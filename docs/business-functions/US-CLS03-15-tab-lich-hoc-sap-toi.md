@@ -1,3 +1,13 @@
+---
+id: US-CLS03-15
+title: "Tab Lich hoc sap toi (Upcoming Schedule)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-15: Tab Lich hoc sap toi (Upcoming Schedule)
 
 > Tai lieu dang cho bien tap

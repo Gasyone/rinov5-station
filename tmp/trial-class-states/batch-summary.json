@@ -1,0 +1,5191 @@
+{
+  "assign": {
+    "name": "TC04-assign-class-modal",
+    "dialogs": [
+      {
+        "text": "Học thử Cambridge Starter - Ca tốiĐã đặt lịchTR-2605-001Nguyễn Minh Anh·Cambridge Starter·3 buổi họcHủy lịchGhép lớpYêu cầu đổi lịchHọc viênNguyễn Minh AnhKH-10248Lần họcLần 1Cơ sởRino Nguyễn TuânThông tin liên hệGia đình Nguyễn0912****78Lớp & Buổi họcThông tin ghép lớpĐã ghép 3 buổi học Đổi lịchCambridge Starter A1CLS-001Starter S1 (SESS-9901)20/05/2026 18:00Cambridge Starter A1CLS-001Starter S2 (SESS-9902)22/05/2026 18:00Cambridge Starter A1CLS-001Starter S3 (SESS-9903)25/05/2026 18:00Môn họcTiếng AnhPhòng họcChưa xếp phòngPhụ tráchLANgười tạoLan AnhMSNgười phụ tráchMs. SarahKết quả nhận xét từ Giáo viênChờ kết quả...Ghi chúLịch sửChưa có ghi chú.Close",
+        "r": {
+          "x": 444,
+          "y": 69,
+          "w": 1024,
+          "h": 777
+        }
+      },
+      {
+        "text": "Ghép lớp học thửTìm lớp phù hợp cho Nguyễn Minh AnhThông tin hiện tạiLớp: Cambridge Starter A1Buổi học: 3 buổiThời gian: 20/05/2026 18:00 ...Trạng thái: Đã đặt lịchLịch khả dụngLọc theo: Cambridge Starter[data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}Cambridge Starter A1Chính thứcMs. Sarah · T3/T5/CN 18:0012/15Starter S120/05/2026 · 18:0012/15Starter S222/05/2026 · 18:0014/15Starter S325/05/2026 · 18:0010/15Vui lòng chọn ít nhất 1 buổi họcHủyXác nhận ghépClose",
+        "r": {
+          "x": 572,
+          "y": 97,
+          "w": 768,
+          "h": 721
+        }
+      }
+    ],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "",
+        "aria": null,
+        "title": "Dashboard",
+        "r": {
+          "x": 14,
+          "y": 80,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 6,
+        "text": "",
+        "aria": null,
+        "title": "Lịch biểu",
+        "r": {
+          "x": 14,
+          "y": 132,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 7,
+        "text": "",
+        "aria": null,
+        "title": "Tuyển sinh",
+        "r": {
+          "x": 14,
+          "y": 184,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 8,
+        "text": "",
+        "aria": null,
+        "title": "Vận hành",
+        "r": {
+          "x": 14,
+          "y": 236,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 9,
+        "text": "",
+        "aria": null,
+        "title": "Học thuật",
+        "r": {
+          "x": 14,
+          "y": 288,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 10,
+        "text": "",
+        "aria": null,
+        "title": "Nhân sự",
+        "r": {
+          "x": 14,
+          "y": 340,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 11,
+        "text": "",
+        "aria": null,
+        "title": "Dữ liệu gốc",
+        "r": {
+          "x": 14,
+          "y": 392,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 12,
+        "text": "",
+        "aria": null,
+        "title": "Hệ thống",
+        "r": {
+          "x": 14,
+          "y": 444,
+          "w": 44,
+          "h": 44
+        }
+      },
+      {
+        "i": 13,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 96,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 14,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 15,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 96,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 204,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 339,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 485,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 625,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 763,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 895,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1032,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 96,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 204,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 339,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 485,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 625,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 763,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 895,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1032,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 34,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 35,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 36,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 820,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 38,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1279,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 39,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 40,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 41,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 798,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 43,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 44,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 117,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Hủy lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1034,
+          "y": 94,
+          "w": 101,
+          "h": 36
+        }
+      },
+      {
+        "i": 64,
+        "text": "Ghép lớp",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1143,
+          "y": 94,
+          "w": 109,
+          "h": 36
+        }
+      },
+      {
+        "i": 65,
+        "text": "Yêu cầu đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1259,
+          "y": 94,
+          "w": 152,
+          "h": 36
+        }
+      },
+      {
+        "i": 66,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 1067,
+          "y": 288,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 67,
+        "text": "Đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1001,
+          "y": 405,
+          "w": 90,
+          "h": 28
+        }
+      },
+      {
+        "i": 68,
+        "text": "Ghi chú",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1126,
+          "y": 248,
+          "w": 89,
+          "h": 29
+        }
+      },
+      {
+        "i": 69,
+        "text": "Lịch sử",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1215,
+          "y": 248,
+          "w": 87,
+          "h": 29
+        }
+      },
+      {
+        "i": 70,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1403,
+          "y": 788,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 71,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1435,
+          "y": 86,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 72,
+        "text": "Cambridge Starter A1\nChính thức\n\nMs. Sarah · T3/T5/CN 18:00\n\n12/15",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 598,
+          "y": 325,
+          "w": 696,
+          "h": 61
+        }
+      },
+      {
+        "i": 73,
+        "text": "Starter S1\n\n20/05/2026 · 18:00\n\n12/15",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 610,
+          "y": 398,
+          "w": 672,
+          "h": 54
+        }
+      },
+      {
+        "i": 74,
+        "text": "Starter S2\n\n22/05/2026 · 18:00\n\n14/15",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 610,
+          "y": 459,
+          "w": 672,
+          "h": 54
+        }
+      },
+      {
+        "i": 75,
+        "text": "Starter S3\n\n25/05/2026 · 18:00\n\n10/15",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 610,
+          "y": 521,
+          "w": 672,
+          "h": 54
+        }
+      },
+      {
+        "i": 76,
+        "text": "Hủy",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1118,
+          "y": 757,
+          "w": 60,
+          "h": 36
+        }
+      },
+      {
+        "i": 77,
+        "text": "Xác nhận ghép",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1186,
+          "y": 757,
+          "w": 129,
+          "h": 36
+        }
+      },
+      {
+        "i": 78,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1307,
+          "y": 114,
+          "w": 16,
+          "h": 16
+        }
+      }
+    ],
+    "bodyText": "U\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1\nHọc thử Cambridge Starter - Ca tối\nĐã đặt lịch\nTR-2605-001\n\nNguyễn Minh Anh\n·\nCambridge Starter\n·\n3 buổi học\n\nHủy lịch\nGhép lớp\nYêu cầu đổi lịch\n\nHỌC VIÊN\n\nNguyễn Minh Anh\n\nKH-10248\n\nLẦN HỌC\n\nLần 1\n\nCƠ SỞ\n\nRino Nguyễn Tuân\n\nTHÔNG TIN LIÊN HỆ\n\nGia đình Nguyễn\n\n0912****78\n\nLỚP & BUỔI HỌC\nTHÔNG TIN GHÉP LỚP\nĐã ghép 3 buổi học\nĐổi lịch\nCambridge Starter A1\nCLS-001\nStarter S1 (SESS-9901)\n20/05/2026 18:00\nCambridge Starter A1\nCLS-001\nStarter S2 (SESS-9902)\n22/05/2026 18:00\nCambridge Starter A1\nCLS-001\nStarter S3 (SESS-9903)\n25/05/2026 18:00\nMÔN HỌC\n\nTiếng Anh\n\nPHÒNG HỌC\n\nChưa xếp phòng\n\nPHỤ TRÁCH\nLA\n\nNGƯỜI TẠO\n\nLan Anh\n\nMS\n\nNGƯỜI PHỤ TRÁCH\n\nMs. Sarah\n\nKẾT QUẢ NHẬN XÉT TỪ GIÁO VIÊN\n\nChờ kết quả...\n\nGhi chú\nLịch sử\n\nChưa có ghi chú.\n\nClose\nGhép lớp học thử\n\nTìm lớp phù hợp cho Nguyễn Minh Anh\n\nThông tin hiện tại\nLớp: Cambridge Starter A1\nBuổi học: 3 buổi\nThời gian: 20/05/2026 18:00 ...\nTrạng thái: Đã đặt lịch\nLịch khả dụng\nLọc theo: Cambridge Starter\nCambridge Starter A1\nChính thức\n\nMs. Sarah · T3/T5/CN 18:00\n\n12/15\n\nStarter S1\n\n20/05/2026 · 18:00\n\n12/15\n\nStarter S2\n\n22/05/2026 · 18:00\n\n14/15\n\nStarter S3\n\n25/05/2026 · 18:00\n\n10/15\nVui lòng chọn ít nhất 1 buổi học\nHủy\nXác nhận ghép\nClose"
+  },
+  "reschedule": {
+    "name": "TC05-reschedule-modal",
+    "dialogs": [],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "Dashboard",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 80,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 6,
+        "text": "Lịch biểu",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 124,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 7,
+        "text": "Tuyển sinh",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 168,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 8,
+        "text": "Đặt lịch test",
+        "aria": null,
+        "title": "Đặt lịch test",
+        "r": {
+          "x": 32,
+          "y": 212,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 9,
+        "text": "Lớp học thử",
+        "aria": null,
+        "title": "Lớp học thử",
+        "r": {
+          "x": 32,
+          "y": 252,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 10,
+        "text": "Quản lý sự kiện",
+        "aria": null,
+        "title": "Quản lý sự kiện",
+        "r": {
+          "x": 32,
+          "y": 292,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 11,
+        "text": "Vận hành",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 340,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 12,
+        "text": "Học thuật",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 384,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 13,
+        "text": "Nhân sự",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 428,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 14,
+        "text": "Dữ liệu gốc",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 472,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 15,
+        "text": "Hệ thống",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 516,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 34,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 38,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 601,
+          "y": 233,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 39,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1027,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 40,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1476,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 43,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 44,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1005,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 59,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 61,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 64,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 65,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      }
+    ],
+    "bodyText": "U\nDashboard\nLịch biểu\nTuyển sinh\nĐặt lịch test\nLớp học thử\nQuản lý sự kiện\nVận hành\nHọc thuật\nNhân sự\nDữ liệu gốc\nHệ thống\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1"
+  },
+  "cancel": {
+    "name": "TC06-cancel-confirm",
+    "dialogs": [],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "Dashboard",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 80,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 6,
+        "text": "Lịch biểu",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 124,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 7,
+        "text": "Tuyển sinh",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 168,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 8,
+        "text": "Đặt lịch test",
+        "aria": null,
+        "title": "Đặt lịch test",
+        "r": {
+          "x": 32,
+          "y": 212,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 9,
+        "text": "Lớp học thử",
+        "aria": null,
+        "title": "Lớp học thử",
+        "r": {
+          "x": 32,
+          "y": 252,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 10,
+        "text": "Quản lý sự kiện",
+        "aria": null,
+        "title": "Quản lý sự kiện",
+        "r": {
+          "x": 32,
+          "y": 292,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 11,
+        "text": "Vận hành",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 340,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 12,
+        "text": "Học thuật",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 384,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 13,
+        "text": "Nhân sự",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 428,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 14,
+        "text": "Dữ liệu gốc",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 472,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 15,
+        "text": "Hệ thống",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 516,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 34,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 38,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 601,
+          "y": 233,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 39,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1027,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 40,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1476,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 43,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 44,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1005,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 59,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 61,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 64,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 65,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      }
+    ],
+    "bodyText": "U\nDashboard\nLịch biểu\nTuyển sinh\nĐặt lịch test\nLớp học thử\nQuản lý sự kiện\nVận hành\nHọc thuật\nNhân sự\nDữ liệu gốc\nHệ thống\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1"
+  },
+  "filter": {
+    "name": "TC07-filter-drawer",
+    "dialogs": [
+      {
+        "text": "Bộ lọc nâng caoLọc theo chương trình, người tạo.Chương trìnhCambridge Starter1STEM Robotics1English Foundation1Math Thinking1IELTS Junior1Cambridge Movers1Phonics1Người tạoLan Anh2Minh Quân2Hoàng Yến2Thanh Vân1Xóa tất cảÁp dụngClose",
+        "r": {
+          "x": 1464,
+          "y": 0,
+          "w": 448,
+          "h": 914
+        }
+      }
+    ],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "Dashboard",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 80,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 6,
+        "text": "Lịch biểu",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 124,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 7,
+        "text": "Tuyển sinh",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 168,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 8,
+        "text": "Đặt lịch test",
+        "aria": null,
+        "title": "Đặt lịch test",
+        "r": {
+          "x": 32,
+          "y": 212,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 9,
+        "text": "Lớp học thử",
+        "aria": null,
+        "title": "Lớp học thử",
+        "r": {
+          "x": 32,
+          "y": 252,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 10,
+        "text": "Quản lý sự kiện",
+        "aria": null,
+        "title": "Quản lý sự kiện",
+        "r": {
+          "x": 32,
+          "y": 292,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 11,
+        "text": "Vận hành",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 340,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 12,
+        "text": "Học thuật",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 384,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 13,
+        "text": "Nhân sự",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 428,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 14,
+        "text": "Dữ liệu gốc",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 472,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 15,
+        "text": "Hệ thống",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 516,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 34,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 38,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 39,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1027,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 40,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1476,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 43,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 44,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1005,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 59,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 61,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 64,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 65,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 66,
+        "text": "CHƯƠNG TRÌNH",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 114,
+          "w": 415,
+          "h": 28
+        }
+      },
+      {
+        "i": 67,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 162,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 68,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 202,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 69,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 242,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 70,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 282,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 71,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 322,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 72,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 362,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 73,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 402,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 74,
+        "text": "NGƯỜI TẠO",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 459,
+          "w": 415,
+          "h": 28
+        }
+      },
+      {
+        "i": 75,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 507,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 76,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 547,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 77,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 587,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 78,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1497,
+          "y": 627,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 79,
+        "text": "Xóa tất cả",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 862,
+          "w": 201,
+          "h": 36
+        }
+      },
+      {
+        "i": 80,
+        "text": "Áp dụng",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1690,
+          "y": 862,
+          "w": 207,
+          "h": 36
+        }
+      },
+      {
+        "i": 81,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1880,
+          "y": 16,
+          "w": 16,
+          "h": 16
+        }
+      }
+    ],
+    "bodyText": "U\nDashboard\nLịch biểu\nTuyển sinh\nĐặt lịch test\nLớp học thử\nQuản lý sự kiện\nVận hành\nHọc thuật\nNhân sự\nDữ liệu gốc\nHệ thống\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1\nBộ lọc nâng cao\n\nLọc theo chương trình, người tạo.\n\nCHƯƠNG TRÌNH\nCambridge Starter\n1\nSTEM Robotics\n1\nEnglish Foundation\n1\nMath Thinking\n1\nIELTS Junior\n1\nCambridge Movers\n1\nPhonics\n1\nNGƯỜI TẠO\nLan Anh\n2\nMinh Quân\n2\nHoàng Yến\n2\nThanh Vân\n1\nXóa tất cả\nÁp dụng\nClose"
+  },
+  "family": {
+    "name": "TC08-family-popover",
+    "dialogs": [],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "Dashboard",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 80,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 6,
+        "text": "Lịch biểu",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 124,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 7,
+        "text": "Tuyển sinh",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 168,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 8,
+        "text": "Đặt lịch test",
+        "aria": null,
+        "title": "Đặt lịch test",
+        "r": {
+          "x": 32,
+          "y": 212,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 9,
+        "text": "Lớp học thử",
+        "aria": null,
+        "title": "Lớp học thử",
+        "r": {
+          "x": 32,
+          "y": 252,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 10,
+        "text": "Quản lý sự kiện",
+        "aria": null,
+        "title": "Quản lý sự kiện",
+        "r": {
+          "x": 32,
+          "y": 292,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 11,
+        "text": "Vận hành",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 340,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 12,
+        "text": "Học thuật",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 384,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 13,
+        "text": "Nhân sự",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 428,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 14,
+        "text": "Dữ liệu gốc",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 472,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 15,
+        "text": "Hệ thống",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 516,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 34,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 38,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 39,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1027,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 40,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1476,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 43,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 44,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1005,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 59,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 61,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 64,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 65,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      }
+    ],
+    "bodyText": "U\nDashboard\nLịch biểu\nTuyển sinh\nĐặt lịch test\nLớp học thử\nQuản lý sự kiện\nVận hành\nHọc thuật\nNhân sự\nDữ liệu gốc\nHệ thống\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1"
+  },
+  "session": {
+    "name": "TC09-session-popover",
+    "dialogs": [],
+    "popovers": [],
+    "buttons": [
+      {
+        "i": 0,
+        "text": "Open navigation",
+        "aria": "Open navigation",
+        "title": null,
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 1,
+        "text": "Search",
+        "aria": "Search",
+        "title": null,
+        "r": {
+          "x": 1693,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 2,
+        "text": "Cài đặt",
+        "aria": "Cài đặt",
+        "title": null,
+        "r": {
+          "x": 1744,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 3,
+        "text": "Thông báo",
+        "aria": "Thông báo",
+        "title": null,
+        "r": {
+          "x": 1796,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 4,
+        "text": "U",
+        "aria": "Tài khoản",
+        "title": null,
+        "r": {
+          "x": 1848,
+          "y": 12,
+          "w": 40,
+          "h": 40
+        }
+      },
+      {
+        "i": 5,
+        "text": "Dashboard",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 80,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 6,
+        "text": "Lịch biểu",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 124,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 7,
+        "text": "Tuyển sinh",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 168,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 8,
+        "text": "Đặt lịch test",
+        "aria": null,
+        "title": "Đặt lịch test",
+        "r": {
+          "x": 32,
+          "y": 212,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 9,
+        "text": "Lớp học thử",
+        "aria": null,
+        "title": "Lớp học thử",
+        "r": {
+          "x": 32,
+          "y": 252,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 10,
+        "text": "Quản lý sự kiện",
+        "aria": null,
+        "title": "Quản lý sự kiện",
+        "r": {
+          "x": 32,
+          "y": 292,
+          "w": 240,
+          "h": 36
+        }
+      },
+      {
+        "i": 11,
+        "text": "Vận hành",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 340,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 12,
+        "text": "Học thuật",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 384,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 13,
+        "text": "Nhân sự",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 428,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 14,
+        "text": "Dữ liệu gốc",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 472,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 15,
+        "text": "Hệ thống",
+        "aria": null,
+        "title": "",
+        "r": {
+          "x": 12,
+          "y": 516,
+          "w": 264,
+          "h": 36
+        }
+      },
+      {
+        "i": 16,
+        "text": "Tất cả cơ sở",
+        "aria": "Cơ sở",
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 76,
+          "w": 208,
+          "h": 32
+        }
+      },
+      {
+        "i": 17,
+        "text": "Tìm Booking",
+        "aria": "Tìm Booking",
+        "title": "Tìm Booking",
+        "r": {
+          "x": 1685,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 18,
+        "text": "Bộ lọc",
+        "aria": "Bộ lọc",
+        "title": "Bộ lọc",
+        "r": {
+          "x": 1725,
+          "y": 76,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 19,
+        "text": "Tạo Booking",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1765,
+          "y": 76,
+          "w": 123,
+          "h": 32
+        }
+      },
+      {
+        "i": 20,
+        "text": "Tất cả7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 21,
+        "text": "Đã đặt lịch2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 22,
+        "text": "Chưa gán lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 23,
+        "text": "Đã ghép lớp1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 24,
+        "text": "Cần đổi lịch1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 25,
+        "text": "Không đến1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 26,
+        "text": "Hoàn thành1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 27,
+        "text": "Đã hủy1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 28,
+        "text": "Tất cả\n7",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 312,
+          "y": 116,
+          "w": 100,
+          "h": 32
+        }
+      },
+      {
+        "i": 29,
+        "text": "Đã đặt lịch\n2",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 420,
+          "y": 116,
+          "w": 127,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Chưa gán lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 555,
+          "y": 116,
+          "w": 138,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Đã ghép lớp\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 701,
+          "y": 116,
+          "w": 131,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 841,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 33,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 979,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 34,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1111,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1248,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 181,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 241,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 38,
+        "text": "Gọi Nguyễn Minh Anh",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 39,
+        "text": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1027,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 40,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "Xem các buổi học khác",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1476,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 314,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 43,
+        "text": "Gọi Trần Bảo Nam",
+        "aria": "Gọi Trần Bảo Nam",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 44,
+        "text": "Liên hệ phụ huynh của Gia đình Trần",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 1005,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 46,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 378,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 47,
+        "text": "Gọi Lê Gia Hân",
+        "aria": "Gọi Lê Gia Hân",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 49,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 440,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 50,
+        "text": "Gọi Phạm Đức Minh",
+        "aria": "Gọi Phạm Đức Minh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 52,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 502,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 53,
+        "text": "Gọi Đỗ Khánh Linh",
+        "aria": "Gọi Đỗ Khánh Linh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 55,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 564,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 56,
+        "text": "Gọi Bùi Hoàng Phúc",
+        "aria": "Gọi Bùi Hoàng Phúc",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 333,
+          "y": 626,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 59,
+        "text": "Gọi Vũ Tue Nhi",
+        "aria": "Gọi Vũ Tue Nhi",
+        "title": "Gọi điện",
+        "r": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 991,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 61,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "Trang đầu",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Trang trước",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 64,
+        "text": "Trang sau",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 65,
+        "text": "Trang cuối",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 66,
+        "text": "Close toast",
+        "aria": "Close toast",
+        "title": null,
+        "r": {
+          "x": 1526,
+          "y": 18,
+          "w": 20,
+          "h": 20
+        }
+      }
+    ],
+    "bodyText": "U\nDashboard\nLịch biểu\nTuyển sinh\nĐặt lịch test\nLớp học thử\nQuản lý sự kiện\nVận hành\nHọc thuật\nNhân sự\nDữ liệu gốc\nHệ thống\nTất cả cơ sở\nTạo Booking\nTất cả\n7\nĐã đặt lịch\n2\nChưa gán lớp\n1\nĐã ghép lớp\n1\nCần đổi lịch\n1\nKhông đến\n1\nHoàn thành\n1\nĐã hủy\n1\n\tBooking / Tên\tHọc viên\tPhụ huynh\tLần\tLớp ghép\tBuổi học\tNgày giờ\tNgười phụ trách\tTrạng thái\n\t\n\nCambridge Starter\n\nTR-2605-001\nTIẾNG ANH\n\t\nNA\n\nNguyễn Minh Anh\n\nKH-10248\n\n\t\n\nGia đình Nguyễn\n\n0912****78\n\tLần 1\t\n\nCambridge Starter A1\n\nCLS-001\n\n\t\n\n3 BUỔI HỌC\n\nStarter S1\n\nSESS-9901\n\n\t\nTỪ:\n18:00 20/05\nĐẾN:\n18:00 25/05\n\t\nLA\nMS\n\tĐã đặt lịch\n\t\n\nSTEM Robotics\n\nTR-2605-002\nSTEM\n\t\nTN\n\nTrần Bảo Nam\n\nKH-10261\n\n\t\n\nGia đình Trần\n\n0987****21\n\tLần 1\t\n\nSTEM Robotics S1\n\nCLS-002\n\n\t\n\nRobo Level 1\n\nSESS-9902\n\n\t\n19:30 21/05\n\t\nMQ\nMD\n\tĐã ghép lớp\n\t\n\nEnglish Foundation\n\nTR-2605-003\nTIẾNG ANH\n\t\nLH\n\nLê Gia Hân\n\nKH-10273\n\n\t\n\nGia đình Lê\n\n0909****22\n\tLần 2\t\n\nEnglish Foundation A1\n\nCLS-003\n\n\t\n\nFoundation A1\n\nSESS-9903\n\n\t\n17:15 14/05\n\t\nHY\nME\n\tHoàn thành\n\t\n\nMath Thinking\n\nTR-2605-004\nTOÁN\n\t\nPM\n\nPhạm Đức Minh\n\nKH-10289\n\n\t\n\nGia đình Phạm\n\n0933****89\n\tLần 1\t\n\nMath Thinking M1\n\nCLS-004\n\n\t\n\nThinking M1\n\nSESS-9904\n\n\t\n18:45 22/05\n\t\nLA\nMR\n\tCần đổi lịch\n\t\n\nIELTS Junior\n\nTR-2605-005\nTIẾNG ANH\n\t\nĐL\n\nĐỗ Khánh Linh\n\nKH-10304\n\n\t\n\nGia đình Đỗ\n\n0977****54\n\tLần 1\t\n\nIELTS Junior J1\n\nCLS-005\n\n\t\n\nIELTS J1\n\nSESS-9905\n\n\t\n09:00 18/05\n\t\nTV\nMA\n\tĐã hủy\n\t\n\nCambridge Movers\n\nTR-2605-006\nTIẾNG ANH\n\t\nBP\n\nBùi Hoàng Phúc\n\nKH-10318\n\n\t\n\nGia đình Bùi\n\n0866****12\n\tLần 1\tChưa ghép\t—\t—\t\nMQ\nMS\n\tĐã đặt lịch\n\t\n\nPhonics\n\nTR-2605-007\nTIẾNG ANH\n\t\nVN\n\nVũ Tue Nhi\n\nKH-10327\n\n\t\n\nGia đình Vũ\n\n0355****67\n\tLần 3\t\n\nPhonics P2\n\nCLS-007\n\n\t\n\nPhonics P2\n\nSESS-9907\n\n\t\n17:30 12/05\n\t\nHY\nME\n\tKhông đến\nHiển thị 1–7 / 7\nDòng\n20\n1 / 1\nĐã sao chép"
+  }
+}

@@ -1,3 +1,13 @@
+---
+id: US-CLS04-11
+title: "Tab Ghi chu Van hanh (Operational Notes - Teacher)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-11: Tab Ghi chu Van hanh (Operational Notes - Teacher)
 
 > Tai lieu dang cho bien tap

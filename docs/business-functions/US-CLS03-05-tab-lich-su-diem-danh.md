@@ -1,3 +1,13 @@
+---
+id: US-CLS03-05
+title: "Tab Lich su Diem danh (Attendance History)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-05: Tab Lich su Diem danh (Attendance History)
 
 > Tai lieu dang cho bien tap

@@ -1,0 +1,1297 @@
+[
+  {
+    "name": "TC05-reschedule-modal",
+    "url": "http://127.0.0.1:3000/app/trial_class",
+    "dialogs": [
+      {
+        "x": 444,
+        "y": 69,
+        "w": 1024,
+        "h": 777
+      },
+      {
+        "x": 700,
+        "y": 274,
+        "w": 512,
+        "h": 366
+      }
+    ],
+    "popovers": [],
+    "lastButtons": [
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Hủy lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1034,
+          "y": 94,
+          "w": 101,
+          "h": 36
+        }
+      },
+      {
+        "i": 64,
+        "text": "Ghép lớp",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1143,
+          "y": 94,
+          "w": 109,
+          "h": 36
+        }
+      },
+      {
+        "i": 65,
+        "text": "Yêu cầu đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1259,
+          "y": 94,
+          "w": 152,
+          "h": 36
+        }
+      },
+      {
+        "i": 66,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 1067,
+          "y": 288,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 67,
+        "text": "Đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1001,
+          "y": 405,
+          "w": 90,
+          "h": 28
+        }
+      },
+      {
+        "i": 68,
+        "text": "Ghi chú",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1126,
+          "y": 248,
+          "w": 89,
+          "h": 29
+        }
+      },
+      {
+        "i": 69,
+        "text": "Lịch sử",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1215,
+          "y": 248,
+          "w": 87,
+          "h": 29
+        }
+      },
+      {
+        "i": 71,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1435,
+          "y": 86,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 72,
+        "text": "Chọn lý do",
+        "aria": "Lý do đổi lịch",
+        "title": null,
+        "r": {
+          "x": 725,
+          "y": 433,
+          "w": 462,
+          "h": 32
+        }
+      },
+      {
+        "i": 73,
+        "text": "Hủy",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1011,
+          "y": 579,
+          "w": 60,
+          "h": 36
+        }
+      },
+      {
+        "i": 74,
+        "text": "Gửi yêu cầu",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1079,
+          "y": 579,
+          "w": 108,
+          "h": 36
+        }
+      },
+      {
+        "i": 75,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1179,
+          "y": 291,
+          "w": 16,
+          "h": 16
+        }
+      }
+    ]
+  },
+  {
+    "name": "TC06-cancel-confirm",
+    "url": "http://127.0.0.1:3000/app/trial_class",
+    "dialogs": [
+      {
+        "x": 444,
+        "y": 69,
+        "w": 1024,
+        "h": 777
+      }
+    ],
+    "popovers": [],
+    "lastButtons": [
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "Hủy lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1034,
+          "y": 94,
+          "w": 101,
+          "h": 36
+        }
+      },
+      {
+        "i": 64,
+        "text": "Ghép lớp",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1143,
+          "y": 94,
+          "w": 109,
+          "h": 36
+        }
+      },
+      {
+        "i": 65,
+        "text": "Yêu cầu đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1259,
+          "y": 94,
+          "w": 152,
+          "h": 36
+        }
+      },
+      {
+        "i": 66,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 1067,
+          "y": 288,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 67,
+        "text": "Đổi lịch",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1001,
+          "y": 405,
+          "w": 90,
+          "h": 28
+        }
+      },
+      {
+        "i": 68,
+        "text": "Ghi chú",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1126,
+          "y": 248,
+          "w": 89,
+          "h": 29
+        }
+      },
+      {
+        "i": 69,
+        "text": "Lịch sử",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1215,
+          "y": 248,
+          "w": 87,
+          "h": 29
+        }
+      },
+      {
+        "i": 71,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1435,
+          "y": 86,
+          "w": 16,
+          "h": 16
+        }
+      },
+      {
+        "i": 72,
+        "text": "Chọn lý do",
+        "aria": "Lý do hủy",
+        "title": null,
+        "r": {
+          "x": 725,
+          "y": 411,
+          "w": 462,
+          "h": 32
+        }
+      },
+      {
+        "i": 73,
+        "text": "Đóng",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 990,
+          "y": 557,
+          "w": 69,
+          "h": 36
+        }
+      },
+      {
+        "i": 74,
+        "text": "Xác nhận hủy",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1067,
+          "y": 557,
+          "w": 120,
+          "h": 36
+        }
+      }
+    ]
+  },
+  {
+    "name": "TC08-family-popover",
+    "url": "http://127.0.0.1:3000/app/trial_class",
+    "dialogs": [
+      {
+        "x": 820,
+        "y": 252,
+        "w": 288,
+        "h": 166
+      }
+    ],
+    "popovers": [
+      {
+        "x": 820,
+        "y": 252,
+        "w": 288,
+        "h": 166
+      }
+    ],
+    "lastButtons": [
+      {
+        "i": 35,
+        "text": "",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 390,
+          "y": 233,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 820,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 38,
+        "text": "",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1279,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 798,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "",
+        "aria": "Gọi Nguyễn Thị Lan (Mẹ)",
+        "title": null,
+        "r": {
+          "x": 1034,
+          "y": 304,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 64,
+        "text": "",
+        "aria": "Sao chép số điện thoại của Nguyễn Thị Lan (Mẹ)",
+        "title": null,
+        "r": {
+          "x": 1062,
+          "y": 304,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 65,
+        "text": "",
+        "aria": "Gọi Nguyễn Văn Hòa (Bố)",
+        "title": null,
+        "r": {
+          "x": 1034,
+          "y": 366,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 66,
+        "text": "",
+        "aria": "Sao chép số điện thoại của Nguyễn Văn Hòa (Bố)",
+        "title": null,
+        "r": {
+          "x": 1062,
+          "y": 366,
+          "w": 24,
+          "h": 24
+        }
+      }
+    ]
+  },
+  {
+    "name": "TC09-session-popover",
+    "url": "http://127.0.0.1:3000/app/trial_class",
+    "dialogs": [
+      {
+        "x": 1279,
+        "y": 245,
+        "w": 288,
+        "h": 276
+      }
+    ],
+    "popovers": [
+      {
+        "x": 1279,
+        "y": 245,
+        "w": 288,
+        "h": 276
+      }
+    ],
+    "lastButtons": [
+      {
+        "i": 29,
+        "text": "Cần đổi lịch\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 625,
+          "y": 116,
+          "w": 130,
+          "h": 32
+        }
+      },
+      {
+        "i": 30,
+        "text": "Không đến\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 763,
+          "y": 116,
+          "w": 124,
+          "h": 32
+        }
+      },
+      {
+        "i": 31,
+        "text": "Hoàn thành\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 895,
+          "y": 116,
+          "w": 129,
+          "h": 32
+        }
+      },
+      {
+        "i": 32,
+        "text": "Đã hủy\n1",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1032,
+          "y": 116,
+          "w": 103,
+          "h": 32
+        }
+      },
+      {
+        "i": 35,
+        "text": "",
+        "aria": "Gọi Nguyễn Minh Anh",
+        "title": "Gọi điện",
+        "r": {
+          "x": 390,
+          "y": 233,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 36,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 820,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 38,
+        "text": "",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1279,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 798,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      }
+    ]
+  },
+  {
+    "name": "TC07-filter-drawer",
+    "url": "http://127.0.0.1:3000/app/trial_class",
+    "dialogs": [
+      {
+        "x": 1464,
+        "y": 0,
+        "w": 448,
+        "h": 914
+      }
+    ],
+    "popovers": [],
+    "lastButtons": [
+      {
+        "i": 36,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Nguyễn",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 820,
+          "y": 224,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 37,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 250,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 38,
+        "text": "",
+        "aria": "Xem các buổi học khác",
+        "title": "Xem các buổi học khác",
+        "r": {
+          "x": 1279,
+          "y": 217,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 41,
+        "text": "",
+        "aria": "Liên hệ phụ huynh của Gia đình Trần",
+        "title": "Liên hệ phụ huynh",
+        "r": {
+          "x": 798,
+          "y": 297,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 42,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 323,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 45,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 385,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 48,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 447,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 51,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 509,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 54,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 571,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 57,
+        "text": "",
+        "aria": null,
+        "title": "Sao chép số điện thoại",
+        "r": {
+          "x": 785,
+          "y": 633,
+          "w": 24,
+          "h": 24
+        }
+      },
+      {
+        "i": 58,
+        "text": "20",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1605,
+          "y": 849,
+          "w": 72,
+          "h": 32
+        }
+      },
+      {
+        "i": 59,
+        "text": "",
+        "aria": "Trang đầu",
+        "title": null,
+        "r": {
+          "x": 1689,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 60,
+        "text": "",
+        "aria": "Trang trước",
+        "title": null,
+        "r": {
+          "x": 1725,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 61,
+        "text": "",
+        "aria": "Trang sau",
+        "title": null,
+        "r": {
+          "x": 1803,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 62,
+        "text": "",
+        "aria": "Trang cuối",
+        "title": null,
+        "r": {
+          "x": 1839,
+          "y": 849,
+          "w": 32,
+          "h": 32
+        }
+      },
+      {
+        "i": 63,
+        "text": "CHƯƠNG TRÌNH",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 114,
+          "w": 415,
+          "h": 28
+        }
+      },
+      {
+        "i": 71,
+        "text": "NGƯỜI TẠO",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 459,
+          "w": 415,
+          "h": 28
+        }
+      },
+      {
+        "i": 76,
+        "text": "Xóa tất cả",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1481,
+          "y": 862,
+          "w": 201,
+          "h": 36
+        }
+      },
+      {
+        "i": 77,
+        "text": "Áp dụng",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1690,
+          "y": 862,
+          "w": 207,
+          "h": 36
+        }
+      },
+      {
+        "i": 78,
+        "text": "Close",
+        "aria": null,
+        "title": null,
+        "r": {
+          "x": 1880,
+          "y": 16,
+          "w": 16,
+          "h": 16
+        }
+      }
+    ]
+  }
+]

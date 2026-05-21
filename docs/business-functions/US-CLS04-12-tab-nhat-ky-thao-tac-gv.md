@@ -1,3 +1,13 @@
+---
+id: US-CLS04-12
+title: "Tab Nhat ky thao tac (Audit Log - Teacher)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-12: Tab Nhat ky thao tac (Audit Log - Teacher)
 
 > Tai lieu dang cho bien tap

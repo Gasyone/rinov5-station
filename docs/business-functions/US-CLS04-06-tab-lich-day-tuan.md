@@ -1,3 +1,13 @@
+---
+id: US-CLS04-06
+title: "Tab Lich day tuan (Teaching Timetable)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-06: Tab Lich day tuan (Teaching Timetable)
 
 > Tai lieu dang cho bien tap

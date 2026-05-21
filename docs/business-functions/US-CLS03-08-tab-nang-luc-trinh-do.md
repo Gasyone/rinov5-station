@@ -1,3 +1,13 @@
+---
+id: US-CLS03-08
+title: "Tab Nang luc & Trinh do (Proficiency)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-08: Tab Nang luc & Trinh do (Proficiency)
 
 > Tai lieu dang cho bien tap

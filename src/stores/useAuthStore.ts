@@ -5,15 +5,17 @@ import { persist, createJSONStorage } from 'zustand/middleware'
  * MOCK AUTH — DEMO ONLY.
  * No real credential check happens. Any email/password is accepted.
  * The server route /api/auth/login sets an `auth_session=true` cookie that the
- * Next middleware reads. Do NOT use this pattern in production — the cookie
+ * auth/dashboard layouts read. Do NOT use this pattern in production — the cookie
  * value is a plain literal and a determined client could set it manually.
  */
+
+type DemoRole = 'admin' | 'branch_manager' | 'sale' | 'csm' | 'teacher'
 
 interface User {
   id: string
   name: string
   email: string
-  role: string
+  role: DemoRole
 }
 
 interface AuthState {
@@ -25,6 +27,15 @@ interface AuthState {
   logout: () => Promise<void>
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
+}
+
+function resolveDemoRole(identifier: string): DemoRole {
+  const normalized = identifier.toLowerCase()
+  if (normalized.includes('teacher')) return 'teacher'
+  if (normalized.includes('sale')) return 'sale'
+  if (normalized.includes('csm') || normalized.includes('care')) return 'csm'
+  if (normalized.includes('branch') || normalized.includes('manager')) return 'branch_manager'
+  return 'admin'
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -40,13 +51,13 @@ export const useAuthStore = create<AuthState>()(
        * do we flip the store to authenticated. If the request fails the store
        * stays clean and the caller sees `false`.
        */
-      login: async (email: string, _password: string) => {
+      login: async (email: string, password: string) => {
         set({ isLoading: true, error: null })
         try {
           const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({ email, password }),
           })
           if (!res.ok) {
             throw new Error(`Login failed (${res.status})`)
@@ -57,7 +68,7 @@ export const useAuthStore = create<AuthState>()(
               id: 'demo-user',
               name: 'Admin Demo',
               email: email || 'admin@demo.com',
-              role: 'admin',
+              role: resolveDemoRole(email),
             },
             isLoading: false,
           })

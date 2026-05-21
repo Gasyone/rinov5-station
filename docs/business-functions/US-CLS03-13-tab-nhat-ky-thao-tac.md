@@ -1,3 +1,13 @@
+---
+id: US-CLS03-13
+title: "Tab Nhat ky thao tac (Audit Log)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-13: Tab Nhat ky thao tac (Audit Log)
 
 > Tai lieu dang cho bien tap

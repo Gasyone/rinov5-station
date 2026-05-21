@@ -1,83 +1,107 @@
+---
+title: "BF-CRM-01: Quản lý Khách hàng tiềm năng"
+type: "Business Function"
+domain: "CAP-ADM"
+status: "Draft"
+tags: [crm, lead]
+---
+
 # BF-CRM-01: Quản lý Khách hàng tiềm năng (Lead Generation & Directory)
 
-> **Capability:** CAP-ADM
-> **Giai đoạn:** 1 — Thu hút & Tiếp cận (Pre-Enrollment)
-> **Nhóm sidebar:** Khách hàng
-> **Menu ID:** `contact_directory`, `contact_shared_directory`
+> **Capability:** CAP-ADM (Năng lực Tuyển sinh & Thương mại)
+> **Giai đoạn:** 1 - Tuyển sinh
+> **Nhóm chức năng:** CRM & Khách hàng
+> **Mã màn hình:** `contact_directory`, `contact_shared_directory`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Đây là business function quản trị đầu vào của vòng đời tuyển sinh. Nhiệm vụ chính là thu thập (Capture), chuẩn hóa (Enrich), và phân loại (Segment) các khách hàng tiềm năng (Leads/Contacts) từ nhiều nguồn khác nhau (Marketing campaigns, Referral, Walk-in, Form đăng ký). BF này cung cấp một danh bạ tập trung để Sales có thể khai thác và tiếp cận hiệu quả.
+Phân hệ quản trị đầu vào của vòng đời tuyển sinh. Nhiệm vụ chính là thu thập (Capture), chuẩn hóa (Enrich), và phân loại (Segment) các khách hàng tiềm năng (Leads/Contacts) từ nhiều nguồn khác nhau (Chiến dịch tiếp thị, Giới thiệu, Khách vãng lai, Biểu mẫu đăng ký). Cung cấp một danh bạ tập trung để đội ngũ Tư vấn viên (Sales) có thể khai thác và tiếp cận hiệu quả.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Sales (Telesales, Tư vấn viên)
-- Marketing (Đẩy lead vào hệ thống)
-- Branch Manager (Phân bổ lead cho Sales)
-- System Admin (Cấu hình nguồn và quyền truy cập shared directory)
+- **Nhân viên Tư vấn (Sales):** Chăm sóc, cập nhật thông tin và chuyển đổi khách hàng.
+- **Nhân viên Tiếp thị (Marketing):** Nhập liệu hoặc đẩy danh sách khách hàng tiềm năng vào hệ thống.
+- **Quản lý Chi nhánh / Trưởng nhóm Tư vấn:** Phân bổ khách hàng cho nhân viên, quản lý hiệu suất.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Tạo mới hoặc nạp (import) danh sách khách hàng tiềm năng.
+- Chuẩn hóa và làm sạch dữ liệu (phát hiện trùng lặp Số điện thoại/Email).
+- Phân loại khách hàng theo nguồn (Source), mức độ ưu tiên (Hot/Warm/Cold).
+- Quản lý phân bổ: Danh bạ cá nhân (thuộc sở hữu của 1 Sales) và Danh bạ chung (Shared Directory - ai nhận trước thì được chăm sóc).
 
-- Tạo mới hoặc import hồ sơ khách hàng tiềm năng (Leads/Contacts).
-- Chuẩn hóa và làm sạch dữ liệu (Detect trùng lặp SĐT/Email).
-- Phân loại Lead theo nguồn (Source), chiến dịch (Campaign/UTM), và mức độ ưu tiên (Hot/Warm/Cold).
-- Quản lý cơ chế phân bổ Lead: Danh bạ cá nhân (chỉ Sales được gán mới thấy) và Danh bạ chung (Shared Directory - ai nhận trước thì được chăm sóc).
+### Không bao gồm (Out of Scope)
+- Ghi nhận chi tiết các cuộc gọi, tin nhắn và lịch hẹn → Xử lý tại `BF-CRM-02`.
+- Quản lý hồ sơ Học viên chính thức (Master Profile) sau khi đã đóng tiền → Xử lý tại `BF-MDM-01`.
+- Đăng ký lịch học thử/kiểm tra đầu vào → Xử lý tại `BF-ENR-01`, `BF-ENR-02`.
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- Ghi nhận chi tiết các cuộc gọi, tin nhắn và lịch hẹn follow-up (thuộc `BF-CRM-02`).
-- Quản lý hồ sơ học viên chính thức (Master Profile) sau khi đã đăng ký học (thuộc `BF-PRF-01`).
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Khách hàng Tiềm năng (Lead) | Mã Lead | Tên, Số điện thoại, Email, Nguồn, Độ nóng | Độc lập (Chưa thành Học viên gốc) | Hồ sơ tạm thời phục vụ Sale. |
+| Sở hữu Lead (Ownership) | Mã phân bổ | Nhân viên phụ trách, Ngày nhận | Trỏ về Mã Lead & Nhân viên | Xác định ai đang chăm sóc khách này. |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- **Upstream:** Các hệ thống Marketing ngoài nền tảng (Landing Page, Facebook Lead Ads, Zalo OA) đẩy data vào thông qua API.
-- **Downstream:** `BF-CRM-02` (Follow-up & Tương tác) - Lấy danh sách Lead để thực hiện telesale và chăm sóc.
-- **Downstream:** `BF-ENR-01`, `BF-ENR-02` - Đăng ký lịch test/học thử khi Lead có nhu cầu.
-
-## 5. User Stories
-
-**Danh sách US đề xuất (Proposed):**
-- [ ] US-CRM-01: Tạo mới và Import danh sách khách hàng (Leads).
-- [ ] US-CRM-02: Cơ chế chống trùng lặp dữ liệu (De-duplication) theo SĐT/Email.
-- [ ] US-CRM-03: Phân bổ Lead tự động (Round-robin) hoặc thủ công cho Sales.
-- [ ] US-CRM-04: Quản lý và khai thác Danh bạ chung (Shared Directory/Lead Pool).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định vòng đời của một Khách hàng tiềm năng.*
 
 ```mermaid
-graph TD
-    A["Nguồn Lead (Marketing, Referral, Walk-in)"] --> B["1. Nhập liệu / API Đổ Lead vào hệ thống"]
-    B --> C["2. Chống trùng lặp (De-dup) & Làm sạch"]
-    C --> D{"Lead được gán cho ai?"}
-    D -->|Cụ thể| E["Danh bạ cá nhân (Contact Directory)"]
-    D -->|Chưa rõ| F["Danh bạ chung (Shared Directory)"]
-    F --> G["Sales tự 'Claim' (Nhận) Lead"]
-    G --> E
-    E --> H["Sẵn sàng cho BF-CRM-02 (Follow-up)"]
+stateDiagram-v2
+    [*] --> Moi_tao : Đổ vào hệ thống
+    Moi_tao --> Phuc_hoi : Không ai nhận (Rơi vào Kho chung)
+    Moi_tao --> Dang_cham_soc : Sales nhận / Được phân công
+    Phuc_hoi --> Dang_cham_soc : Sales khác nhận lại
+    Dang_cham_soc --> Chuyen_doi : Mua hàng thành công
+    Dang_cham_soc --> That_bai : Từ chối mua hàng
+    Chuyen_doi --> [*]
+    That_bai --> Phuc_hoi : Hồi sinh sau X tháng
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Mọi Lead vào hệ thống bắt buộc phải có ít nhất một phương thức liên lạc hợp lệ (SĐT hoặc Email).
-2. Khi import, nếu phát hiện SĐT trùng lặp, hệ thống cảnh báo và yêu cầu gộp (Merge) hoặc từ chối tạo mới để tránh xung đột Sale.
-3. Lead nằm trong Shared Directory nếu quá thời gian quy định (ví dụ: 48h) không có ai "Claim" sẽ tự động chuyển trạng thái "Cảnh báo nguội".
-4. Dữ liệu Lead thuộc sở hữu của Chi nhánh/Công ty, Sales bị giới hạn quyền export trừ khi được cấp phép đặc biệt.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Mới tạo / Phục hồi | Đang chăm sóc | Phải gán cho 1 Nhân viên cụ thể | Sales / Quản lý |
+| Đang chăm sóc | Chuyển đổi | Có đơn hàng thành công đầu tiên | Hệ thống tự động |
+| Đang chăm sóc | Thất bại | Phải ghi nhận lý do từ chối | Nhân viên Tư vấn |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Lead / Contact | Hồ sơ khách hàng tiềm năng trước khi chuyển đổi. |
-| Lead Source | Nguồn gốc xuất phát của Lead (ví dụ: Facebook, Walk-in). |
-| Ownership Assignment | Bảng ánh xạ xác định Sales nào đang nắm giữ Lead nào. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Chống trùng lặp | Nhập SĐT "0901234567" đã tồn tại của Sales A | Cảnh báo: "Khách hàng này đang được chăm sóc bởi NV A", chặn lưu. |
+| Sales tự nhận khách | Chọn 5 khách hàng trong "Danh bạ chung" -> Bấm "Nhận" | 5 khách chuyển sang "Danh bạ cá nhân" của Sales đó, trạng thái "Đang chăm sóc". |
+| Khách hàng mua khóa học | Lead B hoàn tất thanh toán hóa đơn đầu tiên | Trạng thái Lead B chuyển thành "Chuyển đổi" và chuyển hóa thành Học viên chính thức (BF-MDM-01). |
 
-- **Registry mapping:** `crm.lead_contact_lifecycle_management` (Giai đoạn Đầu vào)
-- **Backend:** `partial` (Chức năng import và chống trùng lặp cần hoàn thiện logic).
-- **Frontend:** Các màn hình `contact_directory`, `contact_shared_directory`.
-- **Gaps:** Cần chốt với bộ phận Marketing về chuẩn kết nối API từ Landing Page/Facebook vào hệ thống Rinov4. Mức độ tự động phân bổ Lead (Round-robin) cần định nghĩa rõ logic.
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+1. **[RULE-CRM-01-01] Tính duy nhất (De-duplication):** Hệ thống chặn tuyệt đối việc tạo mới Khách hàng tiềm năng nếu Số điện thoại đã tồn tại trong một Hồ sơ đang được chăm sóc bởi Tư vấn viên khác, nhằm tránh xung đột tranh giành khách.
+2. **[RULE-CRM-01-02] Rơi vào Kho chung (Lead Recycling):** Nếu Khách hàng nằm trong "Danh bạ cá nhân" nhưng Tư vấn viên không có bất kỳ tương tác nào (Không gọi điện, không cập nhật ghi chú) trong vòng X ngày (theo cấu hình), Khách hàng đó sẽ bị tước quyền sở hữu và đẩy lại ra "Danh bạ chung" (Shared Directory) để người khác chăm sóc.
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-CRM-01-01 | Quản lý Danh bạ cá nhân (Danh sách) | /app/contact_directory | Đang soạn thảo |
+| US-CRM-01-02 | Quản lý Danh bạ chung (Danh sách) | /app/contact_shared_directory | Đang soạn thảo |
+| US-CRM-01-03 | Tạo/Sửa thông tin Khách hàng tiềm năng (Biểu mẫu) | Không có | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

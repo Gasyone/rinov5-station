@@ -35,6 +35,14 @@ export interface NavigationGroup {
 
 export const navigationGroups: NavigationGroup[] = [
   {
+    id: 'group_dashboard',
+    label: 'Dashboard',
+    icon: Home,
+    items: [
+      { id: 'dashboard', label: 'Dashboard', href: '/app/dashboard' },
+    ],
+  },
+  {
     id: 'group_calendar',
     label: 'Lịch biểu',
     icon: CalendarDays,
@@ -42,6 +50,7 @@ export const navigationGroups: NavigationGroup[] = [
       { id: 'calendar_class_schedule', label: 'Lịch lớp học', href: '/app/calendar_class_schedule' },
       { id: 'calendar_event_schedule', label: 'Lịch sự kiện', href: '/app/calendar_event_schedule' },
       { id: 'my_schedule', label: 'Lịch của tôi', href: '/app/my_schedule' },
+      { id: 'work_registration', label: 'Đăng ký lịch làm việc', href: '/app/work_registration' },
     ],
   },
   {
@@ -51,7 +60,6 @@ export const navigationGroups: NavigationGroup[] = [
     hiddenInSidebar: true,
     items: [
       { id: 'design_system', label: 'Design System', href: '/app/design_system', hiddenInSidebar: true },
-      { id: 'dashboard', label: 'Dashboard', href: '/app/dashboard', hiddenInSidebar: true },
     ],
   },
   {
@@ -95,9 +103,9 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Vận hành',
     icon: Briefcase,
     items: [
-      { id: 'class_assignment', label: 'Phân lớp', href: '/app/class_assignment' },
       { id: 'students', label: 'Học viên', href: '/app/students' },
       { id: 'classes', label: 'Lớp học', href: '/app/classes' },
+      { id: 'class_sessions', label: 'Buổi học', href: '/app/class_sessions' },
       { id: 'teachers', label: 'Giáo viên', href: '/app/teachers' },
       { id: 'leave_reserve', label: 'Bảo lưu', href: '/app/leave_reserve' },
       { id: 'attendance', label: 'Điểm danh', href: '/app/attendance' },
@@ -109,16 +117,16 @@ export const navigationGroups: NavigationGroup[] = [
     icon: MessageSquare,
     hiddenInSidebar: true,
     items: [
-      { id: 'student_care_new', label: 'Chăm sóc học viên mới', href: '/app/student_care_new' },
-      { id: 'care_schedule', label: 'Lịch chăm sóc', href: '/app/care_schedule' },
-      { id: 'today_care', label: 'Hôm nay', href: '/app/today_care', hiddenInSidebar: true },
-      { id: 'new_student_care', label: 'Học viên mới', href: '/app/new_student_care' },
+      { id: 'student_care_new', label: 'Chăm sóc học viên mới', href: '/app/student_care_new', hiddenInSidebar: true },
+      { id: 'care_schedule', label: 'Lịch chăm sóc', href: '/app/care_schedule', hiddenInSidebar: true },
+      { id: 'today_care', label: 'Phiếu chăm sóc', href: '/app/today_care' },
+      { id: 'new_student_care', label: 'Học viên mới', href: '/app/new_student_care', hiddenInSidebar: true },
       { id: 'at_risk_care', label: 'Có nguy cơ', href: '/app/at_risk_care', hiddenInSidebar: true },
       { id: 'expiring_soon_care', label: 'Sắp hết hạn', href: '/app/expiring_soon_care', hiddenInSidebar: true },
-      { id: 'renewal', label: 'Gia hạn', href: '/app/renewal' },
+      { id: 'renewal', label: 'Gia hạn', href: '/app/renewal', hiddenInSidebar: true },
       { id: 'overdue_care', label: 'Quá hạn', href: '/app/overdue_care', hiddenInSidebar: true },
-      { id: 'special_care', label: 'Chăm sóc đặc biệt', href: '/app/special_care' },
-      { id: 'care_event', label: 'Sự kiện chăm sóc', href: '/app/care_event' },
+      { id: 'special_care', label: 'Chăm sóc đặc biệt', href: '/app/special_care', hiddenInSidebar: true },
+      { id: 'care_event', label: 'Sự kiện chăm sóc', href: '/app/care_event', hiddenInSidebar: true },
       { id: 'care_rule_engine', label: 'Quy tắc chăm sóc', href: '/app/care_rule_engine' },
     ],
   },
@@ -207,3 +215,15 @@ export const navigationGroups: NavigationGroup[] = [
 ]
 
 export const allMenuItems = navigationGroups.flatMap((group) => group.items)
+
+export function getNavigationGroupsForRole(role?: string | null): NavigationGroup[] {
+  return navigationGroups
+    .filter((group) => !group.allowedRoles || (role ? group.allowedRoles.includes(role) : false))
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.allowedRoles || (role ? item.allowedRoles.includes(role) : false)
+      ),
+    }))
+    .filter((group) => group.items.length > 0)
+}

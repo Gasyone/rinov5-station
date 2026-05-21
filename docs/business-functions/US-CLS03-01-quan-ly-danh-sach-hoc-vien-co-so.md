@@ -1,3 +1,13 @@
+---
+id: US-CLS03-01
+title: "Quản lý danh sách Học viên cơ sở (Operational Master List)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-01: Quản lý danh sách Học viên cơ sở (Operational Master List)
 
 > Tài liệu đang chờ biên tập

@@ -1,0 +1,30 @@
+name: Traceability Check
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'src/config/navigation.ts'
+      - 'src/config/screens.ts'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+
+jobs:
+  check-trace:
+    name: Check document traceability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run traceability check
+        run: node scripts/check-traceability.mjs --strict
+
+      - name: Run navigation audit (info only)
+        if: always()
+        run: node scripts/audit-navigation.mjs

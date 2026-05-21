@@ -1,4 +1,14 @@
-﻿# US-OPS03-02-xu-ly-doi-phong
+---
+id: US-OPS03-02
+title: "User Story"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-03
+status: "Draft"
+tags: [user-story]
+---
+
+# US-OPS03-02-xu-ly-doi-phong
 
 > Tài liệu đang chờ biên tập
 

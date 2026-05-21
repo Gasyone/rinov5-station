@@ -1,54 +1,106 @@
-# BF-HR-01: Quản lý Nhân sự
+---
+title: "BF-HR-01: Quản lý Nhân sự"
+type: "Business Function"
+domain: "CAP-HR"
+status: "Draft"
+tags: [hr, employee, organization]
+---
 
-> **Giai đoạn:** 2 — Thiết lập tổ chức
-> **Nhóm sidebar:** Thiết lập tổ chức
-> **Menu ID:** `hr_employees`
+# BF-HR-01: Quản lý Nhân sự (Employee Management)
+
+> **Capability:** CAP-HR (Quản trị Nguồn nhân lực)
+> **Giai đoạn:** 1 - Thiết lập nền tảng
+> **Nhóm chức năng:** Thiết lập tổ chức
+> **Mã màn hình:** `hr_employees`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Thêm/sửa/xóa nhân viên, liên kết profile, phân bổ tổ chức, hợp đồng, chức danh, phạm vi dữ liệu.
+Phân hệ cốt lõi để quản lý hồ sơ nhân viên trong tổ chức. Chức năng bao gồm việc tạo mới, cập nhật hồ sơ cá nhân, gán nhân viên vào các phòng ban/chi nhánh (Organizational Units), phân bổ chức danh (Titles) và quản lý trạng thái làm việc (Active/Resigned). Phân hệ này là nền tảng để cấp quyền truy cập hệ thống ở `CAP-SYS`.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Admin
-- HR
+- **Chuyên viên Nhân sự (HR):** Cập nhật hồ sơ, theo dõi hợp đồng, quản lý trạng thái nhân sự.
+- **Quản lý Hệ thống (Admin):** Đồng bộ tài khoản đăng nhập dựa trên hồ sơ nhân sự.
+- **Quản lý Chi nhánh (BM):** Xem danh sách nhân viên thuộc chi nhánh mình quản lý.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Tạo mới và quản lý Hồ sơ Nhân viên (Họ tên, Liên hệ, CCCD, Ngân hàng).
+- Quản lý quá trình công tác: Chức danh, Phòng ban, Chi nhánh làm việc.
+- Quản lý trạng thái làm việc: Thử việc, Chính thức, Nghỉ việc.
+- Quản lý Hồ sơ Giáo viên (Teacher Profile) như một loại nhân sự đặc biệt.
 
-- [Cần bổ sung]
+### Không bao gồm (Out of Scope)
+- Tính lương, thưởng, thuế thu nhập (Payroll & C&B) → Thuộc hệ thống tính lương riêng.
+- Chấm công hàng ngày (Time & Attendance) → Thuộc `BF-HR-02` (Quản lý Quỹ thời gian).
+- Quản lý Tài khoản Đăng nhập & Quyền hạn truy cập → Thuộc `BF-SYS-01` và `BF-SYS-04`.
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- [Cần bổ sung]
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Hồ sơ Nhân viên (Employee) | Mã NV | Tên, CCCD, SĐT, Ngày vào làm, Trạng thái | Nối với `Person` ở Master Data | Thông tin lõi. |
+| Vị trí công tác (Job Assignment) | Mã phân bổ | Chi nhánh, Phòng ban, Chức danh | Trỏ về Mã NV | Một NV có thể có nhiều vị trí (Kiêm nhiệm). |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- [Cần bổ sung — liệt kê các BF phụ thuộc hoặc liên quan]
+*Sơ đồ dưới đây xác định vòng đời làm việc của một Nhân viên.*
 
-## 5. User Stories
+```mermaid
+stateDiagram-v2
+    [*] --> Thu_viec : Nhận việc
+    Thu_viec --> Chinh_thuc : Ký HĐLĐ
+    Thu_viec --> Nghi_viec : Không đạt
+    Chinh_thuc --> Tam_nghi : Nghỉ thai sản / Nghỉ ốm dài hạn
+    Tam_nghi --> Chinh_thuc : Quay lại làm việc
+    Chinh_thuc --> Nghi_viec : Xin thôi việc / Sa thải
+    Nghi_viec --> [*]
+```
 
-| Tài liệu | Trạng thái |
-|----------|------------|
-| US-HR-01, US-HR-02 (docs/us/) + US-HrEmployee-01→04 (thư mục gốc) | ✅ Đã có |
+**Quy tắc chuyển đổi:**
 
-> Xem chi tiết tại các file US tương ứng.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Thử việc | Chính thức | Phải có số Hợp đồng lao động | Chuyên viên HR |
+| Bất kỳ | Nghỉ việc | Bắt buộc chọn Ngày nghỉ việc chính thức | Chuyên viên HR |
 
-## 6. Quy tắc nghiệp vụ (Business Rules)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-- [Cần bổ sung]
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 7. Dữ liệu chính (Key Data)
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Thêm mới nhân viên | Nhập Tên "Nguyễn Văn A", SĐT, Ngày bắt đầu 01/10 | Tạo Employee "A", trạng thái "Thử việc". Chưa có tài khoản login. |
+| Ký hợp đồng | Chọn Employee A, bấm Chuyển chính thức | Trạng thái thành "Chính thức". Đủ điều kiện nhận phúc lợi. |
+| Nghỉ việc | Chọn Employee A, Ngày nghỉ 15/10, Lý do "Cá nhân" | Trạng thái thành "Nghỉ việc". Hệ thống ngắt quyền truy cập (nếu có). |
 
-| Entity | Mô tả |
-|--------|-------|
-| [Cần bổ sung] | |
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
 
-## 8. Ghi chú triển khai
+1. **[RULE-HR-01-01] Tính duy nhất (Unique Identity):** Mỗi nhân viên chỉ có 1 Mã Nhân viên (Employee ID) duy nhất trên toàn hệ thống. Nếu một người đã nghỉ việc và quay lại làm việc, họ sử dụng lại Mã Nhân viên cũ thay vì tạo mới.
+2. **[RULE-HR-01-02] Độc lập với Tài khoản Đăng nhập:** Một nhân viên có thể có hồ sơ trên hệ thống nhưng KHÔNG CÓ tài khoản đăng nhập (ví dụ: Bảo vệ, Tạp vụ). Việc cấp tài khoản là một bước riêng rẽ (`BF-SYS-01`).
+3. **[RULE-HR-01-03] Kiêm nhiệm (Multiple Assignments):** Một nhân viên có thể giữ nhiều chức danh ở nhiều chi nhánh khác nhau. Hệ thống phải ghi nhận rõ một "Vị trí chính" (Primary) để phục vụ cho việc phê duyệt (Approval flow).
 
-- **Backend:** [Chưa xác định]
-- **Frontend:** [Chưa xác định]
-- **Tích hợp:** [Chưa xác định]
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-HR-01-01 | Quản lý Danh sách Nhân sự | /app/hr_employees | Đã chuẩn hóa |
+| US-HR-01-02 | Tạo mới Nhân sự | Biểu mẫu hộp thoại | Đã chuẩn hóa |
+| US-HR-01-03 | Chi tiết Hồ sơ Nhân sự | Màn hình Chi tiết | Đã chuẩn hóa |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

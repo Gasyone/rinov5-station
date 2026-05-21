@@ -1,3 +1,13 @@
+---
+id: US-CLS03-12
+title: "Tab Ghi chu Van hanh (Operational Notes)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-12: Tab Ghi chu Van hanh (Operational Notes)
 
 > Tai lieu dang cho bien tap

@@ -1,4 +1,14 @@
-﻿# US-CLS06-04-duyet-don-nghi-phep
+---
+id: US-CLS06-04
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-06
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS06-04-duyet-don-nghi-phep
 
 > Tài liệu đang chờ biên tập
 

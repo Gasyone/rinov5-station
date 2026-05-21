@@ -1,3 +1,13 @@
+---
+id: US-CLS03-09
+title: "Tab Lich su Buoi hoc (Session Learning History)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-09: Tab Lich su Buoi hoc (Session Learning History)
 
 > Tai lieu dang cho bien tap

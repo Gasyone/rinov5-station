@@ -1,4 +1,14 @@
-﻿# US-CLS03-02-gan-tag-chu-y-hoc-vien
+---
+id: US-CLS03-03
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS03-02-gan-tag-chu-y-hoc-vien
 
 > Tài liệu đang chờ biên tập
 

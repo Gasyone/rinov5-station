@@ -1,3 +1,13 @@
+---
+id: US-CLS02-03
+title: "Gắn Khung chương trình (Syllabus) vào Lớp"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-02
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS02-03: Gắn Khung chương trình (Syllabus) vào Lớp
 
 > Tài liệu đang chờ biên tập

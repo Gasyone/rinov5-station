@@ -1,4 +1,14 @@
-﻿# US-CLS02-04-dong-lop-tot-nghiep
+---
+id: US-CLS02-05
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-02
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS02-04-dong-lop-tot-nghiep
 
 > Tài liệu đang chờ biên tập
 

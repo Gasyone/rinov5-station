@@ -1,3 +1,13 @@
+---
+id: US-OPS02-01
+title: "Quản lý Danh sách Buổi học tại Lớp (Local View)"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-02
+status: "Draft"
+tags: [user-story]
+---
+
 # US-OPS02-01: Quản lý Danh sách Buổi học tại Lớp (Local View)
 
 > Tài liệu đang chờ biên tập

@@ -1,4 +1,14 @@
-﻿# US-CLS05-03-xem-bao-cao-diem-danh-hoc-tap
+---
+id: US-CLS05-03
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS05-03-xem-bao-cao-diem-danh-hoc-tap
 
 > Tài liệu đang chờ biên tập
 

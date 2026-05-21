@@ -1,3 +1,13 @@
+---
+id: US-OPS02-04
+title: "Thuật toán Quét xung đột (Trùng lịch, Ngày nghỉ lễ)"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-02
+status: "Draft"
+tags: [user-story]
+---
+
 # US-OPS02-04: Thuật toán Quét xung đột (Trùng lịch, Ngày nghỉ lễ)
 
 > Tài liệu đang chờ biên tập

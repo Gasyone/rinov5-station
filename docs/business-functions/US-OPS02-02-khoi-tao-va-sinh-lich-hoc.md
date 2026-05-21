@@ -1,3 +1,13 @@
+---
+id: US-OPS02-02
+title: "Khởi tạo Quy tắc & Sinh lịch học tự động (Batch Generation)"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-02
+status: "Draft"
+tags: [user-story]
+---
+
 # US-OPS02-02: Khởi tạo Quy tắc & Sinh lịch học tự động (Batch Generation)
 
 > Tài liệu đang chờ biên tập

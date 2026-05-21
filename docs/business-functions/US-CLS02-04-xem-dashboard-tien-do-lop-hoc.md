@@ -1,4 +1,14 @@
-﻿# US-CLS02-03-xem-dashboard-tien-do-lop-hoc
+---
+id: US-CLS02-04
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-02
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS02-03-xem-dashboard-tien-do-lop-hoc
 
 > Tài liệu đang chờ biên tập
 

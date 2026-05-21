@@ -1,4 +1,14 @@
-﻿# US-CLS01-03-xep-lop-hang-loat
+---
+id: US-CLS01-03
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-01
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS01-03-xep-lop-hang-loat
 
 > Tài liệu đang chờ biên tập
 

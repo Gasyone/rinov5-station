@@ -1,79 +1,114 @@
-# BF-SAL-01: Quản lý Đơn hàng và Thanh toán
+---
+title: "BF-SAL-01: Quản lý Đơn hàng (Sales Order)"
+type: "Business Function"
+domain: "CAP-COM"
+status: "Draft"
+tags: [sales, order, commerce]
+---
 
-> **Capability:** CAP-COM
-> **Giai đoạn:** 5 — Tuyển sinh & Bán hàng
-> **Nhóm sidebar:** Bán hàng
-> **Menu ID:** `orders`, `receipts`
+# BF-SAL-01: Quản lý Đơn hàng (Sales Order)
+
+> **Capability:** CAP-COM (Năng lực Thương mại & Bán hàng)
+> **Giai đoạn:** 4 - Tuyển sinh & Bán hàng
+> **Nhóm chức năng:** Bán hàng
+> **Mã màn hình:** `orders`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Đây là business function quản lý giao dịch kinh doanh từ khâu đề xuất sản phẩm/gói học, tạo đơn hàng, lập phiếu thu, đối chiếu thanh toán cho đến khi giao dịch được chốt hoặc hủy bỏ. Nghiệp vụ này đảm bảo dòng tiền và doanh thu được ghi nhận chính xác theo các chính sách thương mại và ưu đãi đã thiết lập.
+Business function lõi để quản lý giao dịch kinh doanh. Quá trình bắt đầu từ khâu chọn Sản phẩm (`BF-PRD-01`), áp dụng chiết khấu/mã giảm giá, tạo Báo giá/Đơn hàng (Sales Order) cho học viên. Phân hệ này chịu trách nhiệm tính toán chính xác tổng số tiền khách hàng phải thanh toán dựa trên các cấu trúc thương mại phức tạp, đảm bảo doanh thu được ghi nhận đúng chính sách.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Sales
-- Cashier (Thu ngân)
-- Finance (Kế toán)
-- CSM (Chăm sóc khách hàng)
+- **Nhân viên Tư vấn (Sales):** Lên đơn hàng, áp dụng các mã giảm giá cho học viên.
+- **Quản lý Sales (Sales Manager):** Duyệt các đơn hàng có mức giảm giá vượt khung quy định.
+- **Thu ngân (Cashier) / Kế toán:** Xem thông tin Đơn hàng để tiến hành thu tiền (`BF-SAL-02`).
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Tạo Đơn hàng (Sales Order) mới từ giỏ hàng (Cart) gồm các Sản phẩm và Combo.
+- Cơ chế tính toán giá: Tính tổng tiền, trừ chiết khấu, cộng thuế VAT (nếu có).
+- Áp dụng các Mã giảm giá (Voucher / Promo Code) và kiểm tra tính hợp lệ.
+- Luồng phê duyệt đơn hàng (Approval Workflow) nếu Sales giảm giá vượt mức cho phép.
+- Quản lý trạng thái Đơn hàng: Nháp, Chờ thanh toán, Đã thanh toán, Đã hủy.
 
-- Chọn sản phẩm, combo hoặc cấu trúc gói học để tạo báo giá/đề xuất thương mại cho học viên.
-- Khởi tạo và xác nhận đơn hàng (Sales Order) bao gồm logic định giá, chiết khấu và điều khoản thương mại.
-- Tạo phiếu thu (Receipts) và ghi nhận sự kiện thanh toán, phương thức thanh toán, và trạng thái thu tiền.
-- Đối chiếu trạng thái đơn hàng và thanh toán để đóng giao dịch, chuyển giao sang quy trình tuyển sinh hoặc xếp lớp.
+### Không bao gồm (Out of Scope)
+- Tạo Mã giảm giá (Promo Code) hoặc thiết lập Chính sách giá → Thuộc `BF-PRD-01`.
+- Ghi nhận dòng tiền thực tế (Cash/Chuyển khoản) và In Biên lai → Thuộc `BF-SAL-02`.
+- Hoàn tiền (Refund) → Thuộc hệ thống Tài chính `CAP-FIN`.
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- Quản lý danh mục sản phẩm và chính sách giá gốc (thuộc `BF-PRD-01`).
-- Đánh giá năng lực hoặc học thử trước khi mua (thuộc `BF-ENR-01`, `BF-ENR-02`).
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Đơn hàng (Order) | Mã Đơn hàng | Ngày tạo, Tổng tiền, Số tiền đã thu, Trạng thái | Trỏ về Mã Học viên (Person) | Thông tin chung của giao dịch. |
+| Chi tiết Đơn (Order Item) | Mã Line Item | Số lượng, Đơn giá lúc bán, Thành tiền | Trỏ về Mã Đơn hàng & Mã Sản phẩm | Chốt cứng giá tại thời điểm bán. |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- **Upstream:** `BF-PRD-01` (Product Catalog and Offer Governance) - Cung cấp bảng giá và chính sách sản phẩm.
-- **Upstream:** `BF-ENR-01`, `BF-ENR-02` - Cung cấp kết quả đánh giá/học thử để làm cơ sở tư vấn chốt sales.
-- **Downstream:** `BF-ENR-03` (Enrollment Conversion Management) - Nhận kết quả thanh toán để kích hoạt trạng thái học viên (enrolled).
-
-## 5. User Stories
-
-**Danh sách US đề xuất (Proposed):**
-- [ ] US-SAL-01: Tạo và quản lý báo giá/đơn hàng (Sales Order).
-- [ ] US-SAL-02: Áp dụng mã giảm giá, voucher và chính sách chiết khấu.
-- [ ] US-SAL-03: Lập phiếu thu và xác nhận thanh toán (Receipts/Payments).
-- [ ] US-SAL-04: Xử lý hoàn tiền, hủy đơn và công nợ (nếu có).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định vòng đời của một Đơn hàng (Order).*
 
 ```mermaid
-graph TD
-    A["Khách hàng đồng ý mua khóa học"] --> B["1. Chuẩn bị đề xuất thương mại (Báo giá)"]
-    B --> C["2. Chốt đơn hàng (Confirm Order)"]
-    C --> D["3. Ghi nhận thanh toán (Capture Payment)"]
-    D --> E["4. Đối chiếu & Đóng giao dịch"]
-    E --> F["Chuyển giao cho bộ phận Vận hành/Tuyển sinh"]
+stateDiagram-v2
+    [*] --> Draft : Sales tạo nháp
+    Draft --> Cho_duyet : Giảm giá vượt khung
+    Cho_duyet --> Draft : Manager từ chối
+    Cho_duyet --> Cho_thanh_toan : Manager duyệt
+    Draft --> Cho_thanh_toan : Không cần duyệt
+    Cho_thanh_toan --> Thanh_toan_mot_phan : Khách đặt cọc
+    Thanh_toan_mot_phan --> Da_hoan_tat : Thu đủ tiền
+    Cho_thanh_toan --> Da_hoan_tat : Thu đủ 100% tiền
+    Cho_thanh_toan --> Da_huy : Khách bom hàng / Đổi ý
+    Thanh_toan_mot_phan --> Cho_xu_ly_hoan : Khách hủy khi đã cọc
+    Cho_xu_ly_hoan --> Da_huy : Kế toán trả lại tiền
+    Da_hoan_tat --> [*]
+    Da_huy --> [*]
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Đơn hàng chỉ được chuyển trạng thái "Đã thanh toán" (Paid) khi tổng số tiền thu được từ các phiếu thu khớp với tổng giá trị đơn hàng sau chiết khấu.
-2. Các khoản chiết khấu phải tuân thủ nghiêm ngặt quy tắc cấu hình từ `BF-PRD-01`.
-3. Không thể thay đổi cấu trúc sản phẩm của một đơn hàng nếu đã phát sinh phiếu thu hợp lệ, trừ khi tiến hành quy trình hủy/chuyển đổi.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Chờ thanh toán | Đã hoàn tất | `Số tiền đã thu` >= `Tổng tiền đơn hàng` | Hệ thống tự động khi nhận đủ Phiếu thu |
+| Chờ duyệt | Chờ thanh toán | Quản lý Sales bấm nút Duyệt (Approve) | Sales Manager |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Order | Đơn hàng gốc ghi nhận thỏa thuận mua bán, tổng tiền và trạng thái. |
-| Order Item | Chi tiết các sản phẩm/gói học được chọn trong đơn hàng. |
-| Receipt | Phiếu thu ghi nhận dòng tiền thực tế, phương thức thanh toán. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Lên đơn thường | Chọn Combo "IELTS Standard" giá 10tr. Khách là "Nguyễn Văn A". | Lưu Đơn hàng trạng thái Chờ thanh toán. Tổng tiền = 10tr. |
+| Vượt khung | Sales giảm giá 20% cho Đơn hàng 10tr (Luật chỉ cho giảm max 10%). | Đơn hàng rơi vào trạng thái "Chờ duyệt", báo Noti cho Manager. |
+| Thu tiền cọc | Thu ngân nhập 1 Phiếu thu (`BF-SAL-02`) 2tr vào Đơn hàng 10tr trên. | Đơn tự đổi sang "Thanh toán một phần". Còn nợ 8tr. |
 
-- **Registry mapping:** `sales.order_and_payment_management`
-- **Backend:** `partial`
-- **Frontend:** `hybrid` (Các màn hình chính: `OrderListView`, `ReceiptListView`)
-- **Gaps:** Chưa có User Story chi tiết. Quy trình xử lý công nợ (Pending Collection) cần được làm rõ với bộ phận kế toán.
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+1. **[RULE-SAL-01-01] Đóng băng Dữ liệu (Immutability):** Khi một Đơn hàng đã ở trạng thái `Cho_thanh_toan`, các thông tin về Sản phẩm, Giá bán, Chiết khấu bên trong Đơn hàng đó TUYỆT ĐỐI không được phép sửa đổi (Chỉ-đọc). Nếu có sai sót, Sales bắt buộc phải thực hiện thao tác Hủy đơn (Cancel) và làm lại đơn mới.
+2. **[RULE-SAL-01-02] Không hồi tố Sản phẩm (Snapshot Pricing):** `Order Item` phải lưu bản sao cứng (Snapshot) của Đơn giá tại thời điểm chốt đơn. Việc sửa đổi giá Sản phẩm trong Danh mục `BF-PRD-01` sau đó không được phép làm thay đổi tổng tiền của Đơn hàng cũ này.
+3. **[RULE-SAL-01-03] Kiểm soát chiết khấu (Discount Limit):** Hệ thống phải có bảng phân quyền hạn mức chiết khấu. (VD: Cấp Sales max 5%, Branch Manager max 15%, Vượt mức phải xin duyệt).
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-SAL-01-01 | Quản lý danh sách Đơn hàng (Dashboard & List) | /app/orders | Đang soạn thảo |
+| US-SAL-01-02 | Tạo Đơn hàng mới và Giỏ hàng (Form Builder) | /app/orders/create | Đang soạn thảo |
+| US-SAL-01-03 | Phê duyệt Đơn hàng giảm giá vượt khung | /app/orders | Đang soạn thảo |
+| US-SAL-01-04 | Xem chi tiết Đơn hàng & Tiến độ thanh toán | /app/orders/[id] | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

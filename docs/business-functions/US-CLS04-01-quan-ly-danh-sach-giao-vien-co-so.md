@@ -1,3 +1,13 @@
+---
+id: US-CLS04-01
+title: "Quản lý danh sách Giáo viên tại Cơ sở (Operational Teacher List)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-01: Quản lý danh sách Giáo viên tại Cơ sở (Operational Teacher List)
 
 > Tài liệu đang chờ biên tập

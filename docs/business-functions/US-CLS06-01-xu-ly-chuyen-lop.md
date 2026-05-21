@@ -1,4 +1,14 @@
-﻿# US-CLS06-01-xu-ly-chuyen-lop
+---
+id: US-CLS06-01
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-06
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS06-01-xu-ly-chuyen-lop
 
 > Tài liệu đang chờ biên tập
 

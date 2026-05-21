@@ -1,4 +1,14 @@
-﻿# US-OPS03-04-to-chuc-hoc-bu
+---
+id: US-OPS03-04
+title: "User Story"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-03
+status: "Draft"
+tags: [user-story]
+---
+
+# US-OPS03-04-to-chuc-hoc-bu
 
 > Tài liệu đang chờ biên tập
 

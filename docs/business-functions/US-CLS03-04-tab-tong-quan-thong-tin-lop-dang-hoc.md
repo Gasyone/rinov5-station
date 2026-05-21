@@ -1,3 +1,13 @@
+---
+id: US-CLS03-04
+title: "Tab Tong quan - Thong tin ca nhan & Lop dang hoc"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-04: Tab Tong quan - Thong tin ca nhan & Lop dang hoc
 
 > Tai lieu dang cho bien tap

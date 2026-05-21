@@ -1,3 +1,13 @@
+---
+id: US-CLS05-07
+title: "Upload & Quan ly Media buoi hoc (Session Gallery)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS05-07: Upload & Quan ly Media buoi hoc (Session Gallery)
 
 > Tai lieu dang cho bien tap

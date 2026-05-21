@@ -1,84 +1,99 @@
+---
+title: "BF-CLS-04: Quản lý Giáo viên Vận hành"
+type: "Business Function"
+domain: "CAP-OPS"
+status: "Draft"
+tags: [class, teacher, hr]
+---
+
 # BF-CLS-04: Quản lý Giáo viên Vận hành (Operational Teacher Management)
 
-> **Giai đoạn:** 6 — Lớp học & Học viên
-> **Capability:** CAP-OPS
-> **Nhóm sidebar:** Vận hành
-> **Menu ID:** `teachers`
+> **Capability:** CAP-OPS (Năng lực Quản lý Học viên & Vận hành Lớp)
+> **Giai đoạn:** 2 - Vận hành
+> **Nhóm chức năng:** Quản lý Học viên
+> **Mã màn hình:** `teachers`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Quản lý danh sách Giáo viên đang tham gia giảng dạy tại cơ sở, cung cấp góc nhìn 360° về giáo viên trong bối cảnh Vận hành: Lớp đang phụ trách, Lịch dạy, Thống kê giờ dạy, Đánh giá chất lượng, và Lịch sử dạy thay. Phân công Giáo viên chủ nhiệm (Primary Teacher) và Trợ giảng (TA) cho Lớp học.
+Phân hệ quản lý danh sách Giáo viên đang tham gia giảng dạy tại cơ sở, cung cấp góc nhìn 360° về giáo viên trong bối cảnh Vận hành: Lớp đang phụ trách, Lịch dạy, Thống kê giờ dạy, Đánh giá chất lượng, và Lịch sử dạy thay. Phân công Giáo viên chủ nhiệm (Primary Teacher) và Trợ giảng (TA) cố định cho một Lớp học.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Admin
-- Branch Manager (Người phân công và điều phối)
-- Teacher (Xem lớp mình chủ nhiệm)
+- **Quản lý Chi nhánh / Điều phối viên:** Phân công và điều phối giáo viên cho các lớp.
+- **Giáo viên:** Xem danh sách lớp mình được phân công chủ nhiệm.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
 - Hiển thị danh sách Giáo viên đang tham gia giảng dạy tại cơ sở (Góc nhìn điều phối).
 - Cung cấp trang Chi tiết Giáo viên (Teacher 360° View) với đầy đủ thông tin vận hành.
-- Thực hiện Gán mới hoặc Đổi Giáo viên chủ nhiệm cho một Lớp học cụ thể.
-- Ghi nhận và truy xuất lịch sử thay đổi nhân sự của Lớp học đó.
+- Gán mới hoặc Đổi Giáo viên chủ nhiệm (Primary Teacher) / Trợ giảng cho một Lớp cụ thể.
+- Ghi nhận lịch sử phân công và thay đổi nhân sự của Lớp.
 
-### Ngoài phạm vi (Out of Scope)
-- Xử lý Dạy thay (Substitute) cho 1 buổi (Xử lý tại `BF-OPS-03`).
-- Kiểm tra trùng lịch Giáo viên (Xử lý tại `BF-OPS-02`).
-- Quản lý Hợp đồng, Lương bổng (Xử lý tại `CAP-HR`, `BF-HR-01`).
+### Không bao gồm (Out of Scope)
+- Quản lý Hợp đồng, Lương bổng, Hồ sơ nhân sự gốc → Thuộc HR (`CAP-HR`).
+- Xử lý Dạy thay (Substitute) đột xuất cho 1 buổi học → Xử lý tại `BF-OPS-03`.
+- Kiểm tra trùng lịch Giáo viên khi xếp thời khóa biểu → Xử lý tại `BF-OPS-02`.
 
-## 4. Nghiệp vụ liên quan
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- **Upstream:** `BF-HR-01` (Giáo viên phải có trong danh sách nhân sự). `BF-CLS-02` (Lớp phải được tạo).
-- **Downstream:** `BF-OPS-02` (Dựa vào GV chủ nhiệm để xếp lịch mặc định).
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Hồ sơ Vận hành (Teacher Profile) | Mã hồ sơ GV | Nhãn chú ý, Tổng giờ dạy | Trỏ về gốc HR | Dữ liệu làm việc tại cơ sở. |
+| Phân công Lớp (Class Assignment) | Mã phân công | Vai trò (Chính/Trợ giảng), Ngày bắt đầu, Ngày kết thúc | Trỏ về Mã GV & Mã Lớp | Lịch sử GV gắn với Lớp. |
 
-## 5. User Stories
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-### Danh sách & Thao tác (List Views)
-- [ ] US-CLS04-01: Quản lý danh sách Giáo viên tại Cơ sở (Operational Teacher List).
-- [ ] US-CLS04-02: Gán/Đổi Giáo viên chủ nhiệm hoặc Trợ giảng cho một Lớp.
-- [ ] US-CLS04-03: Xem lịch sử thay đổi giáo viên của Lớp.
-
-### Chi tiết Giáo viên — Teacher 360° View (Kích hoạt khi click vào 1 GV)
-- [ ] US-CLS04-04: Tab Tổng quan — Thông tin cá nhân & Kỹ năng giảng dạy.
-- [ ] US-CLS04-05: Tab Lớp đang phụ trách (Active Classes).
-- [ ] US-CLS04-06: Tab Lịch dạy tuần (Teaching Timetable).
-- [ ] US-CLS04-07: Tab Lịch sử Dạy thay (Substitute Teaching History).
-- [ ] US-CLS04-08: Tab Đánh giá Chất lượng (QA Rating & Observation).
-- [ ] US-CLS04-09: Tab Thống kê Giờ dạy (Teaching Hours Summary).
-- [ ] US-CLS04-10: Tab Phản hồi từ Học viên (Student Feedback).
-- [ ] US-CLS04-11: Tab Ghi chú Vận hành (Operational Notes).
-- [ ] US-CLS04-12: Tab Nhật ký thao tác (Audit Log).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định trạng thái phân công của một Giáo viên với một Lớp học.*
 
 ```mermaid
-graph TD
-    A["Tạo Lớp học (BF-CLS-02)"] --> B["Vào tab Quản lý Giáo viên"]
-    B --> C["Tìm kiếm GV phù hợp (theo Level, Môn học)"]
-    C --> D["Gán làm Primary Teacher hoặc TA"]
-    D --> E["Hệ thống ghi nhận lịch sử phân công"]
-    E --> F["Khi sinh Session (BF-OPS-02), mặc định GV này sẽ dạy"]
+stateDiagram-v2
+    [*] --> Hieu_luc : Gán giáo viên vào Lớp
+    Hieu_luc --> Het_hieu_luc : Lớp kết thúc / Đổi giáo viên
+    Het_hieu_luc --> [*]
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Một lớp có thể có nhiều Giáo viên (Primary Teacher, TA) tùy vào cấu hình môn học.
-2. Nếu đổi Giáo viên chủ nhiệm giữa chừng, các Session trong TƯƠNG LAI sẽ tự động cập nhật Giáo viên mới, các Session TRONG QUÁ KHỨ giữ nguyên Giáo viên cũ.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Hiệu lực | Hết hiệu lực | Khi có Giáo viên mới thay thế, hoặc lớp Đóng | Quản lý Chi nhánh |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Class-Teacher Mapping | Bảng mapping ghi nhận Lớp, Giáo viên, Vai trò, và Ngày bắt đầu/kết thúc. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Phân công mới | Chọn GV "Trần Văn A", Vai trò: Chủ nhiệm, Lớp: IELTS-01 | GV A xuất hiện trên thẻ Lớp học, được quyền xem lớp. |
+| Đổi giáo viên | Thay GV A bằng GV B từ ngày 15/10 | Lịch sử phân công ghi nhận GV A kết thúc 14/10, GV B bắt đầu 15/10. |
+| Xem 360 độ | Bấm vào GV "Trần Văn A" | Hiện thống kê: Đang dạy 3 lớp, 12h/tuần, Rating 4.8. |
 
-- **UI/UX Note:** Do mô hình 1 lớp có 1 GVCN cố định theo suốt khóa, KHÔNG sử dụng Tab Giáo viên riêng biệt. Toàn bộ UI quản lý GVCN được nhúng (embed) dạng Widget/Avatar Card vào thẳng Tab Overview/Dashboard của lớp học.
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
 
-- **Backend:** `ClassService` xử lý mapping.
-- **Frontend:** Tab `Giáo viên` bên trong trang Chi tiết Lớp học.
-- **Gaps:** Cần xác định luồng duyệt nếu Giáo viên từ chối nhận lớp.
+1. **[RULE-CLS-04-01] Áp dụng Tương lai:** Khi thay đổi Giáo viên chủ nhiệm của một Lớp giữa chừng, hệ thống sẽ TỰ ĐỘNG cập nhật Giáo viên mới cho tất cả các Buổi học (Sessions) CHƯA DIỄN RA trong tương lai. Các Buổi học trong quá khứ VẪN GIỮ NGUYÊN Giáo viên cũ để đảm bảo tính đúng đắn của bảng chấm công.
+2. **[RULE-CLS-04-02] Ràng buộc Môn học:** Hệ thống cảnh báo nếu phân công Giáo viên vào lớp có bộ môn không nằm trong danh sách kỹ năng giảng dạy (Skills) của Giáo viên đó.
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-CLS04-01 | Quản lý danh sách Giáo viên Vận hành (Danh sách) | /app/teachers | Đang soạn thảo |
+| US-CLS04-02 | Gán/Đổi GVCN (Component trong Chi tiết Lớp) | Nằm trong Chi tiết Lớp | Đang soạn thảo |
+| US-CLS04-04 | Xem chi tiết Hồ sơ Teacher 360° (Tab chi tiết) | /app/teachers/[id] | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

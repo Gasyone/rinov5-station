@@ -1,4 +1,14 @@
-﻿# US-OPS03-01-xu-ly-day-thay
+---
+id: US-OPS03-01
+title: "User Story"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-03
+status: "Draft"
+tags: [user-story]
+---
+
+# US-OPS03-01-xu-ly-day-thay
 
 > Tài liệu đang chờ biên tập
 

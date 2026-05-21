@@ -1,56 +1,97 @@
+---
+title: "BF-ACD-05: Nhóm kỹ năng"
+type: "Business Function"
+domain: "CAP-ACD"
+status: "Draft"
+tags: [academic, skill]
+---
+
 # BF-ACD-05: Nhóm kỹ năng
 
-> **Giai đoạn:** 3 — Hồ sơ & Sản phẩm
-> **Capability:** CAP-ACD
-> **Nhóm sidebar:** Chương trình đào tạo
-> **Menu ID:** `skill_category`
+> **Capability:** CAP-ACD (Năng lực Học thuật & Đào tạo)
+> **Giai đoạn:** 3 - Hồ sơ & Sản phẩm
+> **Nhóm chức năng:** Chương trình đào tạo
+> **Mã màn hình:** `skill_category`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Phân loại kỹ năng đánh giá học viên: Listening, Speaking, Reading, Writing, v.v.
+Phân hệ quản lý các Thang đo/Nhóm kỹ năng dùng để đánh giá năng lực của học viên. Tùy thuộc vào từng môn học hoặc chương trình đào tạo, trung tâm sẽ cần các tiêu chí chấm điểm khác nhau (Ví dụ: Tiếng Anh thì đánh giá Nghe, Nói, Đọc, Viết; Toán thì đánh giá Đại số, Hình học, Tư duy logic).
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Admin
-- Academic
+- **Giám đốc Học thuật:** Định nghĩa và phê duyệt các thang đo chuẩn của trung tâm.
+- **Quản trị hệ thống:** Cấu hình danh mục.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Tạo danh mục các Nhóm kỹ năng cốt lõi (Category).
+- Định nghĩa các Kỹ năng thành phần (Skill) thuộc Nhóm.
+- Gắn hệ số/trọng số (Weight) cho từng kỹ năng nếu cần tính điểm trung bình.
 
-- [Cần bổ sung]
+### Không bao gồm (Out of Scope)
+- Thực hiện việc chấm điểm học viên trên lớp → Xử lý tại `BF-CLS-05`.
+- Làm bài kiểm tra đầu vào (Placement Test) → Xử lý tại `BF-ENR-01`.
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- [Cần bổ sung]
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Nhóm kỹ năng (Category) | Mã nhóm kỹ năng | Tên nhóm, Trạng thái | Độc lập | Ví dụ: Kỹ năng Tiếng Anh |
+| Kỹ năng thành phần (Skill) | Mã kỹ năng | Tên kỹ năng, Trọng số | Trỏ về Mã nhóm kỹ năng | Ví dụ: Nghe (25%), Nói (25%) |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- [Cần bổ sung — liệt kê các BF phụ thuộc hoặc liên quan]
+*Sơ đồ dưới đây xác định tất cả trạng thái hợp lệ và các phép chuyển đổi được phép.*
 
-## 5. User Stories
+```mermaid
+stateDiagram-v2
+    [*] --> Hoạt_động : Tạo mới
+    Hoạt_động --> Bị_khóa : Vô hiệu hóa
+    Bị_khóa --> Hoạt_động : Kích hoạt lại
+    Hoạt_động --> [*] : Xóa
+```
 
-Chưa có User Story nào được viết cho nghiệp vụ này.
+**Quy tắc chuyển đổi:**
 
-**Danh sách US cần viết (gợi ý):**
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Tạo mới | Hoạt động | Đầy đủ thông tin | Giám đốc Học thuật |
+| Hoạt động | Bị khóa | Không giới hạn | Giám đốc Học thuật |
+| Hoạt động | Xóa | Chưa từng được sử dụng để chấm điểm | Giám đốc Học thuật |
 
-- [ ] US-01: [Cần xác định]
-- [ ] US-02: [Cần xác định]
+### 4.2. Ví dụ Dữ liệu mẫu
 
-## 6. Quy tắc nghiệp vụ (Business Rules)
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-- [Cần bổ sung]
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Tạo Nhóm | Tên: "Tiếng Anh", Trạng thái: Hoạt động | Lưu thành công. |
+| Thêm Kỹ năng | Tên: "Listening", Trọng số: 25%, Nhóm: Tiếng Anh | Lưu thành công. |
+| Tổng trọng số > 100% | Cố tình nhập trọng số làm tổng lên 110% | Cảnh báo: "Tổng trọng số của nhóm không được vượt quá 100%". |
 
-## 7. Dữ liệu chính (Key Data)
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
 
-| Entity | Mô tả |
-|--------|-------|
-| [Cần bổ sung] | |
+1. **[RULE-ACD-05-01] Ràng buộc Xóa:** Không thể xóa Nhóm kỹ năng hoặc Kỹ năng thành phần nếu nó đã được sử dụng để lưu trữ điểm số của ít nhất 1 học viên trong hệ thống (chỉ được phép Khóa).
 
-## 8. Ghi chú triển khai
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
 
-- **Backend:** [Chưa xác định]
-- **Frontend:** [Chưa xác định]
-- **Tích hợp:** [Chưa xác định]
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-ACD-05-01 | Quản lý danh mục Nhóm kỹ năng (Danh sách & Biểu mẫu) | /app/skill_category | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

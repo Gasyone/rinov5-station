@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface Notification {
   id: string
@@ -30,49 +31,61 @@ const generateId = () => {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: true,
-  theme: 'light',
-  locale: 'vi',
-  notifications: [],
-  currentMenuId: null,
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      sidebarOpen: true,
+      theme: 'light',
+      locale: 'vi',
+      notifications: [],
+      currentMenuId: null,
 
-  setSidebarOpen: (open: boolean) => {
-    set({ sidebarOpen: open })
-  },
+      setSidebarOpen: (open: boolean) => {
+        set({ sidebarOpen: open })
+      },
 
-  toggleSidebar: () => {
-    set((state) => ({ sidebarOpen: !state.sidebarOpen }))
-  },
+      toggleSidebar: () => {
+        set((state) => ({ sidebarOpen: !state.sidebarOpen }))
+      },
 
-  setTheme: (theme: 'light' | 'dark') => {
-    set({ theme })
-  },
+      setTheme: (theme: 'light' | 'dark') => {
+        set({ theme })
+      },
 
-  setLocale: (locale: 'vi' | 'en' | 'zh') => {
-    set({ locale })
-  },
+      setLocale: (locale: 'vi' | 'en' | 'zh') => {
+        set({ locale })
+      },
 
-  addNotification: (notification) => {
-    set((state) => ({
-      notifications: [
-        ...state.notifications,
-        {
-          ...notification,
-          id: generateId(),
-          timestamp: new Date(),
-        },
-      ],
-    }))
-  },
+      addNotification: (notification) => {
+        set((state) => ({
+          notifications: [
+            ...state.notifications,
+            {
+              ...notification,
+              id: generateId(),
+              timestamp: new Date(),
+            },
+          ],
+        }))
+      },
 
-  removeNotification: (id: string) => {
-    set((state) => ({
-      notifications: state.notifications.filter((n) => n.id !== id),
-    }))
-  },
+      removeNotification: (id: string) => {
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        }))
+      },
 
-  setCurrentMenuId: (menuId: string | null) => {
-    set({ currentMenuId: menuId })
-  },
-}))
+      setCurrentMenuId: (menuId: string | null) => {
+        set({ currentMenuId: menuId })
+      },
+    }),
+    {
+      name: 'rinov5-ui',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        theme: state.theme,
+        locale: state.locale,
+      }),
+    }
+  )
+)

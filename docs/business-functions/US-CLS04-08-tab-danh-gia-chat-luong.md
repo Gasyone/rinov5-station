@@ -1,3 +1,13 @@
+---
+id: US-CLS04-08
+title: "Tab Danh gia Chat luong (QA Rating & Observation)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-08: Tab Danh gia Chat luong (QA Rating & Observation)
 
 > Tai lieu dang cho bien tap

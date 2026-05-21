@@ -1,0 +1,70 @@
+{
+  "name": "detail-top",
+  "dialog": {
+    "text": "Học thử Cambridge Starter - Ca tốiĐã đặt lịchTR-2605-001Nguyễn Minh Anh·Cambridge Starter·3 buổi họcHủy lịchGhép lớpYêu cầu đổi lịchHọc viênNguyễn Minh AnhKH-10248Lần họcLần 1Cơ sởRino Nguyễn TuânThông tin liên hệGia đình Nguyễn0912****78Lớp & Buổi họcThông tin ghép lớpĐã ghép 3 buổi học Đổi lịchCambridge Starter A1CLS-001Starter S1 (SESS-9901)20/05/2026 18:00Cambridge Starter A1CLS-001Starter S2 (SESS-9902)22/05/2026 18:00Cambridge Starter A1CLS-001Starter S3 (SESS-9903)25/05/2026 18:00Môn họcTiếng AnhPhòng họcChưa xếp phòngPhụ tráchLANgười tạoLan AnhMSNgười phụ tráchMs. SarahKết quả nhận xét từ Giáo viênChờ kết quả...Ghi chúLịch sửChưa có ghi chú.Close",
+    "r": {
+      "x": 444,
+      "y": 69,
+      "w": 1024,
+      "h": 777
+    }
+  },
+  "scrollables": [
+    {
+      "tag": "MAIN",
+      "cls": "min-h-0 space-y-5 overflow-y-auto pr-2",
+      "text": "Thông tin liên hệGia đình Nguyễn0912****78Lớp & Buổi họcThông tin ghép lớpĐã ghé",
+      "r": {
+        "x": 469,
+        "y": 245,
+        "w": 630,
+        "h": 584
+      },
+      "scrollTop": 0,
+      "scrollHeight": 650,
+      "clientHeight": 584
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100",
+      "text": "Ghi chú",
+      "r": {
+        "x": 1126,
+        "y": 248,
+        "w": 89,
+        "h": 29
+      },
+      "scrollTop": 0,
+      "scrollHeight": 32,
+      "clientHeight": 27
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100",
+      "text": "Lịch sử",
+      "r": {
+        "x": 1215,
+        "y": 248,
+        "w": 87,
+        "h": 29
+      },
+      "scrollTop": 0,
+      "scrollHeight": 32,
+      "clientHeight": 27
+    },
+    {
+      "tag": "SPAN",
+      "cls": "sr-only",
+      "text": "Close",
+      "r": {
+        "x": 1442,
+        "y": 101,
+        "w": 1,
+        "h": 1
+      },
+      "scrollTop": 0,
+      "scrollHeight": 24,
+      "clientHeight": 1
+    }
+  ]
+}

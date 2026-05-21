@@ -1,3 +1,13 @@
+---
+id: US-CLS03-10
+title: "Tab Bai tap ve nha (Homework)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-10: Tab Bai tap ve nha (Homework)
 
 > Tai lieu dang cho bien tap

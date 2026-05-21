@@ -1,4 +1,14 @@
-﻿# US-CLS01-02-them-hoc-vien-tu-chi-tiet-lop
+---
+id: US-CLS01-02
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-01
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS01-02-them-hoc-vien-tu-chi-tiet-lop
 
 > Tài liệu đang chờ biên tập
 

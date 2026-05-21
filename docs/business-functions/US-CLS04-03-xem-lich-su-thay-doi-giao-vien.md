@@ -1,4 +1,14 @@
-﻿# US-CLS04-02-xem-lich-su-thay-doi-giao-vien
+---
+id: US-CLS04-03
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS04-02-xem-lich-su-thay-doi-giao-vien
 
 > Tài liệu đang chờ biên tập
 

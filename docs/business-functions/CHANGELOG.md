@@ -22,7 +22,7 @@ Không ghi chú các thay đổi về Source Code (Dev) tại đây.
 - **[BF-CARE-02]** Nâng cấp từ skeleton lên bản "Chuẩn vàng". Định nghĩa luồng quét học viên Expiring Soon, tạo Renewal Queue, và chuyển đổi tái phí. Đề xuất danh sách US (US-CARE-05 đến US-CARE-07).
 - **[BF-CLS-05]** Rename file `BF-OPS-04-diem-danh.md` → `BF-CLS-05-diem-danh-nhan-xet.md` để thống nhất mã BF giữa tên file và nội dung.
 - **[BF-OPS-01]** Chuẩn hóa format US-ID từ `US-WorkRegistration-0x` → `US-OPS01-0x` theo quy ước chung.
-- **[BF-CLS-01]** Cập nhật Menu ID từ `class_enrollment, students` → `class_assignment`. Thêm tham chiếu US-CLS01-01. Cập nhật mô tả Frontend sang layout 2-panel.
+- **[BF-CLS-01]** Cập nhật Menu ID từ `class_enrollment, students` → `class_assignment`. Thêm tham chiếu US-CLS01-01. Cập nhật mô tả giao diện sang layout 2-panel.
 - **[BF-ENR-02]** Biên tập lại BF Học thử (`trial_class`), định nghĩa rõ 2 mô hình Học thử: Ghép buổi (Trial Session) và Lớp riêng (Trial Class). Bổ sung Scope, Business Rules và Mermaid Flow.
 - **[CATALOG]** Thêm tham chiếu `FLOW-OPS-00` vào danh sách Master Flows.
 

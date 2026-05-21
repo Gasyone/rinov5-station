@@ -1,3 +1,13 @@
+---
+id: US-OPS02-03
+title: "Quản lý Danh sách Buổi học & Lịch tổng thể Cơ sở (Global View)"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-02
+status: "Draft"
+tags: [user-story]
+---
+
 # US-OPS02-03: Quản lý Danh sách Buổi học & Lịch tổng thể Cơ sở (Global View)
 
 > Tài liệu đang chờ biên tập

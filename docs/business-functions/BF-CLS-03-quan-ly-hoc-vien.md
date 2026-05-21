@@ -1,87 +1,101 @@
-# BF-CLS-03: Quản lý Học viên (Class Roster Management)
+---
+title: "BF-CLS-03: Quản lý Học viên (Class Roster)"
+type: "Business Function"
+domain: "CAP-OPS"
+status: "Draft"
+tags: [class, student]
+---
 
-> **Giai đoạn:** 6 — Lớp học & Học viên
-> **Capability:** CAP-OPS
-> **Nhóm sidebar:** Vận hành
-> **Menu ID:** `students`
+# BF-CLS-03: Quản lý Học viên (Class Roster)
+
+> **Capability:** CAP-OPS (Năng lực Quản lý Học viên & Vận hành Lớp)
+> **Giai đoạn:** 2 - Vận hành
+> **Nhóm chức năng:** Quản lý Học viên
+> **Mã màn hình:** `students`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Quản lý danh sách Học viên đang theo học (Roster) trong một Lớp cụ thể. Cung cấp góc nhìn 360 độ về học viên: Lịch sử điểm danh, Điểm số, Báo cáo học tập, và Lịch sử chuyển lớp/bảo lưu. Đây là tính năng phục vụ Giáo viên và CSM theo sát tình hình học sinh.
+Phân hệ quản lý danh sách Học viên đang theo học (Roster) trong một Lớp cụ thể. Cung cấp góc nhìn 360 độ về học viên: Lịch sử điểm danh, Điểm số, Báo cáo học tập, và Lịch sử chuyển lớp/bảo lưu. Đây là tính năng phục vụ Giáo viên và Giáo vụ theo sát tình hình học tập của học viên trong khuôn khổ một lớp.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Admin
-- Branch Manager
-- Teacher (Xem học viên lớp mình)
-- CSM (Chăm sóc học viên)
+- **Nhân viên Giáo vụ (Vận hành):** Theo dõi bao quát tình hình lớp, xử lý các yêu cầu bảo lưu/chuyển lớp.
+- **Giáo viên:** Theo sát học viên, xem điểm danh, nhận xét và kết quả học tập để điều chỉnh phương pháp dạy.
+- **Chuyên viên Chăm sóc (CSM):** Dùng dữ liệu này để tư vấn phụ huynh.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
-- Hiển thị danh sách Học viên tổng quát trên toàn cơ sở (Chỉ tập trung vào học viên Active/Suspended).
-- Hiển thị danh sách Roster của một Lớp học cụ thể.
-- Đánh dấu sao, gắn tag ghi chú nhanh trên màn hình danh sách.
+### Có bao gồm (In Scope)
+- Hiển thị danh sách Học viên tổng quát trên toàn cơ sở (Danh sách vận hành).
+- Hiển thị danh sách Học viên (Roster) của một Lớp học cụ thể.
+- Màn hình Student 360° View tổng hợp toàn bộ lịch sử (Điểm danh, Điểm, Nhận xét).
+- Đánh dấu sao, gắn nhãn (tag) chú ý nhanh cho học viên (ví dụ: Học yếu, Cá biệt).
 
-### Ngoài phạm vi (Out of Scope)
-- Đăng ký mới hoặc thu học phí (Xử lý tại `CAP-COM`, `CAP-FIN`).
-- Thay đổi thông tin cá nhân gốc của học viên (Xử lý tại `CAP-MDM`, `BF-PRF-01`).
+### Không bao gồm (Out of Scope)
+- Đăng ký ghi danh mới hoặc thu tiền → Thuộc `CAP-COM`, `CAP-FIN`.
+- Quản lý hồ sơ gốc (Tên, SĐT, Địa chỉ) → Xử lý tại `BF-MDM-01`.
+- Điểm danh & Nhập điểm (hành động nhập liệu) → Xử lý tại `BF-CLS-05`.
 
-## 4. Nghiệp vụ liên quan
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- **Upstream:** `BF-CLS-01` (Học viên được xếp vào lớp sẽ xuất hiện ở đây).
-- **Downstream:** `BF-CARE-01` (CSM sử dụng dữ liệu từ màn hình này để gọi điện chăm sóc học viên).
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Hồ sơ Vận hành (Student Roster) | Mã hồ sơ Roster | Trạng thái (Đang học/Bảo lưu), Nhãn chú ý | Trỏ về Lớp & Học viên gốc | Dữ liệu gắn kết người-lớp. |
 
-## 5. User Stories
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-### Danh sách (List Views)
-- [ ] US-CLS03-01: Quản lý danh sách Học viên cơ sở (Operational Master List).
-- [ ] US-CLS03-02: Xem danh sách học viên đang học trong 1 lớp (Class Roster).
-- [ ] US-CLS03-03: Đánh dấu sao / Gắn tag chú ý cho học viên đặc biệt.
-
-### Chi tiết Học viên — Student 360° View (Kích hoạt khi click vào 1 HV)
-- [ ] US-CLS03-04: Tab Tổng quan — Thông tin cá nhân & Lớp đang học.
-- [ ] US-CLS03-05: Tab Lịch sử Điểm danh (Attendance History).
-- [ ] US-CLS03-06: Tab Lịch sử Nhận xét & Đánh giá (Feedback History).
-- [ ] US-CLS03-07: Tab Đơn hàng & Gói đăng ký (Orders & Packages).
-- [ ] US-CLS03-08: Tab Năng lực & Trình độ (Proficiency).
-- [ ] US-CLS03-09: Tab Lịch sử Buổi học (Session Learning History).
-- [ ] US-CLS03-10: Tab Bài tập về nhà (Homework).
-- [ ] US-CLS03-11: Tab Chăm sóc & Ticket (Care Tickets).
-- [ ] US-CLS03-12: Tab Ghi chú Vận hành (Operational Notes).
-- [ ] US-CLS03-13: Tab Nhật ký thao tác (Audit Log).
-- [ ] US-CLS03-14: Tab Lịch sử Trạng thái (Status Change History).
-- [ ] US-CLS03-15: Tab Lịch học sắp tới (Upcoming Schedule).
-- [ ] US-CLS03-16: Tab Thông tin Phụ huynh (Guardian Quick View).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định trạng thái của một Học viên bên trong một Lớp học.*
 
 ```mermaid
-graph TD
-    A["Vào giao diện Quản lý Học viên (trong 1 Lớp)"] --> B["Xem danh sách Roster"]
-    B --> C["Click vào 1 Học viên cụ thể"]
-    C --> D["Xem Lịch sử Điểm danh (từ BF-CLS-05)"]
-    C --> E["Xem Kết quả bài kiểm tra"]
-    C --> F["Xem Lịch sử chuyển lớp/Bảo lưu (từ BF-CLS-06)"]
-    D --> G["CSM thực hiện gọi chăm sóc (BF-CARE-01)"]
-    E --> G
+stateDiagram-v2
+    [*] --> Dang_hoc : Được xếp vào lớp
+    Dang_hoc --> Bao_luu : Xin tạm nghỉ
+    Bao_luu --> Dang_hoc : Đi học lại
+    Dang_hoc --> Nghi_hoc : Rút hồ sơ / Chuyển lớp
+    Nghi_hoc --> [*]
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Học viên đã chuyển lớp (Transfer) hoặc đang bảo lưu (Suspend) vẫn hiển thị trong lịch sử của lớp nhưng được gắn tag trạng thái mờ (Inactive).
-2. Giáo viên chỉ được xem thông tin học thuật, không được xem chi tiết tài chính (công nợ) của học viên.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Đang học | Bảo lưu | Có phiếu yêu cầu bảo lưu hợp lệ | Giáo vụ / Quản lý |
+| Bất kỳ | Nghỉ học | Xác nhận hoàn phí hoặc đã xếp sang lớp khác | Giáo vụ / Quản lý |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Student Portfolio | Tổng hợp điểm danh, điểm số, và nhận xét của học viên trong khuôn khổ 1 Class. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Xem 360 độ | Chọn Học viên A trong Lớp IELTS-01 | Màn hình hiển thị: A vắng 2 buổi, điểm Mid-term 6.5. |
+| Gắn thẻ (Tag) | Gắn thẻ "Cần kèm cặp" cho Học viên B | Thẻ hiện lên đỏ bên cạnh tên B trong danh sách lớp. |
 
-- **Backend:** `StudentService` tổng hợp data từ `Attendance`, `Grading`, `Enrollment`.
-- **Frontend:** Tab `Học viên` bên trong trang Chi tiết Lớp học (`ClassDetail`).
-- **Gaps:** Cần chốt cơ chế phân quyền chi tiết cho Teacher (ẩn field học phí).
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+1. **[RULE-CLS-03-01] Hiển thị lịch sử:** Học viên đã chuyển lớp (Transfer) hoặc đang bảo lưu (Suspend) VẪN HIỂN THỊ trong danh sách của lớp cũ để tra cứu lịch sử, nhưng tên bị làm mờ và gắn nhãn "Đã nghỉ/Bảo lưu".
+2. **[RULE-CLS-03-02] Phân quyền xem (Data Privacy):** Giáo viên chỉ được xem thông tin học thuật (Điểm, Nhận xét, Điểm danh), KHÔNG ĐƯỢC XEM thông tin tài chính (Học phí, Công nợ) của học viên.
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-CLS03-01 | Quản lý danh sách Học viên cơ sở (Danh sách) | /app/students | Đã chuẩn hóa |
+| US-CLS03-02 | Xem Roster lớp học (Bảng trong chi tiết lớp) | /app/classes/[id] | Đã chuẩn hóa |
+| US-CLS03-04 | Xem chi tiết Hồ sơ Student 360° (Tab chi tiết) | /app/students/[id] | Đã chuẩn hóa |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

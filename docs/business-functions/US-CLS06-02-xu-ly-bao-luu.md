@@ -1,4 +1,14 @@
-﻿# US-CLS06-02-xu-ly-bao-luu
+---
+id: US-CLS06-02
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-06
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS06-02-xu-ly-bao-luu
 
 > Tài liệu đang chờ biên tập
 

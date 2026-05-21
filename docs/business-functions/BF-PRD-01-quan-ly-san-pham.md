@@ -1,78 +1,104 @@
-# BF-PRD-01: Quản lý Sản phẩm
+---
+title: "BF-PRD-01: Quản lý Sản phẩm"
+type: "Business Function"
+domain: "CAP-COM"
+status: "Draft"
+tags: [commerce, product, catalog]
+---
 
-> **Capability:** CAP-COM
-> **Giai đoạn:** 3 — Thương mại & Bán hàng
-> **Nhóm sidebar:** Sản phẩm
-> **Menu ID:** `products`, `product_groups`, `combos`, `product_settings`
+# BF-PRD-01: Quản lý Sản phẩm (Product Catalog Management)
+
+> **Capability:** CAP-COM (Năng lực Thương mại & Bán hàng)
+> **Giai đoạn:** 3 - Hồ sơ & Sản phẩm
+> **Nhóm chức năng:** Sản phẩm
+> **Mã màn hình:** `products`, `product_groups`, `combos`, `product_settings`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Đây là business function quản lý danh mục sản phẩm và chiến lược ưu đãi. Nó quản lý toàn bộ vòng đời của các sản phẩm có thể bán được, bao gồm việc thiết lập cấu trúc sản phẩm, nhóm sản phẩm, các gói combo ưu đãi và các quy tắc thương mại liên quan. Mục tiêu là tạo ra một catalog đồng nhất, sẵn sàng phục vụ cho quy trình Order, Thanh toán và Tuyển sinh.
+Business function quản lý danh mục sản phẩm và chiến lược ưu đãi. Quản lý toàn bộ vòng đời của các "Hàng hóa" có thể bán được để thu tiền, bao gồm việc thiết lập cấu trúc sản phẩm đơn lẻ (Khóa học, Sách, Đồng phục), nhóm sản phẩm, các gói combo ưu đãi và các quy tắc định giá. 
 
-## 2. Đối tượng sử dụng (Actors)
+Mục tiêu là tạo ra một Catalog đồng nhất, tách biệt với "Khung chương trình học thuật" (`BF-ACD-01`), sẵn sàng phục vụ cho quy trình Lập Đơn hàng (`BF-SAL-01`).
 
-- Product Admin
-- Sales Admin
-- System Admin
+## 2. Đối tượng sử dụng (Vai trò)
 
-## 3. Phạm vi (Scope)
+- **Quản lý Sản phẩm (Product Admin):** Định nghĩa cấu trúc sản phẩm mới, đóng gói combo, ra mắt sản phẩm.
+- **Giám đốc Kinh doanh (Sales Admin):** Thiết lập các mức giá (Pricing), cấu hình giảm giá cho Combo.
+- **Nhân viên Tư vấn (Sales):** Sử dụng danh mục sản phẩm (View-only) để báo giá và lên đơn hàng.
 
-### Trong phạm vi (In Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-- Định nghĩa sản phẩm, nhóm sản phẩm, combo và các thiết lập mô tả danh mục bán hàng.
-- Áp dụng các quy tắc nhóm, trạng thái, mục đích định giá và quy tắc bán hàng vận hành vào danh mục.
-- Xuất bản danh mục và mô hình ưu đãi (offer model) để sẵn sàng sử dụng cho các luồng tạo đơn hàng, tuyển sinh và báo cáo.
-- Quản lý vòng đời danh mục: thay đổi hoặc ngừng kinh doanh các sản phẩm/combo mà vẫn đảm bảo tính liên tục của hệ thống.
+### Có bao gồm (In Scope)
+- Định nghĩa Sản phẩm đơn lẻ (Tên, Mã SKU, Loại sản phẩm, Đơn giá chuẩn).
+- Quản lý Nhóm sản phẩm (Product Groups) để phục vụ cho các quy tắc giảm giá chung.
+- Cấu hình Gói ưu đãi (Combos): Ghép nhiều Sản phẩm vào 1 mã duy nhất với mức giá chiết khấu.
+- Thiết lập trạng thái vòng đời sản phẩm: Bản nháp, Đang bán, Ngừng kinh doanh.
 
-### Ngoài phạm vi (Out of Scope)
+### Không bao gồm (Out of Scope)
+- Tạo Đơn hàng (Order) và xuất Hóa đơn thanh toán → Thuộc `BF-SAL-01`.
+- Quản lý Khung chương trình học thuật, số buổi học, bài giảng → Thuộc `BF-ACD-01` (Sản phẩm chỉ là lớp vỏ tài chính bọc bên ngoài Khung chương trình học thuật).
+- Quản lý Kho vật lý (Nhập/Xuất sách, balo) → Thuộc hệ thống Inventory riêng biệt.
 
-- Khâu tạo đơn hàng và thanh toán trực tiếp (thuộc `BF-SAL-01`).
-- Quản lý khung chương trình học thuật gốc (thuộc `BF-ACD-01`).
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-## 4. Nghiệp vụ liên quan
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Sản phẩm (Product) | Mã Sản phẩm (SKU) | Tên, Loại (Dịch vụ/Hàng hóa), Đơn giá, Trạng thái | Độc lập | Đơn vị bán lẻ nhỏ nhất. |
+| Gói ưu đãi (Combo) | Mã Combo | Tên, Tổng giá sau chiết khấu, Trạng thái | Độc lập | Bao gồm nhiều Sản phẩm. |
+| Chi tiết Combo | ID liên kết | Số lượng, Tỷ lệ giảm giá riêng | Trỏ về Mã Combo & Mã Sản phẩm | Thành phần của Combo. |
 
-- **Downstream:** `BF-SAL-01` (Order and Payment Management) - Sử dụng danh mục sản phẩm/combo để cấu hình và tạo đơn hàng.
-- **Downstream:** `BF-ACD-01` (Learning Blueprint Management) - Khởi tạo lộ trình học tương ứng với các sản phẩm giáo dục.
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-## 5. User Stories
-
-**Danh sách US đề xuất (Proposed):**
-- [ ] US-PRD-01: Quản lý danh mục Sản phẩm đơn lẻ.
-- [ ] US-PRD-02: Quản lý Nhóm sản phẩm (Product Groups).
-- [ ] US-PRD-03: Cấu hình và quản lý Combo ưu đãi.
-- [ ] US-PRD-04: Thiết lập thuộc tính thương mại (Product Settings).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định vòng đời của một Sản phẩm/Combo.*
 
 ```mermaid
-graph TD
-    A["Nhu cầu cấu hình danh mục/bảng giá"] --> B["1. Định nghĩa cấu trúc Sản phẩm/Combo"]
-    B --> C["2. Áp dụng quy tắc giá và thương mại"]
-    C --> D["3. Xuất bản danh mục ưu đãi (Offer model)"]
-    D --> E["4. Quản lý vòng đời (Ngừng/Thay đổi)"]
-    E --> F["Danh mục sẵn sàng cho luồng Order/Enrollment"]
+stateDiagram-v2
+    [*] --> Nhap : Lên ý tưởng sản phẩm
+    Nhap --> Dang_ban : Duyệt giá, Đưa lên Catalog
+    Dang_ban --> Ngung_kinh_doanh : Khai tử sản phẩm (Retired)
+    Ngung_kinh_doanh --> [*]
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Cấu trúc bán hàng (Product/Combo) phải được xác định rõ ràng thuộc tính giá và trạng thái trước khi được lưu hành nội bộ.
-2. Sản phẩm hoặc gói combo nếu bị đánh dấu "Ngừng kinh doanh" (Retired) sẽ không được phép chọn trong các đơn hàng mới, nhưng vẫn lưu trữ lịch sử ở các đơn hàng cũ.
-3. Việc thay đổi cấu trúc của Combo không được làm ảnh hưởng hồi tố tới các hợp đồng/giao dịch đã xuất hóa đơn thành công.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Bất kỳ | Ngừng kinh doanh | Không được xóa cứng. Phải giữ lại để tra cứu lịch sử Đơn hàng | Product Admin |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Product | Đối tượng cơ sở có thể kinh doanh độc lập (ví dụ: Khóa học cấp 1, Sách giáo trình). |
-| Product Group | Nhóm các sản phẩm tương đồng để áp dụng chính sách giảm giá hoặc quy tắc kinh doanh chung. |
-| Combo | Một gói kết hợp nhiều Sản phẩm/Nhóm sản phẩm với cấu trúc giá ưu đãi riêng biệt. |
-| Product Settings | Cấu hình hệ thống liên quan tới thuế, cấu trúc định giá và quy tắc tính phí. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Tạo Sản phẩm | SKU: CRS-01, Tên: "IELTS 6.0", Giá: 10,000,000 VND, Loại: Dịch vụ | Lưu thành công. Trạng thái Đang bán. |
+| Tạo Combo | Combo "Back to School": Gồm "IELTS 6.0" (giảm 10%) + "Sách giáo khoa" (miễn phí) | Tính toán Tổng giá = 9,000,000 VND. Sinh SKU Combo mới. |
+| Xóa sản phẩm cũ | Admin bấm Xóa sản phẩm "IELTS 5.0" (Đã bán từ năm ngoái) | Hệ thống chặn thao tác Xóa, chỉ cho phép chuyển sang "Ngừng kinh doanh". |
 
-- **Registry mapping:** `product.catalog_and_offer_governance`
-- **Backend:** `partial`
-- **Frontend:** `hybrid` (Các màn hình chính: `ProductListView`, `ProductGroupsView`, `ProductCombosView`, `ProductSettingsView`)
-- **Gaps:** Chưa có file User Story chi tiết nào. Các US liệt kê hiện đang ở mức đề xuất. Hệ thống cần làm rõ cơ chế duyệt giá (Price Approval) nếu có.
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+1. **[RULE-PRD-01-01] Tách bạch Học thuật và Thương mại (Decoupled Offering):** Hệ thống không được bán trực tiếp "Lớp học" hay "Khung chương trình". Hệ thống chỉ được phép bán "Sản phẩm" (Product). Sau khi Đơn hàng thanh toán thành công, hệ thống mới dùng Mã Sản phẩm đó để quy đổi (Mapping) ra số buổi học hay khóa học tương ứng ở phân hệ Academic.
+2. **[RULE-PRD-01-02] Không hồi tố giá (Non-Retroactive Pricing):** Việc thay đổi Đơn giá của một Sản phẩm đang lưu hành (Active) không được phép làm thay đổi Giá trị của các Đơn hàng (Orders) ĐÃ ĐƯỢC TẠO trong quá khứ. Mức giá mới chỉ có tác dụng đối với Đơn hàng tạo từ thời điểm cập nhật trở đi.
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-PRD-01 | Quản lý danh mục Sản phẩm đơn lẻ (Danh sách & Biểu mẫu) | /app/products | Đang soạn thảo |
+| US-PRD-02 | Quản lý Nhóm sản phẩm (Danh sách) | /app/product_groups | Đang soạn thảo |
+| US-PRD-03 | Cấu hình và quản lý Combo ưu đãi (Biểu mẫu cấu trúc cây) | /app/combos | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

@@ -1,3 +1,13 @@
+---
+id: US-CLS03-06
+title: "Tab Lich su Nhan xet & Danh gia (Feedback History)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-06: Tab Lich su Nhan xet & Danh gia (Feedback History)
 
 > Tai lieu dang cho bien tap

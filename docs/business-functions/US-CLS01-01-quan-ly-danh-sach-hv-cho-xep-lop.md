@@ -1,4 +1,16 @@
+---
+id: US-CLS01-01
+title: "Quản lý danh sách Học viên chờ xếp lớp"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-01
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS01-01: Quản lý danh sách Học viên chờ xếp lớp
+
+> **Tham chiếu:** BF-CLS-01 · `[POLICY-DS-03]` · Design System §4.2 List Page Pattern
 
 ## 1. User Story
 
@@ -14,100 +26,100 @@
 |------------|---------|
 | **BF:** | BF-CLS-01 (Xếp lớp — Enrollment to Class) |
 | **CAP:** | CAP-OPS (SIS & Class Operations) |
-| **Menu ID:** | `class_assignment` |
-| **Sidebar group:** | `group_operations` (Vận hành) |
-| **Allowed Roles:** | `admin`, `branch_manager` |
-| **Priority:** | High |
+| **Màn hình:** | Quản lý Xếp lớp |
+| **Nhóm menu:** | Vận hành |
+| **Vai trò được phép:** | Quản trị viên, Quản lý chi nhánh |
+| **Mức ưu tiên:** | Cao |
 
 ---
 
-## 3. Điều kiện tiền quyết (Preconditions)
+## 3. Điều kiện tiền quyết
 
-1. Học viên phải đã hoàn thành thanh toán (từ `CAP-FIN`) hoặc đã được xác nhận ghi danh.
-2. Học viên có trạng thái thuộc 1 trong 4 nhóm: `cho_xep_lop`, `xep_lop_sau`, `cho_chuyen_lop`, `cho_khai_giang`.
-3. Người dùng đã đăng nhập với role `admin` hoặc `branch_manager`.
+1. Học viên phải đã hoàn thành thanh toán (từ CAP-FIN) hoặc đã được xác nhận ghi danh.
+2. Học viên có trạng thái thuộc 1 trong 4 nhóm: Chờ xếp lớp, Xếp lớp sau, Chờ chuyển lớp, Chờ khai giảng.
+3. Người dùng đã đăng nhập với vai trò Quản trị viên hoặc Quản lý chi nhánh.
 
 ---
 
 ## 4. Mô tả chi tiết
 
-Màn hình hiển thị danh sách học viên đang ở các trạng thái **tiền lớp học** (Pre-class) — tức là học viên đã đăng ký nhưng chưa chính thức vào lớp hoặc đang chờ chuyển lớp. Mục tiêu chính: giúp Branch Manager thấy nhanh ai cần xếp lớp, lớp nào còn chỗ, và thực hiện thao tác xếp lớp.
+Màn hình hiển thị danh sách học viên đang ở các trạng thái **tiền lớp học** (Pre-class) — tức là học viên đã đăng ký nhưng chưa chính thức vào lớp hoặc đang chờ chuyển lớp. Mục tiêu chính: giúp Quản lý chi nhánh thấy nhanh ai cần xếp lớp, lớp nào còn chỗ, và thực hiện thao tác xếp lớp.
 
-### 4.1. Layout tổng thể
+### 4.1. Bố cục tổng thể
 
-Màn hình chia thành 2 panel chính theo chiều ngang:
+Màn hình chia thành 2 vùng chính theo chiều ngang:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ Toolbar: [Status Tabs]  |  [Search] [Filter] [Actions]          │
+│ Thanh công cụ: [Tab trạng thái]  |  [Tìm kiếm] [Lọc] [Thao tác]│
 ├──────────────────────────────────┬───────────────────────────────┤
 │                                  │                               │
-│   Panel trái (60%)               │   Panel phải (40%)            │
+│   Vùng trái (60%)                │   Vùng phải (40%)             │
 │   BẢNG DANH SÁCH HỌC VIÊN       │   DANH SÁCH LỚP CÒN CHỖ     │
-│                                  │   (Class Slots Preview)       │
-│   - Table dạng list              │                               │
-│   - Checkbox chọn nhiều          │   - Card list theo Program    │
-│   - Click row → highlight        │   - Hiển thị tên lớp, GV,    │
-│   - Drag support (tương lai)     │     sĩ số, lịch học           │
+│                                  │                               │
+│   - Bảng dạng danh sách          │   - Danh sách thẻ theo        │
+│   - Ô chọn nhiều                 │     Chương trình              │
+│   - Bấm dòng → đánh dấu         │   - Hiển thị tên lớp, GV,    │
+│                                  │     sĩ số, lịch học           │
 │                                  │   - Nút "Xếp vào lớp này"    │
 │                                  │                               │
 ├──────────────────────────────────┴───────────────────────────────┤
-│ Footer: [Showing X records]  [Rows per page]  [Pagination]      │
+│ Chân bảng: [Hiển thị X bản ghi]  [Số dòng/trang]  [Phân trang] │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-> **Tại sao layout 2 panel?**
-> Bài toán Xếp lớp là bài toán **matching** (Ghép HV ↔ Lớp). Người dùng cần nhìn đồng thời 2 nguồn: danh sách HV chờ (bên trái) và danh sách lớp còn chỗ (bên phải) để ra quyết định. Thiết kế này phổ biến trong SIS (VD: PowerSchool, Infinite Campus).
+> **Tại sao bố cục 2 vùng?**
+> Bài toán Xếp lớp là bài toán **ghép cặp** (Học viên ↔ Lớp). Người dùng cần nhìn đồng thời 2 nguồn: danh sách HV chờ (bên trái) và danh sách lớp còn chỗ (bên phải) để ra quyết định. Thiết kế này phổ biến trong hệ thống quản lý học viên (SIS).
 
-### 4.2. Status Tabs (FilterTabs)
+### 4.2. Tab trạng thái
 
-Sử dụng component `FilterTabs` hiện có, hiển thị 5 tabs:
+Hiển thị 5 tab lọc nhanh:
 
-| Tab ID | Tên hiển thị | Màu dot | Mô tả | Đếm |
-|--------|-------------|---------|-------|-----|
-| `all` | Tất cả | gray | Tổng số HV ở 4 trạng thái dưới | Tổng 4 nhóm |
-| `cho_xep_lop` | Chờ xếp lớp | blue | HV đã thanh toán, chờ ghép vào Class | Count theo status |
-| `xep_lop_sau` | Xếp lớp sau | indigo | HV được hoãn xếp lớp theo yêu cầu | Count theo status |
-| `cho_chuyen_lop` | Chờ chuyển lớp | orange | HV đang chờ duyệt chuyển sang Class khác | Count theo status |
-| `cho_khai_giang` | Chờ khai giảng | cyan | HV đã được xếp lớp, chờ lớp bắt đầu | Count theo status |
+| Tab | Tên hiển thị | Nhóm màu | Mô tả | Đếm |
+|-----|-------------|----------|-------|-----|
+| Tất cả | Tất cả | Trung tính | Tổng số HV ở 4 trạng thái dưới | Tổng 4 nhóm |
+| Chờ xếp lớp | Chờ xếp lớp | Đang xử lý (xanh) | HV đã thanh toán, chờ ghép vào lớp | Đếm theo trạng thái |
+| Xếp lớp sau | Xếp lớp sau | Hoãn (tím) | HV được hoãn xếp lớp theo yêu cầu | Đếm theo trạng thái |
+| Chờ chuyển lớp | Chờ chuyển lớp | Cảnh báo (cam) | HV đang chờ duyệt chuyển sang lớp khác | Đếm theo trạng thái |
+| Chờ khai giảng | Chờ khai giảng | Đã xếp (xanh ngọc) | HV đã được xếp lớp, chờ lớp bắt đầu | Đếm theo trạng thái |
 
-### 4.3. Toolbar
+### 4.3. Thanh công cụ
 
-| Thành phần | Loại control | Mô tả |
-|------------|-------------|-------|
-| Status Tabs | FilterTabs (5 tabs) | Lọc nhanh theo trạng thái. Mặc định chọn tab "Tất cả". |
-| Dropdown Chi nhánh | Select dropdown | Lọc theo chi nhánh. Option đầu: "Tất cả chi nhánh". Chỉ hiển thị branch `type === 'internal'` AND `status === 'active'`. |
-| Ô tìm kiếm | Text input | Placeholder: "Tìm theo tên, mã HV, SĐT, chương trình...". Tìm realtime trên: `fullName`, `code`, `phone`, `packageName`, `subject`. |
-| Nút Bộ lọc | Icon button | Mở Filter Drawer bên phải. Badge hiển thị số filter đang active. |
+| Thành phần | Loại | Mô tả |
+|------------|------|-------|
+| Tab trạng thái | 5 tab lọc nhanh | Lọc nhanh theo trạng thái. Mặc định chọn "Tất cả". |
+| Chọn Chi nhánh | Danh sách thả xuống | Lọc theo chi nhánh. Mặc định "Tất cả chi nhánh". Chỉ hiển thị cơ sở nội bộ đang hoạt động. |
+| Ô tìm kiếm | Ô nhập liệu | Gợi ý: "Tìm theo tên, mã HV, SĐT, chương trình...". Tìm tự động. |
+| Nút Bộ lọc | Nút biểu tượng | Mở bảng lọc bên phải. Hiển thị số bộ lọc đang áp dụng. |
 
-### 4.4. Panel trái — Bảng danh sách Học viên chờ
+### 4.4. Vùng trái — Bảng danh sách Học viên chờ
 
-| Cột | Kiểu | Mô tả | Min-width |
-|-----|------|-------|-----------|
-| ☐ Checkbox | Checkbox | Chọn 1 hoặc nhiều HV để xếp lớp hàng loạt | 48px |
-| Học viên | Text + Code | Tên HV (bold) + Mã HV (mono, muted). Avatar chữ cái đầu. | 220px |
-| Tuổi | Text | Tính từ ngày sinh. Hiển thị "X tuổi". | 60px |
-| Chương trình | Badge + Text | Tên môn học/chương trình đã đăng ký (VD: "IELTS Junior"). Badge màu theo subject. | 150px |
-| Gói học | Text | Tên gói (VD: "Gói 36 buổi"). | 120px |
-| Chi nhánh | Text | Tên chi nhánh đăng ký. | 140px |
-| Trạng thái | Badge | Badge màu theo STATUS_META. | 130px |
-| Ngày chờ | Text + Urgency | Số ngày kể từ khi HV vào trạng thái hiện tại. Nếu > 7 ngày: text đỏ + icon cảnh báo. Nếu > 14 ngày: text đỏ bold + badge "Quá hạn". | 100px |
-| Hành động | Button group | Nút "Xếp lớp" (primary), nút "⋯" (menu: Hoãn, Xem hồ sơ, Hủy). | 120px |
+| Cột | Loại | Mô tả |
+|-----|------|-------|
+| Ô chọn | Ô chọn | Chọn 1 hoặc nhiều HV để xếp lớp hàng loạt. |
+| Học viên | Văn bản + Mã | Tên HV (in đậm) + Mã HV (kiểu chữ mã, màu phụ). Ảnh đại diện chữ cái đầu. |
+| Tuổi | Văn bản | Tính từ ngày sinh. Hiển thị "X tuổi". |
+| Chương trình | Nhãn + Văn bản | Tên môn học/chương trình đã đăng ký (VD: "IELTS Junior"). Nhãn màu theo môn. |
+| Gói học | Văn bản | Tên gói (VD: "Gói 36 buổi"). |
+| Chi nhánh | Văn bản | Tên chi nhánh đăng ký. |
+| Trạng thái | Nhãn trạng thái | Nhãn màu theo quy tắc màu trạng thái (§3.2). |
+| Ngày chờ | Văn bản + Mức độ khẩn | Số ngày kể từ khi HV vào trạng thái hiện tại. Hiển thị mức độ khẩn theo ngưỡng thời gian. |
+| Hành động | Nhóm nút | Nút "Xếp lớp" (nút chính), nút "⋯" (menu: Hoãn, Xem hồ sơ, Hủy — Hủy cần xác nhận theo §6.4 `[DS-P4]`). |
 
-**Logic cột "Ngày chờ" (Urgency indicator):**
-- ≤ 3 ngày: Text xanh, bình thường
-- 4-7 ngày: Text cam, nhắc nhở
-- 8-14 ngày: Text đỏ, icon ⚠️
-- \> 14 ngày: Text đỏ bold, badge "Quá hạn"
+**Mức độ khẩn cột "Ngày chờ":**
+- ≤ 3 ngày: Bình thường (màu tích cực)
+- 4-7 ngày: Nhắc nhở (màu cảnh báo nhẹ)
+- 8-14 ngày: Cảnh báo (màu cảnh báo) + biểu tượng cảnh báo
+- > 14 ngày: Khẩn cấp (màu nguy hiểm, in đậm) + nhãn "Quá hạn"
 
 > **Tại sao cần cột Ngày chờ?**
-> Trong SIS chuẩn, KPI quan trọng nhất của Placement là "Time to Enroll" — thời gian trung bình từ lúc HV đăng ký đến lúc được xếp lớp. Cột này giúp Branch Manager ưu tiên xử lý HV chờ lâu.
+> Trong SIS chuẩn, KPI quan trọng nhất của Xếp lớp là "Time to Enroll" — thời gian trung bình từ lúc HV đăng ký đến lúc được xếp lớp. Cột này giúp Quản lý chi nhánh ưu tiên xử lý HV chờ lâu.
 
-### 4.5. Panel phải — Danh sách Lớp còn chỗ (Class Slots)
+### 4.5. Vùng phải — Danh sách Lớp còn chỗ
 
-Hiển thị các Class đang mở (status = `Open`) và còn chỗ trống (`currentRoster < capacity`).
+Hiển thị các lớp đang mở và còn chỗ trống (sĩ số hiện tại < sức chứa).
 
-Mỗi Class hiển thị dạng **Card nhỏ gọn**:
+Mỗi lớp hiển thị dạng **Thẻ nhỏ gọn**:
 
 ```
 ┌─────────────────────────────────┐
@@ -125,98 +137,98 @@ Mỗi Class hiển thị dạng **Card nhỏ gọn**:
 
 | Thành phần | Mô tả |
 |------------|-------|
-| Tên lớp | Bold, primary text |
-| Chi nhánh | Muted text |
+| Tên lớp | In đậm |
+| Chi nhánh | Màu phụ |
 | GV chủ nhiệm | Tên + vai trò |
-| Sĩ số | Thanh progress nhỏ + text "X/Y (còn Z chỗ)". Nếu gần đầy (≥80%): thanh cam. Nếu đầy: thanh đỏ + disabled. |
-| Lịch học | Tóm tắt Schedule (Thứ + Khung giờ) |
-| Level/Program | Level của lớp (để matching với HV) |
-| Nút xếp lớp | "Xếp HV đã chọn vào đây". Disabled nếu chưa chọn HV nào ở panel trái, hoặc lớp đã đầy. |
+| Sĩ số | Thanh tiến trình nhỏ + văn bản "X/Y (còn Z chỗ)". Nếu gần đầy (≥80%): thanh cảnh báo. Nếu đầy: thanh nguy hiểm + vô hiệu. |
+| Lịch học | Tóm tắt (Thứ + Khung giờ) |
+| Level/Chương trình | Level của lớp (để ghép cặp với HV) |
+| Nút xếp lớp | "Xếp HV đã chọn vào đây". Vô hiệu nếu chưa chọn HV nào, hoặc lớp đã đầy. |
 
-**Bộ lọc panel phải:**
-- Dropdown lọc theo Chi nhánh (đồng bộ với dropdown toolbar)
-- Dropdown lọc theo Program/Subject
-- Toggle "Chỉ hiện lớp còn chỗ" (mặc định bật)
+**Bộ lọc vùng phải:**
+- Chọn Chi nhánh (đồng bộ với thanh công cụ)
+- Chọn Chương trình/Môn học
+- Chuyển đổi "Chỉ hiện lớp còn chỗ" (mặc định bật)
 
 **Gợi ý thông minh (Smart Matching):**
-Khi chọn 1 HV ở panel trái, panel phải tự động:
-- Highlight các lớp **phù hợp** (cùng Subject, cùng Level range, cùng Branch) bằng viền xanh
+Khi chọn 1 HV ở vùng trái, vùng phải tự động:
+- Đánh dấu nổi bật các lớp **phù hợp** (cùng Môn, cùng Level, cùng Chi nhánh)
 - Đẩy lớp phù hợp lên đầu danh sách
-- Mờ đi các lớp không phù hợp (khác Subject hoặc đã đầy)
+- Mờ đi các lớp không phù hợp (khác Môn hoặc đã đầy)
 
-### 4.6. Filter Drawer
+### 4.6. Bảng lọc nâng cao
 
-| Nhóm filter | Loại | Options |
-|-------------|------|---------|
-| Chi nhánh | Checkbox list (multi) | Danh sách branch active. Mỗi option có count. |
-| Chương trình | Checkbox list (multi) | IELTS Junior, Movers, Flyers, KET Prep, PET Prep... |
-| Gói học | Checkbox list (multi) | Gói 24/36/48/60 buổi |
-| Mức độ chờ | Radio group | Tất cả / Chờ > 7 ngày / Chờ > 14 ngày (Quá hạn) |
+| Nhóm lọc | Loại | Tùy chọn |
+|----------|------|----------|
+| Chi nhánh | Danh sách ô chọn (nhiều) | Danh sách chi nhánh đang hoạt động. Mỗi mục có số đếm. |
+| Chương trình | Danh sách ô chọn (nhiều) | IELTS Junior, Movers, Flyers, KET Prep, PET Prep... |
+| Gói học | Danh sách ô chọn (nhiều) | Gói 24/36/48/60 buổi |
+| Mức độ chờ | Nhóm chọn đơn | Tất cả / Chờ > 7 ngày / Chờ > 14 ngày (Quá hạn) |
 
-### 4.7. Batch Actions (Xếp lớp hàng loạt)
+### 4.7. Thao tác hàng loạt
 
-Khi chọn nhiều HV bằng checkbox, hiển thị **Batch Action Bar** phía trên bảng:
+Khi chọn nhiều HV bằng ô chọn, hiển thị **Thanh thao tác hàng loạt** phía trên bảng:
 
 | Thành phần | Mô tả |
 |------------|-------|
-| Label | "Đã chọn X học viên" |
-| Nút "Xếp lớp" | Mở modal chọn lớp đích. Chỉ hiển thị lớp phù hợp (cùng Subject). Kiểm tra sĩ số trước khi xác nhận. |
-| Nút "Hoãn xếp lớp" | Chuyển tất cả HV đã chọn sang trạng thái `xep_lop_sau`. |
-| Nút "Bỏ chọn" | Clear selection |
+| Nhãn | "Đã chọn X học viên" |
+| Nút "Xếp lớp" | Mở hộp thoại chọn lớp đích. Chỉ hiển thị lớp phù hợp (cùng Môn). Kiểm tra sĩ số trước khi xác nhận. |
+| Nút "Hoãn xếp lớp" | Chuyển tất cả HV đã chọn sang trạng thái "Xếp lớp sau". |
+| Nút "Bỏ chọn" | Xóa lựa chọn |
 
-### 4.8. Modal Xếp lớp (Placement Confirmation)
+### 4.8. Hộp thoại Xếp lớp (Xác nhận ghép cặp)
 
-Khi click "Xếp lớp" (từ nút trên row hoặc từ card Class bên phải):
+Khi bấm "Xếp lớp" (từ nút trên dòng hoặc từ thẻ Lớp bên phải):
 
 | Bước | Nội dung |
 |------|----------|
 | 1. Xác nhận thông tin | Hiển thị: Tên HV, Chương trình đăng ký, Lớp đích, Sĩ số hiện tại → mới |
-| 2. Kiểm tra tự động | Hệ thống check: (a) Lớp còn chỗ? (b) Level HV có khớp Level lớp? (c) Lịch HV có trùng lớp khác? |
-| 3. Cảnh báo (nếu có) | Nếu Level không khớp: Cảnh báo vàng "Level HV (Movers) khác Level lớp (Flyers). Bạn có chắc?" |
-| 4. Xác nhận | Nút "Xác nhận xếp lớp" (primary) + "Hủy" (secondary) |
+| 2. Kiểm tra tự động | Hệ thống kiểm tra: (a) Lớp còn chỗ? (b) Level HV có khớp Level lớp? (c) Lịch HV có trùng lớp khác? |
+| 3. Cảnh báo (nếu có) | Nếu Level không khớp: Cảnh báo "Level HV (Movers) khác Level lớp (Flyers). Bạn có chắc?" |
+| 4. Xác nhận | Nút "Xác nhận xếp lớp" (nút chính) + "Hủy" (nút phụ) |
 
 Sau khi xác nhận:
-- Trạng thái HV chuyển thành `cho_khai_giang` (Chờ khai giảng)
-- HV xuất hiện trong Roster của Class đích
-- Số đếm trên Status Tabs cập nhật realtime
-- Toast notification: "Đã xếp {Tên HV} vào lớp {Tên lớp}"
+- Trạng thái HV chuyển thành "Chờ khai giảng"
+- HV xuất hiện trong Danh sách lớp đích
+- Số đếm trên Tab trạng thái cập nhật tự động
+- Thông báo: "Đã xếp {Tên HV} vào lớp {Tên lớp}"
 
 ---
 
-## 5. Corner Cases
+## 5. Trường hợp đặc biệt
 
-| # | Case | Hành vi mong đợi |
-|---|------|-------------------|
-| 5.1 | Không có HV nào chờ xếp lớp | Bảng trống, hiển thị empty state: icon + "Không có học viên nào đang chờ xếp lớp". Panel phải vẫn hiển thị lớp còn chỗ. |
-| 5.2 | Không có lớp nào còn chỗ | Panel phải hiển thị empty state: "Tất cả các lớp đã đủ sĩ số. Vui lòng mở lớp mới." Kèm nút "Tạo lớp mới" (link tới `app/classes`). |
-| 5.3 | Xếp HV vào lớp làm vượt sĩ số tối đa | Modal cảnh báo đỏ: "Lớp đã đạt sĩ số tối đa (12/12). Xếp thêm sẽ vượt quy định." Cho phép Admin override bằng nút "Xếp lớp (Override)" với xác nhận lần 2. Branch Manager không có quyền override. |
-| 5.4 | Xếp HV có Level khác với Level lớp | Cảnh báo vàng (warning, không block). Cho phép tiếp tục nhưng ghi log audit. |
-| 5.5 | HV đã có lớp cũ (trạng thái `cho_chuyen_lop`) | Modal hiển thị thêm thông tin: "Chuyển từ lớp {Lớp cũ} sang lớp {Lớp mới}". Hệ thống tự động gỡ HV khỏi Roster lớp cũ. |
-| 5.6 | Chọn nhiều HV khác Subject để xếp lớp hàng loạt | Disabled nút "Xếp lớp" + tooltip: "Chỉ xếp lớp hàng loạt cho HV cùng chương trình". |
-| 5.7 | HV chờ > 14 ngày | Row highlight nhẹ (nền hồng nhạt). Cột "Ngày chờ" hiển thị badge đỏ "Quá hạn". |
-| 5.8 | Branch Manager chỉ thấy HV chi nhánh mình | Dữ liệu tự động lọc theo `branchId` của user đang đăng nhập. Admin thấy tất cả chi nhánh. |
-| 5.9 | HV được xếp lớp thành công, danh sách cập nhật | HV biến mất khỏi tab `cho_xep_lop`, xuất hiện ở tab `cho_khai_giang`. Count trên tabs cập nhật realtime (không cần reload). |
-| 5.10 | Responsive trên tablet | Panel phải thu gọn thành drawer (mở bằng nút), panel trái chiếm full width. |
+| # | Trường hợp | Hành vi mong đợi |
+|---|-----------|-----------------|
+| 5.1 | Không có HV nào chờ xếp lớp | Bảng hiển thị trạng thái trống (§6.5 EmptyState): "Không có học viên nào đang chờ xếp lớp". Vùng phải vẫn hiển thị lớp còn chỗ. |
+| 5.2 | Không có lớp nào còn chỗ | Vùng phải hiển thị trạng thái trống: "Tất cả các lớp đã đủ sĩ số. Vui lòng mở lớp mới." Kèm nút "Tạo lớp mới". |
+| 5.3 | Xếp HV vào lớp làm vượt sĩ số tối đa | Cảnh báo nguy hiểm: "Lớp đã đạt sĩ số tối đa. Xếp thêm sẽ vượt quy định." Quản trị viên có thể ghi đè bằng xác nhận lần 2 (`[DS-P4]`). Quản lý chi nhánh không có quyền ghi đè. |
+| 5.4 | Xếp HV có Level khác với Level lớp | Cảnh báo nhẹ (không chặn). Cho phép tiếp tục nhưng ghi nhận lịch sử. |
+| 5.5 | HV đã có lớp cũ (trạng thái "Chờ chuyển lớp") | Hộp thoại hiển thị thêm: "Chuyển từ lớp {Lớp cũ} sang lớp {Lớp mới}". Hệ thống tự động gỡ HV khỏi Danh sách lớp cũ. |
+| 5.6 | Chọn nhiều HV khác Môn để xếp lớp hàng loạt | Vô hiệu nút "Xếp lớp" + gợi ý: "Chỉ xếp lớp hàng loạt cho HV cùng chương trình". |
+| 5.7 | HV chờ > 14 ngày | Dòng được đánh dấu nhẹ (nền cảnh báo). Cột "Ngày chờ" hiển thị nhãn "Quá hạn". |
+| 5.8 | Quản lý chi nhánh chỉ thấy HV chi nhánh mình | Dữ liệu tự động lọc theo chi nhánh của người dùng đang đăng nhập. Quản trị viên thấy tất cả. |
+| 5.9 | HV được xếp lớp thành công, danh sách cập nhật | HV biến mất khỏi tab "Chờ xếp lớp", xuất hiện ở tab "Chờ khai giảng". Số đếm cập nhật tự động. |
+| 5.10 | Trên máy tính bảng | Vùng phải thu gọn thành bảng trượt (mở bằng nút), vùng trái chiếm toàn bộ chiều rộng. |
 
 ---
 
-## 6. Acceptance Criteria
+## 6. Tiêu chí chấp nhận
 
-- [ ] Màn hình hiển thị đúng 5 status tabs (Tất cả, Chờ xếp lớp, Xếp lớp sau, Chờ chuyển lớp, Chờ khai giảng) với count chính xác.
-- [ ] Bảng HV hiển thị đủ 9 cột: Checkbox, Học viên, Tuổi, Chương trình, Gói học, Chi nhánh, Trạng thái, Ngày chờ, Hành động.
-- [ ] Cột "Ngày chờ" tính đúng số ngày từ ngày vào trạng thái hiện tại, hiển thị 4 mức urgency (xanh/cam/đỏ/quá hạn).
-- [ ] Panel phải hiển thị danh sách lớp còn chỗ, mỗi card có đủ thông tin: Tên, Chi nhánh, GV, Sĩ số, Lịch học, Level.
-- [ ] Khi chọn 1 HV ở panel trái, panel phải highlight lớp phù hợp (cùng Subject + Level + Branch) và đẩy lên đầu.
-- [ ] Nút "Xếp HV đã chọn vào đây" trên card lớp hoạt động đúng: mở modal xác nhận, check sĩ số, check level.
-- [ ] Batch selection: chọn nhiều HV → hiện Batch Action Bar với nút "Xếp lớp" và "Hoãn".
-- [ ] Modal xếp lớp hiển thị thông tin HV + Lớp đích + kết quả kiểm tra tự động (sĩ số, level, lịch trùng).
-- [ ] Cảnh báo vàng khi Level không khớp, cảnh báo đỏ khi vượt sĩ số. Admin có quyền override sĩ số.
-- [ ] Sau xếp lớp thành công: HV chuyển sang `cho_khai_giang`, biến mất khỏi tab cũ, count cập nhật realtime, toast notification hiển thị.
-- [ ] Tìm kiếm hoạt động realtime trên 5 field (fullName, code, phone, packageName, subject).
-- [ ] Filter Drawer hiển thị 4 nhóm filter (Chi nhánh, Chương trình, Gói học, Mức độ chờ).
-- [ ] Branch Manager chỉ thấy HV thuộc chi nhánh mình. Admin thấy tất cả.
-- [ ] Responsive: Tablet thu gọn panel phải thành drawer.
-- [ ] Dropdown chi nhánh trên toolbar đồng bộ với filter chi nhánh panel phải.
+- [ ] Màn hình hiển thị đúng 5 tab trạng thái với số đếm chính xác.
+- [ ] Bảng HV hiển thị đủ 9 cột: Ô chọn, Học viên, Tuổi, Chương trình, Gói học, Chi nhánh, Trạng thái, Ngày chờ, Hành động.
+- [ ] Cột "Ngày chờ" tính đúng số ngày, hiển thị 4 mức khẩn cấp.
+- [ ] Vùng phải hiển thị danh sách lớp còn chỗ, mỗi thẻ có đủ thông tin.
+- [ ] Khi chọn 1 HV ở vùng trái, vùng phải đánh dấu nổi bật lớp phù hợp và đẩy lên đầu.
+- [ ] Nút "Xếp HV đã chọn vào đây" hoạt động đúng: mở hộp thoại xác nhận, kiểm tra sĩ số và level.
+- [ ] Chọn nhiều HV → hiện thanh thao tác hàng loạt với nút "Xếp lớp" và "Hoãn".
+- [ ] Hộp thoại xếp lớp hiển thị thông tin HV + Lớp đích + kết quả kiểm tra tự động.
+- [ ] Cảnh báo khi Level không khớp. Cảnh báo nguy hiểm khi vượt sĩ số. Quản trị viên có quyền ghi đè (`[DS-P4]`).
+- [ ] Sau xếp lớp thành công: HV chuyển trạng thái, biến mất khỏi tab cũ, số đếm cập nhật tự động, thông báo hiển thị.
+- [ ] Tìm kiếm hoạt động tự động trên 5 trường (tên, mã, SĐT, gói, chương trình).
+- [ ] Bảng lọc hiển thị 4 nhóm (Chi nhánh, Chương trình, Gói học, Mức độ chờ).
+- [ ] Quản lý chi nhánh chỉ thấy HV thuộc chi nhánh mình. Quản trị viên thấy tất cả.
+- [ ] Trên máy tính bảng: vùng phải thu gọn thành bảng trượt.
+- [ ] Chọn Chi nhánh trên thanh công cụ đồng bộ với bộ lọc chi nhánh vùng phải.
 
 ---
 
@@ -224,13 +236,15 @@ Sau khi xác nhận:
 
 | Hướng | BF | Tương tác |
 |-------|-----|-----------|
-| **Upstream** | BF-SAL-01 (Đơn hàng) | HV hoàn thành thanh toán → tự động vào Waitlist (`cho_xep_lop`) |
-| **Upstream** | BF-CLS-06 (Chuyển lớp) | HV yêu cầu chuyển lớp → vào trạng thái `cho_chuyen_lop` |
-| **Downstream** | BF-CLS-02 (Quản lý lớp) | Lấy danh sách Class đang Open + Capacity |
-| **Downstream** | BF-CLS-03 (Quản lý HV) | Sau xếp lớp, HV xuất hiện trong Roster của Class |
-| **Downstream** | BF-OPS-02 (Xếp lịch) | Check trùng lịch HV khi xếp lớp |
+| **Đầu vào** | BF-SAL-01 (Đơn hàng) | HV hoàn thành thanh toán → tự động vào danh sách chờ (Chờ xếp lớp) |
+| **Đầu vào** | BF-CLS-06 (Chuyển lớp) | HV yêu cầu chuyển lớp → vào trạng thái "Chờ chuyển lớp" |
+| **Đầu ra** | BF-CLS-02 (Quản lý lớp) | Lấy danh sách lớp đang mở + sức chứa |
+| **Đầu ra** | BF-CLS-03 (Quản lý HV) | Sau xếp lớp, HV xuất hiện trong Danh sách lớp |
+| **Đầu ra** | BF-OPS-02 (Xếp lịch) | Kiểm tra trùng lịch HV khi xếp lớp |
 
+---
 
-## Đề xuất Giao diện (Expected UI/UX)
+## Đề xuất Giao diện
+
 - **Màn hình:** Quản lý Xếp lớp (Waitlist Enrollment).
-- **Đề xuất UI:** Màn hình 2-Panel (Split View). Panel trái là danh sách học viên đang chờ; Panel phải là chi tiết các lớp đang mở để thao tác kéo thả hoặc chọn.
+- **Đề xuất:** Màn hình 2 vùng (Split View). Vùng trái là danh sách học viên đang chờ; Vùng phải là chi tiết các lớp đang mở để thao tác chọn hoặc kéo thả.

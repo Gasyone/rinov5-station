@@ -1,3 +1,13 @@
+---
+id: US-CLS05-06
+title: "Quan ly tong hop BTVN toan trung tam (Homework Dashboard)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS05-06: Quan ly tong hop BTVN toan trung tam (Homework Dashboard)
 
 > Tai lieu dang cho bien tap

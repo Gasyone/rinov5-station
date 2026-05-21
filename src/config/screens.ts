@@ -5,95 +5,124 @@ export interface ScreenConfig {
 
 export const screens: Record<string, ScreenConfig> = {
   dashboard: {
-    label: 'Dashboard',
-    description: 'Overview of key metrics and activities',
+    label: 'Tổng quan',
+    description: 'Tổng quan các chỉ số và hoạt động chính',
   },
   calendar_class_schedule: {
-    label: 'Class Schedule',
-    description: 'Manage and view class schedules',
+    label: 'Lịch lớp học',
+    description: 'Quản lý và xem lịch lớp học',
   },
   calendar_event_schedule: {
-    label: 'Event Schedule',
-    description: 'Manage and view event schedules',
+    label: 'Lịch sự kiện',
+    description: 'Quản lý và xem lịch sự kiện',
   },
   my_schedule: {
-    label: 'My Schedule',
-    description: 'View your personal schedule',
+    label: 'Lịch của tôi',
+    description: 'Xem lịch cá nhân',
+  },
+  work_registration: {
+    label: 'Đăng ký lịch làm việc',
+    description: 'Đăng ký lịch cá nhân và quản lý lịch nhân viên theo trung tâm',
   },
   booking_test: {
-    label: 'Booking Test',
-    description: 'Manage booking tests',
+    label: 'Đặt lịch test',
+    description: 'Quản lý lịch kiểm tra đầu vào',
   },
   trial_class: {
-    label: 'Trial Class',
-    description: 'Manage trial class sessions',
+    label: 'Lớp học thử',
+    description: 'Quản lý buổi học thử',
   },
   orders: {
-    label: 'Orders',
-    description: 'View and manage orders',
+    label: 'Đơn hàng',
+    description: 'Xem và quản lý đơn hàng',
   },
   receipts: {
-    label: 'Receipts',
-    description: 'View and manage receipts',
+    label: 'Phiếu thu',
+    description: 'Xem và quản lý phiếu thu',
   },
   placement_test: {
-    label: 'Placement Test',
-    description: 'Manage placement tests',
+    label: 'Kiểm tra đầu vào',
+    description: 'Quản lý bài kiểm tra đầu vào',
   },
   students: {
-    label: 'Students',
-    description: 'Manage student records',
+    label: 'Học viên',
+    description: 'Quản lý hồ sơ học viên',
   },
   classes: {
-    label: 'Classes',
-    description: 'Manage classes',
+    label: 'Lớp học',
+    description: 'Quản lý lớp học',
   },
-  class_assignment: {
-    label: 'Class Assignment',
-    description: 'Assign students to classes',
+  class_sessions: {
+    label: 'Buổi học',
+    description: 'Quản lý và theo dõi buổi học',
+  },
+
+  attendance: {
+    label: 'Điểm danh',
+    description: 'Kiểm duyệt điểm danh toàn trung tâm',
+  },
+  teachers: {
+    label: 'Giáo viên',
+    description: 'Quản lý giáo viên',
   },
   hr_employees: {
-    label: 'Employees',
-    description: 'Manage employee records',
+    label: 'Nhân viên',
+    description: 'Quản lý hồ sơ nhân viên',
   },
   branch_list: {
-    label: 'Branches',
-    description: 'View and manage branches',
+    label: 'Chi nhánh',
+    description: 'Xem và quản lý chi nhánh',
   },
   org_structure: {
-    label: 'Org Structure',
-    description: 'View organizational structure',
+    label: 'Cơ cấu tổ chức',
+    description: 'Xem sơ đồ tổ chức',
   },
   products: {
-    label: 'Products',
-    description: 'Manage products',
+    label: 'Sản phẩm',
+    description: 'Quản lý sản phẩm',
   },
   product_groups: {
-    label: 'Product Groups',
-    description: 'Manage product groups',
+    label: 'Nhóm sản phẩm',
+    description: 'Quản lý nhóm sản phẩm',
   },
   combos: {
-    label: 'Combos',
-    description: 'Manage product combos',
+    label: 'Combo',
+    description: 'Quản lý combo sản phẩm',
   },
   program_management: {
-    label: 'Program Management',
-    description: 'Manage academic programs',
+    label: 'Chương trình học',
+    description: 'Quản lý chương trình học',
   },
   syllabus: {
-    label: 'Syllabus',
-    description: 'Manage syllabus content',
+    label: 'Giáo trình',
+    description: 'Quản lý nội dung giáo trình',
   },
   curriculum: {
-    label: 'Curriculum',
-    description: 'Manage curriculum',
+    label: 'Khung chương trình',
+    description: 'Quản lý khung chương trình',
   },
   users: {
-    label: 'Users',
-    description: 'Manage system users',
+    label: 'Người dùng',
+    description: 'Quản lý người dùng hệ thống',
   },
   permissions: {
-    label: 'Permissions',
-    description: 'Manage user permissions',
+    label: 'Phân quyền',
+    description: 'Quản lý quyền người dùng',
+  },
+  contact_directory: {
+    label: 'Danh bạ liên hệ',
+    description: 'Quản lý lead CRM và pipeline chăm sóc',
+  },
+  leave_reserve: {
+    label: 'Bảo lưu & Nghỉ phép',
+    description: 'Quản lý yêu cầu bảo lưu học tập và nghỉ phép của học viên',
+  },
+  today_care: {
+    label: 'Phiếu chăm sóc',
+    description: 'Xử lý các phiếu hỗ trợ và yêu cầu chăm sóc học viên hàng ngày',
+  },
+  care_rule_engine: {
+    label: 'Quy tắc chăm sóc',
+    description: 'Thiết lập quy tắc sinh phiếu tự động dựa trên hành vi học viên',
   },
 }

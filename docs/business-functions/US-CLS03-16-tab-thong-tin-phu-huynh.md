@@ -1,3 +1,13 @@
+---
+id: US-CLS03-16
+title: "Tab Thong tin Phu huynh (Guardian Quick View)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-16: Tab Thong tin Phu huynh (Guardian Quick View)
 
 > Tai lieu dang cho bien tap
@@ -12,4 +22,4 @@
 - **Action:** Nut [Goi dien], Nut [Gui tin nhan Zalo/App].
 
 ## Nguon du lieu (Data Provider)
-- Doc du lieu tu BF-PRF-02 (Quan ly Ho so Gia dinh)
+- Đọc dữ liệu từ đồ thị quan hệ (Relationship Graph) của Household Account (`BF-MDM-02`).

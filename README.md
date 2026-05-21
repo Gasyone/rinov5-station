@@ -42,5 +42,13 @@ npm run dev
 
 Mở trình duyệt tại [http://localhost:3000](http://localhost:3000). Tại màn hình Login, bạn có thể nhập Email/Mật khẩu bất kỳ để đăng nhập hệ thống và xem các luồng demo.
 
-## Tài Liệu Tham Khảo
-Vui lòng tham khảo thư mục `docs/` để xem bản đồ tính năng chi tiết và đặc tả nghiệp vụ (Business Functions/User Stories) của các module.
+## Hướng Dẫn Đọc Tài Liệu (Dành cho Lập trình viên mới)
+
+Dự án này sử dụng kiến trúc tài liệu phân cấp chuẩn ERP. Vui lòng đọc theo thứ tự sau trước khi viết code:
+
+1. Đọc **`[PROJECT_MAP.md](docs/PROJECT_MAP.md)`**: Để nắm được bức tranh tổng thể về giao diện và các luồng chức năng.
+2. Đọc **`[DOCUMENTATION_GUIDELINES.md](docs/DOCUMENTATION_GUIDELINES.md)`**: Để hiểu cấu trúc 4 tầng tài liệu (Standards → CAP → BF → US).
+3. Đọc **`[ENTERPRISE_STANDARDS.md](docs/ENTERPRISE_STANDARDS.md)`**: Nắm "Hiến pháp" dự án (Quy định bắt buộc về Identity, Data Scope, và IAM).
+4. Xem **`[CATALOG.md](docs/business-functions/CATALOG.md)`**: Để tra cứu chi tiết Business Functions của từng phân hệ.
+
+Toàn bộ tài liệu nghiệp vụ chi tiết được lưu trong thư mục `docs/`.

@@ -1,3 +1,13 @@
+---
+id: US-CLS04-04
+title: "Tab Tong quan Giao vien (Teacher Overview)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-04: Tab Tong quan Giao vien (Teacher Overview)
 
 > Tai lieu dang cho bien tap

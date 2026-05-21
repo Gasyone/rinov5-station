@@ -1,4 +1,14 @@
-﻿# US-CLS02-02: Tạo mới vỏ Lớp học (Chỉ thiết lập thông tin cơ bản)
+---
+id: US-CLS02-02
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-02
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS02-02: Tạo mới vỏ Lớp học (Chỉ thiết lập thông tin cơ bản)
 
 > Tài liệu đang chờ biên tập
 

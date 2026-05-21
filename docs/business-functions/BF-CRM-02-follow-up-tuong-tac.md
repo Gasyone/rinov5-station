@@ -1,80 +1,109 @@
-# BF-CRM-02: Quản lý Cơ hội và Tương tác (Sales Pipeline & Follow-up)
+---
+title: "BF-CRM-02: Theo dõi Cơ hội & Tương tác"
+type: "Business Function"
+domain: "CAP-ADM"
+status: "Draft"
+tags: [crm, follow-up, sales]
+---
 
-> **Capability:** CAP-ADM
-> **Giai đoạn:** 1 — Thu hút & Tiếp cận (Pre-Enrollment)
-> **Nhóm sidebar:** Khách hàng
-> **Menu ID:** `contact_followups`, `contact_interactions`
+# BF-CRM-02: Theo dõi Cơ hội & Tương tác (Sales Pipeline & Follow-up)
+
+> **Capability:** CAP-ADM (Năng lực Tuyển sinh & Thương mại)
+> **Giai đoạn:** 1 - Tuyển sinh
+> **Nhóm chức năng:** CRM & Khách hàng
+> **Mã màn hình:** `contact_followups`, `contact_interactions`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Business function này quản lý quá trình theo dõi, chăm sóc và tương tác với khách hàng tiềm năng (Leads) nhằm mục đích chuyển đổi họ thành học viên (Conversion). Nó bao gồm việc quản lý các cuộc gọi (Telesales), lên lịch hẹn (Follow-ups), ghi nhận trạng thái phễu bán hàng (Sales Pipeline) và xử lý các cơ hội kinh doanh (Opportunities) trước khi chuyển qua quy trình Học thử hoặc Đăng ký chính thức.
+Phân hệ quản lý quá trình theo dõi, chăm sóc và tương tác với khách hàng tiềm năng (Leads) nhằm mục đích chuyển đổi họ thành học viên. Nó bao gồm việc quản lý các cuộc gọi tư vấn, lên lịch hẹn chăm sóc (Follow-ups), ghi nhận trạng thái phễu bán hàng (Pipeline) và xử lý các cơ hội kinh doanh trước khi khách hàng quyết định đóng tiền.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Sales (Tư vấn viên, Telesales)
-- Branch Manager (Giám sát hiệu suất Sales)
-- CSM (Hỗ trợ tư vấn các gói gia hạn nếu áp dụng mô hình lai)
+- **Nhân viên Tư vấn (Sales / Telesales):** Người trực tiếp gọi điện, nhắn tin, tư vấn lộ trình và chốt sale.
+- **Quản lý Chi nhánh / Trưởng nhóm Tư vấn:** Giám sát tiến độ phễu bán hàng, đôn đốc nhân viên hoàn thành các lịch hẹn đến hạn.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Ghi nhận lịch sử tương tác đa kênh (Cuộc gọi, Zalo, Gặp trực tiếp) của Tư vấn viên với Khách hàng.
+- Lên lịch nhắc hẹn chăm sóc (Follow-up Tasks) trong tương lai.
+- Kéo thả và quản lý trạng thái Khách hàng trên Phễu bán hàng (Pipeline: Mới, Đã liên hệ, Đang quan tâm, Chốt/Thất bại).
+- Ghi nhận Lý do thất bại (Lost Reason) nếu khách hàng từ chối mua.
 
-- Ghi nhận lịch sử tương tác đa kênh (Cuộc gọi, Zalo, SMS, Gặp mặt trực tiếp).
-- Cài đặt nhắc hẹn (Reminders/Follow-ups) cho Sales.
-- Quản lý trạng thái Lead trong phễu bán hàng (Pipeline Stages: New, Contacted, Interested, Booking, Won, Lost).
-- Thống kê tỷ lệ chuyển đổi (Conversion Rate) và phân tích lý do rớt (Lost Reason).
+### Không bao gồm (Out of Scope)
+- Phân bổ Lead đầu vào và lọc trùng lặp → Xử lý tại `BF-CRM-01`.
+- Quá trình đăng ký lịch Đánh giá năng lực hoặc Học thử → Thuộc `BF-ENR-01`, `BF-ENR-02`.
+- Chăm sóc Học viên đã đóng tiền → Thuộc `CAP-CARE` (BF-CARE-01, BF-CARE-02).
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- Quá trình đăng ký lịch Đánh giá năng lực hoặc Học thử (thuộc `BF-ENR-01`, `BF-ENR-02`).
-- Phân bổ Lead đầu vào và gộp dữ liệu trùng lặp (thuộc `BF-CRM-01`).
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Nhật ký Tương tác (Interaction) | Mã nhật ký | Kênh liên hệ, Nội dung chi tiết, Phản hồi | Trỏ về Mã Lead | Bằng chứng nhân viên có làm việc. |
+| Nhắc hẹn (Follow-up Task) | Mã nhắc hẹn | Thời gian hẹn, Nội dung cần làm, Trạng thái (Pending/Done) | Trỏ về Mã Lead | Todo list của Sales. |
+| Lý do Thất bại (Lost Reason) | Mã lý do | Tên lý do (Giá cao, Xa nhà) | Độc lập | Phân tích lý do rớt lead. |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- **Upstream:** `BF-CRM-01` (Lead Generation) - Cung cấp danh sách khách hàng tiềm năng đã được phân bổ cho Sales.
-- **Downstream:** `BF-ENR-01`, `BF-ENR-02` - Đẩy Lead sang trạng thái Booking (Test/Trial) để trải nghiệm dịch vụ.
-- **Downstream:** `BF-SAL-01` - Lead đồng ý mua khóa học sẽ được chuyển thẳng sang quy trình tạo Đơn hàng.
-
-## 5. User Stories
-
-**Danh sách US đề xuất (Proposed):**
-- [ ] US-CRM-05: Ghi nhận Interaction Log (Nhật ký tương tác) cho Lead.
-- [ ] US-CRM-06: Tạo và quản lý Lịch nhắc hẹn (Follow-up Tasks/Reminders).
-- [ ] US-CRM-07: Quản lý và kéo thả trạng thái Lead trên Sales Pipeline (Kanban Board).
-- [ ] US-CRM-08: Theo dõi lý do thất bại (Lost Reason) và tái tiếp cận (Re-targeting).
-
-## 6. Luồng vận hành tổng thể (End-to-End Flow)
+*Sơ đồ dưới đây xác định các bước của một Cơ hội bán hàng (Pipeline Stage).*
 
 ```mermaid
-graph TD
-    A["Lead được gán cho Sales (Từ BF-CRM-01)"] --> B["1. Nhận Lead & Liên hệ (Telesale)"]
-    B --> C["2. Ghi nhận Interaction Log"]
-    C --> D{"Kết quả tương tác?"}
-    D -->|Cần gọi lại| E["3. Đặt lịch nhắc hẹn (Follow-up)"]
-    D -->|Quan tâm/Chốt| F["Cập nhật Pipeline (Tiến tới Booking/Sales)"]
-    D -->|Từ chối| G["Cập nhật Lost Reason & Đóng Lead"]
-    E --> B
+stateDiagram-v2
+    [*] --> Moi : Lead mới nhận
+    Moi --> Da_lien_he : Gọi cuộc đầu tiên
+    Da_lien_he --> Quan_tam : Khách có hứng thú
+    Quan_tam --> Trai_nghiem : Đi test / Học thử
+    Trai_nghiem --> Thanh_cong : Khách đóng tiền
+    Trai_nghiem --> That_bai : Khách từ chối
+    Da_lien_he --> That_bai : Khách từ chối
+    Moi --> That_bai : Thuê bao/Sai số
+    Thanh_cong --> [*]
+    That_bai --> [*]
 ```
 
-## 7. Quy tắc nghiệp vụ (Business Rules)
+**Quy tắc chuyển đổi:**
 
-1. Mọi tác vụ Follow-up quá hạn (Overdue) sẽ bị gắn cờ đỏ và báo cáo lên Branch Manager sau 24h.
-2. Không cho phép chuyển Lead sang trạng thái "Won" (Thành công) nếu chưa có lịch sử tương tác nào được ghi nhận.
-3. Khi Lead chuyển đổi thành Học viên (Won), lịch sử tương tác tại CRM phải được đồng bộ và đính kèm vào Master Profile của học viên đó để đảm bảo tính liên tục của dữ liệu.
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Bất kỳ | Thành công | Không cho phép tự chọn. Chỉ tự chuyển khi có Đơn hàng thành công | Hệ thống tự động |
+| Bất kỳ | Thất bại | Bắt buộc chọn Lý do thất bại | Nhân viên Tư vấn |
+| Trải nghiệm | Thành công | Mặc định chuyển sang nếu khách chốt sau Test/Trial | Hệ thống tự động |
 
-## 8. Dữ liệu chính (Key Data)
+### 4.2. Ví dụ Dữ liệu mẫu
 
-| Entity | Mô tả |
-|--------|-------|
-| Interaction Log | Bản ghi lịch sử tư vấn (Ngày, Giờ, Kênh, Nội dung, Kết quả). |
-| Follow-up Task | Lịch nhắc nhở công việc cần làm với Lead (Gọi lại, Gửi email báo giá). |
-| Pipeline Stage | Cột mốc định nghĩa mức độ quan tâm của Lead trong phễu bán hàng. |
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-## 9. Ghi chú triển khai
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Ghi nhận gọi điện | Gọi lúc 10h, Kênh: Cuộc gọi, Ghi chú: "Hẹn chiều mai tới xem trung tâm" | Lưu vào Timeline tương tác của Lead. |
+| Hẹn Follow-up | Đặt lịch hẹn lúc 14h ngày mai, nhắc nhở: "Gọi xác nhận khách tới" | Hiện task nhắc nhở trên Dashboard của Sales. |
+| Báo cáo rớt khách | Chuyển trạng thái sang Thất bại, chọn Lý do "Học phí cao" | Lead đóng lại, loại khỏi Phễu đang chăm sóc. |
 
-- **Registry mapping:** `crm.lead_contact_lifecycle_management` (Giai đoạn Chăm sóc & Chuyển đổi)
-- **Backend:** `partial` (Cấu trúc lưu trữ log tương tác cần kiểm tra lại độ linh hoạt của DB).
-- **Frontend:** Các màn hình `contact_followups`, `contact_interactions`. Đề xuất bổ sung giao diện Kanban Board cho Sales Pipeline.
-- **Gaps:** Cần tích hợp với hệ thống tổng đài ảo (VoIP) hoặc Zalo ZNS để tự động lưu log gọi điện/nhắn tin, giảm thao tác thủ công cho Sales.
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+1. **[RULE-CRM-02-01] Ràng buộc Đóng Deal:** Không cho phép Tư vấn viên tự tay chuyển trạng thái Lead sang "Thành công" (Won). Trạng thái này chỉ được cập nhật TỰ ĐỘNG khi hệ thống sinh ra Đơn hàng (Order) đầu tiên ở trạng thái "Đã thanh toán" từ phân hệ `CAP-COM`.
+2. **[RULE-CRM-02-02] Báo động đỏ (Overdue Alert):** Bất kỳ lịch nhắc hẹn (Follow-up Task) nào trễ hạn quá 24h sẽ bị đổi màu đỏ trên bảng điều khiển, và tổng số task trễ hạn của nhân viên sẽ báo cáo thẳng lên màn hình của Quản lý chi nhánh.
+
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
+
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-CRM-02-01 | Ghi nhận Nhật ký Tương tác (Component trong Chi tiết Lead) | Nằm trong Chi tiết Lead | Đang soạn thảo |
+| US-CRM-02-02 | Tạo và quản lý Nhắc hẹn (Bảng nổi) | Nằm trong Chi tiết Lead | Đang soạn thảo |
+| US-CRM-02-03 | Bảng Kanban quản lý Phễu Khách hàng (Pipeline Board) | /app/contact_followups | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+

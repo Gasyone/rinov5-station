@@ -1,3 +1,13 @@
+---
+id: US-CLS05-05
+title: "Xem ket qua Bai tap ve nha theo buoi (Session Homework Results)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS05-05: Xem ket qua Bai tap ve nha theo buoi (Session Homework Results)
 
 > Tai lieu dang cho bien tap

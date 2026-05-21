@@ -1,3 +1,13 @@
+---
+id: US-CLS04-05
+title: "Tab Lop dang phu trach (Active Classes)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-05: Tab Lop dang phu trach (Active Classes)
 
 > Tai lieu dang cho bien tap

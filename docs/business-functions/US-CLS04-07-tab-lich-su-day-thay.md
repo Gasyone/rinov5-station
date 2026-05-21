@@ -1,3 +1,13 @@
+---
+id: US-CLS04-07
+title: "Tab Lich su Day thay (Substitute Teaching History)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-07: Tab Lich su Day thay (Substitute Teaching History)
 
 > Tai lieu dang cho bien tap

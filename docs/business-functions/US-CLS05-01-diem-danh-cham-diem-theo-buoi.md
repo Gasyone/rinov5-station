@@ -1,4 +1,14 @@
-﻿# US-CLS05-01-diem-danh-cham-diem-theo-buoi
+---
+id: US-CLS05-01
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS05-01-diem-danh-cham-diem-theo-buoi
 
 > Tài liệu đang chờ biên tập
 

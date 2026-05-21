@@ -1,0 +1,95 @@
+'use client'
+
+import { useMemo } from 'react'
+import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { BranchSelect, ExpandableSearch, FilterIconButton } from '@/components/controls'
+import { StatusTiles, type StatusTile } from '@/components/shared'
+import { mockClasses, getClasses } from '@/mocks/classes'
+import { STATUS_CONFIG, type StatusTabId } from './classScreenTypes'
+
+interface ClassesToolbarProps {
+  activeStatus: StatusTabId
+  onStatusChange: (status: StatusTabId) => void
+  searchQuery: string
+  onSearchChange: (q: string) => void
+  branchFilter: string
+  onBranchChange: (branch: string) => void
+  onFilterOpen: () => void
+  onCreate: () => void
+}
+
+export function ClassesToolbar({
+  activeStatus,
+  onStatusChange,
+  searchQuery,
+  onSearchChange,
+  branchFilter,
+  onBranchChange,
+  onFilterOpen,
+  onCreate,
+}: ClassesToolbarProps) {
+  const branches = useMemo(
+    () => [...new Set(mockClasses.map((c) => c.branch))].sort(),
+    [],
+  )
+
+  const allClasses = useMemo(() => getClasses({}), [])
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const c of allClasses) {
+      counts[c.status] = (counts[c.status] ?? 0) + 1
+    }
+    return counts
+  }, [allClasses])
+
+  const tiles: StatusTile<StatusTabId>[] = useMemo(
+    () => [
+      { id: 'all', label: 'Tất cả', count: allClasses.length, semantic: 'neutral' },
+      ...STATUS_CONFIG.map((cfg) => ({
+        id: cfg.id,
+        label: cfg.label,
+        count: statusCounts[cfg.statusKey] ?? 0,
+        status: cfg.statusKey,
+      })),
+    ],
+    [allClasses.length, statusCounts],
+  )
+
+  return (
+    <div className="flex flex-col gap-2 px-4 py-3 lg:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <BranchSelect
+            value={branchFilter}
+            branches={branches}
+            onValueChange={onBranchChange}
+            allLabel="Tất cả chi nhánh"
+            ariaLabel="Chi nhánh"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <ExpandableSearch
+            value={searchQuery}
+            onValueChange={onSearchChange}
+            placeholder="Tìm lớp, GV, phòng..."
+            inputClassName="sm:w-64"
+          />
+          <FilterIconButton onClick={onFilterOpen} />
+          <Button size="sm" onClick={onCreate}>
+            <Plus className="h-4 w-4" />
+            Tạo lớp
+          </Button>
+        </div>
+      </div>
+
+      <StatusTiles
+        tiles={tiles}
+        activeId={activeStatus}
+        onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
+      />
+    </div>
+  )
+}

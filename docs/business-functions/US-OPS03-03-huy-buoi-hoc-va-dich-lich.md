@@ -1,3 +1,13 @@
+---
+id: US-OPS03-03
+title: "Xử lý Hủy buổi học và tự động dịch lịch"
+type: "User Story"
+domain: "CAP-OPS"
+bf: BF-OPS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-OPS03-03: Xử lý Hủy buổi học và tự động dịch lịch
 
 > Tài liệu đang chờ biên tập

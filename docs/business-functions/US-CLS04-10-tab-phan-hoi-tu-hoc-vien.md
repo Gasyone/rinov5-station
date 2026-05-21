@@ -1,3 +1,13 @@
+---
+id: US-CLS04-10
+title: "Tab Phan hoi tu Hoc vien (Student Feedback)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-04
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS04-10: Tab Phan hoi tu Hoc vien (Student Feedback)
 
 > Tai lieu dang cho bien tap

@@ -38,6 +38,8 @@ Dữ liệu của bản Demo được mô phỏng hoàn toàn (không kết nố
 
 | Thư mục / File | Nội dung |
 | --- | --- |
+| `docs/DOCUMENTATION_GUIDELINES.md` | Hướng dẫn phân cấp hệ thống tài liệu 4 tầng. |
+| `docs/ENTERPRISE_STANDARDS.md` | Đạo luật nền tảng, các Policy chuẩn ngành. |
 | `docs/business-functions/CATALOG.md` | Bản đồ toàn vẹn 11 Business Capabilities và các chức năng con. |
 | `docs/business-functions/BF-*.md` | Mô tả luồng Business Function chi tiết (End-to-End). |
 | `docs/business-functions/US-*.md` | User Story chi tiết cho từng nghiệp vụ (Các trường thông tin, validations, luồng thao tác UI). |

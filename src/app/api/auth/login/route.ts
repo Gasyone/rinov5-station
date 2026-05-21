@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
  * MOCK AUTH — DEMO ONLY.
  *
  * No credentials are validated. This endpoint exists purely to set the
- * `auth_session` cookie that the Next middleware reads for route gating.
+ * `auth_session` cookie that the auth/dashboard layouts read for route gating.
  * The cookie value is a literal `"true"`, NOT a signed session token — a
  * determined client could set it manually from DevTools and bypass auth.
  *

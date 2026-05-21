@@ -1,3 +1,13 @@
+---
+id: US-CLS03-11
+title: "Tab Cham soc & Ticket (Care Tickets)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-11: Tab Cham soc & Ticket (Care Tickets)
 
 > Tai lieu dang cho bien tap

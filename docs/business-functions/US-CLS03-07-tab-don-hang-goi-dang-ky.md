@@ -1,3 +1,13 @@
+---
+id: US-CLS03-07
+title: "Tab Don hang & Goi dang ky (Orders & Packages)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-03
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS03-07: Tab Don hang & Goi dang ky (Orders & Packages)
 
 > Tai lieu dang cho bien tap

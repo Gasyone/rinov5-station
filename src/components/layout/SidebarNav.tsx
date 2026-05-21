@@ -1,19 +1,30 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import type { NavigationGroup } from '@/config/navigation'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface SidebarNavProps {
   navigationGroups: NavigationGroup[]
   activeMenu: string
   isOpen: boolean
+  mobileOpen: boolean
   onNavigate: (menuId: string) => void
-  onToggle: () => void
+  onOpen: () => void
+  onMobileClose: () => void
 }
 
-export function SidebarNav({ navigationGroups, activeMenu, isOpen, onNavigate, onToggle }: SidebarNavProps) {
+export function SidebarNav({
+  navigationGroups,
+  activeMenu,
+  isOpen,
+  mobileOpen,
+  onNavigate,
+  onOpen,
+  onMobileClose,
+}: SidebarNavProps) {
   const visibleNavigationGroups = navigationGroups
     .filter((group) => !group.hiddenInSidebar)
     .map((group) => ({
@@ -26,8 +37,6 @@ export function SidebarNav({ navigationGroups, activeMenu, isOpen, onNavigate, o
     group.items.some((item) => item.id === activeMenu)
   )
 
-  // Default-expand the group containing the active route. Fall back to the
-  // first group so the sidebar is never fully collapsed on first paint.
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
     if (activeGroup) return [activeGroup.id]
     return visibleNavigationGroups[0] ? [visibleNavigationGroups[0].id] : []
@@ -39,53 +48,63 @@ export function SidebarNav({ navigationGroups, activeMenu, isOpen, onNavigate, o
       : expandedGroups
 
   const handleGroupClick = useCallback(
-    (groupId: string, firstItemId: string) => {
-      if (!isOpen) {
-        onToggle()
+    (group: NavigationGroup) => {
+      if (!isOpen && !mobileOpen) {
+        onOpen()
+        setExpandedGroups((prev) => (prev.includes(group.id) ? prev : [...prev, group.id]))
+        return
       }
+
+      if (group.items.length === 1) {
+        onNavigate(group.items[0].id)
+        onMobileClose()
+        return
+      }
+
       setExpandedGroups((prev) =>
-        prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
+        prev.includes(group.id) ? prev.filter((id) => id !== group.id) : [...prev, group.id]
       )
-      onNavigate(firstItemId)
     },
-    [isOpen, onToggle, onNavigate]
+    [isOpen, mobileOpen, onMobileClose, onNavigate, onOpen]
   )
 
   const handleItemClick = useCallback(
     (itemId: string) => {
       onNavigate(itemId)
+      onMobileClose()
     },
-    [onNavigate]
+    [onMobileClose, onNavigate]
   )
 
   const isSingleMenuGroup = (group: NavigationGroup) => group.items.length === 1
 
-  return (
-    <aside
-      className={cn(
-        'hidden h-full min-h-0 flex-shrink-0 flex-col transition-all duration-300 md:flex',
-        isOpen ? 'w-72' : 'w-[72px] items-center'
-      )}
-    >
-      <div className="custom-scrollbar hover-scroll flex-1 space-y-2 overflow-y-auto py-4">
-        {visibleNavigationGroups.map((group) => (
+  const renderNavContent = (open: boolean) => (
+    <div className="custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-2 overflow-y-auto py-4">
+      {visibleNavigationGroups.map((group) => {
+        const isGroupActive = group.items.some((item) => item.id === activeMenu)
+        const groupExpanded = expandedGroupIds.includes(group.id)
+        const singleMenuGroup = isSingleMenuGroup(group)
+
+        return (
           <div
             key={group.id}
-            className={cn('flex w-full flex-col', isOpen ? 'px-3' : 'items-center')}
+            className={cn('flex w-full flex-col', open ? 'px-3' : 'items-center')}
           >
-            <button
+            <Button
               type="button"
+              variant="ghost"
               className={cn(
                 'flex items-center rounded-xl transition-all',
-                group.items.some((item) => item.id === activeMenu)
-                  ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                  : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50',
-                isOpen ? 'w-full justify-between px-3 py-2.5' : 'h-11 w-11 justify-center p-0'
+                isGroupActive
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+                open ? 'w-full justify-between px-3 py-2.5' : 'h-11 w-11 justify-center p-0'
               )}
-              title={!isOpen ? group.label : ''}
-              onClick={() => handleGroupClick(group.id, group.items[0].id)}
+              aria-expanded={!singleMenuGroup ? groupExpanded : undefined}
+              title={!open ? group.label : ''}
+              onClick={() => handleGroupClick(group)}
             >
-              {isOpen ? (
+              {open ? (
                 <div className="flex min-w-0 flex-1 items-center gap-3 pr-2">
                   <group.icon className="h-5 w-5 flex-shrink-0" />
                   <span className="flex-1 truncate text-left text-inherit text-sm">
@@ -96,39 +115,84 @@ export function SidebarNav({ navigationGroups, activeMenu, isOpen, onNavigate, o
                 <group.icon className="h-5 w-5 flex-shrink-0" />
               )}
 
-              {isOpen && !isSingleMenuGroup(group) && (
+              {open && !singleMenuGroup ? (
                 <ChevronDown
                   className={cn(
                     'h-4 w-4 flex-shrink-0 transition-transform',
-                    expandedGroupIds.includes(group.id) ? '' : '-rotate-90'
+                    groupExpanded ? '' : '-rotate-90'
                   )}
                 />
-              )}
-            </button>
+              ) : null}
+            </Button>
 
-            {expandedGroupIds.includes(group.id) && isOpen && !isSingleMenuGroup(group) && (
-              <div className="ml-2 mt-1 space-y-1 overflow-hidden border-l-2 border-slate-200 py-1 pl-5 pr-1 dark:border-slate-700">
+            {groupExpanded && open && !singleMenuGroup ? (
+              <div className="mt-1 space-y-1 overflow-hidden py-1 pl-5 pr-1">
                 {group.items.map((item) => (
-                  <button
+                  <Button
                     key={item.id}
                     type="button"
+                    variant="ghost"
                     className={cn(
                       'block w-full truncate rounded-lg px-4 py-2 text-left text-sm transition-all',
                       activeMenu === item.id
-                        ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100'
-                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50'
+                        ? 'bg-accent text-accent-foreground'
+                        : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                     )}
                     title={item.label}
                     onClick={() => handleItemClick(item.id)}
                   >
                     <span className="text-[13px] text-inherit">{item.label}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
-        ))}
-      </div>
-    </aside>
+        )
+      })}
+    </div>
+  )
+
+  return (
+    <>
+      <aside
+        onMouseEnter={() => {
+          if (!isOpen) onOpen()
+        }}
+        className={cn(
+          'hidden h-full min-h-0 flex-shrink-0 flex-col transition-all duration-300 md:flex',
+          isOpen ? 'w-72' : 'w-[72px] items-center'
+        )}
+      >
+        {renderNavContent(isOpen)}
+      </aside>
+
+      {mobileOpen ? (
+        <div className="fixed inset-x-0 bottom-0 top-16 z-40 md:hidden">
+          <Button
+            type="button"
+            variant="ghost"
+            aria-label="Close navigation"
+            className="absolute inset-0 h-auto w-auto rounded-none bg-foreground/40 p-0 hover:bg-foreground/40"
+            onClick={onMobileClose}
+          />
+          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col border-r border-border bg-background shadow-lg">
+            <div className="flex h-12 items-center justify-between border-b border-border px-4">
+              <span className="text-sm font-semibold">Navigation</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Close navigation"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                onClick={onMobileClose}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            {renderNavContent(true)}
+          </aside>
+        </div>
+      ) : null}
+    </>
   )
 }

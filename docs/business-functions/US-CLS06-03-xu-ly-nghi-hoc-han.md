@@ -1,4 +1,14 @@
-﻿# US-CLS06-03-xu-ly-nghi-hoc-han
+---
+id: US-CLS06-03
+title: "User Story"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-06
+status: "Draft"
+tags: [user-story]
+---
+
+# US-CLS06-03-xu-ly-nghi-hoc-han
 
 > Tài liệu đang chờ biên tập
 

@@ -1,3 +1,13 @@
+---
+id: US-CLS05-04
+title: "Kiểm duyệt và theo dõi điểm danh toàn trung tâm (Attendance Audit)"
+type: "User Story"
+domain: "CAP-CLS"
+bf: BF-CLS-05
+status: "Draft"
+tags: [user-story]
+---
+
 # US-CLS05-04: Kiểm duyệt và theo dõi điểm danh toàn trung tâm (Attendance Audit)
 
 > Tài liệu đang chờ biên tập

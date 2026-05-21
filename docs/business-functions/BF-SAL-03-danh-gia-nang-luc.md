@@ -1,56 +1,99 @@
-# BF-SAL-03: Đánh giá năng lực
+---
+title: "BF-SAL-03: Đánh giá năng lực (Placement Test)"
+type: "Business Function"
+domain: "CAP-ADM"
+status: "Draft"
+tags: [sales, placement, test, evaluation]
+---
 
-> **Capability:** CAP-ADM
-> **Giai đoạn:** 5 — Tuyển sinh & Bán hàng
-> **Nhóm sidebar:** Bán hàng
-> **Menu ID:** `placement_test`
+# BF-SAL-03: Đánh giá năng lực (Placement Test)
+
+> **Capability:** CAP-ADM (Năng lực Tuyển sinh & Thương mại)
+> **Giai đoạn:** 4 - Tuyển sinh & Bán hàng
+> **Nhóm chức năng:** Bán hàng
+> **Mã màn hình:** `placement_test`
 
 ---
 
-## 1. Mô tả nghiệp vụ
+## 1. Mô tả tổng quan
 
-Quản lý bài test xếp lớp, kết quả đánh giá, đề xuất level/chương trình phù hợp.
+Phân hệ mở rộng của quá trình tư vấn tuyển sinh, chuyên quản lý kết quả bài kiểm tra năng lực đầu vào (Placement Test) của khách hàng. Trong khi `BF-ENR-01` xử lý quy trình đặt lịch (Booking) và điều phối giáo viên, thì phân hệ này tập trung vào việc đọc báo cáo năng lực, mapping trình độ hiện tại với lộ trình học tập, và đề xuất sản phẩm/lớp học phù hợp nhất để nhân viên tư vấn chốt sales.
 
-## 2. Đối tượng sử dụng (Actors)
+## 2. Đối tượng sử dụng (Vai trò)
 
-- Sale
-- Branch Manager
+- **Nhân viên Tư vấn (Sales):** Đọc kết quả phân tích năng lực để tư vấn lộ trình học cho khách.
+- **Trưởng phòng Sales (Sales Manager):** Xem thống kê tỷ lệ chuyển đổi từ việc test ra việc mua hàng.
+- **Cố vấn học tập (Academic Advisor):** Đưa ra nhận xét chuyên sâu hoặc duyệt lộ trình đặc biệt.
 
-## 3. Phạm vi (Scope)
+## 3. Ranh giới Nghiệp vụ (Scope)
 
-### Trong phạm vi (In Scope)
+### Có bao gồm (In Scope)
+- Hiển thị Báo cáo Đánh giá Năng lực chi tiết (Detail Assessment Report).
+- Mapping (Soi chiếu) điểm số bài test với các Khung trình độ (Levels) trong hệ thống.
+- Đề xuất tự động (Auto-recommend) các Khóa học (Products) và Lớp học (Classes) đang mở phù hợp với trình độ vừa test.
+- Ghi nhận lịch sử tư vấn và kết quả chốt (Thành công / Đang suy nghĩ / Thất bại).
 
-- [Cần bổ sung]
+### Không bao gồm (Out of Scope)
+- Tổ chức thi, xếp lịch giáo viên phỏng vấn → Thuộc `BF-ENR-01` (Booking Test).
+- Tạo đơn hàng và tính tiền → Thuộc `BF-SAL-01` (Quản lý Đơn hàng).
 
-### Ngoài phạm vi (Out of Scope)
+## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 
-- [Cần bổ sung]
+| Tên Thực thể | Trường định danh | Thuộc tính quan trọng | Ràng buộc quan hệ | Diễn giải |
+|--------------|------------------|-----------------------|-------------------|----------|
+| Hồ sơ Năng lực (Placement Profile) | Mã Hồ sơ | Trình độ quy đổi (Ví dụ: Pre-IELTS), Điểm mạnh/yếu, Lộ trình đề xuất | Trỏ về Mã Kết quả thi (`BF-ENR-01`) & Mã Khách hàng | Dữ liệu nền để tư vấn. |
 
-## 4. Nghiệp vụ liên quan
+### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-- [Cần bổ sung — liệt kê các BF phụ thuộc hoặc liên quan]
+*Sơ đồ dưới đây xác định vòng đời của một quá trình Tư vấn dựa trên năng lực.*
 
-## 5. User Stories
+```mermaid
+stateDiagram-v2
+    [*] --> Cho_tu_van : Đã có điểm thi từ ENR-01
+    Cho_tu_van --> Dang_tu_van : Sales bắt đầu liên hệ
+    Dang_tu_van --> Chot_don : Khách đồng ý mua gói học
+    Dang_tu_van --> Tu_choi : Khách không đăng ký
+    Chot_don --> [*]
+    Tu_choi --> [*]
+```
 
-Chưa có User Story nào được viết cho nghiệp vụ này.
+**Quy tắc chuyển đổi:**
 
-**Danh sách US cần viết (gợi ý):**
+| Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
+|---------------|-----------------|---------------------|-------------------|
+| Chờ tư vấn | Đang tư vấn | Ghi nhận Log (Call/Meeting) | Sales |
+| Đang tư vấn | Chốt đơn | Tạo thành công Đơn hàng ở `BF-SAL-01` | Hệ thống tự động |
 
-- [ ] US-01: [Cần xác định]
-- [ ] US-02: [Cần xác định]
+### 4.2. Ví dụ Dữ liệu mẫu
 
-## 6. Quy tắc nghiệp vụ (Business Rules)
+*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
-- [Cần bổ sung]
+| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
+|------------|-----------------|-------------------|
+| Nhận kết quả | Khách A được 5.0 IELTS Listening, 6.0 Reading | Hệ thống mapping quy đổi ra trình độ "IELTS Foundation". Đề xuất sản phẩm "Combo Khởi động". |
+| Tư vấn | Sales gọi điện báo kết quả cho Khách A | Trạng thái chuyển thành "Đang tư vấn", lưu lịch sử cuộc gọi. |
 
-## 7. Dữ liệu chính (Key Data)
+## 5. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
 
-| Entity | Mô tả |
-|--------|-------|
-| [Cần bổ sung] | |
+1. **[RULE-SAL-03-01] Tính logic Lộ trình (Path Validation):** Nếu khách hàng có kết quả test là Trình độ Level 3, hệ thống sẽ cảnh báo (Warning) nếu Sales cố tình tạo Đơn hàng/Xếp lớp vào Khóa học Level 5. Tuy nhiên, quyền quyết định cuối cùng vẫn thuộc về Cố vấn học tập (Cần quyền override).
 
-## 8. Ghi chú triển khai
+## 6. Danh sách Yêu cầu Người dùng (User Stories)
 
-- **Backend:** [Chưa xác định]
-- **Frontend:** [Chưa xác định]
-- **Tích hợp:** [Chưa xác định]
+| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
+|------------|-----------------------------|--------------------|------------|
+| US-SAL-03-01 | Xem Báo cáo Đánh giá Năng lực chi tiết (View) | /app/placement_test/[id] | Đang soạn thảo |
+| US-SAL-03-02 | Công cụ Đề xuất Lộ trình & Lớp học tự động (Recommendation Engine) | Nằm trong Chi tiết Khách hàng | Đang soạn thảo |
+
+---
+
+## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+
+- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
+- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
+- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
+
+### ⛔ Hàng rào An toàn (Guardrails)
+- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
+- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
+- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.
+
