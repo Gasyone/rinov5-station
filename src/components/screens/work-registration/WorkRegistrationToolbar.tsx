@@ -2,7 +2,7 @@
 
 import { AlertTriangle, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react'
 import {
-  BranchSelect,
+  ToolbarSelect,
   ExpandableSearch,
   FilterIconButton,
   IconActionButton,
@@ -22,16 +22,16 @@ interface WorkRegistrationToolbarProps {
   title: string
   branches: string[]
   activeBranch: string
+  subjectFilter: string
   search: string
   filterCount: number
   onTabChange: (tab: WorkRegistrationTab) => void
   onBranchChange: (branch: string) => void
+  onSubjectChange: (subject: string) => void
   onSearchChange: (search: string) => void
   onOpenFilters: () => void
   onOpenPrioritySetup: () => void
   onOpenWarnings: () => void
-  onToday: () => void
-  onNavigate: (direction: number) => void
   staffLayout: WorkRegistrationStaffLayout
   onStaffLayoutChange: (layout: WorkRegistrationStaffLayout) => void
 }
@@ -41,16 +41,16 @@ export function WorkRegistrationToolbar({
   title,
   branches,
   activeBranch,
+  subjectFilter,
   search,
   filterCount,
   onTabChange,
   onBranchChange,
+  onSubjectChange,
   onSearchChange,
   onOpenFilters,
   onOpenPrioritySetup,
   onOpenWarnings,
-  onToday,
-  onNavigate,
   staffLayout,
   onStaffLayoutChange,
 }: WorkRegistrationToolbarProps) {
@@ -65,35 +65,34 @@ export function WorkRegistrationToolbar({
             options={WORK_TAB_OPTIONS}
             onValueChange={onTabChange}
           />
-          <Button type="button" variant="ghost" size="sm" onClick={onToday}>
-            Hôm nay
-          </Button>
-          <div className="flex items-center gap-0.5">
-            <IconActionButton
-              icon={ChevronLeft}
-              label="Tuần trước"
-              onClick={() => onNavigate(-1)}
-              className="size-7"
-            />
-            <IconActionButton
-              icon={ChevronRight}
-              label="Tuần sau"
-              onClick={() => onNavigate(1)}
-              className="size-7"
-            />
-          </div>
-          <h2 className="min-w-0 truncate text-sm font-semibold">{title}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <BranchSelect
-            value={activeBranch}
-            branches={branches}
-            onValueChange={onBranchChange}
-            allLabel="Tất cả trung tâm"
-            ariaLabel="Trung tâm"
-            className="h-8 min-w-48"
-          />
+          {activeTab !== 'center' ? (
+            <ToolbarSelect
+              value={activeBranch}
+              options={branches.map((branch) => ({ value: branch, label: branch }))}
+              onValueChange={onBranchChange}
+              ariaLabel="Trung tâm"
+              className="h-8 min-w-48"
+            />
+          ) : null}
+          {activeTab === 'staff' ? (
+            <ToolbarSelect
+              value={subjectFilter}
+              options={[
+                { value: 'all', label: 'Tất cả môn' },
+                { value: 'IELTS', label: 'IELTS' },
+                { value: 'Giao tiếp', label: 'Giao tiếp' },
+                { value: 'TOEIC', label: 'TOEIC' },
+                { value: 'Kids', label: 'Kids' },
+                { value: 'Ngữ pháp', label: 'Ngữ pháp' },
+              ]}
+              onValueChange={onSubjectChange}
+              ariaLabel="Môn học"
+              className="h-8 min-w-32"
+            />
+          ) : null}
           {showSearch ? (
             <ExpandableSearch
               value={search}

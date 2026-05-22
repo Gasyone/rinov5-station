@@ -1,87 +1,83 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Plus } from 'lucide-react'
+import { MoreHorizontal, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BranchSelect, ExpandableSearch, FilterIconButton } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
-import { mockClasses, getClasses } from '@/mocks/classes'
-import { STATUS_CONFIG, type StatusTabId } from './classScreenTypes'
+import type { ClassRecord } from '@/mocks/classRecords'
+import { CLASS_STATUS_LABELS, CLASS_CATEGORIES } from '@/mocks/classRecords'
+import { STATUS_SEMANTIC_MAP, countClassesByStatus } from './classesHelpers'
+import type { ClassStatusFilter } from './classesHelpers'
 
 interface ClassesToolbarProps {
-  activeStatus: StatusTabId
-  onStatusChange: (status: StatusTabId) => void
-  searchQuery: string
-  onSearchChange: (q: string) => void
-  branchFilter: string
+  activeStatus: ClassStatusFilter
+  activeBranch: string
+  searchTerm: string
+  branchOptions: string[]
+  baseForStatus: ClassRecord[]
+  activeFilterCount: number
+  isTeacherRole: boolean
+  onStatusChange: (status: ClassStatusFilter) => void
   onBranchChange: (branch: string) => void
-  onFilterOpen: () => void
-  onCreate: () => void
+  onSearchChange: (value: string) => void
+  onOpenFilters: () => void
+  onCreateClass: () => void
 }
 
 export function ClassesToolbar({
   activeStatus,
+  activeBranch,
+  searchTerm,
+  branchOptions,
+  baseForStatus,
+  activeFilterCount,
+  isTeacherRole,
   onStatusChange,
-  searchQuery,
-  onSearchChange,
-  branchFilter,
   onBranchChange,
-  onFilterOpen,
-  onCreate,
+  onSearchChange,
+  onOpenFilters,
+  onCreateClass,
 }: ClassesToolbarProps) {
-  const branches = useMemo(
-    () => [...new Set(mockClasses.map((c) => c.branch))].sort(),
-    [],
-  )
-
-  const allClasses = useMemo(() => getClasses({}), [])
-
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {}
-    for (const c of allClasses) {
-      counts[c.status] = (counts[c.status] ?? 0) + 1
-    }
-    return counts
-  }, [allClasses])
-
-  const tiles: StatusTile<StatusTabId>[] = useMemo(
-    () => [
-      { id: 'all', label: 'Tất cả', count: allClasses.length, semantic: 'neutral' },
-      ...STATUS_CONFIG.map((cfg) => ({
-        id: cfg.id,
-        label: cfg.label,
-        count: statusCounts[cfg.statusKey] ?? 0,
-        status: cfg.statusKey,
-      })),
-    ],
-    [allClasses.length, statusCounts],
-  )
+  const tiles: StatusTile<ClassStatusFilter>[] = [
+    { id: 'all', label: 'Tất cả', count: countClassesByStatus(baseForStatus, 'all'), semantic: 'neutral' },
+    ...CLASS_CATEGORIES.map((s) => ({
+      id: s,
+      label: CLASS_STATUS_LABELS[s],
+      count: countClassesByStatus(baseForStatus, s),
+      status: s,
+      semantic: STATUS_SEMANTIC_MAP[s],
+    })),
+  ]
 
   return (
-    <div className="flex flex-col gap-2 px-4 py-3 lg:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="flex shrink-0 flex-col gap-3 bg-background px-4 py-3 lg:px-6">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <ExpandableSearch
+            value={searchTerm}
+            onValueChange={onSearchChange}
+            label="Tìm lớp học"
+            placeholder="Tìm tên lớp, mã lớp, giáo viên..."
+            inputClassName="sm:w-56"
+          />
           <BranchSelect
-            value={branchFilter}
-            branches={branches}
+            value={activeBranch}
+            branches={branchOptions}
+            allLabel="Tất cả cơ sở"
+            ariaLabel="Cơ sở"
             onValueChange={onBranchChange}
-            allLabel="Tất cả chi nhánh"
-            ariaLabel="Chi nhánh"
+            className="h-9 min-w-40 text-sm"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <ExpandableSearch
-            value={searchQuery}
-            onValueChange={onSearchChange}
-            placeholder="Tìm lớp, GV, phòng..."
-            inputClassName="sm:w-64"
-          />
-          <FilterIconButton onClick={onFilterOpen} />
-          <Button size="sm" onClick={onCreate}>
-            <Plus className="h-4 w-4" />
-            Tạo lớp
-          </Button>
+        <div className="flex items-center gap-2">
+          <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
+          {!isTeacherRole ? (
+            <Button size="sm" onClick={onCreateClass}>
+              <Plus className="h-4 w-4" />
+              Tạo lớp
+            </Button>
+          ) : null}
         </div>
       </div>
 

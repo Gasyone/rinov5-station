@@ -37,7 +37,7 @@ Phân hệ quản lý toàn bộ vòng đời của một lịch học thử (Tr
 ### Không bao gồm (Out of Scope)
 - Tổ chức lớp học thử riêng biệt chỉ gồm toàn học sinh mới (Dedicated Trial Class) → Xử lý như lớp bình thường ở `CAP-OPS`.
 - Tư vấn chốt Sale, tạo Đơn hàng → Xử lý tại `BF-SAL-01`.
-- Xếp lớp học chính thức dài hạn → Xử lý tại `BF-CLS-01`.
+- Xếp lớp học chính thức dài hạn → Xử lý tại `BF-CLS-03` (trạng thái Chờ xếp lớp).
 
 ## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)
 

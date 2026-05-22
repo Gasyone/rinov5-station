@@ -59,10 +59,8 @@ export function WorkRegistrationStaffTable({
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Nhân viên</TableHead>
-              <TableHead>Trung tâm</TableHead>
               <TableHead>Giờ</TableHead>
               <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,40 +79,11 @@ export function WorkRegistrationStaffTable({
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>{summary.employee.branch}</TableCell>
                 <TableCell>{formatMinutes(summary.totalMinutes)}</TableCell>
                 <TableCell>
                   <Badge className={getStatusBadgeClass(statusForBadge(summary.status))}>
                     {WORK_STATUS_LABELS[summary.status]}
                   </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Xem ${summary.employee.name}`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onViewEmployee(summary.employee.id)
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Đăng ký lịch cho ${summary.employee.name}`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onRegisterFor(summary.employee.id)
-                      }}
-                    >
-                      <CalendarPlus className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </TableCell>
               </TableRow>
             ))}

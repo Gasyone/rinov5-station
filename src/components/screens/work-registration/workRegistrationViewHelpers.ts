@@ -14,7 +14,7 @@ export function buildStatusTiles(
   const count = (status: WorkRegistrationStatusFilter) =>
     status === 'all' ? summaries.length : summaries.filter((summary) => summary.status === status).length
 
-  return (['all', 'not_registered', 'registered', 'locked'] as WorkRegistrationStatusFilter[]).map((status) => ({
+  return (['all', 'not_registered', 'registered'] as WorkRegistrationStatusFilter[]).map((status) => ({
     id: status,
     label: WORK_STATUS_LABELS[status],
     count: count(status),
@@ -25,10 +25,21 @@ export function buildStatusTiles(
 export function buildFilterSections(
   summaries: EmployeeWeekSummary[],
   jobTitles: string[],
-  statusFilter: WorkRegistrationStatusFilter
+  statusFilter: WorkRegistrationStatusFilter,
+  subjectFilter: string
 ): FilterSection[] {
   const positions = Array.from(new Set(summaries.map((summary) => summary.employee.position))).sort()
+  const subjects = ['IELTS', 'Giao tiếp', 'TOEIC', 'Kids', 'Ngữ pháp']
   return [
+    {
+      id: 'subjects',
+      title: 'Môn học',
+      options: subjects.map((subject) => ({
+        value: subject,
+        label: subject,
+        checked: subjectFilter === subject,
+      })),
+    },
     {
       id: 'jobTitles',
       title: 'Chức danh',
@@ -41,7 +52,7 @@ export function buildFilterSections(
     {
       id: 'statuses',
       title: 'Trạng thái đăng ký',
-      options: (['not_registered', 'registered', 'locked'] as WorkRegistrationStatusFilter[]).map((status) => ({
+      options: (['not_registered', 'registered'] as WorkRegistrationStatusFilter[]).map((status) => ({
         value: status,
         label: WORK_STATUS_LABELS[status],
         count: summaries.filter((summary) => summary.status === status).length,

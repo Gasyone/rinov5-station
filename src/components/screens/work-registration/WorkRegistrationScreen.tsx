@@ -36,10 +36,11 @@ export function WorkRegistrationScreen() {
   const [records, setRecords] = useState<WorkRegistrationRecord[]>(() => getMockWorkRegistrations(initialWeek))
   const [priorityRules, setPriorityRules] = useState<WorkPrioritySlotRule[]>(DEFAULT_WORK_PRIORITY_RULES)
   const [activeTab, setActiveTab] = useState<WorkRegistrationTab>('mine')
-  const [activeBranch, setActiveBranch] = useState('all')
+  const [activeBranch, setActiveBranch] = useState(employees[0]?.branch ?? 'all')
   const [search, setSearch] = useState('')
   const [jobTitles, setJobTitles] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<WorkRegistrationStatusFilter>('all')
+  const [subjectFilter, setSubjectFilter] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [warningsOpen, setWarningsOpen] = useState(false)
   const [prioritySetupOpen, setPrioritySetupOpen] = useState(false)
@@ -73,15 +74,16 @@ export function WorkRegistrationScreen() {
       filterEmployeeSummaries(employeeSummaries, {
         branch: activeBranch,
         jobTitles,
+        subject: subjectFilter,
         status: statusFilter,
         search,
       }),
-    [activeBranch, employeeSummaries, jobTitles, search, statusFilter]
+    [activeBranch, employeeSummaries, jobTitles, search, statusFilter, subjectFilter]
   )
   const statusTiles = useMemo(() => buildStatusTiles(employeeSummaries), [employeeSummaries])
   const filterSections = useMemo(
-    () => buildFilterSections(employeeSummaries, jobTitles, statusFilter),
-    [employeeSummaries, jobTitles, statusFilter]
+    () => buildFilterSections(employeeSummaries, jobTitles, statusFilter, subjectFilter),
+    [employeeSummaries, jobTitles, statusFilter, subjectFilter]
   )
 
   const visibleStaffIds = useMemo(
@@ -97,16 +99,13 @@ export function WorkRegistrationScreen() {
     ? activeEmployeeRecords
     : weekRecords.filter((record) => visibleStaffIds.has(record.employeeId))
   const centerSummaries = useMemo(
-    () => buildBranchSummaries(employees, records, weekStart, activeBranch, priorityRules),
-    [activeBranch, employees, priorityRules, records, weekStart]
+    () => buildBranchSummaries(employees, records, weekStart, activeTab === 'center' ? 'all' : activeBranch, priorityRules),
+    [activeTab, activeBranch, employees, priorityRules, records, weekStart]
   )
 
   const priorityMinutes = activeEmployeeRecords
     .filter((record) => isPriorityWorkSlot(record.date, record.slotId, priorityRules))
     .reduce((total, record) => total + (getSlot(record.slotId)?.minutes ?? 0), 0)
-  const readonlyCount = activeEmployeeRecords.filter(
-    (record) => record.status === 'locked'
-  ).length
   const slotDetailRecords = slotDetail
     ? weekRecords.filter((record) =>
         record.date === slotDetail.date &&
@@ -153,6 +152,7 @@ export function WorkRegistrationScreen() {
         title={title}
         branches={branches}
         activeBranch={activeBranch}
+        subjectFilter={subjectFilter}
         search={search}
         filterCount={activeFilterCount}
         onTabChange={(tab) => {
@@ -160,12 +160,14 @@ export function WorkRegistrationScreen() {
           if (tab !== 'staff') setDelegateEmployeeId(undefined)
         }}
         onBranchChange={(branch) => { setActiveBranch(branch); setCenterPage(1) }}
+        onSubjectChange={(subject) => {
+          setSubjectFilter(subject)
+          setStaffPage(1)
+        }}
         onSearchChange={setSearch}
         onOpenFilters={() => setFilterOpen(true)}
         onOpenPrioritySetup={() => setPrioritySetupOpen(true)}
         onOpenWarnings={() => setWarningsOpen(true)}
-        onToday={() => setWeekStart(getWorkWeekStart(new Date()))}
-        onNavigate={(direction) => setWeekStart((current) => addWorkDays(current, direction * 7))}
         staffLayout={staffLayout}
         onStaffLayoutChange={setStaffLayout}
       />
@@ -181,7 +183,6 @@ export function WorkRegistrationScreen() {
             todayKey={todayKey}
             totalMinutes={sumRegistrationMinutes(activeEmployeeRecords)}
             priorityMinutes={priorityMinutes}
-            readonlyCount={readonlyCount}
             readonlyWeek={actionState.readonlyWeek}
             priorityRules={priorityRules}
             canMutate={actionState.canMutate}
@@ -209,7 +210,6 @@ export function WorkRegistrationScreen() {
             pageSize={staffPageSize}
             totalMinutes={sumRegistrationMinutes(activeEmployeeRecords)}
             priorityMinutes={priorityMinutes}
-            readonlyCount={readonlyCount}
             readonlyWeek={actionState.readonlyWeek}
             priorityRules={priorityRules}
             canMutate={actionState.canMutate}
@@ -221,7 +221,16 @@ export function WorkRegistrationScreen() {
             }}
             onPageChange={setStaffPage}
             onPageSizeChange={setStaffPageSize}
-            onSetDelegateEmployee={setDelegateEmployeeId}
+            onSetDelegateEmployee={(id) => {
+              setDelegateEmployeeId(id)
+              if (id && staffLayout === 'list') {
+                setStaffLayout('grid')
+              }
+            }}
+            onBackToList={() => {
+              setDelegateEmployeeId(undefined)
+              setStaffLayout('list')
+            }}
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
             onClear={() => setClearConfirmOpen(true)}
@@ -247,11 +256,15 @@ export function WorkRegistrationScreen() {
           if (sectionId === 'statuses') {
             setStatusFilter((current) => current === value ? 'all' : value as WorkRegistrationStatusFilter)
           }
+          if (sectionId === 'subjects') {
+            setSubjectFilter((current) => current === value ? 'all' : value)
+          }
           setStaffPage(1)
         }}
         onClearAll={() => {
           setJobTitles([])
           setStatusFilter('all')
+          setSubjectFilter('all')
           setStaffPage(1)
         }}
       />

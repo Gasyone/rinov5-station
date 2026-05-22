@@ -181,6 +181,13 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   pending_transfer: 'warning',
   awaiting_opening: 'completed',
 
+  // Class lifecycle (BF-CLS-02)
+  nhap: 'neutral',
+  mo_chieu_sinh: 'info',
+  dang_hoc: 'success',
+  dong_lop: 'completed',
+  huy: 'error',
+
   // Class Session (BF-OPS-02 / FLOW-OPS-01)
   // scheduled, in_progress, completed, cancelled already registered above
   audited: 'completed',

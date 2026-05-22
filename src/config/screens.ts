@@ -61,6 +61,10 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Điểm danh',
     description: 'Kiểm duyệt điểm danh toàn trung tâm',
   },
+  session_feedback: {
+    label: 'Nhận xét',
+    description: 'Quản lý nhận xét và đánh giá học viên theo buổi học',
+  },
   teachers: {
     label: 'Giáo viên',
     description: 'Quản lý giáo viên',
@@ -114,8 +118,8 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Quản lý lead CRM và pipeline chăm sóc',
   },
   leave_reserve: {
-    label: 'Bảo lưu & Nghỉ phép',
-    description: 'Quản lý yêu cầu bảo lưu học tập và nghỉ phép của học viên',
+    label: 'Bảo lưu & Chuyển lớp',
+    description: 'Quản lý yêu cầu bảo lưu, chuyển lớp và nghỉ học của học viên',
   },
   today_care: {
     label: 'Phiếu chăm sóc',

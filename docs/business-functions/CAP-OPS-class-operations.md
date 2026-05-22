@@ -96,9 +96,8 @@ Khối Vận hành thiết kế theo nguyên tắc **Tách biệt Tĩnh — Đ�
 
 | Mã BF | Tên Phân hệ Nghiệp vụ | Trạng thái |
 |-------|------------------------|------------|
-| `BF-CLS-01` | Xếp lớp | ✅ Đã chuẩn hóa |
 | `BF-CLS-02` | Quản lý Lớp học | ✅ Đã chuẩn hóa |
-| `BF-CLS-03` | Quản lý Học viên | ✅ Đã chuẩn hóa |
+| `BF-CLS-03` | Quản lý Học viên (gồm Chờ xếp lớp) | ✅ Đã chuẩn hóa |
 | `BF-CLS-04` | Quản lý Giáo viên chủ nhiệm | ✅ Đã chuẩn hóa |
 | `BF-CLS-05` | Điểm danh & Nhận xét | ✅ Đã chuẩn hóa |
 | `BF-CLS-06` | Nghỉ học, Bảo lưu & Chuyển lớp | ✅ Đã chuẩn hóa |

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Lock, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -77,7 +77,7 @@ export function WorkRegistrationGrid({
       aggregateMode ||
       Boolean(readonlyWeek) ||
       dateKey < todayKey ||
-      record?.status === 'locked'
+      Boolean(record?.assignedClass)
     )
   }
 
@@ -144,16 +144,13 @@ export function WorkRegistrationGrid({
                   className="mb-1"
                 />
               ) : null}
-              <span className={cn('text-[11px] font-medium uppercase', isToday ? 'text-primary' : 'text-muted-foreground')}>
-                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.getDay()]}
-              </span>
               <div
                 className={cn(
-                  'mt-0.5 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold',
-                  isToday ? 'bg-primary text-primary-foreground' : ''
+                  'mt-0.5 flex h-7 items-center justify-center rounded-md px-2 text-sm font-semibold',
+                  isToday ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
                 )}
               >
-                {day.getDate()}
+                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.getDay()]}
               </div>
             </div>
           )
@@ -222,11 +219,8 @@ export function WorkRegistrationGrid({
                         cellClass(record, disabled, priority)
                       )}
                     >
-                      {record?.status === 'locked' ? (
-                        <Lock className="h-3.5 w-3.5" />
-                      ) : null}
-                      {record ? (record.status === 'draft' ? 'Nháp' : WORK_STATUS_LABELS[record.status as keyof typeof WORK_STATUS_LABELS]) : ''}
-                      {priority ? <Star className={cn('h-3.5 w-3.5', warningColors.text)} /> : null}
+                      {record?.assignedClass ? record.assignedClass : record ? (record.status === 'draft' ? 'Nháp' : WORK_STATUS_LABELS[record.status as keyof typeof WORK_STATUS_LABELS]) : ''}
+                      {priority && !record?.assignedClass ? <Star className={cn('h-3.5 w-3.5', warningColors.text)} /> : null}
                     </Button>
                   )}
                 </div>

@@ -17,5 +17,5 @@ tags: [user-story]
 - **Đề xuất UI:** 
   - **Data Grid (Bảng dữ liệu):** Liệt kê các học viên đang có trạng thái Đang học (Active) hoặc Bảo lưu (Suspended). KHÔNG hiển thị Leads hoặc Đã nghỉ học.
   - **Cột dữ liệu:** Mã HV, Tên, Lớp đang học (dạng Tag), Số dư buổi học, Tình trạng công nợ (Đỏ/Xanh).
-  - **Hành động (Action Column):** Nút ba chấm (Dropdown) chứa các lệnh: 'Chuyển lớp', 'Bảo lưu', 'Xếp lớp'. (Lưu ý: Click vào các nút này sẽ gọi Pop-up/UI của nhóm nghiệp vụ BF-CLS-06 và BF-CLS-01).
+  - **Hành động (Action Column):** Nút ba chấm (Dropdown) chứa các lệnh: 'Chuyển lớp', 'Bảo lưu', 'Xếp lớp'. (Lưu ý: Click "Xếp lớp" sẽ gọi Pop-up xếp lớp của BF-CLS-03; các nút còn lại gọi Pop-up của BF-CLS-06).
   - **Click vào Tên:** Bật lên Drawer "Hồ sơ 360" lấy từ CAP-MDM.

@@ -90,6 +90,7 @@ stateDiagram-v2
 | US-ENR03-01 | Quản lý danh sách Sự kiện (Danh sách) | /app/event_management_new | Đang soạn thảo |
 | US-ENR03-02 | Tạo/Cập nhật Sự kiện (Biểu mẫu) | Không có | Đang soạn thảo |
 | US-ENR03-03 | Quản lý Khách mời & Check-in (Chi tiết Sự kiện) | /app/event_management_new/[id] | Đang soạn thảo |
+| US-ENR03-04 | Lịch sự kiện Cơ sở (Global Event Schedule) | /app/calendar_event_schedule | Hoàn thành |
 
 ---
 

@@ -1,21 +1,20 @@
-import type { Class } from '@/mocks/classes'
+import type { ClassRecord } from '@/mocks/classRecords'
+import { CLASS_CATEGORIES, CLASS_STATUS_LABELS } from '@/mocks/classRecords'
 
-export type ClassStatusFilter = 'all' | Class['status']
+export type ClassStatusFilter = 'all' | ClassRecord['status']
 
 export interface ClassFilterState {
   branches: string[]
   levels: string[]
   teachers: string[]
+  rooms: string[]
 }
 
 export const CLASS_STATUS_TABS: Array<{
   id: ClassStatusFilter
   label: string
-  status?: Class['status']
+  status?: ClassRecord['status']
 }> = [
-  { id: 'all', label: 'All' },
-  { id: 'active', label: 'Active', status: 'active' },
-  { id: 'upcoming', label: 'Upcoming', status: 'upcoming' },
-  { id: 'completed', label: 'Completed', status: 'completed' },
-  { id: 'cancelled', label: 'Cancelled', status: 'cancelled' },
+  { id: 'all', label: 'Tất cả' },
+  ...CLASS_CATEGORIES.map((s) => ({ id: s, label: CLASS_STATUS_LABELS[s], status: s })),
 ]

@@ -1,61 +1,8 @@
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+⨯ Another next dev server is already running.
 
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
+- Local:        http://localhost:3000
+- PID:          15140
+- Dir:          C:\Users\Jacky Tran\Documents\Rinov5
+- Log:          .next\dev\logs\next-development.log
 
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <RedirectErrorBoundary router={{...}}>
-      <InnerLayoutRouter url="/app/calen..." tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
-        <SegmentViewNode type="layout" pagePath="(dashboard...">
-          <SegmentTrieNode>
-          <DashboardLayout>
-            <MainLayout>
-              <div className="ui-main-ca...">
-                <div className="relative f...">
-                  <HeaderBar onOpenMobileSidebar={function onOpenMobileSidebar}>
-                    <header className="ui-shell-h...">
-                      <div>
-                      <div className="flex items...">
-                        <div className="hidden h-1..." onMouseEnter={function onMouseEnter} ...>
-                          <Button>
-                          <div className="grid min-w...">
-                            <Input ref={{current:null}} value="" onChange={function onChange} onFocus={function onFocus} ...>
-                              <input
-                                type={undefined}
-                                data-slot="input"
-                                className="w-full rounded-md border-input transition-[color,box-shadow] selection:bg-p..."
-                                ref={{current:null}}
-                                value=""
-                                onChange={function onChange}
-                                onFocus={function onFocus}
-                                onBlur={function closeSearchIfIdle}
-                                placeholder="Search..."
--                               style={{caret-color:"transparent"}}
-                              >
-                        ...
-                  ...
-                ...
-      ...
- 
-⨯ Failed to generate static paths for /app/[menuId]:
-TypeError: __webpack_modules__[moduleId] is not a function
-    at __webpack_exec__ (C:\Users\Jacky Tran\Documents\Rinov5\.next\dev\server\app\(dashboard)\app\[menuId]\page.js:845:39)
-    at <unknown> (C:\Users\Jacky Tran\Documents\Rinov5\.next\dev\server\app\(dashboard)\app\[menuId]\page.js:846:579) {
-  type: 'TypeError'
-}
-⨯ TypeError: __webpack_modules__[moduleId] is not a function
-    at __webpack_exec__ (C:\Users\Jacky Tran\Documents\Rinov5\.next\dev\server\app\(dashboard)\app\[menuId]\page.js:845:39)
-    at <unknown> (C:\Users\Jacky Tran\Documents\Rinov5\.next\dev\server\app\(dashboard)\app\[menuId]\page.js:846:579) {
-  type: 'TypeError',
-  page: '/app/calendar_class_schedule'
-}
-[browser] Uncaught TypeError: __webpack_modules__[moduleId] is not a function
-    at __webpack_exec__ (.next\dev\server\app\(dashboard)\app\[menuId]\page.js:845:39)
-    at <unknown> (.next\dev\server\app\(dashboard)\app\[menuId]\page.js:846:579)
+Run taskkill /PID 15140 /F to stop it.

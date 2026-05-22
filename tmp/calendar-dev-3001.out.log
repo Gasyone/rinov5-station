@@ -1,17 +1,6 @@
 ▲ Next.js 16.2.6 (webpack)
 - Local:         http://127.0.0.1:3001
 - Network:       http://127.0.0.1:3001
-✓ Ready in 1928ms
-
-○ Compiling /app/[menuId] ...
- GET /app/calendar_class_schedule 200 in 31.7s (next.js: 30.1s, proxy.ts: 526ms, application-code: 1026ms)
- GET /app/calendar_class_schedule 200 in 658ms (next.js: 35ms, proxy.ts: 37ms, application-code: 587ms)
- GET /app/calendar_class_schedule 200 in 315ms (next.js: 20ms, proxy.ts: 10ms, application-code: 285ms)
- GET /app/calendar_class_schedule 200 in 629ms (next.js: 32ms, proxy.ts: 14ms, application-code: 583ms)
- GET /app/calendar_class_schedule 200 in 386ms (next.js: 18ms, proxy.ts: 12ms, application-code: 356ms)
- GET /app/calendar_class_schedule 200 in 410ms (next.js: 29ms, proxy.ts: 11ms, application-code: 369ms)
- GET /app/calendar_class_schedule 200 in 443ms (next.js: 24ms, proxy.ts: 11ms, application-code: 408ms)
- GET /app/calendar_class_schedule 200 in 1081ms (next.js: 258ms, proxy.ts: 34ms, application-code: 789ms)
- GET /app/calendar_class_schedule 200 in 473ms (next.js: 39ms, proxy.ts: 21ms, application-code: 413ms)
-○ Compiling /_error ...
- GET /app/calendar_class_schedule 500 in 13.4s (next.js: 12.9s, proxy.ts: 19ms, application-code: 499ms)
+✓ Ready in 361ms
+Using secrets defined in .dev.vars
+[?25h

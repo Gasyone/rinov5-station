@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "next build --webpack",
     "dev": "next dev --webpack --hostname 127.0.0.1 --port 3000",
     "dev:turbo": "next dev --turbopack --hostname 127.0.0.1 --port 3000",
     "runtime:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-runtime.ps1",
     "dev:restart": "npm run runtime:clean && npm run dev",
-    "build": "next build --webpack",
     "build:turbo": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -18,7 +18,11 @@
     "test-storybook": "vitest --project storybook run",
     "coverage-storybook": "vitest --project storybook run --coverage",
     "verify-storybook": "npm run typecheck && npm run lint:storybook && npm run test-storybook && npm run build-storybook",
-    "visual-storybook": "chromatic --exit-zero-on-changes --only-changed"
+    "visual-storybook": "chromatic --exit-zero-on-changes --only-changed",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

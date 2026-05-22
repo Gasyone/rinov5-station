@@ -17,7 +17,7 @@ Mô tả luồng End-to-End từ khi một Lớp học (Class) được khởi t
 | **1. Chuẩn bị** | GV đăng ký quỹ thời gian, Syllabus được chuẩn bị | `BF-HR-02`, `BF-ACD-02` (CAP-ACD) |
 | **2. Mở lớp** | Tạo vỏ lớp (Class), gắn Syllabus, phân công GV chủ nhiệm | `BF-CLS-02`, `BF-CLS-04` |
 | **3. Xếp lịch** | Tạo Golden Schedule, check conflict, sinh Sessions | `BF-OPS-02` |
-| **4. Tuyển sinh vào lớp** | Xếp học viên từ Waitlist vào Roster của Class | `BF-CLS-01` |
+| **4. Tuyển sinh vào lớp** | Xếp học viên từ Chờ xếp lớp vào Roster của Class | `BF-CLS-03` |
 | **5. Vận hành hàng ngày** | Quản lý biến động Session (dạy thay, đổi phòng, hủy, học bù) | `BF-OPS-03` |
 | **6. Điểm danh & Đánh giá** | GV điểm danh từng Session, nhập điểm, nhận xét | `BF-CLS-05` |
 | **7. Quản lý gián đoạn** | Báo nghỉ phép, bảo lưu, chuyển lớp | `BF-CLS-06` |
@@ -47,7 +47,7 @@ graph TD
 
     subgraph "Giai đoạn 4: Tuyển sinh vào lớp"
         D1["HV hoàn thành đóng phí<br>(CAP-FIN)"]
-        D2["Xếp HV vào Class<br>(BF-CLS-01)"]
+        D2["HV vào trạng thái Chờ xếp lớp → Xếp vào Class<br>(BF-CLS-03)"]
         D3["HV xuất hiện trong Roster"]
     end
 
@@ -116,7 +116,7 @@ graph TD
 |-----------|------|------|-------------------|
 | Availability Input | `CAP-HR` (BF-HR-02) | `CAP-OPS` (BF-OPS-02) | Quỹ thời gian GV |
 | Syllabus Input | `CAP-ACD` (BF-ACD-02) | `CAP-OPS` (BF-CLS-02) | Khung chương trình + số buổi + Topics |
-| Payment Trigger | `CAP-FIN` (BF-SAL-02) | `CAP-OPS` (BF-CLS-01) | HV đã thanh toán → Waitlist |
+| Payment Trigger | `CAP-FIN` (BF-SAL-02) | `CAP-OPS` (BF-CLS-03) | HV đã thanh toán → Chuyển trạng thái Chờ xếp lớp |
 | Attendance Output | `CAP-OPS` (BF-CLS-05) | `CAP-CARE` (BF-CARE-01) | Dữ liệu vắng không phép → Ticket CSM |
 | Session Count Output | `CAP-OPS` (BF-CLS-05) | `CAP-FIN` | Số buổi đã học → Tính lương GV, khấu trừ học phí |
 | Suspend/Transfer | `CAP-OPS` (BF-CLS-06) | `CAP-FIN` | Đóng băng / Tính lại tài chính |

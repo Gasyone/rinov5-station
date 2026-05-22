@@ -18,7 +18,6 @@ interface WorkRegistrationEditablePanelProps {
   todayKey: string
   totalMinutes: number
   priorityMinutes: number
-  readonlyCount: number
   readonlyWeek: boolean
   priorityRules: WorkPrioritySlotRule[]
   canMutate: boolean
@@ -38,7 +37,6 @@ export function WorkRegistrationEditablePanel({
   todayKey,
   totalMinutes,
   priorityMinutes,
-  readonlyCount,
   readonlyWeek,
   priorityRules,
   canMutate,
@@ -54,7 +52,6 @@ export function WorkRegistrationEditablePanel({
         <WorkRegistrationActionBar
           totalMinutes={totalMinutes}
           priorityMinutes={priorityMinutes}
-          lockedCount={readonlyCount}
           subjectLabel={activeEmployeeName}
           canMutate={canMutate}
           primaryLabel={primaryActionLabel}

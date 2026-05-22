@@ -39,7 +39,7 @@ tags: [catalog, questionnaire, elicitation]
 | Mã | Tên | BF liên quan | Persona hỏi | Trạng thái |
 |----|-----|-------------|-------------|-----------|
 | QS-OPS-01 | Tạo Lớp học & Gán lộ trình | BF-CLS-02 | BM | ⏳ |
-| QS-OPS-02 | Xếp lớp cho Học viên | BF-CLS-01 | BM | ⏳ |
+| QS-OPS-02 | Xếp lớp cho Học viên | BF-CLS-03 | BM | ⏳ Đã hợp nhất vào BF-CLS-03 |
 | QS-OPS-03 | Tạo Lịch & Sinh Buổi học | BF-OPS-02 | BM | ⏳ |
 | QS-OPS-04 | Quản lý Buổi học (Dạy thay, Đổi phòng, Hủy, Học bù) | BF-OPS-03 | BM, Teacher | ⏳ |
 | QS-OPS-05 | Điểm danh & Nhận xét | BF-CLS-05 | Teacher, BM | ⏳ |

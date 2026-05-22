@@ -35,7 +35,7 @@ Phân hệ thiết lập và quản lý các "vỏ hộp" Lớp học (Class) d�
 
 ### Không bao gồm (Out of Scope)
 - Xếp thời khóa biểu cụ thể và sinh Buổi học (Session) → Xử lý tại `BF-OPS-02`.
-- Xếp học viên vào lớp → Xử lý tại `BF-CLS-01`.
+- Xếp học viên vào lớp → Xử lý tại `BF-CLS-03` (trạng thái Chờ xếp lớp).
 - Phân công Giáo viên chủ nhiệm → Xử lý tại `BF-CLS-04`.
 
 ## 4. Mô hình Dữ liệu Nghiệp vụ (Data Entities)

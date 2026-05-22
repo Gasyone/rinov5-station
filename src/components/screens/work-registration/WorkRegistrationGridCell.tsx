@@ -71,6 +71,13 @@ export function cellClass(
   priority: boolean
 ) {
   if (record) {
+    if (record.assignedClass) {
+      return cn(
+        'bg-indigo-50 text-indigo-700 border-indigo-200 font-bold',
+        priority && 'ring-1 ring-ring',
+        disabled && 'cursor-not-allowed opacity-80'
+      )
+    }
     return cn(
       getStatusBadgeClass(record.status),
       priority && 'ring-1 ring-ring',

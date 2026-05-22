@@ -10,14 +10,11 @@ export type WorkRegistrationStatusFilter =
   | 'all'
   | 'not_registered'
   | 'registered'
-  | 'locked'
-
 export interface EmployeeWeekSummary {
   employee: WorkRegistrationEmployee
   records: WorkRegistrationRecord[]
   totalMinutes: number
   status: WorkRegistrationStatusFilter
-  lockedCount: number
 }
 
 export interface BranchWeekSummary {
@@ -55,7 +52,6 @@ export const WORK_STATUS_LABELS: Record<WorkRegistrationStatusFilter, string> = 
   all: 'Tất cả',
   not_registered: 'Chưa đăng ký',
   registered: 'Đã đăng ký',
-  locked: 'Đã khóa',
 }
 
 export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string }> = [

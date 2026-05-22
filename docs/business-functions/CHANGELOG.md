@@ -3,6 +3,39 @@
 Tài liệu này ghi chú lại tất cả các thay đổi quan trọng đối với hệ thống tài liệu Business Functions (BF), User Stories (US), và Flows. 
 Không ghi chú các thay đổi về Source Code (Dev) tại đây.
 
+## [Unreleased] - 2026-05-22
+
+### Removed (Xóa / Ngừng sử dụng)
+- **~~`BF-CLS-01` (Xếp lớp)~~** — Không còn là BF riêng. Nghiệp vụ xếp lớp được hợp nhất vào `BF-CLS-03` (Quản lý Học viên) dưới dạng trạng thái "Chờ xếp lớp". Không còn menu màn hình `/app/class_assignment` — chức năng xếp lớp tích hợp vào `/app/students` với bộ lọc trạng thái.
+
+### Added (Thêm mới)
+- **[Navigation]** Tạo 2 nhóm menu mới: `group_class_management` (Quản lý lớp học) và `group_session_management` (Quản lý buổi học). Nhóm `group_operations` (Vận hành) được ẩn.
+- **[BF-CLS-03]** Mở rộng BF-CLS-03: thêm trạng thái "Chờ xếp lớp" (`Cho_xep_lop`), quy tắc xếp lớp, và Smart Matching — tất cả từ BF-CLS-01 cũ.
+
+### Changed (Thay đổi)
+- **[US-CLS01-01]** Viết lại — không còn là màn hình 2 vùng riêng biệt. Trở thành bộ lọc trạng thái trong Quản lý Học viên (`/app/students`).
+- **[US-CLS01-02]** Viết lại — trở thành hành động trong Chi tiết Lớp học (`/app/classes/[id]` > Tab Học viên).
+- **[US-CLS01-03]** Viết lại — trở thành batch action trong Quản lý Học viên khi lọc "Chờ xếp lớp".
+- **[CAP-OPS]** Cập nhật: BF-CLS-01 không còn trong danh sách BF.
+- **[FLOW-OPS-00]** Giai đoạn 4 (Tuyển sinh vào lớp) → tham chiếu `BF-CLS-03` thay vì `BF-CLS-01`.
+- **[CATALOG]** Cập nhật danh mục: BF-CLS-01 đã hợp nhất vào BF-CLS-03.
+- **[BF-CLS-02]** Out of scope: xếp HV → tham chiếu BF-CLS-03.
+- **[BF-ENR-02]** Out of scope: xếp lớp chính thức → tham chiếu BF-CLS-03.
+- **[US-CLS03-01]** Hành động "Xếp lớp" → tham chiếu BF-CLS-03 thay vì BF-CLS-01.
+
+### Decisions (Quyết định kiến trúc)
+- **[Architecture]** Không tách "Xếp lớp" thành menu riêng. "Chờ xếp lớp" là trạng thái của Học viên, không phải thực thể độc lập. Người dùng thao tác trên `/app/students` với bộ lọc trạng thái, giảm độ phức tạp điều hướng.
+- **[Architecture]** Vòng đời lớp học: 5 trạng thái chuẩn — `nhap`, `mo_chieu_sinh`, `dang_hoc`, `dong_lop`, `huy`. Mock data `classRecords.ts` và `classes.ts` đã chuẩn hóa theo.
+- **[US-CLS02-01]** Chuẩn hóa đầy đủ: tab trạng thái trên cùng, BranchSelect + Search + Filter cùng hàng toolbar, 11 cột bảng, action theo trạng thái, phân trang 20/50/100.
+- **[ClassesScreen]** Triển khai giao diện `/app/classes` theo US-CLS02-01: SegmentedControl, BranchSelect, Search, DataTable, ConfirmDialog cho xóa lớp.
+- **[classesTypes / classesHelpers / ClassesTable / ClassDetailView]** Cập nhật toàn bộ sang dùng `classRecords.ts` với lifecycle statuses mới.
+
+- **[ClassesScreen]** Viết lại toàn bộ theo pattern `BookingTestScreen`: `<StatusTiles>` + `<ExpandableSearch>` + `<BranchSelect>` + `<FilterIconButton>` cùng hàng toolbar + status tiles.
+- **[Columns]** Gộp mã lớp vào tên lớp, thêm cột "Chương trình đào tạo", gộp phòng dưới chi nhánh, dồn ngày bắt đầu/kết thúc thành cột "Thời gian".
+- **[Avatars]** Giáo viên chủ nhiệm dùng avatar + hover → mini profile. Giáo viên dạy thay hiển thị nhiều avatar (dashed border) với tooltip lý do thay.
+- **[ScheduleSummary]** Lịch học hiển thị dạng badge "T2 18:00" giống booking_test, nhiều dòng nếu có nhiều buổi. Nút "+N" mở modal mở rộng.
+- **[Mock data]** Thêm `scheduleSlots` và `substituteTeachers[]` vào `classRecords.ts`.
+
 ## [Unreleased] - 2026-05-16
 
 ### Added (Thêm mới)

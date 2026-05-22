@@ -93,17 +93,17 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-OPS03-02`: Xử lý Đổi phòng
   - `US-OPS03-03`: Hủy Buổi học & Dịch lịch
   - `US-OPS03-04`: Tổ chức Học bù
-- `BF-CLS-01`: Xếp lớp (✅ Đã chuẩn hóa)
-  - `US-CLS01-01`: Quản lý Danh sách HV chờ xếp lớp
-  - `US-CLS01-02`: Thêm Học viên từ Chi tiết lớp
-  - `US-CLS01-03`: Xếp lớp Hàng loạt
+- `BF-OPS-04`: Nhận xét & Bài tập (Session Feedback) (✅ Đã chuẩn hóa)
+  - `US-OPS04-01`: Nhận xét học viên theo buổi
+  - `US-OPS04-02`: Bảng điều khiển nhận xét toàn trung tâm
+  - `US-OPS04-03`: Quản lý bài tập theo buổi
 - `BF-CLS-02`: Quản lý Lớp học (✅ Đã chuẩn hóa)
   - `US-CLS02-01`: Quản lý Danh sách Lớp học
   - `US-CLS02-02`: Tạo mới Vỏ lớp học
   - `US-CLS02-03`: Gán Khung chương trình vào Lớp
   - `US-CLS02-04`: Xem Dashboard Tiến độ Lớp học
   - `US-CLS02-05`: Đóng lớp / Tốt nghiệp
-- `BF-CLS-03`: Quản lý Học viên (✅ Đã chuẩn hóa)
+- `BF-CLS-03`: Quản lý Học viên (gồm Chờ xếp lớp) (✅ Đã chuẩn hóa)
   - `US-CLS03-01`: Quản lý Danh sách HV Cơ sở
   - `US-CLS03-02`: Xem Danh sách HV trong Lớp
   - `US-CLS03-03`: Gắn Tag Chú ý HV
@@ -120,6 +120,9 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-CLS03-14`: Tab Lịch sử Trạng thái
   - `US-CLS03-15`: Tab Lịch học Sắp tới
   - `US-CLS03-16`: Tab Thông tin Phụ huynh
+  - `US-CLS01-01`: Bộ lọc HV chờ xếp lớp (hợp nhất vào BF-CLS-03)
+  - `US-CLS01-02`: Thêm HV từ Chi tiết lớp (hợp nhất vào BF-CLS-03)
+  - `US-CLS01-03`: Xếp lớp Hàng loạt (hợp nhất vào BF-CLS-03)
 - `BF-CLS-04`: Quản lý Giáo viên chủ nhiệm (✅ Đã chuẩn hóa)
   - `US-CLS04-01`: Quản lý Danh sách GV Cơ sở
   - `US-CLS04-02`: Gán/Đổi GV Chủ nhiệm

@@ -1,11 +1,13 @@
-﻿export interface ClassSession {
+export interface ClassSession {
   id: string; classCode: string; className: string; subject: string; teacher: string;
   branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
-  scheduleLabel: string; status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
   statusLabel: string; type: 'class_session' | 'supplementary' | 'workshop' | 'planned';
   typeLabel: string; title: string; lessonSubtitle: string;
-  totalStudents: number; officialStudents: number; trialStudents: number
+  totalStudents: number; officialStudents: number; trialStudents: number;
+  attendedStudents?: number; isRecurring?: boolean;
+  substituteTeacher?: string;
+  status?: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
 }
 
 export interface EventSession {
@@ -13,8 +15,9 @@ export interface EventSession {
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
   branch: string; organizer: string;
   type: 'event' | 'placement_test' | 'workshop' | 'consultation';
-  typeLabel: string; status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
-  statusLabel: string; participants: number; maxParticipants: number; location: string; note: string
+  typeLabel: string; status: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
+  statusLabel: string; participants: number; maxParticipants: number; location: string; note: string;
+  isRecurring?: boolean;
 }
 
 // NOTE: Tailwind class strings for these `type` values live in
@@ -71,20 +74,43 @@ export function getMockClassSessions(): ClassSession[] {
       const seed = HASH(cls.id + i)
       const isToday = d.getTime() === today.getTime()
       const bucket = (isToday ? 'today' : d < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
-      const sts = bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : seed % 3 === 0 ? 'pending' : 'confirmed'
+      let sts = bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : seed % 3 === 0 ? 'pending' : 'confirmed'
+      
+      // Inject some cancelled and rescheduled statuses
+      if (seed % 11 === 0 && bucket === 'upcoming') sts = 'cancelled'
+      if (seed % 13 === 0 && bucket === 'upcoming') sts = 'rescheduled'
+      if (seed % 15 === 0 && bucket === 'past') sts = 'cancelled'
+      
       const [sh, sm] = cls.time.split('-')[0].split(':').map(Number)
       const [eh, em] = cls.time.split('-')[1].split(':').map(Number)
+      
+      const totalStudents = 12 + (seed % 8)
+      const trialStudents = 2 + (seed % 3)
+      const attendedStudents = bucket === 'past' && sts !== 'cancelled' ? totalStudents - (seed % 3) : undefined
+      const statusLabelMap: Record<string, string> = {
+        confirmed: 'Đã xác nhận',
+        pending: 'Chờ xác nhận',
+        completed: 'Hoàn thành',
+        cancelled: 'Đã hủy',
+        rescheduled: 'Đổi ngày',
+      }
+      
+      const teacher = PICK(['Thu Hà', 'Mỹ Linh', 'Coenrad Redman'], seed)
+      // Inject substitute teacher randomly for upcoming or today classes
+      const substituteTeacher = (seed % 7 === 0 && sts !== 'cancelled') ? PICK(['Hương Ly', 'Thanh Bình', 'David John'], seed) : undefined
+      
       return {
         id: `CLS-${cls.id}-${toDateKey(d)}`, classCode: cls.id, className: cls.name,
-        subject: cls.subject, teacher: PICK(['Thu Hà', 'Mỹ Linh', 'Coenrad Redman'], seed),
+        subject: cls.subject, teacher,
         branch: PICK(BRANCHES, seed), schoolRoom: PICK(['Phòng 1', 'Phòng 2', 'Phòng 3'], seed),
         level: PICK(['Kindie 1', 'Level 2', 'Columbus 4'], seed),
         date: toDateKey(d), dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
         dateBucket: bucket, timeLabel: `${PAD(sh)}:${PAD(sm)}`, endTimeLabel: `${PAD(eh)}:${PAD(em)}`,
-        scheduleLabel: cls.schedule, status: sts, statusLabel: sts === 'confirmed' ? 'Đã xác nhận' : sts === 'pending' ? 'Chờ xác nhận' : 'Hoàn thành',
+        scheduleLabel: cls.schedule, status: sts as ClassSession['status'], statusLabel: statusLabelMap[sts],
         type, typeLabel: type === 'class_session' ? 'Chính thức' : 'Bổ trợ',
         title: lesson.title, lessonSubtitle: lesson.subtitle,
-        totalStudents: 12 + (seed % 8), officialStudents: 8 + (seed % 5), trialStudents: 2 + (seed % 3),
+        totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
+        attendedStudents, isRecurring: true, substituteTeacher,
       }
     }).filter(Boolean) as ClassSession[]
   }).sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
@@ -100,8 +126,13 @@ export function getMockEventSessions(): EventSession[] {
     const bucket = (isToday ? 'today' : d < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
     const type = EVENT_TYPES[idx % EVENT_TYPES.length]
     const sts = (bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : idx % 4 === 0 ? 'pending' : 'confirmed') as 'confirmed' | 'pending' | 'cancelled' | 'completed'
-    const maxP = 30 + (seed % 40)
-    const participants = bucket === 'past' ? Math.min(maxP, 15 + (seed % 30)) : bucket === 'today' ? maxP - 2 : Math.min(maxP, 5 + (seed % 20))
+    let maxP = 30 + (seed % 40)
+    let participants = bucket === 'past' ? Math.min(maxP, 15 + (seed % 30)) : bucket === 'today' ? maxP - 2 : Math.min(maxP, 5 + (seed % 20))
+    
+    if (type === 'placement_test') {
+      maxP = 1
+      participants = sts === 'completed' ? 1 : 0
+    }
     const sh = 9 + (idx % 4), eh = 11 + (idx % 4)
     return {
       id: `EVT-${String(idx + 1).padStart(3, '0')}`, title: name,
@@ -109,11 +140,13 @@ export function getMockEventSessions(): EventSession[] {
       date: toDateKey(d), dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
       dateBucket: bucket, timeLabel: `${PAD(sh)}:00`, endTimeLabel: `${PAD(eh)}:30`,
       branch: PICK(BRANCHES, idx), organizer: PICK(['Phòng Đào tạo', 'Phòng Tuyển sinh', 'Phòng Marketing'], idx),
-      type, typeLabel: type === 'event' ? 'Sự kiện' : 'Test',
+      type, typeLabel: type === 'event' ? 'Sự kiện' : 'Trải nghiệm',
       status: sts, statusLabel: sts === 'confirmed' ? 'Đã xác nhận' : sts === 'pending' ? 'Chờ xác nhận' : 'Hoàn thành',
       participants, maxParticipants: maxP,
       location: `${PICK(BRANCHES, idx)} - Hội trường`,
-      note: bucket === 'upcoming' ? `Đã mở đăng ký, hiện có ${participants}/${maxP} người.` : bucket === 'today' ? 'Sắp diễn ra.' : `Đã diễn ra với ${participants} người.`,
+      note: type === 'placement_test' 
+        ? (participants === 1 ? 'Đã hoàn thành trải nghiệm.' : 'Chờ học viên tham gia trải nghiệm.')
+        : bucket === 'upcoming' ? `Đã mở đăng ký, hiện có ${participants}/${maxP} người.` : bucket === 'today' ? 'Sắp diễn ra.' : `Đã diễn ra với ${participants} người.`,
     }
   }).sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
 }

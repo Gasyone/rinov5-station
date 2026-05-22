@@ -14,7 +14,8 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { getMockClassSessions, getMockEventSessions } from '@/mocks/calendarSchedule'
 import { getBookingTests, type BookingTest } from '@/mocks/bookingTests'
-import { readTrialClasses, type TrialClass } from '@/components/screens/trial-class/trialClassHelpers'
+import { readTrialClasses } from '@/components/screens/trial-class/trialClassHelpers'
+import type { TrialClass } from '@/mocks/trialClasses'
 import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
 import { TrialClassDetailDialog } from '@/components/screens/trial-class/TrialClassDetailDialog'
 import {
@@ -53,13 +54,14 @@ interface UnifiedSlot extends ScheduleGridItem {
   endTimeLabel: string
   branch: string
   personLabel: string
+  type: string;
   typeLabel: string;
   totalStudents?: number;
   trialStudents?: number;
   attendedStudents?: number;
   isRecurring?: boolean;
   substituteTeacher?: string;
-  status: string;
+  status?: string;
   dateBucket: 'past' | 'today' | 'upcoming';
 }
 
@@ -72,6 +74,8 @@ export function MyScheduleScreen() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
   const [sourceFilters, setSourceFilters] = useState<string[]>([])
+  const [statusFilters, setStatusFilters] = useState<string[]>([])
+  const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [activeBranch, setActiveBranch] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -174,6 +178,8 @@ export function MyScheduleScreen() {
           if (!matchesToday && !matchesUpcoming) return false
         }
         if (sourceFilters.length > 0 && !sourceFilters.includes(slot.scheduleType)) return false
+        if (statusFilters.length > 0 && !statusFilters.includes(slot.status as string)) return false
+        if (typeFilters.length > 0 && !typeFilters.includes(slot.type)) return false
         if (search) {
           const query = search.toLowerCase()
           if (
@@ -185,13 +191,16 @@ export function MyScheduleScreen() {
         return true
       })
       .sort((a, b) => a.startMin - b.startMin || a.date.localeCompare(b.date))
-  }, [activeBranch, allClass, allEvent, bucketFilters, search, sourceFilters, today])
+  }, [activeBranch, allClass, allEvent, bucketFilters, search, sourceFilters, statusFilters, typeFilters, today])
 
   const branches = useMemo(
     () => [...new Set([...allClass.map((session) => session.branch), ...allEvent.map((session) => session.branch)])],
     [allClass, allEvent]
   )
-  const activeFilterCount = bucketFilters.length + sourceFilters.length
+  const statuses = useMemo(() => [...new Map(slots.map((slot) => [slot.status, slot.status === 'confirmed' ? 'Đã xác nhận' : slot.status === 'pending' ? 'Chờ xác nhận' : slot.status === 'completed' ? 'Hoàn thành' : slot.status === 'rescheduled' ? 'Đổi ngày' : 'Đã hủy'])).entries()], [slots])
+  const types = useMemo(() => [...new Map(slots.map((slot) => [slot.type, slot.typeLabel])).entries()], [slots])
+
+  const activeFilterCount = bucketFilters.length + sourceFilters.length + statusFilters.length + typeFilters.length
   const filterSections = useMemo<FilterSection[]>(
     () => [
       {
@@ -212,8 +221,28 @@ export function MyScheduleScreen() {
           checked: sourceFilters.includes(source.value),
         })),
       },
+      {
+        id: 'statuses',
+        title: 'Trạng thái',
+        options: statuses.filter(([value]) => value !== undefined).map(([value, label]) => ({
+          value: value as string,
+          label: label as string,
+          count: slots.filter((slot) => slot.status === value).length,
+          checked: statusFilters.includes(value as string),
+        })),
+      },
+      {
+        id: 'types',
+        title: 'Loại lịch',
+        options: types.map(([value, label]) => ({
+          value,
+          label,
+          count: slots.filter((slot) => slot.type === value).length,
+          checked: typeFilters.includes(value),
+        })),
+      },
     ],
-    [bucketFilters, sourceFilters]
+    [bucketFilters, sourceFilters, statusFilters, typeFilters, statuses, types, slots]
   )
 
   const titleDate = viewMode === 'day'
@@ -288,11 +317,21 @@ export function MyScheduleScreen() {
             setSourceFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
+          } else if (sectionId === 'statuses') {
+            setStatusFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'types') {
+            setTypeFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
           }
         }}
         onClearAll={() => {
           setBucketFilters([])
           setSourceFilters([])
+          setStatusFilters([])
+          setTypeFilters([])
         }}
       />
 
@@ -361,9 +400,13 @@ function UnifiedCard({ slot, compact, onClick }: { slot: UnifiedSlot; compact?: 
       <div className={compact ? '' : 'p-3'}>
         <div className="mb-1 flex items-center justify-between gap-2">
           <div className={cn('flex items-center gap-1 font-bold text-primary', compact ? 'text-[10px]' : 'text-[11px]', isCancelled && "text-muted-foreground")}>
-            <Clock className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+            {isRescheduled ? (
+              <CalendarClock className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5', "text-amber-600 dark:text-amber-500")} />
+            ) : (
+              <Clock className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+            )}
             {slot.timeLabel} - {slot.endTimeLabel}
-            {slot.isRecurring && <Repeat className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5', "text-muted-foreground ml-0.5")} title="Lịch lặp lại" />}
+            {slot.isRecurring && <Repeat className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5', "text-muted-foreground ml-0.5")} />}
           </div>
           <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 font-semibold', compact ? 'text-[7px]' : 'text-[8px]', getStatusBadgeClass(slot.type))}>
             {slot.typeLabel}
@@ -372,12 +415,6 @@ function UnifiedCard({ slot, compact, onClick }: { slot: UnifiedSlot; compact?: 
         <h4 className={cn('font-bold leading-tight', compact ? `text-[10px] ${lineClamp2}` : 'truncate text-[12px]', isCancelled && 'line-through text-muted-foreground')}>
           {slot.title}
         </h4>
-        {isRescheduled && (
-          <div className={cn("mt-1 flex items-center gap-1 font-medium text-amber-600 dark:text-amber-500", compact ? "text-[8px]" : "text-[9px]")}>
-            <CalendarClock className={compact ? "h-2.5 w-2.5" : "h-3 w-3"} />
-            <span>Đổi ngày</span>
-          </div>
-        )}
         <div className={cn('mt-1 text-muted-foreground', compact ? 'text-[9px]' : 'space-y-1 text-[10px]')}>
           <div className="flex items-center gap-1">
             {isClass ? <BookOpen className={compact ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0"} /> : <MapPin className={compact ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0"} />}

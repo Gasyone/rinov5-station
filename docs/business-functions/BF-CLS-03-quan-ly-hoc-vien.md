@@ -6,7 +6,7 @@ status: "Draft"
 tags: [class, student]
 ---
 
-# BF-CLS-03: Quản lý Học viên (Class Roster)
+# BF-CLS-03: Quản lý Học viên (Student Management)
 
 > **Capability:** CAP-OPS (Năng lực Quản lý Học viên & Vận hành Lớp)
 > **Giai đoạn:** 2 - Vận hành
@@ -17,21 +17,38 @@ tags: [class, student]
 
 ## 1. Mô tả tổng quan
 
-Phân hệ quản lý danh sách Học viên đang theo học (Roster) trong một Lớp cụ thể. Cung cấp góc nhìn 360 độ về học viên: Lịch sử điểm danh, Điểm số, Báo cáo học tập, và Lịch sử chuyển lớp/bảo lưu. Đây là tính năng phục vụ Giáo viên và Giáo vụ theo sát tình hình học tập của học viên trong khuôn khổ một lớp.
+Phân hệ quản lý toàn bộ vòng đời của Học viên trong hệ thống — từ khi hoàn thành thanh toán và vào trạng thái **Chờ xếp lớp**, cho đến khi được xếp vào Lớp học cụ thể. Đồng thời cung cấp:
+
+- **Danh sách tổng quát** toàn trung tâm với bộ lọc trạng thái (Chờ xếp lớp, Đang học, Bảo lưu, Nghỉ học).
+- **Roster** — danh sách Học viên đang theo học trong một Lớp cụ thể.
+- **Student 360° View** — góc nhìn toàn diện về học viên: Lịch sử điểm danh, Điểm số, Nhận xét, Lịch sử buổi học, và Lịch sử chuyển lớp/bảo lưu.
+- **Gắn nhãn (Tag)** chú ý nhanh cho học viên (ví dụ: Học yếu, Cá biệt, Cần kèm cặp).
+
+### Trạng thái "Chờ xếp lớp" (Was BF-CLS-01)
+
+Học viên hoàn thành thanh toán nhưng chưa được xếp vào lớp sẽ tự động vào trạng thái **Chờ xếp lớp** (`Cho_xep_lop`). Tại màn hình Quản lý Học viên, bộ lọc trạng thái cho phép tách riêng nhóm này để Giáo vụ xử lý nhanh:
+
+1. Xem danh sách học viên chờ xếp lớp.
+2. Gợi ý lớp phù hợp dựa trên trình độ và chương trình học.
+3. Thực hiện ghi danh (Enroll) trực tiếp từ danh sách.
+4. Xếp lớp hàng loạt cho nhiều học viên cùng lúc.
 
 ## 2. Đối tượng sử dụng (Vai trò)
 
-- **Nhân viên Giáo vụ (Vận hành):** Theo dõi bao quát tình hình lớp, xử lý các yêu cầu bảo lưu/chuyển lớp.
+- **Nhân viên Giáo vụ (Vận hành):** Theo dõi bao quát tình hình lớp, xử lý xếp lớp, bảo lưu/chuyển lớp.
 - **Giáo viên:** Theo sát học viên, xem điểm danh, nhận xét và kết quả học tập để điều chỉnh phương pháp dạy.
 - **Chuyên viên Chăm sóc (CSM):** Dùng dữ liệu này để tư vấn phụ huynh.
+- **Quản lý Chi nhánh:** Giám sát tiến độ xếp lớp, đảm bảo không có học viên tồn đọng quá hạn.
 
 ## 3. Ranh giới Nghiệp vụ (Scope)
 
 ### Có bao gồm (In Scope)
 - Hiển thị danh sách Học viên tổng quát trên toàn cơ sở (Danh sách vận hành).
+- **Bộ lọc trạng thái:** Chờ xếp lớp, Đang học, Bảo lưu, Nghỉ học.
+- Thao tác xếp lớp trực tiếp từ danh sách học viên chờ xếp lớp (xếp đơn, xếp hàng loạt).
 - Hiển thị danh sách Học viên (Roster) của một Lớp học cụ thể.
 - Màn hình Student 360° View tổng hợp toàn bộ lịch sử (Điểm danh, Điểm, Nhận xét).
-- Đánh dấu sao, gắn nhãn (tag) chú ý nhanh cho học viên (ví dụ: Học yếu, Cá biệt).
+- Đánh dấu sao, gắn nhãn (tag) chú ý nhanh cho học viên.
 
 ### Không bao gồm (Out of Scope)
 - Đăng ký ghi danh mới hoặc thu tiền → Thuộc `CAP-COM`, `CAP-FIN`.
@@ -46,23 +63,34 @@ Phân hệ quản lý danh sách Học viên đang theo học (Roster) trong m�
 
 ### 4.1. Vòng đời Trạng thái (Status Lifecycle)
 
-*Sơ đồ dưới đây xác định trạng thái của một Học viên bên trong một Lớp học.*
+*Sơ đồ dưới đây xác định trạng thái tổng quát của một Học viên trong hệ thống.*
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Dang_hoc : Được xếp vào lớp
+    [*] --> Cho_xep_lop : Thanh toán thành công
+    Cho_xep_lop --> Dang_hoc : Được xếp vào lớp
+    Cho_xep_lop --> Huy : Rút học phí
     Dang_hoc --> Bao_luu : Xin tạm nghỉ
     Bao_luu --> Dang_hoc : Đi học lại
     Dang_hoc --> Nghi_hoc : Rút hồ sơ / Chuyển lớp
     Nghi_hoc --> [*]
+    Huy --> [*]
 ```
 
 **Quy tắc chuyển đổi:**
 
 | Từ trạng thái | Sang trạng thái | Điều kiện bắt buộc | Vai trò được phép |
 |---------------|-----------------|---------------------|-------------------|
+| Bất kỳ | Chờ xếp lớp | Có Đơn hàng thành công nhưng chưa có Lớp | Hệ thống tự động |
+| Chờ xếp lớp | Đang học | Lớp học được chọn phải còn chỗ trống | Giáo vụ |
+| Chờ xếp lớp | Hủy | Xác nhận hoàn phí | Giáo vụ / Quản lý |
 | Đang học | Bảo lưu | Có phiếu yêu cầu bảo lưu hợp lệ | Giáo vụ / Quản lý |
 | Bất kỳ | Nghỉ học | Xác nhận hoàn phí hoặc đã xếp sang lớp khác | Giáo vụ / Quản lý |
+
+### Quy tắc Xếp lớp (từ BF-CLS-01 cũ)
+
+1. **[RULE-CLS-03-03] Sĩ số (Capacity):** Mặc định KHÔNG cho phép xếp lớp nếu số lượng học viên vượt quá Sĩ số tối đa (Max Capacity) của lớp, trừ trường hợp có quyền Quản lý ghi đè (Override).
+2. **[RULE-CLS-03-04] Trình độ (Level Matching):** Hệ thống phải bật cảnh báo nếu Giáo vụ cố tình xếp học viên vào lớp có Trình độ (Level) khác với kết quả bài Kiểm tra đầu vào (Placement Test).
 
 ### 4.2. Ví dụ Dữ liệu mẫu
 
@@ -84,7 +112,11 @@ stateDiagram-v2
 |------------|-----------------------------|--------------------|------------|
 | US-CLS03-01 | Quản lý danh sách Học viên cơ sở (Danh sách) | /app/students | Đã chuẩn hóa |
 | US-CLS03-02 | Xem Roster lớp học (Bảng trong chi tiết lớp) | /app/classes/[id] | Đã chuẩn hóa |
+| US-CLS03-03 | Gán tag chú ý học viên (Chức năng) | /app/students | Đã chuẩn hóa |
 | US-CLS03-04 | Xem chi tiết Hồ sơ Student 360° (Tab chi tiết) | /app/students/[id] | Đã chuẩn hóa |
+| US-CLS01-01 | Danh sách HV chờ xếp lớp (Bộ lọc trong Danh sách HV) | /app/students?status=cho_xep_lop | Hợp nhất vào BF-CLS-03 |
+| US-CLS01-02 | Thêm HV từ Chi tiết Lớp (Bảng nổi) | /app/classes/[id] | Hợp nhất vào BF-CLS-03 |
+| US-CLS01-03 | Xếp lớp hàng loạt (Chức năng) | /app/students?status=cho_xep_lop | Hợp nhất vào BF-CLS-03 |
 
 ---
 

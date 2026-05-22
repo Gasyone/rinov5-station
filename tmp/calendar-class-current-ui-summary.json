@@ -1,0 +1,301 @@
+[
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Open navigation",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Search",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1693,
+      "y": 12,
+      "w": 40,
+      "h": 40
+    }
+  },
+  {
+    "tag": "INPUT",
+    "text": "",
+    "aria": null,
+    "placeholder": "Search...",
+    "role": null,
+    "rect": {
+      "x": 1733,
+      "y": 22,
+      "w": 12,
+      "h": 20
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Cài đặt",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1744,
+      "y": 12,
+      "w": 40,
+      "h": 40
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Thông báo",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1796,
+      "y": 12,
+      "w": 40,
+      "h": 40
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "A",
+    "aria": "Tài khoản",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1848,
+      "y": 12,
+      "w": 40,
+      "h": 40
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 80,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 132,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 184,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 236,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 288,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 340,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 392,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 444,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 14,
+      "y": 496,
+      "w": 44,
+      "h": 44
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Hôm nay",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 96,
+      "y": 78,
+      "w": 81,
+      "h": 32
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Trước",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 185,
+      "y": 80,
+      "w": 28,
+      "h": 28
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Sau",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 215,
+      "y": 80,
+      "w": 28,
+      "h": 28
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Ngày",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1499,
+      "y": 78,
+      "w": 54,
+      "h": 32
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Tuần",
+    "aria": null,
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1554,
+      "y": 78,
+      "w": 52,
+      "h": 32
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Tất cả trung tâm",
+    "aria": "Trung tâm",
+    "placeholder": null,
+    "role": "combobox",
+    "rect": {
+      "x": 1616,
+      "y": 78,
+      "w": 192,
+      "h": 32
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Tìm lớp học",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1816,
+      "y": 78,
+      "w": 32,
+      "h": 32
+    }
+  },
+  {
+    "tag": "BUTTON",
+    "text": "",
+    "aria": "Lọc lịch lớp học",
+    "placeholder": null,
+    "role": null,
+    "rect": {
+      "x": 1856,
+      "y": 78,
+      "w": 32,
+      "h": 32
+    }
+  }
+]

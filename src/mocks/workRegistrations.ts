@@ -36,11 +36,12 @@ export interface WorkRegistrationRecord {
   status: WorkRegistrationStatus
   updatedAt: string
   note?: string
-  lockedReason?: string
+  assignedClass?: string
 }
 
 export interface WorkRegistrationEmployee extends Employee {
   code: string
+  subjects: string[]
 }
 
 const pad = (value: number) => String(value).padStart(2, '0')
@@ -153,11 +154,13 @@ export function getWorkWeekDays(weekStart: Date): Date[] {
 }
 
 export function getWorkRegistrationEmployees(): WorkRegistrationEmployee[] {
+  const subjectsPool = ['IELTS', 'Giao tiếp', 'TOEIC', 'Kids', 'Ngữ pháp']
   return mockEmployees
     .filter((employee) => employee.status !== 'resigned')
     .map((employee, index) => ({
       ...employee,
       code: `EMP-${String(index + 1).padStart(3, '0')}`,
+      subjects: index % 2 === 0 ? ['IELTS', 'TOEIC'] : ['Giao tiếp', 'Kids'],
     }))
 }
 
@@ -170,7 +173,7 @@ const recordTemplates: Array<{
   slotIds: string[]
   status: WorkRegistrationStatus
   note?: string
-  lockedReason?: string
+  assignedClass?: string
 }> = [
   // Nhiều nhân viên đăng ký trùng khung giờ sáng Thứ 2 (dayOffset: 0)
   { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-0800', 3), status: 'registered' },
@@ -188,11 +191,11 @@ const recordTemplates: Array<{
 
   { employeeId: 'e2', dayOffset: 1, slotIds: slotRange('afternoon-1500', 3), status: 'registered' },
   { employeeId: 'e2', dayOffset: 3, slotIds: slotRange('evening-1800', 3), status: 'registered' },
-  { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('evening-1800', 3), status: 'locked', lockedReason: 'Đã xếp lớp IELTS 01' },
+  { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('evening-1800', 3), status: 'registered', assignedClass: 'IELTS 01' },
   { employeeId: 'e3', dayOffset: 2, slotIds: slotRange('evening-1930', 3), status: 'registered' },
   { employeeId: 'e3', dayOffset: 4, slotIds: slotRange('morning-0930', 3), status: 'registered' },
   { employeeId: 'e4', dayOffset: 1, slotIds: slotRange('morning-0800', 3), status: 'registered' },
-  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('afternoon-1500', 3), status: 'locked', lockedReason: 'Đã sinh lịch lớp' },
+  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('afternoon-1500', 3), status: 'registered', assignedClass: 'Giao tiếp Cơ bản' },
   { employeeId: 'e5', dayOffset: 0, slotIds: slotRange('afternoon-1330', 3), status: 'registered' },
   { employeeId: 'e5', dayOffset: 4, slotIds: slotRange('afternoon-1500', 3), status: 'registered' },
   { employeeId: 'e6', dayOffset: 2, slotIds: slotRange('morning-0800', 3), status: 'registered' },
@@ -231,7 +234,7 @@ export function getMockWorkRegistrations(anchor = new Date()): WorkRegistrationR
         slotId,
         status: template.status,
         note: template.note,
-        lockedReason: template.lockedReason,
+        assignedClass: template.assignedClass,
         updatedAt: `${dateKey}T09:00:00`,
       }))
     })

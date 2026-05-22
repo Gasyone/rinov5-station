@@ -99,17 +99,32 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
+    id: 'group_class_management',
+    label: 'Quản lý lớp học',
+    icon: GraduationCap,
+    items: [
+      { id: 'classes', label: 'Lớp học', href: '/app/classes' },
+      { id: 'students', label: 'Học viên', href: '/app/students' },
+      { id: 'teachers', label: 'Giáo viên', href: '/app/teachers' },
+      { id: 'leave_reserve', label: 'Bảo lưu & Chuyển lớp', href: '/app/leave_reserve' },
+    ],
+  },
+  {
+    id: 'group_session_management',
+    label: 'Quản lý buổi học',
+    icon: CalendarDays,
+    items: [
+      { id: 'class_sessions', label: 'Buổi học', href: '/app/class_sessions' },
+      { id: 'attendance', label: 'Điểm danh', href: '/app/attendance' },
+      { id: 'session_feedback', label: 'Nhận xét', href: '/app/session_feedback' },
+    ],
+  },
+  {
     id: 'group_operations',
     label: 'Vận hành',
     icon: Briefcase,
-    items: [
-      { id: 'students', label: 'Học viên', href: '/app/students' },
-      { id: 'classes', label: 'Lớp học', href: '/app/classes' },
-      { id: 'class_sessions', label: 'Buổi học', href: '/app/class_sessions' },
-      { id: 'teachers', label: 'Giáo viên', href: '/app/teachers' },
-      { id: 'leave_reserve', label: 'Bảo lưu', href: '/app/leave_reserve' },
-      { id: 'attendance', label: 'Điểm danh', href: '/app/attendance' },
-    ],
+    hiddenInSidebar: true,
+    items: [],
   },
   {
     id: 'group_care',

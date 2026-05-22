@@ -93,7 +93,7 @@ stateDiagram-v2
 |------------|-----------------------------|--------------------|------------|
 | US-OPS02-01 | Quản lý Danh sách Buổi học tại Lớp (Local View) | Nằm trong Chi tiết Lớp học | Đang soạn thảo |
 | US-OPS02-02 | Khởi tạo Quy tắc & Sinh lịch học tự động (Batch) | Nằm trong Chi tiết Lớp học | Đang soạn thảo |
-| US-OPS02-03 | Quản lý Lịch tổng thể Cơ sở (Global Calendar) | /app/calendar_class_schedule | Đang soạn thảo |
+| US-OPS02-03 | Quản lý Lịch tổng thể Cơ sở (Global Calendar) | /app/calendar_class_schedule | Hoàn thành |
 | US-OPS02-04 | Thuật toán Quét xung đột (Conflict Check API) | Chạy ngầm | Đang soạn thảo |
 
 ---

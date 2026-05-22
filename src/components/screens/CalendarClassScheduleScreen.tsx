@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock, Users } from 'lucide-react'
+import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock, Users, Repeat, CalendarClock } from 'lucide-react'
 import { BranchSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl } from '@/components/controls'
 import { FilterSheetPanel, type FilterSection } from '@/components/filters'
 import { EmptyState } from '@/components/shared'
@@ -41,8 +41,11 @@ export function CalendarClassScheduleScreen() {
   const allSessions = useMemo(() => getMockClassSessions(), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('all')
+  const [activeBranch, setActiveBranch] = useState('')
   const [subjectFilters, setSubjectFilters] = useState<string[]>([])
+  const [statusFilters, setStatusFilters] = useState<string[]>([])
+  const [typeFilters, setTypeFilters] = useState<string[]>([])
+  const [teacherFilters, setTeacherFilters] = useState<string[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
 
@@ -54,8 +57,11 @@ export function CalendarClassScheduleScreen() {
 
   const filtered = useMemo(() => {
     return allSessions.filter((session) => {
-      if (activeBranch !== 'all' && session.branch !== activeBranch) return false
+      if (activeBranch && activeBranch !== 'all' && session.branch !== activeBranch) return false
       if (subjectFilters.length > 0 && !subjectFilters.includes(session.subject)) return false
+      if (statusFilters.length > 0 && !statusFilters.includes(session.status as string)) return false
+      if (typeFilters.length > 0 && !typeFilters.includes(session.type)) return false
+      if (teacherFilters.length > 0 && !teacherFilters.includes(session.teacher)) return false
       if (!search) return true
 
       const query = search.toLowerCase()
@@ -66,12 +72,15 @@ export function CalendarClassScheduleScreen() {
         session.classCode.toLowerCase().includes(query)
       )
     })
-  }, [activeBranch, allSessions, search, subjectFilters])
+  }, [activeBranch, allSessions, search, subjectFilters, statusFilters, typeFilters, teacherFilters])
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate])
   const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject))], [allSessions])
+  const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
+  const types = useMemo(() => [...new Map(allSessions.map((session) => [session.type, session.typeLabel])).entries()], [allSessions])
+  const teachers = useMemo(() => [...new Set(allSessions.map((session) => session.teacher))], [allSessions])
   const branches = useMemo(() => [...new Set(allSessions.map((session) => session.branch))], [allSessions])
-  const activeFilterCount = subjectFilters.length
+  const activeFilterCount = subjectFilters.length + statusFilters.length + typeFilters.length + teacherFilters.length
 
   const filterSections = useMemo<FilterSection[]>(
     () => [
@@ -85,8 +94,38 @@ export function CalendarClassScheduleScreen() {
           checked: subjectFilters.includes(subject),
         })),
       },
+      {
+        id: 'statuses',
+        title: 'Trạng thái',
+        options: statuses.filter(([value]) => value !== undefined).map(([value, label]) => ({
+          value: value as string,
+          label: label as string,
+          count: allSessions.filter((session) => session.status === value).length,
+          checked: statusFilters.includes(value as string),
+        })),
+      },
+      {
+        id: 'types',
+        title: 'Loại buổi học',
+        options: types.map(([value, label]) => ({
+          value,
+          label,
+          count: allSessions.filter((session) => session.type === value).length,
+          checked: typeFilters.includes(value),
+        })),
+      },
+      {
+        id: 'teachers',
+        title: 'Giáo viên',
+        options: teachers.map((teacher) => ({
+          value: teacher,
+          label: teacher,
+          count: allSessions.filter((session) => session.teacher === teacher).length,
+          checked: teacherFilters.includes(teacher),
+        })),
+      },
     ],
-    [allSessions, subjectFilters, subjects]
+    [allSessions, subjectFilters, statusFilters, typeFilters, teacherFilters, subjects, statuses, types, teachers]
   )
 
   const calendarTitle = viewMode === 'day'
@@ -183,10 +222,25 @@ export function CalendarClassScheduleScreen() {
             setSubjectFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
+          } else if (sectionId === 'statuses') {
+            setStatusFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'types') {
+            setTypeFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'teachers') {
+            setTeacherFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
           }
         }}
         onClearAll={() => {
           setSubjectFilters([])
+          setStatusFilters([])
+          setTypeFilters([])
+          setTeacherFilters([])
         }}
       />
 
@@ -254,23 +308,43 @@ function DayColumn({
 
 function SessionCard({ session, onClick }: { session: ClassSession; onClick: () => void }) {
   const initials = getInitial(session.teacher)
+  const substituteInitials = session.substituteTeacher ? getInitial(session.substituteTeacher) : ''
+  
+  const isCancelled = session.status === 'cancelled'
+  const isRescheduled = session.status === 'rescheduled'
+  
+  let bgClass = 'bg-card hover:bg-accent/60'
+  if (isCancelled) {
+    bgClass = 'bg-zinc-50 dark:bg-zinc-900/50 opacity-75 hover:bg-zinc-100'
+  } else if (session.dateBucket === 'past') {
+    bgClass = 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50'
+  } else if (session.dateBucket === 'upcoming') {
+    bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50'
+  }
 
   return (
     <div
       onClick={onClick}
-      className="group flex min-h-[76px] flex-col overflow-hidden rounded-md bg-card text-left shadow-sm transition hover:bg-accent/60 cursor-pointer"
+      className={cn("group flex min-h-[76px] flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer", bgClass)}
     >
       <div className="p-2.5">
         <div className="mb-1 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-[10px] font-bold text-primary">
-            <Clock className="h-3 w-3" />
+          <div className={cn("flex items-center gap-1 text-[10px] font-bold text-primary", isCancelled && "text-muted-foreground")}>
+            {isRescheduled ? (
+              <CalendarClock className="h-3 w-3 text-amber-600 dark:text-amber-500" />
+            ) : (
+              <Clock className="h-3 w-3" />
+            )}
             {session.timeLabel} - {session.endTimeLabel}
+            {session.isRecurring && <Repeat className="h-3 w-3 text-muted-foreground ml-0.5" />}
           </div>
           <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold', getStatusBadgeClass(session.type))}>
             {session.typeLabel}
           </span>
         </div>
-        <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2)}>{session.title}</h4>
+        <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2, isCancelled && 'line-through text-muted-foreground')}>
+          {session.title}
+        </h4>
         <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">
           <div className="flex items-center gap-1">
             <BookOpen className="h-3 w-3 shrink-0" />
@@ -279,11 +353,26 @@ function SessionCard({ session, onClick }: { session: ClassSession; onClick: () 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <Users className="h-3 w-3 shrink-0" />
-              <span>{session.totalStudents} HS ({session.trialStudents} học thử)</span>
+              <span>
+                {session.attendedStudents !== undefined 
+                  ? `${session.attendedStudents}/${session.totalStudents} HS (${session.trialStudents} học thử)`
+                  : `${session.totalStudents} HS (${session.trialStudents} học thử)`}
+              </span>
             </div>
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground" title={session.teacher}>
-              {initials}
-            </div>
+            {session.substituteTeacher ? (
+              <div className="flex -space-x-1" title={`Dạy thay: ${session.substituteTeacher} (Chính: ${session.teacher})`}>
+                <div className="relative z-0 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground opacity-60">
+                  {initials}
+                </div>
+                <div className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-[9px] font-bold text-amber-700">
+                  {substituteInitials}
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground" title={session.teacher}>
+                {initials}
+              </div>
+            )}
           </div>
         </div>
       </div>

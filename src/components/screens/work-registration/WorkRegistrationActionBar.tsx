@@ -10,7 +10,6 @@ import { formatMinutes } from './workRegistrationHelpers'
 interface WorkRegistrationActionBarProps {
   totalMinutes: number
   priorityMinutes: number
-  lockedCount: number
   subjectLabel: string
   canMutate: boolean
   primaryLabel: string
@@ -22,7 +21,6 @@ interface WorkRegistrationActionBarProps {
 export function WorkRegistrationActionBar({
   totalMinutes,
   priorityMinutes,
-  lockedCount,
   subjectLabel,
   canMutate,
   primaryLabel,
@@ -43,11 +41,6 @@ export function WorkRegistrationActionBar({
           <Star className="h-3.5 w-3.5" />
           {formatMinutes(priorityMinutes)} giờ vàng
         </Badge>
-        {lockedCount > 0 ? (
-          <Badge className={cn('gap-1', warning.badge)}>
-            {lockedCount} đã khóa
-          </Badge>
-        ) : null}
         <span className="text-xs text-muted-foreground">{subjectLabel}</span>
         <span className="text-xs text-muted-foreground">{helperText}</span>
       </div>

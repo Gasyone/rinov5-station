@@ -75,7 +75,6 @@ export function resolveEmployeeWeekStatus(records: WorkRegistrationRecord[]): Wo
   // Bỏ qua các record đang nháp (chưa lưu) khi tính trạng thái của nhân viên
   const savedRecords = records.filter((record) => record.status !== 'draft')
   if (savedRecords.length === 0) return 'not_registered'
-  if (savedRecords.some((record) => record.status === 'locked')) return 'locked'
   return 'registered'
 }
 
@@ -91,7 +90,6 @@ export function buildEmployeeSummaries(
       records: employeeRecords,
       totalMinutes: sumRegistrationMinutes(employeeRecords),
       status: resolveEmployeeWeekStatus(employeeRecords),
-      lockedCount: employeeRecords.filter((record) => record.status === 'locked').length,
     }
   })
 }
@@ -101,6 +99,7 @@ export function filterEmployeeSummaries(
   options: {
     branch: string
     jobTitles: string[]
+    subject: string
     status: WorkRegistrationStatusFilter
     search: string
   }
@@ -108,6 +107,7 @@ export function filterEmployeeSummaries(
   const query = options.search.trim().toLowerCase()
   return summaries.filter(({ employee, status }) => {
     if (options.branch !== 'all' && employee.branch !== options.branch) return false
+    if (options.subject !== 'all' && (!employee.subjects || !employee.subjects.includes(options.subject))) return false
     if (options.jobTitles.length > 0 && !options.jobTitles.includes(employee.position)) return false
     if (options.status !== 'all' && status !== options.status) return false
     if (!query) return true
@@ -217,9 +217,6 @@ export function getMonthMatrix(anchor: Date) {
   )
 }
 
-export const isReadonlyStatus = (status: WorkRegistrationStatus) =>
-  status === 'locked'
-
 export function resolveWeekActionState(
   records: WorkRegistrationRecord[],
   weekStart: Date,
@@ -228,11 +225,9 @@ export function resolveWeekActionState(
   const weekStartKey = toWorkDateKey(weekStart)
   const currentWeekStartKey = toWorkDateKey(currentWeekStart)
   const isPastWeek = weekStartKey < currentWeekStartKey
-  const hasRecords = records.length > 0
   const hasRegistered = records.some((record) => record.status === 'registered')
   const hasDraft = records.some((record) => record.status === 'draft')
-  const allReadonly = hasRecords && records.every((record) => isReadonlyStatus(record.status))
-  const readonlyWeek = isPastWeek || allReadonly
+  const readonlyWeek = isPastWeek
 
   if (isPastWeek) {
     return {
@@ -240,15 +235,6 @@ export function resolveWeekActionState(
       canMutate: false,
       primaryActionLabel: 'Cập nhật đăng ký',
       actionHelperText: 'Tuần đã qua chỉ được xem',
-    }
-  }
-
-  if (allReadonly) {
-    return {
-      readonlyWeek,
-      canMutate: false,
-      primaryActionLabel: 'Cập nhật đăng ký',
-      actionHelperText: 'Tất cả khung giờ đã bị khóa bởi lịch lớp',
     }
   }
 

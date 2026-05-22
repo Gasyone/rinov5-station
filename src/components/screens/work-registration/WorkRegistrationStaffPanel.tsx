@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react'
 import { DataTableFrame } from '@/components/data-table'
-import { StatusTiles, type StatusTile } from '@/components/shared'
+import { BackButton, StatusTiles, type StatusTile } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import {
   type WorkRegistrationEmployee,
@@ -17,6 +17,7 @@ import type {
   WorkRegistrationStatusFilter,
   WorkRegistrationStaffLayout,
 } from './workRegistrationTypes'
+import { ToolbarSelect } from '@/components/controls'
 import { cn } from '@/lib/utils'
 
 interface WorkRegistrationStaffPanelProps {
@@ -34,7 +35,6 @@ interface WorkRegistrationStaffPanelProps {
   pageSize: number
   totalMinutes: number
   priorityMinutes: number
-  readonlyCount: number
   readonlyWeek: boolean
   priorityRules: WorkPrioritySlotRule[]
   canMutate: boolean
@@ -48,6 +48,7 @@ interface WorkRegistrationStaffPanelProps {
   onOpenSlotDetail: (date: string, slotId: string) => void
   onClear: () => void
   onSubmit: () => void
+  onBackToList: () => void
 }
 
 export function WorkRegistrationStaffPanel({
@@ -65,7 +66,6 @@ export function WorkRegistrationStaffPanel({
   pageSize,
   totalMinutes,
   priorityMinutes,
-  readonlyCount,
   readonlyWeek,
   priorityRules,
   canMutate,
@@ -79,22 +79,30 @@ export function WorkRegistrationStaffPanel({
   onOpenSlotDetail,
   onClear,
   onSubmit,
+  onBackToList,
 }: WorkRegistrationStaffPanelProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <StatusTiles tiles={statusTiles} activeId={statusFilter} onSelect={onStatusChange} />
 
       {delegateEmployeeId ? (
-        <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm">
-          <span>Đang đăng ký cho {activeEmployeeName}</span>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Thoát đăng ký thay"
-            onClick={() => onSetDelegateEmployee(undefined)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <div className={cn("flex items-center rounded-lg border border-border bg-card px-3 py-2 text-sm", layout === 'grid' ? "gap-3" : "justify-between")}>
+          {layout === 'grid' ? (
+            <BackButton label="Danh sách" onClick={onBackToList} />
+          ) : null}
+          <span className="font-medium">
+            Đang đăng ký cho <span className="font-semibold text-primary">{activeEmployeeName}</span>
+          </span>
+          {layout !== 'grid' ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Thoát đăng ký thay"
+              onClick={() => onSetDelegateEmployee(undefined)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -121,7 +129,6 @@ export function WorkRegistrationStaffPanel({
               <WorkRegistrationActionBar
                 totalMinutes={totalMinutes}
                 priorityMinutes={priorityMinutes}
-                lockedCount={readonlyCount}
                 subjectLabel={activeEmployeeName}
                 canMutate={canMutate}
                 primaryLabel={primaryActionLabel}

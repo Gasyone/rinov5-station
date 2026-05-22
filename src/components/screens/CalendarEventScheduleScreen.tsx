@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Users } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Users, CalendarClock } from 'lucide-react'
 import {
   BranchSelect,
   ExpandableSearch,
@@ -16,6 +16,8 @@ import { getMockEventSessions, type EventSession } from '@/mocks/calendarSchedul
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import { EventDetailDialog } from './calendar/EventDetailDialog'
+import { BookingTestDetailDialog } from './booking-test/BookingTestDetailDialog'
+import { mockBookingTests } from '@/mocks/bookingTests'
 
 const FILTER_BUCKETS = [
   { value: 'today', label: 'Hôm nay' },
@@ -30,7 +32,7 @@ const VIEW_MODES = [
 
 const EVENT_TYPES = [
   { value: 'event', label: 'Sự kiện' },
-  { value: 'placement_test', label: 'Kiểm tra đầu vào' },
+  { value: 'placement_test', label: 'Trải nghiệm' },
   { value: 'workshop', label: 'Hội thảo' },
   { value: 'consultation', label: 'Tư vấn' },
 ]
@@ -59,9 +61,11 @@ export function CalendarEventScheduleScreen() {
   const allSessions = useMemo(() => getMockEventSessions(), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
+  const [typeFilters, setTypeFilters] = useState<string[]>([])
+  const [statusFilters, setStatusFilters] = useState<string[]>([])
+  const [organizerFilters, setOrganizerFilters] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [activeBranch, setActiveBranch] = useState('all')
-  const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
 
@@ -79,6 +83,8 @@ export function CalendarEventScheduleScreen() {
       if (activeBranch !== 'all' && session.branch !== activeBranch) return false
       if (bucketFilters.length > 0 && !bucketFilters.includes(session.dateBucket)) return false
       if (typeFilters.length > 0 && !typeFilters.includes(session.type)) return false
+      if (statusFilters.length > 0 && !statusFilters.includes(session.status)) return false
+      if (organizerFilters.length > 0 && !organizerFilters.includes(session.organizer)) return false
       if (!search) return true
 
       const query = search.toLowerCase()
@@ -88,9 +94,11 @@ export function CalendarEventScheduleScreen() {
         session.organizer.toLowerCase().includes(query)
       )
     })
-  }, [activeBranch, allSessions, bucketFilters, search, typeFilters])
+  }, [activeBranch, allSessions, bucketFilters, search, typeFilters, statusFilters, organizerFilters])
 
-  const activeFilterCount = bucketFilters.length + typeFilters.length
+  const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
+  const organizers = useMemo(() => [...new Set(allSessions.map((session) => session.organizer))], [allSessions])
+  const activeFilterCount = bucketFilters.length + typeFilters.length + statusFilters.length + organizerFilters.length
   const filterSections = useMemo<FilterSection[]>(
     () => [
       {
@@ -113,8 +121,28 @@ export function CalendarEventScheduleScreen() {
           checked: typeFilters.includes(type.value),
         })),
       },
+      {
+        id: 'statuses',
+        title: 'Trạng thái',
+        options: statuses.map(([value, label]) => ({
+          value,
+          label,
+          count: allSessions.filter((session) => session.status === value).length,
+          checked: statusFilters.includes(value),
+        })),
+      },
+      {
+        id: 'organizers',
+        title: 'Người tổ chức',
+        options: organizers.map((organizer) => ({
+          value: organizer,
+          label: organizer,
+          count: allSessions.filter((session) => session.organizer === organizer).length,
+          checked: organizerFilters.includes(organizer),
+        })),
+      },
     ],
-    [allSessions, bucketFilters, typeFilters]
+    [allSessions, bucketFilters, typeFilters, statusFilters, organizerFilters, statuses, organizers]
   )
 
   const calendarTitle = viewMode === 'day'
@@ -129,10 +157,15 @@ export function CalendarEventScheduleScreen() {
 
   const [selectedEvent, setSelectedEvent] = useState<EventSession | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [bookingTestOpen, setBookingTestOpen] = useState(false)
 
   const handleSelectEvent = (session: EventSession) => {
     setSelectedEvent(session)
-    setDetailOpen(true)
+    if (session.type === 'placement_test') {
+      setBookingTestOpen(true)
+    } else {
+      setDetailOpen(true)
+    }
   }
 
   const handleRegister = () => {
@@ -211,9 +244,16 @@ export function CalendarEventScheduleScreen() {
             setBucketFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
-          }
-          if (sectionId === 'types') {
+          } else if (sectionId === 'types') {
             setTypeFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'statuses') {
+            setStatusFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'organizers') {
+            setOrganizerFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
           }
@@ -221,6 +261,8 @@ export function CalendarEventScheduleScreen() {
         onClearAll={() => {
           setBucketFilters([])
           setTypeFilters([])
+          setStatusFilters([])
+          setOrganizerFilters([])
         }}
       />
 
@@ -230,6 +272,21 @@ export function CalendarEventScheduleScreen() {
         onOpenChange={setDetailOpen}
         onRegister={handleRegister}
       />
+      
+      {bookingTestOpen && selectedEvent?.type === 'placement_test' && (
+        <BookingTestDetailDialog
+          booking={mockBookingTests[0]} // Mock data for demo
+          detailNote=""
+          copiedKey=""
+          onOpenChange={setBookingTestOpen}
+          onUpdateBooking={() => {}}
+          onOpenAssessment={() => {}}
+          onCall={() => {}}
+          onCopy={async () => {}}
+          onDetailNoteChange={() => {}}
+          onAddNote={() => {}}
+        />
+      )}
     </div>
   )
 }
@@ -288,23 +345,38 @@ function EventColumn({
 
 function EventCard({ session, onClick }: { session: EventSession; onClick: () => void }) {
   const initials = getInitial(session.organizer)
+  const isCancelled = session.status === 'cancelled'
+  const isRescheduled = session.status === 'rescheduled'
+
+  let bgClass = 'bg-card hover:bg-accent/60'
+  if (isCancelled) {
+    bgClass = 'bg-zinc-50 dark:bg-zinc-900/50 opacity-75 hover:bg-zinc-100'
+  } else if (session.dateBucket === 'past') {
+    bgClass = 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50'
+  } else if (session.dateBucket === 'upcoming') {
+    bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50'
+  }
 
   return (
     <div
       onClick={onClick}
-      className="group flex min-h-[76px] flex-col overflow-hidden rounded-md bg-card text-left shadow-sm transition hover:bg-accent/60 cursor-pointer"
+      className={cn("group flex min-h-[76px] flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer", bgClass)}
     >
       <div className="p-2.5">
         <div className="mb-1 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-[10px] font-bold text-primary">
-            <Clock className="h-3 w-3" />
+          <div className={cn("flex items-center gap-1 text-[10px] font-bold text-primary", isCancelled && "text-muted-foreground")}>
+            {isRescheduled ? (
+              <CalendarClock className="h-3 w-3 text-amber-600 dark:text-amber-500" />
+            ) : (
+              <Clock className="h-3 w-3" />
+            )}
             {session.timeLabel} - {session.endTimeLabel}
           </div>
           <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold', getStatusBadgeClass(session.type))}>
             {session.typeLabel}
           </span>
         </div>
-        <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2)}>{session.title}</h4>
+        <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2, isCancelled && 'line-through text-muted-foreground')}>{session.title}</h4>
         <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 shrink-0" />
