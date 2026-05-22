@@ -1,4 +1,5 @@
-import { getTrialClasses, type TrialClass, type TrialClassStatus } from '@/mocks/trialClasses'
+import { getTrialClasses, type TrialClassStatus } from '@/mocks/trialClasses'
+export type { TrialClass } from '@/mocks/trialClasses'
 import type { CreateTrialClassForm, StatusTileId } from './trialClassTypes'
 import { STATUS_META } from './trialClassConstants'
 
