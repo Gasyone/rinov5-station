@@ -17,9 +17,9 @@ const PROTECTED_PREFIX = '/app'
 const LOGIN_PATH = '/login'
 const DEFAULT_AUTHED_PATH = '/app/dashboard'
 
-export const runtime = 'edge'
+export const runtime = 'experimental-edge'
 
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isAuthenticated = request.cookies.get('auth_session')?.value === 'true'
 
