@@ -17,7 +17,6 @@ const PROTECTED_PREFIX = '/app'
 const LOGIN_PATH = '/login'
 const DEFAULT_AUTHED_PATH = '/app/dashboard'
 
-export const runtime = 'experimental-edge'
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
