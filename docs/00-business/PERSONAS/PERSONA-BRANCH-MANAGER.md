@@ -130,16 +130,3 @@ tags: [persona, stakeholder, branch-manager, daily-user]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"⓪ Mỗi sáng tôi mất 30 phút chỉ để biết hôm nay có ai báo nghỉ. Cái này lẽ ra hệ thống phải tự đẩy lên đầu màn hình."*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Đây là **Persona vận hành** — ưu tiên giảm thời gian / số click / thay vì tính năng đẹp.
-- Notification proactive (cái gì đến tay BM trước khi BM phải tự tìm) là pattern cốt lõi cho persona này.
-- Mọi tính năng "approve" của BM phải kèm Confirm Dialog (`[DS-P4]`) và ghi log.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** giả định BM dùng được Mobile cho tác vụ phức tạp — workflow chính là Web.
-- **KHÔNG** đẩy quyết định cấp chuỗi (mở cơ sở mới, đổi chính sách giá) cho BM — đó là `PERSONA-OWNER`.
-- **KHÔNG** tạo "Dashboard Branch Manager" như một CAP riêng — đó là 1 view của `CAP-RPT` với ABAC scope.

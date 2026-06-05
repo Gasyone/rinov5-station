@@ -9,8 +9,10 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterSheetPanel,
-  type FilterSection,
+  FilterGroupSheetPanel,
+  createFilterGroup,
+  type FilterGroupConfig,
+  getSchoolFilterGroup,
 } from '@/components/filters'
 import { ConfirmDialog, MetricTile } from '@/components/shared'
 import type { Order } from '@/mocks/orders'
@@ -73,38 +75,28 @@ export function OrdersScreen() {
     filters.paymentMethods.length +
     filters.paymentStatuses.length
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
-        id: 'branches',
-        title: 'Branch',
-        options: branches.map((b) => ({
-          value: b,
-          label: b,
-          count: orders.filter((o) => o.branch === b).length,
-          checked: filters.branches.includes(b),
-        })),
-      },
-      {
+      getSchoolFilterGroup(
+        'branches',
+        filters.branches,
+        (branch) => orders.filter((o) => o.branch === branch).length,
+        branches
+      ),
+      createFilterGroup({
         id: 'paymentMethods',
-        title: 'Payment method',
-        options: paymentMethods.map((m) => ({
-          value: m,
-          label: PAYMENT_METHOD_LABELS[m],
-          count: orders.filter((o) => o.paymentMethod === m).length,
-          checked: filters.paymentMethods.includes(m),
-        })),
-      },
-      {
+        options: paymentMethods,
+        selectedValues: filters.paymentMethods,
+        getOptionLabel: (method) => PAYMENT_METHOD_LABELS[method as Order['paymentMethod']],
+        getOptionCount: (method) => orders.filter((o) => o.paymentMethod === method).length,
+      }),
+      createFilterGroup({
         id: 'paymentStatuses',
-        title: 'Payment status',
-        options: paymentStatuses.map((s) => ({
-          value: s,
-          label: PAYMENT_STATUS_LABELS[s],
-          count: orders.filter((o) => o.paymentStatus === s).length,
-          checked: filters.paymentStatuses.includes(s),
-        })),
-      },
+        options: paymentStatuses,
+        selectedValues: filters.paymentStatuses,
+        getOptionLabel: (status) => PAYMENT_STATUS_LABELS[status as Order['paymentStatus']],
+        getOptionCount: (status) => orders.filter((o) => o.paymentStatus === status).length,
+      }),
     ],
     [branches, paymentMethods, paymentStatuses, orders, filters]
   )
@@ -204,11 +196,11 @@ export function OrdersScreen() {
         </DataTableFrame>
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Order filters"
         description="Filter by branch, payment method, and payment status."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)

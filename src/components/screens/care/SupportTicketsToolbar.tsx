@@ -74,42 +74,39 @@ export function SupportTicketsToolbar({
   ]
 
   return (
-    <div className="flex flex-col gap-2 px-4 py-3 lg:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <ToolbarSelect
-            value={categoryFilter}
-            onValueChange={onCategoryChange}
-            options={categoryOptions}
-            ariaLabel="Phân loại"
-          />
-          <ToolbarSelect
-            value={priorityFilter}
-            onValueChange={onPriorityChange}
-            options={priorityOptions}
-            ariaLabel="Độ ưu tiên"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <ExpandableSearch
-            value={searchQuery}
-            onValueChange={onSearchChange}
-            placeholder="Tìm mã ticket, tên học viên..."
-            inputClassName="sm:w-64"
-          />
-          <Button size="sm" onClick={onCreateTicket}>
-            <Plus className="h-4 w-4" />
-            Tạo phiếu mới
-          </Button>
-        </div>
+    <div className="flex shrink-0 items-center justify-between gap-4 bg-background px-4 py-3 lg:px-6">
+      <div className="flex-1 overflow-x-auto min-w-0">
+        <StatusTiles
+          tiles={tiles}
+          activeId={activeStatus}
+          onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
+        />
       </div>
 
-      <StatusTiles
-        tiles={tiles}
-        activeId={activeStatus}
-        onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
-      />
+      <div className="flex shrink-0 items-center gap-2">
+        <ExpandableSearch
+          value={searchQuery}
+          onValueChange={onSearchChange}
+          placeholder="Tìm mã ticket, tên học viên..."
+          inputClassName="sm:w-64"
+        />
+        <ToolbarSelect
+          value={categoryFilter}
+          onValueChange={onCategoryChange}
+          options={categoryOptions}
+          ariaLabel="Phân loại"
+        />
+        <ToolbarSelect
+          value={priorityFilter}
+          onValueChange={onPriorityChange}
+          options={priorityOptions}
+          ariaLabel="Độ ưu tiên"
+        />
+        <Button size="sm" onClick={onCreateTicket}>
+          <Plus className="h-4 w-4 mr-1.5" />
+          Tạo phiếu mới
+        </Button>
+      </div>
     </div>
   )
 }

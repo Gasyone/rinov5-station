@@ -2,8 +2,8 @@
 
 import { useRef, useState } from 'react'
 import {
-  Bell,
   Check,
+  ExternalLink,
   Globe,
   LogOut,
   Menu,
@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { HeaderBrand } from './HeaderBrand'
+import { NotificationDropdown } from './NotificationDropdown'
 
 const UI_LOCALE_OPTIONS = [
   { code: 'vi', label: 'Tiếng Việt', shortLabel: 'VI' },
@@ -65,7 +66,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   }
 
   return (
-    <header className="ui-shell-header sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-md md:pl-4 md:pr-6">
+    <header className="ui-shell-header sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between bg-background/90 px-4 backdrop-blur-md md:pl-4 md:pr-6">
       <div className="flex items-center gap-2 md:gap-4">
         <Button
           type="button"
@@ -200,26 +201,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
         </DropdownMenu>
 
         {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-lg"
-              aria-label="Thông báo"
-              className="ui-icon-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
-            >
-              <Bell className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>Thông báo</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Chưa có thông báo nào
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <NotificationDropdown />
 
         {/* User menu */}
         <DropdownMenu>
@@ -252,6 +234,59 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                   {user?.role ?? ''}
                 </p>
               </div>
+            </div>
+            <div className="p-2 border-b border-border">
+              <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                Hệ thống liên kết
+              </div>
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://crm.rinoedu.ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-blue-500/10 text-[10px] font-bold text-blue-500 dark:bg-blue-500/20">
+                      CRM
+                    </span>
+                    <span>Hệ thống CRM</span>
+                  </span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://erp.rinoedu.ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-emerald-500/10 text-[10px] font-bold text-emerald-500 dark:bg-emerald-500/20">
+                      ERP
+                    </span>
+                    <span>Hệ thống ERP</span>
+                  </span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://care.rinoedu.ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-indigo-500/10 text-[10px] font-bold text-indigo-500 dark:bg-indigo-500/20">
+                      CARE
+                    </span>
+                    <span>Hệ thống Care</span>
+                  </span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                </a>
+              </DropdownMenuItem>
             </div>
             <div className="p-2">
               <DropdownMenuItem

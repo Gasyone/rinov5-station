@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldLabel } from '@/components/shared'
-import { ToolbarSelect } from '@/components/controls'
+import { BranchSelect, ToolbarSelect } from '@/components/controls'
 import type { Contact } from '@/mocks/contacts'
 import { SOURCE_LABELS } from './contactsTypes'
 
@@ -105,14 +105,14 @@ export function ContactsFormDialog({
               className="h-9 min-w-full"
             />
           </FieldLabel>
-          <FieldLabel label="Branch" required>
-            <ToolbarSelect
+          <FieldLabel label="School" required>
+            <BranchSelect
               value={value.branch}
-              ariaLabel="Branch"
-              options={[
-                { value: '', label: 'Select branch' },
-                ...branches.map((b) => ({ value: b, label: b })),
-              ]}
+              branches={branches}
+              variant="inline"
+              includeAll={false}
+              placeholder="Select school"
+              ariaLabel="School"
               onValueChange={(v) => update('branch', v)}
               className="h-9 min-w-full"
             />

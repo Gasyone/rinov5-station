@@ -1,9 +1,10 @@
 import type { StatusConfigItem } from './trialClassTypes'
 
 export const STATUS_CONFIG: StatusConfigItem[] = [
-  { id: 'pending_confirmation', label: 'Đã đặt lịch', status: 'pending_confirmation' },
-  { id: 'confirmed', label: 'Đã ghép lớp', status: 'confirmed' },
+  { id: 'pending_approval', label: 'Chờ xác nhận', status: 'pending_approval' },
+  { id: 'rejected', label: 'Từ chối ghép', status: 'rejected' },
   { id: 'reschedule', label: 'Cần đổi lịch', status: 'reschedule' },
+  { id: 'confirmed', label: 'Đã ghép lớp', status: 'confirmed' },
   { id: 'no_show', label: 'Không đến', status: 'no_show' },
   { id: 'completed', label: 'Hoàn thành', status: 'completed' },
   { id: 'cancelled', label: 'Đã hủy', status: 'cancelled' },
@@ -13,7 +14,7 @@ export const STATUS_META = Object.fromEntries(
   STATUS_CONFIG.map((status) => [status.id, status])
 ) as Record<StatusConfigItem['id'], StatusConfigItem>
 
-export const VIRTUAL_TILE_ID = 'unassigned'
+
 
 export const PROGRAM_OPTIONS = [
   'Cambridge Starter',

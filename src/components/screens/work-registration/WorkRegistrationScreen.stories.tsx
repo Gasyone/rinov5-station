@@ -69,14 +69,3 @@ export const WarningGuide: Story = {
     await expect(body.getByText('Cảnh báo đăng ký lịch')).toBeVisible()
   },
 }
-
-export const PrioritySetup: Story = {
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Thiết lập giờ vàng' }))
-
-    const body = within(canvasElement.ownerDocument.body)
-    await expect(await body.findByRole('dialog')).toBeVisible()
-    await expect(body.getByText('Thiết lập giờ vàng')).toBeVisible()
-    await expect(body.getByText('Ca áp dụng')).toBeVisible()
-  },
-}

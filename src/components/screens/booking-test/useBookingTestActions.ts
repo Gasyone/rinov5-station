@@ -1,12 +1,11 @@
 'use client'
 
 import { type Dispatch, type SetStateAction } from 'react'
+import { toast } from 'sonner'
 import type { BookingSubject, BookingTest } from '@/mocks/bookingTests'
 import {
+  applyBookingCheckIn,
   buildEmptyAssessmentDraft,
-  buildEmptyCreateForm,
-  buildNewBooking,
-  nextBookingId,
   normalizePhone,
   summarizeAssessmentDraft,
 } from './bookingTestHelpers'
@@ -20,14 +19,12 @@ import {
   buildSampleAssessmentDraft,
   hasAssessmentDraftContent,
 } from './bookingTestAssessmentSamples'
-import type { AssessmentDraft, CreateBookingForm } from './bookingTestTypes'
+import type { AssessmentDraft } from './bookingTestTypes'
 
 interface ActionDeps {
   bookings: BookingTest[]
   setBookings: Dispatch<SetStateAction<BookingTest[]>>
   setCopiedKey: Dispatch<SetStateAction<string>>
-  setCreateForm: Dispatch<SetStateAction<CreateBookingForm>>
-  setIsCreateOpen: Dispatch<SetStateAction<boolean>>
   setAssessmentBookingId: Dispatch<SetStateAction<string>>
   setAssessmentDraft: Dispatch<SetStateAction<AssessmentDraft>>
   setDetailNote: Dispatch<SetStateAction<string>>
@@ -35,7 +32,6 @@ interface ActionDeps {
   studentOptions: Array<{ id: string; label: string; familyName: string; phone: string }>
   authorName: string
   activeSubject: BookingSubject
-  createForm: CreateBookingForm
   assessmentBooking: BookingTest | null
   assessmentDraft: AssessmentDraft
   detailBooking: BookingTest | null
@@ -68,25 +64,49 @@ export function useBookingTestActions(deps: ActionDeps) {
     window.setTimeout(() => deps.setCopiedKey(''), 1800)
   }
 
-  const triggerDeskCall = (phone?: string) => {
+  const triggerDeskCall = (phone?: string, name?: string, studentName?: string, studentId?: string) => {
     const normalized = normalizePhone(phone)
     if (!normalized) return
     const callEvent = new CustomEvent('rinov5:desk-call', {
-      detail: { phone: normalized, source: 'screen.booking-test' },
+      detail: { phone: normalized, name, studentName, studentId, source: 'screen.booking-test' },
       cancelable: true,
     })
     window.dispatchEvent(callEvent)
     if (!callEvent.defaultPrevented) window.location.href = `tel:${normalized}`
   }
 
-  const openCreateDialog = () => {
-    deps.setCreateForm(buildEmptyCreateForm())
-    deps.setIsCreateOpen(true)
-  }
+
 
   const openAssessmentDialog = (bookingId: string) => {
     const next = deps.bookings.find((booking) => booking.id === bookingId)
     if (!next || next.subject !== 'english') return
+
+    // Kiểm tra đã gán giáo viên và người phụ trách hay chưa
+    const hasTeacher = Boolean(next.teacher?.trim())
+    const hasResponsible = Boolean(
+      next.ops?.trim() ||
+        next.createdBy?.trim() ||
+        next.interviewer?.trim() ||
+        next.tester?.trim()
+    )
+
+    if (!hasTeacher || !hasResponsible) {
+      toast.error(
+        'Vui lòng gán Giáo viên và Người phụ trách trước khi bắt đầu đánh giá/làm bài test.'
+      )
+      return
+    }
+
+    if (next.status === 'booked_assessment' || next.attendance !== 'confirmed') {
+      updateBooking(bookingId, (current) => ({
+        ...applyBookingCheckIn(current),
+        status:
+          current.status === 'booked_assessment'
+            ? 'started_assessment'
+            : current.status,
+      }))
+    }
+
     const storedDraft = readStoredAssessmentDraft(bookingId)
     const sampleDraft = buildSampleAssessmentDraft(next)
     deps.setAssessmentDraft(
@@ -98,31 +118,7 @@ export function useBookingTestActions(deps: ActionDeps) {
     deps.setAssessmentBookingId(bookingId)
   }
 
-  const handleStudentSelect = (studentId: string) => {
-    const selected = deps.studentOptions.find((student) => student.id === studentId)
-    deps.setCreateForm((current) => ({
-      ...current,
-      studentId,
-      childName: selected?.label ?? '',
-    }))
-  }
 
-  const submitCreate = () => {
-    const f = deps.createForm
-    if (!f.childName || !f.program || !f.school || !f.scheduleTime) return
-
-    const selectedStudent = deps.studentOptions.find((s) => s.id === f.studentId)
-    const newBooking = buildNewBooking({
-      id: nextBookingId(deps.bookings),
-      form: f,
-      activeSubject: deps.activeSubject,
-      authorName: deps.authorName,
-      familyName: selectedStudent?.familyName ?? '',
-      phone: selectedStudent?.phone ?? '',
-    })
-    deps.setBookings((current) => [newBooking, ...current])
-    deps.setIsCreateOpen(false)
-  }
 
   const saveAssessment = () => {
     if (!deps.assessmentBooking) return
@@ -134,6 +130,7 @@ export function useBookingTestActions(deps: ActionDeps) {
       const updated: BookingTest = {
         ...booking,
         status: booking.status === 'booked_assessment' ? 'started_assessment' : booking.status,
+        attendance: 'confirmed',
         isInterviewed: true,
         isTested: true,
         resultLink: booking.resultLink || getBookingResultHref(booking.id),
@@ -189,10 +186,7 @@ export function useBookingTestActions(deps: ActionDeps) {
     updateBooking,
     copyToClipboard,
     triggerDeskCall,
-    openCreateDialog,
     openAssessmentDialog,
-    handleStudentSelect,
-    submitCreate,
     saveAssessment,
     addDetailNote,
     toggleSelectAll,

@@ -124,16 +124,3 @@ tags: [sr, csm, care, renewal]
 |-----------|------|------------------|-----------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft |
 | v1.0 | ⓪ TBD | CSM + BM | Approved |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Pipeline UI dùng pattern shadcn `Tabs` hoặc kanban-style — KHÔNG tự chế.
-- Template tin nhắn lưu trong `CAP-SYS` (cấu hình hệ thống), không hardcode.
-- Tự động đóng card khi có Đơn hàng mới — kích hoạt từ event của `CAP-COM`.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** tự gửi tin nhắn / email cho phụ huynh thay CSM — luôn confirm trước.
-- **KHÔNG** tạo template chứa PII của HV khác trong nội dung mặc định.
-- **KHÔNG** cho phép drag card sang "Thành công" thủ công nếu chưa có Đơn hàng (`[RULE-CARE-02-01]`).

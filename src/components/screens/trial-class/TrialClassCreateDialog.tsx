@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { InlineSelect, SegmentedControl, StudentCombobox, type StudentOption } from '@/components/controls'
+import { BranchSelect, InlineSelect, StudentCombobox, type StudentOption } from '@/components/controls'
 import { FieldLabel } from '@/components/shared'
 import { PROGRAM_OPTIONS, SUBJECT_MAP } from './trialClassConstants'
 import { TrialClassSchedulePanel } from './TrialClassSchedulePanel'
@@ -48,7 +48,7 @@ export function TrialClassCreateDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-h-[90vh] overflow-y-auto sm:max-w-3xl"
+        className="max-h-[90vh] overflow-y-auto sm:max-w-4xl"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -85,14 +85,12 @@ export function TrialClassCreateDialog({
 
 
 
-              <FieldLabel label="Cơ sở">
-                <InlineSelect
+              <FieldLabel label="Trường">
+                <BranchSelect
                   value={form.school}
-                  ariaLabel="Cơ sở"
-                  options={[
-                    { value: '', label: 'Chọn cơ sở' },
-                    ...branchOptions.map((branch) => ({ value: branch, label: branch })),
-                  ]}
+                  branches={branchOptions}
+                  variant="inline"
+                  includeAll={false}
                   onValueChange={(value) =>
                     onFormChange((current) => ({ ...current, school: value }))
                   }
@@ -139,21 +137,10 @@ export function TrialClassCreateDialog({
                   const isAlreadySelected = current.selectedSessions.some(
                     (s) => s.classId === session.classId && s.sessionId === session.sessionId
                   )
-                  
-                  if (current.selectedSessions.length > 0 && current.selectedSessions[0].classId !== session.classId) {
-                    return {
-                      ...current,
-                      selectedSessions: [session],
-                    }
-                  }
 
                   return {
                     ...current,
-                    selectedSessions: isAlreadySelected
-                      ? current.selectedSessions.filter(
-                          (s) => !(s.classId === session.classId && s.sessionId === session.sessionId)
-                        )
-                      : [...current.selectedSessions, session],
+                    selectedSessions: isAlreadySelected ? [] : [session],
                   }
                 })
               }}
@@ -165,7 +152,7 @@ export function TrialClassCreateDialog({
           <div className="text-left text-sm text-muted-foreground">
             {form.selectedSessions.length > 0 ? (
               <span>
-                Đã chọn: <strong className="text-foreground">{form.selectedSessions.length} buổi học</strong>
+                Đã chọn: <strong className="text-foreground">1 buổi học</strong>
               </span>
             ) : (
               <span>Chưa chọn buổi học (Giáo vụ sẽ ghép sau)</span>
@@ -182,5 +169,4 @@ export function TrialClassCreateDialog({
     </Dialog>
   )
 }
-
 

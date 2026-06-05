@@ -4,7 +4,7 @@ import { type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 interface FieldLabelProps {
-  label: string
+  label: ReactNode
   children: ReactNode
   /** Optional helper text below the label */
   description?: string
@@ -33,9 +33,15 @@ export function FieldLabel({
 }: FieldLabelProps) {
   return (
     <label className={cn('grid gap-1.5', className)}>
-      <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-        {required ? <span className="text-destructive">*</span> : null}
+      <span className="flex items-center justify-between w-full text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {typeof label === 'string' ? (
+          <span className="flex items-center gap-1">
+            {label}
+            {required ? <span className="text-destructive">*</span> : null}
+          </span>
+        ) : (
+          label
+        )}
       </span>
       {children}
       {description && !error ? (
@@ -51,6 +57,7 @@ interface InfoFieldProps {
   value: ReactNode
   /** Secondary line below the value (timestamp, ID, etc.) */
   supporting?: ReactNode
+  icon?: ReactNode
   valueClassName?: string
   className?: string
 }
@@ -65,17 +72,19 @@ export function InfoField({
   label,
   value,
   supporting,
+  icon,
   valueClassName,
   className,
 }: InfoFieldProps) {
   return (
     <div className={cn('min-w-0', className)}>
-      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+        {icon}
         {label}
-      </p>
-      <p className={cn('truncate text-sm font-semibold', valueClassName)}>{value}</p>
+      </div>
+      <div className={cn('truncate text-sm font-semibold', valueClassName)}>{value}</div>
       {supporting ? (
-        <p className="truncate text-xs text-muted-foreground">{supporting}</p>
+        <div className="truncate text-xs text-muted-foreground">{supporting}</div>
       ) : null}
     </div>
   )

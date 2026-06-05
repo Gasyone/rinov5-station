@@ -3,17 +3,22 @@
 import { Eye } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { SupportTicket } from '@/mocks/tickets'
 
 interface SupportTicketsTableProps {
   tickets: SupportTicket[]
+  selectedIds: Set<string>
+  onToggleRow: (id: string) => void
   onViewDetails: (ticket: SupportTicket) => void
 }
 
 export function SupportTicketsTable({
   tickets,
+  selectedIds,
+  onToggleRow,
   onViewDetails,
 }: SupportTicketsTableProps) {
   const getCategoryText = (cat: string) => {
@@ -66,9 +71,11 @@ export function SupportTicketsTable({
       <Table>
         <TableHeader className="bg-muted/50">
           <TableRow>
-            <TableHead className="w-[100px] font-semibold">Mã Ticket</TableHead>
-            <TableHead className="font-semibold">Học viên</TableHead>
+            <TableHead className="w-[50px]">
+              <Checkbox />
+            </TableHead>
             <TableHead className="font-semibold">Tiêu đề</TableHead>
+            <TableHead className="font-semibold">Học viên</TableHead>
             <TableHead className="font-semibold">Phân loại</TableHead>
             <TableHead className="font-semibold">Độ ưu tiên</TableHead>
             <TableHead className="font-semibold">Người xử lý</TableHead>
@@ -87,15 +94,23 @@ export function SupportTicketsTable({
           ) : (
             tickets.map((t) => (
               <TableRow key={t.id} className="hover:bg-muted/50 transition-colors">
-                <TableCell className="font-mono text-xs font-semibold">{t.id}</TableCell>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedIds.has(t.id)}
+                    onCheckedChange={() => onToggleRow(t.id)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm text-foreground">{t.title}</span>
+                    <span className="text-xs text-muted-foreground font-mono">{t.id}</span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-medium text-sm text-foreground">{t.studentName}</span>
                     <span className="text-xs text-muted-foreground">{t.studentCode}</span>
                   </div>
-                </TableCell>
-                <TableCell className="max-w-[200px] truncate" title={t.title}>
-                  {t.title}
                 </TableCell>
                 <TableCell className="text-sm">{getCategoryText(t.category)}</TableCell>
                 <TableCell>

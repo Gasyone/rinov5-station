@@ -58,6 +58,8 @@ export interface BookingTest {
   interviewer?: string
   msg?: string
   notes?: BookingNote[]
+  avatar?: string
+  dob?: string
 }
 
 export const PROGRAM_LEVELS = [
@@ -79,12 +81,13 @@ export const SUB_LEVELS = ["A1", "A", "B", "C"]
 export const mockBookingTests: BookingTest[] = [
   {
     id: "E0001",
-    childName: "Vu Phuc An",
-    familyName: "Gia đình Vũ Phúc An",
-    phone: "0901234294",
+    childName: "Nguyễn An",
+    dob: "2005-03-15",
+    familyName: "Gia đình Nguyễn An",
+    phone: "0911111111",
     familyMembers: [
-      { name: "Vũ Nam (Bố)", phone: "0901234294", isPrimary: true },
-      { name: "Nguyễn Lan (Mẹ)", phone: "0901234295" },
+      { name: "Nguyễn Văn A (Bố)", phone: "0922222222", isPrimary: true },
+      { name: "Trần Thị Lan (Mẹ)", phone: "0922222223" },
     ],
     status: "completed",
     isInterviewed: true,
@@ -93,7 +96,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "english",
     eventType: "test",
     program: "Station Program",
-    school: "Rino Nguyễn Tuân",
+    school: "RinoEdu Nguyễn Tuân",
     room: "Phòng A2",
     classroom: "Phòng A2",
     testTime: "2026-05-18 18:30",
@@ -121,6 +124,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0002",
     childName: "Truc My",
+    dob: "2015-08-25",
     familyName: "Gia đình Trúc My",
     phone: "0388222122",
     familyMembers: [{ name: "Lê Hoa (Mẹ)", phone: "0388222122", isPrimary: true }],
@@ -129,7 +133,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "english",
     eventType: "test",
     program: "Station Program",
-    school: "Rino Tô Ký",
+    school: "RinoEdu Linh Đàm",
     room: "Phòng B1",
     classroom: "Phòng B1",
     testTime: "2026-05-19 19:00",
@@ -157,6 +161,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0003",
     childName: "Quynh Chi",
+    dob: "2017-01-05",
     familyName: "Gia đình Quỳnh Chi",
     phone: "0912333345",
     familyMembers: [
@@ -170,7 +175,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "math",
     eventType: "test",
     program: "Toán tư duy",
-    school: "Rino Nguyễn Tuân",
+    school: "RinoEdu Nguyễn Tuân",
     room: "Phòng M3",
     classroom: "Phòng M3",
     testTime: "2026-05-19 19:30",
@@ -197,6 +202,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0004",
     childName: "Tuong Vi",
+    dob: "2018-11-30",
     familyName: "Gia đình Tường Vi",
     phone: "0944111119",
     familyMembers: [{ name: "Trần Tâm (Mẹ)", phone: "0944111119", isPrimary: true }],
@@ -205,7 +211,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "english",
     eventType: "test",
     program: "Station Program",
-    school: "Rino Nguyễn Tuân",
+    school: "RinoEdu Nguyễn Tuân",
     room: "Sảnh tư vấn",
     classroom: "Phòng C1",
     testTime: "2026-05-20 17:00",
@@ -232,6 +238,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0005",
     childName: "Bao Chau",
+    dob: "2014-06-17",
     familyName: "Gia đình Bảo Châu",
     phone: "0912345678",
     familyMembers: [
@@ -245,7 +252,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "english",
     eventType: "test",
     program: "IELTS Foundation",
-    school: "Rino Bình Thạnh",
+    school: "RinoEdu Smart City",
     room: "Phòng IELTS",
     classroom: "Phòng IELTS",
     testTime: "2026-05-21 10:00",
@@ -273,6 +280,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0006",
     childName: "Minh Khoa",
+    dob: "2016-09-22",
     familyName: "Gia đình Minh Khoa",
     phone: "0901456789",
     familyMembers: [{ name: "Nguyễn Khang (Bố)", phone: "0901456789", isPrimary: true }],
@@ -283,7 +291,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "math",
     eventType: "test",
     program: "Toán tư duy",
-    school: "Rino Tô Ký",
+    school: "RinoEdu Linh Đàm",
     room: "Phòng M1",
     classroom: "Phòng M1",
     testTime: "2026-05-17 15:30",
@@ -309,6 +317,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0007",
     childName: "Gia Bao",
+    dob: "2019-04-08",
     familyName: "Gia đình Gia Bảo",
     phone: "0977567890",
     familyMembers: [{ name: "Đặng Minh (Bố)", phone: "0977567890", isPrimary: true }],
@@ -317,7 +326,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "english",
     eventType: "test",
     program: "Tiếng Anh thiếu nhi",
-    school: "Rino Nguyễn Tuân",
+    school: "RinoEdu Nguyễn Tuân",
     room: "Phòng K2",
     classroom: "Phòng K2",
     testTime: "2026-05-16 09:30",
@@ -343,6 +352,7 @@ export const mockBookingTests: BookingTest[] = [
   {
     id: "E0008",
     childName: "Thanh Huong",
+    dob: "2015-12-03",
     familyName: "Gia đình Thanh Hương",
     phone: "0938456789",
     familyMembers: [
@@ -356,7 +366,7 @@ export const mockBookingTests: BookingTest[] = [
     subject: "math",
     eventType: "test",
     program: "Toán Olympiad",
-    school: "Rino Bình Thạnh",
+    school: "RinoEdu Smart City",
     room: "Phòng 301",
     classroom: "Phòng 301",
     testTime: "2026-05-15 14:30",

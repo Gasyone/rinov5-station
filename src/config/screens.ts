@@ -9,7 +9,7 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Tổng quan các chỉ số và hoạt động chính',
   },
   calendar_class_schedule: {
-    label: 'Lịch lớp học',
+    label: 'Lịch học',
     description: 'Quản lý và xem lịch lớp học',
   },
   calendar_event_schedule: {
@@ -21,16 +21,48 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Xem lịch cá nhân',
   },
   work_registration: {
-    label: 'Đăng ký lịch làm việc',
+    label: 'Đăng ký lịch',
     description: 'Đăng ký lịch cá nhân và quản lý lịch nhân viên theo trung tâm',
   },
+  calendar_class_schedule_v2: {
+    label: 'Lịch học',
+    description: 'Quản lý và xem lịch lớp học (v2)',
+  },
+  calendar_event_schedule_v2: {
+    label: 'Lịch sự kiện',
+    description: 'Quản lý và xem lịch sự kiện (v2)',
+  },
+  my_schedule_v2: {
+    label: 'Lịch của tôi',
+    description: 'Xem lịch cá nhân (v2)',
+  },
+  work_registration_v2: {
+    label: 'Đăng ký lịch',
+    description: 'Đăng ký lịch cá nhân và quản lý lịch nhân viên theo trung tâm (v2)',
+  },
   booking_test: {
-    label: 'Đặt lịch test',
+    label: 'Kiểm tra/Trải nghiệm',
     description: 'Quản lý lịch kiểm tra đầu vào',
+  },
+  booking_test_v2: {
+    label: 'Kiểm tra/ Trải nghiệm',
+    description: 'Quản lý lịch kiểm tra đầu vào (v2)',
   },
   trial_class: {
     label: 'Lớp học thử',
     description: 'Quản lý buổi học thử',
+  },
+  trial_class_v2: {
+    label: 'Lớp học thử',
+    description: 'Quản lý buổi học thử (v2)',
+  },
+  event_management_new: {
+    label: 'Quản lý sự kiện',
+    description: 'Quản lý danh sách sự kiện tuyển sinh và đón tiếp khách mời',
+  },
+  event_management_new_v2: {
+    label: 'Quản lý sự kiện',
+    description: 'Quản lý sự kiện (v2)',
   },
   orders: {
     label: 'Đơn hàng',
@@ -50,7 +82,7 @@ export const screens: Record<string, ScreenConfig> = {
   },
   classes: {
     label: 'Lớp học',
-    description: 'Quản lý lớp học',
+    description: 'Vận hành lớp học',
   },
   class_sessions: {
     label: 'Buổi học',
@@ -62,7 +94,7 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Kiểm duyệt điểm danh toàn trung tâm',
   },
   session_feedback: {
-    label: 'Nhận xét',
+    label: 'Nhận xét học viên',
     description: 'Quản lý nhận xét và đánh giá học viên theo buổi học',
   },
   teachers: {
@@ -128,5 +160,58 @@ export const screens: Record<string, ScreenConfig> = {
   care_rule_engine: {
     label: 'Quy tắc chăm sóc',
     description: 'Thiết lập quy tắc sinh phiếu tự động dựa trên hành vi học viên',
+  },
+
+  student_operations_alert: {
+    label: 'Theo dõi vận hành',
+    description: 'Giám sát chuyên cần, BTVN, điểm kiểm tra và cảnh báo CSKH',
+  },
+  care_schedule: {
+    label: 'Lịch hẹn chăm sóc',
+    description: 'Quản lý lịch hẹn gọi điện và điểm chạm chăm sóc học viên',
+  },
+  renewal: {
+    label: 'Tái phí học viên',
+    description: 'Quản lý chiến dịch tái phí, phễu giữ chân học viên và chồng phí tương lai',
+  },
+  qc_check: {
+    label: 'Kiểm tra chất lượng',
+    description: 'Tạo đợt QC, ghi nhận lỗi và phát hành báo cáo chất lượng',
+  },
+  qc_remediation: {
+    label: 'Khắc phục',
+    description: 'Theo dõi và xử lý các lỗi đã ghi nhận từ các đợt kiểm tra QC',
+  },
+  classes_v2: {
+    label: 'Lớp học',
+    description: 'Vận hành lớp học (v2)',
+  },
+  students_v2: {
+    label: 'Học viên',
+    description: 'Quản lý hồ sơ học viên (v2)',
+  },
+  teachers_v2: {
+    label: 'Giáo viên',
+    description: 'Quản lý giáo viên (v2)',
+  },
+  leave_reserve_v2: {
+    label: 'Bảo lưu & Chuyển lớp',
+    description: 'Quản lý yêu cầu bảo lưu, chuyển lớp và nghỉ học của học viên (v2)',
+  },
+  class_sessions_v2: {
+    label: 'Buổi học',
+    description: 'Quản lý và theo dõi buổi học (v2)',
+  },
+  attendance_v2: {
+    label: 'Điểm danh',
+    description: 'Kiểm duyệt điểm danh toàn trung tâm (v2)',
+  },
+  session_feedback_v2: {
+    label: 'Nhận xét học viên',
+    description: 'Quản lý nhận xét và đánh giá học viên theo buổi học (v2)',
+  },
+  system_config: {
+    label: 'Cấu hình hệ thống',
+    description: 'Quản lý cấu hình chung, branding và tham số vận hành bảo mật',
   },
 }

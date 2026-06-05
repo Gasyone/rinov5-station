@@ -1,6 +1,6 @@
 'use client'
 
-import { Mail, MessageCircle, Phone, UsersRound } from 'lucide-react'
+import { MessageCircle, UsersRound } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -15,8 +15,9 @@ import {
   EmptyState,
   EntityCell,
   StatusBadge,
+  ContactCell,
 } from '@/components/shared'
-import { formatDateTime, maskPhone } from '@/lib/format'
+import { formatDateTime } from '@/lib/format'
 import type { Contact } from '@/mocks/contacts'
 import { SOURCE_LABELS } from './contactsTypes'
 
@@ -29,7 +30,7 @@ interface ContactsTableProps {
 
 const COLUMNS: Array<{ label: string; className?: string }> = [
   { label: 'Contact' },
-  { label: 'Contact info', className: 'min-w-52' },
+  { label: 'Liên hệ', className: 'min-w-52' },
   { label: 'Source', className: 'min-w-32' },
   { label: 'Interest', className: 'min-w-44' },
   { label: 'Branch', className: 'min-w-44' },
@@ -78,17 +79,13 @@ export function ContactsTable({
             <TableCell>
               <EntityCell name={contact.name} supporting={contact.id.toUpperCase()} />
             </TableCell>
-            <TableCell>
-              {contact.email ? (
-                <div className="flex items-center gap-1.5 text-xs">
-                  <Mail className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate">{contact.email}</span>
-                </div>
-              ) : null}
-              <div className="flex items-center gap-1.5 font-mono text-xs">
-                <Phone className="h-3 w-3 text-muted-foreground" />
-                {maskPhone(contact.phone)}
-              </div>
+            <TableCell onClick={(e) => e.stopPropagation()}>
+              <ContactCell
+                phone={contact.phone}
+                email={contact.email}
+                studentId={contact.id}
+                studentName={contact.name}
+              />
             </TableCell>
             <TableCell>
               <Badge variant="outline" className="rounded-md text-[10px]">

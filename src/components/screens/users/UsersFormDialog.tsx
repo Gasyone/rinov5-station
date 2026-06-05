@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { FieldLabel } from '@/components/shared'
-import { ToolbarSelect } from '@/components/controls'
+import { BranchSelect, ToolbarSelect } from '@/components/controls'
 import type { User } from '@/mocks/users'
 import { ROLE_LABELS } from './usersTypes'
 
@@ -101,14 +101,14 @@ export function UsersFormDialog({
               className="h-9 min-w-full"
             />
           </FieldLabel>
-          <FieldLabel label="Branch" required className="md:col-span-2">
-            <ToolbarSelect
+          <FieldLabel label="School" required className="md:col-span-2">
+            <BranchSelect
               value={value.branch}
-              ariaLabel="Branch"
-              options={[
-                { value: '', label: 'Select branch' },
-                ...branches.map((b) => ({ value: b, label: b })),
-              ]}
+              branches={branches}
+              variant="inline"
+              includeAll={false}
+              placeholder="Select school"
+              ariaLabel="School"
               onValueChange={(v) => update('branch', v)}
               className="h-9 min-w-full"
             />

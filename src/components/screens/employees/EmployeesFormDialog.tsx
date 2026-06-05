@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldLabel } from '@/components/shared'
-import { ToolbarSelect } from '@/components/controls'
+import { BranchSelect, ToolbarSelect } from '@/components/controls'
 import type { Employee } from '@/mocks/employees'
 
 const STATUS_OPTIONS: Array<{ value: Employee['status']; label: string }> = [
@@ -132,14 +132,14 @@ export function EmployeesFormDialog({
           <FieldLabel label="Position" required>
             <Input value={value.position} onChange={(e) => update('position', e.target.value)} />
           </FieldLabel>
-          <FieldLabel label="Branch" required>
-            <ToolbarSelect
+          <FieldLabel label="School" required>
+            <BranchSelect
               value={value.branch}
-              ariaLabel="Branch"
-              options={[
-                { value: '', label: 'Select branch' },
-                ...branches.map((b) => ({ value: b, label: b })),
-              ]}
+              branches={branches}
+              variant="inline"
+              includeAll={false}
+              placeholder="Select school"
+              ariaLabel="School"
               onValueChange={(v) => update('branch', v)}
               className="h-9 min-w-full"
             />

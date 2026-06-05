@@ -8,8 +8,9 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterSheetPanel,
-  type FilterSection,
+  FilterGroupSheetPanel,
+  createFilterGroup,
+  type FilterGroupConfig,
 } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import type { Product } from '@/mocks/products'
@@ -66,28 +67,21 @@ export function ProductsScreen() {
 
   const activeFilterCount = filters.branches.length + filters.categories.length
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
+      createFilterGroup({
         id: 'branches',
-        title: 'Branch',
-        options: branches.map((b) => ({
-          value: b,
-          label: b,
-          count: products.filter((p) => p.branch === b).length,
-          checked: filters.branches.includes(b),
-        })),
-      },
-      {
+        options: branches,
+        selectedValues: filters.branches,
+        getOptionCount: (branch) => products.filter((p) => p.branch === branch).length,
+      }),
+      createFilterGroup({
         id: 'categories',
-        title: 'Category',
-        options: categories.map((c) => ({
-          value: c,
-          label: CATEGORY_LABELS[c],
-          count: products.filter((p) => p.category === c).length,
-          checked: filters.categories.includes(c),
-        })),
-      },
+        options: categories,
+        selectedValues: filters.categories,
+        getOptionLabel: (category) => CATEGORY_LABELS[category as Product['category']],
+        getOptionCount: (category) => products.filter((p) => p.category === category).length,
+      }),
     ],
     [branches, categories, products, filters]
   )
@@ -183,11 +177,11 @@ export function ProductsScreen() {
         </DataTableFrame>
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Product filters"
         description="Filter by branch and category."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)

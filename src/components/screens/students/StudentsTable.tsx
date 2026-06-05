@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, Fragment } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,10 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { EmptyState, StatusBadge, EntityCell } from '@/components/shared'
-import { Eye, GraduationCap, Mail, Phone, Calendar } from 'lucide-react'
-import type { Student } from '@/mocks/students'
+import { EmptyState, StatusBadge, EntityCell, ContactCell } from '@/components/shared'
+import { Eye, GraduationCap, Phone, Calendar, ChevronDown, ChevronRight, CornerDownRight, LifeBuoy } from 'lucide-react'
+import type { Student, EnrolledClass } from '@/mocks/students'
+import { getFamilyContacts } from '@/mocks/careAlerts'
 import { STUDENT_STATUS_LABELS } from './studentTypes'
+import { ScheduleSummary } from '@/components/screens/classes/ScheduleSummary'
+import { Badge } from '@/components/ui/badge'
+import { getStatusBadgeClass } from '@/lib/statusColors'
+import { useCallStore } from '@/stores/useCallStore'
 
 interface StudentsTableProps {
   students: Student[]
@@ -21,7 +27,34 @@ interface StudentsTableProps {
   onToggleAll: (checked: boolean, ids: string[]) => void
   onToggleOne: (id: string, checked: boolean) => void
   onView: (studentId: string) => void
+  onCreateTicket: (studentId: string) => void
 }
+
+function getStudentStudyDuration(classes?: EnrolledClass[]) {
+  if (!classes || classes.length === 0) return null
+  
+  let minStart: string | undefined
+  let maxEnd: string | undefined
+  
+  classes.forEach((c) => {
+    if (c.startDate) {
+      if (!minStart || c.startDate < minStart) {
+        minStart = c.startDate
+      }
+    }
+    if (c.endDate) {
+      if (!maxEnd || c.endDate > maxEnd) {
+        maxEnd = c.endDate
+      }
+    }
+  })
+  
+  return {
+    startDate: minStart,
+    endDate: maxEnd,
+  }
+}
+
 
 export function StudentsTable({
   students,
@@ -29,31 +62,54 @@ export function StudentsTable({
   onToggleAll,
   onToggleOne,
   onView,
+  onCreateTicket,
 }: StudentsTableProps) {
   const pageIds = students.map((s) => s.id)
   const isPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id))
 
+  // Trạng thái mở rộng dòng học viên
+  const [expandedStudentIds, setExpandedStudentIds] = useState<string[]>([])
+
+  const toggleExpand = (studentId: string) => {
+    setExpandedStudentIds((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    )
+  }
+
+  const initials = (name: string) => {
+    if (!name) return ''
+    return name.split(' ').map((w) => w[0]).slice(-2).join('').toUpperCase()
+  }
+
   return (
-    <Table containerClassName="min-w-full overflow-visible" className="min-w-[1000px] align-top">
+    <Table containerClassName="min-w-full overflow-visible" className="min-w-[2200px] align-top">
       <TableHeader>
-        <TableRow className="border-b bg-muted/50 hover:bg-muted/50">
-          <TableHead className="sticky left-0 z-30 w-12 min-w-12 max-w-12 bg-muted/50 text-center">
+        <TableRow className="border-b bg-muted hover:bg-muted">
+          <TableHead className="sticky left-0 z-30 w-12 min-w-12 max-w-12 bg-muted text-center border-r border-border/10">
             <Checkbox
               checked={isPageSelected}
               onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
             />
           </TableHead>
-          <TableHead className="sticky left-12 z-20 w-64 min-w-64 max-w-64 bg-muted/50">Học viên</TableHead>
-          <TableHead className="min-w-80">Ghi danh</TableHead>
-          <TableHead className="min-w-80">Phụ huynh liên hệ</TableHead>
-          <TableHead className="min-w-80">Ngày sinh / Ghi danh</TableHead>
-          <TableHead className="min-w-100">Trạng thái</TableHead>
+          <TableHead className="sticky left-12 z-20 w-80 min-w-80 max-w-80 bg-muted border-r border-border/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Học viên/Gói học</TableHead>
+          <TableHead className="min-w-64">Liên hệ / GV phụ trách</TableHead>
+          <TableHead className="min-w-60">Lớp học</TableHead>
+          <TableHead className="min-w-52">Ngày sinh / Lịch học</TableHead>
+          <TableHead className="min-w-44">Trạng thái</TableHead>
+          <TableHead className="min-w-44">Trình độ & Sub level</TableHead>
+          <TableHead className="min-w-44">Thời gian học</TableHead>
+          <TableHead className="min-w-56">Trường & Phòng học</TableHead>
+          <TableHead className="min-w-72">Chương trình & lộ trình</TableHead>
+          <TableHead className="min-w-72">Khung chương trình</TableHead>
+          <TableHead className="min-w-60">Bài học tiếp theo</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {students.length === 0 ? (
           <TableRow className="border-b-0">
-            <TableCell colSpan={6} className="h-48 text-center">
+            <TableCell colSpan={12} className="h-48 text-center">
               <EmptyState
                 icon={<GraduationCap className="h-7 w-7 text-muted-foreground" />}
                 title="Không có học viên nào"
@@ -63,72 +119,341 @@ export function StudentsTable({
             </TableCell>
           </TableRow>
         ) : (
-          students.map((student) => (
-            <TableRow key={student.id} className="group cursor-pointer border-b-0">
-              <TableCell className="sticky left-0 z-30 w-12 min-w-12 max-w-12 bg-background text-center group-hover:bg-muted">
-                <Checkbox
-                  checked={selectedIds.has(student.id)}
-                  onCheckedChange={(checked) => onToggleOne(student.id, Boolean(checked))}
-                />
-              </TableCell>
-              <TableCell className="sticky left-12 z-20 w-64 min-w-64 max-w-64 bg-background group-hover:bg-muted" onClick={() => onView(student.id)}>
-                <div className="relative z-10 max-w-full overflow-hidden pr-12">
-                  <EntityCell name={student.name} supporting={`STU-00${student.id.replace('s', '')}`} />
-                  <div
-                    className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 group-hover:flex"
-                    onClick={(e) => e.stopPropagation()}
+          students.map((student) => {
+            const isExpanded = expandedStudentIds.includes(student.id)
+            const activeClasses = student.enrolledClasses?.filter(c => c.status === 'active') || []
+            const familyContacts = getFamilyContacts(student.id, student.name)
+
+            // Compute subRows: fallback to dynamic virtual row representing their purchased package if no class assigned
+            const subRows: EnrolledClass[] = student.enrolledClasses && student.enrolledClasses.length > 0
+              ? student.enrolledClasses
+              : [
+                  {
+                    classCode: `UNASSIGNED-${student.id}`,
+                    className: 'Chưa xếp lớp',
+                    type: 'offline',
+                    scheduleSlots: [],
+                    teacherName: '-',
+                    status: 'wait_for_assignment',
+                    progress: student.totalSessions !== undefined && student.remainingSessions !== undefined
+                      ? `${student.totalSessions - student.remainingSessions} / ${student.totalSessions} buổi`
+                      : `0 / ${student.totalSessions || 24} buổi`,
+                    programName: student.packageName || 'Chương trình học',
+                    pathCode: '-',
+                    curriculumName: student.curriculum || '-',
+                    curriculumCode: '-',
+                    nextLessonName: '-',
+                    nextLessonDate: '-',
+                    branch: '-',
+                    room: '-',
+                    level: student.level || '-',
+                    subLevel: student.subLevel || '-',
+                    startDate: undefined,
+                    endDate: undefined,
+                  }
+                ]
+
+            return (
+              <Fragment key={student.id}>
+                {/* DÒNG CHA (HỌC VIÊN) */}
+                <TableRow className="group cursor-pointer border-b-0 hover:bg-muted transition-colors">
+                  <TableCell className="sticky left-0 z-30 w-12 min-w-12 max-w-12 bg-white dark:bg-zinc-950 text-center group-hover:bg-muted border-r border-border/10">
+                    <Checkbox
+                      checked={selectedIds.has(student.id)}
+                      onCheckedChange={(checked) => onToggleOne(student.id, Boolean(checked))}
+                    />
+                  </TableCell>
+                  <TableCell 
+                    className="sticky left-12 z-20 w-80 min-w-80 max-w-80 bg-white dark:bg-zinc-950 group-hover:bg-muted border-r border-border/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
+                    onClick={() => toggleExpand(student.id)}
                   >
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Xem hồ sơ"
-                      onClick={() => onView(student.id)}
-                      className="bg-transparent shadow-none hover:bg-transparent"
-                    >
-                      <Eye className="h-4 w-4 text-primary" />
-                    </Button>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="min-w-80" onClick={() => onView(student.id)}>
-                {student.enrolledClass ? (
-                  <>
-                    <div className="text-sm font-medium">{student.enrolledClass}</div>
-                    <div className="text-xs text-muted-foreground">{student.branch}</div>
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground italic">Chưa có lớp</span>
-                )}
-              </TableCell>
-              <TableCell className="min-w-80" onClick={() => onView(student.id)}>
-                {student.parentName ? (
-                  <>
-                    <div className="text-sm font-medium">{student.parentName}</div>
-                    {student.parentPhone && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        {student.parentPhone}
+                    <div className="relative z-10 max-w-full overflow-hidden pr-20">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleExpand(student.id)
+                          }}
+                          className="h-5 w-5 p-0 hover:bg-muted shrink-0 mr-1"
+                        >
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+
+                        <EntityCell name={student.name} supporting={`STU-00${student.id.replace('s', '')}`} />
                       </div>
+
+                      <div
+                        className="absolute right-1 top-1/2 hidden -translate-y-1/2 items-center gap-1 group-hover:flex"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Xem hồ sơ"
+                          onClick={() => onView(student.id)}
+                          className="bg-transparent shadow-none hover:bg-transparent"
+                        >
+                          <Eye className="h-4 w-4 text-primary" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Tạo yêu cầu hỗ trợ"
+                          onClick={() => onCreateTicket(student.id)}
+                          className="bg-transparent shadow-none hover:bg-transparent text-amber-500 hover:text-amber-600"
+                        >
+                          <LifeBuoy className="h-4 w-4" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Gọi điện cho phụ huynh"
+                          onClick={() =>
+                            useCallStore.getState().startCall({
+                              studentId: student.id,
+                              studentName: student.name,
+                              parentPhone: student.parentPhone || '0987654321',
+                              parentName: student.parentName || `Phụ huynh em ${student.name}`,
+                            })
+                          }
+                          className="bg-transparent shadow-none hover:bg-transparent text-emerald-600 hover:text-emerald-700"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* LIÊN HỆ */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <ContactCell
+                      name={student.parentName}
+                      phone={student.parentPhone}
+                      studentId={student.id}
+                      studentName={student.name}
+                      masked={true}
+                      additionalContacts={familyContacts.length > 1 ? familyContacts : undefined}
+                    />
+                  </TableCell>
+
+                  {/* LỚP HỌC */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    {activeClasses.length > 0 ? (
+                      <Badge variant="secondary" className="font-semibold text-[10px] bg-primary/10 text-primary hover:bg-primary/20 border-transparent">
+                        {activeClasses.length} lớp đang học
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
                     )}
-                  </>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
+                  </TableCell>
+
+                  {/* NGÀY SINH / LỊCH HỌC */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <div className="flex items-center gap-1.5 text-xs text-foreground">
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      {new Date(student.dob).toLocaleDateString('vi-VN')}
+                    </div>
+                  </TableCell>
+
+                  {/* TRẠNG THÁI */}
+                  <TableCell onClick={() => onView(student.id)}>
+                    <StatusBadge status={student.status} label={STUDENT_STATUS_LABELS[student.status] ?? student.status} />
+                  </TableCell>
+
+                  {/* TRÌNH ĐỘ & SUB LEVEL */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <div className="font-semibold text-foreground text-xs">{student.level || '-'}</div>
+                    <div className="text-[9px] text-muted-foreground">{student.subLevel || '-'}</div>
+                  </TableCell>
+
+                  {/* THỜI GIAN HỌC */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    {(() => {
+                      const duration = getStudentStudyDuration(student.enrolledClasses)
+                      if (!duration || (!duration.startDate && !duration.endDate)) {
+                        return <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
+                      }
+                      return (
+                        <>
+                          <div className="text-[10px] text-foreground font-medium">
+                            Từ: {duration.startDate ? new Date(duration.startDate).toLocaleDateString('vi-VN') : '-'}
+                          </div>
+                          <div className="text-[9px] text-muted-foreground">
+                            Đến: {duration.endDate ? new Date(duration.endDate).toLocaleDateString('vi-VN') : '-'}
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </TableCell>
+
+                  {/* TRƯỜNG & PHÒNG HỌC (Để trống ở dòng học viên) */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
+                  </TableCell>
+
+                  {/* CHƯƠNG TRÌNH & LỘ TRÌNH (Để trống ở dòng học viên) */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
+                  </TableCell>
+
+                  {/* KHUNG CHƯƠNG TRÌNH (Để trống ở dòng học viên) */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
+                  </TableCell>
+
+                  {/* BÀI HỌC TIẾP THEO (Để trống ở dòng học viên) */}
+                  <TableCell onClick={() => toggleExpand(student.id)}>
+                    <span className="text-muted-foreground/30 font-mono text-[10px]">-</span>
+                  </TableCell>
+                </TableRow>
+
+                {/* DÒNG CON (CHI TIẾT CÁC LỚP HỌC KHI MỞ RỘNG) */}
+                {isExpanded && (
+                  subRows.map((cls) => (
+                    <TableRow 
+                      key={cls.classCode}
+                      className="text-[11px] bg-zinc-50/70 dark:bg-zinc-900/60 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 border-b border-border/40 border-l border-l-border/80 transition-colors"
+                      onClick={() => onView(student.id)}
+                    >
+                      {/* Checkbox trống (Sticky để giữ thẳng cột) */}
+                      <TableCell className="sticky left-0 z-30 w-12 min-w-12 max-w-12 bg-zinc-50 dark:bg-zinc-900 text-center py-2 border-r border-border/10" onClick={(e) => e.stopPropagation()} />
+
+                      {/* Gói đăng ký và Số buổi của gói */}
+                      <TableCell className="sticky left-12 z-20 w-80 min-w-80 max-w-80 bg-zinc-50 dark:bg-zinc-900 group-hover:bg-muted pl-6 py-2 border-r border-border/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                        <div className="flex items-center gap-2">
+                          <CornerDownRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                          <div className="flex flex-col">
+                            <div className="font-semibold text-foreground text-xs">{cls.programName || 'Chương trình học'}</div>
+                            <div className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                              Đã học: <span className="font-semibold text-foreground">{cls.progress}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* Giáo viên phụ trách */}
+                      <TableCell className="py-2">
+                        {cls.teacherName === '-' ? (
+                          <span className="text-muted-foreground/50">-</span>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary" title={cls.teacherName}>
+                              {initials(cls.teacherName)}
+                            </div>
+                            <span className="text-xs font-medium text-foreground">{cls.teacherName}</span>
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {/* Lớp học và Mã lớp */}
+                      <TableCell className="py-2">
+                        {cls.classCode.startsWith('UNASSIGNED') ? (
+                          <span className="text-muted-foreground font-medium text-xs">Chưa xếp lớp</span>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-foreground text-xs">{cls.className}</span>
+                              <Badge variant="outline" className={`font-semibold px-1 py-0 rounded text-[8px] uppercase shrink-0 ${getStatusBadgeClass(cls.type)}`}>
+                                {cls.type === 'offline' ? 'Offline' : 'Online Tutor'}
+                              </Badge>
+                            </div>
+                            <div className="text-[9px] text-primary font-semibold font-mono">{cls.classCode}</div>
+                          </>
+                        )}
+                      </TableCell>
+
+                      {/* Lịch học */}
+                      <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                        {cls.scheduleSlots.length === 0 ? (
+                          <span className="text-muted-foreground/50">-</span>
+                        ) : (
+                          <ScheduleSummary scheduleSlots={cls.scheduleSlots} className={cls.className} />
+                        )}
+                      </TableCell>
+
+                      {/* Trạng thái lớp */}
+                      <TableCell className="py-2">
+                        <StatusBadge status={cls.status} label={cls.status === 'active' ? 'Đang học' : cls.status === 'session_ended' ? 'Hết buổi' : cls.status === 'pending_transfer' ? 'Chờ chuyển' : cls.status === 'wait_for_assignment' ? 'Chờ xếp lớp' : 'Không hoạt động'} />
+                      </TableCell>
+
+                      {/* Trình độ lớp sub-row */}
+                      <TableCell className="py-2">
+                        <div className="font-medium text-foreground text-xs">{cls.level || '-'}</div>
+                        <div className="text-[9px] text-muted-foreground">{cls.subLevel || '-'}</div>
+                      </TableCell>
+
+
+
+                      {/* Thời gian học lớp sub-row */}
+                      <TableCell className="py-2">
+                        <div className="text-[10px] text-foreground font-medium">
+                          Từ: {cls.startDate ? new Date(cls.startDate).toLocaleDateString('vi-VN') : '-'}
+                        </div>
+                        <div className="text-[9px] text-muted-foreground">
+                          Đến: {cls.endDate ? new Date(cls.endDate).toLocaleDateString('vi-VN') : '-'}
+                        </div>
+                      </TableCell>
+
+                      {/* Trường & phòng học lớp sub-row */}
+                      <TableCell className="py-2">
+                        {cls.type === 'online_tutor' ? (
+                          <div className="text-muted-foreground text-xs">-</div>
+                        ) : (
+                          <>
+                            <div className="text-xs font-semibold text-foreground line-clamp-1 max-w-[160px]" title={cls.branch}>
+                              {cls.branch || '-'}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-medium">
+                              Phòng: {cls.room || '-'}
+                            </div>
+                          </>
+                        )}
+                      </TableCell>
+
+                      {/* Chương trình & lộ trình lớp sub-row */}
+                      <TableCell className="py-2">
+                        <div className="text-xs font-semibold text-foreground line-clamp-1 max-w-[200px]" title={cls.programName}>
+                          {cls.programName || '-'}
+                        </div>
+                        <div className="text-[9px] text-primary font-semibold font-mono" title={cls.pathCode}>
+                          {cls.pathCode || '-'}
+                        </div>
+                      </TableCell>
+
+                      {/* Khung chương trình lớp sub-row */}
+                      <TableCell className="py-2">
+                        <div className="text-xs font-semibold text-foreground line-clamp-1 max-w-[200px]" title={cls.curriculumName}>
+                          {cls.curriculumName || '-'}
+                        </div>
+                        <div className="text-[9px] text-primary font-semibold font-mono text-muted-foreground/70" title={cls.curriculumCode}>
+                          {cls.curriculumCode || '-'}
+                        </div>
+                      </TableCell>
+
+                      {/* Bài học tiếp theo lớp sub-row */}
+                      <TableCell className="py-2">
+                        <div className="text-xs font-semibold text-foreground line-clamp-1 max-w-[200px]" title={cls.nextLessonName}>
+                          {cls.nextLessonName || '-'}
+                        </div>
+                        <div className="text-[9px] text-amber-600 font-semibold font-mono whitespace-nowrap" title={cls.nextLessonDate}>
+                          {cls.nextLessonDate || '-'}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
-              </TableCell>
-              <TableCell className="min-w-80" onClick={() => onView(student.id)}>
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  {new Date(student.dob).toLocaleDateString('vi-VN')}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Ghi danh: {new Date(student.enrollmentDate).toLocaleDateString('vi-VN')}
-                </div>
-              </TableCell>
-              <TableCell className="min-w-100" onClick={() => onView(student.id)}>
-                <StatusBadge status={student.status} label={STUDENT_STATUS_LABELS[student.status] ?? student.status} />
-              </TableCell>
-            </TableRow>
-          ))
+              </Fragment>
+            )
+          })
         )}
       </TableBody>
     </Table>

@@ -5,6 +5,15 @@ Không ghi chú các thay đổi về Source Code (Dev) tại đây.
 
 ## [Unreleased] - 2026-05-22
 
+### Added (Thêm mới)
+- **[CAP-NOTIFICATION]** Tạo mới `CAP-NOTIFICATION-notification-center.md` — Năng lực Trung tâm Thông báo In-App. Phân lớp Supporting Capabilities (Layer 2).
+- **[BF-NOTIF-01]** Tạo mới `BF-NOTIF-01-quan-ly-trung-tam-thong-bao.md` — Quản lý vòng đời thông báo: Bell Icon, Badge, Panel, Đọc/Chưa đọc, Filter, Delete. 6 Business Rules: Badge accuracy, Data Scope, Click-to-Navigate, Auto-Archive, Rate Limit, DND.
+- **[BF-NOTIF-02]** Tạo mới `BF-NOTIF-02-routing-rules.md` — Routing Rules: ánh xạ 18 sự kiện nghiệp vụ từ 8 CAPs → Notification cho người nhận. Bảng Master Routing Table đầy đủ.
+- **[US-NOTIF-01]** Tạo mới `US-NOTIF-01-notification-center.md` — User Story chi tiết: Bell Icon + Badge + Notification Panel + Notification Item + Segmented Control + Mock Data. 8 Business Rules, 8 Exception Cases, 14 SMART AC, 10 Self-Verification.
+- **[NotificationDropdown]** Tạo component `NotificationDropdown.tsx` + `notificationHelpers.ts` — Dropdown panel với SegmentedControl, Badge unread, Priority colors, Relative time, Filter, Mark as Read, Delete.
+- **[HeaderBar]** Thay thế notification placeholder tĩnh bằng `<NotificationDropdown />` component thực tế. Xóa import Bell thừa.
+- **[DESIGN_SYSTEM]** Thêm §12 "Notification Patterns" — Bell Icon + Badge spec, Panel spec, Notification Item spec, Data Flow, Compliance Checklist. Update version 1.1 → 1.2.
+
 ### Removed (Xóa / Ngừng sử dụng)
 - **~~`BF-CLS-01` (Xếp lớp)~~** — Không còn là BF riêng. Nghiệp vụ xếp lớp được hợp nhất vào `BF-CLS-03` (Quản lý Học viên) dưới dạng trạng thái "Chờ xếp lớp". Không còn menu màn hình `/app/class_assignment` — chức năng xếp lớp tích hợp vào `/app/students` với bộ lọc trạng thái.
 
@@ -35,6 +44,13 @@ Không ghi chú các thay đổi về Source Code (Dev) tại đây.
 - **[Avatars]** Giáo viên chủ nhiệm dùng avatar + hover → mini profile. Giáo viên dạy thay hiển thị nhiều avatar (dashed border) với tooltip lý do thay.
 - **[ScheduleSummary]** Lịch học hiển thị dạng badge "T2 18:00" giống booking_test, nhiều dòng nếu có nhiều buổi. Nút "+N" mở modal mở rộng.
 - **[Mock data]** Thêm `scheduleSlots` và `substituteTeachers[]` vào `classRecords.ts`.
+
+- **[ScheduleSummary]** Hiển thị tối đa 2 dòng lịch học, từ dòng 3+ → icon Calendar mở modal chi tiết.
+- **[Mock data]** Thêm `learningPath`, `syllabus`, `subLevel`, `nextSession` vào `classRecords.ts`.
+- **[Cột mới]** Thêm "Lộ trình" (dưới Chương trình), "Khung chương trình" (tên + phiên bản), "Trình độ" (level + subLevel).
+- **[Wider columns]** Mở rộng min-w cho tất cả cột, table min-w 1500px, scroll ngang.
+- **[Cột giáo viên]** Chỉ avatar, bỏ tên/title, hover → mini profile.
+- **[Trình độ]** Hiển thị level chính + subLevel nhỏ bên dưới.
 
 ## [Unreleased] - 2026-05-16
 

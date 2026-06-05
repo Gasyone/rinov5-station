@@ -9,8 +9,9 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterSheetPanel,
-  type FilterSection,
+  FilterGroupSheetPanel,
+  createFilterGroup,
+  type FilterGroupConfig,
 } from '@/components/filters'
 import { ConfirmDialog, MetricTile } from '@/components/shared'
 import type { Contact } from '@/mocks/contacts'
@@ -78,38 +79,27 @@ export function ContactsScreen() {
   const activeFilterCount =
     filters.branches.length + filters.sources.length + filters.assignees.length
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
+      createFilterGroup({
         id: 'branches',
-        title: 'Branch',
-        options: branches.map((b) => ({
-          value: b,
-          label: b,
-          count: contacts.filter((c) => c.branch === b).length,
-          checked: filters.branches.includes(b),
-        })),
-      },
-      {
+        options: branches,
+        selectedValues: filters.branches,
+        getOptionCount: (branch) => contacts.filter((c) => c.branch === branch).length,
+      }),
+      createFilterGroup({
         id: 'sources',
-        title: 'Source',
-        options: sources.map((s) => ({
-          value: s,
-          label: SOURCE_LABELS[s],
-          count: contacts.filter((c) => c.source === s).length,
-          checked: filters.sources.includes(s),
-        })),
-      },
-      {
+        options: sources,
+        selectedValues: filters.sources,
+        getOptionLabel: (source) => SOURCE_LABELS[source as Contact['source']],
+        getOptionCount: (source) => contacts.filter((c) => c.source === source).length,
+      }),
+      createFilterGroup({
         id: 'assignees',
-        title: 'Assigned to',
-        options: assignees.map((a) => ({
-          value: a,
-          label: a,
-          count: contacts.filter((c) => c.assignedTo === a).length,
-          checked: filters.assignees.includes(a),
-        })),
-      },
+        options: assignees,
+        selectedValues: filters.assignees,
+        getOptionCount: (assignee) => contacts.filter((c) => c.assignedTo === assignee).length,
+      }),
     ],
     [branches, sources, assignees, contacts, filters]
   )
@@ -215,11 +205,11 @@ export function ContactsScreen() {
         </DataTableFrame>
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Contact filters"
         description="Filter by branch, source, and assigned sales rep."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)

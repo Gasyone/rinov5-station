@@ -15,9 +15,9 @@
   --primary-foreground: hsl(0 0% 98%);
   --secondary: hsl(185 15% 95%);
   --secondary-foreground: hsl(200 15% 18%);
-  --muted: hsl(185 12% 96%);
+  --muted: hsl(185 14% 92%);
   --muted-foreground: hsl(195 5% 45%);
-  --accent: hsl(185 20% 93%);
+  --accent: hsl(185 18% 89%);
   --accent-foreground: hsl(200 15% 18%);
   --destructive: hsl(0 84.2% 60.2%);
   --destructive-foreground: hsl(0 0% 98%);
@@ -148,3 +148,36 @@
     background-color: color-mix(in srgb, var(--muted-foreground) 36%, transparent);
   }
 }
+
+/* Tự động điều chỉnh tỷ lệ hiển thị (Responsive Scaling) dựa trên độ phân giải màn hình.
+   Sử dụng font-size trên html giúp toàn bộ giao diện dùng rem scale tỉ lệ hoàn hảo,
+   đồng thời sửa lỗi định vị lệch vị trí của các select/dropdown/popover (Floating UI) và hoạt động tốt trên mọi trình duyệt. */
+:root {
+  --app-height: 100vh;
+}
+
+@media (min-width: 1600px) {
+  html {
+    font-size: 105%;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 112.5%;
+  }
+}
+
+@media (min-width: 2560px) {
+  html {
+    font-size: 125%;
+  }
+}
+
+@media (min-width: 3440px) {
+  html {
+    font-size: 140%;
+  }
+}
+
+

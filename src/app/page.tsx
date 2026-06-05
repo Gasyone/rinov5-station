@@ -6,7 +6,7 @@ export default async function RootPage() {
   const isAuthenticated = cookieStore.get('auth_session')?.value === 'true'
 
   if (isAuthenticated) {
-    redirect('/app/dashboard')
+    redirect('/app/calendar_class_schedule')
   }
   redirect('/login')
 }

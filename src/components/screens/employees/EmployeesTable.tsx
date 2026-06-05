@@ -1,6 +1,6 @@
 'use client'
 
-import { Mail, Phone, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -15,8 +15,9 @@ import {
   EmptyState,
   EntityCell,
   StatusBadge,
+  ContactCell,
 } from '@/components/shared'
-import { formatCurrency, formatDate, maskPhone } from '@/lib/format'
+import { formatCurrency, formatDate } from '@/lib/format'
 import type { Employee } from '@/mocks/employees'
 
 interface EmployeesTableProps {
@@ -30,7 +31,7 @@ interface EmployeesTableProps {
 const COLUMNS: Array<{ label: string; className?: string }> = [
   { label: 'Employee' },
   { label: 'Position', className: 'min-w-44' },
-  { label: 'Contact', className: 'min-w-52' },
+  { label: 'Liên hệ', className: 'min-w-52' },
   { label: 'Branch', className: 'min-w-44' },
   { label: 'Contract', className: 'min-w-32' },
   { label: 'Hired', className: 'min-w-28' },
@@ -86,15 +87,13 @@ export function EmployeesTable({
               <p className="truncate text-sm font-medium">{employee.position}</p>
               <p className="text-xs text-muted-foreground">{employee.department}</p>
             </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1.5 text-xs">
-                <Mail className="h-3 w-3 text-muted-foreground" />
-                <span className="truncate">{employee.email}</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-mono text-xs">
-                <Phone className="h-3 w-3 text-muted-foreground" />
-                {maskPhone(employee.phone)}
-              </div>
+            <TableCell onClick={(e) => e.stopPropagation()}>
+              <ContactCell
+                phone={employee.phone}
+                email={employee.email}
+                studentId={employee.id}
+                studentName={employee.name}
+              />
             </TableCell>
             <TableCell className="text-sm">{employee.branch}</TableCell>
             <TableCell>

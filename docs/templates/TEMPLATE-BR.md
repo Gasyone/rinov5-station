@@ -130,17 +130,3 @@ tags: [br, business, stakeholder]
 |-----------|------|------------------|-----------|---------|
 | v0.1 | YYYY-MM-DD | [Tên / Vai trò] | Draft | Tạo mới |
 | v1.0 | | | Approved | |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- BR là **đầu vào**, không phải đầu ra. AI **KHÔNG** tự sinh BR — phải có người ký xác nhận.
-- Khi BR thay đổi, **PHẢI** trigger review tất cả SR/CAP/BF/US trace về nó (xem `TRACEABILITY-MATRIX.md`).
-- Khi viết CAP/BF/US mới, **PHẢI** trace ngược về BR cha. Nếu không trace được → tạo BR mới hoặc loại bỏ CAP/BF/US đó.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** đặt giải pháp kỹ thuật vào BR (UI, API, schema, component name).
-- **KHÔNG** copy nội dung từ CAP/BF/US ngược lên BR — quan hệ là **xuôi**, không ngược.
-- **KHÔNG** dùng động từ kỹ thuật ("triển khai", "tích hợp API", "render UI") trong BR. Dùng động từ kinh doanh ("giảm", "tăng", "đảm bảo", "loại bỏ").
-- **KHÔNG** thêm BR mới mà không có Owner ký xác nhận trong Approval Log.

@@ -3,24 +3,26 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { getTeachers } from '@/mocks/teacherRecords'
+import { getTeachers, mockTeachers } from '@/mocks/teacherRecords'
 import { TeachersToolbar } from './TeachersToolbar'
 import { TeachersTable } from './TeachersTable'
+import { TeacherDetailDialog } from './TeacherDetailDialog'
 import type { TeacherStatusId } from './teacherTypes'
 
 export function TeachersScreen() {
   const [activeStatus, setActiveStatus] = useState<TeacherStatusId>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [branchFilter, setBranchFilter] = useState('')
+  const [branchFilter, setBranchFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [activeTeacherId, setActiveTeacherId] = useState<string | null>(null)
 
   const filtered = useMemo(
     () =>
       getTeachers({
         search: searchQuery,
-        branch: branchFilter || undefined,
+        branch: branchFilter === 'all' || !branchFilter ? undefined : branchFilter,
         status: activeStatus === 'all' ? undefined : activeStatus,
       }),
     [searchQuery, branchFilter, activeStatus],
@@ -29,6 +31,8 @@ export function TeachersScreen() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const currentPage = Math.min(page, totalPages)
   const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  const activeTeacher = activeTeacherId ? mockTeachers.find((t) => t.id === activeTeacherId) || null : null
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -67,10 +71,18 @@ export function TeachersScreen() {
                 return next
               })
             }}
-            onView={() => toast.info('Xem hồ sơ giáo viên')}
+            onView={(id) => setActiveTeacherId(id)}
           />
         </DataTableFrame>
       </div>
+
+      <TeacherDetailDialog
+        teacher={activeTeacher}
+        open={!!activeTeacherId}
+        onOpenChange={(open) => {
+          if (!open) setActiveTeacherId(null)
+        }}
+      />
     </div>
   )
 }

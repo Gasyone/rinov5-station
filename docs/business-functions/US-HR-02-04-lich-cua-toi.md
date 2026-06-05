@@ -1,115 +1,125 @@
 ---
 id: US-HR-02-04
-title: "Lịch của tôi"
+title: "Xem Lịch của tôi (My Schedule / Super Aggregator)"
 bf: BF-HR-02
 domain: CAP-HR
 status: standardized
-tags: [schedule, calendar, personal, aggregator]
+tags: [schedule, calendar, personal, aggregator, hr]
 ---
 
-# US-HR-02-04: Xem Lịch của tôi (My Schedule / Aggregator)
+# US-HR-02-04: Xem Lịch của tôi (My Schedule / Super Aggregator)
 
-> **Tham chiếu:** BF-HR-02 · Giao diện Mẫu §4.2 (Danh sách dạng Grid)
+> **Tham chiếu:** BF-HR-02 · `[POLICY-HR-01]` · Giao diện Mẫu §4.2 (Danh sách dạng Grid / Calendar cá nhân)
 
 ## 1. Yêu cầu Người dùng (User Story)
-**Là một** Nhân sự của tổ chức (Giáo viên, Trợ giảng, Nhân viên, Tư vấn viên), **tôi muốn** xem toàn bộ lịch làm việc cá nhân của mình được tổng hợp từ tất cả các hệ thống (Lớp học, Sự kiện, Học thử, Booking Test), **để** biết chính xác các công việc/thời gian mình đã được phân bổ trong ngày/tuần và chủ động sắp xếp công việc cá nhân.
+
+**Là một** Nhân sự của tổ chức (Giáo viên, Trợ giảng, Nhân viên Tư vấn, Quản lý),
+**tôi muốn** xem toàn bộ lịch làm việc cá nhân của mình được tổng hợp từ tất cả các hệ thống (Lịch dạy Lớp học, Lịch coi thi Booking Test, Lịch Học thử, Lịch họp nội bộ, Lịch nghỉ phép),
+**để** biết chính xác các công việc và khung thời gian mình đã được phân bổ trong ngày/tuần, từ đó chủ động sắp xếp công việc cá nhân, đảm bảo đúng giờ và chuẩn bị kỹ lưỡng cho công việc giảng dạy/tư vấn.
 
 > **Kiểm tra chất lượng (INVEST):**
-> - [x] **I**ndependent — Triển khai hiển thị độc lập, đóng vai trò Consumer.
-> - [x] **N**egotiable — Giao diện có thể điều chỉnh tùy theo các bộ lọc.
-> - [x] **V**aluable — Tạo ra "Một nguồn sự thật" (Single source of truth) về thời gian làm việc cho nhân viên.
-> - [x] **E**stimable — Dễ dàng ước lượng do chỉ là màn hiển thị tổng hợp dữ liệu.
-> - [x] **S**mall — Gói gọn trong một màn hình Dashboard/Lịch cá nhân.
-> - [x] **T**estable — Có thể tạo dữ liệu giả từ nhiều nguồn để kiểm thử sự hợp nhất (Aggregator).
+> - [x] **I**ndependent — Triển khai hiển thị hoàn toàn độc lập với các bảng nghiệp vụ.
+> - [x] **N**egotiable — Giao diện hỗ trợ linh hoạt 3 dạng: Grid, List Agenda, Timeline.
+> - [x] **V**aluable — Cực kỳ giá trị với Giáo viên "chạy show" nhiều nhánh, nhiều lớp.
+> - [x] **E**stimable — Rõ ràng về data model (Super Unified Model).
+> - [x] **S**mall — Chỉ tập trung vào UI Rendering cho 1 `current_user`.
+> - [x] **T**estable — Có 12+ tiêu chí nghiệm thu chặt chẽ.
 
 ---
 
 ## 2. Quy tắc Nghiệp vụ (Business Rules)
 
-1. **[RULE-AGGR-01] Mô hình Producer - Consumer:** 
-   - Màn hình này đóng vai trò là **Consumer** (Tiêu thụ dữ liệu). 
-   - Các phân hệ khác như `BF-OPS-02` (Xếp lịch lớp), `BF-ENR-01` (Booking Test), `BF-ENR-02` (Học thử), `BF-OPS-03` (Sự kiện) đóng vai trò là **Producer** (Sản xuất dữ liệu).
-   - Khi một sự kiện (có gán nhân sự) được tạo, thay đổi hoặc xóa ở phân hệ gốc (Producer), hệ thống phải tự động đẩy (push) thông tin về giao diện này dưới một định dạng chuẩn chung (`UnifiedSlot`).
-   
-2. **[RULE-AGGR-02] Ràng buộc hiển thị (Read-Only):**
-   - Lịch của tôi là màn hình **Chỉ đọc**. Nhân sự không được phép sửa giờ, sửa trung tâm hay xóa lịch trực tiếp trên các thẻ lịch ở đây.
-   - Bất kỳ thay đổi nào (xin nghỉ, xin đổi lịch, thay đổi thông tin lớp) đều phải quay về phân hệ gốc (Producer) tương ứng để xử lý.
-
-3. **[RULE-AGGR-03] Cơ chế tổng hợp Chi nhánh:**
-   - Nếu nhân sự được phân công làm việc ở nhiều cơ sở khác nhau, lịch mặc định sẽ gộp toàn bộ lịch từ tất cả cơ sở. Cần có tùy chọn lọc để nhân sự xem theo từng cơ sở cụ thể.
+1. **[RULE-MYCAL-01] Mô hình "Super Consumer" (Cá nhân hóa tuyệt đối):** 
+   - Dữ liệu trả về bắt buộc lấy theo mệnh đề `WHERE assigned_employee_id = current_user_id`.
+   - Lấy từ TẤT CẢ các module: Xếp lịch lớp, Lịch thi, Họp nội bộ, Nghỉ phép cá nhân.
+2. **[RULE-MYCAL-02] Đa Chi nhánh (Cross-Branch Aggregation):**
+   - Lịch của tôi MẶC ĐỊNH phải gộp lịch từ TẤT CẢ cơ sở mà nhân sự đó được điều động.
+   - BẮT BUỘC hiển thị rõ Tên Chi nhánh / Cơ sở trên từng thẻ lịch để giáo viên biết họ phải di chuyển đến đâu.
+3. **[RULE-MYCAL-03] Chế độ Chỉ đọc (Read-only):**
+   - Tuyệt đối không cho sửa trực tiếp thời gian, địa điểm trên lưới sự kiện này.
+   - Bất kỳ nhu cầu thay đổi nào đều phải gọi Action để hệ thống điều hướng về Form nghiệp vụ gốc.
+4. **[RULE-MYCAL-04] Lịch Nghỉ phép (Time-off Blockers):**
+   - Nếu nhân sự có đơn xin nghỉ phép đã duyệt trong dải ngày xem, lịch phải bôi xám (Blocked) dải ngày/giờ đó và ghi rõ "Nghỉ phép".
 
 ### 2.1. Thông số & Định mức (Metrics & Thresholds)
-- **[METRIC-01] Hiệu năng (SLA):** Thời gian tổng hợp và tải lịch theo tuần/ngày cần < 2 giây. Do phải truy xuất chéo từ nhiều hệ thống, nên áp dụng cơ chế Caching hoặc Materialized View nếu cần ở backend thực tế.
+
+- **[METRIC-01] Thời gian Hợp nhất:** Backend phải thực thi truy vấn hợp nhất đa luồng trong dưới `1.0 giây`.
+- **[METRIC-02] Mobile-First SLA:** Màn hình này có 80% traffic từ điện thoại, bắt buộc tối ưu hiển thị 100% không gian dọc (Agenda View) trên màn hình dưới 768px.
 
 ---
 
 ## 3. Cấu trúc Giao diện & Dữ liệu
 
+**Bố cục Tổng thể:** Dạng Bảng điều khiển cá nhân (Personal Dashboard).
+
 ### 3.1. Thanh công cụ (Toolbar)
-| Thành phần | Loại hiển thị | Logic | Ghi chú |
-|------------|---------------|-------|---------|
-| Chế độ xem | Segmented Control | Chuyển đổi giữa chế độ Ngày / Tuần | Mặc định: Tuần. |
-| Chọn Trung tâm | Danh sách thả xuống (BranchSelect) | Lọc lịch theo trung tâm cụ thể | Mặc định: Tất cả trung tâm. |
-| Khung Tìm kiếm | Ô nhập chữ (ExpandableSearch) | Quét trường Tên, Lớp học, Loại | Cập nhật kết quả tự động. |
-| Nút Bộ lọc | Nút (FilterIconButton) | Mở bảng lọc nâng cao | Hiển thị số lượng bộ lọc đang bật. |
-| Nút Hôm nay | Nút chữ | Trở về ngày/tuần hiện tại | |
-| Điều hướng thời gian | Icon Action Button (Trái/Phải) | Lùi/Tiến 1 ngày hoặc 1 tuần | |
+
+| Thành phần | Loại hiển thị | Logic & Tham số | Ghi chú |
+|------------|---------------|-----------------|---------|
+| Chế độ xem | Segmented Control | Chuyển Ngày / Tuần / Agenda | Trên Điện thoại, mặc định ghim chết ở Agenda. |
+| Khung Tìm kiếm | `ExpandableSearch` | Tìm Tên lớp, Loại sự kiện | Tự động highlight kết quả trên lịch. |
+| Nút Báo bận | `IconActionButton` | Mở nhanh Form "Xin nghỉ / Báo bận" | HR Module. |
+| Nút Bộ lọc | `FilterIconButton` | Mở bảng Slide Panel bên phải | |
 
 ### 3.2. Bảng lọc nâng cao (Slide Panel)
+
 | Thành phần | Loại hiển thị | Dữ liệu | Ghi chú |
 |------------|---------------|---------|---------|
-| Khoảng thời gian | Ô đánh dấu (Checkbox) | Hôm nay, Sắp diễn ra | Có thể chọn nhiều. |
-| Nguồn lịch | Ô đánh dấu (Checkbox) | Lớp học, Sự kiện (Booking Test, Học thử...) | Lọc theo nguồn từ Producer. |
+| Nguồn sự kiện | Checkbox Group | Tích chọn: Lớp học, Trực test, Họp, Nghỉ phép | |
+| Cơ sở làm việc | Multi-Select | Chọn các cơ sở muốn xem | |
 
-### 3.3. Bảng Lịch (Schedule Time Grid)
-| Cột/Dòng | Loại hiển thị | Trường Dữ liệu | Ghi chú |
+### 3.3. Bảng Lịch (Schedule Time Grid / Agenda)
+
+| Thành phần | Loại hiển thị | Trường Dữ liệu | Ghi chú |
 |----------|---------------|----------------|---------|
-| Trục thời gian | Cột giờ | 07:00 -> 23:00 | Khung giờ hoạt động chuẩn chung toàn hệ thống. |
-| Trục ngày | Các cột thứ | Thứ 2 - Chủ Nhật (hoặc 1 ngày) | Tùy theo chế độ xem (Ngày/Tuần). |
-| Thẻ lịch (UnifiedCard) | Khối thông tin | Giờ, Tên sự kiện, Phân loại, Trung tâm, Thống kê học viên | Tự động co giãn theo khoảng thời gian thực tế. |
+| Trục thời gian | Cột giờ / Headers ngày | 07:00 -> 23:00 | Khung giờ chung. |
+| Thẻ lịch (`UnifiedPersonalCard`) | Khối thông tin bo góc | Giờ, Tên Lớp/Sự kiện, Phân loại, **Tên Cơ sở**, Vai trò | Đặc biệt: Cơ sở (Branch) phải in đậm. |
+| Khối Nghỉ phép (`BlockerCard`) | Dải màu xám gạch chéo | Ghi chú lý do nghỉ | Chặn ngang không cho xếp lịch (Visual only). |
 
 ### 3.4. Thao tác trên Thẻ Lịch (Card)
-| Nút | Loại | Logic | Điều kiện |
-|-----|------|-------|-----------|
-| Thẻ lịch | Nhấp chuột (Click) | Mở trang chi tiết gốc của sự kiện/lớp học đó (nếu được hỗ trợ) | Read-only tại màn hình lịch. |
+
+| Thao tác | Hành động | Kết quả mong đợi | Điều kiện |
+|----------|----------|------------------|-----------|
+| Click Trái| Bấm vào thẻ | Bật popup chi tiết nhỏ (Mini-detail) | Pop-up nhỏ gọn chứa nút Action liên kết ngoài. |
+| Right-Click | Bấm chuột phải | Bật Context Menu lối tắt | "Xin dạy thay", "Gửi nhận xét bài học", "Xem giáo án". |
 
 ---
 
-## 4. Xử lý Ngoại lệ
-| # | Tình huống | Cách xử lý |
-|---|-----------|-----------|
-| 4.1 | Không có lịch trình | Lưới thời gian hiển thị trống, không cần báo lỗi. |
-| 4.2 | Tìm kiếm không có kết quả | Ẩn toàn bộ thẻ lịch, lưới thời gian trống. |
+## 4. Xử lý Ngoại lệ (Corner Cases)
+
+| # | Tình huống | Cách xử lý | UI/UX Feedback |
+|---|-----------|------------|----------------|
+| 4.1 | Tuần trống lịch | Không có lớp/sự kiện. | Hiển thị Empty State lớn hình ảnh thư giãn: "Tuần này bạn có thể nghỉ ngơi!". |
+| 4.2 | Đụng lịch vật lý | HR xếp nhầm giờ 2 cơ sở cách xa nhau. | Cảnh báo Đỏ rực chớp nháy (Red Alert) trên cả 2 thẻ lịch: "Cảnh báo trùng lịch cá nhân!". |
+| 4.3 | Đổi múi giờ | GV đang công tác ở nước ngoài xem lịch. | Ép hiển thị theo Múi giờ gốc của Trung tâm (Việt Nam GMT+7), kèm cảnh báo nhỏ trên header. |
+| 4.4 | Mất mạng | | Hiển thị Toast, giữ nguyên cache lịch cũ để GV vẫn xem được offline. |
+| 4.5 | Đóng ứng dụng / Mở lại | | Lưu state View (Ngày/Tuần/Agenda) vào `localStorage`. |
 
 ---
 
-## 5. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
-
-- **Mô hình Dữ liệu Hợp nhất (Unified Data Model):** Trên UI, cần định nghĩa một cấu trúc dữ liệu chuẩn (`UnifiedSlot`) bao gồm các trường bắt buộc như: `id`, `scheduleType` (lớp/sự kiện), `title`, `subtitle`, `date`, `timeLabel`, `endTimeLabel`, `branch`, `typeLabel`. Tất cả dữ liệu mock từ các nguồn khác nhau phải được map về định dạng chung này trước khi render lên lưới.
-- **Tuân thủ Design System:** Bắt buộc dùng `getStatusBadgeClass()` từ `src/lib/statusColors.ts` để hiển thị màu thẻ trạng thái hoặc phân loại sự kiện.
-- **Component dùng chung:** Phải sử dụng các component từ `@/components/controls` cho Toolbar và `FilterSheetPanel` từ `@/components/filters`.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** đặt logic chỉnh sửa (CRUD) lịch trực tiếp trên thẻ. Mọi luồng thay đổi trạng thái (cancel, đổi lịch) phải dẫn về các luồng nghiệp vụ tương ứng (VD: Flow đổi lịch học).
-- **KHÔNG** làm vỡ layout lưới thời gian khi có nhiều lịch chồng lấp (Overlap) cùng khung giờ.
-- **KHÔNG** tạo thêm hằng số (constants) màu sắc riêng lẻ cho các loại sự kiện trong file giao diện. Nếu cần thêm màu cho loại lịch mới, phải định nghĩa ở `statusColors.ts` và đưa vào tài liệu.
-
----
-
-## 6. Kế hoạch Tự kiểm tra (Self-Verification)
+## 5. Kế hoạch Tự kiểm tra (Self-Verification)
 
 | # | Hạng mục | Cách kiểm tra | Tiêu chuẩn Đạt |
 |---|----------|---------------|-----------------|
-| V-01 | Hợp nhất dữ liệu | Dùng dữ liệu mock từ 2 nguồn (Lớp học, Sự kiện) | Hiển thị chung trên một lưới thời gian. |
-| V-02 | Chuyển đổi khung nhìn | Bấm "Ngày", "Tuần" | Trục thời gian hiển thị đúng định dạng mà thẻ vẫn khớp vị trí. |
-| V-03 | Lọc theo nguồn | Tích chọn bộ lọc "Lớp học" | Chỉ giữ lại các thẻ có type là lớp học. |
+| V-01 | Test hợp nhất | Inject mock data từ 3 nguồn: Lớp, Test, Xin nghỉ. | Render trơn tru, hiển thị dải xám cho Xin nghỉ, thẻ xanh cho Lớp. |
+| V-02 | Test Mobile | Bật Device Toolbar (Mobile). | Giao diện tự động sụp thành list Agenda cuộn mượt mà. |
+| V-03 | Local Storage | Đổi view sang "Ngày", F5 trình duyệt. | Vẫn giữ ở view "Ngày". |
 
 ---
 
-## 7. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)
+## 6. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)
 
 | # | Tiêu chí (Specific) | Cách đo (Measurable) | Kết quả mong đợi |
 |---|--------------------|-----------------------|-------------------|
-| AC-01 | Bố cục chuẩn mực | So sánh với tài liệu UI | Có đầy đủ các Controls chuẩn (Tìm kiếm, Chọn nhánh, Chọn chế độ xem). |
-| AC-02 | Định vị chính xác | Kéo thẻ thả vào grid | Thẻ sự kiện xuất hiện đúng khe thời gian (VD: 18:00 - 19:30). |
-| AC-03 | Đồng bộ Màu sắc | Kiểm tra trực quan | Màu của các loại lịch phải trùng khớp hoàn toàn với màu định nghĩa toàn hệ thống. |
+| AC-01 | Trọn vẹn dữ liệu cá nhân | Login bằng GV A, query từ DB các bảng. | Hiển thị chính xác 100% sự kiện có gắn tag ID GV A. |
+| AC-02 | Cross-Branch Visibility | Mock data GV dạy tại 2 cơ sở. | Thẻ lịch có Badge "Cơ sở 1", "Cơ sở 2" chữ in đậm, dễ nhìn. |
+| AC-03 | Component Isolation | Code review `MyScheduleScreen`. | Màn hình sạch bong, KHÔNG có hàm `POST/PUT` liên quan tới business gốc. |
+| AC-04 | Nghỉ phép (Time-off) | Tạo 1 phiếu xin nghỉ buổi sáng. | Lưới sáng hiển thị 1 block màu xám gạch chéo "Nghỉ phép". |
+| AC-05 | Lọc Nguồn Sự Kiện | Tích bỏ "Họp nội bộ". | Các thẻ họp nội bộ biến mất lập tức trên grid. |
+| AC-06 | Responsive Agenda | Resize cửa sổ xuống 400px. | Grid biến mất, list Agenda hiện lên. Khác biệt UI hoàn toàn nhưng chung 1 nguồn data. |
+| AC-07 | Cảnh báo Trùng lịch | Thêm 2 lịch trùng giờ. | Thẻ đỏ, viền đậm, có icon tam giác cảnh báo. |
+| AC-08 | Context Menu Lối tắt | Chuột phải vào thẻ Lớp học. | Hiện menu nhỏ: "Xin dạy thay", "Nhận xét buổi học". |
+| AC-09 | Mở Mini-Detail | Click chuột trái. | Hiện Modal tóm tắt thông tin, kèm nút "Xem chi tiết gốc". |
+| AC-10 | Đổi múi giờ an toàn | Đổi múi giờ máy tính sang Mỹ. | Grid vẫn bám theo đúng dải giờ của VN, không bị chạy lùi thẻ lịch. |
+| AC-11 | Nút Báo bận | Bấm nút IconActionButton "Báo bận". | Chuyển hướng sang Form xin nghỉ của phân hệ HR. |
+| AC-12 | Xử lý Offline | Tắt WIFI, F5 trang. | Có cơ chế fallback/cache (PWA) hoặc chí ít không vỡ giao diện. |

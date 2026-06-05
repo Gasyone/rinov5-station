@@ -124,16 +124,3 @@ tags: [persona, stakeholder, csm, daily-user, retention]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"⓪ Tôi cần biết HÔM NAY ai cần gọi, không phải mỗi sáng tự đoán. Hệ thống phải biết trước tôi."*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- CSM là persona **proactive notification** điển hình — UI nên đẩy việc tới CSM, không bắt CSM tự tìm.
-- Tốc độ mở profile HV (< 1 giây) là yêu cầu cứng — tần suất 30–40 lần/ngày.
-- "Inbox Hôm nay" của CSM là 1 view aggregate xuyên `CAP-CARE` + `CAP-OPS` — KHÔNG tạo CAP riêng.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** cho CSM thấy HV ngoài phạm vi phân công nếu chưa được share (`[POLICY-IAM-04]`).
-- **KHÔNG** auto-gửi tin nhắn / email cho phụ huynh thay CSM — CSM phải confirm trước khi gửi.
-- **KHÔNG** tạo CAP riêng "Care Dashboard" — chỉ là view của `CAP-CARE` với scope cá nhân.

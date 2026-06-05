@@ -116,14 +116,3 @@ tags: [br, operations, class, scheduling, teacher]
 |-----------|------|-------|-----------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft |
 | v1.0 | ⓪ TBD | OWNER + BM | Approved |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- BR-002 không yêu cầu CAP/BF mới — `BF-OPS-02` + `BF-OPS-03` đã thiết kế đầy đủ.
-- Ưu tiên triển khai `US-OPS02-04` (quét xung đột) + `US-OPS03-01` (dạy thay).
-
-### ⛔ Hàng rào An toàn
-- **KHÔNG** đặt giải pháp UI vào BR.
-- **KHÔNG** tạo CAP riêng cho "Scheduling Engine" — đó là 1 BF trong `CAP-OPS`.

@@ -104,7 +104,7 @@ export function getStudents(filters?: {
 
 These rules are NON-NEGOTIABLE. Violating them produces unmaintainable code.
 
-1. **MAX 300 lines per component file.** If a screen component exceeds 300 lines, it MUST be decomposed into sub-components.
+1. **MAX 800 lines per component file.** If a screen component exceeds 800 lines, it MUST be decomposed into sub-components.
 2. **Screen files (`*Screen.tsx`) are orchestrators, not monoliths.** They should:
    - Import and compose sub-components
    - Hold top-level state and callbacks
@@ -114,7 +114,7 @@ These rules are NON-NEGOTIABLE. Violating them produces unmaintainable code.
    ```
    src/components/screens/
    └── booking-test/
-       ├── BookingTestScreen.tsx     ← Orchestrator (≤ 300 lines)
+       ├── BookingTestScreen.tsx     ← Orchestrator (≤ 800 lines)
        ├── BookingTestToolbar.tsx    ← Toolbar + filters + search
        ├── BookingTestTable.tsx      ← Table rendering
        ├── BookingTestDetailDialog.tsx
@@ -314,7 +314,7 @@ When an AI agent starts work in this repo:
 
 Before reporting work as complete, the AI agent MUST verify:
 
-1. **File Size**: Are component files under 300 lines? If not, refactor immediately.
+1. **File Size**: Are component files under 800 lines? If not, refactor immediately.
 2. **Status Colors**: Are ALL entity statuses using `getStatusBadgeClass` (or `<StatusBadge />`) from `statusColors.ts`? (No hardcoded `bg-emerald-*` / `text-red-*` / etc. anywhere in `src/components/` or `src/mocks/`.)
 3. **Shared Components**: Have `<EmptyState />`, `<ModuleLoadingSkeleton />`, `<ErrorState />`, `<StatusBadge />`, `<StatusTiles />`, `<MetricTile />`, `<ConfirmDialog />`, `<FieldLabel />`, `<InfoField />`, `<Panel />`, `<PageHeader />`, `<BackButton />` been used wherever applicable instead of inline equivalents?
 4. **Toolbar Controls**: Are list toolbars built from `@/components/controls` and `@/components/filters`? No raw `<button>`, `<select>`, or `<input>` for toolbar UI.

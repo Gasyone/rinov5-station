@@ -10,6 +10,10 @@ tags: [tag1, detail]
 # US-XXX-YY-ZZ: [Tên Màn Hình Chi Tiết]
 
 > **Tham chiếu:** BF-XXX-YY · Giao diện Mẫu §4.3 (Trang chi tiết)
+> **Đường dẫn màn hình & Trạng thái liên quan:**
+> - `[Đường dẫn trang chi tiết hoặc Hộp thoại chi tiết]` -> Trạng thái: `[Các trạng thái được phép]`
+
+
 
 ## 1. Yêu cầu Người dùng (User Story)
 **Là một** [Vai trò], **tôi muốn** [Hành động], **để** [Mục đích].
@@ -68,41 +72,37 @@ tags: [tag1, detail]
 
 ---
 
-## 4. Xử lý Ngoại lệ
-| # | Tình huống | Cách xử lý |
-|---|-----------|-----------|
-| 4.1 | Mã đối tượng không tồn tại | Hiện thông báo "Không tìm thấy dữ liệu". |
-| 4.2 | Thao tác Xóa/Hủy bỏ | Bắt buộc hiện Hộp thoại Xác nhận nguy hiểm trước khi thực thi. |
+## 4. Mô tả chi tiết (Màn hình & Luồng)
+
+*(Mô tả dễ hiểu, đầy đủ bằng ngôn ngữ tự nhiên để đội ngũ kỹ thuật có thể hiểu rõ và thực hiện được đúng yêu cầu. Không quy định định dạng cụ thể, người viết chủ động chọn cách thể hiện phù hợp như văn bản tự do, các bước thực hiện step-by-step, mã giả nghiệp vụ, hoặc vẽ sơ đồ luồng hoạt động...)*
+
+### 4.1. Mô tả Màn hình
+- [Người viết mô tả chi tiết bố cục phân bổ (ví dụ: 2 cột Tóm tắt/Chi tiết hoặc các tab chức năng), cách hiển thị thông tin và điều phối các khu vực hiển thị.]
+
+### 4.2. Luồng Hoạt động (Workflow)
+- [Người viết mô tả luồng đi của dữ liệu chi tiết, các thao tác chuyển trạng thái, ghi nhận lịch sử hoạt động, và hành động tương tác của người dùng.]
 
 ---
 
-## 5. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+## 5. Corner Cases (Trường hợp góc cạnh & Đặc biệt)
 
-- Tuân thủ chặt chẽ ranh giới trách nhiệm: Giao diện chi tiết chỉ hiển thị và điều phối các thành phần con, không ôm đồm xử lý logic dữ liệu phức tạp (giao cho tầng Service/Domain).
-- Các hành động nguy hiểm (Xóa, Hủy, Thay đổi trạng thái quan trọng) phải bắt buộc thông qua hệ thống Xác nhận (Confirmation) thống nhất.
-- Áp dụng các quy tắc phân quyền (Authorization) trước khi hiển thị các nút thao tác.
+*(Bắt buộc phải liệt kê đầy đủ các trường hợp đặc biệt, ngoại lệ hoặc lỗi có thể xảy ra trong thực tế. Trong quá trình xây dựng, nếu phát sinh thêm bất kỳ trường hợp đặc biệt nào, người viết và lập trình viên phải lập tức cập nhật bổ sung vào bảng này.)*
 
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** thêm nhóm thông tin hoặc thẻ (tab) ngoài mục 3.3.
-- **KHÔNG** cho phép chuyển trạng thái ngoài sơ đồ vòng đời đã định nghĩa.
-- **KHÔNG** bỏ qua bước xác nhận cho hành động có tính rủi ro cao.
-
----
-
-## 6. Kế hoạch Tự kiểm tra (Self-Verification)
-
-| # | Hạng mục | Cách kiểm tra | Tiêu chuẩn Đạt |
-|---|----------|---------------|-----------------|
-| V-01 | Nút trạng thái | Thử ở mỗi trạng thái | Chỉ nút hợp lệ xuất hiện. |
-| V-02 | Lịch sử | Thêm bản ghi mới | Nằm trên cùng, đúng thời gian + tên. |
-| V-03 | Giao diện co giãn | Thu hẹp màn hình | Co từ 2 cột thành 1 cột. |
+| # | Tình huống đặc biệt (Corner Case) | Cách xử lý chi tiết | Ghi chú / Trạng thái |
+|---|----------------------------------|---------------------|----------------------|
+| 5.1 | Mã đối tượng không tồn tại hoặc sai đường dẫn | Chuyển hướng người dùng về trang thông báo không tìm thấy dữ liệu kèm nút quay lại danh sách. | |
+| 5.2 | Người dùng bấm các thao tác nguy hiểm (Xóa, Hủy, Khóa) | Bắt buộc phải hiển thị một hộp thoại xác nhận nguy hiểm (ConfirmDialog) trước khi cho phép thực thi. | |
+| 5.3 | Mất kết nối internet khi đang ghi chú nhanh (Auto-save) | Hiển thị thông báo nhỏ báo lỗi tự động lưu và giữ nguyên nội dung chưa lưu để người dùng sao chép hoặc thử lại. | |
+| 5.4 | Bản ghi bị thay đổi bởi người dùng khác cùng lúc | Khi người dùng thực hiện thao tác, hệ thống báo lỗi xung đột dữ liệu và yêu cầu người dùng tải lại trang. | |
 
 ---
 
-## 7. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)
+## 6. Tiêu chí Nghiệm thu (Acceptance Criteria)
 
-| # | Tiêu chí (Specific) | Cách đo (Measurable) | Kết quả mong đợi |
-|---|--------------------|-----------------------|-------------------|
-| AC-01 | Bố cục 2 cột | So với §4.3 | 2 cột trên máy tính, 1 cột trên điện thoại. |
-| AC-02 | Nút đúng logic | Bấm nút ở từng trạng thái | Chỉ nút hợp lệ xuất hiện theo bảng 3.1. |
-| AC-03 | Lịch sử đầy đủ | Thêm nội dung mới | Mới nhất trên cùng, đúng thời gian + người. |
+*(Liệt kê chi tiết các điều kiện xác định sản phẩm/tính năng được xem là hoàn thành. Viết dưới dạng danh sách gạch đầu dòng rõ ràng, cụ thể và dễ dàng kiểm thử.)*
+
+- **AC-1 (Bố cục 2 cột linh hoạt):** Màn hình đáp ứng đúng tỷ lệ thiết kế (Tóm tắt 30% / Chi tiết 70% trên máy tính) và co giãn thành 1 cột trên thiết bị di động.
+- **AC-2 (Nút hành động hợp lệ):** Nút chuyển trạng thái hoặc sửa đổi chỉ xuất hiện đúng theo sơ đồ vòng đời và điều kiện nghiệp vụ được đặc tả ở mục 3.1.
+- **AC-3 (Lịch sử cập nhật tức thì):** Khi thêm ghi chú mới hoặc thực hiện thay đổi thông tin thành công, dòng lịch sử hoạt động phải ngay lập tức hiển thị bản ghi nhật ký mới nhất trên cùng.
+- **AC-4 (Xác nhận hành động nguy hiểm):** Mọi hành động Xóa/Hủy bỏ/Tạm khóa bắt buộc phải kích hoạt hộp thoại xác nhận trước khi cập nhật dữ liệu.
+

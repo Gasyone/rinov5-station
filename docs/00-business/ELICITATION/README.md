@@ -160,17 +160,3 @@ status: "Completed"
 | 3 | QS-BR-DISCOVERY | Owner + BM | Tìm BR mới cho 7 CAP TBD |
 | 3 | QS-PERSONA-VALIDATE | Teacher (1 người) | Gỡ ⓪ PERSONA-TEACHER |
 | 4 | QS-CAP-OPS | BM + Teacher | Validate BR-002 |
-
----
-
-## 9. Chỉ dẫn cho AI Agent
-
-- AI có thể **sinh bộ câu hỏi mới** từ template khi có CAP/BR/SR mới cần validate.
-- AI dùng file `RS-*` (kết quả) để **tự động cập nhật** Persona/BR/SR (gỡ ⓪, bổ sung).
-- AI **KHÔNG** tự trả lời câu hỏi thay Stakeholder.
-- Khi user paste kết quả phỏng vấn vào chat, AI parse và tạo file RS-* + cập nhật tài liệu.
-
-### ⛔ Hàng rào An toàn
-- **KHÔNG** lưu PII thật (tên thật, SĐT) trong file RS-* — dùng vai trò + chi nhánh.
-- **KHÔNG** tạo QS mới mà không có mục đích rõ ràng (phải gắn với Persona/BR/SR cụ thể).
-- **KHÔNG** phỏng vấn quá 60 phút / buổi — chia nhỏ nếu cần.

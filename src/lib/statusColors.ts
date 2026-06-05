@@ -119,6 +119,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   unassigned_teacher: 'warning',
   interviewed: 'purple',
   tested: 'warning',
+  checkin: 'success',
   completed: 'completed',
   failed: 'error',
   cancelled: 'neutral',
@@ -155,6 +156,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   ongoing: 'warning',
   upcoming: 'info',
 
+  // Event Management V5
+  mo_dang_ky: 'success',
+  dang_dien_ra: 'info',
+  ket_thuc: 'completed',
+
   // Students
   graduated: 'completed',
   transferred: 'neutral',
@@ -170,6 +176,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
 
   // Trial Class
   pending_confirmation: 'warning',
+  pending_approval: 'warning',
   reschedule: 'error',
   no_show: 'neutral',
   class_workshop: 'warning',
@@ -184,9 +191,10 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   // Class lifecycle (BF-CLS-02)
   nhap: 'neutral',
   mo_chieu_sinh: 'info',
+  cho_khai_giang: 'purple',
   dang_hoc: 'success',
-  dong_lop: 'completed',
-  huy: 'error',
+  tam_dung: 'warning',
+  huy: 'completed',
 
   // Class Session (BF-OPS-02 / FLOW-OPS-01)
   // scheduled, in_progress, completed, cancelled already registered above
@@ -211,6 +219,39 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   leave: 'info',
   suspend: 'warning',
 
+  // Teacher Schedule Status
+  trung_lich: 'error',
+  trong_lich: 'success',
+
+  // Session Feedback
+  feedback_pending: 'warning',
+  feedback_completed: 'success',
+  feedback_needs_follow_up: 'error',
+
+  // Homework
+  homework_done: 'success',
+  homework_missing: 'error',
+  homework_late: 'warning',
+  homework_partial: 'info',
+
+  // QC Check Event
+  qc_draft: 'neutral',
+  qc_published: 'info',
+  qc_correcting: 'warning',
+  qc_closed: 'completed',
+  qc_cancelled: 'neutral',
+  qc_completed_closed: 'success',
+  qc_not_met: 'error',
+
+  // QC Error
+  qc_error_open: 'error',
+  qc_error_correcting: 'warning',
+  qc_error_corrected: 'success',
+  qc_error_closed: 'completed',
+  qc_error_cancelled: 'neutral',
+  qc_error_overdue: 'purple',
+  qc_error_not_met: 'error',
+
   // Generic
   draft: 'neutral',
   approved: 'success',
@@ -222,6 +263,12 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   refunded: 'neutral',
   confirmed: 'success',
   declined: 'error',
+
+  // Class Types & Operations
+  offline: 'success',
+  online: 'purple',
+  online_tutor: 'purple',
+  assigned_class: 'purple',
 }
 
 export function resolveStatusSemantic(status: string): StatusSemantic {
@@ -243,3 +290,13 @@ export function getStatusBadgeClass(status: string): string {
 export function getStatusDotClass(status: string): string {
   return getStatusColors(resolveStatusSemantic(status)).dot
 }
+
+/**
+ * Get standard status dot color class for attendance/homework rates.
+ */
+export function getRateColorClass(rate: number): string {
+  if (rate < 50) return getStatusColors('error').dot
+  if (rate < 80) return getStatusColors('warning').dot
+  return getStatusColors('success').dot
+}
+

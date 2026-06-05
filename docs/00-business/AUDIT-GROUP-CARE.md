@@ -199,18 +199,3 @@ Audit này tạo các Work Item mới đề xuất cho M2 (sau khi Pilot 4 verif
 | W7.6 | Tạo screen `today_care` theo `SR-CSM-001` (chưa có code) | E7 / E5 |
 | W7.7 | Tạo screen `renewal` theo `SR-CSM-002` (chưa có code) | E7 / E5 |
 | W7.8 | Tạo widget BM Dashboard theo `SR-BRANCH_MANAGER-001` | E7 / E5 |
-
----
-
-## 7. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Đây là báo cáo audit **lần đầu** dùng framework Tier 0. Cần phỏng vấn để chuyển ⓪ và `[NEEDS-CLARIFICATION]` thành Approved.
-- Trước khi sửa `navigation.ts`, phải có:
-  1. Phỏng vấn CSM/BM xác nhận audit.
-  2. SR cho 4 mục `[NEEDS-CLARIFICATION]` (giữ hoặc drop có lý do).
-  3. Lộ trình migration (URL cũ redirect URL mới — nếu cần).
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** xóa menu nào trước khi có chữ ký Stakeholder (Branch Manager phụ trách CARE).
-- **KHÔNG** đổi tên menu mà không cập nhật mọi tài liệu US tham chiếu.
-- **KHÔNG** dùng audit này như quyết định cuối — đây là *đề xuất có lập luận*, cần 1 vòng review với người dùng thật.

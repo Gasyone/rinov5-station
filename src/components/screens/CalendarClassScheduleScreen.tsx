@@ -2,12 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import { BookOpen, Calendar, ChevronLeft, ChevronRight, Clock, Users, Repeat, CalendarClock } from 'lucide-react'
-import { BranchSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl } from '@/components/controls'
+import { BranchSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl, SYSTEM_BRANCHES } from '@/components/controls'
 import { FilterSheetPanel, type FilterSection } from '@/components/filters'
 import { EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { getMockClassSessions, type ClassSession } from '@/mocks/calendarSchedule'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import { SessionDetailDialog } from './calendar/SessionDetailDialog'
 
@@ -41,10 +40,9 @@ export function CalendarClassScheduleScreen() {
   const allSessions = useMemo(() => getMockClassSessions(), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('')
+  const [activeBranch, setActiveBranch] = useState('all')
   const [subjectFilters, setSubjectFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
-  const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [teacherFilters, setTeacherFilters] = useState<string[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
@@ -60,7 +58,6 @@ export function CalendarClassScheduleScreen() {
       if (activeBranch && activeBranch !== 'all' && session.branch !== activeBranch) return false
       if (subjectFilters.length > 0 && !subjectFilters.includes(session.subject)) return false
       if (statusFilters.length > 0 && !statusFilters.includes(session.status as string)) return false
-      if (typeFilters.length > 0 && !typeFilters.includes(session.type)) return false
       if (teacherFilters.length > 0 && !teacherFilters.includes(session.teacher)) return false
       if (!search) return true
 
@@ -72,15 +69,14 @@ export function CalendarClassScheduleScreen() {
         session.classCode.toLowerCase().includes(query)
       )
     })
-  }, [activeBranch, allSessions, search, subjectFilters, statusFilters, typeFilters, teacherFilters])
+  }, [activeBranch, allSessions, search, subjectFilters, statusFilters, teacherFilters])
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate])
   const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject))], [allSessions])
   const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
-  const types = useMemo(() => [...new Map(allSessions.map((session) => [session.type, session.typeLabel])).entries()], [allSessions])
   const teachers = useMemo(() => [...new Set(allSessions.map((session) => session.teacher))], [allSessions])
-  const branches = useMemo(() => [...new Set(allSessions.map((session) => session.branch))], [allSessions])
-  const activeFilterCount = subjectFilters.length + statusFilters.length + typeFilters.length + teacherFilters.length
+  const branches = SYSTEM_BRANCHES
+  const activeFilterCount = subjectFilters.length + statusFilters.length + teacherFilters.length
 
   const filterSections = useMemo<FilterSection[]>(
     () => [
@@ -105,16 +101,6 @@ export function CalendarClassScheduleScreen() {
         })),
       },
       {
-        id: 'types',
-        title: 'Loại buổi học',
-        options: types.map(([value, label]) => ({
-          value,
-          label,
-          count: allSessions.filter((session) => session.type === value).length,
-          checked: typeFilters.includes(value),
-        })),
-      },
-      {
         id: 'teachers',
         title: 'Giáo viên',
         options: teachers.map((teacher) => ({
@@ -125,7 +111,7 @@ export function CalendarClassScheduleScreen() {
         })),
       },
     ],
-    [allSessions, subjectFilters, statusFilters, typeFilters, teacherFilters, subjects, statuses, types, teachers]
+    [allSessions, subjectFilters, statusFilters, teacherFilters, subjects, statuses, teachers]
   )
 
   const calendarTitle = viewMode === 'day'
@@ -177,8 +163,6 @@ export function CalendarClassScheduleScreen() {
             value={activeBranch}
             branches={branches}
             onValueChange={setActiveBranch}
-            allLabel="Tất cả trung tâm"
-            ariaLabel="Trung tâm"
             className="h-8 min-w-48"
           />
           <ExpandableSearch
@@ -226,10 +210,6 @@ export function CalendarClassScheduleScreen() {
             setStatusFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
-          } else if (sectionId === 'types') {
-            setTypeFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
           } else if (sectionId === 'teachers') {
             setTeacherFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
@@ -239,7 +219,6 @@ export function CalendarClassScheduleScreen() {
         onClearAll={() => {
           setSubjectFilters([])
           setStatusFilters([])
-          setTypeFilters([])
           setTeacherFilters([])
         }}
       />
@@ -338,9 +317,6 @@ function SessionCard({ session, onClick }: { session: ClassSession; onClick: () 
             {session.timeLabel} - {session.endTimeLabel}
             {session.isRecurring && <Repeat className="h-3 w-3 text-muted-foreground ml-0.5" />}
           </div>
-          <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold', getStatusBadgeClass(session.type))}>
-            {session.typeLabel}
-          </span>
         </div>
         <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2, isCancelled && 'line-through text-muted-foreground')}>
           {session.title}

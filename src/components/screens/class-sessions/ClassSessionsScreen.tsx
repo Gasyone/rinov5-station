@@ -3,8 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/shared'
-import { FilterSheetPanel } from '@/components/filters'
-import type { FilterSection } from '@/components/filters'
+import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { mockClassSessions, getClassSessions, getTeachers } from '@/mocks/classSessions'
 import { ClassSessionsToolbar } from './ClassSessionsToolbar'
 import { SessionTable } from './SessionTable'
@@ -15,7 +14,7 @@ type SessionStatusId = 'all' | 'scheduled' | 'in_progress' | 'completed' | 'audi
 export function ClassSessionsScreen() {
   const [activeStatus, setActiveStatus] = useState<SessionStatusId>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [branchFilter, setBranchFilter] = useState('')
+  const [branchFilter, setBranchFilter] = useState('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [filterOpen, setFilterOpen] = useState(false)
   const [filterState, setFilterState] = useState<Record<string, Set<string>>>({})
@@ -24,7 +23,7 @@ export function ClassSessionsScreen() {
     () =>
       getClassSessions({
         search: searchQuery,
-        branch: branchFilter || undefined,
+        branch: branchFilter === 'all' || !branchFilter ? undefined : branchFilter,
         status: activeStatus === 'all' ? undefined : activeStatus,
       }),
     [searchQuery, branchFilter, activeStatus],
@@ -32,35 +31,31 @@ export function ClassSessionsScreen() {
 
   const groups = useMemo(() => groupSessionsByClass(filteredSessions), [filteredSessions])
 
-  const filterSections: FilterSection[] = useMemo(() => {
+  const filterGroups = useMemo<FilterGroupConfig[]>(() => {
     const allTeachers = getTeachers(mockClassSessions)
     return [
-      {
+      createFilterGroup({
         id: 'teacher',
-        title: 'Giáo viên',
-        options: allTeachers.map((t) => ({
-          label: t,
-          value: t,
-          count: mockClassSessions.filter((s) => s.teacher === t).length,
-          checked: filterState.teacher?.has(t) ?? false,
-        })),
-      },
-      {
+        options: allTeachers,
+        selectedValues: filterState.teacher,
+        getOptionCount: (teacher) => mockClassSessions.filter((session) => session.teacher === teacher).length,
+      }),
+      createFilterGroup({
         id: 'dateRange',
-        title: 'Khoảng thời gian',
         options: [
-          { label: 'Tuần này', value: 'this_week', count: 5, checked: filterState.dateRange?.has('this_week') ?? false },
-          { label: 'Tuần sau', value: 'next_week', count: 4, checked: filterState.dateRange?.has('next_week') ?? false },
-          { label: 'Tháng này', value: 'this_month', count: 15, checked: filterState.dateRange?.has('this_month') ?? false },
+          { label: 'Tuần này', value: 'this_week', count: 5 },
+          { label: 'Tuần sau', value: 'next_week', count: 4 },
+          { label: 'Tháng này', value: 'this_month', count: 15 },
         ],
-      },
-      {
+        selectedValues: filterState.dateRange,
+      }),
+      createFilterGroup({
         id: 'conflict',
-        title: 'Xung đột',
         options: [
-          { label: 'Có xung đột', value: 'has_conflict', count: 1, checked: filterState.conflict?.has('has_conflict') ?? false },
+          { label: 'Có xung đột', value: 'has_conflict', count: 1 },
         ],
-      },
+        selectedValues: filterState.conflict,
+      }),
     ]
   }, [filterState])
 
@@ -136,11 +131,11 @@ export function ClassSessionsScreen() {
           />
         )}
 
-        <FilterSheetPanel
+        <FilterGroupSheetPanel
           open={filterOpen}
           onOpenChange={setFilterOpen}
           title="Bộ lọc buổi học"
-          sections={filterSections}
+          groups={filterGroups}
           onToggle={handleFilterToggle}
           onClearAll={handleFilterClear}
           onApply={handleFilterApply}

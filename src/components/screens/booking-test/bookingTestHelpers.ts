@@ -38,9 +38,8 @@ export function getSpeakingLevelFromScore(totalScore: number, answeredCount: num
 }
 
 export function summarizeAssessmentDraft(draft: AssessmentDraft) {
-  const scoreSelections =
-    draft.selectedTab === 'oldForm' ? draft.oldForm.scoreSelections : draft.scoreSelections
-  const maxScore = draft.selectedTab === 'oldForm' ? 32 : 8
+  const scoreSelections = draft.scoreSelections
+  const maxScore = 8
   const numericScores = Object.values(scoreSelections)
     .filter((value) => typeof value === 'number' && !Number.isNaN(value)) as number[]
   const totalScore = numericScores.reduce((sum, value) => sum + value, 0)
@@ -48,10 +47,7 @@ export function summarizeAssessmentDraft(draft: AssessmentDraft) {
 
   return {
     answeredCount,
-    level:
-      draft.selectedTab === 'form2025'
-        ? getSpeakingLevelFromScore(totalScore, answeredCount)
-        : '',
+    level: getSpeakingLevelFromScore(totalScore, answeredCount),
     speaking: answeredCount > 0 ? `${formatAssessmentScore(totalScore)}/${maxScore}` : '',
   }
 }
@@ -91,6 +87,24 @@ export function buildEmptyAssessmentDraft(booking?: BookingTest): AssessmentDraf
 
 export function getSubjectLabel(subject: BookingSubject) {
   return subject === 'english' ? 'Tiếng Anh' : 'Toán'
+}
+
+export function getWeekdayLabel(dateTimeStr: string): string {
+  if (!dateTimeStr) return ''
+  const datePart = dateTimeStr.split(' ')[0]
+  const date = new Date(datePart)
+  if (Number.isNaN(date.getTime())) return ''
+  const day = date.getDay()
+  const weekdayLabels = [
+    'Chủ Nhật',
+    'Thứ Hai',
+    'Thứ Ba',
+    'Thứ Tư',
+    'Thứ Năm',
+    'Thứ Sáu',
+    'Thứ Bảy',
+  ]
+  return weekdayLabels[day]
 }
 
 export function maskPhone(phone?: string) {
@@ -134,6 +148,29 @@ export function getStatusLabel(status: BookingStatus) {
   return STATUS_META[status as keyof typeof STATUS_META]?.label ?? status
 }
 
+export function isTerminalBookingStatus(status: BookingStatus) {
+  return ['completed', 'cancelled', 'failed'].includes(status)
+}
+
+export function isBookingCheckedIn(booking: BookingTest) {
+  return booking.attendance === 'confirmed'
+}
+
+export function shouldShowCheckInAction(booking: BookingTest) {
+  return !isBookingCheckedIn(booking) && !isTerminalBookingStatus(booking.status)
+}
+
+export function applyBookingCheckIn(booking: BookingTest): BookingTest {
+  return {
+    ...booking,
+    attendance: 'confirmed',
+    status:
+      booking.status === 'booked_assessment'
+        ? 'started_assessment'
+        : booking.status,
+  }
+}
+
 export function matchesStatusTile(booking: BookingTest, status: StatusTileId) {
   if (status === 'all') return true
   if (status === 'interviewed')
@@ -141,6 +178,7 @@ export function matchesStatusTile(booking: BookingTest, status: StatusTileId) {
   if (status === 'tested')
     return booking.status === 'started_assessment' && Boolean(booking.isTested)
   if (status === 'unassigned_teacher') return !String(booking.teacher ?? '').trim()
+  if (status === 'checkin') return isBookingCheckedIn(booking)
   return booking.status === status
 }
 

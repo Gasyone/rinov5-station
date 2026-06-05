@@ -1,76 +1,26 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  formatMinute,
+  layoutDayItems,
+  toScheduleDateKey,
+} from './scheduleHelpers'
+import type { ScheduleGridItem, ScheduleTimeGridProps } from './scheduleTypes'
 
-export interface ScheduleGridItem {
-  id: string
-  date: string
-  timeLabel: string
-  endTimeLabel: string
-  startMin: number
-}
-
-interface ScheduleTimeGridProps<T extends ScheduleGridItem> {
-  items: T[]
-  days: Date[]
-  today: Date
-  renderItem: (item: T) => ReactNode
-  hourStart?: number
-  hourEnd?: number
-  rowClassName?: string
-}
-
-const pad = (value: number) => String(value).padStart(2, '0')
-
-export const toScheduleDateKey = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-
-export const getScheduleMonday = (input: Date) => {
-  const date = new Date(input)
-  const day = date.getDay()
-  date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
-  date.setHours(0, 0, 0, 0)
-  return date
-}
-
-export const getScheduleWeekDays = (from: Date) =>
-  Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(from)
-    date.setDate(date.getDate() + index)
-    date.setHours(0, 0, 0, 0)
-    return date
-  })
-
-export const parseScheduleTime = (time: string) => {
-  const [hour = 0, minute = 0] = time.split(':').map(Number)
-  return hour * 60 + minute
-}
-
-const formatMinute = (minute: number) =>
-  `${pad(Math.floor(minute / 60))}:${pad(minute % 60)}`
-
-const buildSlots = <T extends ScheduleGridItem>(
-  items: T[],
-  hourStart: number,
-  hourEnd: number
-) => {
-  const first = hourStart * 60
-  const last = hourEnd * 60
-  const slots = new Set<number>()
-
-  for (let minute = first; minute <= last; minute += 30) {
-    slots.add(minute)
-  }
-
-  items.forEach((item) => {
-    if (item.startMin >= first && item.startMin <= last) {
-      slots.add(item.startMin)
-    }
-  })
-
-  return Array.from(slots).sort((a, b) => a - b)
-}
+// Re-export helpers and types for backward compatibility
+export {
+  formatMinute,
+  getScheduleMonday,
+  getScheduleWeekDays,
+  parseScheduleTime,
+  toScheduleDateKey,
+} from './scheduleHelpers'
+export type {
+  ScheduleGridItem,
+  ScheduleItemRenderContext,
+  ScheduleTimeGridProps,
+} from './scheduleTypes'
 
 export function ScheduleTimeGrid<T extends ScheduleGridItem>({
   items,
@@ -81,11 +31,21 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
   hourEnd = 22,
   rowClassName,
 }: ScheduleTimeGridProps<T>) {
-  const slots = buildSlots(items, hourStart, hourEnd)
+  // Generate the fixed 30-minute slots
+  const first = hourStart * 60
+  const last = hourEnd * 60
+  const slots: number[] = []
+  for (let minute = first; minute <= last; minute += 30) {
+    slots.push(minute)
+  }
+
+  const totalSlots = slots.length
+  const rowHeight = 76 // pixels
   const gridTemplateColumns = `4rem repeat(${days.length}, minmax(8.5rem, 1fr))`
 
   return (
     <div className="min-h-0 flex-1 overflow-auto">
+      {/* Sticky Header */}
       <div
         className="sticky top-0 z-20 grid min-w-max border-b border-border/40 bg-background/95 backdrop-blur-sm"
         style={{ gridTemplateColumns }}
@@ -119,37 +79,100 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
         })}
       </div>
 
-      <div className="min-w-max divide-y divide-border/10">
-        {slots.map((minute) => (
-          <div
-            key={minute}
-            className={cn('grid min-h-[76px]', rowClassName)}
-            style={{ gridTemplateColumns }}
-          >
-            <div className="border-r border-border/40 pr-3 pt-2 text-right text-xs font-medium text-muted-foreground/70">
+      {/* Grid Container */}
+      <div
+        className="relative min-w-max"
+        style={{ height: `${totalSlots * rowHeight}px` }}
+      >
+        {/* Background Grid Rows (Horizontal Lines) */}
+        <div
+          className="absolute inset-0 grid pointer-events-none"
+          style={{
+            gridTemplateColumns,
+            gridTemplateRows: `repeat(${totalSlots}, ${rowHeight}px)`,
+          }}
+        >
+          {slots.map((minute, rowIndex) => (
+            <div
+              key={minute}
+              className="col-span-full border-b border-border/10 last:border-b-0"
+              style={{
+                gridColumn: '1 / -1',
+                gridRow: `${rowIndex + 1}`,
+                height: `${rowHeight}px`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Time Labels & Day Columns Overlay */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 pointer-events-none border-r border-border/40" />
+        <div
+          className="absolute inset-0 grid"
+          style={{
+            gridTemplateColumns,
+            gridTemplateRows: `repeat(${totalSlots}, ${rowHeight}px)`,
+          }}
+        >
+          {/* Time Labels */}
+          {slots.map((minute, rowIndex) => (
+            <div
+              key={minute}
+              className={cn(
+                'pr-3 pt-2 text-right text-xs font-medium text-muted-foreground/70 select-none border-b border-border/5',
+                rowClassName
+              )}
+              style={{
+                gridColumn: '1',
+                gridRow: `${rowIndex + 1}`,
+                height: `${rowHeight}px`,
+              }}
+            >
               {formatMinute(minute)}
             </div>
-            {days.map((day) => {
-              const dateKey = toScheduleDateKey(day)
-              const cellItems = items.filter(
-                (item) => item.date === dateKey && item.startMin === minute
-              )
+          ))}
 
-              return (
-                <div
-                  key={`${day.toISOString()}-${minute}`}
-                  className="min-w-0 border-r border-border/30 px-1.5 py-1.5 last:border-r-0"
-                >
-                  <div className="space-y-1.5">
-                    {cellItems.map((item) => (
-                      <div key={item.id}>{renderItem(item)}</div>
-                    ))}
+          {/* Day Columns */}
+          {days.map((day, dayIndex) => {
+            const dateKey = toScheduleDateKey(day)
+            const dayItems = items.filter((item) => item.date === dateKey)
+
+            // Calculate absolute layout positions for items on this day
+            const laidOutItems = layoutDayItems(dayItems, hourStart, rowHeight, last)
+
+            return (
+              <div
+                key={day.toISOString()}
+                className="relative border-r border-border/30 last:border-r-0"
+                style={{
+                  gridColumn: `${dayIndex + 2}`,
+                  gridRow: `1 / span ${totalSlots}`,
+                  height: `${totalSlots * rowHeight}px`,
+                }}
+              >
+                {laidOutItems.map(({ item, top, height, left, width }) => (
+                  <div
+                    key={item.id}
+                    className="absolute p-0.5"
+                    style={{
+                      top: `${top}px`,
+                      height: `${height}px`,
+                      left: `${left}%`,
+                      width: `${width}%`,
+                      zIndex: 10,
+                    }}
+                  >
+                    {renderItem(item, {
+                      overlapCount: Math.round(100 / width),
+                      overlapIndex: Math.round(left / width),
+                      isOverlapped: width < 99,
+                    })}
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        ))}
+                ))}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

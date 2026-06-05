@@ -10,3 +10,22 @@ export { ConfirmDialog } from './ConfirmDialog'
 export { MetricTile } from './MetricTile'
 export { EntityCell } from './EntityCell'
 export { DataTableActions } from './DataTableActions'
+export { AvatarStack, type AvatarStackItem } from './AvatarStack'
+export {
+  DetailDialogFrame,
+  DetailDialogTabsList,
+  type DetailDialogTab,
+} from './DetailDialogFrame'
+
+export { ContactCell } from './ContactCell'
+export { PersonnelCell, type PersonnelItem } from './PersonnelCell'
+export { PersonnelHoverCard } from './PersonnelHoverCard'
+export { DateTimeCell } from './DateTimeCell'
+export { CapacityProgressCell } from './CapacityProgressCell'
+export { CurrencyCell } from './CurrencyCell'
+export { LocationCell } from './LocationCell'
+export { NoteCell } from './NoteCell'
+export { ItemsSummaryCell, type SummaryItem } from './ItemsSummaryCell'
+export { BadgeGroupCell, type BadgeItem } from './BadgeGroupCell'
+export { CallDialog } from './CallDialog'
+export { StudentNotePopover } from './StudentNotePopover'

@@ -120,15 +120,3 @@ tags: [br, admissions, lead, conversion, enrollment]
 |-----------|------|-------|-----------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft |
 | v1.0 | ⓪ TBD | OWNER + Sale Lead | Approved |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- BR-004 xuyên 3 CAP (ADM → COM → OPS) — đây là luồng `FLOW-ENR-00` đã thiết kế.
-- Ưu tiên: nối `BF-ENR-01` (test) → `BF-SAL-01` (đơn) → `BF-CLS-01` (xếp lớp) thành pipeline.
-- SLA xếp lớp cần cảnh báo tự động (liên kết `SR-BRANCH_MANAGER-003`).
-
-### ⛔ Hàng rào An toàn
-- **KHÔNG** tạo CAP riêng cho "Enrollment Pipeline" — đó là FLOW xuyên 3 CAP hiện có.
-- **KHÔNG** bỏ qua bước test/học thử — đây là quy tắc nghiệp vụ bắt buộc của `CAP-ADM`.

@@ -122,16 +122,3 @@ tags: [persona, stakeholder, sale, daily-user]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"⓪ Tôi không muốn nhập 1 phụ huynh 3 lần ở 3 hệ thống. Mất 5 phút mỗi lần là mất cơ hội chốt khách."*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Persona này có động lực cao (commission) — sẵn sàng dùng tính năng nâng cao nếu giúp tăng số đơn.
-- Tốc độ tìm kiếm Person/Family (`CAP-MDM`) là **chỉ số sống còn** — debounce 300ms (`[DS-P3]`) là yêu cầu cứng.
-- Workflow Lead → Booking Test → Order phải nối liền, không break màn hình.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** cho Sale xem dữ liệu HV của Sale khác (vi phạm `[POLICY-IAM-04]` Record Sharing) trừ khi có ACL share rõ ràng.
-- **KHÔNG** thay Sale ra quyết định giảm giá tự động — luôn cần Approve nếu vượt ngưỡng.
-- **KHÔNG** tạo CAP riêng "Sale Dashboard" — chỉ là 1 view của `CAP-RPT` với scope cá nhân.

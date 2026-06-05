@@ -49,27 +49,27 @@ graph TB
 
 | CAP | Tên | Vai trò |
 |-----|-----|---------|
-| [CAP-ADM](./CAP-ADM-admissions-management.md) | Quản lý Tuyển sinh | Biến Lead thành Học viên |
-| [CAP-COM](./CAP-COM-commerce.md) | Thương mại & Bán hàng | Sản phẩm → Đơn hàng |
-| [CAP-OPS](./CAP-OPS-class-operations.md) | Vận hành Lớp & Học viên | Lớp + Buổi + Điểm danh + GV |
-| [CAP-ACD](./CAP-ACD-academic-management.md) | Học thuật & Đào tạo | Chương trình + Giáo trình + QC |
-| [CAP-CARE](./CAP-CARE-student-care.md) | Chăm sóc Học viên | Chăm sóc + Giữ chân |
+| [CAP-ADM](./admissions/CAP-ADM-admissions-management.md) | Quản lý Tuyển sinh | Biến Lead thành Học viên |
+| [CAP-COM](./commerce/CAP-COM-commerce.md) | Thương mại & Bán hàng | Sản phẩm → Đơn hàng |
+| [CAP-OPS](./class-operations/CAP-OPS-class-operations.md) | Vận hành Lớp & Học viên | Lớp + Buổi + Điểm danh + GV |
+| [CAP-ACD](./academic/CAP-ACD-academic-management.md) | Học thuật & Đào tạo | Chương trình + Giáo trình + QC |
+| [CAP-CARE](./student-care/CAP-CARE-student-care.md) | Chăm sóc Học viên | Chăm sóc + Giữ chân |
 
 ### Layer 2 — Supporting Capabilities (Hỗ trợ)
 
 | CAP | Tên | Vai trò |
 |-----|-----|---------|
-| [CAP-HR](./CAP-HR-human-resources.md) | Tổ chức & Nhân sự | Ai làm gì, ở đâu trong tổ chức |
-| [CAP-FIN](./CAP-FIN-financial-management.md) | Quản trị Tài chính | Thu phí, Phiếu thu, Doanh thu |
-| [CAP-FCM](./CAP-FCM-facility-management.md) | Cơ sở vật chất | Bảo trì, Checklist CSVC |
+| [CAP-HR](./human-resources/CAP-HR-human-resources.md) | Tổ chức & Nhân sự | Ai làm gì, ở đâu trong tổ chức |
+| [CAP-FIN](./financial/CAP-FIN-financial-management.md) | Quản trị Tài chính | Thu phí, Phiếu thu, Doanh thu |
+| [CAP-FCM](./facility/CAP-FCM-facility-management.md) | Cơ sở vật chất | Bảo trì, Checklist CSVC |
 
 ### Layer 3 — Governance & Management (Quản trị)
 
 | CAP | Tên | Vai trò |
 |-----|-----|---------|
-| [CAP-SYS](./CAP-SYS-system-governance.md) | Hệ thống & IAM | Tài khoản, Phân quyền, Cấu hình |
-| [CAP-MDM](./CAP-MDM-master-data.md) | Dữ liệu Gốc | Golden Record, Hồ sơ cá nhân/Gia đình |
-| [CAP-RPT](./CAP-RPT-reporting-analytics.md) | Báo cáo & Phân tích | Dashboard, KPI, Export |
+| [CAP-SYS](./system-governance/CAP-SYS-system-governance.md) | Hệ thống & IAM | Tài khoản, Phân quyền, Cấu hình |
+| [CAP-MDM](./master-data/CAP-MDM-master-data.md) | Dữ liệu Gốc | Golden Record, Hồ sơ cá nhân/Gia đình |
+| [CAP-RPT](./reporting-analytics/CAP-RPT-reporting-analytics.md) | Báo cáo & Phân tích | Dashboard, KPI, Export |
 
 ## 3. Mô hình 3 Tầng Thực thể Nền tảng
 

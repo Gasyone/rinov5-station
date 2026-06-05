@@ -10,7 +10,7 @@ export default async function AuthLayout({
   const isAuthenticated = cookieStore.get('auth_session')?.value === 'true'
 
   if (isAuthenticated) {
-    redirect('/app/dashboard')
+    redirect('/app/calendar_class_schedule')
   }
 
   return <>{children}</>

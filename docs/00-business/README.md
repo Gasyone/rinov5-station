@@ -162,17 +162,3 @@ Trước khi tích hợp, lớp này hoạt động độc lập như một th�
 | Pilot 3 — Stakeholders + 5 Persona | Điền nội dung thật | ⏳ Chưa bắt đầu |
 | Pilot 4 — Vết cắt dọc CAP-CARE | 1 BR + 2-3 SR + Matrix mẫu | ⏳ Chưa bắt đầu |
 | Pilot 1 — Audit Matrix toàn dự án | Đối soát 11 CAP / 42 BF / ~150 US | ⏳ Chưa bắt đầu |
-
----
-
-## 8. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- **KHÔNG** tạo file thật trong `00-business/` cho đến khi có pilot tương ứng được phê duyệt.
-- **PHẢI** đọc `README.md` này trước khi đề xuất Persona/BR/SR mới.
-- **PHẢI** dùng template tương ứng trong `docs/templates/` thay vì sáng tạo cấu trúc mới.
-- Khi tham chiếu chéo, dùng cú pháp mã định danh thay vì copy nội dung (giống `DOCUMENTATION_GUIDELINES.md` mục 3).
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** sửa `ENTERPRISE_STANDARDS.md`, `CAP-*`, `BF-*`, `US-*` với mục đích "căn chỉnh" với BR/SR khi chưa có quy trình tích hợp chính thức.
-- **KHÔNG** đặt logic kỹ thuật (API, schema, code) vào BR/SR — đó là việc của Tier 3-4.
-- **KHÔNG** tạo Persona dựa trên suy đoán — phải có dữ liệu thực từ phỏng vấn hoặc xác nhận của Stakeholder.

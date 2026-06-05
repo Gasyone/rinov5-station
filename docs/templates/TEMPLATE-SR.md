@@ -133,19 +133,3 @@ tags: [sr, stakeholder, persona]
 |-----------|------|------------------|-----------|---------|
 | v0.1 | YYYY-MM-DD | [Tên / Vai trò] | Draft | Tạo mới |
 | v1.0 | | | Approved | |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- SR là **cầu nối** giữa BR (kinh doanh) và US (kỹ thuật). KHÔNG được bỏ qua tầng này.
-- Mỗi SR **PHẢI** trace ngược về 1 BR cụ thể. Nếu không có BR cha → tạo BR hoặc loại bỏ SR.
-- Mỗi SR **PHẢI** gắn với 1 Persona cụ thể. Nếu nhiều persona cần → tạo nhiều SR.
-- Khi viết US (Tier 4), **PHẢI** ghi rõ "Đáp ứng SR-XXX" trong frontmatter hoặc mục tham chiếu.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** đặt chi tiết UI (component, layout, button label) vào SR — đó là việc của US.
-- **KHÔNG** đặt chi tiết kỹ thuật (API, schema, query) vào SR — đó là việc của BF/US.
-- **KHÔNG** tạo SR mà không có Persona cha rõ ràng.
-- **KHÔNG** gộp nhiều Persona vào 1 SR — mỗi Persona có goals/pain points khác nhau, cần SR riêng.
-- **KHÔNG** chấp nhận SR thiếu Acceptance Criteria đo được — sẽ không thể nghiệm thu.

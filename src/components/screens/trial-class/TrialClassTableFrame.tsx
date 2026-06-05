@@ -21,6 +21,10 @@ interface TrialClassTableFrameProps {
   onToggleOne: (id: string, checked: boolean) => void
   onRowClick: (id: string) => void
   onCopy: (text: string, key: string) => void
+  onRequestReschedule?: (id: string) => void
+  onOpenAssignReschedule?: (id: string) => void
+  onApprove?: (id: string) => void
+  onReject?: (id: string) => void
 }
 
 export function TrialClassTableFrame({
@@ -39,6 +43,10 @@ export function TrialClassTableFrame({
   onToggleOne,
   onRowClick,
   onCopy,
+  onRequestReschedule,
+  onOpenAssignReschedule,
+  onApprove,
+  onReject,
 }: TrialClassTableFrameProps) {
   if (loading) {
     return <ModuleLoadingSkeleton rows={8} columns={10} showToolbar={false} className="h-full" />
@@ -75,6 +83,10 @@ export function TrialClassTableFrame({
         onToggleOne={onToggleOne}
         onRowClick={onRowClick}
         onCopy={onCopy}
+        onRequestReschedule={onRequestReschedule}
+        onOpenAssignReschedule={onOpenAssignReschedule}
+        onApprove={onApprove}
+        onReject={onReject}
       />
     </DataTableFrame>
   )

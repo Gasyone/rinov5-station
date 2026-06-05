@@ -22,6 +22,7 @@ import {
   formatDateTime,
   getStatusLabel,
   getSubjectLabel,
+  isBookingCheckedIn,
   maskPhone,
 } from './bookingTestHelpers'
 import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
@@ -32,6 +33,7 @@ import { getBookingResultHref, hasBookingAssessmentResult } from './bookingTestA
 
 interface BookingTestDetailDialogProps {
   booking: BookingTest | null
+  bookings?: BookingTest[]
   detailNote: string
   copiedKey: string
   onOpenChange: (open: boolean) => void
@@ -45,6 +47,7 @@ interface BookingTestDetailDialogProps {
 
 export function BookingTestDetailDialog({
   booking,
+  bookings = [],
   detailNote,
   copiedKey,
   onOpenChange,
@@ -74,17 +77,30 @@ export function BookingTestDetailDialog({
       <DialogContent className="grid h-[82vh] max-h-[760px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-5xl">
         <DialogHeader className="shrink-0 px-6 pb-4 pt-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="flex flex-wrap items-center gap-2">
-                {booking.childName}
-                <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
-                <Badge variant="outline" className="rounded-md font-mono">
-                  {booking.id}
-                </Badge>
-              </DialogTitle>
-              <DialogDescription className="mt-1">
-                {booking.program} - {formatDateTime(booking.testTime)}
-              </DialogDescription>
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              {booking.avatar ? (
+                <img
+                  src={booking.avatar}
+                  alt={booking.childName}
+                  className="h-11 w-11 shrink-0 rounded-xl object-cover shadow-sm border border-border"
+                />
+              ) : (
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20">
+                  {booking.childName?.charAt(0) || '?'}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="flex flex-wrap items-center gap-2">
+                  {booking.childName}
+                  <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
+                  <Badge variant="outline" className="rounded-md font-mono">
+                    {booking.id}
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription className="mt-1">
+                  {booking.program} - {formatDateTime(booking.testTime)}
+                </DialogDescription>
+              </div>
             </div>
             <div className="shrink-0 pr-8">
               <BookingTestDetailActions
@@ -102,10 +118,21 @@ export function BookingTestDetailDialog({
             <InfoField label="Chương trình" value={booking.program} />
             <InfoField
               label="Lịch hẹn"
-              value={formatDateTime(booking.testTime)}
-              valueClassName="text-primary"
+              value={
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="text-primary">{formatDateTime(booking.testTime)}</span>
+                  {isBookingCheckedIn(booking) && (
+                    <StatusBadge
+                      status="checkin"
+                      label="Đã đến"
+                      withDot
+                      className="rounded-md px-2 py-0.5 text-[11px]"
+                    />
+                  )}
+                </span>
+              }
             />
-            <InfoField label="Cơ sở" value={booking.school} supporting={booking.room || 'Sảnh tư vấn'} />
+            <InfoField label="Trường" value={booking.school} supporting={booking.room || 'Sảnh tư vấn'} />
             <InfoField label="Môn học" value={getSubjectLabel(booking.subject)} />
           </section>
 
@@ -195,7 +222,7 @@ export function BookingTestDetailDialog({
                     </FieldLabel>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <SpeakingScore result={booking.testResult} />
+                    {booking.subject === 'english' && <SpeakingScore result={booking.testResult} />}
                     <LwrScore result={booking.testResult} />
                   </div>
                 </div>
@@ -203,6 +230,7 @@ export function BookingTestDetailDialog({
 
               <BookingTestResponsiblePanel
                 booking={booking}
+                bookings={bookings}
                 onUpdateBooking={onUpdateBooking}
               />
 
@@ -218,10 +246,12 @@ export function BookingTestDetailDialog({
                       </Button>
                     )}
                     {Boolean(
-                      booking.isInterviewed ||
+                      booking.teacher?.trim() && (
+                        booking.isInterviewed ||
                         booking.status === 'completed' ||
                         (booking.testResult?.speaking && booking.testResult.speaking !== '-') ||
                         (booking.testResult?.lwr && booking.testResult.lwr !== '-')
+                      )
                     ) && (
                       <Button asChild variant="link" className="h-auto p-0 justify-start">
                         <a href={getBookingResultHref(booking.id)} target="_blank" rel="noreferrer">

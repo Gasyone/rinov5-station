@@ -120,14 +120,3 @@ tags: [br, mdm, golden-record, deduplication]
 |-----------|------|-------|-----------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft |
 | v1.0 | ⓪ TBD | OWNER | Approved |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- BR-003 là "mặt nghiệp vụ" của `[POLICY-MDM-01]` — policy nói "phải", BR nói "vì sao phải".
-- `BF-MDM-01` + `US-MDM-01-04` (Merge Duplicates) đã thiết kế — chỉ cần ưu tiên triển khai.
-
-### ⛔ Hàng rào An toàn
-- **KHÔNG** xóa cứng bản ghi khi merge — luôn soft-merge (giữ lịch sử).
-- **KHÔNG** auto-merge mà không có confirm từ người dùng — chỉ gợi ý.

@@ -8,8 +8,9 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterSheetPanel,
-  type FilterSection,
+  FilterGroupSheetPanel,
+  createFilterGroup,
+  type FilterGroupConfig,
 } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import type { User } from '@/mocks/users'
@@ -74,28 +75,21 @@ export function UsersScreen() {
 
   const activeFilterCount = filters.branches.length + filters.roles.length
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
+      createFilterGroup({
         id: 'branches',
-        title: 'Branch',
-        options: branches.map((b) => ({
-          value: b,
-          label: b,
-          count: users.filter((u) => u.branch === b).length,
-          checked: filters.branches.includes(b),
-        })),
-      },
-      {
+        options: branches,
+        selectedValues: filters.branches,
+        getOptionCount: (branch) => users.filter((u) => u.branch === branch).length,
+      }),
+      createFilterGroup({
         id: 'roles',
-        title: 'Role',
-        options: roles.map((r) => ({
-          value: r,
-          label: ROLE_LABELS[r],
-          count: users.filter((u) => u.role === r).length,
-          checked: filters.roles.includes(r),
-        })),
-      },
+        options: roles,
+        selectedValues: filters.roles,
+        getOptionLabel: (role) => ROLE_LABELS[role as User['role']],
+        getOptionCount: (role) => users.filter((u) => u.role === role).length,
+      }),
     ],
     [branches, roles, users, filters]
   )
@@ -202,11 +196,11 @@ export function UsersScreen() {
         </DataTableFrame>
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="User filters"
         description="Filter by branch and role."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)

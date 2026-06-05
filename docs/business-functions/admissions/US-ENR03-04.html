@@ -1,0 +1,300 @@
+<hr>
+<h2>id: US-ENR03-04
+title: &quot;Lịch sự kiện Cơ sở (Global Event Schedule)&quot;
+bf: BF-ENR-03
+domain: CAP-ADM
+status: standardized
+tags: [schedule, events, booking, aggregator, polymorphism]</h2>
+<h1>US-ENR03-04: Lịch sự kiện Cơ sở (Global Event Schedule)</h1>
+<blockquote>
+<p><strong>Tham chiếu:</strong> BF-ENR-03 · <code>[POLICY-DS-03]</code> · Giao diện Mẫu §4.2 (Danh sách dạng Grid/Calendar)</p>
+</blockquote>
+<h2>1. Yêu cầu Người dùng (User Story)</h2>
+<p><strong>Là một</strong> Quản lý chi nhánh hoặc Tư vấn viên (Sales/Admissions),
+<strong>tôi muốn</strong> xem toàn bộ lịch sự kiện tuyển sinh (Kiểm tra đầu vào, Học thử, Hội thảo) diễn ra tại cơ sở trên một giao diện lịch tổng hợp chung,
+<strong>để</strong> nắm bắt lịch trình tiếp đón khách, kiểm tra trực quan xem phòng đánh giá hoặc giáo viên phụ trách có bị trùng lịch hay không, và quản lý các lượt khách đến cơ sở một cách chuyên nghiệp, tránh quá tải sảnh chờ.</p>
+<blockquote>
+<p><strong>Kiểm tra chất lượng (INVEST):</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>I</strong>ndependent — Không phụ thuộc vào các phân hệ tạo lịch. Hoạt động như một bảng tổng hợp đa luồng.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>N</strong>egotiable — Có thể tùy chỉnh màu sắc thẻ hiển thị theo loại hoặc theo trạng thái xử lý.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>V</strong>aluable — Cung cấp &quot;Một nguồn sự thật&quot; về lưu lượng khách vãng lai, cực kỳ thiết yếu cho bộ phận Tuyển sinh.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>E</strong>stimable — Rõ ràng về logic phân phối giao diện chi tiết.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>S</strong>mall — Hoàn thành cấu trúc đa luồng trong một chu kỳ.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>T</strong>estable — Hỗ trợ tiêu chí kiểm định dữ liệu nghiêm ngặt.</li>
+</ul>
+</blockquote>
+<hr>
+<h2>2. Quy tắc Nghiệp vụ (Business Rules)</h2>
+<ol>
+<li><strong>[RULE-EVT-01] Đa nguồn dữ liệu (Multi-Producers &amp; Unified Data):</strong> <ul>
+<li>Lịch này <strong>CHỈ</strong> hiển thị sự kiện Tuyển sinh và Marketing. Tuyệt đối không chứa lịch Lớp học chính khóa của khối vận hành.</li>
+<li>Ba nguồn thu thập chính: <code>Kiểm tra đầu vào</code>, <code>Học thử</code>, <code>Hội thảo quy mô lớn</code>.</li>
+<li>Yêu cầu hệ thống phải đồng nhất các cấu trúc dữ liệu khác nhau về một chuẩn chung trước khi đưa lên hiển thị.</li>
+</ul>
+</li>
+<li><strong>[RULE-EVT-02] Đa hình màn hình chi tiết (Polymorphic Detail Trigger):</strong> <ul>
+<li>Lưới lịch ở chế độ <strong>Chỉ xem</strong>.</li>
+<li>Bấm chuột vào thẻ sự kiện -&gt; Hệ thống tự động nhận diện loại sự kiện và mở đúng Hộp thoại quản lý gốc:<ul>
+<li>Nếu là <code>Kiểm tra đầu vào</code> -&gt; Mở Hộp thoại Chi tiết Kiểm tra.</li>
+<li>Nếu là <code>Học thử</code> -&gt; Mở Hộp thoại Chi tiết Học thử.</li>
+<li>Nếu là <code>Hội thảo</code> -&gt; Mở Hộp thoại Chi tiết Sự kiện.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>[RULE-EVT-03] Đồng bộ tự động (Reactive UI):</strong> <ul>
+<li>Mọi thay đổi trạng thái (Ví dụ: Khách &quot;Không đến&quot; hoặc &quot;Hoàn thành bài&quot;) phải tự động cập nhật lên bảng lịch ngay lập tức.</li>
+</ul>
+</li>
+<li><strong>[RULE-EVT-04] Gom nhóm sự kiện lớn (Clustering):</strong><ul>
+<li>Sự kiện Hội thảo thường chiếm trọn ngày với đông người tham gia. Yêu cầu có khu vực hiển thị đặc biệt (kéo dài cả ngày) ở dải trên cùng màn hình.</li>
+</ul>
+</li>
+</ol>
+<h3>2.1. Thông số &amp; Định mức (Metrics &amp; Thresholds)</h3>
+<ul>
+<li><strong>[METRIC-01] Sức chịu tải UI (Extreme Overlap):</strong> Hỗ trợ hiển thị tối đa 20 lượt khách đến cùng 1 khung giờ 18:00 (thường gặp khi tổ chức đánh giá diện rộng). Yêu cầu tự động chuyển sang chế độ gom nhóm rút gọn dạng &quot;Đang có +N khách&quot;.</li>
+<li><strong>[METRIC-02] Tốc độ xử lý:</strong> Phản hồi truy vấn hợp nhất dưới <code>1.5 giây</code>.</li>
+</ul>
+<hr>
+<h2>3. Cấu trúc Giao diện &amp; Dữ liệu</h2>
+<p><strong>Bố cục Tổng thể:</strong> Gồm Thanh công cụ có bộ lọc phân loại chuyên sâu, kết hợp lưới thời gian đa năng.</p>
+<h3>3.1. Thanh công cụ (Toolbar)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Logic &amp; Tham số</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Phân loại</td>
+<td>Nhóm hộp kiểm (Checkbox)</td>
+<td>Bật/tắt các lớp sự kiện: Kiểm tra, Học thử, Hội thảo.</td>
+<td>Giúp Tư vấn viên chỉ tập trung vào nhóm khách của mình.</td>
+</tr>
+<tr>
+<td>Chọn Trung tâm</td>
+<td>Danh sách thả xuống</td>
+<td>Lọc theo cơ sở vật lý</td>
+<td></td>
+</tr>
+<tr>
+<td>Tình trạng</td>
+<td>Chọn nhiều mục</td>
+<td>Chọn trạng thái: Chờ thi, Đang thi, Đã xong, Vắng mặt.</td>
+<td></td>
+</tr>
+<tr>
+<td>Tìm kiếm</td>
+<td>Ô nhập văn bản</td>
+<td>Tìm theo Tên khách, Số điện thoại.</td>
+<td>Đặc biệt quan trọng khi Lễ tân đối chiếu số điện thoại khách đến.</td>
+</tr>
+<tr>
+<td>Tạo mới</td>
+<td>Nút thả xuống</td>
+<td>Menu nhanh: &quot;Tạo lịch Kiểm tra&quot;, &quot;Tạo Học thử&quot;.</td>
+<td>Lối tắt hữu dụng giúp không cần chuyển trang thủ công.</td>
+</tr>
+</tbody></table>
+<h3>3.2. Bảng Lịch (Time Grid Core)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Dữ liệu</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Khay Trọn ngày</td>
+<td>Vùng ngang trên cùng</td>
+<td>Các sự kiện Hội thảo kéo dài cả ngày</td>
+<td>Tách biệt khỏi các khoảng chia giờ chi tiết.</td>
+</tr>
+<tr>
+<td>Trục thời gian</td>
+<td>Cột chia giờ</td>
+<td>07:00 - 22:00</td>
+<td></td>
+</tr>
+<tr>
+<td>Thẻ Sự kiện</td>
+<td>Khối thông tin hợp nhất</td>
+<td>Tên khách, SĐT (ẩn một phần), Loại (Icon), Trạng thái.</td>
+<td>Đảm bảo văn bản rõ nét, không bị bóp méo khi màn hình hẹp.</td>
+</tr>
+<tr>
+<td>Màu nền</td>
+<td>Phủ màu đồng bộ</td>
+<td>Thay đổi dựa theo Loại hoặc Trạng thái (Ví dụ: Chờ = Vàng, Xong = Xanh).</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>3.3. Thẻ Sự kiện (Event Card)</h3>
+<table>
+<thead>
+<tr>
+<th>Đặc điểm nhận dạng</th>
+<th>Loại Sự kiện gốc</th>
+<th>Kiểu thiết kế riêng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Biểu tượng Tìm kiếm / Tài liệu</td>
+<td>Đặt lịch Kiểm tra</td>
+<td>Góc thẻ được bo vuông vức.</td>
+</tr>
+<tr>
+<td>Biểu tượng Mũ tốt nghiệp</td>
+<td>Đăng ký Học thử</td>
+<td>Góc thẻ bo tròn mềm mại để dễ dàng phân biệt.</td>
+</tr>
+<tr>
+<td>Biểu tượng Loa thông báo</td>
+<td>Hội thảo tập trung</td>
+<td>Kéo dài hiển thị tại rãnh trọn ngày.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Xử lý Ngoại lệ (Corner Cases)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tình huống</th>
+<th>Cách xử lý</th>
+<th>Thông báo giao diện</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4.1</td>
+<td>Quá tải một mốc giờ</td>
+<td>Có hơn 5 khách dồn vào một khoảng 15 phút.</td>
+<td>Hệ thống chuyển sang vẽ một khối đại diện: &quot;18:00 - Có 15 khách đánh giá &amp; 5 học thử&quot;. Bấm vào sẽ sổ ra danh sách chi tiết.</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Thiếu thời lượng hẹn</td>
+<td>Nhân viên chỉ nhập giờ khách đến, không có giờ dự kiến về.</td>
+<td>Mặc định cấp cho thẻ một độ cao tương đương 30 phút.</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Khách trùng số điện thoại</td>
+<td>Anh em sinh đôi đến kiểm tra chung giờ.</td>
+<td>Cảnh báo khi rê chuột: &quot;Hệ thống ghi nhận trùng số điện thoại với [Tên khách]&quot;.</td>
+</tr>
+<tr>
+<td>4.4</td>
+<td>Mất mạng khi đang mở biểu mẫu</td>
+<td>Cố tạo lịch mới nhưng kết nối rớt.</td>
+<td>Lưới lịch cũ không bị ảnh hưởng, hộp thoại đang mở tự chịu trách nhiệm báo lỗi.</td>
+</tr>
+<tr>
+<td>4.5</td>
+<td>Đổi bộ lọc liên tục</td>
+<td>Người dùng đánh dấu/bỏ đánh dấu liên tục trên thanh công cụ.</td>
+<td>Sử dụng cơ chế lọc trên thiết bị (Client-side), không gửi yêu cầu về máy chủ nhằm đảm bảo phản hồi tức thì dưới 100ms.</td>
+</tr>
+</tbody></table>
+<h2>5. Kế hoạch Tự kiểm tra (Self-Verification)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hạng mục</th>
+<th>Bước kiểm tra</th>
+<th>Tiêu chuẩn Đạt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V-01</td>
+<td>Kiểm tra tính đa hình</td>
+<td>Bấm vào thẻ &quot;Học thử&quot;, sau đó bấm thẻ &quot;Kiểm tra&quot;.</td>
+<td>Hai bảng chức năng hoàn toàn khác biệt hiện lên tương ứng.</td>
+</tr>
+<tr>
+<td>V-02</td>
+<td>Gom nhóm tự động</td>
+<td>Tạo lập dữ liệu ảo gồm 10 sự kiện trùng giờ.</td>
+<td>Khối thời gian hiển thị gọn gàng dạng văn bản &quot;+10 sự kiện&quot;.</td>
+</tr>
+<tr>
+<td>V-03</td>
+<td>Lọc tại chỗ</td>
+<td>Bỏ chọn nhóm &quot;Học thử&quot;.</td>
+<td>Mọi sự kiện học thử biến mất tức thời mà không xuất hiện bánh xe tải dữ liệu.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tiêu chí (Specific)</th>
+<th>Cách đo (Measurable)</th>
+<th>Kết quả mong đợi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AC-01</td>
+<td>Khay sự kiện trọn ngày</td>
+<td>Nhập lịch hội thảo lớn kéo dài.</td>
+<td>Giao diện xếp sự kiện lên một thanh ngang ưu tiên nằm trên cùng lịch.</td>
+</tr>
+<tr>
+<td>AC-02</td>
+<td>Điều phối giao diện chuẩn xác</td>
+<td>Bấm thao tác trên từng loại sự kiện.</td>
+<td>Cửa sổ làm việc bật lên phải chuẩn xác khớp với đặc tính kỹ thuật của sự kiện đó.</td>
+</tr>
+<tr>
+<td>AC-03</td>
+<td>Tìm kiếm bám sát thực tế</td>
+<td>Gõ ba số &quot;098&quot;.</td>
+<td>Thẻ nào có số điện thoại khách chứa &quot;098&quot; sẽ nổi bật, mọi thẻ khác mờ đi. Phản ứng có độ trễ ngắn.</td>
+</tr>
+<tr>
+<td>AC-04</td>
+<td>Nút tạo nhanh</td>
+<td>Chọn lệnh tạo lịch Học thử từ thanh công cụ.</td>
+<td>Gọi đúng biểu mẫu nhập liệu tiêu chuẩn.</td>
+</tr>
+<tr>
+<td>AC-05</td>
+<td>Chữa lỗi dữ liệu giờ</td>
+<td>Đưa vào hệ thống lịch hẹn thiếu thông tin kết thúc.</td>
+<td>Thẻ tự giới hạn chiều cao thành khung chuẩn 30 phút.</td>
+</tr>
+<tr>
+<td>AC-06</td>
+<td>Nhận diện thị giác</td>
+<td>So sánh hai trạng thái &quot;Đang đợi&quot; và &quot;Đã đánh giá xong&quot;.</td>
+<td>Màu nền hiển thị khác biệt rõ rệt theo quy định nhận diện chung.</td>
+</tr>
+<tr>
+<td>AC-07</td>
+<td>Tự động cập nhật</td>
+<td>Xử lý hoàn tất khách hàng và đóng hộp thoại.</td>
+<td>Lưới tự phản ứng đổi màu ngay lập tức không cần người thao tác.</td>
+</tr>
+<tr>
+<td>AC-08</td>
+<td>Tương thích thiết bị di động</td>
+<td>Xem màn hình trên kích thước hẹp.</td>
+<td>Lưới biến thành dạng Danh sách dọc gọn gàng (Agenda).</td>
+</tr>
+<tr>
+<td>AC-09</td>
+<td>Phân quyền an toàn</td>
+<td>Đăng nhập bằng tài khoản không thuộc khối Kinh doanh.</td>
+<td>Thông tin khách hàng bị ẩn toàn bộ hoặc chặn quyền truy cập tính năng.</td>
+</tr>
+</tbody></table>

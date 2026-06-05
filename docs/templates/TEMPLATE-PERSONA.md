@@ -123,18 +123,3 @@ tags: [persona, stakeholder]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"[Một câu Persona này thực sự đã nói trong phỏng vấn, hoặc câu thể hiện chính xác tâm tư của họ.]"*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- **Persona PHẢI dựa trên dữ liệu thực** (phỏng vấn, khảo sát, quan sát) — không suy đoán.
-- Khi viết US, tham chiếu Persona bằng mã `PERSONA-XXX`, không viết lại nội dung.
-- Mọi tính năng phải khớp với ít nhất 1 JTBD ở mục 7.
-- Pain Point ở mục 3 là nguồn nguyên liệu chính để viết Stakeholder Requirements.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** tạo Persona dựa trên cảm nhận. Phải có nguồn dữ liệu (phỏng vấn / quan sát / khảo sát).
-- **KHÔNG** gộp 2 vai trò có goals/pain points/quyền khác nhau vào 1 Persona.
-- **KHÔNG** thêm chi tiết kỹ thuật (UI mockup, schema) vào Persona — đó là việc của US.
-- **KHÔNG** đặt định kiến (giới tính, tuổi, văn hóa) vượt quá mức cần thiết để hiểu hành vi công việc.

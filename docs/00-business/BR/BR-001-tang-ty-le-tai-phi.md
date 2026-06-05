@@ -131,16 +131,3 @@ tags: [br, retention, care, renewal]
 |-----------|------|------------------|-----------|---------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft | Tạo từ context dự án + 5 Persona |
 | v1.0 | ⓪ TBD | OWNER | Approved | Cần Owner xác nhận |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- BR-001 không yêu cầu CAP/BF mới — phải khai thác `CAP-CARE` đã có.
-- Ưu tiên triển khai 2 màn hình `today_care` + `at_risk_care` + `renewal` (đã có trong navigation).
-- Khi tăng `KPI-001` → trigger review BR-001 hằng quý.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** đặt giải pháp kỹ thuật vào BR (UI mockup, API endpoint).
-- **KHÔNG** tạo CAP riêng cho "At-risk detection" — đó là 1 quy tắc trong `care_rule_engine` của `CAP-CARE`.
-- **KHÔNG** chấp nhận BR-AC-01..04 mà không có dữ liệu baseline trước khi triển khai.

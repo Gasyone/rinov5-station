@@ -8,8 +8,10 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterSheetPanel,
-  type FilterSection,
+  FilterGroupSheetPanel,
+  createFilterGroup,
+  type FilterGroupConfig,
+  getSchoolFilterGroup,
 } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import type { Employee } from '@/mocks/employees'
@@ -77,50 +79,37 @@ export function EmployeesScreen() {
     filters.departments.length +
     filters.contractTypes.length
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
-        id: 'branches',
-        title: 'Branch',
-        options: branches.map((b) => ({
-          value: b,
-          label: b,
-          count: employees.filter((e) => e.branch === b).length,
-          checked: filters.branches.includes(b),
-        })),
-      },
-      {
+      getSchoolFilterGroup(
+        'branches',
+        filters.branches,
+        (branch) => employees.filter((e) => e.branch === branch).length,
+        branches
+      ),
+      createFilterGroup({
         id: 'departments',
-        title: 'Department',
-        options: departments.map((d) => ({
-          value: d,
-          label: d,
-          count: employees.filter((e) => e.department === d).length,
-          checked: filters.departments.includes(d),
-        })),
-      },
-      {
+        options: departments,
+        selectedValues: filters.departments,
+        getOptionCount: (department) => employees.filter((e) => e.department === department).length,
+      }),
+      createFilterGroup({
         id: 'contractTypes',
-        title: 'Contract type',
-        options: contractTypes.map((c) => ({
-          value: c,
-          label: c,
-          count: employees.filter((e) => e.contractType === c).length,
-          checked: filters.contractTypes.includes(c),
-        })),
-      },
-      {
+        options: contractTypes,
+        selectedValues: filters.contractTypes,
+        getOptionCount: (contractType) => employees.filter((e) => e.contractType === contractType).length,
+      }),
+      createFilterGroup({
         id: 'statuses',
-        title: 'Status',
         options: EMPLOYEE_STATUS_TABS.filter((t) => t.id !== 'all').map((t) => ({
           value: t.id,
           label: t.label,
           count: countEmployeesByStatus(employees, t.id),
-          checked: false,
         })),
-      },
+        selectedValues: activeStatus === 'all' ? [] : [activeStatus],
+      }),
     ],
-    [branches, departments, contractTypes, employees, filters]
+    [activeStatus, branches, departments, contractTypes, employees, filters]
   )
 
   const toggleArray = <K extends keyof EmployeeFilterState>(
@@ -214,11 +203,11 @@ export function EmployeesScreen() {
         </DataTableFrame>
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Employee filters"
         description="Filter by branch, department, and contract type."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)
@@ -232,6 +221,7 @@ export function EmployeesScreen() {
         }}
         onClearAll={() => {
           setFilters({ branches: [], departments: [], contractTypes: [] })
+          setActiveStatus('all')
           setPage(1)
         }}
       />

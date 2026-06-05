@@ -8,6 +8,7 @@ export interface ClassSession {
   attendedStudents?: number; isRecurring?: boolean;
   substituteTeacher?: string;
   status?: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
+  isOpeningDay?: boolean;
 }
 
 export interface EventSession {
@@ -15,9 +16,10 @@ export interface EventSession {
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
   branch: string; organizer: string;
   type: 'event' | 'placement_test' | 'workshop' | 'consultation';
-  typeLabel: string; status: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
+  typeLabel: string; status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
   statusLabel: string; participants: number; maxParticipants: number; location: string; note: string;
   isRecurring?: boolean;
+  subject?: string;
 }
 
 // NOTE: Tailwind class strings for these `type` values live in
@@ -39,6 +41,9 @@ const CLASSES = [
   { id: 'AK_TOAN_017', name: 'Toán tư duy AK Columbus 4', subject: 'Toán tư duy', schedule: 'T3,T7', time: '19:40-21:10' },
   { id: 'AK_TOAN_016', name: 'Toán tư duy AK Archimedes 7', subject: 'Toán tư duy', schedule: 'T6', time: '19:15-21:15' },
   { id: 'SA1_TA_T03', name: 'Tiếng Anh Trial Level 2', subject: 'Tiếng Anh', schedule: 'T4', time: '15:30-17:30' },
+  { id: 'SA2_TA_014', name: 'Tiếng Anh SA2 Level 3', subject: 'Tiếng Anh', schedule: 'T3,T6', time: '17:45-19:15' },
+  { id: 'AK_TOAN_021', name: 'Toán tư duy AK Archimedes 5', subject: 'Toán tư duy', schedule: 'T6', time: '19:15-21:15' },
+  { id: 'STEM_ROBO_003', name: 'STEM Robotics S1', subject: 'STEM Robotics', schedule: 'T4', time: '15:30-17:30' },
 ]
 
 const LESSONS: Record<string, { title: string; subtitle: string }[]> = {
@@ -50,6 +55,10 @@ const LESSONS: Record<string, { title: string; subtitle: string }[]> = {
   'Toán tư duy': [
     { title: 'Level 307 - Bài 2: Trò chơi cờ bàn', subtitle: 'Khám phá luật chơi' },
     { title: 'C2 - Bài 2: Toto và 100 hạt sỏi', subtitle: 'Ôn đếm theo nhóm' },
+  ],
+  'STEM Robotics': [
+    { title: 'Robot line follower: Cân chỉnh cảm biến', subtitle: 'Lắp ráp và thử đường chạy' },
+    { title: 'STEM Coding: Vòng lặp và điều kiện', subtitle: 'Lập trình nhiệm vụ theo nhóm' },
   ],
 }
 
@@ -76,9 +85,8 @@ export function getMockClassSessions(): ClassSession[] {
       const bucket = (isToday ? 'today' : d < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
       let sts = bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : seed % 3 === 0 ? 'pending' : 'confirmed'
       
-      // Inject some cancelled and rescheduled statuses
+      // Inject some cancelled statuses
       if (seed % 11 === 0 && bucket === 'upcoming') sts = 'cancelled'
-      if (seed % 13 === 0 && bucket === 'upcoming') sts = 'rescheduled'
       if (seed % 15 === 0 && bucket === 'past') sts = 'cancelled'
       
       const [sh, sm] = cls.time.split('-')[0].split(':').map(Number)
@@ -99,6 +107,8 @@ export function getMockClassSessions(): ClassSession[] {
       // Inject substitute teacher randomly for upcoming or today classes
       const substituteTeacher = (seed % 7 === 0 && sts !== 'cancelled') ? PICK(['Hương Ly', 'Thanh Bình', 'David John'], seed) : undefined
       
+      const isOp = cls.id === 'SA1_TA_001' && d.getDay() === days[0] && i > 14 && i <= 21
+      
       return {
         id: `CLS-${cls.id}-${toDateKey(d)}`, classCode: cls.id, className: cls.name,
         subject: cls.subject, teacher,
@@ -111,6 +121,7 @@ export function getMockClassSessions(): ClassSession[] {
         title: lesson.title, lessonSubtitle: lesson.subtitle,
         totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
         attendedStudents, isRecurring: true, substituteTeacher,
+        isOpeningDay: isOp || undefined,
       }
     }).filter(Boolean) as ClassSession[]
   }).sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
@@ -118,22 +129,37 @@ export function getMockClassSessions(): ClassSession[] {
 
 export function getMockEventSessions(): EventSession[] {
   const today = new Date(); today.setHours(0, 0, 0, 0)
-  return EVENT_NAMES.map((name, idx) => {
+  const standardEvents = EVENT_NAMES.map((name, idx) => {
     const offset = (idx % 5) - 2 + Math.floor(idx / 5) * 3
     const d = addDays(today, offset)
     const seed = HASH(name)
     const isToday = d.getTime() === today.getTime()
     const bucket = (isToday ? 'today' : d < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
     const type = EVENT_TYPES[idx % EVENT_TYPES.length]
-    const sts = (bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : idx % 4 === 0 ? 'pending' : 'confirmed') as 'confirmed' | 'pending' | 'cancelled' | 'completed'
+    
+    let sts: 'scheduled' | 'completed' | 'cancelled' = 'scheduled'
+    if (bucket === 'past') {
+      sts = idx % 5 === 0 ? 'cancelled' : 'completed'
+    } else {
+      sts = idx % 6 === 0 ? 'cancelled' : 'scheduled'
+    }
+
     let maxP = 30 + (seed % 40)
-    let participants = bucket === 'past' ? Math.min(maxP, 15 + (seed % 30)) : bucket === 'today' ? maxP - 2 : Math.min(maxP, 5 + (seed % 20))
+    let participants = sts === 'completed' ? Math.min(maxP, 15 + (seed % 30)) : sts === 'cancelled' ? 0 : Math.min(maxP, 5 + (seed % 20))
     
     if (type === 'placement_test') {
       maxP = 1
       participants = sts === 'completed' ? 1 : 0
     }
     const sh = 9 + (idx % 4), eh = 11 + (idx % 4)
+    let subject = 'Tiếng Anh'
+    if (name.includes('Toán') || name.includes('Archimedes') || name.includes('Columbus')) {
+      subject = 'Toán tư duy'
+    } else if (name.includes('STEM') || name.includes('Robo')) {
+      subject = 'STEM Robotics'
+    } else if (name.includes('Kỹ năng')) {
+      subject = 'Kỹ năng sống'
+    }
     return {
       id: `EVT-${String(idx + 1).padStart(3, '0')}`, title: name,
       description: `Sự kiện dành cho phụ huynh và học viên`,
@@ -141,13 +167,86 @@ export function getMockEventSessions(): EventSession[] {
       dateBucket: bucket, timeLabel: `${PAD(sh)}:00`, endTimeLabel: `${PAD(eh)}:30`,
       branch: PICK(BRANCHES, idx), organizer: PICK(['Phòng Đào tạo', 'Phòng Tuyển sinh', 'Phòng Marketing'], idx),
       type, typeLabel: type === 'event' ? 'Sự kiện' : 'Trải nghiệm',
-      status: sts, statusLabel: sts === 'confirmed' ? 'Đã xác nhận' : sts === 'pending' ? 'Chờ xác nhận' : 'Hoàn thành',
+      status: sts, statusLabel: sts === 'scheduled' ? 'Đã lên lịch' : sts === 'completed' ? 'Hoàn thành' : 'Hủy',
       participants, maxParticipants: maxP,
       location: `${PICK(BRANCHES, idx)} - Hội trường`,
       note: type === 'placement_test' 
         ? (participants === 1 ? 'Đã hoàn thành trải nghiệm.' : 'Chờ học viên tham gia trải nghiệm.')
         : bucket === 'upcoming' ? `Đã mở đăng ký, hiện có ${participants}/${maxP} người.` : bucket === 'today' ? 'Sắp diễn ra.' : `Đã diễn ra với ${participants} người.`,
+      isRecurring: idx % 3 === 0,
+      subject,
     }
-  }).sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
-}
+  })
 
+  // Thêm dữ liệu mẫu cho lịch trải nghiệm hủy lịch và lịch trải nghiệm đã qua
+  const customEvents: EventSession[] = [
+    {
+      id: 'EVT-CUSTOM-001',
+      title: 'Lịch trải nghiệm học thử Tiếng Anh - Nguyễn Minh Anh',
+      description: 'Lớp học trải nghiệm Tiếng Anh giao tiếp cùng giáo viên bản ngữ.',
+      date: toDateKey(addDays(today, 1)), // Ngày mai
+      dateDisplay: `${PAD(addDays(today, 1).getDate())}/${PAD(addDays(today, 1).getMonth() + 1)}/${addDays(today, 1).getFullYear()}`,
+      dateBucket: 'upcoming',
+      timeLabel: '14:30',
+      endTimeLabel: '16:00',
+      branch: 'RinoEdu Linh Đàm',
+      organizer: 'Phòng Đào tạo',
+      type: 'placement_test',
+      typeLabel: 'Trải nghiệm',
+      status: 'cancelled',
+      statusLabel: 'Hủy',
+      participants: 0,
+      maxParticipants: 1,
+      location: 'RinoEdu Linh Đàm - Phòng 101',
+      note: 'Phụ huynh xin hủy lịch do học sinh bị ốm. Hẹn xếp lịch lại sau.',
+      isRecurring: false,
+      subject: 'Tiếng Anh',
+    },
+    {
+      id: 'EVT-CUSTOM-002',
+      title: 'Đánh giá năng lực & Trải nghiệm lớp học - Trần Đức Nam',
+      description: 'Bài kiểm tra năng lực đầu vào và học thử lớp Toán tư duy.',
+      date: toDateKey(addDays(today, -1)), // Ngày hôm qua
+      dateDisplay: `${PAD(addDays(today, -1).getDate())}/${PAD(addDays(today, -1).getMonth() + 1)}/${addDays(today, -1).getFullYear()}`,
+      dateBucket: 'past',
+      timeLabel: '09:00',
+      endTimeLabel: '10:30',
+      branch: 'RinoEdu Nguyễn Tuân',
+      organizer: 'Phòng Tuyển sinh',
+      type: 'placement_test',
+      typeLabel: 'Trải nghiệm',
+      status: 'completed',
+      statusLabel: 'Hoàn thành',
+      participants: 1,
+      maxParticipants: 1,
+      location: 'RinoEdu Nguyễn Tuân - Phòng 204',
+      note: 'Đã hoàn thành trải nghiệm. Đánh giá tốt, phụ huynh chuẩn bị làm thủ tục nhập học.',
+      isRecurring: false,
+      subject: 'Tiếng Anh',
+    },
+    {
+      id: 'EVT-CUSTOM-003',
+      title: 'Trải nghiệm Toán tư duy Archimedes - Phạm Gia Bảo',
+      description: 'Lớp học thử Toán tư duy khơi dậy tiềm năng toán học.',
+      date: toDateKey(addDays(today, -2)), // 2 ngày trước
+      dateDisplay: `${PAD(addDays(today, -2).getDate())}/${PAD(addDays(today, -2).getMonth() + 1)}/${addDays(today, -2).getFullYear()}`,
+      dateBucket: 'past',
+      timeLabel: '18:00',
+      endTimeLabel: '19:30',
+      branch: 'RinoEdu Smart City',
+      organizer: 'Phòng Marketing',
+      type: 'placement_test',
+      typeLabel: 'Trải nghiệm',
+      status: 'cancelled',
+      statusLabel: 'Hủy',
+      participants: 0,
+      maxParticipants: 1,
+      location: 'RinoEdu Smart City - Phòng Trải nghiệm',
+      note: 'Học viên không đến trải nghiệm và không liên lạc được.',
+      isRecurring: false,
+      subject: 'Toán tư duy',
+    }
+  ]
+
+  return [...standardEvents, ...customEvents].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
+}

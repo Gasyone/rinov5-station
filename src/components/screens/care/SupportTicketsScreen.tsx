@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { getTickets, updateTicketStatus, addTicketInteraction, createTicket, type SupportTicket, type TicketInteractionLog } from '@/mocks/tickets'
@@ -18,11 +18,11 @@ export function SupportTicketsScreen() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
 
-  // Local state trigger to reload mock calculations
   const [updateTrigger, setUpdateTrigger] = useState(0)
 
   const filtered = useMemo(() => {
@@ -42,6 +42,18 @@ export function SupportTicketsScreen() {
     return filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
   }, [filtered, currentPage, pageSize])
 
+  const handleToggleRow = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
   const handleViewDetails = (ticket: SupportTicket) => {
     setSelectedTicket(ticket)
     setDetailOpen(true)
@@ -51,7 +63,6 @@ export function SupportTicketsScreen() {
     const success = updateTicketStatus(ticketId, status)
     if (success) {
       setUpdateTrigger((prev) => prev + 1)
-      // Update selected ticket state in open dialog
       if (selectedTicket && selectedTicket.id === ticketId) {
         setSelectedTicket((prev) => prev ? { ...prev, status } : null)
       }
@@ -65,7 +76,6 @@ export function SupportTicketsScreen() {
     const success = addTicketInteraction(ticketId, log)
     if (success) {
       setUpdateTrigger((prev) => prev + 1)
-      // Sync selected ticket interactions
       if (selectedTicket && selectedTicket.id === ticketId) {
         const newLog: TicketInteractionLog = {
           ...log,
@@ -80,8 +90,11 @@ export function SupportTicketsScreen() {
     }
   }
 
-  const handleCreateTicket = (newTicket: Omit<SupportTicket, 'id' | 'createdDate' | 'interactionLogs'>) => {
-    createTicket(newTicket)
+  const handleCreateTicket = (newTicket: Omit<SupportTicket, 'id' | 'createdDate' | 'interactionLogs' | 'type'>) => {
+    createTicket({
+      ...newTicket,
+      type: 'support'
+    })
     setUpdateTrigger((prev) => prev + 1)
     toast.success('Đã tạo phiếu hỗ trợ thành công')
   }
@@ -114,6 +127,8 @@ export function SupportTicketsScreen() {
         >
           <SupportTicketsTable
             tickets={paged}
+            selectedIds={selectedIds}
+            onToggleRow={handleToggleRow}
             onViewDetails={handleViewDetails}
           />
         </DataTableFrame>

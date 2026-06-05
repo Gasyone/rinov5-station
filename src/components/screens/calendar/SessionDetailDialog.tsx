@@ -2,7 +2,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { InfoField, Panel } from '@/components/shared'
 import { Clock, Calendar, BookOpen, Users, MapPin } from 'lucide-react'
 import type { ClassSession } from '@/mocks/calendarSchedule'
@@ -26,12 +25,7 @@ export function SessionDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-card">
         <DialogHeader>
-          <div className="flex items-center justify-between pr-6">
-            <DialogTitle className="text-base font-bold">Chi tiết buổi học</DialogTitle>
-            <Badge variant="secondary" className="text-xs">
-              {session.typeLabel}
-            </Badge>
-          </div>
+          <DialogTitle className="text-base font-bold">Chi tiết buổi học</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

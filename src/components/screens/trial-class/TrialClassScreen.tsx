@@ -3,32 +3,24 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterSheetPanel, type FilterSection } from '@/components/filters'
-import { mockStudents } from '@/mocks/students'
-import { nextTrialId, type TrialClass } from '@/mocks/trialClasses'
+import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import type { TrialClass } from '@/mocks/trialClasses'
 import { TrialClassToolbar } from './TrialClassToolbar'
 import { TrialClassTableFrame } from './TrialClassTableFrame'
-import { TrialClassCreateDialog } from './TrialClassCreateDialog'
 import { TrialClassDetailDialog } from './TrialClassDetailDialog'
 import { TrialClassAssignDialog } from './TrialClassAssignDialog'
 import {
-  applyTrialAssignment,
-  applyTrialReschedule,
-  buildEmptyCreateForm,
-  buildTrialFromCreateForm,
   filterTrialClasses,
   readTrialClasses,
   type TrialClassUpdater,
+  getWeekdayLabel,
 } from './trialClassHelpers'
-import type { AssignDialogMode, CreateTrialClassForm, StatusTileId } from './trialClassTypes'
+import { SYSTEM_BRANCHES } from '@/components/controls'
+import { STATUS_CONFIG } from './trialClassConstants'
+import type { AssignDialogMode, StatusTileId, TrialSessionSelection, TrialClassFilterState } from './trialClassTypes'
 
-function getUniqueStringValues(trials: TrialClass[], key: 'branch' | 'program' | 'creator'): string[] {
-  return [...new Set(trials.map((t) => t[key]).filter(Boolean))]
-}
-
-interface TrialClassFilterOnly {
-  programs: string[]
-  creators: string[]
+function getUniqueStringValues(trials: TrialClass[], key: 'branch' | 'program' | 'creator' | 'subject' | 'owner' | 'school'): string[] {
+  return [...new Set(trials.map((t) => t[key]).filter(Boolean))] as string[]
 }
 
 export function TrialClassScreen() {
@@ -37,9 +29,14 @@ export function TrialClassScreen() {
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [filters, setFilters] = useState<TrialClassFilterOnly>({
+  const [filters, setFilters] = useState<TrialClassFilterState>({
     programs: [],
     creators: [],
+    statuses: [],
+    subjects: [],
+    owners: [],
+    schools: [],
+    weekdays: [],
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [page, setPage] = useState(1)
@@ -47,10 +44,9 @@ export function TrialClassScreen() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [copiedKey, setCopiedKey] = useState('')
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [createForm, setCreateForm] = useState<CreateTrialClassForm>(buildEmptyCreateForm)
   const [detailTrialId, setDetailTrialId] = useState('')
   const [assignMode, setAssignMode] = useState<AssignDialogMode>({ mode: 'closed' })
+
   const trials = trialState.trials
   const error = trialState.error
   const setTrials = (updater: TrialClassUpdater) => {
@@ -60,21 +56,22 @@ export function TrialClassScreen() {
     }))
   }
 
-  const branchOptions = useMemo(() => getUniqueStringValues(trials, 'branch'), [trials])
+  const branchOptions = SYSTEM_BRANCHES
   const programOptions = useMemo(() => getUniqueStringValues(trials, 'program'), [trials])
   const creatorOptions = useMemo(() => getUniqueStringValues(trials, 'creator'), [trials])
-  
-  const studentOptions = useMemo(
-    () =>
-      mockStudents.map((student) => ({
-        id: student.id,
-        label: student.name,
-        familyName: student.parentName || `Gia đình ${student.name}`,
-        phone: student.parentPhone || student.phone || '',
-        avatar: student.avatar || '',
-      })),
-    []
-  )
+  const subjectOptions = useMemo(() => getUniqueStringValues(trials, 'subject'), [trials])
+  const ownerOptions = useMemo(() => getUniqueStringValues(trials, 'owner'), [trials])
+  const schoolOptions = SYSTEM_BRANCHES
+
+  const weekdayOptions = useMemo(() => {
+    const days = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật']
+    return days.map((day) => ({
+      value: day,
+      label: day,
+      count: trials.filter((t) => t.sessions.length > 0 && getWeekdayLabel(t.sessions[0].trialDate) === day).length,
+      checked: filters.weekdays?.includes(day) ?? false,
+    }))
+  }, [trials, filters.weekdays])
 
   const filtered = useMemo(
     () => filterTrialClasses(trials, searchTerm, activeBranch, activeStatus, filters),
@@ -93,43 +90,74 @@ export function TrialClassScreen() {
   const currentPage = Math.min(page, totalPages)
   const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
-  const activeFilterCount = filters.programs.length + filters.creators.length
+  const activeFilterCount =
+    filters.programs.length +
+    filters.creators.length +
+    filters.statuses.length +
+    filters.subjects.length +
+    filters.owners.length +
+    filters.schools.length +
+    filters.weekdays.length
 
   const detailTrial = trials.find((t) => t.id === detailTrialId) ?? null
-  const assignTrial = assignMode.mode !== 'closed'
-    ? trials.find((t) => t.id === assignMode.trialId) ?? null
-    : null
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
+      createFilterGroup({
+        id: 'schools',
+        options: schoolOptions,
+        selectedValues: filters.schools,
+        getOptionCount: (school) => trials.filter((t) => t.school === school).length,
+      }),
+      createFilterGroup({
+        id: 'statuses',
+        options: STATUS_CONFIG.map((status) => ({
+          value: status.id,
+          label: status.label,
+          count: trials.filter((t) => t.status === status.id).length,
+        })),
+        selectedValues: filters.statuses,
+      }),
+      createFilterGroup({
+        id: 'weekdays',
+        options: weekdayOptions,
+        selectedValues: filters.weekdays,
+      }),
+      createFilterGroup({
+        id: 'subjects',
+        options: subjectOptions,
+        selectedValues: filters.subjects,
+        getOptionCount: (subject) => trials.filter((t) => t.subject === subject).length,
+      }),
+      createFilterGroup({
         id: 'programs',
-        title: 'Chương trình',
-        options: programOptions.map((p) => ({
-          value: p,
-          label: p,
-          count: trials.filter((t) => t.program === p).length,
-          checked: filters.programs.includes(p),
-        })),
-      },
-      {
+        options: programOptions,
+        selectedValues: filters.programs,
+        getOptionCount: (program) => trials.filter((t) => t.program === program).length,
+      }),
+      createFilterGroup({
+        id: 'owners',
+        options: ownerOptions,
+        selectedValues: filters.owners,
+        getOptionCount: (owner) => trials.filter((t) => t.owner === owner).length,
+      }),
+      createFilterGroup({
         id: 'creators',
-        title: 'Người tạo',
-        options: creatorOptions.map((c) => ({
-          value: c,
-          label: c,
-          count: trials.filter((t) => t.creator === c).length,
-          checked: filters.creators.includes(c),
-        })),
-      },
+        title: 'Sale',
+        options: creatorOptions,
+        selectedValues: filters.creators,
+        getOptionCount: (creator) => trials.filter((t) => t.creator === creator).length,
+        searchable: true,
+        scrollable: true,
+      }),
     ],
-    [programOptions, creatorOptions, trials, filters]
+    [schoolOptions, subjectOptions, programOptions, ownerOptions, creatorOptions, weekdayOptions, trials, filters]
   )
 
-  const toggleArrayFilter = (key: 'programs' | 'creators', value: string) => {
+  const toggleArrayFilter = (key: keyof TrialClassFilterState, value: string) => {
     setPage(1)
     setFilters((current) => {
-      const arr = current[key] as string[]
+      const arr = (current[key] || []) as string[]
       return {
         ...current,
         [key]: arr.includes(value) ? arr.filter((v: string) => v !== value) : [...arr, value],
@@ -137,66 +165,46 @@ export function TrialClassScreen() {
     })
   }
 
-  const handleCreate = () => {
-    setCreateForm(buildEmptyCreateForm())
-    setIsCreateOpen(true)
-  }
-
-  const handleSubmitCreate = () => {
-    if (!createForm.studentName || !createForm.school || !createForm.program) {
-      toast.error('Vui lòng điền đầy đủ: Tên học viên, Cơ sở, Chương trình.')
-      return
-    }
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    const id = nextTrialId(trials)
-    const newTrial = buildTrialFromCreateForm({
-      id,
-      form: createForm,
-      activeBranch,
-      branchOptions,
-      now,
-    })
-    setTrials((current) => [newTrial, ...current])
-    setIsCreateOpen(false)
-    setCreateForm(buildEmptyCreateForm())
-    toast.success(`Đã tạo booking ${id}`)
-  }
-
-  const handleAssign = (
-    trialId: string,
-    sessions: import('./trialClassTypes').TrialSessionSelection[],
-    notes: string,
-  ) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    setTrials((current) =>
-      current.map((t) => {
-        if (t.id !== trialId) return t
-        return applyTrialAssignment(t, {
-          sessions,
-          notes,
-          now,
-        })
-      })
-    )
-    setAssignMode({ mode: 'closed' })
-    toast.success('Đã ghép lớp thành công')
-  }
-
-  const handleRequestReschedule = (trialId: string, reason: string, notes: string) => {
-    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
-    setTrials((current) =>
-      current.map((t) => {
-        if (t.id !== trialId) return t
-
-        return applyTrialReschedule(t, reason, notes, now)
-      })
-    )
-    toast.success('Đã gửi yêu cầu đổi lịch — slot lớp cũ được giải phóng')
-  }
-
   const handleUpdateTrial = (trialId: string, updater: (trial: TrialClass) => TrialClass) => {
     setTrials((current) => current.map((t) => (t.id === trialId ? updater(t) : t)))
     toast.success('Đã cập nhật')
+  }
+
+  const handleApprove = (trialId: string) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    setTrials((current) =>
+      current.map((t) => {
+        if (t.id !== trialId) return t
+        return {
+          ...t,
+          status: 'confirmed',
+          auditLog: [
+            ...t.auditLog,
+            { timestamp: now, author: 'Người dùng hiện tại', action: 'Chấp thuận ghép lớp' },
+          ],
+        }
+      })
+    )
+    toast.success('Đã chấp thuận học thử vào lớp thành công')
+  }
+
+  const handleReject = (trialId: string) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    setTrials((current) =>
+      current.map((t) => {
+        if (t.id !== trialId) return t
+        return {
+          ...t,
+          sessions: [],
+          status: 'rejected',
+          auditLog: [
+            ...t.auditLog,
+            { timestamp: now, author: 'Người dùng hiện tại', action: 'Từ chối ghép lớp', detail: 'Giải phóng lớp đã chọn' },
+          ],
+        }
+      })
+    )
+    toast.success('Đã từ chối ghép lớp và giải phóng lịch học')
   }
 
   const handleCopy = (text: string, key: string) => {
@@ -204,6 +212,39 @@ export function TrialClassScreen() {
     setCopiedKey(key)
     setTimeout(() => setCopiedKey(''), 2000)
     toast.success('Đã sao chép')
+  }
+
+  const handleAssign = (trialId: string, sessions: TrialSessionSelection[], notes: string, rescheduleReason?: string) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    setTrials((current) =>
+      current.map((t) => {
+        if (t.id !== trialId) return t
+        const previousSession = t.sessions.length > 0 ? t.sessions[0] : t.previousSession
+        return {
+          ...t,
+          sessions: sessions.map((s) => ({
+            classId: s.classId,
+            className: s.className,
+            sessionId: s.sessionId,
+            sessionName: s.sessionName,
+            trialDate: s.trialDate,
+          })),
+          status: 'confirmed' as const,
+          previousSession: rescheduleReason ? previousSession : t.previousSession,
+          auditLog: [
+            ...t.auditLog,
+            {
+              timestamp: now,
+              author: 'Người dùng hiện tại',
+              action: rescheduleReason ? `Đổi buổi học (${rescheduleReason})` : 'Ghép lớp học thử',
+              detail: notes || undefined,
+            },
+          ],
+        }
+      })
+    )
+    setAssignMode({ mode: 'closed' })
+    toast.success(rescheduleReason ? 'Đã đổi buổi học thành công' : 'Đã ghép lớp thành công')
   }
 
   return (
@@ -219,7 +260,6 @@ export function TrialClassScreen() {
         onStatusChange={(status) => { setActiveStatus(status); setPage(1) }}
         onSearchChange={(value) => { setSearchTerm(value); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
-        onCreate={handleCreate}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-2 lg:px-6 lg:pb-6">
@@ -251,32 +291,34 @@ export function TrialClassScreen() {
           }}
           onRowClick={setDetailTrialId}
           onCopy={handleCopy}
+          onOpenAssignReschedule={(id) => {
+            setAssignMode({ mode: 'reschedule', trialId: id })
+          }}
+          onApprove={handleApprove}
+          onReject={handleReject}
         />
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
-        sections={filterSections}
-        description="Lọc theo chương trình, người tạo."
+        groups={filterGroups}
+        description="Kết hợp bộ lọc theo trường, trạng thái, ngày trong tuần, môn học, chương trình, người phụ trách và sale."
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
-          if (sectionId === 'programs') toggleArrayFilter('programs', value)
-          if (sectionId === 'creators') toggleArrayFilter('creators', value)
+          toggleArrayFilter(sectionId as keyof TrialClassFilterState, value)
         }}
         onClearAll={() => {
-          setFilters({ programs: [], creators: [] })
+          setFilters({
+            programs: [],
+            creators: [],
+            statuses: [],
+            subjects: [],
+            owners: [],
+            schools: [],
+            weekdays: [],
+          })
           setPage(1)
         }}
-      />
-
-      <TrialClassCreateDialog
-        open={isCreateOpen}
-        form={createForm}
-        branchOptions={branchOptions}
-        studentOptions={studentOptions}
-        onOpenChange={(open) => { if (!open) setIsCreateOpen(false) }}
-        onFormChange={setCreateForm}
-        onSubmit={handleSubmitCreate}
       />
 
       <TrialClassDetailDialog
@@ -284,14 +326,16 @@ export function TrialClassScreen() {
         onOpenChange={(open) => { if (!open) setDetailTrialId('') }}
         onCopy={handleCopy}
         copiedKey={copiedKey}
-        onAssign={setAssignMode}
-        onRequestReschedule={handleRequestReschedule}
+        onOpenAssign={(mode) => setAssignMode(mode)}
+        onRequestReschedule={() => {}}
         onUpdateTrial={handleUpdateTrial}
+        onApprove={handleApprove}
+        onReject={handleReject}
       />
 
       <TrialClassAssignDialog
         mode={assignMode}
-        trial={assignTrial}
+        trial={assignMode.mode !== 'closed' ? trials.find((t) => t.id === assignMode.trialId) ?? null : null}
         onOpenChange={(open) => { if (!open) setAssignMode({ mode: 'closed' }) }}
         onAssign={handleAssign}
       />

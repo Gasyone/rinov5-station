@@ -8,13 +8,23 @@ import { STATUS_CONFIG, FILTER_CONDITIONS } from './bookingTestConstants'
 import {
   countStatus,
   getMemberList,
+  getWeekdayLabel,
+  isBookingCheckedIn,
   isTeacherEmployeeName,
   matchesStatusTile,
   uniqueSorted,
 } from './bookingTestHelpers'
 import type { FilterState, StatusTileId } from './bookingTestTypes'
-import type { BookingStatus, BookingSubject } from '@/mocks/bookingTests'
-import type { FilterSection } from '@/components/filters'
+import type { BookingSubject } from '@/mocks/bookingTests'
+import {
+  createFilterGroup,
+  type FilterGroupConfig,
+  getSchoolFilterGroup,
+  getTeacherFilterGroup,
+  getSaleFilterGroup,
+  getSubjectFilterGroup,
+  getProgramFilterGroup,
+} from '@/components/filters'
 
 interface UseBookingTestDataArgs {
   bookings: BookingTest[]
@@ -23,12 +33,16 @@ interface UseBookingTestDataArgs {
   activeStatus: StatusTileId
   searchTerm: string
   filters: FilterState
+  userRole?: string
+  userName?: string
 }
 
 /**
  * Derives memoized lookups and filtered slices used by `BookingTestScreen`.
  * Extracted to keep the orchestrator under the 300-line cap (DS §10.1).
  */
+import { SYSTEM_BRANCHES } from '@/components/controls'
+
 export function useBookingTestData({
   bookings,
   activeSubject,
@@ -36,11 +50,10 @@ export function useBookingTestData({
   activeStatus,
   searchTerm,
   filters,
+  userRole,
+  userName,
 }: UseBookingTestDataArgs) {
-  const schoolOptions = useMemo(
-    () => uniqueSorted(bookings.map((booking) => booking.school)),
-    [bookings]
-  )
+  const schoolOptions = SYSTEM_BRANCHES
 
   const teacherOptions = useMemo(() => {
     const fromBookings = bookings
@@ -67,17 +80,70 @@ export function useBookingTestData({
   const baseForStatus = useMemo(
     () =>
       bookings.filter((booking) => {
+        if (userRole === 'teacher' && booking.teacher !== userName && booking.tester !== userName) {
+          return false
+        }
         if (booking.subject !== activeSubject) return false
         if (activeSchool !== 'all' && booking.school !== activeSchool) return false
         return true
       }),
-    [activeSchool, activeSubject, bookings]
+    [activeSchool, activeSubject, bookings, userRole, userName]
   )
+
+  const weekdayOptions = useMemo(() => {
+    const days = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật']
+    return days.map((day) => ({
+      value: day,
+      label: day,
+      count: bookings.filter((b) => getWeekdayLabel(b.testTime) === day).length,
+      checked: filters.weekdays?.includes(day) ?? false,
+    }))
+  }, [bookings, filters.weekdays])
+
+  const programOptions = useMemo(() => {
+    const programs = uniqueSorted(bookings.map((b) => b.program))
+    return programs.map((prog) => ({
+      value: prog,
+      label: prog,
+      count: bookings.filter((b) => b.program === prog).length,
+      checked: filters.programs?.includes(prog) ?? false,
+    }))
+  }, [bookings, filters.programs])
+
+  const subjectOptions = useMemo(() => {
+    return [
+      {
+        value: 'english',
+        label: 'Tiếng Anh',
+        count: bookings.filter((b) => b.subject === 'english').length,
+        checked: filters.subjects?.includes('english') ?? false,
+      },
+      {
+        value: 'math',
+        label: 'Toán',
+        count: bookings.filter((b) => b.subject === 'math').length,
+        checked: filters.subjects?.includes('math') ?? false,
+      },
+    ]
+  }, [bookings, filters.subjects])
+
+  const saleOptions = useMemo(() => {
+    const creators = uniqueSorted(bookings.map((b) => b.createdBy))
+    return creators.map((creator) => ({
+      value: creator,
+      label: creator,
+      count: bookings.filter((b) => b.createdBy === creator).length,
+      checked: filters.sales?.includes(creator) ?? false,
+    }))
+  }, [bookings, filters.sales])
 
   const filteredBookings = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
 
     return bookings.filter((booking) => {
+      if (userRole === 'teacher' && booking.teacher !== userName && booking.tester !== userName) {
+        return false
+      }
       if (booking.subject !== activeSubject) return false
       if (activeSchool !== 'all' && booking.school !== activeSchool) return false
       if (!matchesStatusTile(booking, activeStatus)) return false
@@ -89,12 +155,41 @@ export function useBookingTestData({
       ) {
         return false
       }
+      if (
+        filters.weekdays &&
+        filters.weekdays.length > 0 &&
+        !filters.weekdays.includes(getWeekdayLabel(booking.testTime))
+      ) {
+        return false
+      }
+      if (
+        filters.programs &&
+        filters.programs.length > 0 &&
+        !filters.programs.includes(booking.program)
+      ) {
+        return false
+      }
+      if (
+        filters.subjects &&
+        filters.subjects.length > 0 &&
+        !filters.subjects.includes(booking.subject)
+      ) {
+        return false
+      }
+      if (
+        filters.sales &&
+        filters.sales.length > 0 &&
+        !filters.sales.includes(booking.createdBy || '')
+      ) {
+        return false
+      }
       if (filters.conditions.length > 0) {
         const conditionMatched = filters.conditions.some((condition) => {
           if (condition === 'interviewed')
             return booking.status === 'started_assessment' && Boolean(booking.isInterviewed)
           if (condition === 'tested')
             return booking.status === 'started_assessment' && Boolean(booking.isTested)
+          if (condition === 'checkin') return isBookingCheckedIn(booking)
           return booking.status === 'failed'
         })
         if (!conditionMatched) return false
@@ -110,65 +205,90 @@ export function useBookingTestData({
         ]
           .join(' ')
           .toLowerCase()
-        if (!haystack.includes(normalizedSearch)) return false
-      }
-      return true
-    })
-  }, [activeSchool, activeStatus, activeSubject, bookings, filters, searchTerm])
+          if (!haystack.includes(normalizedSearch)) return false
+        }
+        return true
+      })
+    }, [activeSchool, activeStatus, activeSubject, bookings, filters, searchTerm, userRole, userName])
 
-  const filterSections = useMemo<FilterSection[]>(
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
-        id: 'schools',
-        title: 'Trường / trung tâm',
-        options: schoolOptions.map((school) => ({
-          value: school,
-          label: school,
-          count: bookings.filter((booking) => booking.school === school).length,
-          checked: filters.schools.includes(school),
-        })),
-      },
-      {
+      getSchoolFilterGroup(
+        'schools',
+        filters.schools,
+        (school) => bookings.filter((booking) => booking.school === school).length,
+        schoolOptions
+      ),
+      createFilterGroup({
         id: 'statuses',
-        title: 'Trạng thái',
         options: STATUS_CONFIG.filter(
-          (status) => !['interviewed', 'tested', 'unassigned_teacher'].includes(status.id)
+          (status) => !['interviewed', 'tested', 'unassigned_teacher', 'checkin'].includes(status.id)
         ).map((status) => ({
           value: status.id,
           label: status.label,
           count: bookings.filter((booking) => booking.status === status.id).length,
-          checked: filters.statuses.includes(status.id as BookingStatus),
         })),
-      },
-      {
+        selectedValues: filters.statuses,
+      }),
+      createFilterGroup({
         id: 'conditions',
-        title: 'Điều kiện khác',
-        options: FILTER_CONDITIONS.map((condition) => ({
+        options: FILTER_CONDITIONS.filter(
+          (condition) => activeSubject !== 'math' || condition.id !== 'interviewed'
+        ).map((condition) => ({
           value: condition.id,
           label: condition.label,
           count: countStatus(bookings, condition.id),
-          checked: filters.conditions.includes(condition.id),
         })),
-      },
-      {
-        id: 'teachers',
-        title: 'Giáo viên',
-        options: teacherOptions.map((teacher) => ({
-          value: teacher,
-          label: teacher,
-          count: bookings.filter((booking) => getMemberList(booking).includes(teacher)).length,
-          checked: filters.teachers.includes(teacher),
-        })),
-      },
+        selectedValues: filters.conditions,
+      }),
+      getTeacherFilterGroup(
+        filters.teachers,
+        (teacher) => bookings.filter((booking) => getMemberList(booking).includes(teacher)).length,
+        teacherOptions
+      ),
+      createFilterGroup({
+        id: 'weekdays',
+        options: weekdayOptions,
+        selectedValues: filters.weekdays,
+      }),
+      getProgramFilterGroup(
+        filters.programs,
+        undefined,
+        programOptions
+      ),
+      getSubjectFilterGroup(
+        filters.subjects,
+        undefined,
+        subjectOptions
+      ),
+      getSaleFilterGroup(
+        filters.sales,
+        (creator) => bookings.filter((booking) => booking.createdBy === creator).length,
+        saleOptions
+      ),
     ],
-    [bookings, filters, schoolOptions, teacherOptions]
+    [
+      bookings,
+      filters,
+      schoolOptions,
+      teacherOptions,
+      activeSubject,
+      weekdayOptions,
+      programOptions,
+      subjectOptions,
+      saleOptions,
+    ]
   )
 
   const activeFilterCount =
     filters.schools.length +
     filters.statuses.length +
     filters.conditions.length +
-    filters.teachers.length
+    filters.teachers.length +
+    (filters.weekdays?.length ?? 0) +
+    (filters.programs?.length ?? 0) +
+    (filters.subjects?.length ?? 0) +
+    (filters.sales?.length ?? 0)
 
   return {
     schoolOptions,
@@ -176,7 +296,7 @@ export function useBookingTestData({
     studentOptions,
     baseForStatus,
     filteredBookings,
-    filterSections,
+    filterGroups,
     activeFilterCount,
   }
 }

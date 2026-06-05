@@ -10,6 +10,10 @@ tags: [tag1, form]
 # US-XXX-YY-ZZ: [Tên Biểu Mẫu Tạo/Sửa]
 
 > **Tham chiếu:** BF-XXX-YY · Giao diện Mẫu §4.4 (Biểu mẫu)
+> **Đường dẫn màn hình & Trạng thái liên quan:**
+> - `[Đường dẫn gọi biểu mẫu hoặc Hộp thoại]` -> Trạng thái: `[Các trạng thái được phép]`
+
+
 
 ## 1. Yêu cầu Người dùng (User Story)
 **Là một** [Vai trò], **tôi muốn** [Hành động], **để** [Mục đích].
@@ -52,7 +56,7 @@ tags: [tag1, form]
 
 ### 3.2. Ví dụ Dữ liệu mẫu
 
-*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
+*Giúp Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
 | Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
 |------------|-----------------|-------------------|
@@ -68,42 +72,37 @@ tags: [tag1, form]
 
 ---
 
-## 4. Xử lý Ngoại lệ
+## 4. Mô tả chi tiết (Màn hình & Luồng)
 
-| # | Tình huống | Cách xử lý |
-|---|-----------|-----------|
-| 4.1 | Lưu khi biểu mẫu trống | Viền đỏ ô nhập liệu, hiện dòng lỗi bên dưới. |
-| 4.2 | Bấm ra ngoài khi đang điền | Không tự đóng hộp thoại. Người dùng phải chủ động bấm Hủy. |
+*(Mô tả dễ hiểu, đầy đủ bằng ngôn ngữ tự nhiên để đội ngũ kỹ thuật có thể hiểu rõ và thực hiện được đúng yêu cầu. Không quy định định dạng cụ thể, người viết chủ động chọn cách thể hiện phù hợp như văn bản tự do, các bước thực hiện step-by-step, mã giả nghiệp vụ, hoặc vẽ sơ đồ luồng hoạt động...)*
 
----
+### 4.1. Mô tả Màn hình
+- [Người viết mô tả chi tiết bố cục của biểu mẫu (1 cột hay 2 cột), cách sắp xếp các nhóm trường thông tin nhập liệu, và các thành phần giao diện liên quan.]
 
-## 5. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
-
-- Tách biệt hoàn toàn phần xử lý giao diện (UI) và phần kiểm tra ràng buộc dữ liệu (Business Validation).
-- Kiểm tra tính hợp lệ nghiệp vụ ngay khi người dùng nhập liệu (Real-time Validation) để tăng trải nghiệm.
-- Áp dụng các quy tắc phân quyền (Authorization) trước khi cho phép lưu dữ liệu.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** thêm trường nhập liệu ngoài danh sách ở mục 3.1.
-- **KHÔNG** thay đổi quy tắc kiểm tra hợp lệ nghiệp vụ ở mục 2 mà chưa được phê duyệt.
-- **KHÔNG** bỏ qua bước xác nhận (Confirmation) cho các hành động có tính rủi ro cao (Xóa, Hủy, Khóa).
+### 4.2. Luồng Hoạt động (Workflow)
+- [Người viết mô tả luồng đi của biểu mẫu từ lúc mở ra, quá trình người dùng nhập liệu, kiểm tra tính hợp lệ thời gian thực, cho đến khi bấm Lưu hoặc Hủy.]
 
 ---
 
-## 6. Kế hoạch Tự kiểm tra (Self-Verification)
+## 5. Corner Cases (Trường hợp góc cạnh & Đặc biệt)
 
-| # | Hạng mục | Cách kiểm tra | Tiêu chuẩn Đạt |
-|---|----------|---------------|-----------------|
-| V-01 | Kiểm tra dữ liệu | Thử từng tình huống ở mục 3.2 | Kết quả khớp cột "Kết quả mong đợi". |
-| V-02 | Ngoại lệ | Thử từng tình huống ở mục 4 | Hệ thống xử lý đúng mô tả. |
-| V-03 | Nhãn trạng thái | Kiểm tra mọi nhãn | Không có màu gán cố định. |
+*(Bắt buộc phải liệt kê đầy đủ các trường hợp đặc biệt, ngoại lệ hoặc lỗi có thể xảy ra trong thực tế. Trong quá trình xây dựng, nếu phát sinh thêm bất kỳ trường hợp đặc biệt nào, người viết và lập trình viên phải lập tức cập nhật bổ sung vào bảng này.)*
+
+| # | Tình huống đặc biệt (Corner Case) | Cách xử lý chi tiết | Ghi chú / Trạng thái |
+|---|----------------------------------|---------------------|----------------------|
+| 5.1 | Người dùng bấm Lưu khi biểu mẫu trống | Viền đỏ ô nhập liệu bắt buộc và hiển thị dòng chữ báo lỗi tương ứng ngay bên dưới trường đó. | Kiểm tra thời gian thực |
+| 5.2 | Bấm ra ngoài biểu mẫu/hộp thoại khi đang điền | Ngăn chặn việc tự động đóng hộp thoại để tránh mất dữ liệu. Người dùng phải bấm nút Hủy để xác nhận đóng. | |
+| 5.3 | Trùng mã định danh hoặc dữ liệu duy nhất | Khi bấm Lưu, hệ thống kiểm tra và chặn hành động lưu, hiển thị thông báo lỗi trùng dữ liệu cụ thể. | Chặn lưu từ hệ thống |
+| 5.4 | Mất kết nối internet khi đang gửi biểu mẫu | Hiển thị trạng thái đang gửi bị lỗi và thông báo cho người dùng thử lại, giữ nguyên dữ liệu đã nhập trên biểu mẫu. | |
 
 ---
 
-## 7. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)
+## 6. Tiêu chí Nghiệm thu (Acceptance Criteria)
 
-| # | Tiêu chí (Specific) | Cách đo (Measurable) | Kết quả mong đợi |
-|---|--------------------|-----------------------|-------------------|
-| AC-01 | Bố cục chuẩn | So với mẫu thiết kế §4.4 | Đúng bố cục [1 cột / 2 cột] đã chọn. |
-| AC-02 | Kiểm tra hợp lệ | Để trống trường bắt buộc, bấm Lưu | Viền đỏ + dòng lỗi, nút Lưu bị chặn. |
-| AC-03 | Lưu thành công | Điền đúng, bấm Lưu | Hộp thoại đóng, danh sách tải lại, hiện bản ghi mới. |
+*(Liệt kê chi tiết các điều kiện xác định sản phẩm/tính năng được xem là hoàn thành. Viết dưới dạng danh sách gạch đầu dòng rõ ràng, cụ thể và dễ dàng kiểm thử.)*
+
+- **AC-1 (Bố cục chuẩn):** Biểu mẫu hiển thị đúng bố cục thiết kế đã chọn (1 cột hoặc 2 cột), các trường nhập liệu được gắn nhãn đầy đủ và rõ ràng.
+- **AC-2 (Kiểm tra hợp lệ):** Khi bỏ trống trường bắt buộc và bấm Lưu, hệ thống phải chặn lưu, đồng thời bôi đỏ viền ô nhập liệu và hiển thị thông báo lỗi chi tiết.
+- **AC-3 (Lưu dữ liệu thành công):** Khi điền thông tin hợp lệ và bấm Lưu, dữ liệu được ghi nhận vào hệ thống, hộp thoại đóng lại, danh sách chính tự động tải lại và hiển thị bản ghi mới.
+- **AC-4 (Hủy bỏ an toàn):** Khi bấm nút Hủy bỏ, hệ thống xóa sạch dữ liệu tạm trên biểu mẫu và đóng hộp thoại mà không thực hiện bất kỳ thay đổi nào trên hệ thống.
+

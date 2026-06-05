@@ -1,0 +1,385 @@
+<hr>
+<h2>id: US-OPS02-03
+title: &quot;Quản lý Lịch tổng thể Cơ sở (Global Class Schedule)&quot;
+bf: BF-OPS-02
+domain: CAP-OPS
+status: standardized
+tags: [schedule, class, ops, aggregator, calendar]</h2>
+<h1>US-OPS02-03: Quản lý Lịch tổng thể Cơ sở (Global Class Schedule)</h1>
+<blockquote>
+<p><strong>Tham chiếu:</strong> BF-OPS-02 · <code>[POLICY-DS-03]</code> · Giao diện Mẫu §4.2 (Danh sách dạng Grid/Calendar)</p>
+</blockquote>
+<h2>1. Yêu cầu Người dùng (User Story)</h2>
+<p><strong>Là một</strong> Quản lý chi nhánh hoặc Nhân viên Giáo vụ (Operations),
+<strong>tôi muốn</strong> xem toàn bộ lịch học (Class Sessions) của tất cả các lớp đang diễn ra tại cơ sở trên một giao diện lịch tổng hợp (Lịch tuần/tháng),
+<strong>để</strong> nắm bắt tình hình sử dụng phòng học, lịch dạy của giáo viên, phát hiện sớm các phòng học trống để tối ưu hóa nguồn lực, và tra cứu nhanh thông tin vận hành của bất kỳ buổi học nào mà không cần vào từng lớp riêng lẻ.</p>
+<blockquote>
+<p><strong>Kiểm tra chất lượng (INVEST):</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>I</strong>ndependent — Triển khai độc lập với module Quản lý Lớp học gốc. Đóng vai trò là Màn hình tổng hợp chỉ đọc.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>N</strong>egotiable — Chi tiết giao diện bộ lọc và các góc nhìn (tháng/tuần/ngày) có thể linh hoạt.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>V</strong>aluable — Cung cấp &quot;bức tranh toàn cảnh&quot; 360 độ về hoạt động đào tạo tại cơ sở.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>E</strong>stimable — Ước lượng dựa trên bộ khung lịch chuẩn của hệ thống.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>S</strong>mall — Hoàn thành cấu trúc chỉ đọc trong 1 chu kỳ phát triển.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>T</strong>estable — Có hơn 10 tiêu chí nghiệm thu chặt chẽ.</li>
+</ul>
+</blockquote>
+<hr>
+<h2>2. Quy tắc Nghiệp vụ (Business Rules)</h2>
+<ol>
+<li><strong>[RULE-CAL-01] Nguồn dữ liệu (Producer):</strong> <ul>
+<li>Lịch học cơ sở <strong>CHỈ</strong> hiển thị các sự kiện là Buổi học được sinh ra từ hệ thống Lớp học. </li>
+<li>Tuyệt đối KHÔNG chứa lịch Kiểm tra đầu vào hay Học thử (thuộc Tuyển sinh).</li>
+</ul>
+</li>
+<li><strong>[RULE-CAL-02] Chế độ Chỉ đọc (Strictly Read-only):</strong> <ul>
+<li>Màn hình Lịch KHÔNG cho phép thao tác kéo thả biểu tượng để đổi ngày, đổi giờ hay đổi phòng trực tiếp trên lưới.</li>
+<li>Tránh rủi ro thay đổi lịch ngoài ý muốn. Mọi thao tác chỉnh sửa phải được thực hiện thông qua biểu mẫu chuẩn.</li>
+</ul>
+</li>
+<li><strong>[RULE-CAL-03] Ủy quyền tương tác (Detail Trigger):</strong> <ul>
+<li>Nhấn chuột trái vào Thẻ sự kiện <code>-&gt;</code> Mở Hộp thoại Chi tiết Buổi học của phân hệ quản lý tương ứng.</li>
+</ul>
+</li>
+<li><strong>[RULE-CAL-04] Đồng bộ tự động (Reactive UI):</strong> <ul>
+<li>Bất kỳ thay đổi nào từ Hộp thoại Chi tiết (Ví dụ: Đổi phòng thành công, Hủy buổi) -&gt; Hệ thống phải tự động tải lại dữ liệu của chính màn hình lịch mà không cần làm mới lại toàn bộ trang.</li>
+</ul>
+</li>
+<li><strong>[RULE-CAL-05] Ràng buộc Không gian / Thời gian:</strong><ul>
+<li>Dữ liệu lịch luôn được lấy theo tiêu chí gốc: Chỉ thuộc Cơ sở của người dùng hiện tại và nằm trong khoảng thời gian đang xem trên màn hình.</li>
+<li>Giờ hiển thị chính: 07:00 đến 22:00.</li>
+</ul>
+</li>
+</ol>
+<h3>2.1. Thông số &amp; Định mức (Metrics &amp; Thresholds)</h3>
+<ul>
+<li><strong>[METRIC-01] Hiệu năng (SLA):</strong> Thời gian tải dữ liệu lịch của 1 Tháng (khoảng 2000 buổi học) phải dưới <code>1.5 giây</code>. </li>
+<li><strong>[METRIC-02] Giới hạn hiển thị:</strong> Ở chế độ xem Tháng, nếu một ngày có quá 5 ca học, hiển thị dạng rút gọn &quot;Xem thêm +N ca&quot; thay vì làm tràn ô lưới.</li>
+</ul>
+<hr>
+<h2>3. Cấu trúc Giao diện &amp; Dữ liệu</h2>
+<p><strong>Bố cục Tổng thể:</strong> Bao gồm Thanh công cụ (Chọn chế độ xem, Tìm kiếm, Lọc chi tiết) ở trên và Bảng lưới thời gian ở dưới.</p>
+<h3>3.1. Thanh công cụ (Toolbar)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Logic &amp; Tham số</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chế độ xem</td>
+<td>Nút chuyển đổi</td>
+<td>Chuyển đổi Ngày / Tuần / Tháng. Lưu trạng thái ghi nhớ cá nhân.</td>
+<td>Mặc định: Tuần.</td>
+</tr>
+<tr>
+<td>Chọn Trung tâm</td>
+<td>Danh sách thả xuống</td>
+<td>Lọc theo chi nhánh làm việc (Dành cho Quản lý vùng).</td>
+<td>Vô hiệu hóa nếu người dùng chỉ thuộc 1 chi nhánh.</td>
+</tr>
+<tr>
+<td>Chọn Phòng học</td>
+<td>Danh sách chọn nhiều mục</td>
+<td>Lọc nhiều phòng học cùng lúc.</td>
+<td>Lấy theo danh sách phòng của chi nhánh hiện tại.</td>
+</tr>
+<tr>
+<td>Chọn Giáo viên</td>
+<td>Danh sách chọn nhiều mục</td>
+<td>Lọc theo Giáo viên phụ trách.</td>
+<td>Hỗ trợ gõ từ khóa tìm kiếm nội bộ.</td>
+</tr>
+<tr>
+<td>Tìm kiếm</td>
+<td>Ô nhập văn bản</td>
+<td>Quét Tên lớp, Mã lớp, Tên chủ đề học.</td>
+<td>Tìm kiếm ngay khi gõ (Độ trễ 300ms).</td>
+</tr>
+<tr>
+<td>Bộ lọc trạng thái</td>
+<td>Nút biểu tượng</td>
+<td>Bật tắt hiển thị các trạng thái: Bình thường, Dạy thay, Hủy...</td>
+<td>Mở bảng trượt từ cạnh phải màn hình.</td>
+</tr>
+<tr>
+<td>Nút &quot;Hôm nay&quot;</td>
+<td>Nút viền</td>
+<td>Đưa lịch về tuần/ngày hiện tại.</td>
+<td>Nhấn mạnh trực quan nếu đang ở khoảng thời gian xa hiện tại.</td>
+</tr>
+</tbody></table>
+<h3>3.2. Bảng Lịch (Calendar/Time Grid Core)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Dữ liệu</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trục dọc (Y)</td>
+<td>Cột giờ</td>
+<td>07:00 - 22:00</td>
+<td>Ẩn giờ đêm. Độ phân giải 30 phút một vạch.</td>
+</tr>
+<tr>
+<td>Trục ngang (X)</td>
+<td>Các ngày</td>
+<td>Thứ 2 -&gt; Chủ Nhật</td>
+<td>Bôi màu nền nhạt để nhấn mạnh cột ngày hiện tại.</td>
+</tr>
+<tr>
+<td>Cột báo giờ thực</td>
+<td>Đường kẻ ngang</td>
+<td>Đường kẻ ngang màu đỏ</td>
+<td>Di chuyển theo thời gian thực tế.</td>
+</tr>
+</tbody></table>
+<h3>3.3. Thẻ Sự kiện (Event Card)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Dữ liệu Hiển thị</th>
+<th>Ghi chú Hiển thị</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mã Lớp</td>
+<td>Chữ đậm</td>
+<td>Ví dụ: <code>IELTS-A-01</code></td>
+</tr>
+<tr>
+<td>Khung giờ</td>
+<td>Chữ nhỏ</td>
+<td>Ví dụ: <code>18:00 - 19:30</code></td>
+</tr>
+<tr>
+<td>Phòng học</td>
+<td>Chữ kèm biểu tượng Tọa độ</td>
+<td>Ví dụ: <code>Phòng 101</code></td>
+</tr>
+<tr>
+<td>Giáo viên</td>
+<td>Chữ kèm biểu tượng Người</td>
+<td>Ví dụ: <code>GV. Nguyễn Văn A</code></td>
+</tr>
+<tr>
+<td>Màu nền</td>
+<td>Màu sắc theo hệ thống</td>
+<td>Bình thường: Xanh ngọc. Dạy thay: Vàng. Đã hủy: Đỏ.</td>
+</tr>
+<tr>
+<td>Cảnh báo</td>
+<td>Biểu tượng Cảnh báo (Đỏ)</td>
+<td>Hiện lên nếu buổi học chưa được gán phòng hoặc chưa có Giáo viên.</td>
+</tr>
+</tbody></table>
+<h3>3.4. Thao tác trên Thẻ Lịch (Interactions)</h3>
+<table>
+<thead>
+<tr>
+<th>Tương tác</th>
+<th>Khu vực</th>
+<th>Kết quả mong đợi</th>
+<th>Điều kiện / Ràng buộc</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nhấn chuột trái</td>
+<td>Thẻ sự kiện</td>
+<td>Mở Hộp thoại Chi tiết Buổi học</td>
+<td>Cấm tương tác nếu không có quyền xem thông tin.</td>
+</tr>
+<tr>
+<td>Rê chuột qua</td>
+<td>Thẻ sự kiện</td>
+<td>Mở khối thông tin nhanh (Tooltip)</td>
+<td>Chứa: Sĩ số hiện tại, Tên Bài học, Tiến độ.</td>
+</tr>
+<tr>
+<td>Kéo thả</td>
+<td>Thẻ sự kiện</td>
+<td>(Vô hiệu hóa)</td>
+<td>Cấm tuyệt đối thao tác này.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Xử lý Ngoại lệ (Corner Cases)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tình huống</th>
+<th>Cách xử lý</th>
+<th>Thông báo giao diện</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4.1</td>
+<td>Không có lịch học</td>
+<td>Hệ thống trả về rỗng cho khoảng thời gian đó.</td>
+<td>Khung lưới giữ nguyên, hiển thị chữ mờ &quot;Không có dữ liệu&quot;.</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Lịch chồng chéo</td>
+<td>Khâu vận hành xếp nhầm 2 lớp vào cùng 1 phòng cùng giờ.</td>
+<td>Hiển thị thẻ dạng chia đôi cột dọc (mỗi thẻ 50% chiều rộng), viền thẻ màu đỏ đậm.</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Lệch múi giờ máy tính</td>
+<td>Máy tính người dùng sai giờ so với hệ thống.</td>
+<td>Ép buộc hiển thị theo Múi giờ gốc của hệ thống, cảnh báo lỗi nếu lệch quá 1 giờ.</td>
+</tr>
+<tr>
+<td>4.4</td>
+<td>Lỗi kết nối mạng</td>
+<td>Mất mạng khi đang chuyển sang tuần khác.</td>
+<td>Giữ nguyên dữ liệu tuần cũ, hiển thị thông báo &quot;Lỗi kết nối&quot;.</td>
+</tr>
+<tr>
+<td>4.5</td>
+<td>Dữ liệu bị khuyết</td>
+<td>Lỗi hệ thống thiếu thông tin giờ kết thúc.</td>
+<td>Dự phòng: Mặc định hiển thị thẻ có chiều cao tương đương 1.5 giờ và đánh dấu cảnh báo.</td>
+</tr>
+<tr>
+<td>4.6</td>
+<td>Chọn quá nhiều phòng lọc</td>
+<td>Danh sách trên thanh công cụ quá dài.</td>
+<td>Chuyển sang hiển thị &quot;Đã chọn N phòng&quot; thay vì liệt kê từng tên.</td>
+</tr>
+<tr>
+<td>4.7</td>
+<td>Thẻ bị khóa chốt</td>
+<td>Lớp học đã hoàn tất tính lương/tài chính.</td>
+<td>Thẻ màu xám, có biểu tượng Ổ khóa. Chỉ xem được, ẩn tất cả các nút sửa đổi bên trong hộp thoại.</td>
+</tr>
+<tr>
+<td>4.8</td>
+<td>Sự kiện vắt qua ngày mới</td>
+<td>Lớp học kéo dài từ 22:30 đến 00:30.</td>
+<td>Hiển thị thành 2 phần: 1 khối dừng ở 23:59 hôm nay, 1 khối bắt đầu lúc 00:00 ngày mai.</td>
+</tr>
+</tbody></table>
+<h2>5. Kế hoạch Tự kiểm tra (Self-Verification)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hạng mục</th>
+<th>Bước kiểm tra</th>
+<th>Tiêu chuẩn Đạt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V-01</td>
+<td>Độ chính xác lưới dọc</td>
+<td>Tạo thử sự kiện từ <code>17:15</code> đến <code>18:45</code>.</td>
+<td>Khối màu nằm lệch xuống vừa đúng 1/4 vạch lưới so với gốc 17:00.</td>
+</tr>
+<tr>
+<td>V-02</td>
+<td>Chức năng lọc Combo</td>
+<td>Cùng lúc chọn Phòng 101 và Giáo viên A.</td>
+<td>Chỉ những lớp thỏa mãn cả hai điều kiện mới xuất hiện.</td>
+</tr>
+<tr>
+<td>V-03</td>
+<td>Phản hồi tự động</td>
+<td>Bật hộp thoại, bấm &quot;Hủy buổi&quot;, đóng hộp thoại.</td>
+<td>Lưới tự động cập nhật thẻ đó thành màu đỏ, không cần tải lại trình duyệt.</td>
+</tr>
+<tr>
+<td>V-04</td>
+<td>Chia tỷ lệ hiển thị</td>
+<td>Xếp 3 lớp trùng một khoảng giờ.</td>
+<td>3 thẻ tự động chia làm 3 cột bằng nhau, không bị mất chữ.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tiêu chí (Specific)</th>
+<th>Cách đo (Measurable)</th>
+<th>Kết quả mong đợi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AC-01</td>
+<td>Bố cục tổng thể</td>
+<td>Đánh giá trực quan.</td>
+<td>Đầy đủ thanh công cụ, bảng lưới thời gian và thanh điều hướng.</td>
+</tr>
+<tr>
+<td>AC-02</td>
+<td>Lọc nguồn dữ liệu</td>
+<td>Phân tích nguồn đổ vào lịch.</td>
+<td>Hoàn toàn chỉ chứa các dữ kiện phân loại &quot;Buổi học&quot;, tuyệt đối không lẫn tạp các sự kiện khác.</td>
+</tr>
+<tr>
+<td>AC-03</td>
+<td>Tỷ lệ khung lưới</td>
+<td>Đo chiều cao giao diện thực tế.</td>
+<td>Chiều cao của khối sự kiện 1 tiếng phải đúng bằng một nửa chiều cao của sự kiện 2 tiếng.</td>
+</tr>
+<tr>
+<td>AC-04</td>
+<td>Khối thông tin nhanh</td>
+<td>Rê chuột qua thẻ sự kiện.</td>
+<td>Hiển thị mượt mà bảng tóm tắt gồm Tên bài, Sĩ số, Giáo viên.</td>
+</tr>
+<tr>
+<td>AC-05</td>
+<td>Chuyển đổi khung thời gian</td>
+<td>Chuyển từ Tháng về Ngày.</td>
+<td>Dữ liệu làm mới tương ứng nhanh chóng.</td>
+</tr>
+<tr>
+<td>AC-06</td>
+<td>Đưa về thời điểm hiện tại</td>
+<td>Từ một thời điểm tương lai bấm &quot;Hôm nay&quot;.</td>
+<td>Khung xem giật về đúng tuần hiện tại.</td>
+</tr>
+<tr>
+<td>AC-07</td>
+<td>Ràng buộc bảo mật</td>
+<td>Kéo thẻ sự kiện thả sang cột ngày khác.</td>
+<td>Thẻ trượt về vị trí cũ, không lưu thông tin thay đổi nào.</td>
+</tr>
+<tr>
+<td>AC-08</td>
+<td>Điều hướng chi tiết</td>
+<td>Nhấn vào thẻ sự kiện bất kỳ.</td>
+<td>Khởi chạy đúng hộp thoại quản lý tương ứng của hệ thống.</td>
+</tr>
+<tr>
+<td>AC-09</td>
+<td>Phân quyền truy cập</td>
+<td>Dùng tài khoản hạn chế quyền.</td>
+<td>Hệ thống chặn thông báo hoặc ẩn hoàn toàn khung hiển thị.</td>
+</tr>
+<tr>
+<td>AC-10</td>
+<td>Phản hồi tải mạng</td>
+<td>Chuyển lịch sang thời điểm chứa dữ liệu lớn.</td>
+<td>Có hiển thị các khung xám (Skeleton) để tạo cảm giác hệ thống đang xử lý.</td>
+</tr>
+<tr>
+<td>AC-11</td>
+<td>Thông báo ngoại lệ</td>
+<td>Tắt kết nối internet và thao tác.</td>
+<td>Giao diện cảnh báo lỗi trực quan hiện lên, không gây sập trắng toàn bộ trang web.</td>
+</tr>
+</tbody></table>

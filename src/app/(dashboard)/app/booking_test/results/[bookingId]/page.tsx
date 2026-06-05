@@ -9,5 +9,9 @@ export default function BookingTestResultRoute({
   params: Promise<{ bookingId: string }>
 }) {
   const { bookingId } = use(params)
-  return <BookingTestResultPage key={bookingId} bookingId={bookingId} />
+  return (
+    <div className="h-full min-h-0">
+      <BookingTestResultPage key={bookingId} bookingId={bookingId} />
+    </div>
+  )
 }

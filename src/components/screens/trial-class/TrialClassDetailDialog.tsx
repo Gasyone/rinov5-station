@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { CalendarDays, CheckCircle, Copy, ExternalLink, Phone, PhoneCall, PlusCircle, RefreshCw, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -18,19 +17,19 @@ import { cn } from '@/lib/utils'
 import type { TrialClass } from '@/mocks/trialClasses'
 import { formatTrialDate, getTrialStatusLabel, maskPhone } from './trialClassHelpers'
 import type { AssignDialogMode } from './trialClassTypes'
-import { TrialClassCancelDialog } from './TrialClassCancelDialog'
 import { TrialClassDetailActions } from './TrialClassDetailActions'
 import { TrialClassDetailSidePanel } from './TrialClassDetailSidePanel'
-import { TrialClassRescheduleDialog } from './TrialClassRescheduleDialog'
 
 interface TrialClassDetailDialogProps {
   trial: TrialClass | null
   onOpenChange: (open: boolean) => void
   onCopy: (text: string, key: string) => void
   copiedKey: string
-  onAssign: (mode: AssignDialogMode) => void
+  onOpenAssign?: (mode: AssignDialogMode) => void
   onRequestReschedule: (trialId: string, reason: string, notes: string) => void
   onUpdateTrial: (trialId: string, updater: (trial: TrialClass) => TrialClass) => void
+  onApprove?: (id: string) => void
+  onReject?: (id: string) => void
 }
 
 export function TrialClassDetailDialog({
@@ -38,18 +37,12 @@ export function TrialClassDetailDialog({
   onOpenChange,
   onCopy,
   copiedKey,
-  onAssign,
-  onRequestReschedule,
+  onOpenAssign,
   onUpdateTrial,
+  onApprove,
+  onReject,
 }: TrialClassDetailDialogProps) {
-  const [cancelOpen, setCancelOpen] = useState(false)
-  const [rescheduleOpen, setRescheduleOpen] = useState(false)
-
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      setCancelOpen(false)
-      setRescheduleOpen(false)
-    }
     onOpenChange(open)
   }
 
@@ -62,6 +55,9 @@ export function TrialClassDetailDialog({
   }
 
   const warningTone = getStatusColors('warning')
+  const isPendingReschedule = trial.status === 'reschedule'
+  const activeSessions = isPendingReschedule ? [] : trial.sessions
+  const releasedSession = trial.previousSession ?? (isPendingReschedule ? trial.sessions[0] : undefined)
 
   return (
     <>
@@ -79,10 +75,10 @@ export function TrialClassDetailDialog({
                   <span>{trial.studentName}</span>
                   <span className="text-muted-foreground">&middot;</span>
                   <span>{trial.program}</span>
-                  {trial.sessions.length > 0 && (
+                  {activeSessions.length > 0 && (
                     <>
                       <span className="text-muted-foreground">&middot;</span>
-                      <span>{trial.sessions.length} buổi học</span>
+                      <span>{activeSessions.length} buổi học</span>
                     </>
                   )}
                 </DialogDescription>
@@ -90,9 +86,9 @@ export function TrialClassDetailDialog({
               <div className="shrink-0 pr-8">
                 <TrialClassDetailActions
                   trial={trial}
-                  onAssign={onAssign}
-                  onOpenCancel={() => setCancelOpen(true)}
-                  onOpenReschedule={() => setRescheduleOpen(true)}
+                  onAssign={onOpenAssign}
+                  onApprove={onApprove}
+                  onReject={onReject}
                 />
               </div>
             </div>
@@ -102,7 +98,7 @@ export function TrialClassDetailDialog({
             <section className="grid gap-x-8 gap-y-2 shrink-0 border-y border-border py-3 sm:grid-cols-3">
               <InfoField label="Học viên" value={trial.studentName} supporting={trial.customerId} />
               <InfoField label="Lần học" value={trial.attempt} />
-              <InfoField label="Cơ sở" value={trial.school} />
+              <InfoField label="Trường" value={trial.school} />
             </section>
 
             <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[1fr_320px]">
@@ -136,17 +132,19 @@ export function TrialClassDetailDialog({
                 <Panel title="Lớp & Buổi học" icon={<CalendarDays className="h-4 w-4" />}>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="sm:col-span-2">
-                      <FieldLabel label="Thông tin ghép lớp">
-                        {trial.sessions.length > 0 ? (
+                      <FieldLabel label="Buổi học đã chọn">
+                        {activeSessions.length > 0 ? (
                           <div className="flex flex-col">
                             <div className="flex items-center justify-between py-2">
-                              <span className="text-sm font-semibold">Đã ghép {trial.sessions.length} buổi học</span>
-                              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => onAssign({ mode: 'reschedule', trialId: trial.id })}>
-                                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Đổi lịch
-                              </Button>
+                              <span className="text-sm font-semibold">Đã chọn {activeSessions.length} buổi học</span>
+                              {onOpenAssign && trial.status !== 'completed' && trial.status !== 'cancelled' && (
+                                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => onOpenAssign({ mode: 'reschedule', trialId: trial.id })}>
+                                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Đổi buổi
+                                </Button>
+                              )}
                             </div>
                             <div className="space-y-1.5 py-1">
-                              {trial.sessions.map((s, idx) => (
+                              {activeSessions.map((s, idx) => (
                                 <div key={idx} className="flex flex-col rounded-md p-2.5 transition-colors hover:bg-muted/50">
                                   <div className="flex items-start justify-between mb-1.5">
                                     <span className="text-sm font-semibold text-foreground">{s.className}</span>
@@ -163,10 +161,12 @@ export function TrialClassDetailDialog({
                         ) : (
                           <div className="rounded-md border border-dashed border-border px-3 py-2 flex items-center justify-between">
                             <p className="text-sm text-muted-foreground italic">Chưa ghép lớp</p>
-                            <Button variant="link" size="sm" className="h-auto p-0 text-primary" onClick={() => onAssign({ mode: 'assign', trialId: trial.id })}>
-                              <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
-                              Ghép lớp
-                            </Button>
+                            {onOpenAssign && (
+                              <Button variant="link" size="sm" className="h-auto p-0 text-primary" onClick={() => onOpenAssign({ mode: 'assign', trialId: trial.id })}>
+                                <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+                                Ghép lớp
+                              </Button>
+                            )}
                           </div>
                         )}
                       </FieldLabel>
@@ -183,14 +183,14 @@ export function TrialClassDetailDialog({
                     </div>
                   </div>
 
-                  {trial.previousSession && (
+                  {releasedSession && (
                     <div className={cn('mt-3 rounded-md border border-border px-3 py-2', warningTone.bg)}>
                       <p className={cn('mb-1 text-[10px] font-bold uppercase tracking-wide', warningTone.text)}>
                         Lớp cũ (đã giải phóng)
                       </p>
                       <div className="grid gap-1 text-xs">
-                        <span className="font-medium">{trial.previousSession.className} <span className="font-mono text-muted-foreground">({trial.previousSession.classId})</span></span>
-                        <span className="text-muted-foreground">{trial.previousSession.sessionName} &middot; {formatTrialDate(trial.previousSession.trialDate)}</span>
+                        <span className="font-medium">{releasedSession.className} <span className="font-mono text-muted-foreground">({releasedSession.classId})</span></span>
+                        <span className="text-muted-foreground">{releasedSession.sessionName} &middot; {formatTrialDate(releasedSession.trialDate)}</span>
                       </div>
                     </div>
                   )}
@@ -203,7 +203,7 @@ export function TrialClassDetailDialog({
                         <AvatarFallback className="rounded-lg">{trial.creator.slice(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Người tạo</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Sale</p>
                         <p className="truncate text-sm font-semibold">{trial.creator}</p>
                       </div>
                     </div>
@@ -246,19 +246,6 @@ export function TrialClassDetailDialog({
         </DialogContent>
       </Dialog>
 
-      <TrialClassCancelDialog
-        open={cancelOpen}
-        trial={trial}
-        onOpenChange={setCancelOpen}
-        onUpdateTrial={onUpdateTrial}
-      />
-
-      <TrialClassRescheduleDialog
-        open={rescheduleOpen}
-        trial={trial}
-        onOpenChange={setRescheduleOpen}
-        onRequestReschedule={onRequestReschedule}
-      />
     </>
   )
 }

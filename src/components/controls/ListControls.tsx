@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils'
 export interface SegmentedControlOption<T extends string> {
   value: T
   label: string
+  disabled?: boolean
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -41,14 +42,20 @@ export function SegmentedControl<T extends string>({
           key={option.value}
           type="button"
           variant="ghost"
+          disabled={option.disabled}
           className={cn(
             'h-8 rounded px-3 text-xs font-semibold transition-colors',
             value === option.value
               ? 'bg-background text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground',
+            option.disabled && 'cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted-foreground',
             itemClassName
           )}
-          onClick={() => onValueChange(option.value)}
+          onClick={() => {
+            if (!option.disabled) {
+              onValueChange(option.value)
+            }
+          }}
         >
           {option.label}
         </Button>
@@ -57,7 +64,7 @@ export function SegmentedControl<T extends string>({
   )
 }
 
-interface ToolbarSelectOption {
+export interface ToolbarSelectOption {
   value: string
   label: string
 }
@@ -66,6 +73,7 @@ interface ToolbarSelectProps {
   value: string
   options: ToolbarSelectOption[]
   onValueChange: (value: string) => void
+  disabled?: boolean
   className?: string
   ariaLabel?: string
 }
@@ -74,6 +82,7 @@ export function ToolbarSelect({
   value,
   options,
   onValueChange,
+  disabled,
   className,
   ariaLabel,
 }: ToolbarSelectProps) {
@@ -82,6 +91,7 @@ export function ToolbarSelect({
   return (
     <Select
       value={value || EMPTY_SENTINEL}
+      disabled={disabled}
       onValueChange={(v) => onValueChange(v === EMPTY_SENTINEL ? '' : v)}
     >
       <SelectTrigger
@@ -110,6 +120,7 @@ interface InlineSelectProps {
   placeholder?: string
   ariaLabel?: string
   className?: string
+  variant?: 'solid' | 'dashed'
 }
 
 const EMPTY_SELECT_VALUE = '__empty__'
@@ -122,63 +133,222 @@ export function InlineSelect({
   placeholder,
   ariaLabel,
   className,
+  variant = 'dashed',
 }: InlineSelectProps) {
-  const selectValue = value || EMPTY_SELECT_VALUE
+  // Check if there is an empty option in the provided list
+  const hasEmptyOption = options.some((opt) => opt.value === '' || opt.value === EMPTY_SELECT_VALUE)
+  
+  // If there's an empty option, use the sentinel value. Otherwise, use raw value or undefined to show placeholder.
+  const selectValue = hasEmptyOption ? (value || EMPTY_SELECT_VALUE) : (value || undefined)
 
   return (
     <Select
       value={selectValue}
       disabled={disabled}
-      onValueChange={(nextValue) => onValueChange(nextValue === EMPTY_SELECT_VALUE ? '' : nextValue)}
+      onValueChange={(v) => {
+        if (hasEmptyOption) {
+          onValueChange(v === EMPTY_SELECT_VALUE ? '' : v)
+        } else {
+          onValueChange(v || '')
+        }
+      }}
     >
       <SelectTrigger
         aria-label={ariaLabel}
         size="sm"
-        className={cn('w-full border-dashed bg-background text-xs shadow-none', className)}
+        className={cn(
+          'inline-flex w-full min-w-0 max-w-full items-center justify-between overflow-hidden text-ellipsis whitespace-nowrap bg-background text-xs shadow-none',
+          variant === 'dashed' ? 'border-dashed' : 'border-solid',
+          className
+        )}
       >
-        <SelectValue placeholder={placeholder} />
+        <span className="block truncate text-left max-w-[calc(100%-12px)]">
+          <SelectValue placeholder={placeholder} />
+        </span>
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
-          <SelectItem
-            key={option.value || EMPTY_SELECT_VALUE}
-            value={option.value || EMPTY_SELECT_VALUE}
-          >
-            {option.label}
-          </SelectItem>
-        ))}
+        {options.map((option) => {
+          const itemVal = hasEmptyOption && !option.value ? EMPTY_SELECT_VALUE : option.value
+          return (
+            <SelectItem
+              key={itemVal || EMPTY_SELECT_VALUE}
+              value={itemVal || EMPTY_SELECT_VALUE}
+            >
+              {option.label}
+            </SelectItem>
+          )
+        })}
       </SelectContent>
     </Select>
   )
 }
 
+export const SYSTEM_BRANCHES = [
+  'RinoEdu Nguyễn Tuân',
+  'RinoEdu Linh Đàm',
+  'RinoEdu Smart City',
+]
+
 interface BranchSelectProps {
   value: string
-  branches: string[]
+  branches?: string[]
   onValueChange: (value: string) => void
   allLabel?: string
+  allValue?: string
+  includeAll?: boolean
+  variant?: 'toolbar' | 'inline'
+  placeholder?: string
+  disabled?: boolean
   ariaLabel?: string
   className?: string
 }
 
 export function BranchSelect({
   value,
-  branches,
+  branches = SYSTEM_BRANCHES,
   onValueChange,
-  allLabel = 'Tất cả trung tâm',
-  ariaLabel = 'Trung tâm',
+  allLabel = 'Tất cả trường',
+  allValue = 'all',
+  includeAll,
+  variant = 'toolbar',
+  placeholder = 'Chọn trường',
+  disabled,
+  ariaLabel = 'Trường',
   className,
 }: BranchSelectProps) {
+  const shouldIncludeAll = includeAll ?? variant === 'toolbar'
+  const leadingOption = shouldIncludeAll
+    ? { value: allValue, label: allLabel }
+    : variant === 'inline'
+      ? { value: '', label: placeholder }
+      : null
+  const options = [
+    ...(leadingOption ? [leadingOption] : []),
+    ...branches.map((branch) => ({ value: branch, label: branch })),
+  ]
+
+  if (variant === 'inline') {
+    return (
+      <InlineSelect
+        value={value}
+        ariaLabel={ariaLabel}
+        disabled={disabled}
+        options={options}
+        placeholder={placeholder}
+        onValueChange={onValueChange}
+        className={className}
+      />
+    )
+  }
+
   return (
     <ToolbarSelect
       value={value}
       ariaLabel={ariaLabel}
-      options={[
-        { value: '', label: allLabel },
-        ...branches.map((branch) => ({ value: branch, label: branch })),
-      ]}
+      disabled={disabled}
+      options={options}
       onValueChange={onValueChange}
       className={className}
+    />
+  )
+}
+
+interface SubjectSelectProps {
+  value: string
+  subjects?: string[]
+  options?: ToolbarSelectOption[]
+  onValueChange: (value: string) => void
+  allLabel?: string
+  allValue?: string
+  includeAll?: boolean
+  variant?: 'toolbar' | 'inline'
+  placeholder?: string
+  disabled?: boolean
+  ariaLabel?: string
+  className?: string
+}
+
+export function SubjectSelect({
+  value,
+  subjects = [],
+  options: customOptions,
+  onValueChange,
+  allLabel = 'Tất cả môn',
+  allValue = 'all',
+  includeAll,
+  variant = 'toolbar',
+  placeholder = 'Chọn môn học',
+  disabled,
+  ariaLabel = 'Môn học',
+  className,
+}: SubjectSelectProps) {
+  const shouldIncludeAll = includeAll ?? variant === 'toolbar'
+  const leadingOption = shouldIncludeAll
+    ? { value: allValue, label: allLabel }
+    : variant === 'inline'
+      ? { value: '', label: placeholder }
+      : null
+  const options = [
+    ...(leadingOption ? [leadingOption] : []),
+    ...(customOptions ?? subjects.map((subject) => ({ value: subject, label: subject }))),
+  ]
+
+  if (variant === 'inline') {
+    return (
+      <InlineSelect
+        value={value}
+        ariaLabel={ariaLabel}
+        disabled={disabled}
+        options={options}
+        placeholder={placeholder}
+        onValueChange={onValueChange}
+        className={className}
+      />
+    )
+  }
+
+  return (
+    <ToolbarSelect
+      value={value}
+      ariaLabel={ariaLabel}
+      disabled={disabled}
+      options={options}
+      onValueChange={onValueChange}
+      className={className}
+    />
+  )
+}
+
+interface SubjectSegmentedControlProps<T extends string> {
+  value: T
+  subjects: readonly T[]
+  onValueChange: (value: T) => void
+  getLabel?: (subject: T) => string
+  disabledSubjects?: readonly T[]
+  className?: string
+  itemClassName?: string
+}
+
+export function SubjectSegmentedControl<T extends string>({
+  value,
+  subjects,
+  onValueChange,
+  getLabel = (subject) => subject,
+  disabledSubjects = [],
+  className,
+  itemClassName,
+}: SubjectSegmentedControlProps<T>) {
+  return (
+    <SegmentedControl
+      value={value}
+      options={subjects.map((subject) => ({
+        value: subject,
+        label: getLabel(subject),
+        disabled: disabledSubjects.includes(subject),
+      }))}
+      onValueChange={onValueChange}
+      className={className}
+      itemClassName={itemClassName}
     />
   )
 }

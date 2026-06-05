@@ -15,7 +15,7 @@ const meta = {
     nextjs: {
       appDirectory: true,
       navigation: {
-        pathname: '/app/dashboard',
+        pathname: '/app/calendar_class_schedule',
       },
     },
   },

@@ -1,10 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/shared'
+import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { BookingTest } from '@/mocks/bookingTests'
+import {
+  applyBookingCheckIn,
+  isTerminalBookingStatus,
+  shouldShowCheckInAction,
+} from './bookingTestHelpers'
 
 interface BookingTestDetailActionsProps {
   booking: BookingTest
@@ -18,11 +24,28 @@ export function BookingTestDetailActions({
   onOpenAssessment,
 }: BookingTestDetailActionsProps) {
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
+  const canCheckIn = shouldShowCheckInAction(booking)
+  const canCancel = !isTerminalBookingStatus(booking.status)
+  const isAssessing = booking.status === 'started_assessment'
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        {!['completed', 'cancelled', 'failed'].includes(booking.status) && (
+        {/* Chỉ hiện nút check-in khi chưa check-in */}
+        {canCheckIn && (
+          <Button
+            variant="outline"
+            className={getStatusBadgeClass('checkin')}
+            onClick={() =>
+              onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
+            }
+          >
+            <UserCheck className="h-4 w-4" />
+            Check-in học viên
+          </Button>
+        )}
+
+        {canCancel && (
           <Button
             variant="destructive"
             onClick={() => setConfirmCancelOpen(true)}
@@ -31,20 +54,8 @@ export function BookingTestDetailActions({
             Hủy lịch test
           </Button>
         )}
-        {booking.status === 'booked_assessment' && (
-          <Button
-            variant="outline"
-            onClick={() =>
-              onUpdateBooking(booking.id, (current) => ({
-                ...current,
-                status: 'started_assessment',
-              }))
-            }
-          >
-            Bắt đầu đánh giá
-          </Button>
-        )}
-        {booking.status === 'started_assessment' && (
+
+        {isAssessing && (
           <>
             <Button
               variant="outline"
@@ -65,12 +76,13 @@ export function BookingTestDetailActions({
             </Button>
           </>
         )}
-        <Button
-          disabled={booking.subject !== 'english'}
-          onClick={() => onOpenAssessment(booking.id)}
-        >
-          Mở đánh giá
-        </Button>
+        {booking.subject === 'english' && booking.teacher?.trim() && isAssessing && (
+          <Button
+            onClick={() => onOpenAssessment(booking.id)}
+          >
+            Mở đánh giá
+          </Button>
+        )}
       </div>
 
       <ConfirmDialog

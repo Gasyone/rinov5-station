@@ -126,16 +126,3 @@ tags: [sr, branch-manager, care, dashboard]
 |-----------|------|-------|-----------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft |
 | v1.0 | ⓪ TBD | BM + Owner | Approved |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Widget này tái sử dụng pattern `MetricTile` từ `@/components/shared` (`DESIGN_SYSTEM.md` §10.2).
-- Drill-down dùng pattern List Page (§4.2) với filter "CSM phụ trách".
-- KHÔNG duplicate dữ liệu HV — query trên dữ liệu sống của `CAP-CARE` + `CAP-OPS`.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** cho BM thấy HV ngoài cơ sở (vi phạm `[POLICY-ORG-01]`).
-- **KHÔNG** cho phép xóa / chỉnh trạng thái at-risk từ Dashboard — chỉ là view, không phải tool quản lý.
-- **KHÔNG** tạo CAP riêng cho "BM Care Dashboard" — đây là 1 view của `CAP-RPT` với scope cơ sở.

@@ -15,7 +15,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 const PROTECTED_PREFIX = '/app'
 const LOGIN_PATH = '/login'
-const DEFAULT_AUTHED_PATH = '/app/dashboard'
+const DEFAULT_AUTHED_PATH = '/app/calendar_class_schedule'
 
 
 export function proxy(request: NextRequest) {

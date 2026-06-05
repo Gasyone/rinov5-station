@@ -65,7 +65,7 @@ stateDiagram-v2
 
 ### 4.2. Ví dụ Dữ liệu mẫu
 
-*Giúp AI và Lập trình viên tạo dữ liệu kiểm thử chính xác.*
+*Giúp Lập trình viên tạo dữ liệu kiểm thử chính xác.*
 
 | Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
 |------------|-----------------|-------------------|
@@ -90,16 +90,3 @@ stateDiagram-v2
 | US-XXX-YY-01 | [Tên US 1] (Danh sách) | /app/[menu_id] | Đang soạn thảo |
 | US-XXX-YY-02 | [Tên US 2] (Biểu mẫu) | Không có | Đang soạn thảo |
 | US-XXX-YY-03 | [Tên US 3] (Chi tiết) | /app/[menu_id]/[id] | Đang soạn thảo |
-
----
-
-## 7. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
-
-- Tuân thủ chặt chẽ cấu trúc thực thể ở mục 4. Phải đảm bảo tính toàn vẹn dữ liệu nghiệp vụ (dữ liệu bảng con phải trỏ đúng mã có thật của bảng cha).
-- Mọi trạng thái liệt kê trong sơ đồ 4.1 phải được ánh xạ đầy đủ vào hệ thống.
-- Giao diện và luồng xử lý phải tuân thủ bảng chuyển đổi trạng thái (chỉ hiển thị các hành động hợp lệ theo từng trạng thái và phân quyền).
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** thêm trường dữ liệu hoặc thực thể ngoài danh sách quy định ở mục 4.
-- **KHÔNG** thay đổi cấu trúc quan hệ thực thể mà chưa được phê duyệt từ Product Owner.
-- **KHÔNG** tạo trạng thái nghiệp vụ mới ngoài sơ đồ ở mục 4.1. Mọi sự thay đổi vòng đời phải được cập nhật vào tài liệu này trước.

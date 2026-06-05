@@ -1,6 +1,6 @@
-import { getTrialClasses, type TrialClassStatus } from '@/mocks/trialClasses'
-export type { TrialClass } from '@/mocks/trialClasses'
-import type { CreateTrialClassForm, StatusTileId } from './trialClassTypes'
+import { getTrialClasses, type TrialClassStatus, type TrialClass } from '@/mocks/trialClasses'
+export type { TrialClass }
+import type { CreateTrialClassForm, StatusTileId, TrialClassFilterState } from './trialClassTypes'
 import { STATUS_META } from './trialClassConstants'
 
 export function formatTrialDate(dateStr: string): string {
@@ -13,7 +13,6 @@ export function formatTrialDate(dateStr: string): string {
 
 export function countStatus(trials: TrialClass[], id: StatusTileId): number {
   if (id === 'all') return trials.length
-  if (id === 'unassigned') return trials.filter((t) => t.sessions.length === 0).length
   return trials.filter((t) => t.status === id).length
 }
 
@@ -27,7 +26,7 @@ export function getTrialFamilyMembers(trial: TrialClass) {
 }
 
 export function canAssign(trial: TrialClass): boolean {
-  return trial.status === 'pending_confirmation' || trial.status === 'reschedule'
+  return trial.status === 'pending_approval' || trial.status === 'reschedule'
 }
 
 export function canRequestReschedule(trial: TrialClass): boolean {
@@ -92,7 +91,7 @@ export function buildTrialFromCreateForm({
     school: form.school,
     program: form.program,
     subject: form.subject,
-    status: form.selectedSessions.length > 0 ? 'confirmed' : 'pending_confirmation',
+    status: form.selectedSessions.length > 0 ? 'confirmed' : 'pending_approval',
     creator: 'Người dùng hiện tại',
     owner: 'Chưa gán',
     notes: form.notes,
@@ -121,14 +120,14 @@ export function applyTrialAssignment(
   return {
     ...trial,
     sessions: assignment.sessions,
-    status: 'confirmed' as TrialClassStatus,
+    status: 'pending_approval' as TrialClassStatus,
     notes: assignment.notes || trial.notes,
     auditLog: [
       ...trial.auditLog,
       {
         timestamp: assignment.now,
         author: 'Người dùng hiện tại',
-        action: 'Ghép lớp',
+        action: 'Ghép lớp (Chờ xác nhận)',
         detail: `Đã chọn ${assignment.sessions.length} buổi học`,
       },
     ],
@@ -160,19 +159,45 @@ export function applyTrialReschedule(
   }
 }
 
+export function getWeekdayLabel(dateTimeStr: string): string {
+  if (!dateTimeStr) return ''
+  const datePart = dateTimeStr.split(' ')[0]
+  const date = new Date(datePart)
+  if (Number.isNaN(date.getTime())) return ''
+  const day = date.getDay()
+  const weekdayLabels = [
+    'Chủ Nhật',
+    'Thứ Hai',
+    'Thứ Ba',
+    'Thứ Tư',
+    'Thứ Năm',
+    'Thứ Sáu',
+    'Thứ Bảy',
+  ]
+  return weekdayLabels[day]
+}
+
 export function filterTrialClasses(
   trials: TrialClass[],
   search: string,
   activeBranch: string,
   activeStatus: StatusTileId,
-  filters: { programs: string[]; creators: string[] }
+  filters: TrialClassFilterState
 ): TrialClass[] {
   return trials.filter((trial) => {
     if (activeBranch !== 'all' && trial.branch !== activeBranch) return false
-    if (activeStatus === 'unassigned' && trial.sessions.length > 0) return false
-    if (activeStatus !== 'all' && activeStatus !== 'unassigned' && trial.status !== activeStatus) return false
+    if (activeStatus !== 'all' && trial.status !== activeStatus) return false
     if (filters.programs.length > 0 && !filters.programs.includes(trial.program)) return false
     if (filters.creators.length > 0 && !filters.creators.includes(trial.creator)) return false
+    if (filters.subjects.length > 0 && !filters.subjects.includes(trial.subject)) return false
+    if (filters.owners.length > 0 && !filters.owners.includes(trial.owner)) return false
+    if (filters.statuses.length > 0 && !filters.statuses.includes(trial.status)) return false
+    if (filters.schools.length > 0 && !filters.schools.includes(trial.school)) return false
+    if (filters.weekdays && filters.weekdays.length > 0) {
+      if (trial.sessions.length === 0) return false
+      const dayLabel = getWeekdayLabel(trial.sessions[0].trialDate)
+      if (!filters.weekdays.includes(dayLabel)) return false
+    }
     if (search) {
       const q = search.toLowerCase()
       const haystack = [

@@ -3,7 +3,7 @@
 > **Hướng dẫn:** Trước khi đọc hoặc chỉnh sửa các BF, vui lòng nắm rõ quy tắc trong `[DOCUMENTATION_GUIDELINES.md](../DOCUMENTATION_GUIDELINES.md)` và các chính sách bảo mật trong `[ENTERPRISE_STANDARDS.md](../ENTERPRISE_STANDARDS.md)`.
 > Tài liệu cơ sở cho toàn bộ quá trình phát triển hệ thống RinoEdu.
 > Được cấu trúc lại theo chuẩn ngành Quản lý Giáo dục (EdTech/EA).
-> Cập nhật lần cuối: 2026-05-18
+> Cập nhật lần cuối: 2026-05-22 (Thêm CAP-NOTIFICATION)
 
 ## Quy ước
 
@@ -15,8 +15,8 @@
 
 ## Tổng quan
 
-- **Tổng số BFs (E2E):** 42 BFs
-- **Tổng số Năng lực (Capabilities):** 11
+- **Tổng số BFs (E2E):** 43 BFs
+- **Tổng số Năng lực (Capabilities):** 12
 - **Mô hình tiếp cận:** Quản trị theo vòng đời nghiệp vụ (Lifecycle), chia thành 3 lớp kiến trúc (Core, Support, Governance).
 
 ---
@@ -28,21 +28,22 @@
 Hệ thống được chia thành 3 phân lớp (Layers) như sau:
 
 ### Layer 1: Core Educational Capabilities (Giá trị lõi)
-- [CAP-ACD: Học thuật & Đào tạo (Academic Management)](./CAP-ACD-academic-management.md)
-- [CAP-ADM: Quản lý Tuyển sinh (Admissions Management)](./CAP-ADM-admissions-management.md)
-- [CAP-COM: Thương mại & Bán hàng (Commerce & Sales)](./CAP-COM-commerce.md)
-- [CAP-OPS: Quản lý học viên & Vận hành lớp (SIS & Class Operations)](./CAP-OPS-class-operations.md)
-- [CAP-CARE: Chăm sóc học viên (Student Care & Retention)](./CAP-CARE-student-care.md)
+- [CAP-ACD: Học thuật & Đào tạo (Academic Management)](./academic/CAP-ACD-academic-management.md)
+- [CAP-ADM: Quản lý Tuyển sinh (Admissions Management)](./admissions/CAP-ADM-admissions-management.md)
+- [CAP-COM: Thương mại & Bán hàng (Commerce & Sales)](./commerce/CAP-COM-commerce.md)
+- [CAP-OPS: Quản lý học viên & Vận hành lớp (SIS & Class Operations)](./class-operations/CAP-OPS-class-operations.md)
+- [CAP-CARE: Chăm sóc học viên (Student Care & Retention)](./student-care/CAP-CARE-student-care.md)
 
 ### Layer 2: Supporting Capabilities (Khối hỗ trợ)
-- [CAP-FIN: Quản trị Tài chính (Financial Management)](./CAP-FIN-financial-management.md)
-- [CAP-HR: Tổ chức & Nhân sự (HR & Organization)](./CAP-HR-human-resources.md)
-- [CAP-FCM: Quản lý Cơ sở vật chất (Facility Management)](./CAP-FCM-facility-management.md)
+- [CAP-FIN: Quản trị Tài chính (Financial Management)](./financial/CAP-FIN-financial-management.md)
+- [CAP-HR: Tổ chức & Nhân sự (HR & Organization)](./human-resources/CAP-HR-human-resources.md)
+- [CAP-FCM: Quản lý Cơ sở vật chất (Facility Management)](./facility/CAP-FCM-facility-management.md)
+- [CAP-NOTIFICATION: Trung tâm Thông báo In-App (In-App Notification)](./notification/CAP-NOTIFICATION-notification-center.md)
 
 ### Layer 3: Governance & Management (Khối quản trị)
-- [CAP-SYS: Quản trị Hệ thống (System & Identity Governance)](./CAP-SYS-system-governance.md)
-- [CAP-MDM: Dữ liệu Gốc (Master Data Management)](./CAP-MDM-master-data.md)
-- [CAP-RPT: Báo cáo & Phân tích (Reporting & Analytics)](./CAP-RPT-reporting-analytics.md)
+- [CAP-SYS: Quản trị Hệ thống (System & Identity Governance)](./system-governance/CAP-SYS-system-governance.md)
+- [CAP-MDM: Dữ liệu Gốc (Master Data Management)](./master-data/CAP-MDM-master-data.md)
+- [CAP-RPT: Báo cáo & Phân tích (Reporting & Analytics)](./reporting-analytics/CAP-RPT-reporting-analytics.md)
 
 ---
 
@@ -76,6 +77,7 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-ENR02-04`: Xử lý Ngoại lệ Booking
   - `US-ENR02-05`: Giáo viên Nhận xét & Trả kết quả
 - `BF-ENR-03`: Quản lý sự kiện tuyển sinh (✅ Chuẩn vàng)
+  - `US-ENR03-04`: Lịch sử Sự kiện Cơ sở
 - `BF-SAL-03`: Đánh giá năng lực
 
 ### 3. Thương mại & Bán hàng (`CAP-COM`)
@@ -103,7 +105,7 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-CLS02-03`: Gán Khung chương trình vào Lớp
   - `US-CLS02-04`: Xem Dashboard Tiến độ Lớp học
   - `US-CLS02-05`: Đóng lớp / Tốt nghiệp
-- `BF-CLS-03`: Quản lý Học viên (gồm Chờ xếp lớp) (✅ Đã chuẩn hóa)
+- `BF-CLS-03`: Quản lý Học viên (gồm Chờ xếp lớp) (✅ Đã chuẩn hóa) *(Ghi chú: BF-CLS-01 Xếp lớp đã hợp nhất vào BF này)*
   - `US-CLS03-01`: Quản lý Danh sách HV Cơ sở
   - `US-CLS03-02`: Xem Danh sách HV trong Lớp
   - `US-CLS03-03`: Gắn Tag Chú ý HV
@@ -120,9 +122,6 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-CLS03-14`: Tab Lịch sử Trạng thái
   - `US-CLS03-15`: Tab Lịch học Sắp tới
   - `US-CLS03-16`: Tab Thông tin Phụ huynh
-  - `US-CLS01-01`: Bộ lọc HV chờ xếp lớp (hợp nhất vào BF-CLS-03)
-  - `US-CLS01-02`: Thêm HV từ Chi tiết lớp (hợp nhất vào BF-CLS-03)
-  - `US-CLS01-03`: Xếp lớp Hàng loạt (hợp nhất vào BF-CLS-03)
 - `BF-CLS-04`: Quản lý Giáo viên chủ nhiệm (✅ Đã chuẩn hóa)
   - `US-CLS04-01`: Quản lý Danh sách GV Cơ sở
   - `US-CLS04-02`: Gán/Đổi GV Chủ nhiệm
@@ -162,24 +161,36 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
 ### 7. Tổ chức & Nhân sự (`CAP-HR`)
 - `BF-ORG-01`: Branch & Facility Setup (✅ Chuẩn vàng)
   - `US-ORG-01-01`: Thiết lập Giờ Hoạt động Chi nhánh
+  - `US-ORG-01-02`: Quản lý Phòng học
+  - `US-ORG-01-03`: Quản lý Danh sách Chi nhánh
+  - `US-ORG-01-04`: Tạo mới Chi nhánh
+  - `US-ORG-01-05`: Chi tiết Chi nhánh
 - `BF-ORG-02`: Organization Structure Governance (✅ Chuẩn vàng)
+  - `US-ORG-02-01`: Quản lý Sơ đồ Tổ chức
+  - `US-ORG-02-02`: Điều chuyển Nhân sự
+  - `US-ORG-02-03`: Tạo mới Phòng ban
+  - `US-ORG-02-04`: Chi tiết Phòng ban
 - `BF-HR-01`: Employee Lifecycle — Hire-to-Retire (✅ Đã có US)
   - `US-HR-01`: Tạo mới Nhân sự
   - `US-HR-01-01`: Quản lý Danh sách Nhân sự
+  - `US-HR-01-02`: Tạo mới Nhân sự
+  - `US-HR-01-03`: Chi tiết Hồ sơ Nhân sự
 - `BF-HR-02`: Quản lý Lịch làm việc & Quỹ thời gian (Workforce Scheduling) (✅ Đã chuẩn hóa)
   - `US-HR-02-01`: Cá nhân đăng ký lịch rảnh (Quỹ thời gian)
   - `US-HR-02-02`: Quản lý Đăng ký hộ & Theo dõi
   - `US-HR-02-03`: Quản lý lịch theo trung tâm (Heatmap)
   - `US-HR-02-04`: Xem Lịch của tôi (My Schedule / Aggregator)
-- `BF-HR-03`: Phối hợp & Sự kiện nội bộ (Collaboration & Events) (Dự kiến)
-  - `US-HR-03-01`: Nhận & Phản hồi lời mời họp (Inbox)
-  - `US-HR-03-02`: Tạo & Cập nhật Sự kiện cá nhân
-  - `US-HR-03-03`: Mời & Quản lý người tham dự (Attendees)
-  - `US-HR-03-04`: Đặt phòng & Tài nguyên (Resource Booking)
-  - `US-HR-03-05`: Thiết lập Lịch lặp & Nhắc nhở
+- `BF-HR-03`: Phối hợp & Sự kiện nội bộ (Collaboration & Events) (Dự kiến — chưa có file BF/US)
 
 ### 8. Cơ sở vật chất (`CAP-FCM`)
 - `BF-QA-02`: Facility Maintenance & Checklist
+
+### 8.5. Thông báo In-App (`CAP-NOTIFICATION`)
+- `BF-NOTIF-01`: Quản lý Trung tâm Thông báo (Notification Center) (✅ Đã soạn thảo)
+  - `US-NOTIF-01`: Trung tâm Thông báo In-App (Notification Center)
+- `BF-NOTIF-02`: Routing Rules — Ánh xạ sự kiện → Thông báo (✅ Đã soạn thảo)
+  - `US-NOTIF-03`: Xem danh sách Routing Rules (Đề xuất)
+  - `US-NOTIF-04`: Bật/Tắt Routing Rule (Đề xuất)
 
 ### 9. Quản trị Hệ thống (`CAP-SYS`)
 - `BF-SYS-01`: Identity Lifecycle Management (ILM) (✅ Đã chuẩn hóa)
@@ -190,6 +201,7 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
 - `BF-SYS-02`: Platform Configuration Governance (✅ Đã có)
   - `US-SYS-02-01`: Cấu hình Chung
   - `US-SYS-02-02`: Tham số Vận hành
+  - `US-SYS-02-03`: Quản lý Danh mục Nhân sự
 - `BF-SYS-03`: Device Provisioning Lifecycle (✅ Đã có)
   - `US-SYS-03-01`: Danh sách Thiết bị
   - `US-SYS-03-02`: Chuyển Thiết bị
@@ -223,10 +235,12 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
 ---
 
 ## Luồng nghiệp vụ tổng thể (Master Flows)
-- [FLOW-MDM-00: Vòng đời Dữ liệu Đối tác (Party Data Lifecycle)](./FLOW-MDM-00-party-data-lifecycle.md)
-- [FLOW-ENR-00: Luồng Tuyển sinh (Lead to Student)](./FLOW-ENR-00-vong-doi-tuyen-sinh.md)
-- [FLOW-ENR-01: Vòng đời Booking Test](./FLOW-ENR-01-booking-test.md)
-- [FLOW-ENR-02: Học thử ghép buổi](./FLOW-ENR-02-hoc-thu-ghep-buoi.md)
-- [FLOW-OPS-00: Vòng đời Lớp học (Class Lifecycle)](./FLOW-OPS-00-vong-doi-lop-hoc.md)
-- [FLOW-OPS-01: Vòng đời Buổi học (Session Lifecycle)](./FLOW-OPS-01-vong-doi-buoi-hoc.md)
-- [FLOW-SYS-00: Vòng đời IAM (Identity & Access Lifecycle)](./FLOW-SYS-00-iam-lifecycle.md)
+- [FLOW-MDM-00: Vòng đời Dữ liệu Đối tác (Party Data Lifecycle)](./master-data/FLOW-MDM-00-party-data-lifecycle.md)
+- [FLOW-ENR-00: Luồng Tuyển sinh (Lead to Student)](./admissions/FLOW-ENR-00-vong-doi-tuyen-sinh.md)
+- [FLOW-ENR-01: Vòng đời Booking Test](./admissions/FLOW-ENR-01-booking-test.md)
+- [FLOW-ENR-02: Học thử ghép buổi](./admissions/FLOW-ENR-02-hoc-thu-ghep-buoi.md)
+- [FLOW-OPS-00: Vòng đời Lớp học (Class Lifecycle)](./class-operations/FLOW-OPS-00-vong-doi-lop-hoc.md)
+- [FLOW-OPS-01: Vòng đời Buổi học (Session Lifecycle)](./class-operations/FLOW-OPS-01-vong-doi-buoi-hoc.md)
+- [FLOW-HR-01: Vòng đời Nhân sự (Hire-to-Retire)](./human-resources/FLOW-HR-01-vong-doi-nhan-su.md)
+- [FLOW-ORG-01: Luồng Thiết lập Cơ sở & Tổ chức](./human-resources/FLOW-ORG-01-thiet-lap-chi-nhanh-to-chuc.md)
+- [FLOW-SYS-00: Vòng đời IAM (Identity & Access Lifecycle)](./system-governance/FLOW-SYS-00-iam-lifecycle.md)

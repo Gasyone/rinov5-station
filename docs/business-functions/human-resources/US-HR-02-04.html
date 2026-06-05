@@ -1,0 +1,322 @@
+<hr>
+<h2>id: US-HR-02-04
+title: &quot;Xem Lịch của tôi (My Schedule / Super Aggregator)&quot;
+bf: BF-HR-02
+domain: CAP-HR
+status: standardized
+tags: [schedule, calendar, personal, aggregator, hr]</h2>
+<h1>US-HR-02-04: Xem Lịch của tôi (My Schedule / Super Aggregator)</h1>
+<blockquote>
+<p><strong>Tham chiếu:</strong> BF-HR-02 · <code>[POLICY-HR-01]</code> · Giao diện Mẫu §4.2 (Danh sách dạng Grid / Calendar cá nhân)</p>
+</blockquote>
+<h2>1. Yêu cầu Người dùng (User Story)</h2>
+<p><strong>Là một</strong> Nhân sự của tổ chức (Giáo viên, Trợ giảng, Nhân viên Tư vấn, Quản lý),
+<strong>tôi muốn</strong> xem toàn bộ lịch làm việc cá nhân của mình được tổng hợp từ tất cả các hệ thống (Lịch dạy Lớp học, Lịch coi thi, Lịch Học thử, Lịch họp nội bộ, Lịch nghỉ phép),
+<strong>để</strong> biết chính xác các công việc và khung thời gian mình đã được phân bổ trong ngày/tuần, từ đó chủ động sắp xếp công việc cá nhân, đảm bảo đúng giờ và chuẩn bị kỹ lưỡng cho công việc của bản thân.</p>
+<blockquote>
+<p><strong>Kiểm tra chất lượng (INVEST):</strong></p>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <strong>I</strong>ndependent — Triển khai hiển thị hoàn toàn độc lập với các bảng nghiệp vụ nhân sự.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>N</strong>egotiable — Giao diện hỗ trợ linh hoạt 3 góc nhìn: Lưới thời gian, Danh sách công việc, Tuyến thời gian.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>V</strong>aluable — Cực kỳ giá trị với Nhân sự di chuyển qua nhiều chi nhánh.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>E</strong>stimable — Rõ ràng về yêu cầu thu thập dữ liệu đa nguồn.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>S</strong>mall — Phạm vi gói gọn trong việc hiển thị dữ liệu của một tài khoản hiện tại.</li>
+<li><input checked="" disabled="" type="checkbox"> <strong>T</strong>estable — Đi kèm đầy đủ tiêu chí xác thực.</li>
+</ul>
+</blockquote>
+<hr>
+<h2>2. Quy tắc Nghiệp vụ (Business Rules)</h2>
+<ol>
+<li><strong>[RULE-MYCAL-01] Mô hình Tập trung cá nhân (Super Consumer):</strong> <ul>
+<li>Dữ liệu trả về bắt buộc lấy theo điều kiện truy vấn là mã Nhân sự đăng nhập hiện tại.</li>
+<li>Bắt buộc phải kết nối tới tất cả nguồn: Xếp lịch lớp, Lịch thi, Họp nội bộ, Phiếu báo nghỉ cá nhân.</li>
+</ul>
+</li>
+<li><strong>[RULE-MYCAL-02] Đa Chi nhánh (Cross-Branch Aggregation):</strong><ul>
+<li>Lịch cá nhân MẶC ĐỊNH phải gộp công việc từ tất cả cơ sở mà nhân sự đó được điều động.</li>
+<li>BẮT BUỘC hiển thị rõ Tên Cơ sở vật lý trên từng thẻ lịch để nhân sự không đi nhầm địa điểm.</li>
+</ul>
+</li>
+<li><strong>[RULE-MYCAL-03] Chế độ Chỉ đọc (Read-only):</strong><ul>
+<li>Tuyệt đối không cho sửa trực tiếp thời gian, địa điểm trên lưới này.</li>
+<li>Mọi nhu cầu thay đổi (xin nghỉ, đến muộn) phải sử dụng tính năng liên kết để mở Biểu mẫu xử lý chuyên dụng.</li>
+</ul>
+</li>
+<li><strong>[RULE-MYCAL-04] Lịch Nghỉ phép (Time-off Blockers):</strong><ul>
+<li>Nếu nhân sự đã được duyệt đơn nghỉ phép, dải thời gian tương ứng trên lịch phải hiển thị khối xám gạch chéo để thông báo khoảng thời gian đã đóng.</li>
+</ul>
+</li>
+</ol>
+<h3>2.1. Thông số &amp; Định mức (Metrics &amp; Thresholds)</h3>
+<ul>
+<li><strong>[METRIC-01] Thời gian Hợp nhất:</strong> Hệ thống máy chủ phải tổng hợp dữ liệu từ mọi nguồn phân tán trong vòng dưới <code>1.0 giây</code>.</li>
+<li><strong>[METRIC-02] Tối ưu hóa trên thiết bị nhỏ:</strong> Màn hình này phần lớn xem trên điện thoại, bắt buộc kích hoạt giao diện dạng Danh sách (Agenda) cho thiết bị nhỏ.</li>
+</ul>
+<hr>
+<h2>3. Cấu trúc Giao diện &amp; Dữ liệu</h2>
+<p><strong>Bố cục Tổng thể:</strong> Bảng điều khiển công việc cá nhân.</p>
+<h3>3.1. Thanh công cụ (Toolbar)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Logic &amp; Tham số</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chế độ xem</td>
+<td>Điều hướng khối</td>
+<td>Chuyển Ngày / Tuần / Lịch trình</td>
+<td>Trên Điện thoại, mặc định ghim ở dạng Lịch trình.</td>
+</tr>
+<tr>
+<td>Tìm kiếm nhanh</td>
+<td>Ô nhập văn bản</td>
+<td>Tìm tên lớp, loại sự kiện</td>
+<td>Tự động làm sáng kết quả khớp ngay trên lịch.</td>
+</tr>
+<tr>
+<td>Báo bận/Xin nghỉ</td>
+<td>Nút tiện ích</td>
+<td>Mở nhanh quy trình nộp đơn</td>
+<td>Liên kết trực tiếp tới phân hệ Nhân sự.</td>
+</tr>
+<tr>
+<td>Tùy chỉnh hiển thị</td>
+<td>Nút bảng trượt</td>
+<td>Cấu hình lọc theo nguồn</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>3.2. Bảng lọc nâng cao (Slide Panel)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Dữ liệu</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nguồn sự kiện</td>
+<td>Hộp kiểm (Checkbox)</td>
+<td>Cho phép ẩn bớt: Họp, Dạy, Trực thi...</td>
+<td></td>
+</tr>
+<tr>
+<td>Khu vực</td>
+<td>Chọn nhiều mục</td>
+<td>Lọc công việc theo từng cụm chi nhánh</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>3.3. Bảng Lịch (Schedule Time Grid / Agenda)</h3>
+<table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Loại hiển thị</th>
+<th>Trường Dữ liệu</th>
+<th>Ghi chú</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trục thời gian</td>
+<td>Cột giờ / Headers ngày</td>
+<td>07:00 -&gt; 23:00</td>
+<td>Khung giờ làm việc chung.</td>
+</tr>
+<tr>
+<td>Thẻ thông tin cá nhân</td>
+<td>Khối vuông bo góc</td>
+<td>Giờ, Tên Công việc, Loại, <strong>Tên Cơ sở</strong>, Vai trò</td>
+<td>Thông tin cơ sở vật lý phải in đậm rõ ràng.</td>
+</tr>
+<tr>
+<td>Khối Nghỉ phép</td>
+<td>Dải xám gạch chéo</td>
+<td>Ghi chú lý do vắng mặt</td>
+<td>Cảnh báo lịch làm việc bị đóng rào.</td>
+</tr>
+</tbody></table>
+<h3>3.4. Thao tác trên Thẻ Lịch (Card)</h3>
+<table>
+<thead>
+<tr>
+<th>Thao tác</th>
+<th>Hành động</th>
+<th>Kết quả mong đợi</th>
+<th>Điều kiện</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nhấn chuột trái</td>
+<td>Bấm vào khối lịch</td>
+<td>Bật thẻ chi tiết tóm tắt</td>
+<td>Hiện các nút thao tác hỗ trợ nhanh.</td>
+</tr>
+<tr>
+<td>Nhấn chuột phải</td>
+<td>Gọi menu phụ</td>
+<td>Bật danh sách lối tắt</td>
+<td>&quot;Gửi đơn dạy thay&quot;, &quot;Nhận xét chất lượng&quot;.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Xử lý Ngoại lệ (Corner Cases)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tình huống</th>
+<th>Cách xử lý</th>
+<th>Thông báo giao diện</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>4.1</td>
+<td>Tuần trống việc</td>
+<td>Nhân sự không có giờ phân công.</td>
+<td>Hiển thị màn hình đồ họa thân thiện: &quot;Tuần này bạn chưa có lịch làm việc!&quot;.</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Đụng lịch vật lý</td>
+<td>Khâu vận hành xếp nhầm giờ 2 cơ sở cách xa nhau.</td>
+<td>Bật tín hiệu chớp nháy viền đỏ cực mạnh: &quot;Cảnh báo trùng lịch phân công!&quot;.</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Đổi múi giờ</td>
+<td>Nhân sự di chuyển qua múi giờ khác.</td>
+<td>Cưỡng ép hiện theo múi giờ trung tâm tại Việt Nam nhằm tránh sự cố nhầm giờ lên lớp.</td>
+</tr>
+<tr>
+<td>4.4</td>
+<td>Thiết bị mất kết nối</td>
+<td>Đang xem thì đứt cáp mạng.</td>
+<td>Cung cấp thông báo lỗi kết nối nhưng vẫn giữ nguyên hình ảnh lịch để nhân sự tra cứu tạm thời.</td>
+</tr>
+<tr>
+<td>4.5</td>
+<td>Đóng/Mở lại ứng dụng</td>
+<td>Tắt tab trình duyệt.</td>
+<td>Lưu lại các tùy chọn lọc của người dùng vào bộ nhớ trình duyệt nhằm tối ưu trải nghiệm.</td>
+</tr>
+</tbody></table>
+<h2>5. Kế hoạch Tự kiểm tra (Self-Verification)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Hạng mục</th>
+<th>Cách kiểm tra</th>
+<th>Tiêu chuẩn Đạt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V-01</td>
+<td>Kiểm tra tích hợp đa luồng</td>
+<td>Trộn dữ liệu Lớp, Thi, và Xin nghỉ.</td>
+<td>Giao diện xếp đúng thẻ màu xanh cho việc, dải màu xám chặn cho ngày nghỉ.</td>
+</tr>
+<tr>
+<td>V-02</td>
+<td>Tối ưu hiển thị dọc</td>
+<td>Mở tính năng mô phỏng thiết bị di động.</td>
+<td>Bảng lưới thời gian sập thành dạng danh sách có thể cuộn ngón tay dễ dàng.</td>
+</tr>
+<tr>
+<td>V-03</td>
+<td>Lưu trữ cá nhân</td>
+<td>Đổi các thiết lập, sau đó làm mới trang.</td>
+<td>Thông tin giữ y hệt trạng thái trước đó.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tiêu chí (Specific)</th>
+<th>Cách đo (Measurable)</th>
+<th>Kết quả mong đợi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AC-01</td>
+<td>Tính toàn vẹn của dữ liệu</td>
+<td>So sánh với dữ liệu trích xuất từ tất cả các luồng.</td>
+<td>Chứa đúng và đủ toàn bộ lịch có gắn mã của nhân sự đó.</td>
+</tr>
+<tr>
+<td>AC-02</td>
+<td>Khả năng nhìn xuyên chi nhánh</td>
+<td>Đưa vào hai lịch làm ở hai nơi khác nhau.</td>
+<td>Hiển thị rõ tên từng cơ sở in đậm ngay trên tiêu đề thẻ.</td>
+</tr>
+<tr>
+<td>AC-03</td>
+<td>Tính độc lập thành phần</td>
+<td>Đánh giá mã nguồn tổng thể.</td>
+<td>Màn hình hoàn toàn sạch, không chứa các cơ chế trực tiếp lưu dữ liệu.</td>
+</tr>
+<tr>
+<td>AC-04</td>
+<td>Rào chắn nghỉ phép</td>
+<td>Có đơn xin nghỉ thành công.</td>
+<td>Tại vùng giờ đó bị phủ mờ kèm chữ &quot;Nghỉ phép&quot;, ngăn việc hiểu nhầm là lịch rảnh.</td>
+</tr>
+<tr>
+<td>AC-05</td>
+<td>Tùy chỉnh luồng dữ liệu</td>
+<td>Tắt chức năng xem lịch họp.</td>
+<td>Mọi khung thời gian dùng cho họp tự động rút lui khỏi màn hình.</td>
+</tr>
+<tr>
+<td>AC-06</td>
+<td>Đổi cấu trúc di động</td>
+<td>Co nhỏ cửa sổ làm việc xuống màn hình hẹp.</td>
+<td>Cơ chế vẽ lịch thay đổi hoàn toàn sang cấu trúc hiển thị dọc ưu việt.</td>
+</tr>
+<tr>
+<td>AC-07</td>
+<td>Cảnh báo an toàn</td>
+<td>Đưa lịch bị đụng khung giờ vào.</td>
+<td>Thẻ màu đỏ gắt kèm biểu tượng tam giác cảnh báo rõ nét.</td>
+</tr>
+<tr>
+<td>AC-08</td>
+<td>Menu tương tác nhanh</td>
+<td>Chuột phải vào bất kỳ phần lịch nào.</td>
+<td>Mở các hành động nhanh như Xin dạy thay hay Viết báo cáo.</td>
+</tr>
+<tr>
+<td>AC-09</td>
+<td>Mở tóm tắt thẻ</td>
+<td>Bấm chọn sự kiện bằng chuột trái.</td>
+<td>Hiện một bảng tóm gọn cung cấp cái nhìn nhanh không cần tải trang mới.</td>
+</tr>
+<tr>
+<td>AC-10</td>
+<td>Ràng buộc vật lý</td>
+<td>Mô phỏng múi giờ quốc tế.</td>
+<td>Màn hình không bị trôi lệch thẻ do đổi múi giờ.</td>
+</tr>
+<tr>
+<td>AC-11</td>
+<td>Liên kết nghiệp vụ rẽ nhánh</td>
+<td>Bấm chọn khai báo bận rộn.</td>
+<td>Rời khỏi màn hình này để sang quy trình của phân hệ chuyên biệt.</td>
+</tr>
+<tr>
+<td>AC-12</td>
+<td>Cơ chế chống lỗi mạng</td>
+<td>Ngắt kết nối mạng bất ngờ.</td>
+<td>Cơ chế lưu trữ offline giúp giao diện không bị đổ vỡ hoàn toàn.</td>
+</tr>
+</tbody></table>

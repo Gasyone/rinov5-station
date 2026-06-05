@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterSheetPanel } from '@/components/filters'
+import { FilterGroupSheetPanel } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
-import { DEFAULT_WORK_PRIORITY_RULES, addWorkDays, getMockWorkRegistrations, getWorkRegistrationEmployees, getWorkWeekDays, getWorkWeekStart, isPriorityWorkSlot, toWorkDateKey, type WorkPrioritySlotRule, type WorkRegistrationRecord } from '@/mocks/workRegistrations'
+import { DEFAULT_WORK_PRIORITY_RULES, getMockWorkRegistrations, getWorkRegistrationEmployees, getWorkWeekDays, getWorkWeekStart, isPriorityWorkSlot, toWorkDateKey, type WorkRegistrationRecord } from '@/mocks/workRegistrations'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { clearWorkRegistrationWeek, submitWorkRegistration, upsertWorkSlot } from './workRegistrationActions'
 import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
-import { WorkRegistrationPrioritySetupDialog } from './WorkRegistrationPrioritySetupDialog'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
 import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
 import { WorkRegistrationToolbar } from './WorkRegistrationToolbar'
@@ -18,7 +17,6 @@ import {
   buildBranchSummaries,
   buildEmployeeSummaries,
   filterEmployeeSummaries,
-  formatWorkWeekRange,
   getEmployeeWeekRecords,
   getRecordsForWeek,
   getSlot,
@@ -26,15 +24,15 @@ import {
   sumRegistrationMinutes,
 } from './workRegistrationHelpers'
 import type { SlotDetailTarget, WorkRegistrationStatusFilter, WorkRegistrationTab, WorkRegistrationStaffLayout } from './workRegistrationTypes'
-import { buildFilterSections, buildStatusTiles, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
+import { buildFilterGroups, buildStatusTiles, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
 
 export function WorkRegistrationScreen() {
   const userRole = useAuthStore((state) => state.user?.role)
   const employees = useMemo(() => getWorkRegistrationEmployees(), [])
   const initialWeek = useMemo(() => getWorkWeekStart(new Date()), [])
-  const [weekStart, setWeekStart] = useState(initialWeek)
+  const [weekStart] = useState(initialWeek)
   const [records, setRecords] = useState<WorkRegistrationRecord[]>(() => getMockWorkRegistrations(initialWeek))
-  const [priorityRules, setPriorityRules] = useState<WorkPrioritySlotRule[]>(DEFAULT_WORK_PRIORITY_RULES)
+  const priorityRules = DEFAULT_WORK_PRIORITY_RULES
   const [activeTab, setActiveTab] = useState<WorkRegistrationTab>('mine')
   const [activeBranch, setActiveBranch] = useState(employees[0]?.branch ?? 'all')
   const [search, setSearch] = useState('')
@@ -43,11 +41,10 @@ export function WorkRegistrationScreen() {
   const [subjectFilter, setSubjectFilter] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [warningsOpen, setWarningsOpen] = useState(false)
-  const [prioritySetupOpen, setPrioritySetupOpen] = useState(false)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
   const [delegateEmployeeId, setDelegateEmployeeId] = useState<string>()
   const [slotDetail, setSlotDetail] = useState<SlotDetailTarget | null>(null)
-  const [branchDetail, setBranchDetail] = useState<{ branch: string; date?: string } | null>(null)
+  const [branchDetail, setBranchDetail] = useState<{ branch: string; date?: string; dayLabel?: string } | null>(null)
   const [staffPage, setStaffPage] = useState(1)
   const [staffPageSize, setStaffPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [centerPage, setCenterPage] = useState(1)
@@ -59,6 +56,10 @@ export function WorkRegistrationScreen() {
   const weekDays = useMemo(() => getWorkWeekDays(weekStart), [weekStart])
   const branches = useMemo(
     () => Array.from(new Set(employees.map((employee) => employee.branch))).sort(),
+    [employees]
+  )
+  const subjects = useMemo(
+    () => Array.from(new Set(employees.flatMap((employee) => employee.subjects ?? []))).sort(),
     [employees]
   )
   const currentEmployeeId = resolveCurrentEmployeeId(userRole)
@@ -81,8 +82,8 @@ export function WorkRegistrationScreen() {
     [activeBranch, employeeSummaries, jobTitles, search, statusFilter, subjectFilter]
   )
   const statusTiles = useMemo(() => buildStatusTiles(employeeSummaries), [employeeSummaries])
-  const filterSections = useMemo(
-    () => buildFilterSections(employeeSummaries, jobTitles, statusFilter, subjectFilter),
+  const filterGroups = useMemo(
+    () => buildFilterGroups(employeeSummaries, jobTitles, statusFilter, subjectFilter),
     [employeeSummaries, jobTitles, statusFilter, subjectFilter]
   )
 
@@ -117,8 +118,6 @@ export function WorkRegistrationScreen() {
     ? weekRecords.filter((record) => record.branch === branchDetail.branch && (!branchDetail.date || record.date === branchDetail.date))
     : []
   const detailRecords = branchDetail ? branchDetailRecords : slotDetailRecords
-  const title = formatWorkWeekRange(weekStart)
-  const activeFilterCount = jobTitles.length + (statusFilter === 'all' ? 0 : 1)
   const actionState = useMemo(
     () => resolveWeekActionState(activeEmployeeRecords, weekStart, currentWeekStart),
     [activeEmployeeRecords, currentWeekStart, weekStart]
@@ -149,12 +148,11 @@ export function WorkRegistrationScreen() {
     <div className="flex h-full min-h-0 flex-col bg-background">
       <WorkRegistrationToolbar
         activeTab={activeTab}
-        title={title}
         branches={branches}
+        subjects={subjects}
         activeBranch={activeBranch}
         subjectFilter={subjectFilter}
         search={search}
-        filterCount={activeFilterCount}
         onTabChange={(tab) => {
           setActiveTab(tab)
           if (tab !== 'staff') setDelegateEmployeeId(undefined)
@@ -165,8 +163,6 @@ export function WorkRegistrationScreen() {
           setStaffPage(1)
         }}
         onSearchChange={setSearch}
-        onOpenFilters={() => setFilterOpen(true)}
-        onOpenPrioritySetup={() => setPrioritySetupOpen(true)}
         onOpenWarnings={() => setWarningsOpen(true)}
         staffLayout={staffLayout}
         onStaffLayoutChange={setStaffLayout}
@@ -224,12 +220,8 @@ export function WorkRegistrationScreen() {
             onSetDelegateEmployee={(id) => {
               setDelegateEmployeeId(id)
               if (id && staffLayout === 'list') {
-                setStaffLayout('grid')
+                setStaffLayout('split')
               }
-            }}
-            onBackToList={() => {
-              setDelegateEmployeeId(undefined)
-              setStaffLayout('list')
             }}
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
@@ -239,15 +231,15 @@ export function WorkRegistrationScreen() {
         ) : null}
 
         {activeTab === 'center' ? (
-          <WorkRegistrationCenterOverview summaries={centerSummaries} page={centerPage} pageSize={centerPageSize} onPageChange={setCenterPage} onPageSizeChange={setCenterPageSize} onOpenBranch={(branch) => setBranchDetail({ branch })} onOpenBranchDay={(branch, date) => setBranchDetail({ branch, date })} />
+          <WorkRegistrationCenterOverview summaries={centerSummaries} page={centerPage} pageSize={centerPageSize} onPageChange={setCenterPage} onPageSizeChange={setCenterPageSize} onOpenBranch={(branch) => setBranchDetail({ branch })} onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })} />
         ) : null}
       </div>
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={filterOpen}
         title="Bộ lọc đăng ký nhân viên"
         description="Lọc nhân viên theo chức danh và trạng thái đăng ký."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'jobTitles') {
@@ -269,11 +261,10 @@ export function WorkRegistrationScreen() {
         }}
       />
       <WorkRegistrationWarningDialog open={warningsOpen} onOpenChange={setWarningsOpen} />
-      <WorkRegistrationPrioritySetupDialog open={prioritySetupOpen} rules={priorityRules} onRulesChange={setPriorityRules} onOpenChange={setPrioritySetupOpen} />
       <WorkRegistrationSlotDetailDialog
         open={Boolean(slotDetail || branchDetail)}
         title={branchDetail?.branch ?? 'Đăng ký theo khung giờ'}
-        description={branchDetail ? (branchDetail.date ?? formatWorkWeekRange(weekStart)) : slotDetailDescription(slotDetail)}
+        description={branchDetail ? branchDetail.dayLabel : slotDetailDescription(slotDetail)}
         records={detailRecords}
         employees={employees}
         onOpenChange={(open) => {

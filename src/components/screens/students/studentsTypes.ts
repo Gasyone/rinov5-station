@@ -5,7 +5,29 @@ export type StudentStatusFilter = 'all' | Student['status']
 export interface StudentFilterState {
   branches: string[]
   levels: string[]
+  classTypes: string[]
+  teachers: string[]
+  remainingSessionsRange: string[]
+  genders: string[]
+  programs: string[]
+  subjects: string[]
+  classes: string[]
+  sales: string[]
   status: StudentStatusFilter
+}
+
+export const INITIAL_FILTER_STATE: StudentFilterState = {
+  branches: [],
+  levels: [],
+  classTypes: [],
+  teachers: [],
+  remainingSessionsRange: [],
+  genders: [],
+  programs: [],
+  subjects: [],
+  classes: [],
+  sales: [],
+  status: 'all',
 }
 
 export const STUDENT_STATUS_TABS: Array<{

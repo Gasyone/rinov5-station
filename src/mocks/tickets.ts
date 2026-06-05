@@ -19,95 +19,120 @@ export interface SupportTicket {
   createdDate: string
   description: string
   interactionLogs: TicketInteractionLog[]
+  type: 'care' | 'support'  // Phân loại: chăm sóc chủ động hoặc hỗ trợ sự cố
+  alertCode?: string        // Mã cảnh báo liên kết (như C90B, C100...)
 }
 
 export let mockTickets: SupportTicket[] = [
   {
     id: "TCK-001",
-    studentId: "s1",
-    studentName: "Nguyễn An",
+    studentId: "149231",
+    studentName: "Nguyễn Mỹ Linh",
     studentCode: "STU-001",
-    title: "Nghỉ học liên tiếp 3 buổi không phép",
-    category: "attendance",
+    title: "Cảnh báo gia hạn số buổi học C90B",
+    category: "billing",
     priority: "high",
     status: "new",
-    assignee: "Nguyễn Thị Cầm (CSM)",
-    createdDate: "2025-05-18",
-    description: "Hệ thống tự động ghi nhận học viên nghỉ liên tiếp 3 buổi của lớp IELTS A1. Cần CSM gọi điện xác nhận lý do và hỗ trợ ôn bài.",
-    interactionLogs: [
-      {
-        id: "log-1",
-        date: "2025-05-18",
-        staffName: "Nguyễn Thị Cầm (CSM)",
-        channel: "phone",
-        notes: "Đã liên hệ phụ huynh, thuê bao bận không nhấc máy. Đã nhắn zalo cho phụ huynh.",
-      }
-    ]
+    assignee: "AnhNTN33",
+    createdDate: "2026-05-24",
+    description: "Học viên chỉ còn 54 buổi học, cảnh báo C90B kích hoạt. Cần liên hệ trao đổi với phụ huynh định hướng lên lớp 5 và làm thủ tục gia hạn học phí.",
+    interactionLogs: [],
+    type: "care",
+    alertCode: "C90B"
   },
   {
     id: "TCK-002",
-    studentId: "s3",
-    studentName: "Lê Chi",
+    studentId: "113838",
+    studentName: "Nguyễn Hà Phương",
     studentCode: "STU-003",
-    title: "Phản hồi bài tập về nhà quá khó",
+    title: "Xác nhận chuyển lớp & Bài tập về nhà C90B",
     category: "academic",
     priority: "medium",
-    status: "in_progress",
-    assignee: "Trần Thế Vinh (CSM)",
-    createdDate: "2025-05-16",
-    description: "Phụ huynh gọi điện báo con làm bài tập về nhà môn Tiếng Anh A1 mất quá nhiều thời gian, đề nghị giáo viên hướng dẫn thêm.",
+    status: "completed",
+    assignee: "AnhNTN33",
+    createdDate: "2026-05-20",
+    description: "Học viên chuẩn bị chuyển lớp, còn lại 1 buổi. Cần gọi điện nhắc nhở hoàn thiện BTVN và hoàn tất thủ tục chuyển lớp.",
     interactionLogs: [
       {
-        id: "log-2",
-        date: "2025-05-16",
-        staffName: "Trần Thế Vinh (CSM)",
-        channel: "phone",
-        notes: "Ghi nhận ý kiến. Đã phản hồi cho giáo viên phụ trách lớp Tiếng Anh A1 để điều chỉnh dung lượng bài tập về nhà.",
-      },
-      {
-        id: "log-3",
-        date: "2025-05-17",
-        staffName: "Trần Thế Vinh (CSM)",
+        id: "log-1",
+        date: "2026-05-25",
+        staffName: "AnhNTN33",
         channel: "zalo",
-        notes: "Giáo viên đã gửi file hướng dẫn giải chi tiết cho con. Đã gửi qua Zalo cho phụ huynh.",
+        notes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới.",
       }
-    ]
+    ],
+    type: "care",
+    alertCode: "C90B"
   },
   {
     id: "TCK-003",
-    studentId: "s4",
-    studentName: "Đinh Dũng",
-    studentCode: "STU-004",
-    title: "Yêu cầu xuất hóa đơn đỏ (VAT)",
-    category: "billing",
-    priority: "low",
-    status: "completed",
-    assignee: "Phạm Hồng Ngọc (CSM)",
-    createdDate: "2025-05-10",
-    description: "Khách hàng yêu cầu xuất hóa đơn GTGT cho đơn hàng đóng phí khóa học IELTS B1 trị giá 15.000.000đ.",
+    studentId: "152149",
+    studentName: "Phạm Đình Nguyên",
+    studentCode: "STU-006",
+    title: "Cảnh báo hoàn thành BTVN thấp dưới 70%",
+    category: "academic",
+    priority: "high",
+    status: "in_progress",
+    assignee: "AnhNTN33",
+    createdDate: "2026-05-25",
+    description: "Tỷ lệ làm bài tập về nhà trong tháng 5 chỉ đạt 66.7%. Cần CSKH gọi nhắc phụ huynh đôn đốc con.",
     interactionLogs: [
       {
-        id: "log-4",
-        date: "2025-05-12",
-        staffName: "Phạm Hồng Ngọc (CSM)",
-        channel: "email",
-        notes: "Đã chuyển thông tin sang phòng kế toán và gửi hóa đơn điện tử thành công tới email của phụ huynh.",
+        id: "log-2",
+        date: "2026-05-26",
+        staffName: "AnhNTN33",
+        channel: "phone",
+        notes: "Đã gọi cho mẹ. Mẹ phản hồi đợt này cho con đi chơi nhiều, tối nay về sẽ nhắc con làm BTVN.",
       }
-    ]
+    ],
+    type: "care",
+    alertCode: "Cảnh báo BTVN"
   },
   {
     id: "TCK-004",
-    studentId: "s8",
-    studentName: "Lê Thị Khánh",
+    studentId: "152292",
+    studentName: "Minh Vy",
     studentCode: "STU-008",
-    title: "Đề xuất chuyển lớp sang buổi tối",
-    category: "general",
+    title: "Hỗ trợ phụ huynh - Phản hồi bài kiểm tra điểm kém",
+    category: "academic",
     priority: "medium",
-    status: "pending",
-    assignee: "Nguyễn Thị Cầm (CSM)",
-    createdDate: "2025-05-19",
-    description: "Do trùng lịch học thêm toán ở trường phổ thông, học viên mong muốn được chuyển từ lớp Tiếng Anh B1 (Chiều Thứ 7) sang lớp tối ngày thường.",
-    interactionLogs: []
+    status: "in_progress",
+    assignee: "AnhNTN33",
+    createdDate: "2026-05-25",
+    description: "Điểm thi lần gần nhất của con giảm mạnh xuống 0.2. Phụ huynh băn khoăn về năng lực học tập của con.",
+    interactionLogs: [
+      {
+        id: "log-3",
+        date: "2026-05-26",
+        staffName: "AnhNTN33",
+        channel: "zalo",
+        notes: "Đã trao đổi zalo. Nhờ mẹ nhắc con làm lại bài kiểm tra và làm bài tập đầy đủ.",
+      }
+    ],
+    type: "support"
+  },
+  {
+    id: "TCK-005",
+    studentId: "152940",
+    studentName: "Nguyễn Hoàng Vũ",
+    studentCode: "STU-013",
+    title: "Yêu cầu tài liệu ôn thi học kỳ",
+    category: "general",
+    priority: "low",
+    status: "completed",
+    assignee: "AnhNTN33",
+    createdDate: "2026-05-23",
+    description: "Phụ huynh đề xuất trung tâm gửi thêm tài liệu ôn thi do con bận ôn tập học kỳ ở trường không đi học đều được.",
+    interactionLogs: [
+      {
+        id: "log-4",
+        date: "2026-05-26",
+        staffName: "AnhNTN33",
+        channel: "zalo",
+        notes: "Đã nhắn tin gửi link tài liệu và add phụ huynh vào Zalo nhóm lớp.",
+      }
+    ],
+    type: "support"
   }
 ]
 
@@ -117,12 +142,14 @@ export function getTickets(filters?: {
   priority?: string
   status?: string
   studentId?: string
+  type?: 'care' | 'support'
 }): SupportTicket[] {
   return mockTickets.filter((t) => {
     if (filters?.studentId && t.studentId !== filters.studentId) return false
     if (filters?.category && t.category !== filters.category) return false
     if (filters?.priority && t.priority !== filters.priority) return false
     if (filters?.status && t.status !== filters.status) return false
+    if (filters?.type && t.type !== filters.type) return false
     if (filters?.search) {
       const q = filters.search.toLowerCase()
       const matches =
@@ -130,7 +157,8 @@ export function getTickets(filters?: {
         t.studentCode.toLowerCase().includes(q) ||
         t.title.toLowerCase().includes(q) ||
         t.id.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q)
+        t.description.toLowerCase().includes(q) ||
+        (t.alertCode && t.alertCode.toLowerCase().includes(q))
       if (!matches) return false
     }
     return true

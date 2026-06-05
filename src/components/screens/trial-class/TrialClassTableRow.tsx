@@ -1,20 +1,19 @@
 'use client'
 
-import { CheckCircle, Copy, Phone } from 'lucide-react'
+import { Phone, FileText, Check, X, ArrowRightLeft } from 'lucide-react'
+import { useCallStore } from '@/stores/useCallStore'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { StatusBadge } from '@/components/shared'
+import { StatusBadge, ContactCell, PersonnelCell } from '@/components/shared'
 import type { TrialClass } from '@/mocks/trialClasses'
 import {
   getInitials,
   getTrialFamilyMembers,
   getTrialStatusLabel,
-  maskPhone,
 } from './trialClassHelpers'
-import { TrialClassFamilyPopover } from './TrialClassFamilyPopover'
-import { TrialClassSessionsPopover } from './TrialClassSessionsPopover'
+
 
 interface TrialClassTableRowProps {
   trial: TrialClass
@@ -23,6 +22,10 @@ interface TrialClassTableRowProps {
   onToggle: (id: string, checked: boolean) => void
   onRowClick: (id: string) => void
   onCopy: (text: string, key: string) => void
+  onRequestReschedule?: (id: string) => void
+  onOpenAssignReschedule?: (id: string) => void
+  onApprove?: (id: string) => void
+  onReject?: (id: string) => void
 }
 
 function formatTrialDateShort(dateStr: string): string {
@@ -42,13 +45,15 @@ function formatTrialTime(dateStr: string): string {
 export function TrialClassTableRow({
   trial,
   isSelected,
-  copiedKey,
   onToggle,
   onRowClick,
-  onCopy,
+  onOpenAssignReschedule,
+  onApprove,
+  onReject,
 }: TrialClassTableRowProps) {
+  const startCall = useCallStore((s) => s.startCall)
   const familyMembers = getTrialFamilyMembers(trial)
-  const primaryFamilyMember = familyMembers.find((member) => member.isPrimary) ?? familyMembers[0]
+  const primaryFamilyMember = familyMembers.find((member: import('@/mocks/trialClasses').TrialClassFamilyMember) => member.isPrimary) ?? familyMembers[0]
 
   return (
     <TableRow
@@ -65,7 +70,7 @@ export function TrialClassTableRow({
         />
       </TableCell>
 
-      <TableCell className="sticky left-12 z-20 min-w-72 max-w-72 overflow-hidden bg-background group-hover:bg-muted">
+      <TableCell className="sticky left-12 z-20 w-84 min-w-84 max-w-84 overflow-hidden bg-background group-hover:bg-muted">
         <div className="relative z-10 max-w-full overflow-hidden pr-24">
           <div className="min-w-0 space-y-1.5">
             <p className="truncate font-semibold" title={trial.program}>
@@ -83,13 +88,57 @@ export function TrialClassTableRow({
             className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 group-hover:flex"
             onClick={(event) => event.stopPropagation()}
           >
+            {trial.status === 'pending_approval' && onApprove && onReject && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  title="Chấp thuận ghép lớp"
+                  aria-label={`Chấp thuận ghép lớp cho ${trial.studentName}`}
+                  onClick={() => onApprove(trial.id)}
+                  className="bg-transparent shadow-none hover:bg-emerald-50 text-emerald-600 dark:hover:bg-emerald-950/30"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  title="Từ chối ghép lớp"
+                  aria-label={`Từ chối ghép lớp cho ${trial.studentName}`}
+                  onClick={() => onReject(trial.id)}
+                  className="bg-transparent shadow-none hover:bg-red-50 text-red-600 dark:hover:bg-red-950/30"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+
+            {trial.sessions.length > 0 && (trial.status === 'confirmed' || trial.status === 'pending_approval') && onOpenAssignReschedule && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                title="Đổi buổi học"
+                aria-label={`Đổi buổi học cho ${trial.studentName}`}
+                onClick={() => onOpenAssignReschedule(trial.id)}
+                className="bg-transparent shadow-none hover:bg-primary/10"
+              >
+                <ArrowRightLeft className="h-4 w-4 text-primary" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon-sm"
               title="Gọi điện"
               aria-label={`Gọi ${trial.studentName}`}
-              onClick={() => onCopy(trial.familyPhone, `phone-${trial.id}`)}
-              className="bg-transparent shadow-none hover:bg-transparent"
+              onClick={() => {
+                startCall({
+                  studentId: trial.customerId,
+                  studentName: trial.studentName,
+                  parentPhone: trial.familyPhone,
+                  parentName: trial.familyName,
+                })
+              }}
+              className="bg-transparent shadow-none hover:bg-muted"
             >
               <Phone className="h-4 w-4 text-muted-foreground" />
             </Button>
@@ -109,37 +158,15 @@ export function TrialClassTableRow({
         </div>
       </TableCell>
 
-      <TableCell>
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5">
-            <p className="font-medium text-sm">{trial.familyName}</p>
-            {familyMembers.length > 1 ? (
-              <TrialClassFamilyPopover
-                trial={trial}
-                copiedKey={copiedKey}
-                onCopy={onCopy}
-              />
-            ) : null}
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-xs">
-            {maskPhone(primaryFamilyMember.phone)}
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              title="Sao chép số điện thoại"
-              onClick={(event) => {
-                event.stopPropagation()
-                onCopy(primaryFamilyMember.phone, `family-${trial.id}`)
-              }}
-            >
-              {copiedKey === `family-${trial.id}` ? (
-                <CheckCircle className="h-3 w-3 text-primary" />
-              ) : (
-                <Copy className="h-3 w-3" />
-              )}
-            </Button>
-          </div>
-        </div>
+      <TableCell onClick={(event) => event.stopPropagation()}>
+        <ContactCell
+          name={primaryFamilyMember.name}
+          phone={primaryFamilyMember.phone}
+          studentId={trial.customerId}
+          studentName={trial.studentName}
+          masked={true}
+          additionalContacts={familyMembers.length > 1 ? familyMembers : []}
+        />
       </TableCell>
 
       <TableCell>
@@ -161,17 +188,9 @@ export function TrialClassTableRow({
 
       <TableCell>
         {trial.sessions.length > 0 ? (
-          <div className="space-y-1">
-            {trial.sessions.length > 1 && (
-              <div className="flex items-center gap-1">
-                <p className="font-semibold text-[11px] text-primary uppercase">{trial.sessions.length} buổi học</p>
-                <TrialClassSessionsPopover sessions={trial.sessions} />
-              </div>
-            )}
-            <div className="space-y-0.5">
-              <p className="font-medium text-sm">{trial.sessions[0].sessionName}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">{trial.sessions[0].sessionId}</p>
-            </div>
+          <div className="space-y-0.5">
+            <p className="font-medium text-sm">{trial.sessions[0].sessionName}</p>
+            <p className="font-mono text-[10px] text-muted-foreground">{trial.sessions[0].sessionId}</p>
           </div>
         ) : (
           <span className="text-muted-foreground text-xs italic">—</span>
@@ -180,35 +199,42 @@ export function TrialClassTableRow({
 
       <TableCell>
         {trial.sessions.length > 0 ? (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              {trial.sessions.length > 1 && <span className="text-[10px] text-muted-foreground uppercase">Từ:</span>}
-              <span className="font-medium text-sm leading-none">{formatTrialTime(trial.sessions[0].trialDate)} {formatTrialDateShort(trial.sessions[0].trialDate)}</span>
-            </div>
-            {trial.sessions.length > 1 && (
-              <div className="flex items-center gap-1.5 border-t border-border/50 pt-1.5 mt-1.5">
-                <span className="text-[10px] text-muted-foreground uppercase">Đến:</span>
-                <span className="font-medium text-sm leading-none">{formatTrialTime(trial.sessions[trial.sessions.length - 1].trialDate)} {formatTrialDateShort(trial.sessions[trial.sessions.length - 1].trialDate)}</span>
-              </div>
-            )}
-          </div>
+          <span className="font-medium text-sm">{formatTrialTime(trial.sessions[0].trialDate)} {formatTrialDateShort(trial.sessions[0].trialDate)}</span>
+        ) : (
+          <span className="text-muted-foreground text-xs italic">—</span>
+        )}
+      </TableCell>
+
+      <TableCell onClick={(event) => event.stopPropagation()}>
+        {trial.status === 'completed' ? (
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-2.5 text-xs text-primary border-primary/20 hover:bg-primary/5"
+          >
+            <a href={`/app/trial_class/feedback/${trial.id}`} target="_blank" rel="noopener noreferrer">
+              <FileText className="h-3.5 w-3.5" />
+              Xem nhận xét
+            </a>
+          </Button>
+        ) : trial.sessions.length > 0 ? (
+          <span className="text-muted-foreground text-xs italic">Chờ nhận xét</span>
         ) : (
           <span className="text-muted-foreground text-xs italic">—</span>
         )}
       </TableCell>
 
       <TableCell>
-        <div className="flex items-center -space-x-2">
-          {[trial.creator, trial.owner].map((member) => (
-            <div
-              key={member}
-              title={member}
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-muted text-[10px] font-bold text-foreground"
-            >
-              {getInitials(member)}
-            </div>
-          ))}
-        </div>
+        {trial.sessions.length > 0 ? (
+          <PersonnelCell
+            items={[{ name: trial.owner }]}
+            size="sm"
+            mode="single"
+          />
+        ) : (
+          <span className="text-muted-foreground text-xs italic">—</span>
+        )}
       </TableCell>
 
       <TableCell>

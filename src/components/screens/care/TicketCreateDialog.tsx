@@ -11,7 +11,7 @@ import type { SupportTicket } from '@/mocks/tickets'
 interface TicketCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (ticket: Omit<SupportTicket, 'id' | 'createdDate' | 'interactionLogs'>) => void
+  onSubmit: (ticket: Omit<SupportTicket, 'id' | 'createdDate' | 'interactionLogs' | 'type'>) => void
 }
 
 export function TicketCreateDialog({

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { expect } from 'storybook/test'
 import { BranchSelect } from './ListControls'
 
-const BRANCHES = ['Chi nhánh Hà Nội', 'Chi nhánh Hồ Chí Minh', 'Chi nhánh Đà Nẵng']
+const BRANCHES = ['RinoEdu Nguyễn Tuân', 'RinoEdu Smart City', 'RinoEdu Linh Đàm']
 
 const meta = {
   component: BranchSelect,
@@ -33,10 +33,10 @@ export const Default: Story = {
 }
 
 export const Preselected: Story = {
-  args: { value: 'Chi nhánh Hà Nội', branches: BRANCHES, onValueChange: () => undefined },
-  render: () => <Demo initial="Chi nhánh Hà Nội" />,
+  args: { value: 'RinoEdu Nguyễn Tuân', branches: BRANCHES, onValueChange: () => undefined },
+  render: () => <Demo initial="RinoEdu Nguyễn Tuân" />,
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('combobox', { name: 'Trung tâm' })).toHaveTextContent('Chi nhánh Hà Nội')
+    await expect(canvas.getByRole('combobox', { name: 'Trung tâm' })).toHaveTextContent('RinoEdu Nguyễn Tuân')
   },
 }
 
@@ -62,5 +62,33 @@ export const CustomAllLabel: Story = {
       )
     }
     return <Custom />
+  },
+}
+
+export const Inline: Story = {
+  args: {
+    value: '',
+    branches: BRANCHES,
+    variant: 'inline',
+    includeAll: false,
+    onValueChange: () => undefined,
+  },
+  render: () => {
+    function InlineDemo() {
+      const [value, setValue] = useState('')
+      return (
+        <BranchSelect
+          value={value}
+          branches={BRANCHES}
+          variant="inline"
+          includeAll={false}
+          placeholder="Chọn cơ sở"
+          ariaLabel="Cơ sở"
+          onValueChange={setValue}
+          className="h-9 min-w-52 border-solid"
+        />
+      )
+    }
+    return <InlineDemo />
   },
 }

@@ -130,17 +130,3 @@ tags: [persona, stakeholder, owner, decision-maker]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"⓪ Tôi không cần biết Sale chốt từng đơn thế nào. Tôi cần biết hôm nay chuỗi của mình đang chảy đúng hướng hay không — chỉ trong 30 giây."*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Persona này là **người ra quyết định**, không phải user thường xuyên — màn hình ưu tiên trải nghiệm "đọc nhanh".
-- Mọi US thuộc `CAP-RPT` mà không trả về dữ liệu toàn chuỗi → không phù hợp Owner.
-- Bất kỳ tính năng "ẩn để Owner xem" → vi phạm `[POLICY-IAM-02]` Default Deny. Owner có quyền không phải vì là Owner mà vì có Role Active đầy đủ.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** đặt PII thật của Founder vào file này.
-- **KHÔNG** suy đoán trải nghiệm dùng Mobile của Owner — cần khảo sát thực tế.
-- **KHÔNG** tạo CAP riêng "Dashboard Owner" — Owner chỉ là 1 trong nhiều người dùng `CAP-RPT`.
-- **KHÔNG** chấp nhận quote ⓪ thay cho phỏng vấn thật. Khi có phỏng vấn, gỡ ⓪.

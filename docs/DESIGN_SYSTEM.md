@@ -1,6 +1,6 @@
 # RinoEdu Design System
 
-> **Phiên bản:** 1.1  
+> **Phiên bản:** 1.2  
 > **Vị trí:** Ngang hàng `ENTERPRISE_STANDARDS.md` — là "hiến pháp" của mặt giao diện.  
 > **Đối tượng:** AI Agent, Developer, Designer, QA.  
 > **Tiêu chuẩn tham chiếu:**
@@ -701,3 +701,84 @@ Mỗi screen mới hoặc cập nhật PHẢI pass checklist trước khi merge:
 - [ ] Import qua barrel `@/components/{shared,controls,data-table,filters,layout}`
 - [ ] File component ≤ 300 dòng
 - [ ] `npx tsc --noEmit` exit 0 và `npx eslint` exit 0
+
+---
+
+## 12. Notification Patterns (Thông báo In-App)
+
+> **Tiêu chuẩn tham chiếu:** US-NOTIF-01 · BF-NOTIF-01 · BF-NOTIF-02 · CAP-NOTIFICATION
+> **Mục tiêu:** Đảm bảo thông báo trong ứng dụng nhất quán về giao diện, tương tác, và khả năng tiếp cận.
+
+### 12.1. Bell Icon + Badge
+
+| Thành phần | Spec | Ví dụ |
+|------------|------|-------|
+| Icon | Bell từ lucide-react, kích thước h-5 w-5 | Trong HeaderBar |
+| Badge | Rounded full, bg-destructive, text-destructive-foreground | Trên góc phải Bell |
+| Badge content | Số unread, tối đa "99+" | 3 → "3", 150 → "99+" |
+| Ẩn badge | Khi unread = 0 | Không hiển thị badge |
+| Padding badge | absolute -right-0.5 -top-0.5 | Vị trí overlap Bell |
+
+**Quy tắc:**
+- `[N-BELL-1]` Badge luôn hiển thị số unread thực tế từ store. KHÔNG hardcode.
+- `[N-BELL-2]` Tooltip/aria-label = "Thông báo" cho accessibility.
+
+### 12.2. Notification Panel
+
+| Thành phần | Spec | Ví dụ |
+|------------|------|-------|
+| Width | w-80 (320px) | Đủ rộng cho title + message |
+| Max height | max-h-[360px] overflow-y-auto | Cuộn khi > 5 items |
+| Header | Tiêu đề "Thông báo" + nút "Đánh dấu tất cả đã đọc" | Border-bottom phân cách |
+| Filter | SegmentedControl 5 tabs: All, System, Workflow, Reminder, Alert | Mỗi tab có số lượng |
+| Empty state | Icon Bell mờ + text "Chưa có thông báo nào" | Centered, py-8 |
+
+**Quy tắc:**
+- `[N-PANEL-1]` Panel mở khi click Bell, đóng khi click ngoài. Tuân thủ shadcn DropdownMenu.
+- `[N-PANEL-2]` SegmentedControl từ @/components/controls — KHÔNG tự viết inline.
+- `[N-PANEL-3]` Danh sách sắp xếp theo timestamp giảm dần — mới nhất trên cùng.
+
+### 12.3. Notification Item
+
+| Thành phần | Spec | Ví dụ |
+|------------|------|-------|
+| Layout | Flex row: Icon + Content + Time | Gap 3 (12px) |
+| Category icon | h-4 w-4, text-muted-foreground | System=Settings, Workflow=ArrowRight, Reminder=Clock, Alert=AlertTriangle |
+| Title | Line-clamp-2, text-sm | Unread: font-semibold; Read: font-normal text-muted-foreground |
+| Message | Line-clamp-1, text-xs, text-muted-foreground | Optional, dưới title |
+| Time | Relative time, text-[11px], text-muted-foreground | "5 phút trước", "2 giờ trước" |
+| Read indicator | Border-l-4 (unread) hoặc border-l (read) | Unread: border-l-primary; Read: border-l-border |
+| Unread background | bg-primary/[0.03] | Nền nhẹ để phân biệt |
+| Priority dot | h-1.5 w-1.5 rounded-full | Cao: destructive, Trung bình: amber-400, Thấp: muted-foreground |
+
+**Quy tắc:**
+- `[N-ITEM-1]` Click item → mark as read → navigate tới targetRoute.
+- `[N-ITEM-2]` Hover → hiển thị actions: Mark as Read (✓), Delete (X).
+- `[N-ITEM-3]` Delete hành động phá hủy → yêu cầu ConfirmDialog trước khi xóa ([DS-P4]).
+- `[N-ITEM-4]` Relative time: < 60p → phút, < 24h → giờ, < 7d → ngày, ≥ 7d → date locale.
+
+### 12.4. Data Flow Architecture
+
+```
+[BF Event Trigger] → [Mock Generator] → [useUIStore.notifications]
+                                                  │
+                                      ┌───────────┼────────────┐
+                                      ▼           ▼            ▼
+                                Bell Badge   Notification   Panel
+                                                   Item
+```
+
+- Store: `useUIStore.notifications` (Zustand)
+- Mock data: `notificationHelpers.ts` — generator từ Bảng Routing Rules BF-NOTIF-02
+- Component: `<NotificationDropdown />` trong `@/components/layout`
+
+### 12.5. Compliance Checklist
+
+- [ ] Badge count reactive với store unread count
+- [ ] Item unread có border-l-4 border-primary + bg-primary/[0.03]
+- [ ] Item read có border-l border-border, font-normal, text-muted-foreground
+- [ ] Priority colors: destructive/amber-400/muted-foreground — KHÔNG hardcode
+- [ ] Relative time tính đúng theo mốc 60p/24h/7d
+- [ ] SegmentedControl từ @/components/controls
+- [ ] Empty state có icon + text centered
+- [ ] Delete action có ConfirmDialog ([DS-P4])

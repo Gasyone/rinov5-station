@@ -1,42 +1,52 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { BookOpen, ChevronLeft, ChevronRight, Clock, MapPin, Users, Repeat, CalendarClock } from 'lucide-react'
-import {
-  BranchSelect,
-  ExpandableSearch,
-  FilterIconButton,
-  IconActionButton,
-  SegmentedControl,
-} from '@/components/controls'
-import { FilterSheetPanel, type FilterSection } from '@/components/filters'
-import { Button } from '@/components/ui/button'
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { toast } from 'sonner'
-import { getMockClassSessions, getMockEventSessions } from '@/mocks/calendarSchedule'
-import { getBookingTests, type BookingTest } from '@/mocks/bookingTests'
-import { readTrialClasses } from '@/components/screens/trial-class/trialClassHelpers'
-import type { TrialClass } from '@/mocks/trialClasses'
+import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
 import { TrialClassDetailDialog } from '@/components/screens/trial-class/TrialClassDetailDialog'
+import { readTrialClasses } from '@/components/screens/trial-class/trialClassHelpers'
 import {
   getScheduleMonday,
   getScheduleWeekDays,
-  parseScheduleTime,
   ScheduleTimeGrid,
-  toScheduleDateKey,
-  type ScheduleGridItem,
 } from '@/components/screens/schedule/ScheduleTimeGrid'
-import { getStatusBadgeClass } from '@/lib/statusColors'
-import { cn } from '@/lib/utils'
+import { getBookingTests, type BookingTest, mockBookingTests } from '@/mocks/bookingTests'
+import { getMockClassSessions, getMockEventSessions } from '@/mocks/calendarSchedule'
+import type { TrialClass } from '@/mocks/trialClasses'
+import { MyScheduleCard } from './my-schedule/MyScheduleCard'
+import {
+  buildUnifiedSlots,
+  filterMyScheduleSlots,
+} from './my-schedule/myScheduleHelpers'
+import { MyScheduleToolbar } from './my-schedule/MyScheduleToolbar'
+import type { UnifiedSlot } from './my-schedule/myScheduleTypes'
 
-const VIEW_MODES = [
-  { value: 'day', label: 'Ngày' },
-  { value: 'week', label: 'Tuần' },
+const PERIOD_OPTIONS = [
+  { value: 'morning', label: 'Sáng' },
+  { value: 'afternoon', label: 'Chiều' },
+  { value: 'evening', label: 'Tối' },
 ]
 
-const FILTER_BUCKETS = [
-  { value: 'today', label: 'Hôm nay' },
-  { value: 'upcoming', label: 'Sắp diễn ra' },
+const getSessionPeriod = (timeLabel: string): 'morning' | 'afternoon' | 'evening' => {
+  if (!timeLabel) return 'morning'
+  const hour = parseInt(timeLabel.split(':')[0], 10)
+  if (isNaN(hour)) return 'morning'
+  if (hour < 12) return 'morning'
+  if (hour < 18) return 'afternoon'
+  return 'evening'
+}
+
+const STATUS_OPTIONS = [
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'confirmed', label: 'Đã booking' },
+  { value: 'cancelled', label: 'Đã hủy' },
+  { value: 'rescheduled', label: 'Đổi ngày' },
+]
+
+const TYPE_OPTIONS = [
+  { value: 'placement_test', label: 'Lịch Trải nghiệm' },
+  { value: 'class_session', label: 'Lịch học' },
 ]
 
 const SOURCE_FILTERS = [
@@ -44,52 +54,191 @@ const SOURCE_FILTERS = [
   { value: 'event', label: 'Sự kiện' },
 ]
 
-interface UnifiedSlot extends ScheduleGridItem {
-  id: string
-  scheduleType: 'class' | 'event'
-  title: string
-  subtitle: string
-  date: string
-  timeLabel: string
-  endTimeLabel: string
-  branch: string
-  personLabel: string
-  type: string;
-  typeLabel: string;
-  totalStudents?: number;
-  trialStudents?: number;
-  attendedStudents?: number;
-  isRecurring?: boolean;
-  substituteTeacher?: string;
-  status?: string;
-  dateBucket: 'past' | 'today' | 'upcoming';
-}
-
-const formatLabel = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString('vi-VN', opts)
-const lineClamp2 = 'overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]'
+const formatLabel = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('vi-VN', opts)
 
 export function MyScheduleScreen() {
   const allClass = useMemo(() => getMockClassSessions(), [])
-  const allEvent = useMemo(() => getMockEventSessions(), [])
+  const allEvent = useMemo(() => getMockEventSessions().filter((session) => session.type === 'placement_test'), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
   const [sourceFilters, setSourceFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
   const [typeFilters, setTypeFilters] = useState<string[]>([])
+  const [subjectFilters, setSubjectFilters] = useState<string[]>([])
+  const [roomFilters, setRoomFilters] = useState<string[]>([])
+  const [conditionFilters, setConditionFilters] = useState<string[]>([])
+
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('')
+  const [activeBranch, setActiveBranch] = useState('all')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getScheduleMonday(new Date()))
-
-  // Modal states
-  const [detailBookingId, setDetailBookingId] = useState('')
   const [detailBooking, setDetailBooking] = useState<BookingTest | null>(null)
-  
-  const [detailTrialId, setDetailTrialId] = useState('')
   const [detailTrial, setDetailTrial] = useState<TrialClass | null>(null)
-  
   const [detailNote, setDetailNote] = useState('')
   const [copiedKey, setCopiedKey] = useState('')
+
+  const today = useMemo(() => {
+    const value = new Date()
+    value.setHours(0, 0, 0, 0)
+    return value
+  }, [])
+
+  const slots = useMemo<UnifiedSlot[]>(() => {
+    return filterMyScheduleSlots(buildUnifiedSlots(allClass, allEvent), {
+      activeBranch,
+      bucketFilters,
+      sourceFilters,
+      statusFilters,
+      typeFilters,
+      search,
+      today,
+      subjectFilters,
+      roomFilters,
+      conditionFilters,
+    })
+  }, [
+    activeBranch, allClass, allEvent, bucketFilters, search, sourceFilters, statusFilters, 
+    typeFilters, today, subjectFilters, roomFilters, conditionFilters
+  ])
+
+  const branches = useMemo(
+    () => [...new Set([...allClass.map((session) => session.branch), ...allEvent.map((session) => session.branch)])],
+    [allClass, allEvent]
+  )
+
+  const allSubjects = useMemo(() => {
+    const subjects = [
+      ...allClass.map((s) => s.subject),
+      ...allEvent.map((s) => s.subject),
+      ...mockBookingTests.map((b) => b.program),
+    ].filter(Boolean) as string[]
+    return [...new Set(subjects)].sort()
+  }, [allClass, allEvent])
+
+  const allRooms = useMemo(() => {
+    const rooms = [
+      ...allClass.map((s) => s.schoolRoom),
+      ...mockBookingTests.map((b) => b.room),
+      ...mockBookingTests.map((b) => b.classroom),
+    ].filter(Boolean) as string[]
+    return [...new Set(rooms)].sort()
+  }, [allClass])
+
+  const getAssociatedBookingTest = (slot: UnifiedSlot) => {
+    if (slot.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === 'E0007')
+    if (slot.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === 'E0001')
+    if (slot.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === 'E0006')
+    const seed = slot.title.charCodeAt(0) + slot.title.length
+    const bookingIdx = seed % mockBookingTests.length
+    return mockBookingTests[bookingIdx]
+  }
+
+  const activeFilterCount = (
+    bucketFilters.length + sourceFilters.length + statusFilters.length + typeFilters.length +
+    subjectFilters.length + roomFilters.length + conditionFilters.length
+  )
+  
+  const titleDate = viewMode === 'day'
+    ? formatLabel(selectedDate, { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+    : `${formatLabel(getScheduleWeekDays(selectedDate)[0], { day: '2-digit', month: 'long' })} - ${formatLabel(getScheduleWeekDays(selectedDate)[6], { day: '2-digit', month: 'short', year: 'numeric' })}`
+
+  const filterGroups = useMemo<FilterGroupConfig[]>(
+    () => [
+      createFilterGroup({
+        id: 'buckets',
+        options: PERIOD_OPTIONS,
+        selectedValues: bucketFilters,
+        getOptionCount: (period) => slots.filter((slot) => getSessionPeriod(slot.timeLabel) === period).length,
+      }),
+      createFilterGroup({
+        id: 'sources',
+        title: 'Nguồn lịch',
+        options: SOURCE_FILTERS,
+        selectedValues: sourceFilters,
+      }),
+      createFilterGroup({
+        id: 'statuses',
+        options: STATUS_OPTIONS,
+        selectedValues: statusFilters,
+        getOptionCount: (status) => slots.filter((slot) => {
+          if (status === 'confirmed') {
+            return slot.status === 'confirmed' || slot.status === 'scheduled'
+          }
+          if (status === 'cancelled') {
+            return slot.status === 'cancelled' || slot.status === undefined
+          }
+          return slot.status === status
+        }).length,
+      }),
+      createFilterGroup({
+        id: 'types',
+        title: 'Loại lịch',
+        options: TYPE_OPTIONS,
+        selectedValues: typeFilters,
+        getOptionCount: (type) => slots.filter((slot) => {
+          if (type === 'class_session') {
+            return slot.type === 'class_session' || slot.type === 'supplementary' || slot.type === 'planned'
+          }
+          return slot.type === type
+        }).length,
+      }),
+      createFilterGroup({
+        id: 'subjectFilters',
+        title: 'Môn học & Chương trình',
+        options: allSubjects,
+        selectedValues: subjectFilters,
+        getOptionCount: (subject) => slots.filter((slot) => {
+          if (slot.scheduleType === 'class') return slot.subject === subject
+          const booking = getAssociatedBookingTest(slot)
+          return slot.subject === subject || (booking && booking.program === subject)
+        }).length,
+      }),
+      createFilterGroup({
+        id: 'roomFilters',
+        title: 'Phòng học & Vị trí',
+        options: allRooms,
+        selectedValues: roomFilters,
+        getOptionCount: (room) => slots.filter((slot) => {
+          if (slot.scheduleType === 'class') return slot.schoolRoom === room
+          const booking = getAssociatedBookingTest(slot)
+          return (booking && booking.room === room) || (booking && booking.classroom === room)
+        }).length,
+      }),
+      createFilterGroup({
+        id: 'conditionFilters',
+        title: 'Điều kiện đặc biệt',
+        options: [
+          {
+            value: 'trial',
+            label: 'Có học viên học thử',
+            count: slots.filter((slot) => slot.scheduleType === 'class' && (slot.trialStudents || 0) > 0).length,
+          },
+          {
+            value: 'substitute',
+            label: 'Lớp dạy thay',
+            count: slots.filter((slot) => slot.scheduleType === 'class' && slot.substituteTeacher).length,
+          },
+          {
+            value: 'opening',
+            label: 'Lớp khai giảng',
+            count: slots.filter((slot) => slot.scheduleType === 'class' && slot.isOpeningDay).length,
+          },
+          {
+            value: 'attended',
+            label: 'Đã điểm danh (Lớp)',
+            count: slots.filter((slot) => slot.scheduleType === 'class' && slot.attendedStudents !== undefined).length,
+          },
+          {
+            value: 'capacity',
+            label: 'Sĩ số lớn (từ 15 HS)',
+            count: slots.filter((slot) => slot.scheduleType === 'class' && (slot.totalStudents || 0) >= 15).length,
+          },
+        ],
+        selectedValues: conditionFilters,
+      }),
+    ],
+    [bucketFilters, sourceFilters, statusFilters, typeFilters, slots, allSubjects, allRooms, subjectFilters, roomFilters, conditionFilters]
+  )
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text).catch(() => {})
@@ -100,238 +249,98 @@ export function MyScheduleScreen() {
 
   const handleSlotClick = (slot: UnifiedSlot) => {
     if (slot.scheduleType === 'event' && slot.type === 'placement_test') {
-      const allBookings = getBookingTests()
-      // Fallback to the first mock item for demo purposes since IDs don't perfectly align
-      const booking = allBookings.find(b => b.id === slot.id) || allBookings[0]
-      if (booking) {
-        setDetailBooking(booking)
-        setDetailBookingId(booking.id)
-      }
-    } else if (slot.scheduleType === 'class' && (slot.subtitle.toLowerCase().includes('trial') || slot.typeLabel.toLowerCase().includes('trải nghiệm'))) {
-      const allTrials = readTrialClasses().trials
-      const trial = allTrials.find(t => t.id === slot.id) || allTrials[0]
-      if (trial) {
-        setDetailTrial(trial)
-        setDetailTrialId(trial.id)
-      }
-    } else {
-      toast.info('Tính năng đang phát triển cho loại lịch này.')
+      const booking = getBookingTests().find((item) => item.id === slot.id) || getBookingTests()[0]
+      if (booking) setDetailBooking(booking)
+      return
     }
+
+    if (slot.scheduleType === 'class' && (slot.subtitle.toLowerCase().includes('trial') || slot.typeLabel.toLowerCase().includes('trải nghiệm'))) {
+      const trial = readTrialClasses().trials.find((item) => item.id === slot.id) || readTrialClasses().trials[0]
+      if (trial) setDetailTrial(trial)
+      return
+    }
+
+    toast.info('Tính năng đang phát triển cho loại lịch này.')
   }
 
-  const today = useMemo(() => {
-    const value = new Date()
-    value.setHours(0, 0, 0, 0)
-    return value
-  }, [])
-
-  const slots = useMemo<UnifiedSlot[]>(() => {
-    const merged: UnifiedSlot[] = [
-      ...allClass.map((session) => ({
-        id: session.id,
-        scheduleType: 'class' as const,
-        title: session.title,
-        subtitle: session.className,
-        date: session.date,
-        timeLabel: session.timeLabel,
-        endTimeLabel: session.endTimeLabel,
-        branch: session.branch,
-        personLabel: session.teacher,
-        type: session.type,
-        typeLabel: session.typeLabel,
-        totalStudents: session.totalStudents,
-        trialStudents: session.trialStudents,
-        attendedStudents: session.attendedStudents,
-        isRecurring: session.isRecurring,
-        substituteTeacher: session.substituteTeacher,
-        status: session.status,
-        dateBucket: session.dateBucket,
-        startMin: parseScheduleTime(session.timeLabel),
-      })),
-      ...allEvent.map((session) => ({
-        id: session.id,
-        scheduleType: 'event' as const,
-        title: session.title,
-        subtitle: session.location,
-        date: session.date,
-        timeLabel: session.timeLabel,
-        endTimeLabel: session.endTimeLabel,
-        branch: session.branch,
-        personLabel: session.organizer,
-        type: session.type,
-        typeLabel: session.typeLabel,
-        isRecurring: session.isRecurring,
-        status: session.status,
-        dateBucket: session.dateBucket,
-        startMin: parseScheduleTime(session.timeLabel),
-      })),
-    ]
-
-    return merged
-      .filter((slot) => {
-        if (activeBranch && activeBranch !== 'all' && slot.branch !== activeBranch) return false
-        if (bucketFilters.length > 0) {
-          const slotDate = new Date(slot.date)
-          slotDate.setHours(0, 0, 0, 0)
-          const matchesToday = bucketFilters.includes('today') && slot.date === toScheduleDateKey(today)
-          const matchesUpcoming = bucketFilters.includes('upcoming') && slotDate > today
-          if (!matchesToday && !matchesUpcoming) return false
-        }
-        if (sourceFilters.length > 0 && !sourceFilters.includes(slot.scheduleType)) return false
-        if (statusFilters.length > 0 && !statusFilters.includes(slot.status as string)) return false
-        if (typeFilters.length > 0 && !typeFilters.includes(slot.type)) return false
-        if (search) {
-          const query = search.toLowerCase()
-          if (
-            !slot.title.toLowerCase().includes(query) &&
-            !slot.subtitle.toLowerCase().includes(query) &&
-            !slot.personLabel.toLowerCase().includes(query)
-          ) return false
-        }
-        return true
-      })
-      .sort((a, b) => a.startMin - b.startMin || a.date.localeCompare(b.date))
-  }, [activeBranch, allClass, allEvent, bucketFilters, search, sourceFilters, statusFilters, typeFilters, today])
-
-  const branches = useMemo(
-    () => [...new Set([...allClass.map((session) => session.branch), ...allEvent.map((session) => session.branch)])],
-    [allClass, allEvent]
-  )
-  const statuses = useMemo(() => [...new Map(slots.map((slot) => [slot.status, slot.status === 'confirmed' ? 'Đã xác nhận' : slot.status === 'pending' ? 'Chờ xác nhận' : slot.status === 'completed' ? 'Hoàn thành' : slot.status === 'rescheduled' ? 'Đổi ngày' : 'Đã hủy'])).entries()], [slots])
-  const types = useMemo(() => [...new Map(slots.map((slot) => [slot.type, slot.typeLabel])).entries()], [slots])
-
-  const activeFilterCount = bucketFilters.length + sourceFilters.length + statusFilters.length + typeFilters.length
-  const filterSections = useMemo<FilterSection[]>(
-    () => [
-      {
-        id: 'buckets',
-        title: 'Khoảng thời gian',
-        options: FILTER_BUCKETS.map((bucket) => ({
-          value: bucket.value,
-          label: bucket.label,
-          checked: bucketFilters.includes(bucket.value),
-        })),
-      },
-      {
-        id: 'sources',
-        title: 'Nguồn lịch',
-        options: SOURCE_FILTERS.map((source) => ({
-          value: source.value,
-          label: source.label,
-          checked: sourceFilters.includes(source.value),
-        })),
-      },
-      {
-        id: 'statuses',
-        title: 'Trạng thái',
-        options: statuses.filter(([value]) => value !== undefined).map(([value, label]) => ({
-          value: value as string,
-          label: label as string,
-          count: slots.filter((slot) => slot.status === value).length,
-          checked: statusFilters.includes(value as string),
-        })),
-      },
-      {
-        id: 'types',
-        title: 'Loại lịch',
-        options: types.map(([value, label]) => ({
-          value,
-          label,
-          count: slots.filter((slot) => slot.type === value).length,
-          checked: typeFilters.includes(value),
-        })),
-      },
-    ],
-    [bucketFilters, sourceFilters, statusFilters, typeFilters, statuses, types, slots]
-  )
-
-  const titleDate = viewMode === 'day'
-    ? formatLabel(selectedDate, { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
-    : `${formatLabel(getScheduleWeekDays(selectedDate)[0], { day: '2-digit', month: 'long' })} - ${formatLabel(getScheduleWeekDays(selectedDate)[6], { day: '2-digit', month: 'short', year: 'numeric' })}`
-
-  const navigate = (dir: number) => {
+  const navigate = (direction: number) => {
     const date = new Date(selectedDate)
-    date.setDate(date.getDate() + (viewMode === 'day' ? dir : dir * 7))
+    date.setDate(date.getDate() + (viewMode === 'day' ? direction : direction * 7))
     setSelectedDate(date)
+  }
+
+  const toggleFilterValue = (
+    value: string,
+    setter: Dispatch<SetStateAction<string[]>>
+  ) => {
+    setter((current) => (
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+    ))
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between lg:px-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedDate(viewMode === 'day' ? new Date() : getScheduleMonday(new Date()))}>
-            Hôm nay
-          </Button>
-          <div className="flex items-center gap-0.5">
-            <IconActionButton icon={ChevronLeft} label="Trước" onClick={() => navigate(-1)} className="size-7" />
-            <IconActionButton icon={ChevronRight} label="Sau" onClick={() => navigate(1)} className="size-7" />
-          </div>
-          <h2 className="text-sm font-semibold">{titleDate}</h2>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <SegmentedControl
-            value={viewMode}
-            options={VIEW_MODES.map((mode) => ({ value: mode.value as 'day' | 'week', label: mode.label }))}
-            onValueChange={setViewMode}
-          />
-          <BranchSelect
-            value={activeBranch}
-            branches={branches}
-            onValueChange={setActiveBranch}
-            allLabel="Tất cả trung tâm"
-            ariaLabel="Trung tâm"
-            className="h-8 min-w-48"
-          />
-          <ExpandableSearch
-            value={search}
-            onValueChange={setSearch}
-            label="Tìm lịch của tôi"
-            placeholder="Tìm lịch..."
-            inputClassName="sm:w-72"
-          />
-          <FilterIconButton count={activeFilterCount} label="Lọc lịch của tôi" onClick={() => setIsFilterOpen(true)} />
-        </div>
-      </div>
+      <MyScheduleToolbar
+        viewMode={viewMode}
+        titleDate={titleDate}
+        branches={branches}
+        activeBranch={activeBranch}
+        search={search}
+        activeFilterCount={activeFilterCount}
+        onViewModeChange={(value) => {
+          setViewMode(value)
+          if (value === 'day') {
+            setSelectedDate(new Date())
+          } else {
+            setSelectedDate(getScheduleMonday(selectedDate))
+          }
+        }}
+        onBranchChange={setActiveBranch}
+        onSearchChange={setSearch}
+        onToday={() => setSelectedDate(viewMode === 'day' ? new Date() : getScheduleMonday(new Date()))}
+        onNavigate={navigate}
+        onFilterOpen={() => setIsFilterOpen(true)}
+      />
 
       <ScheduleTimeGrid
         items={slots}
         days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
         today={today}
-        renderItem={(slot) => <UnifiedCard slot={slot} compact onClick={() => handleSlotClick(slot)} />}
+        overlapLayout="columns"
+        renderItem={(slot, context) => (
+          <MyScheduleCard
+            slot={slot}
+            compact
+            isOverlapped={context.isOverlapped}
+            showTime={false}
+            onClick={() => handleSlotClick(slot)}
+          />
+        )}
       />
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Bộ lọc lịch của tôi"
         description="Lọc lịch theo thời gian và nguồn lịch."
-        sections={filterSections}
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
-          if (sectionId === 'buckets') {
-            setBucketFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          }
-          if (sectionId === 'sources') {
-            setSourceFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'statuses') {
-            setStatusFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'types') {
-            setTypeFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          }
+          if (sectionId === 'buckets') toggleFilterValue(value, setBucketFilters)
+          if (sectionId === 'sources') toggleFilterValue(value, setSourceFilters)
+          if (sectionId === 'statuses') toggleFilterValue(value, setStatusFilters)
+          if (sectionId === 'types') toggleFilterValue(value, setTypeFilters)
+          if (sectionId === 'subjectFilters') toggleFilterValue(value, setSubjectFilters)
+          if (sectionId === 'roomFilters') toggleFilterValue(value, setRoomFilters)
+          if (sectionId === 'conditionFilters') toggleFilterValue(value, setConditionFilters)
         }}
         onClearAll={() => {
           setBucketFilters([])
           setSourceFilters([])
           setStatusFilters([])
           setTypeFilters([])
+          setSubjectFilters([])
+          setRoomFilters([])
+          setConditionFilters([])
         }}
       />
 
@@ -341,9 +350,7 @@ export function MyScheduleScreen() {
         copiedKey={copiedKey}
         onOpenChange={(open) => { if (!open) setDetailBooking(null) }}
         onUpdateBooking={(id, updater) => {
-          if (detailBooking && detailBooking.id === id) {
-            setDetailBooking(updater(detailBooking))
-          }
+          if (detailBooking && detailBooking.id === id) setDetailBooking(updater(detailBooking))
           toast.success('Đã cập nhật (Demo)')
         }}
         onOpenAssessment={() => toast.info('Mở form đánh giá')}
@@ -362,96 +369,47 @@ export function MyScheduleScreen() {
         onOpenChange={(open) => { if (!open) setDetailTrial(null) }}
         onCopy={handleCopy}
         copiedKey={copiedKey}
-        onAssign={() => toast.info('Ghép lớp học thử')}
+
         onRequestReschedule={() => toast.info('Yêu cầu đổi lịch')}
         onUpdateTrial={(id, updater) => {
-          if (detailTrial && detailTrial.id === id) {
-            setDetailTrial(updater(detailTrial))
-          }
+          if (detailTrial && detailTrial.id === id) setDetailTrial(updater(detailTrial))
           toast.success('Đã cập nhật')
         }}
       />
-    </div>
-  )
-}
 
-function UnifiedCard({ slot, compact, onClick }: { slot: UnifiedSlot; compact?: boolean; onClick?: () => void }) {
-  const isClass = slot.scheduleType === 'class'
-  const initials = getInitial(slot.personLabel)
-  const substituteInitials = slot.substituteTeacher ? getInitial(slot.substituteTeacher) : ''
-  
-  const isCancelled = slot.status === 'cancelled'
-  const isRescheduled = slot.status === 'rescheduled'
-  
-  let bgClass = 'bg-card hover:bg-accent/60'
-  if (isCancelled) {
-    bgClass = 'bg-zinc-50 dark:bg-zinc-900/50 opacity-75 hover:bg-zinc-100'
-  } else if (slot.dateBucket === 'past') {
-    bgClass = 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50'
-  } else if (slot.dateBucket === 'upcoming') {
-    bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50'
-  }
-
-  return (
-    <div 
-      className={cn('group flex min-h-[64px] flex-col overflow-hidden rounded-md text-left shadow-sm transition', compact && 'h-full p-2', bgClass, onClick && 'cursor-pointer')}
-      onClick={onClick}
-    >
-      <div className={compact ? '' : 'p-3'}>
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <div className={cn('flex items-center gap-1 font-bold text-primary', compact ? 'text-[10px]' : 'text-[11px]', isCancelled && "text-muted-foreground")}>
-            {isRescheduled ? (
-              <CalendarClock className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5', "text-amber-600 dark:text-amber-500")} />
-            ) : (
-              <Clock className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
-            )}
-            {slot.timeLabel} - {slot.endTimeLabel}
-            {slot.isRecurring && <Repeat className={cn(compact ? 'h-3 w-3' : 'h-3.5 w-3.5', "text-muted-foreground ml-0.5")} />}
+      {/* Chú giải màu sắc footer */}
+      <div className="border-t border-border/40 bg-muted/20 px-4 py-2.5 lg:px-6">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground/80">Chú giải màu sắc:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-white border border-border dark:bg-zinc-800" />
+            <span>Buổi học hôm nay</span>
           </div>
-          <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 font-semibold', compact ? 'text-[7px]' : 'text-[8px]', getStatusBadgeClass(slot.type))}>
-            {slot.typeLabel}
-          </span>
-        </div>
-        <h4 className={cn('font-bold leading-tight', compact ? `text-[10px] ${lineClamp2}` : 'truncate text-[12px]', isCancelled && 'line-through text-muted-foreground')}>
-          {slot.title}
-        </h4>
-        <div className={cn('mt-1 text-muted-foreground', compact ? 'text-[9px]' : 'space-y-1 text-[10px]')}>
-          <div className="flex items-center gap-1">
-            {isClass ? <BookOpen className={compact ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0"} /> : <MapPin className={compact ? "h-3 w-3 shrink-0" : "h-3.5 w-3.5 shrink-0"} />}
-            <span className="truncate">{slot.subtitle}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-sky-500 border border-sky-600 dark:bg-sky-400" />
+            <span className="font-medium text-sky-600 dark:text-sky-400">Buổi học sắp diễn ra</span>
           </div>
-          <div className="flex items-center justify-between">
-            {!compact && isClass && slot.totalStudents !== undefined ? (
-              <div className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 shrink-0" />
-                <span>
-                  {slot.attendedStudents !== undefined 
-                    ? `${slot.attendedStudents}/${slot.totalStudents} HS (${slot.trialStudents} học thử)`
-                    : `${slot.totalStudents} HS (${slot.trialStudents} học thử)`}
-                </span>
-              </div>
-            ) : <div />}
-            {!compact && slot.substituteTeacher ? (
-              <div className="flex -space-x-1" title={`Dạy thay: ${slot.substituteTeacher} (Chính: ${slot.personLabel})`}>
-                <div className="relative z-0 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground opacity-60">
-                  {initials}
-                </div>
-                <div className="relative z-10 flex h-5 w-5 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-[9px] font-bold text-amber-700">
-                  {substituteInitials}
-                </div>
-              </div>
-            ) : !compact ? (
-              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground" title={slot.personLabel}>
-                {initials}
-              </div>
-            ) : null}
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-orange-500 border border-orange-600 dark:bg-orange-400" />
+            <span className="font-medium text-orange-600 dark:text-orange-400">Buổi học đã diễn ra</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-violet-500 border border-violet-600 dark:bg-violet-400" />
+            <span className="font-semibold text-violet-700 dark:text-violet-400">Buổi dạy thay</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-emerald-500 border border-emerald-600 dark:bg-emerald-400 shadow-sm animate-pulse" />
+            <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+              Ngày khai giảng (Lớp mới) 
+              <span className="inline-flex animate-pulse rounded bg-emerald-500 px-1.5 py-0.5 text-[8px] font-black uppercase text-emerald-950">KHAI GIẢNG</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-zinc-400 border border-zinc-50 dark:bg-zinc-600 opacity-75" />
+            <span className="line-through font-medium text-zinc-500 dark:text-zinc-400">Buổi học đã hủy</span>
           </div>
         </div>
       </div>
     </div>
   )
-}
-
-function getInitial(name: string) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
 }

@@ -22,13 +22,13 @@ interface BookingTestToolbarProps {
   schoolOptions: string[]
   baseForStatus: BookingTest[]
   activeFilterCount: number
-  isTeacherRole: boolean
+  isTeacherRole?: boolean
   onSubjectChange: (subject: BookingSubject) => void
   onSchoolChange: (school: string) => void
   onStatusChange: (status: StatusTileId) => void
   onSearchChange: (value: string) => void
   onOpenFilters: () => void
-  onCreateBooking: () => void
+  onCreateBooking?: () => void
 }
 
 export function BookingTestToolbar({
@@ -39,7 +39,7 @@ export function BookingTestToolbar({
   schoolOptions,
   baseForStatus,
   activeFilterCount,
-  isTeacherRole,
+  isTeacherRole = false,
   onSubjectChange,
   onSchoolChange,
   onStatusChange,
@@ -78,10 +78,8 @@ export function BookingTestToolbar({
           <BranchSelect
             value={activeSchool}
             branches={schoolOptions}
-            allLabel="Tất cả cơ sở"
-            ariaLabel="Cơ sở"
             onValueChange={onSchoolChange}
-            className="h-9 min-w-44 text-sm"
+            className="h-9 min-w-40 text-sm"
           />
         </div>
 
@@ -94,7 +92,7 @@ export function BookingTestToolbar({
             inputClassName="sm:w-64"
           />
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
-          {!isTeacherRole ? (
+          {!isTeacherRole && onCreateBooking ? (
             <Button size="sm" onClick={onCreateBooking}>
               <Plus className="h-4 w-4" />
               Tạo lịch test

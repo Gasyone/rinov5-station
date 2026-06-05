@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,8 @@ export interface FilterSection {
   options: FilterOption[]
   emptyMessage?: string
   defaultOpen?: boolean
+  searchable?: boolean
+  scrollable?: boolean
 }
 
 interface FilterSheetPanelProps {
@@ -35,7 +37,9 @@ interface FilterSheetPanelProps {
   onOpenChange: (open: boolean) => void
   onToggle: (sectionId: string, value: string) => void
   onClearAll: () => void
+  onClearSection?: (sectionId: string) => void
   onApply?: () => void
+  children?: React.ReactNode
 }
 
 export function FilterSheetPanel({
@@ -48,7 +52,9 @@ export function FilterSheetPanel({
   onOpenChange,
   onToggle,
   onClearAll,
+  onClearSection,
   onApply,
+  children,
 }: FilterSheetPanelProps) {
   const selectedCount = sections.reduce(
     (total, section) => total + section.options.filter((option) => option.checked).length,
@@ -69,11 +75,13 @@ export function FilterSheetPanel({
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4">
+          {children}
           {sections.map((section) => (
             <FilterSectionBlock
               key={section.id}
               section={section}
               onToggle={(value) => onToggle(section.id, value)}
+              onClearSection={onClearSection ? () => onClearSection(section.id) : undefined}
             />
           ))}
         </div>
@@ -98,15 +106,36 @@ export function FilterSheetPanel({
 function FilterSectionBlock({
   section,
   onToggle,
+  onClearSection,
 }: {
   section: FilterSection
   onToggle: (value: string) => void
+  onClearSection?: () => void
 }) {
   const [open, setOpen] = useState(section.defaultOpen !== false)
+  const [searchQuery, setSearchQuery] = useState('')
   const selectedOptions = section.options.filter((option) => option.checked)
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen)
+    if (!isOpen) {
+      setSearchQuery('')
+    }
+  }
+
+  const isSearchable = section.searchable === true
+  const isScrollable = section.scrollable === true
+
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery) return section.options
+    const q = searchQuery.toLowerCase()
+    return section.options.filter((opt) =>
+      opt.label.toLowerCase().includes(q)
+    )
+  }, [section.options, searchQuery])
+
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="border-b border-border py-4 last:border-b-0">
+    <Collapsible open={open} onOpenChange={handleOpenChange} className="border-b border-border py-4 last:border-b-0">
       <CollapsibleTrigger asChild>
         <Button
           type="button"
@@ -123,9 +152,24 @@ function FilterSectionBlock({
               </Badge>
             ) : null}
           </span>
-          <ChevronDown
-            className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open ? '' : '-rotate-90')}
-          />
+          <div className="flex items-center gap-2 shrink-0">
+            {selectedOptions.length > 0 && onClearSection && (
+              <span
+                role="button"
+                tabIndex={0}
+                className="text-[10px] font-semibold text-muted-foreground hover:text-foreground px-1"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onClearSection()
+                }}
+              >
+                Tắt lọc
+              </span>
+            )}
+            <ChevronDown
+              className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open ? '' : '-rotate-90')}
+            />
+          </div>
         </Button>
       </CollapsibleTrigger>
 
@@ -134,25 +178,39 @@ function FilterSectionBlock({
       ) : null}
 
       <CollapsibleContent>
-        <div className="mt-3 space-y-2 px-2">
-          {section.options.length > 0 ? (
-            section.options.map((option) => (
-              <label
-                key={option.value}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-accent"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <Checkbox checked={option.checked} onCheckedChange={() => onToggle(option.value)} />
-                  <span className="truncate text-sm font-medium">{option.label}</span>
-                </span>
-                {typeof option.count === 'number' ? (
-                  <span className="font-mono text-xs text-muted-foreground">{option.count}</span>
-                ) : null}
-              </label>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">{section.emptyMessage ?? 'Không có tùy chọn.'}</p>
+        <div className="mt-3 px-2">
+          {isSearchable && (
+            <div className="mb-2">
+              <input
+                type="text"
+                placeholder={`Tìm ${section.title.toLowerCase()}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-8 px-2.5 rounded-md border border-input bg-transparent text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
           )}
+
+          <div className={cn("space-y-1.5", isScrollable && "max-h-48 overflow-y-auto pr-1 select-none scrollbar-thin")}>
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-accent"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Checkbox checked={option.checked} onCheckedChange={() => onToggle(option.value)} />
+                    <span className="truncate text-sm font-medium">{option.label}</span>
+                  </span>
+                  {typeof option.count === 'number' ? (
+                    <span className="font-mono text-xs text-muted-foreground">{option.count}</span>
+                  ) : null}
+                </label>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground py-2 text-center">Không tìm thấy tùy chọn.</p>
+            )}
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>

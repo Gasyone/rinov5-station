@@ -199,8 +199,6 @@ export function CalendarEventScheduleScreen() {
             value={activeBranch}
             branches={branches}
             onValueChange={setActiveBranch}
-            allLabel="Tất cả trung tâm"
-            ariaLabel="Trung tâm"
             className="h-8 min-w-48"
           />
           <ExpandableSearch

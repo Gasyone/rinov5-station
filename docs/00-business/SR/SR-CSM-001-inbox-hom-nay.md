@@ -131,16 +131,3 @@ tags: [sr, csm, care, inbox]
 |-----------|------|------------------|-----------|---------|
 | v0.1 | 2026-05-19 | (AI Agent) | Draft | Tạo từ JTBD #1 của PERSONA-CSM |
 | v1.0 | ⓪ TBD | CSM thật + BM | Approved | Cần phỏng vấn CSM |
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Inbox này KHÔNG phải CAP riêng — là 1 view aggregate của `CAP-CARE` + tín hiệu từ `CAP-OPS`.
-- Performance là tính năng — debounce + virtualized list nếu > 100 items.
-- 5 filter (at-risk / sắp hết hạn / vắng 3 buổi / ticket / mới) phải dùng chung 1 cấu trúc bảng (`DESIGN_SYSTEM.md` §4.2).
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** tạo 5 màn hình riêng cho 5 filter — gộp về 1 với SegmentedControl.
-- **KHÔNG** cho CSM thấy HV ngoài scope (vi phạm `[POLICY-IAM-04]` ACL).
-- **KHÔNG** auto-trigger gọi điện hoặc gửi tin nhắn tự động — luôn cần CSM confirm.

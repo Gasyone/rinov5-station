@@ -34,23 +34,23 @@ export interface NavigationGroup {
 }
 
 export const navigationGroups: NavigationGroup[] = [
-  {
-    id: 'group_dashboard',
-    label: 'Dashboard',
-    icon: Home,
-    items: [
-      { id: 'dashboard', label: 'Dashboard', href: '/app/dashboard' },
-    ],
-  },
+//   {
+//     id: 'group_dashboard',
+//     label: 'Dashboard',
+//     icon: Home,
+//     items: [
+//       { id: 'dashboard', label: 'Dashboard', href: '/app/dashboard' },
+//     ],
+//   },
   {
     id: 'group_calendar',
     label: 'Lịch biểu',
     icon: CalendarDays,
     items: [
-      { id: 'calendar_class_schedule', label: 'Lịch lớp học', href: '/app/calendar_class_schedule' },
+      { id: 'calendar_class_schedule', label: 'Lịch học', href: '/app/calendar_class_schedule' },
       { id: 'calendar_event_schedule', label: 'Lịch sự kiện', href: '/app/calendar_event_schedule' },
       { id: 'my_schedule', label: 'Lịch của tôi', href: '/app/my_schedule' },
-      { id: 'work_registration', label: 'Đăng ký lịch làm việc', href: '/app/work_registration' },
+      { id: 'work_registration', label: 'Đăng ký lịch', href: '/app/work_registration' },
     ],
   },
   {
@@ -80,7 +80,7 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Tuyển sinh',
     icon: GraduationCap,
     items: [
-      { id: 'booking_test', label: 'Đặt lịch test', href: '/app/booking_test' },
+      { id: 'booking_test', label: 'Kiểm tra/Trải nghiệm', href: '/app/booking_test' },
       { id: 'trial_class', label: 'Lớp học thử', href: '/app/trial_class' },
       { id: 'event_management_new', label: 'Quản lý sự kiện', href: '/app/event_management_new' },
     ],
@@ -100,23 +100,13 @@ export const navigationGroups: NavigationGroup[] = [
   },
   {
     id: 'group_class_management',
-    label: 'Quản lý lớp học',
+    label: 'Vận hành lớp học',
     icon: GraduationCap,
     items: [
       { id: 'classes', label: 'Lớp học', href: '/app/classes' },
       { id: 'students', label: 'Học viên', href: '/app/students' },
-      { id: 'teachers', label: 'Giáo viên', href: '/app/teachers' },
       { id: 'leave_reserve', label: 'Bảo lưu & Chuyển lớp', href: '/app/leave_reserve' },
-    ],
-  },
-  {
-    id: 'group_session_management',
-    label: 'Quản lý buổi học',
-    icon: CalendarDays,
-    items: [
-      { id: 'class_sessions', label: 'Buổi học', href: '/app/class_sessions' },
       { id: 'attendance', label: 'Điểm danh', href: '/app/attendance' },
-      { id: 'session_feedback', label: 'Nhận xét', href: '/app/session_feedback' },
     ],
   },
   {
@@ -130,30 +120,22 @@ export const navigationGroups: NavigationGroup[] = [
     id: 'group_care',
     label: 'Chăm sóc',
     icon: MessageSquare,
-    hiddenInSidebar: true,
     items: [
-      { id: 'student_care_new', label: 'Chăm sóc học viên mới', href: '/app/student_care_new', hiddenInSidebar: true },
-      { id: 'care_schedule', label: 'Lịch chăm sóc', href: '/app/care_schedule', hiddenInSidebar: true },
+
+      { id: 'student_operations_alert', label: 'Theo dõi vận hành', href: '/app/student_operations_alert' },
+      { id: 'renewal', label: 'Tái phí học viên', href: '/app/renewal' },
       { id: 'today_care', label: 'Phiếu chăm sóc', href: '/app/today_care' },
-      { id: 'new_student_care', label: 'Học viên mới', href: '/app/new_student_care', hiddenInSidebar: true },
-      { id: 'at_risk_care', label: 'Có nguy cơ', href: '/app/at_risk_care', hiddenInSidebar: true },
-      { id: 'expiring_soon_care', label: 'Sắp hết hạn', href: '/app/expiring_soon_care', hiddenInSidebar: true },
-      { id: 'renewal', label: 'Gia hạn', href: '/app/renewal', hiddenInSidebar: true },
-      { id: 'overdue_care', label: 'Quá hạn', href: '/app/overdue_care', hiddenInSidebar: true },
-      { id: 'special_care', label: 'Chăm sóc đặc biệt', href: '/app/special_care', hiddenInSidebar: true },
-      { id: 'care_event', label: 'Sự kiện chăm sóc', href: '/app/care_event', hiddenInSidebar: true },
+      { id: 'care_schedule', label: 'Lịch hẹn chăm sóc', href: '/app/care_schedule' },
       { id: 'care_rule_engine', label: 'Quy tắc chăm sóc', href: '/app/care_rule_engine' },
     ],
   },
   {
     id: 'group_quality',
-    label: 'Chất lượng',
+    label: 'Quản lý chất lượng',
     icon: ShieldCheck,
-    hiddenInSidebar: true,
     items: [
-      { id: 'teacher_qc', label: 'Quản lý giáo viên', href: '/app/teacher_qc' },
-      { id: 'facility_checklist', label: 'Kiểm tra cơ sở', href: '/app/facility_checklist' },
-      { id: 'quality_issues', label: 'Vấn đề chất lượng', href: '/app/quality_issues' },
+      { id: 'qc_check', label: 'Kiểm tra chất lượng', href: '/app/qc_check' },
+      { id: 'qc_remediation', label: 'Khắc phục', href: '/app/qc_remediation' },
     ],
   },
   {
@@ -225,6 +207,48 @@ export const navigationGroups: NavigationGroup[] = [
       { id: 'users', label: 'Người dùng', href: '/app/users' },
       { id: 'devices', label: 'Thiết bị', href: '/app/devices', hiddenInSidebar: true },
       { id: 'permissions', label: 'Phân quyền', href: '/app/permissions' },
+    ],
+  },
+  {
+    id: 'group_calendar_v2',
+    label: 'Lịch biểu v2',
+    icon: CalendarDays,
+    items: [
+      { id: 'calendar_class_schedule_v2', label: 'Lịch học', href: '/app/calendar_class_schedule_v2' },
+      { id: 'calendar_event_schedule_v2', label: 'Lịch sự kiện', href: '/app/calendar_event_schedule_v2' },
+      { id: 'my_schedule_v2', label: 'Lịch của tôi', href: '/app/my_schedule_v2' },
+      { id: 'work_registration_v2', label: 'Đăng ký lịch', href: '/app/work_registration_v2' },
+    ],
+  },
+  {
+    id: 'group_enrollment_v2',
+    label: 'Tuyển sinh v2',
+    icon: GraduationCap,
+    items: [
+      { id: 'booking_test_v2', label: 'Kiểm tra/ Trải nghiệm', href: '/app/booking_test_v2' },
+      { id: 'trial_class_v2', label: 'Lớp học thử', href: '/app/trial_class_v2' },
+      { id: 'event_management_new_v2', label: 'Quản lý sự kiện', href: '/app/event_management_new_v2' },
+    ],
+  },
+  {
+    id: 'group_class_management_v2',
+    label: 'Vận hành lớp học v2',
+    icon: GraduationCap,
+    items: [
+      { id: 'classes_v2', label: 'Lớp học', href: '/app/classes_v2' },
+      { id: 'students_v2', label: 'Học viên', href: '/app/students_v2' },
+      { id: 'teachers_v2', label: 'Giáo viên', href: '/app/teachers_v2' },
+      { id: 'leave_reserve_v2', label: 'Bảo lưu & Chuyển lớp', href: '/app/leave_reserve_v2' },
+    ],
+  },
+  {
+    id: 'group_session_management_v2',
+    label: 'Quản lý buổi học v2',
+    icon: CalendarDays,
+    items: [
+      { id: 'class_sessions_v2', label: 'Buổi học', href: '/app/class_sessions_v2' },
+      { id: 'attendance_v2', label: 'Điểm danh', href: '/app/attendance_v2' },
+      { id: 'session_feedback_v2', label: 'Nhận xét', href: '/app/session_feedback_v2' },
     ],
   },
 ]

@@ -11,17 +11,14 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog'
-import { InlineSelect } from '@/components/controls'
 import { ConfirmDialog } from '@/components/shared'
-import { TEST_TYPE_OPTIONS } from './bookingTestConstants'
 import { Form2025Section } from './Form2025Section'
-import { EnglishAssessmentOldForm } from './EnglishAssessmentOldForm'
 import { type BookingTest } from '@/mocks/bookingTests'
 import {
   getBookingResultHref,
   hasBookingAssessmentResult,
 } from './bookingTestAssessmentStorage'
-import type { AssessmentDraft, AssessmentTab } from './bookingTestTypes'
+import type { AssessmentDraft } from './bookingTestTypes'
 
 interface BookingTestAssessmentDialogProps {
   booking: BookingTest | null
@@ -103,14 +100,22 @@ export function BookingTestAssessmentDialog({
               {/* Row 1: Avatar + Title/Name + Meta + Close */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background text-base font-bold text-muted-foreground shadow-sm border border-solid">
-                    {booking.childName?.charAt(0) || '?'}
-                  </div>
+                  {booking.avatar ? (
+                    <img
+                      src={booking.avatar}
+                      alt={booking.childName}
+                      className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm border border-border"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20">
+                      {booking.childName?.charAt(0) || '?'}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <DialogTitle className="text-base font-bold leading-tight">English Assessment Form</DialogTitle>
                     <DialogDescription className="text-sm truncate">
                       {booking.childName}
-                      <span className="ml-2 text-muted-foreground">· N/A</span>
+                      <span className="ml-2 text-muted-foreground">· {booking.dob ? `Ngày sinh: ${booking.dob}` : 'N/A'}</span>
                     </DialogDescription>
                   </div>
                 </div>
@@ -135,76 +140,26 @@ export function BookingTestAssessmentDialog({
                   </DialogClose>
                 </div>
               </div>
-
-              {/* Row 2: Tabs (text-only) + Test Type selector */}
-              <div className="mt-2 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-none shrink-0">
-                  {(['form2025', 'oldForm'] as AssessmentTab[]).map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      className={`relative px-3 py-1.5 text-sm font-semibold transition-colors shrink-0 whitespace-nowrap ${
-                        draft.selectedTab === tab
-                          ? 'text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() =>
-                        onDraftChange((current: AssessmentDraft) => ({ ...current, selectedTab: tab }))
-                      }
-                    >
-                      {tab === 'form2025' ? 'Form 2025' : 'Form cũ'}
-                      {draft.selectedTab === tab && (
-                        <span className="absolute inset-x-1 -bottom-[7px] h-0.5 rounded-full bg-foreground" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="w-56 shrink-0">
-                  <InlineSelect
-                    value={draft.testType}
-                    disabled={isReadOnly}
-                    ariaLabel="Loại bài test"
-                    options={TEST_TYPE_OPTIONS}
-                    onValueChange={(value) =>
-                      onDraftChange((current: AssessmentDraft) => ({
-                        ...current,
-                        testType: value as AssessmentDraft['testType'],
-                      }))
-                    }
-                    className="h-8 border-solid text-xs shadow-xs"
-                  />
-                </div>
-              </div>
             </div>
 
             {/* Scrollable Body */}
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
               {isReadOnly ? (
                 <div className="mb-4 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                  Kết quả đã chấm đang ở chế độ chỉ xem. Bấm Chỉnh sửa đánh giá để cập nhật lại.
+                  Kết quả hiện ở chế độ chỉ xem. Bấm Chỉnh sửa đánh giá để cập nhật lại.
                 </div>
               ) : null}
               {isEditMode && hasResult ? (
                 <div className="mb-4 rounded-lg border bg-background px-4 py-3 text-sm text-muted-foreground">
-                  Bạn đang cập nhật lại kết quả đã chấm. Hãy lưu khi chắc chắn thay đổi là đúng.
+                  Bạn đang cập nhật lại kết quả hiện có. Hãy lưu khi chắc chắn thay đổi là đúng.
                 </div>
               ) : null}
-              {draft.selectedTab === 'form2025' ? (
-                <Form2025Section
-                  draft={draft}
-                  resultHref={resultHref}
-                  readOnly={isReadOnly}
-                  onDraftChange={onDraftChange}
-                />
-              ) : (
-                <EnglishAssessmentOldForm
-                  draft={draft}
-                  resultHref={resultHref}
-                  readOnly={isReadOnly}
-                  onDraftChange={onDraftChange}
-                />
-              )}
+              <Form2025Section
+                draft={draft}
+                resultHref={resultHref}
+                readOnly={isReadOnly}
+                onDraftChange={onDraftChange}
+              />
             </div>
 
             {/* Footer */}

@@ -10,6 +10,11 @@ tags: [tag1, list]
 # US-XXX-YY-ZZ: [Tên Màn Hình Danh Sách]
 
 > **Tham chiếu:** BF-XXX-YY · `[POLICY-XXX-YY]` · Giao diện Mẫu §4.2 (Danh sách)
+> **Đường dẫn màn hình & Trạng thái liên quan:**
+> - `[Đường dẫn URL 1]` -> Trạng thái: `[Trạng thái A]`
+> - `[Đường dẫn URL 2]` -> Trạng thái: `[Trạng thái B]`
+
+
 
 ## 1. Yêu cầu Người dùng (User Story)
 **Là một** [Vai trò], **tôi muốn** [Hành động], **để** [Mục đích].
@@ -75,41 +80,37 @@ Chuẩn `[20, 50, 100]` bản ghi/trang.
 
 ---
 
-## 4. Xử lý Ngoại lệ
-| # | Tình huống | Cách xử lý |
-|---|-----------|-----------|
-| 4.1 | Không có dữ liệu | Hiện thông báo "Chưa có dữ liệu". |
-| 4.2 | Tìm kiếm không có kết quả | Hiện thông báo "Không tìm thấy", xóa nội dung bảng. |
+## 4. Mô tả chi tiết (Màn hình & Luồng)
+
+*(Mô tả dễ hiểu, đầy đủ bằng ngôn ngữ tự nhiên để đội ngũ kỹ thuật có thể hiểu rõ và thực hiện được đúng yêu cầu. Không quy định định dạng cụ thể, người viết chủ động chọn cách thể hiện phù hợp như văn bản tự do, các bước thực hiện step-by-step, mã giả nghiệp vụ, hoặc vẽ sơ đồ luồng hoạt động...)*
+
+### 4.1. Mô tả Màn hình
+- [Người viết mô tả chi tiết bố cục trực quan, các khối thông tin hiển thị, và cách chúng bố trí trên giao diện để đội ngũ kỹ thuật dễ dàng hình dung.]
+
+### 4.2. Luồng Hoạt động (Workflow)
+- [Người viết mô tả luồng đi của nghiệp vụ, hành trình của người dùng từ khi bắt đầu cho đến khi hoàn thành các tác vụ trên màn hình danh sách này.]
 
 ---
 
-## 5. Chỉ dẫn cho AI Agent & Lập trình viên (Business Architecture)
+## 5. Corner Cases (Trường hợp góc cạnh & Đặc biệt)
 
-- Phải kiểm tra phân quyền (Authorization) trước khi cho phép xem dữ liệu và thực hiện thao tác (VD: Tạo mới, Xóa).
-- Nhãn trạng thái bắt buộc lấy màu từ bộ quy tắc trạng thái chuẩn của doanh nghiệp (Design System).
-- Bố cục danh sách phải đáp ứng đúng chuẩn trải nghiệm người dùng (Thanh công cụ -> Lọc trạng thái -> Bảng dữ liệu -> Phân trang).
+*(Bắt buộc phải liệt kê đầy đủ các trường hợp đặc biệt, ngoại lệ hoặc lỗi có thể xảy ra trong thực tế. Trong quá trình xây dựng, nếu phát sinh thêm bất kỳ trường hợp đặc biệt nào, người viết và lập trình viên phải lập tức cập nhật bổ sung vào bảng này.)*
 
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** thêm cột, trường lọc, hoặc nút bấm ngoài danh sách đã được định nghĩa ở mục 3.
-- **KHÔNG** bỏ qua các trạng thái Trống / Đang tải / Lỗi (Empty, Loading, Error state) trong thiết kế luồng.
-
----
-
-## 6. Kế hoạch Tự kiểm tra (Self-Verification)
-
-| # | Hạng mục | Cách kiểm tra | Tiêu chuẩn Đạt |
-|---|----------|---------------|-----------------|
-| V-01 | Tìm kiếm | Nhập từ khóa | Bảng lọc đúng, không phân biệt hoa/thường. |
-| V-02 | Trạng thái trống | Xóa hết dữ liệu | Hiện thông báo "Chưa có dữ liệu", không lỗi giao diện. |
-| V-03 | Nhãn trạng thái | Kiểm tra bằng mắt | Không có màu gán cố định. |
-| V-04 | Phân trang | Chuyển trang | Dữ liệu hiển thị đúng theo trang đã chọn. |
+| # | Tình huống đặc biệt (Corner Case) | Cách xử lý chi tiết | Ghi chú / Trạng thái |
+|---|----------------------------------|---------------------|----------------------|
+| 5.1 | Không có dữ liệu trong hệ thống | Hiển thị màn hình trống với thông điệp hướng dẫn rõ ràng. | Áp dụng mẫu EmptyState |
+| 5.2 | Tìm kiếm không trả về kết quả | Hiển thị bảng trống kèm thông báo không tìm thấy kết quả phù hợp. | |
+| 5.3 | Mất kết nối khi đang tải danh sách | Hiển thị thông báo lỗi kết nối và nút bấm để người dùng thử tải lại. | Áp dụng mẫu ErrorState |
+| 5.4 | Quyền hạn truy cập bị từ chối | Chặn hiển thị danh sách và chuyển hướng người dùng về giao diện thông báo lỗi quyền. | |
 
 ---
 
-## 7. Tiêu chí Nghiệm thu (SMART Acceptance Criteria)
+## 6. Tiêu chí Nghiệm thu (Acceptance Criteria)
 
-| # | Tiêu chí (Specific) | Cách đo (Measurable) | Kết quả mong đợi |
-|---|--------------------|-----------------------|-------------------|
-| AC-01 | Bố cục chuẩn | So với mẫu thiết kế §4.2 | Thanh công cụ → Khối trạng thái → Bảng → Phân trang. |
-| AC-02 | Tìm kiếm đúng | Nhập từ khóa | Chỉ hiện dòng khớp, không phân biệt hoa/thường. |
-| AC-03 | Nhãn đúng màu | Kiểm tra bằng mắt | Tất cả lấy màu từ hệ thống tập trung. |
+*(Liệt kê chi tiết các điều kiện xác định sản phẩm/tính năng được xem là hoàn thành. Viết dưới dạng danh sách gạch đầu dòng rõ ràng, cụ thể và dễ dàng kiểm thử.)*
+
+- **AC-1 (Bố cục chuẩn):** Giao diện hiển thị đầy đủ các vùng chức năng theo cấu trúc: Thanh công cụ phía trên → Khối trạng thái → Bảng danh sách chính → Bộ phân trang ở dưới cùng.
+- **AC-2 (Tìm kiếm chính xác):** Khi nhập từ khóa tìm kiếm, bảng chỉ hiển thị những bản ghi có trường thông tin trùng khớp, hỗ trợ tìm kiếm không phân biệt chữ hoa hay chữ thường.
+- **AC-3 (Nhãn trạng thái đồng bộ):** Màu sắc hiển thị của các trạng thái phải được lấy tập trung từ hệ thống định nghĩa màu của doanh nghiệp, không được gán màu cứng trực tiếp trên giao diện.
+- **AC-4 (Phân trang ổn định):** Việc chuyển đổi qua lại giữa các trang hoặc thay đổi số lượng bản ghi hiển thị trên mỗi trang phải đảm bảo tải và kết xuất chính xác tập dữ liệu tương ứng.
+

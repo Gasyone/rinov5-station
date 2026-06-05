@@ -1,5 +1,9 @@
 import { DashboardScreen } from '@/components/screens/DashboardScreen'
 
 export default function DashboardPage() {
-  return <DashboardScreen />
+  return (
+    <div className="h-full min-h-0">
+      <DashboardScreen />
+    </div>
+  )
 }

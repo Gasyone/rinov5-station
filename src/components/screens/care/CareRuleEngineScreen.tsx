@@ -21,6 +21,7 @@ export function CareRuleEngineScreen() {
       priority: 'high',
       active: true,
       conditionValue: '3',
+      unit: 'buổi'
     },
     {
       id: 'R-02',
@@ -30,16 +31,38 @@ export function CareRuleEngineScreen() {
       priority: 'medium',
       active: true,
       conditionValue: '7',
+      unit: 'ngày'
     },
     {
       id: 'R-03',
-      title: 'Tự động tạo Ticket nhắc hẹn Booking Test',
-      description: 'Khi học viên có lịch kiểm tra đầu vào nhưng không có mặt hoặc trễ quá 15 phút.',
-      category: 'Tuyển sinh (Admissions)',
+      title: 'Tự động dán nhãn C90B khi sắp hết buổi học',
+      description: 'Khi số buổi học còn lại của học viên bằng hoặc nhỏ hơn 5 buổi, tự động dán nhãn C90B và sinh phiếu chăm sóc gia hạn.',
+      category: 'Tái ký học phí (Renewal)',
       priority: 'high',
-      active: false,
-      conditionValue: '15',
+      active: true,
+      conditionValue: '5',
+      unit: 'buổi'
     },
+    {
+      id: 'R-04',
+      title: 'Cảnh báo hoàn thành BTVN thấp dưới ngưỡng yêu cầu',
+      description: 'Khi tỷ lệ hoàn thành BTVN trong tháng của học viên sụt giảm dưới 70%, tự động sinh phiếu để CSKH nhắc nhở phụ huynh.',
+      category: 'Học tập (Academic)',
+      priority: 'medium',
+      active: true,
+      conditionValue: '70',
+      unit: '%'
+    },
+    {
+      id: 'R-05',
+      title: 'Cảnh báo chuyên cần học tập yếu',
+      description: 'Khi tỷ lệ chuyên cần đi học thực tế của học viên giảm dưới 75%, tự động kích hoạt cảnh báo vận hành học tập.',
+      category: 'Chuyên cần (Attendance)',
+      priority: 'medium',
+      active: false,
+      conditionValue: '75',
+      unit: '%'
+    }
   ])
 
   const handleToggleRule = (id: string, val: boolean) => {
@@ -67,9 +90,13 @@ export function CareRuleEngineScreen() {
     }
   }
 
+  const handleSaveConfig = () => {
+    toast.success('Đã lưu toàn bộ cấu hình quy tắc sinh phiếu chăm sóc tự động!')
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <div className="border-b px-4 py-4 lg:px-6 flex items-center justify-between gap-4">
+      <div className="border-b px-4 py-4 lg:px-6 flex items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
             Quy tắc Chăm sóc Học viên tự động
@@ -78,7 +105,7 @@ export function CareRuleEngineScreen() {
             Thiết lập các điều kiện kích hoạt sinh phiếu hỗ trợ chăm sóc (Support Tickets) tự động cho CSM
           </p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={handleSaveConfig}>
           <Settings className="h-4 w-4 mr-1" /> Lưu cấu hình
         </Button>
       </div>
@@ -87,7 +114,7 @@ export function CareRuleEngineScreen() {
         <Panel title="Danh sách các quy tắc kích hoạt tự động">
           <div className="space-y-4">
             {rules.map((rule) => (
-              <Card key={rule.id} className="p-4 border hover:border-muted-foreground/30 transition-all">
+              <Card key={rule.id} className="p-4 border hover:border-muted-foreground/30 transition-all bg-card/50">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -99,14 +126,14 @@ export function CareRuleEngineScreen() {
                         {rule.category}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{rule.description}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{rule.description}</p>
                     
                     <div className="pt-2 flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
+                        <Clock className="h-3.5 w-3.5 text-primary" />
                         <span>Giá trị ngưỡng kích hoạt:</span>
                         <span className="font-semibold text-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
-                          {rule.conditionValue} {rule.id === 'R-01' ? 'buổi' : rule.id === 'R-02' ? 'ngày' : 'phút'}
+                          {rule.conditionValue} {rule.unit}
                         </span>
                       </div>
                     </div>

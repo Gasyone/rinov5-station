@@ -124,17 +124,3 @@ tags: [persona, stakeholder, teacher, class-operation]
 ## 10. Câu Trích Dẫn Đặc Trưng (Quote)
 
 > *"⓪ Sau buổi dạy tôi chỉ có 10 phút trước khi vào lớp tiếp theo. Form điểm danh dài 3 trang là tôi bỏ — sẽ làm cuối ngày, mà cuối ngày là quên."*
-
----
-
-## 11. Chỉ dẫn cho AI Agent & Lập trình viên
-
-- Đây là persona **mobile-friendly nhất** trong 5 persona — UI điểm danh / nhận xét phải tốt trên mobile (touch target ≥ 44px theo `[R3]`).
-- Phạm vi dữ liệu rất hẹp (lớp tôi dạy) — sai về Data Scope sẽ phá vỡ trải nghiệm.
-- Thời gian xử lý mỗi tác vụ là **ràng buộc cứng** — performance là tính năng.
-
-### ⛔ Hàng rào An toàn (Guardrails)
-- **KHÔNG** cho Teacher xem HV ngoài lớp được phân công (vi phạm `[POLICY-ORG-01]`).
-- **KHÔNG** giả định Teacher dùng được desktop trong giờ dạy — bắt buộc support mobile workflow.
-- **KHÔNG** tạo "Quản lý Học viên" CAP riêng cho Teacher — đó là 1 view của `CAP-OPS` với scope hẹp.
-- **KHÔNG** đẩy thông báo sản phẩm / chiến dịch tái phí cho Teacher — đó là việc của CSM/Sale.

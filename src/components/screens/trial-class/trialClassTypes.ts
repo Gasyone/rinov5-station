@@ -1,7 +1,7 @@
 import type { TrialClassStatus } from '@/mocks/trialClasses'
 
-/** Tile Id includes real statuses + virtual filters like 'unassigned' */
-export type StatusTileId = 'all' | TrialClassStatus | 'unassigned'
+/** Tile Id includes real statuses */
+export type StatusTileId = 'all' | TrialClassStatus
 
 export interface TrialSessionSelection {
   classId: string
@@ -14,7 +14,11 @@ export interface TrialSessionSelection {
 export interface TrialClassFilterState {
   programs: string[]
   creators: string[]
-  statuses: TrialClassStatus[]
+  statuses: string[]
+  subjects: string[]
+  owners: string[]
+  schools: string[]
+  weekdays: string[]
 }
 
 export interface CreateTrialClassForm {

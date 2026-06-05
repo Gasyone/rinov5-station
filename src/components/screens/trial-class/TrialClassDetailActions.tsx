@@ -1,34 +1,36 @@
 'use client'
 
-import { CalendarDays, Clock, XCircle } from 'lucide-react'
+import { CalendarDays, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { TrialClass, TrialClassStatus } from '@/mocks/trialClasses'
+import type { TrialClass } from '@/mocks/trialClasses'
 import type { AssignDialogMode } from './trialClassTypes'
 
 interface TrialClassDetailActionsProps {
   trial: TrialClass
-  onAssign: (mode: AssignDialogMode) => void
-  onOpenCancel: () => void
-  onOpenReschedule: () => void
-}
-
-function canCancelStatus(status: TrialClassStatus): boolean {
-  return !['cancelled', 'completed', 'no_show'].includes(status)
+  onAssign?: (mode: AssignDialogMode) => void
+  onApprove?: (id: string) => void
+  onReject?: (id: string) => void
 }
 
 export function TrialClassDetailActions({
   trial,
   onAssign,
-  onOpenCancel,
-  onOpenReschedule,
+  onApprove,
+  onReject,
 }: TrialClassDetailActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {canCancelStatus(trial.status) && (
-        <Button variant="destructive" onClick={onOpenCancel}>
-          <XCircle className="h-4 w-4" />
-          Hủy lịch
-        </Button>
+      {trial.status === 'pending_approval' && onApprove && onReject && (
+        <>
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => onApprove(trial.id)}>
+            <Check className="h-4 w-4" />
+            Chấp thuận ghép
+          </Button>
+          <Button variant="destructive" onClick={() => onReject(trial.id)}>
+            <X className="h-4 w-4" />
+            Từ chối ghép
+          </Button>
+        </>
       )}
       {trial.status === 'completed' && (
         <span className="text-xs text-muted-foreground">Đã hoàn thành</span>
@@ -39,22 +41,13 @@ export function TrialClassDetailActions({
       {trial.status === 'cancelled' && (
         <span className="text-xs text-muted-foreground">Đã hủy</span>
       )}
-      {(trial.status === 'pending_confirmation' || trial.status === 'reschedule' || trial.sessions.length === 0) && (
+      {trial.status === 'rejected' && (
+        <span className="text-xs text-muted-foreground">Bị từ chối ghép lớp</span>
+      )}
+      {trial.status === 'reschedule' && onAssign && (
         <Button variant="outline" onClick={() => onAssign({ mode: 'assign', trialId: trial.id })}>
           <CalendarDays className="h-4 w-4" />
-          {trial.status === 'reschedule' || trial.previousSession ? 'Ghép lại lớp' : 'Ghép lớp'}
-        </Button>
-      )}
-      {trial.status === 'confirmed' && (
-        <Button variant="outline" onClick={() => onAssign({ mode: 'reschedule', trialId: trial.id })}>
-          <Clock className="h-4 w-4" />
-          Đổi buổi
-        </Button>
-      )}
-      {(trial.status === 'confirmed' || trial.status === 'pending_confirmation') && (
-        <Button variant="outline" onClick={onOpenReschedule}>
-          <Clock className="h-4 w-4" />
-          Yêu cầu đổi lịch
+          Ghép lại lớp
         </Button>
       )}
     </div>

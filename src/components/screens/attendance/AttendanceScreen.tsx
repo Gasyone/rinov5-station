@@ -11,7 +11,7 @@ import type { AttendanceStatusId } from './attendanceTypes'
 export function AttendanceScreen() {
   const [activeStatus, setActiveStatus] = useState<AttendanceStatusId>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [branchFilter, setBranchFilter] = useState('')
+  const [branchFilter, setBranchFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
@@ -20,7 +20,7 @@ export function AttendanceScreen() {
     () =>
       getAttendanceRecords({
         search: searchQuery,
-        branch: branchFilter || undefined,
+        branch: branchFilter === 'all' || !branchFilter ? undefined : branchFilter,
         status: activeStatus === 'all' ? undefined : activeStatus,
       }),
     [searchQuery, branchFilter, activeStatus],

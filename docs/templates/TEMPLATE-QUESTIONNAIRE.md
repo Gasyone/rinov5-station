@@ -116,16 +116,3 @@ docs/00-business/ELICITATION/RESPONSES/RS-{QS-ID}-{YYYY-MM-DD}.md
 ```
 
 Dùng template `TEMPLATE-RESPONSE.md` (xem bên dưới).
-
----
-
-## 9. Chỉ dẫn cho AI Agent
-
-- AI có thể **sinh câu hỏi bổ sung** dựa trên context Persona/BR/SR hiện có.
-- AI **KHÔNG** tự trả lời thay Stakeholder — chỉ gợi ý đáp án để người hỏi chọn.
-- Khi có kết quả phỏng vấn (file RS-*), AI dùng nó để cập nhật Persona/BR/SR (gỡ ⓪, bổ sung data).
-
-### ⛔ Hàng rào An toàn
-- **KHÔNG** đặt câu hỏi dẫn dắt (leading question) — VD: "Bạn có đồng ý rằng X tốt không?"
-- **KHÔNG** hỏi quá 30 câu trong 1 buổi — gây mệt mỏi, chất lượng giảm.
-- **KHÔNG** ghi PII thật (SĐT, email cá nhân) vào file kết quả — dùng mã ẩn danh.

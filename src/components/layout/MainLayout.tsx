@@ -8,6 +8,7 @@ import { SidebarNav } from './SidebarNav'
 import { getNavigationGroupsForRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
+import { CallDialog } from '@/components/shared'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -54,7 +55,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="ui-main-canvas flex h-screen overflow-hidden font-sans bg-background">
+    <div className="ui-main-canvas flex overflow-hidden font-sans bg-background" style={{ height: 'var(--app-height, 100vh)' }}>
       <div className="relative flex h-full w-full flex-col bg-background">
         <HeaderBar
           onOpenMobileSidebar={() => setMobileNavOpen(true)}
@@ -75,12 +76,13 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             className="ui-main-canvas custom-scrollbar relative min-w-0 flex-1 overflow-hidden"
             onPointerDownCapture={handleContentPointerDown}
           >
-            <div className="h-full w-full overflow-auto">{children}</div>
+            <div className="h-full w-full overflow-hidden flex flex-col">{children}</div>
           </main>
         </div>
       </div>
 
       {isDev && DevPanel ? <DevPanel /> : null}
+      <CallDialog />
     </div>
   )
 }

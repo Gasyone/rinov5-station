@@ -11,6 +11,9 @@ export * from "./workRegistrations"
 export * from "./trialClasses"
 export * from "./leaveReserve"
 export * from "./tickets"
+export * from "./lmsRoadmaps"
+export * from "./systemConfig"
+
 
 export type { User as AuthUser } from "./users"
 export type { Student as MockStudent } from "./students"
@@ -26,9 +29,9 @@ export type { ClassSession, EventSession } from "./calendarSchedule"
 export { getMockClassSessions, getMockEventSessions } from "./calendarSchedule"
 
 export const BRANCHES = [
-  "Chi nhánh Hà Nội",
-  "Chi nhánh Hồ Chí Minh",
-  "Chi nhánh Đà Nẵng",
+  "RinoEdu Nguyễn Tuân",
+  "RinoEdu Smart City",
+  "RinoEdu Linh Đàm",
   "Toàn hệ thống",
 ]
 
