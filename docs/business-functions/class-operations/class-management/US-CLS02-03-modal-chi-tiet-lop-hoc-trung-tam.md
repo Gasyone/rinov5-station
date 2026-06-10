@@ -77,20 +77,25 @@ tags: [class, detail-modal, roster, learning-path, logs]
 
 ### 2.2. Ranh giới Nghiệp vụ & Luồng tương tác (Interactive Scope)
 
-Hộp thoại chi tiết lớp học đóng vai trò là một bảng điều khiển tích hợp trung tâm. Một số luồng tương tác nghiệp vụ được xử lý trực tiếp tại giao diện của hộp thoại, trong khi một số khác sẽ kích hoạt các hộp thoại nổi/phân hệ chuyên biệt ngoài ranh giới:
+Hộp thoại chi tiết lớp học đóng vai trò là một bảng điều khiển tích hợp trung tâm. Có sự phân định ranh giới rõ ràng về nghiệp vụ và luồng xử lý tương tác giữa phân hệ Quản lý lớp học (BF-CLS-02) và phân hệ Điều chỉnh lịch & Vận hành (BF-OPS-03):
 
-#### 1. Các luồng tương tác trực tiếp trên Hộp thoại (In Scope):
-- **Điều phối trạng thái lớp:** Bấm thay đổi trạng thái (Kích hoạt, Quay về nháp, Tạm nghỉ, Mở lại, Đóng lớp) trực tiếp trên thanh tiêu đề.
-- **Chỉnh sửa thông tin hành chính tĩnh:** Bấm nút "Chỉnh sửa" trên thanh tiêu đề để mở chế độ chỉnh sửa thông tin tại phân mục Tổng quan (Tên lớp, Giáo viên chủ nhiệm mặc định, Trợ giảng mặc định, Phòng học cố định, Ngày bắt đầu/ngày kết thúc dự kiến).
+#### 1. Phạm vi nghiệp vụ thuộc US-CLS02-03 (Phân hệ BF-CLS-02):
+Hộp thoại chi tiết lớp học chịu trách nhiệm về mặt cấu trúc giao diện khung (Detail Modal Container), hiển thị thông tin, ghi chép nhật ký tương tác và các tương tác cốt lõi liên quan đến quản lý danh sách học sinh cùng trạng thái vận hành của lớp:
+- **Điều phối trạng thái lớp (Header):** Hiển thị các nút điều hướng vòng đời (Kích hoạt, Quay về nháp, Tạm nghỉ, Mở lại, Đóng lớp).
 - **Quản lý danh sách học viên (Xóa khỏi danh sách):** Nhấp chọn "Xóa khỏi lớp" trực tiếp tại thẻ học sinh (Roster Card), kích hoạt hộp thoại xác nhận và cập nhật sĩ số.
-- **Cập nhật lịch học tuần cố định:** Thực hiện cập nhật lịch cố định trực tiếp tại phân mục Lịch học cố định.
-- **Điều phối buổi học lẻ (Buổi học thực tế):** Chỉ định giáo viên dạy thay lẻ, đổi phòng lẻ cho từng buổi, và tải lên giáo án/slide bài giảng thực tế cho buổi học đó.
 - **Ghi nhận ghi chú phản hồi:** Nhập nội dung và gửi ghi chú tương tác nội bộ tại thanh ghi chép bên phải.
 
-#### 2. Các luồng tương tác chuyển tiếp bên ngoài (Out of Scope):
+#### 2. Các luồng tương tác chuyển tiếp sang phân hệ Điều chỉnh lịch & Vận hành (BF-OPS-03):
+Mặc dù được tích hợp hiển thị ngay trong các tab của Hộp thoại chi tiết lớp học, các luồng tương tác cập nhật thông tin và điều chỉnh vận hành dưới đây về mặt nghiệp vụ sẽ thuộc ranh giới và tuân thủ các quy tắc đặc tả của phân hệ **BF-OPS-03**:
+- **Chỉnh sửa thông tin hành chính lớp học:** Việc bấm nút "Chỉnh sửa" trên tiêu đề để chỉnh sửa các trường tại phân mục *Tổng quan* (Tên lớp, Giáo viên chủ nhiệm mặc định, Trợ giảng mặc định, Phòng học cố định, Ngày bắt đầu/bế giảng dự kiến) thuộc phạm vi của [US-OPS03-01](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/scheduling/US-OPS03-01-cap-nhat-thong-tin-tong-quan.md).
+- **Cập nhật ca học tuần cố định:** Luồng chỉnh sửa lịch tuần cố định trực tiếp tại phân mục *Lịch học cố định* thuộc phạm vi của [US-OPS03-02](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/scheduling/US-OPS03-02-dieu-chinh-lich-hoc-co-dinh.md).
+- **Điều phối buổi học lẻ (dạy thay, đổi phòng lẻ, tài liệu):** Nghiệp vụ đổi giáo viên dạy thay, dời phòng lẻ, hoặc upload tài liệu bài giảng cho từng ca lẻ tại phân mục *Buổi học thực tế* thuộc phạm vi của [US-OPS03-03](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/scheduling/US-OPS03-03-dieu-chinh-chi-tiet-buoi-hoc-le.md).
+- **Đóng lớp & Giải phóng tài nguyên lịch (Khi bấm nút Đóng):** Nghiệp vụ thu hồi lịch tuần lặp lại và giải phóng phòng học, giáo viên phụ trách thuộc phạm vi của [US-OPS03-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/scheduling/US-OPS03-05-dong-lop-giai-phong-tai-nguyen.md).
+
+#### 3. Các luồng tương tác chuyển tiếp bên ngoài khác (Out of Scope):
 - **Thêm học viên mới vào lớp:** Bấm "+ Thêm học viên" tại phân mục Học viên sẽ kích hoạt một Hộp thoại nổi chọn học sinh xếp lớp (đặc tả tại US-CLS02-05). Luồng tìm kiếm và chọn học viên nằm ở hộp thoại đó.
 - **Thiết lập lộ trình bài giảng gốc:** Bấm "Thiết lập lộ trình" tại phân mục Lộ trình học tập sẽ chuyển đổi giao diện sang Wizard hướng dẫn thiết lập lộ trình giảng dạy mới (đặc tả tại US-CLS02-04).
-- **Điểm danh chuyên cần và nhận xét chi tiết buổi học:** Bấm "Xem chi tiết buổi học" tại phân mục Buổi học thực tế sẽ kích hoạt một Hộp thoại chi tiết buổi học độc lập để chấm điểm chuyên cần/nhận xét (thuộc phân hệ ghi nhận kết quả học tập).
+- **Điểm danh chuyên cần và nhận xét chi tiết buổi học:** Bấm "Xem chi tiết buổi học" tại phân mục Buổi học thực tế sẽ kích hoạt một Hộp thoại chi tiết buổi học độc lập để chấm điểm chuyên cần/nhận xét (thuộc phân hệ ghi nhận kết quả học tập - BF-CLS-05).
 - **Các nghiệp vụ đóng học phí, bảo lưu tài chính học phí:** Do phân hệ kế toán và chăm sóc khách hàng quản lý bên ngoài.
 
 ---
@@ -158,7 +163,7 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
 |---|---|---|---|
 | Bộ lọc trạng thái buổi | Hàng nút lọc nhanh | Trạng thái buổi học | Lọc danh sách buổi học thực tế (Tất cả, Đang học/Tiếp theo, Sắp tới, Đã học, Đổi lịch, Đã hủy). |
 | Thẻ buổi học thực tế | Khung danh sách dọc | Thông tin buổi học thực tế | Hiển thị 5 buổi học đang vận hành lấy lên từ hệ thống. Mỗi buổi học gồm số thứ tự buổi, thời gian học thực tế, phòng học thực tế, giáo viên giảng dạy thực tế. |
-| Chỉ thị thay thế lẻ | Chữ gạch ngang + Nhãn nổi bật | Giáo viên dạy thay, Phòng thay thế lẻ | Khi có thay đổi đột xuất lẻ cho buổi học: phòng học hoặc giáo viên mặc định bị gạch ngang mờ đi, hiển thị thay thế lẻ mới kèm theo ghi chú dạng cover (Ví dụ: "Dạng Cover: COVER 1A"). |
+| Chỉ thị thay thế lẻ | Chữ gạch quang + Nhãn nổi bật | Giáo viên dạy thay, Phòng thay thế lẻ | Khi có thay đổi đột xuất lẻ cho buổi học: phòng học hoặc giáo viên mặc định bị gạch ngang mờ đi, hiển thị thay thế lẻ mới kèm theo ghi chú dạng cover (Ví dụ: "Dạng Cover: COVER 1A"). |
 | Tài liệu đính kèm | Các liên kết | Slide bài giảng, file bài tập | Cho phép tải lên giáo án mới hoặc tải về các tài liệu học tập của buổi học lẻ đó. |
 | Thay đổi đột xuất | Các nút tác vụ nhanh | Gán dạy thay lẻ, Đổi phòng lẻ, Upload tài liệu | Giáo vụ có thể đổi nhanh giáo viên dạy thay hoặc phòng học lẻ cho buổi đó. Mỗi thay đổi lẻ đều được gửi về hệ thống ngoài đồng bộ và tự động ghi log vào Nhật ký hoạt động. |
 | Điểm danh và nhận xét | Nút màu nhấn | Nút "Xem chi tiết buổi học" | Nhấp chọn để mở hộp thoại điểm danh chuyên cần chi tiết và nhận xét học viên cho buổi học thực tế tương ứng. |
