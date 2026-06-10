@@ -123,14 +123,14 @@ tags: [class, detail-modal, roster, learning-path, logs]
 
 ### 3.2. Vùng chính bên trái (Hệ thống phân mục)
 
-Vùng chính bên trái hiển thị các tab menu ngang để chuyển đổi giữa các phân mục thông tin. Theo thiết kế ranh giới nghiệp vụ, phân mục Học viên và Lịch học cố định được đặc tả chi tiết dưới đây, các tab còn lại (Lộ trình học tập, Buổi học thực tế, Tổng quan) chỉ đóng vai trò là các tab menu điều phối chuyển đổi và nội dung chi tiết bên trong thuộc phân hệ quản lý bên ngoài.
+Vùng chính bên trái hiển thị các tab menu ngang để chuyển đổi giữa các phân mục thông tin. Theo thiết kế ranh giới nghiệp vụ, chỉ có phân mục Học viên (Roster) thuộc ranh giới đặc tả chi tiết của tài liệu này. Tất cả các phân mục còn lại (Lộ trình học tập, Buổi học thực tế, Lịch học cố định, Tổng quan) chỉ đóng vai trò là các tab menu điều phối chuyển đổi và nội dung chi tiết bên trong thuộc phạm vi quản lý của các phân hệ/User Story bên ngoài.
 
 #### Các Tab Menu chuyển đổi ở cột bên trái:
 1.  **Học viên (Roster):** Tab menu chuyển sang danh sách thẻ roster học viên thuộc lớp (đặc tả chi tiết nội dung tại Bảng 3.2a).
-2.  **Lộ trình học tập (Roadmap):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (dòng thời gian bài học, gán giáo trình) thuộc phạm vi phân hệ quản lý lộ trình học tập, không mô tả chi tiết tại đây.
-3.  **Buổi học thực tế (Sessions):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (danh sách buổi học vận hành lẻ, đổi phòng/giáo viên dạy thay lẻ) thuộc phạm vi phân hệ vận hành ca học lẻ, không mô tả chi tiết tại đây.
-4.  **Lịch học cố định (Schedule):** Tab menu chuyển sang khung hiển thị các ca học tuần cố định hàng tuần (đặc tả chi tiết nội dung tại Bảng 3.2b).
-5.  **Tổng quan (Overview):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (chỉnh sửa thông tin hành chính cơ bản của lớp) thuộc phạm vi phân hệ thông tin tĩnh của lớp học, không mô tả chi tiết tại đây.
+2.  **Lộ trình học tập (Roadmap):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (dòng thời gian bài học, gán giáo trình) thuộc phạm vi ngoài (không mô tả tại đây).
+3.  **Buổi học thực tế (Sessions):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (danh sách buổi học vận hành lẻ, đổi phòng/giáo viên dạy thay lẻ) thuộc phạm vi ngoài (không mô tả tại đây).
+4.  **Lịch học cố định (Schedule):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (chỉnh sửa ca học tuần cố định) thuộc phạm vi ngoài (không mô tả tại đây).
+5.  **Tổng quan (Overview):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (chỉnh sửa thông tin hành chính cơ bản của lớp) thuộc phạm vi ngoài (không mô tả tại đây).
 
 #### Bảng 3.2a: Phân mục Học viên
 | Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
@@ -145,12 +145,6 @@ Vùng chính bên trái hiển thị các tab menu ngang để chuyển đổi g
 | Ngày nhập học | Biểu tượng lịch + Văn bản | Ngày nhập học vào lớp | Định dạng: "Nhập học: DD/MM/YYYY" |
 | Ghi chú học sinh | Biểu tượng ghi chú + Chữ nghiêng mờ | Nội dung ghi chú học viên | Hiển thị tóm tắt ghi chú ở chân thẻ. Nhấp chọn vào dòng này để mở popover bong bóng thoại chứa đầy đủ nội dung ghi chú dài. |
 | Xóa khỏi lớp | Liên kết chữ màu đỏ (destructive) | Nút "Xóa khỏi lớp" | Chỉ hiển thị khi lớp chưa đóng và thẻ không bị mờ. Bấm chọn sẽ kích hoạt hộp thoại xác nhận hủy bỏ. Nếu xóa học viên cuối cùng của lớp Đang học, hệ thống tự động đổi trạng thái lớp sang Đã kết thúc và ghi nhật ký hoạt động. |
-
-#### Bảng 3.2b: Phân mục Lịch học cố định
-| Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
-|---|---|---|---|
-| Danh sách ca học tuần | Danh sách thông tin | Ngày trong tuần, Ca học, Phòng mặc định, Giáo viên | Hiển thị chi tiết ca học cố định lặp lại hàng tuần của lớp, kèm theo phòng mặc định và giáo viên phụ trách mặc định. |
-| Cập nhật lịch cố định | Nút màu trung tính | Nút "Cập nhật lịch học cố định" | Nhấp chọn để thực hiện điều chỉnh ca học cố định hàng tuần. Hệ thống kiểm tra trùng lịch phòng học (chặn tuyệt đối nếu trùng lịch lớp khác) và nhân sự (hiển thị thông tin trùng ca màu đỏ nhưng cho phép tự quyết định gán). |
 
 ---
 
