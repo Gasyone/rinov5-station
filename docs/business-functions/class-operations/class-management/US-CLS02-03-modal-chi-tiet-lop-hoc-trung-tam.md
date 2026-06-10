@@ -103,15 +103,34 @@ tags: [class, detail-modal, roster, learning-path, logs]
 | Trạng thái lớp | Nhãn màu chuẩn (Status Badge) | Trạng thái lớp | Hiển thị màu chuẩn: Nháp (Xám), Chờ khai giảng (Tím), Đang học (Xanh lá), Tạm nghỉ (Vàng cam). |
 | Thông tin địa điểm | Biểu tượng bản đồ + Văn bản | Chi nhánh & Phòng học cố định | Ví dụ: "RinoEdu Nguyễn Tuân - Phòng: A102" |
 | Khung chương trình | Biểu tượng sách + Văn bản | Cấp độ & Trình độ học thuật | Ví dụ: "Chương trình: Beginner - Trình độ: A1" |
-| Giáo viên chủ nhiệm | Ảnh đại diện viết tắt + Tên giáo viên | Giáo viên chủ nhiệm | Rê chuột vào ảnh đại diện/tên hiển thị bảng nổi chi tiết nhân sự (Personnel Hover Card) để xem số điện thoại và gọi/sao chép. |
+| Giáo viên chủ nhiệm | Ảnh đại diện viết tắt + Tên giáo viên | Giáo viên chủ nhiệm | Rê chuột vào ảnh đại diện/tên hiển thị Bảng nổi thông tin nhân sự (Personnel Hover Card - chi tiết tại Mục 3.4). |
 | Sĩ số roster | Số / Số [+Số học thử] kèm thanh đo tiến độ | Sĩ số thực tế / Sĩ số tối đa | Định dạng: `X/Y [+Z]`. Thanh tiến độ tự động đổi màu: Đỏ (>=90%), Vàng/Cam (70% - 89%), Đen/Xanh thông thường (<70%). |
-| Lịch học cố định | Danh sách các thứ và ca học | Lịch học cố định | Tổng hợp từ các ca học cố định trong tuần của lớp. |
+| Lịch học cố định | Danh sách các thứ và ca học kèm nút biểu tượng lịch | Lịch học cố định | Tổng hợp các ca cố định. Khi số lượng lịch vượt quá 2, hiển thị biểu tượng nút lịch (Calendar). Di chuột hoặc nhấp chọn nút này sẽ mở Hộp thông tin nổi (Popover - chi tiết tại Bảng 3.1c). |
 | Khai giảng - Bế giảng | Khoảng ngày tháng | Ngày bắt đầu - Ngày kết thúc dự kiến | |
 | Nhãn buổi học tiếp theo | Nhãn pill badge viền xanh dương | Buổi học kế tiếp | Hiển thị ngày học, ca học và phòng học thực tế của buổi học tiếp theo. |
 
+#### Bảng 3.1c: Hộp thông tin nổi Lịch học cố định (Schedule Slots Popover)
+| Thành phần | Loại hiển thị | Nội dung hiển thị | Logic tương tác / Ràng buộc |
+|---|---|---|---|
+| Tiêu đề hộp nổi | Chữ nhỏ in hoa đậm | "DANH SÁCH BUỔI HỌC (X)" | Trong đó X là tổng số ca học cố định hàng tuần của lớp. |
+| Danh sách buổi học | Khối cuộn dọc | Danh sách các dòng ca học | Cho phép cuộn dọc nếu số lượng ca học quá dài. |
+| Tên ca học / Thứ | Chữ đậm | Tên lớp học (Ví dụ: "IELTS Junior 1A") | Lấy tên lớp học hiện tại để hiển thị làm tiêu đề dòng. |
+| Chi tiết ca học | Chữ nhỏ mờ | Thứ trong tuần + Mã ca học cố định | Định dạng: "Thứ X • SESS-YYYY" (Mã ca học tự động sinh tăng dần từ 9901). |
+| Ngày và giờ bắt đầu | Chữ nhỏ bên phải | Ngày thực tế + Giờ bắt đầu | Ví dụ: "02/06 18:00" |
+| Thời gian kết thúc | Biểu tượng đồng hồ + Chữ nhỏ mờ | Giờ kết thúc ca học | Ví dụ: "18:00-19:30" (Giờ kết thúc: 19:30). |
+
+---
+
 ### 3.2. Vùng chính bên trái (Hệ thống phân mục)
 
-Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
+Vùng chính bên trái hiển thị các tab menu ngang để chuyển đổi giữa các phân mục thông tin. Theo thiết kế ranh giới nghiệp vụ, phân mục Học viên và Lịch học cố định được đặc tả chi tiết dưới đây, các tab còn lại (Lộ trình học tập, Buổi học thực tế, Tổng quan) chỉ đóng vai trò là các tab menu điều phối chuyển đổi và nội dung chi tiết bên trong thuộc phân hệ quản lý bên ngoài.
+
+#### Các Tab Menu chuyển đổi ở cột bên trái:
+1.  **Học viên (Roster):** Tab menu chuyển sang danh sách thẻ roster học viên thuộc lớp (đặc tả chi tiết nội dung tại Bảng 3.2a).
+2.  **Lộ trình học tập (Roadmap):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (dòng thời gian bài học, gán giáo trình) thuộc phạm vi phân hệ quản lý lộ trình học tập, không mô tả chi tiết tại đây.
+3.  **Buổi học thực tế (Sessions):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (danh sách buổi học vận hành lẻ, đổi phòng/giáo viên dạy thay lẻ) thuộc phạm vi phân hệ vận hành ca học lẻ, không mô tả chi tiết tại đây.
+4.  **Lịch học cố định (Schedule):** Tab menu chuyển sang khung hiển thị các ca học tuần cố định hàng tuần (đặc tả chi tiết nội dung tại Bảng 3.2b).
+5.  **Tổng quan (Overview):** Tab menu chuyển đổi. Nội dung chi tiết bên trong (chỉnh sửa thông tin hành chính cơ bản của lớp) thuộc phạm vi phân hệ thông tin tĩnh của lớp học, không mô tả chi tiết tại đây.
 
 #### Bảng 3.2a: Phân mục Học viên
 | Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
@@ -127,40 +146,13 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
 | Ghi chú học sinh | Biểu tượng ghi chú + Chữ nghiêng mờ | Nội dung ghi chú học viên | Hiển thị tóm tắt ghi chú ở chân thẻ. Nhấp chọn vào dòng này để mở popover bong bóng thoại chứa đầy đủ nội dung ghi chú dài. |
 | Xóa khỏi lớp | Liên kết chữ màu đỏ (destructive) | Nút "Xóa khỏi lớp" | Chỉ hiển thị khi lớp chưa đóng và thẻ không bị mờ. Bấm chọn sẽ kích hoạt hộp thoại xác nhận hủy bỏ. Nếu xóa học viên cuối cùng của lớp Đang học, hệ thống tự động đổi trạng thái lớp sang Đã kết thúc và ghi nhật ký hoạt động. |
 
-#### Bảng 3.2b: Phân mục Lộ trình học tập
-| Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
-|---|---|---|---|
-| Khung giáo trình | Tiêu đề văn bản | Tên giáo trình / Lộ trình | Hiển thị tên giáo trình gán cho lớp học. Hiển thị thông báo hướng dẫn thiết lập lộ trình nếu chưa được gán. |
-| Người cập nhật cuối | Văn bản chữ mờ | Lịch sử cập nhật lộ trình | Hiển thị thời gian và người thay đổi lộ trình gần nhất (Ví dụ: "Lộ trình được thay đổi vào..."). |
-| Thiết lập/Đổi lộ trình | Nút màu trung tính | Nút "Thiết lập lộ trình" | Nhấp chọn để mở bảng hướng dẫn thiết lập lộ trình giảng dạy mới (Roadmap Wizard) để điều chỉnh giáo trình áp dụng cho lớp. |
-| Buổi học lý thuyết tuyến tính | Dòng thời gian bài học | Danh sách bài giảng | Hiển thị danh sách tuyến tính bài giảng theo thứ tự buổi học gồm tiêu đề bài giảng, mô tả ngắn nội dung bài học, liên kết slide bài giảng và bài tập về nhà đính kèm. |
-
-#### Bảng 3.2c: Phân mục Buổi học thực tế
-| Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
-|---|---|---|---|
-| Bộ lọc trạng thái buổi | Hàng nút lọc nhanh | Trạng thái buổi học | Lọc danh sách buổi học thực tế (Tất cả, Đang học/Tiếp theo, Sắp tới, Đã học, Đổi lịch, Đã hủy). |
-| Thẻ buổi học thực tế | Khung danh sách dọc | Thông tin buổi học thực tế | Hiển thị 5 buổi học đang vận hành lấy lên từ hệ thống. Mỗi buổi học gồm số thứ tự buổi, thời gian học thực tế, phòng học thực tế, giáo viên giảng dạy thực tế. |
-| Chỉ thị thay thế lẻ | Chữ gạch quang + Nhãn nổi bật | Giáo viên dạy thay, Phòng thay thế lẻ | Khi có thay đổi đột xuất lẻ cho buổi học: phòng học hoặc giáo viên mặc định bị gạch ngang mờ đi, hiển thị thay thế lẻ mới kèm theo ghi chú dạng cover (Ví dụ: "Dạng Cover: COVER 1A"). |
-| Tài liệu đính kèm | Các liên kết | Slide bài giảng, file bài tập | Cho phép tải lên giáo án mới hoặc tải về các tài liệu học tập của buổi học lẻ đó. |
-| Thay đổi đột xuất | Các nút tác vụ nhanh | Gán dạy thay lẻ, Đổi phòng lẻ, Upload tài liệu | Giáo vụ có thể đổi nhanh giáo viên dạy thay hoặc phòng học lẻ cho buổi đó. Mỗi thay đổi lẻ đều được gửi về hệ thống ngoài đồng bộ và tự động ghi log vào Nhật ký hoạt động. |
-| Điểm danh và nhận xét | Nút màu nhấn | Nút "Xem chi tiết buổi học" | Nhấp chọn để mở hộp thoại điểm danh chuyên cần chi tiết và nhận xét học viên cho buổi học thực tế tương ứng. |
-
-#### Bảng 3.2d: Phân mục Lịch học cố định
+#### Bảng 3.2b: Phân mục Lịch học cố định
 | Thành phần | Loại hiển thị | Trường dữ liệu / Nút | Logic tương tác & Nghiệp vụ |
 |---|---|---|---|
 | Danh sách ca học tuần | Danh sách thông tin | Ngày trong tuần, Ca học, Phòng mặc định, Giáo viên | Hiển thị chi tiết ca học cố định lặp lại hàng tuần của lớp, kèm theo phòng mặc định và giáo viên phụ trách mặc định. |
 | Cập nhật lịch cố định | Nút màu trung tính | Nút "Cập nhật lịch học cố định" | Nhấp chọn để thực hiện điều chỉnh ca học cố định hàng tuần. Hệ thống kiểm tra trùng lịch phòng học (chặn tuyệt đối nếu trùng lịch lớp khác) và nhân sự (hiển thị thông tin trùng ca màu đỏ nhưng cho phép tự quyết định gán). |
 
-#### Bảng 3.2e: Phân mục Tổng quan
-| Thành phần | Loại hiển thị | Trường dữ liệu | Logic tương tác & Nghiệp vụ |
-|---|---|---|---|
-| Chi nhánh cơ sở | Chỉ xem / Ô chọn | Chi nhánh quản lý lớp | Chỉ xem ở chế độ thông thường. Chế độ chỉnh sửa cho phép chọn chi nhánh thuộc quyền quản lý. |
-| Giáo viên chủ nhiệm | Chỉ xem / Ô chọn nhân sự | Giáo viên chủ nhiệm chính | Chế độ chỉnh sửa cho phép chọn và gán lại giáo viên chủ nhiệm. |
-| Trợ giảng chỉ định | Chỉ xem / Ô chọn nhân sự | Trợ giảng của lớp | Chế độ chỉnh sửa cho phép gán hoặc đổi trợ giảng. |
-| Phòng học cố định | Chỉ xem / Ô chọn phòng học | Phòng học mặc định | Chế độ chỉnh sửa cho phép gán phòng học cố định (bắt buộc thuộc chi nhánh quản lý lớp). |
-| Thời gian khóa học | Chỉ xem / Ô chọn ngày | Ngày khai giảng, ngày bế giảng dự kiến | Chế độ chỉnh sửa cho phép cập nhật khoảng thời gian khóa học. |
-| Môn học & Trình độ | Chỉ xem / Ô chọn danh mục | Môn học, Trình độ chính, phụ | Kế thừa trực tiếp từ danh mục hệ thống. |
-| Sĩ số tối đa | Chỉ xem / Ô chọn tỷ lệ | Sĩ số tối đa | Thay đổi sĩ số tối đa thông qua tỷ lệ Giáo viên:Học viên khi chỉnh sửa thông tin. |
+---
 
 ### 3.3. Vùng phụ bên phải (Tương tác & Nhật ký)
 
@@ -168,7 +160,7 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
 | Tab con | Thành phần | Loại hiển thị | Trường dữ liệu / Logic tương tác |
 |---|---|---|---|
 | Tương tác (X) | Danh sách tương tác | Khung dọc cuộn | Hiển thị các ghi chú tương tác nội bộ sắp xếp mới nhất ở trên cùng. |
-| | Avatar & Người viết | Ảnh đại diện viết tắt + Tên giáo vụ | Rê chuột vào tên người viết ghi chú sẽ mở ra HoverCard chi tiết thông tin nhân sự giáo vụ để gọi điện nhanh hoặc sao chép thông tin. |
+| | Avatar & Người viết | Ảnh đại diện viết tắt + Tên giáo vụ | Rê chuột vào tên/avatar của người viết sẽ mở ra Bảng nổi thông tin nhân sự (Personnel Hover Card - chi tiết tại Mục 3.4). |
 | | Thời gian tương tác | Chữ nhỏ mờ | Hiển thị mốc thời gian đã trôi qua ở dạng tương đối (Ví dụ: "Hôm qua", "2 ngày trước", "1 tuần trước"). |
 | | Nội dung tương tác | Văn bản thông thường | Hiển thị nội dung ghi chú nội bộ phản hồi của lớp học. |
 | | Khung nhập ghi chú | Ô nhập văn bản (Textarea) | Khung nhập văn bản ở dưới cùng để giáo vụ gõ ghi chú mới nhanh. |
@@ -177,6 +169,23 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
 | | Mốc thời gian | Chữ nhỏ font đơn | Hiển thị thời gian tuyệt đối xảy ra hành động (Giờ:Phút Ngày/Tháng/Năm). |
 | | Mô tả hành động | Chữ đậm | Mô tả cụ thể hành động (Ví dụ: "Đã xóa học viên...", "Thay đổi phòng học lẻ...", "Kích hoạt lớp học..."). |
 | | Người thực hiện | Chữ nhỏ mờ | Tên người thực hiện hành động (Ví dụ: "Giáo vụ Lan" hoặc "Hệ thống"). |
+
+---
+
+### 3.4. Bảng nổi thông tin nhân sự (Personnel Hover Card)
+
+Khi di chuột (hoặc nhấp chọn) vào khu vực chỉ định của nhân sự (như Giáo viên chủ nhiệm ở tiêu đề, Giáo vụ viết ghi chú ở tab Tương tác), hệ thống hiển thị một hộp thông tin nổi (Hover Card) chi tiết về nhân sự đó:
+
+#### Bảng 3.4a: Cấu trúc thông tin Bảng nổi nhân sự
+| Vùng thông tin | Loại hiển thị | Nội dung hiển thị | Ghi chú & Tác vụ |
+|---|---|---|---|
+| Ảnh đại diện | Hình tròn bo góc | Hình ảnh cá nhân của nhân sự | Nếu không có ảnh, hiển thị chữ cái viết tắt tên nhân sự trên nền màu thương hiệu nhạt. |
+| Họ tên | Chữ đậm | Họ và tên đầy đủ của nhân sự | Ví dụ: "Cô Lan" hoặc "Giáo vụ Lan". |
+| Mã số nhân viên | Nhãn viền nhỏ (Badge) font chữ đơn | Mã định danh nhân viên | Ví dụ: `EMP-CL` hoặc `EMP-GVL`. |
+| Chức danh | Khối biểu tượng hình khiên + Chữ | Tên vị trí chức vụ đang đảm nhiệm | Ví dụ: "Giáo viên chủ nhiệm" hoặc "Bộ phận Giáo vụ". |
+| Số điện thoại | Khối biểu tượng điện thoại + Số | Số điện thoại liên lạc của nhân sự | Nằm cạnh số điện thoại có tích hợp 2 nút tác vụ nhanh: **Gọi điện** (biểu tượng điện thoại màu xanh lá) và **Sao chép** (biểu tượng sao chép). |
+| Email liên hệ | Khối biểu tượng thư + Văn bản | Địa chỉ thư điện tử của nhân sự | Hiển thị địa chỉ email, hiển thị dấu gạch ngang "—" nếu chưa được cập nhật. |
+| Chỉ thị dạy thay lẻ | Khối viền đứt nét màu vàng (nổi bật) | Ngày dạy thay + Lý do dạy thay | Chỉ hiển thị đối với trường hợp Giáo viên dạy thay lẻ. Hiển thị thông tin lý do dạy thay (Ví dụ: "Lý do: Giáo viên chính nghỉ phép"). |
 
 ---
 
@@ -189,10 +198,11 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
 ### 4.2. Luồng Hoạt động (Workflow)
 1. **Mở xem chi tiết**: Người dùng bấm vào tên lớp tại danh sách lớp học. Hộp thoại chi tiết lớn mở ra, mặc định hiển thị phân mục **Học viên**.
 2. **Kiểm tra thông số nhanh**: Giáo vụ nhìn lướt qua phần tiêu đề hộp thoại để nắm bắt ngay sĩ số hiện tại, lịch học tuần cố định và thông tin buổi học sắp tới mà không cần nhấp chuột chọn tab.
-3. **Thay đổi trạng thái lớp**: Trên thanh tiêu đề, giáo vụ bấm các nút hành động (ví dụ: bấm nút **Kích hoạt** để chuyển lớp nháp sang chờ khai giảng). Hệ thống hiển thị hộp thoại xác nhận đối với các thao tác nguy hiểm (Quay về nháp, Đóng lớp). Sau khi xác nhận thành công, trạng thái lớp cập nhật lại trên tiêu đề và hệ thống tự động ghi nhận một bản ghi lịch sử vào tab Nhật ký hoạt động.
-4. **Xem thông tin liên hệ nhanh**: Giáo vụ di chuột qua ảnh đại diện của giáo viên chủ nhiệm ở góc phải tiêu đề hoặc avatar của học sinh để hiển thị thông tin số điện thoại của giáo viên/phụ huynh. Giáo vụ có thể gọi nhanh hoặc sao chép số điện thoại mà không cần phải truy cập vào trang chi tiết cá nhân.
-5. **Viết ghi chú tương tác**: Giáo vụ chuyển sang tab **Tương tác** ở vùng bên phải, nhập nội dung phản hồi nội bộ và bấm gửi. Ghi chú mới lập tức xuất hiện ở trên cùng danh sách, đồng thời hệ thống tự động ghi nhận một dòng log lịch sử sang tab Nhật ký.
-6. **Xóa học sinh khỏi roster**: Giáo vụ bấm nút "Xóa khỏi lớp" tại thẻ học viên, hệ thống yêu cầu xác nhận. Sau khi xác nhận, sĩ số lớp giảm đi. Nếu lớp đang học và đây là học viên cuối cùng bị xóa, hệ thống sẽ tự động đổi trạng thái lớp sang "Đã kết thúc".
+3. **Xem danh sách buổi học cố định từ lịch**: Trên phần thông tin nhanh ở tiêu đề, giáo vụ di chuột vào biểu tượng Lịch học cố định. Hộp Popover mở ra hiển thị danh sách tất cả các ca học cố định hàng tuần của lớp kèm theo thứ, mã ca học và giờ học thực tế.
+4. **Thay đổi trạng thái lớp**: Trên thanh tiêu đề, giáo vụ bấm các nút hành động (ví dụ: bấm nút **Kích hoạt** để chuyển lớp nháp sang chờ khai giảng). Hệ thống hiển thị hộp thoại xác nhận đối với các thao tác nguy hiểm (Quay về nháp, Đóng lớp). Sau khi xác nhận thành công, trạng thái lớp cập nhật lại trên tiêu đề và hệ thống tự động ghi nhận một bản ghi lịch sử vào tab Nhật ký hoạt động.
+5. **Xem thông tin liên hệ nhanh nhân sự**: Giáo vụ di chuột qua ảnh đại diện của giáo viên chủ nhiệm ở góc phải tiêu đề hoặc tên người viết ghi chú ở tab Tương tác. Bảng nổi thông tin nhân sự (Personnel Hover Card) mở ra hiển thị ảnh, tên, mã số, chức vụ, SĐT và email. Giáo vụ có thể nhấn biểu tượng điện thoại để gọi nhanh hoặc nhấn nút sao chép để copy SĐT nhân sự.
+6. **Viết ghi chú tương tác**: Giáo vụ chuyển sang tab **Tương tác** ở vùng bên phải, nhập nội dung phản hồi nội bộ và bấm gửi. Ghi chú mới lập tức xuất hiện ở trên cùng danh sách, đồng thời hệ thống tự động ghi nhận một dòng log lịch sử sang tab Nhật ký.
+7. **Xóa học sinh khỏi roster**: Giáo vụ bấm nút "Xóa khỏi lớp" tại thẻ học viên, hệ thống yêu cầu xác nhận. Sau khi xác nhận, sĩ số lớp giảm đi. Nếu lớp đang học và đây là học viên cuối cùng bị xóa, hệ thống sẽ tự động đổi trạng thái lớp sang "Đã kết thúc".
 
 ---
 
@@ -227,3 +237,5 @@ Gồm 5 phân mục thông tin chính có thể chuyển đổi linh hoạt:
   - Danh sách tương tác hiển thị thời gian ở dạng tương đối (ví dụ: "Hôm qua", "2 ngày trước").
   - Rê chuột vào tên người viết ghi chú phải bật HoverCard thông tin nhân sự.
   - Khung nhập ghi chú tương tác có nút gửi máy bay giấy nằm gọn gàng bên trong góc dưới bên phải; viết ghi chú mới và gửi thành công phải nạp tức thì ghi chú lên đầu danh sách và tự động ghi thêm một dòng log lịch sử sang tab Nhật ký.
+- **AC-10 (Hộp thông tin nổi Lịch học cố định):** Nhấp chọn hoặc di chuột vào nút Lịch học cố định trên tiêu đề phải hiển thị chính xác Popover danh sách buổi học gồm: tên lớp, thứ, mã ca học YYYY, ngày giờ, và giờ kết thúc có biểu tượng đồng hồ đi kèm.
+- **AC-11 (Bảng nổi thông tin nhân sự chi tiết):** Di chuột vào giáo viên chủ nhiệm hoặc giáo vụ viết tương tác phải hiển thị đúng bảng Hover Card gồm: ảnh đại diện/chữ viết tắt, họ tên, mã nhân viên, chức danh kèm biểu tượng khiên, SĐT kèm biểu tượng điện thoại, nút gọi điện, nút copy SĐT và Email liên hệ kèm biểu tượng thư.
