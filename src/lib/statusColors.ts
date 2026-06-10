@@ -115,7 +115,6 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
 
   // Booking Test
   booked_assessment: 'success',
-  started_assessment: 'info',
   unassigned_teacher: 'warning',
   interviewed: 'purple',
   tested: 'warning',
@@ -170,6 +169,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   trial: 'purple',
   reserve: 'purple',
   session_ended: 'neutral',
+  dropout: 'error',
 
   // Products
   archived: 'neutral',
@@ -222,6 +222,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   // Teacher Schedule Status
   trung_lich: 'error',
   trong_lich: 'success',
+  goi_lop: 'warning',
+  busy: 'error',
 
   // Session Feedback
   feedback_pending: 'warning',
