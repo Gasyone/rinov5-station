@@ -133,28 +133,48 @@ Bảng danh sách giáo viên toàn hệ thống để gán vào ca học:
 
 ## 4. Mô tả chi tiết (Màn hình & Luồng)
 
+*(Yêu cầu mô tả dễ hiểu, đầy đủ để đội ngũ kỹ thuật có thể hiểu rõ và thực hiện được đúng yêu cầu đặt ra. Không quy định định dạng cụ thể, người viết chủ động chọn cách thể hiện phù hợp với yêu cầu của sản phẩm hoặc phong cách viết của riêng mình)*
+
 ### 4.1. Bố cục Giao diện
-- Hộp thoại biểu mẫu mở ra dạng cửa sổ lớn phủ màn hình để chứa lượng thông tin xếp lịch lớn.
+
+Hộp thoại biểu mẫu mở ra dạng cửa sổ lớn phủ màn hình để chứa lượng thông tin xếp lịch lớn.
+
 - **Bước 1**: Chia làm 2 cột:
   - Cột bên trái: Điền các thông tin cơ bản của lớp học (Tên, mã, cơ sở, loại hình, khung chương trình, phụ trách chung).
-  - Cột bên phải: Cấu hình lịch học và phân bổ phòng, giáo viên cho các ngày trong tuần. Có các thẻ chuyển tab hiển thị dạng danh sách (List) hoặc lịch biểu (Calendar).
-- **Bước 2**: Hiển thị bảng danh sách các học viên được xếp lớp (đang chờ gán vào lớp).
-  - Phía trên bảng là thanh tiêu đề hiển thị tổng số học viên hiện tại (ví dụ: "Học viên (12/15)") kèm nút màu nhấn để mở cửa sổ chọn học viên.
-  - Phía dưới là danh sách học viên dạng bảng với các cột thông tin học lực, gói học tập, số buổi khả dụng và ghi chú. Mỗi học viên có một nút biểu tượng thùng rác màu tiêu cực để xóa học viên khỏi danh sách gán nhanh.
+  - Cột bên phải: Cấu hình lịch học và phân bổ phòng, giáo viên cho các ngày trong tuần. Có các thẻ chuyển tab hiển thị dạng danh sách hoặc lịch biểu (lịch biểu chưa phát triển).
+- **Bước 2**: Giao diện danh sách học viên, hiển thị danh sách các học viên được gán vào lớp và nút mở hộp thoại chọn học viên nâng cao.
 
-### 4.2. Luồng Hoạt động (Workflow)
-1. **Khởi tạo và Mở biểu mẫu**: Người dùng nhấp nút **Tạo lớp** từ màn hình danh sách lớp học. Hệ thống mở cửa sổ nổi ở trạng thái mặc định: Tên lớp trống, Trường tự động chọn theo Chi nhánh hiện tại của người dùng, Lịch học tuần chưa kích hoạt ngày nào.
-2. **Thiết lập Bước 1**:
-   - Người dùng nhập Tên lớp, chọn Khung chương trình (nếu có). Hệ thống tự điền gợi ý Môn học và Trình độ học lực phù hợp.
-   - Người dùng cấu hình lịch học bằng cách tích chọn các ngày học trong tuần ở cột bên phải. Với mỗi ngày học được bật, người dùng bắt buộc chọn ca học, chọn phòng học trống tại Trường hiện tại, và chọn Giáo viên phụ trách (thông qua bong bóng chọn nhanh hoặc qua cửa sổ phụ điều phối giáo viên hệ thống).
-   - Tại Bước 1, người dùng có thể nhấp **Tạo lớp nháp** để lưu ngay lớp học ở trạng thái **Nháp** (chỉ cần nhập Tên lớp và Trường).
-3. **Chuyển tiếp sang Bước 2**:
-   - Người dùng nhấp nút **Tiếp theo** để chuyển sang màn hình danh sách học viên.
-   - Người dùng nhấp nút **Chọn học viên xếp lớp** để mở cửa sổ phụ từ [US-CLS02-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/class-management/US-CLS02-05-them-hoc-vien-vao-lop.md). Sau khi chọn học viên và xác nhận, danh sách học viên được đưa vào bảng ở Bước 2.
-4. **Lưu dữ liệu và Hoàn tất**:
-   - Nhấp **Quay lại** để trở về Bước 1 điều chỉnh thông tin (dữ liệu học viên ở Bước 2 vẫn được lưu giữ tạm thời).
-   - Nhấp **Tạo lớp nháp** tại Bước 2: Lưu lớp học ở trạng thái **Nháp** thành công (cho phép gán 0 học viên).
-   - Nhấp **Khai giảng** tại Bước 2: Hệ thống chạy quy trình kiểm tra toàn bộ điều kiện khai giảng. Nếu hợp lệ, lưu lớp học với trạng thái **Chờ khai giảng**, đóng cửa sổ nổi và làm mới danh sách lớp học. Nếu không hợp lệ (ví dụ: thiếu thông tin bắt buộc hoặc chưa có học viên), hệ thống hiển thị cảnh báo đỏ và ngăn chặn lưu.
+### 4.2. Giao diện các Hộp thoại phụ
+
+- **Hộp thoại Điều phối giáo viên hệ thống**: Hộp thoại nổi chứa bảng danh sách nhân sự (đặc tả chi tiết các trường nhập liệu tại Mục 3.5).
+- **Hộp thoại Chọn học viên xếp lớp**: Hộp thoại nổi lớn kích hoạt khi nhấn "Chọn học viên xếp lớp" ở Bước 2. Giao diện dạng bảng, bộ lọc tab và quy tắc nghiệp vụ liên quan được đặc tả tập trung tại [US-CLS02-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/class-management/US-CLS02-05-them-hoc-vien-vao-lop.md) để tránh trùng lặp tài liệu thiết kế.
+
+### 4.3. Các bong bóng thông tin & Tương tác vi mô
+
+- **Thẻ nổi thông tin nhân sự**: Khi di chuột qua giáo viên đã gán ở phần Phụ trách, hiển thị thẻ nổi gồm Mã GV, Họ tên, Vai trò, Số điện thoại, Email mà không cần bấm mở trang mới.
+- **Bong bóng chọn nhanh**: Khi bấm nút thêm giáo viên/trợ giảng, mở ra một khung nổi nhỏ phía trên giao diện hiện tại cho phép gõ tìm kiếm nhanh và chọn trực tiếp.
+- **Bong bóng ghi chú học viên**: Nhấp vào biểu tượng ghi chú của học viên để mở bong bóng nhỏ hiển thị nội dung ghi nhận từ bộ phận tư vấn tuyển sinh.
+
+### 4.4. Luồng Hoạt động (Workflow)
+
+1. **Khởi tạo**: Người dùng bấm nút **Tạo lớp** trên thanh công cụ danh sách lớp. Hộp thoại mở ra tại Bước 1. Người dùng nhập các thông tin cơ bản. Khi chọn Trường, hệ thống tự động kích hoạt bộ lọc phòng học bên cột xếp lịch tuần. Khi chọn Khung chương trình (nếu chọn), các trường Môn học và Trình độ hiển thị giá trị điền sẵn và khóa lại. Nếu không chọn Khung chương trình, giáo vụ có thể chọn môn học thủ công.
+2. **Cấu hình lịch học**: Người dùng tích chọn ngày học (ví dụ: Thứ 2 và Thứ 4), chọn ca học thiết lập sẵn (ví dụ: Ca 2). Hệ thống tự điền giờ và khóa cứng.
+3. **Phân công nhân sự & phòng học**: Giáo vụ thực hiện gán phòng học và nhân sự (giáo viên chính/trợ giảng):
+   - Khi chọn giáo viên chính hoặc trợ giảng, hệ thống hiển thị thông tin rảnh/bận. Nếu giáo viên bị trùng ca, hệ thống hiển thị cảnh báo đỏ dưới tên giáo viên trong danh sách chọn (ví dụ: "Trùng lịch: 09:15 - 10:45"). Giáo vụ có thể chọn gán bình thường nếu muốn dạy gối ca.
+   - Nếu cần xem tổng thể lịch rảnh/bận, giáo vụ bấm nút hình quả địa cầu cạnh ô chọn để mở hộp thoại phụ **Điều phối giáo viên hệ thống** và phân công trực tiếp tại đó.
+4. **Lưu nháp Bước 1 hoặc chuyển tiếp**: Người dùng có thể:
+   - Bấm **Tạo lớp nháp** (ngay tại Bước 1): Hệ thống chỉ kiểm tra Tên lớp và Trường/Cơ sở, lưu thông tin vỏ lớp học ở trạng thái **Nháp** và đóng hộp thoại.
+   - Bấm **Tiếp theo**: Hệ thống chuyển sang giao diện Bước 2.
+5. **Thao tác tại Bước 2**:
+   - Giáo vụ thực hiện gán thêm học viên vào lớp thông qua hộp thoại Chọn học viên xếp lớp (chi tiết tại [US-CLS02-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/class-management/US-CLS02-05-them-hoc-vien-vao-lop.md)).
+   - Danh sách học viên đã chọn được truyền ngược về và hiển thị trên bảng của Bước 2. Giáo vụ có thể nhấn vào nút biểu tượng Thùng rác để xóa nhanh học viên ra khỏi danh sách xếp lớp tạm thời của lớp đang tạo (thao tác xóa này chỉ loại học viên khỏi danh sách lớp đang tạo, không xóa hồ sơ học viên trên hệ thống).
+6. **Lưu dữ liệu và hoàn tất**:
+   - Bấm **Quay lại**: Trở về Bước 1 để hiệu chỉnh thông tin (dữ liệu học viên đã xếp ở Bước 2 được giữ nguyên).
+   - Bấm **Tạo lớp nháp** (tại Bước 2): Hệ thống lưu lớp ở trạng thái **Nháp** và đóng hộp thoại (không kiểm tra điều kiện khai giảng).
+   - Bấm **Khai giảng**: Hệ thống tự động kiểm tra điều kiện khai giảng:
+     - *Trường hợp đủ điều kiện*: Lưu lớp học ở trạng thái **Chờ khai giảng**, hiển thị thông báo thành công và đóng hộp thoại.
+     - *Trường hợp thiếu thông tin cơ bản ở Bước 1 hoặc lịch học*: Hiển thị biểu ngữ đỏ góc trên bên phải "Không đủ điều kiện chờ khai giảng. Vui lòng bổ sung thông tin đỏ", quay lại Bước 1 hiển thị các thông báo lỗi bôi đỏ tại các trường tương ứng và chặn lưu.
+     - *Trường hợp thiếu học viên ở Bước 2*: Hiển thị biểu ngữ đỏ phía trên danh sách học viên "Lớp học cần có ít nhất 1 học viên xếp lớp" và chặn lưu.
 
 ---
 
@@ -206,3 +226,5 @@ Bảng danh sách giáo viên toàn hệ thống để gán vào ca học:
 - **AC-16 (Cảnh báo trùng lịch nghỉ lễ):** Khi Ngày bắt đầu rơi vào ngày nghỉ lễ đã được cấu hình trong hệ thống, hệ thống hiển thị dòng chữ cảnh báo ghi rõ tên ngày nghỉ lễ và thông tin buổi học thực tế đầu tiên lùi sang buổi học tiếp theo dưới ô Ngày bắt đầu, cho phép lưu bình thường.
 - **AC-17 (Cảnh báo thiếu số buổi học):** Khi số buổi học thực tế được tính toán dự kiến nhỏ hơn số lượng buổi học tiêu chuẩn của Môn học, hệ thống phải hiển thị dòng cảnh báo thiếu số buổi kèm nút chức năng "Tự động điều chỉnh ngày kết thúc" để kéo dài ngày kết thúc phù hợp.
 - **AC-18 (Xác nhận thoát an toàn):** Khi nhấp nút "Hủy" hoặc nút đóng ở góc biểu mẫu tạo mới có chứa dữ liệu đã chỉnh sửa, hệ thống phải hiển thị hộp thoại xác nhận hủy bỏ để ngăn mất dữ liệu ngoài ý muốn.
+- **AC-19 (Lưu nháp không cần học viên):** Bấm nút "Tạo lớp nháp" tại Bước 2 phải luôn cho phép lưu thành công lớp học ở trạng thái Nháp mà không bắt buộc có học viên, hỗ trợ trường hợp tạo vỏ trước, xếp lớp sau.
+- **AC-20 (Điều hướng sau khi Khai giảng):** Khi bấm nút "Khai giảng" và lưu thành công ở trạng thái Chờ khai giảng, hệ thống phải tự động đóng biểu mẫu, chuyển hướng người dùng về lại trang danh sách lớp học `/app/classes`, đồng thời hiển thị thông báo thành công (Toast) trực quan.
