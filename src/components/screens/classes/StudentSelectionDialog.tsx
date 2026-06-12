@@ -89,8 +89,12 @@ export function StudentSelectionDialog({
   const [studentTab, setStudentTab] = useState<'all' | 'suitable' | 'trial' | 'waiting' | 'reserve' | 'enroll_later' | 'pending_transfer' | 'suspend'>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
+  const normalizedInitialIds = useMemo(() => {
+    return initialSelectedIds.map((id) => id.split('-')[0])
+  }, [initialSelectedIds])
+
   const newStudentsCount = useMemo(() => {
-    const initialSet = new Set(initialSelectedIds)
+    const initialSet = new Set(normalizedInitialIds)
     let count = 0
     selectedIds.forEach((id) => {
       if (!initialSet.has(id)) {
@@ -98,22 +102,24 @@ export function StudentSelectionDialog({
       }
     })
     return count
-  }, [selectedIds, initialSelectedIds])
+  }, [selectedIds, normalizedInitialIds])
 
   // Sync selectedIds when dialog opens
   useEffect(() => {
     if (open) {
-      setSelectedIds(new Set(initialSelectedIds))
+      setSelectedIds(new Set(normalizedInitialIds))
       setStudentSearch('')
       setStudentTab('all')
     }
-  }, [open, initialSelectedIds])
+  }, [open, normalizedInitialIds])
 
   // Filter students based on status eligibility and tabs
   const filteredStudents = useMemo(() => {
     return mockStudents.filter((student) => {
+      const isInitiallySelected = normalizedInitialIds.includes(student.id)
       // 1. Only show students eligible for placement (ignore active/graduated/inactive)
-      if (!AVAILABLE_PLACEMENT_STATUSES.includes(student.status)) {
+      // UNLESS they are already selected in the class roster
+      if (!isInitiallySelected && !AVAILABLE_PLACEMENT_STATUSES.includes(student.status)) {
         return false
       }
 
@@ -154,23 +160,25 @@ export function StudentSelectionDialog({
 
       return true
     })
-  }, [studentSearch, studentTab, subject])
+  }, [studentSearch, studentTab, subject, normalizedInitialIds])
 
   const tabCounts = useMemo(() => {
-    const eligible = mockStudents.filter((student) => AVAILABLE_PLACEMENT_STATUSES.includes(student.status))
+    const eligible = mockStudents.filter((student) => {
+      return AVAILABLE_PLACEMENT_STATUSES.includes(student.status) || normalizedInitialIds.includes(student.id)
+    })
     const sub = subject.toLowerCase()
     
     return {
       all: eligible.length,
-      suitable: eligible.filter((s) => s.status === 'wait_for_assignment' || (s.level && s.level.toLowerCase().includes(sub))).length,
-      trial: eligible.filter((s) => s.status === 'trial').length,
-      waiting: eligible.filter((s) => s.status === 'wait_for_assignment').length,
-      reserve: eligible.filter((s) => s.status === 'reserve').length,
-      enroll_later: eligible.filter((s) => s.status === 'enroll_later').length,
-      pending_transfer: eligible.filter((s) => s.status === 'pending_transfer').length,
+      suitable: eligible.filter((s) => (s.status as string) === 'wait_for_assignment' || (s.level && s.level.toLowerCase().includes(sub))).length,
+      trial: eligible.filter((s) => (s.status as string) === 'trial' || (normalizedInitialIds.includes(s.id) && (s.status as string) === 'trial')).length,
+      waiting: eligible.filter((s) => (s.status as string) === 'wait_for_assignment').length,
+      reserve: eligible.filter((s) => (s.status as string) === 'reserve' || (normalizedInitialIds.includes(s.id) && (s.status as string) === 'reserve')).length,
+      enroll_later: eligible.filter((s) => (s.status as string) === 'enroll_later').length,
+      pending_transfer: eligible.filter((s) => (s.status as string) === 'pending_transfer').length,
       suspend: eligible.filter((s) => (s.status as string) === 'suspend').length,
     }
-  }, [subject])
+  }, [subject, normalizedInitialIds])
 
   const handleStudentSelectToggle = (id: string) => {
     setSelectedIds((prev) => {

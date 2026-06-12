@@ -2,27 +2,17 @@
 
 import { useState } from 'react'
 import {
-  Play,
   MessageSquare,
   Clock,
   SendHorizontal,
-  Pencil,
-  GraduationCap,
-  BookOpen,
-  MapPin,
-  Sparkles,
-  Pause,
-  Ban,
-  Undo
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { InfoField, StatusBadge, ConfirmDialog } from '@/components/shared'
+import { DialogTitle } from '@/components/ui/dialog'
+import { ConfirmDialog, PersonnelHoverCard } from '@/components/shared'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { CLASS_STATUS_LABELS } from '@/mocks/classRecords'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 // Import Sub-components
 import { ClassesDetailOverview } from './ClassesDetailOverview'
@@ -32,10 +22,66 @@ import { ClassesDetailSessions } from './ClassesDetailSessions'
 import { ClassesDetailSchedule } from './ClassesDetailSchedule'
 import { StudentSelectionDialog } from '../StudentSelectionDialog'
 import { ClassesRoadmapWizardView } from './ClassesRoadmapWizardView'
+import {
+  ClassesDetailHeader,
+  type ClassesStatusChangeRequest,
+} from './ClassesDetailHeader'
+
+import { toast } from 'sonner'
 
 // Import Helper utilities
+import { StudentDetailDialog } from '@/components/screens/students/detail/StudentDetailDialog'
 import { generateMockRoster, generateRoadmapSessions } from './classesDetailHelpers'
 import type { ClassNote, ClassAuditLog, RoadmapSession, RosterStudent } from './classesDetailTypes'
+
+function formatNoteTimestamp(timestampStr: string): string {
+  try {
+    const parts = timestampStr.split(' ')
+    if (parts.length !== 2) return timestampStr
+    const [timePart, datePart] = parts
+    const [hours, minutes] = timePart.split(':').map(Number)
+    const [day, month, year] = datePart.split('/').map(Number)
+    
+    const noteDate = new Date(year, month - 1, day, hours, minutes)
+    const now = new Date()
+    
+    const oneDayMs = 24 * 60 * 60 * 1000
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const noteDateStart = new Date(noteDate.getFullYear(), noteDate.getMonth(), noteDate.getDate())
+    const diffDays = Math.floor((todayStart.getTime() - noteDateStart.getTime()) / oneDayMs)
+    
+    if (diffDays === 0) {
+      return timePart
+    }
+    if (diffDays === 1) {
+      return 'Hôm qua'
+    }
+    if (diffDays > 1 && diffDays < 7) {
+      return `${diffDays} ngày trước`
+    }
+    
+    const diffWeeks = Math.floor(diffDays / 7)
+    if (diffWeeks > 0 && diffWeeks < 4) {
+      return `${diffWeeks} tuần trước`
+    }
+    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`
+  } catch {
+    return timestampStr
+  }
+}
+
+function getFirstTabWithError(errors: Record<string, string>): string {
+  if (errors.name || errors.branch || errors.level || errors.startDate || errors.syllabus) {
+    return 'overview'
+  }
+  if (errors.roster) {
+    return 'roster'
+  }
+  if (errors.schedule || Object.keys(errors).some(k => k.startsWith('room_') || k.startsWith('teacher_'))) {
+    return 'schedule'
+  }
+  return 'overview'
+}
 
 interface ClassesDetailViewProps {
   cls: ClassRecord | null
@@ -61,9 +107,14 @@ export function ClassesDetailView({
   hideClassType = false
 }: ClassesDetailViewProps) {
   const [activeTab, setActiveTab] = useState('roster')
+  const getInitials = (name: string) => {
+    if (!name) return '—'
+    return name.split(' ').map((n) => n[0]).slice(-2).join('').toUpperCase()
+  }
   const [activeSideTab, setActiveSideTab] = useState<'notes' | 'logs'>('notes')
   const [noteInput, setNoteInput] = useState('')
   const [isStudentSelectOpen, setIsStudentSelectOpen] = useState(false)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [isRoadmapWizardOpen, setIsRoadmapWizardOpen] = useState(false)
   const [syllabusState, setSyllabusState] = useState<string>('')
   const [roadmapLastChangedInfo, setRoadmapLastChangedInfo] = useState<string | null>(
@@ -77,12 +128,51 @@ export function ClassesDetailView({
 
   const [isEditing, setIsEditing] = useState(false)
   const [editFormState, setEditFormState] = useState<ClassRecord | null>(null)
-  const [confirmStatusChange, setConfirmStatusChange] = useState<{
-    newStatus: ClassRecord['status']
-    actionText: string
-    title: string
-    description: string
-  } | null>(null)
+  const [confirmStatusChange, setConfirmStatusChange] = useState<ClassesStatusChangeRequest | null>(null)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+  const hasOverviewError = !!(validationErrors.name || validationErrors.branch || validationErrors.level || validationErrors.startDate || validationErrors.syllabus)
+  const hasRosterError = !!validationErrors.roster
+  const hasScheduleError = !!(validationErrors.schedule || Object.keys(validationErrors).some(k => k.startsWith('room_') || k.startsWith('teacher_')))
+
+  const handleEditFormStateChange = (nextState: ClassRecord | null) => {
+    setEditFormState(nextState)
+    if (!nextState) return
+    setValidationErrors((prev) => {
+      if (!prev || Object.keys(prev).length === 0) return prev
+      const copy = { ...prev }
+      let changed = false
+      if (copy.name && nextState.name && nextState.name.trim() !== '') {
+        delete copy.name
+        changed = true
+      }
+      if (copy.syllabus && nextState.syllabus && nextState.syllabus.trim() !== '') {
+        delete copy.syllabus
+        changed = true
+      }
+      if (copy.branch && nextState.branch && nextState.branch.trim() !== '') {
+        delete copy.branch
+        changed = true
+      }
+      if (copy.level && nextState.level && nextState.level.trim() !== '') {
+        delete copy.level
+        changed = true
+      }
+      if (copy.startDate && nextState.startDate && nextState.startDate.trim() !== '') {
+        delete copy.startDate
+        changed = true
+      }
+      if (copy.room && nextState.room && nextState.room.trim() !== '') {
+        delete copy.room
+        changed = true
+      }
+      if (copy.teacher && nextState.teacher && nextState.teacher.trim() !== '') {
+        delete copy.teacher
+        changed = true
+      }
+      return changed ? copy : prev
+    })
+  }
 
   // Adjust state during render when prop changes (React recommended pattern)
   if (cls && cls.id !== prevClsId) {
@@ -150,10 +240,76 @@ export function ClassesDetailView({
 
   const handleSave = () => {
     if (!editFormState) return
-    if (!editFormState.name.trim()) {
-      alert('Tên lớp không được để trống!')
-      return
+
+    // If class is Awaiting Opening or Active, validate the updated form state
+    if (editFormState.status === 'cho_khai_giang' || editFormState.status === 'dang_hoc') {
+      const errors: Record<string, string> = {}
+      if (!editFormState.name || !editFormState.name.trim()) {
+        errors.name = 'Tên lớp không được để trống'
+      }
+      if (!editFormState.branch || !editFormState.branch.trim() || editFormState.branch === 'all') {
+        errors.branch = 'Chưa chọn chi nhánh/trường'
+      }
+      if (!editFormState.level || !editFormState.level.trim()) {
+        errors.level = 'Chưa chọn môn học/trình độ'
+      }
+      if (!editFormState.startDate || editFormState.startDate === '---' || editFormState.startDate === '') {
+        errors.startDate = 'Chưa chọn ngày bắt đầu'
+      }
+      if (!editFormState.syllabus || !editFormState.syllabus.trim() || editFormState.syllabus === '—') {
+        errors.syllabus = 'Chưa chọn chương trình'
+      }
+      if (rosterState.length === 0) {
+        errors.roster = 'Lớp học cần có ít nhất 1 học viên xếp lớp (Roster)'
+      }
+      
+      if (!editFormState.scheduleSlots || editFormState.scheduleSlots.length === 0) {
+        errors.schedule = 'Vui lòng kích hoạt ít nhất 1 ngày học trong tuần'
+        if (!editFormState.room) {
+          errors.room = 'Chưa chọn phòng học cố định'
+        }
+        if (!editFormState.teacher) {
+          errors.teacher = 'Chưa chọn giáo viên chủ nhiệm'
+        }
+      } else {
+        editFormState.scheduleSlots.forEach((slot, index) => {
+          const roomVal = slot.room || editFormState.room
+          if (!roomVal || roomVal === '---' || roomVal === 'Chưa gán') {
+            errors[`room_${index}`] = `Vui lòng chọn phòng học cho ca học thứ ${index + 1} (${slot.dayOfWeek})`
+            errors.room = 'Vui lòng chọn phòng học cố định'
+          }
+          const hasTeacher = (slot.teachers && slot.teachers.length > 0) || (editFormState.teacher && editFormState.teacher !== 'Chưa xếp lớp' && editFormState.teacher !== 'Chưa gán' && editFormState.teacher !== '—')
+          if (!hasTeacher) {
+            errors[`teacher_${index}`] = `Vui lòng phân công phụ trách cho ca học thứ ${index + 1} (${slot.dayOfWeek})`
+            errors.teacher = 'Vui lòng chọn giáo viên chủ nhiệm'
+          }
+        })
+      }
+
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors)
+        setActiveTab(getFirstTabWithError(errors))
+        toast.error('Không đủ điều kiện chờ khai giảng. Vui lòng bổ sung thông tin đỏ.')
+        return
+      }
+    } else {
+      // For Draft classes, only name and branch are strictly required to save basic edit
+      const errors: Record<string, string> = {}
+      if (!editFormState.name || !editFormState.name.trim()) {
+        errors.name = 'Tên lớp không được để trống'
+      }
+      if (!editFormState.branch || !editFormState.branch.trim() || editFormState.branch === 'all') {
+        errors.branch = 'Chưa chọn chi nhánh/trường'
+      }
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors)
+        setActiveTab('overview')
+        toast.error('Vui lòng nhập đầy đủ thông tin đỏ!')
+        return
+      }
     }
+
+    setValidationErrors({})
     if (onSave) {
       onSave(editFormState)
     }
@@ -168,14 +324,93 @@ export function ClassesDetailView({
   }
 
   const handleStatusChange = (newStatus: ClassRecord['status'], actionText: string) => {
-    if (onStatusChange && cls) {
-      onStatusChange(cls.id, newStatus)
+    if (cls) {
+      if (newStatus === 'cho_khai_giang') {
+        const errors: Record<string, string> = {}
+        if (!cls.name || !cls.name.trim()) {
+          errors.name = 'Tên lớp không được để trống'
+        }
+        if (!cls.branch || !cls.branch.trim() || cls.branch === 'all') {
+          errors.branch = 'Chưa chọn chi nhánh/trường'
+        }
+        if (!cls.level || !cls.level.trim()) {
+          errors.level = 'Chưa chọn môn học/trình độ'
+        }
+        if (!cls.startDate || cls.startDate === '---' || cls.startDate === '') {
+          errors.startDate = 'Chưa chọn ngày bắt đầu'
+        }
+        if (!cls.syllabus || !cls.syllabus.trim() || cls.syllabus === '—') {
+          errors.syllabus = 'Chưa chọn chương trình'
+        }
+        if (rosterState.length === 0) {
+          errors.roster = 'Lớp học cần có ít nhất 1 học viên xếp lớp (Roster)'
+        }
+
+        if (!cls.scheduleSlots || cls.scheduleSlots.length === 0) {
+          errors.schedule = 'Vui lòng kích hoạt ít nhất 1 ngày học trong tuần'
+          if (!cls.room) {
+            errors.room = 'Chưa chọn phòng học cố định'
+          }
+          if (!cls.teacher) {
+            errors.teacher = 'Chưa chọn giáo viên chủ nhiệm'
+          }
+        } else {
+          cls.scheduleSlots.forEach((slot, index) => {
+            const roomVal = slot.room || cls.room
+            if (!roomVal || roomVal === '---' || roomVal === 'Chưa gán') {
+              errors[`room_${index}`] = `Vui lòng chọn phòng học cho ca học thứ ${index + 1} (${slot.dayOfWeek})`
+              errors.room = 'Vui lòng chọn phòng học cố định'
+            }
+            const hasTeacher = (slot.teachers && slot.teachers.length > 0) || (cls.teacher && cls.teacher !== 'Chưa xếp lớp' && cls.teacher !== 'Chưa gán' && cls.teacher !== '—')
+            if (!hasTeacher) {
+              errors[`teacher_${index}`] = `Vui lòng phân công phụ trách cho ca học thứ ${index + 1} (${slot.dayOfWeek})`
+              errors.teacher = 'Vui lòng chọn giáo viên chủ nhiệm'
+            }
+          })
+        }
+
+        if (Object.keys(errors).length > 0) {
+          setValidationErrors(errors)
+          setIsEditing(true)
+          setEditFormState(cls)
+          setActiveTab(getFirstTabWithError(errors))
+          toast.error('Không đủ điều kiện chờ khai giảng. Vui lòng bổ sung thông tin đỏ.')
+          return
+        }
+      }
+
+      setValidationErrors({})
+
       const now = new Date()
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-      setLogs((prev) => [
-        { id: Math.random().toString(), action: actionText, operator: 'Giáo vụ Lan', timestamp: timeStr },
-        ...prev
-      ])
+      
+      const newLogs = [
+        { id: Math.random().toString(), action: actionText, operator: 'Giáo vụ Lan', timestamp: timeStr }
+      ]
+
+      if (newStatus === 'huy') {
+        // Clear roster state and save
+        setRosterState([])
+        newLogs.unshift({
+          id: Math.random().toString(),
+          action: 'Đã giải phóng toàn bộ học viên khỏi danh sách Roster do hủy/kết thúc lớp học.',
+          operator: 'Hệ thống',
+          timestamp: timeStr
+        })
+        if (onSave) {
+          onSave({
+            ...cls,
+            status: 'huy',
+            enrolledStudents: 0
+          })
+        }
+      }
+
+      if (onStatusChange) {
+        onStatusChange(cls.id, newStatus)
+      }
+
+      setLogs((prev) => [...newLogs, ...prev])
     }
   }
 
@@ -234,10 +469,11 @@ export function ClassesDetailView({
 
   // Calculate percentage of enrolled students vs max
   const enrollmentPercentage = Math.round((cls.enrolledStudents / cls.maxStudents) * 100)
-  const isSĩSốCảnhBáo = enrollmentPercentage >= 90
+  const isCapacityWarning = enrollmentPercentage >= 90
+
 
   return (
-    <div className="grid h-full w-full grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden bg-background">
+    <div className="flex flex-col flex-1 min-h-0 w-full gap-0 overflow-hidden bg-background">
       {isRoadmapWizardOpen ? (
         <>
           <DialogTitle className="sr-only">
@@ -249,11 +485,19 @@ export function ClassesDetailView({
             classTeacher={cls.teacher || 'Chưa gán'}
             classNameStr={cls.name}
             syllabusName={syllabusState}
+            classStartDate={cls.startDate}
             lastChangedInfo={roadmapLastChangedInfo}
             onBack={() => setIsRoadmapWizardOpen(false)}
             onSave={(updatedSessions, logMessage, newSyllabusName) => {
               setSessionsState(updatedSessions)
               setSyllabusState(newSyllabusName)
+              
+              if (onSave && cls) {
+                onSave({
+                  ...cls,
+                  syllabus: newSyllabusName
+                })
+              }
               
               const now = new Date()
               const monthStr = (now.getMonth() + 1).toString().padStart(2, '0')
@@ -281,253 +525,40 @@ export function ClassesDetailView({
         </>
       ) : (
         <>
-          {/* 1. Header Banner thông minh */}
-          <DialogHeader className="shrink-0 border-b bg-muted/10 px-6 pb-4 pt-6">
-            <div className="flex flex-col gap-4">
-              
-              {/* Top row: Title + State + Buttons (with Next Session below) */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <DialogTitle className="flex flex-wrap items-center gap-2 text-xl font-bold text-foreground">
-                    {cls.name}
-                    <StatusBadge status={cls.status} label={CLASS_STATUS_LABELS[cls.status]} />
-                    <Badge variant="outline" className="rounded-md font-mono text-xs">
-                      {cls.code}
-                    </Badge>
-                  </DialogTitle>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" /> {cls.branch}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <BookOpen className="h-3.5 w-3.5" /> Chương trình: {cls.level || 'Chưa gán'} • Level (trình độ): {cls.subLevel || 'Chưa gán'}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Action buttons & Next Session Chip right under */}
-                <div className="flex flex-col items-end shrink-0 pr-8 gap-2">
-                  <div className="flex items-center gap-2">
-                    {isEditing ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setIsEditing(false)
-                            setEditFormState(cls)
-                          }}
-                          className="rounded-lg text-xs h-8 px-3"
-                        >
-                          Hủy
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleSave}
-                          className="bg-primary text-primary-foreground hover:bg-primary/95 rounded-lg text-xs h-8 px-3 font-semibold"
-                        >
-                          Lưu thay đổi
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        {cls.status !== 'huy' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setIsEditing(true)
-                              setEditFormState(cls)
-                            }}
-                            className="rounded-lg h-8 text-xs"
-                          >
-                            <Pencil className="h-4 w-4 mr-1.5" /> Chỉnh sửa
-                          </Button>
-                        )}
-
-                        {/* Nháp transitions */}
-                        {cls.status === 'nhap' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="rounded-lg h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/95 font-semibold"
-                              onClick={() => handleStatusChange('cho_khai_giang', 'Đã kích hoạt lớp học sang trạng thái Chờ khai giảng.')}
-                            >
-                              <Play className="h-4 w-4 mr-1.5" /> Kích hoạt chờ khai giảng
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="rounded-lg h-8 text-xs"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'huy',
-                                actionText: 'Đã hủy/kết thúc lớp học nháp.',
-                                title: 'Hủy/Kết thúc lớp học',
-                                description: 'Bạn có chắc chắn muốn hủy/kết thúc lớp học nháp này? Trạng thái lớp sẽ chuyển sang Đã kết thúc.'
-                              })}
-                            >
-                              <Ban className="h-4 w-4 mr-1.5" /> Hủy/Kết thúc lớp
-                            </Button>
-                          </>
-                        )}
-
-                        {/* Chờ khai giảng transitions */}
-                        {cls.status === 'cho_khai_giang' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-lg h-8 text-xs"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'nhap',
-                                actionText: 'Đã chuyển lớp học trở lại trạng thái Nháp.',
-                                title: 'Quay về lớp Nháp',
-                                description: 'Bạn có chắc chắn muốn chuyển lớp học này quay trở lại trạng thái Nháp để điều chỉnh thông tin?'
-                              })}
-                            >
-                              <Undo className="h-4 w-4 mr-1.5" /> Quay về nháp
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="rounded-lg h-8 text-xs"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'huy',
-                                actionText: 'Đã hủy lịch chờ khai giảng của lớp học.',
-                                title: 'Hủy/Kết thúc lớp học',
-                                description: 'Bạn có chắc chắn muốn hủy lịch khai giảng của lớp này? Trạng thái lớp sẽ được chuyển sang Đã kết thúc.'
-                              })}
-                            >
-                              <Ban className="h-4 w-4 mr-1.5" /> Hủy/Kết thúc lớp
-                            </Button>
-                          </>
-                        )}
-
-                        {/* Đang học transitions */}
-                        {cls.status === 'dang_hoc' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-lg h-8 text-xs border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 dark:text-amber-300 font-semibold"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'tam_dung',
-                                actionText: 'Đã chuyển lớp học sang trạng thái Tạm nghỉ.',
-                                title: 'Tạm nghỉ lớp học',
-                                description: 'Bạn có chắc chắn muốn tạm ngưng vận hành lớp học này và chuyển sang trạng thái Tạm nghỉ?'
-                              })}
-                            >
-                              <Pause className="h-4 w-4 mr-1.5" /> Tạm nghỉ
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg h-8 text-xs font-semibold"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'huy',
-                                actionText: 'Tốt nghiệp & Kết thúc lớp học thành công.',
-                                title: 'Tốt nghiệp & Kết thúc lớp học',
-                                description: 'Bạn có chắc chắn muốn tốt nghiệp học viên và kết thúc lớp học này? Trạng thái lớp sẽ chuyển sang Đã kết thúc.'
-                              })}
-                            >
-                              <GraduationCap className="h-4 w-4 mr-1.5" /> Tốt nghiệp & Kết thúc
-                            </Button>
-                          </>
-                        )}
-
-                        {/* Tạm nghỉ transitions */}
-                        {cls.status === 'tam_dung' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="default"
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 text-xs font-semibold"
-                              onClick={() => handleStatusChange('dang_hoc', 'Đã kích hoạt lớp học đang tạm nghỉ quay trở lại Đang học.')}
-                            >
-                              <Play className="h-4 w-4 mr-1.5" /> Mở lại (Đang học)
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="rounded-lg h-8 text-xs"
-                              onClick={() => setConfirmStatusChange({
-                                newStatus: 'huy',
-                                actionText: 'Đã hủy/kết thúc lớp học đang tạm nghỉ.',
-                                title: 'Hủy/Kết thúc lớp học',
-                                description: 'Bạn có chắc chắn muốn hủy/kết thúc hẳn lớp học đang tạm nghỉ này? Trạng thái lớp sẽ chuyển sang Đã kết thúc.'
-                              })}
-                            >
-                              <Ban className="h-4 w-4 mr-1.5" /> Hủy/Kết thúc lớp
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  
-                  {/* Buổi học tiếp theo positioned right under action buttons */}
-                  {cls.nextSession && (
-                    <div className="flex items-center gap-1.5 rounded-full bg-primary/5 px-3 py-1 border border-primary/20 text-primary text-[10px] font-semibold max-w-xs justify-end shadow-xs">
-                      <Play className="h-3 w-3 animate-pulse" />
-                      <span>Buổi kế tiếp: <strong>{cls.nextSession.date} ({cls.nextSession.time} · {cls.nextSession.room})</strong></span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Info Grid for Summary (Removed tuition, added opening & trial counts) */}
-              <div className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-4">
-                <InfoField label="Giáo viên chủ nhiệm" value={cls.teacher} supporting={`SĐT: ${cls.teacherPhone}`} />
-                <InfoField label="Lịch cố định hàng tuần" value={cls.schedule} supporting={`Phòng học mặc định: ${cls.room}`} />
-                <InfoField 
-                  label="Sĩ số Roster" 
-                  value={
-                    <div className="flex items-center gap-2">
-                      <span className={isSĩSốCảnhBáo ? 'font-bold text-destructive' : 'font-bold'}>
-                        {cls.enrolledStudents} / {cls.maxStudents} học viên
-                      </span>
-                      <span className="text-xs text-muted-foreground">({enrollmentPercentage}%)</span>
-                    </div>
-                  }
-                  supporting={
-                    <div className="mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-muted">
-                      <div 
-                        className={`h-full rounded-full ${isSĩSốCảnhBáo ? 'bg-destructive' : 'bg-primary'}`} 
-                        style={{ width: `${Math.min(100, enrollmentPercentage)}%` }}
-                      />
-                    </div>
-                  }
-                />
-                <InfoField 
-                  label="Ngày khai giảng" 
-                  value={new Date(cls.startDate).toLocaleDateString('vi-VN')} 
-                  supporting={
-                    <div className="flex items-center gap-1 mt-0.5 text-xs text-muted-foreground font-medium">
-                      <Sparkles className="h-3 w-3 text-purple-600" />
-                      <span>Học viên Trial: <strong>{cls.trialStudents ?? 0} học viên</strong></span>
-                    </div>
-                  }
-                />
-              </div>
-
-            </div>
-          </DialogHeader>
+          <ClassesDetailHeader
+            cls={cls}
+            isEditing={isEditing}
+            rosterCount={rosterState.length}
+            enrollmentPercentage={enrollmentPercentage}
+            isCapacityWarning={isCapacityWarning}
+            onStartEdit={() => {
+              setIsEditing(true)
+              setEditFormState(cls)
+            }}
+            onCancelEdit={() => {
+              setIsEditing(false)
+              setEditFormState(cls)
+            }}
+            onSave={handleSave}
+            onStatusChange={handleStatusChange}
+            onRequestStatusChange={setConfirmStatusChange}
+          />
 
           {/* 2. Split Body: 70% Left Tabs / 30% Right Notes & Logs */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pb-6 pt-4">
-            <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[1fr_320px]">
+            <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[1fr_320px] h-full">
               
               {/* Left: 70% Content Area */}
-              <main className="flex min-h-0 flex-col overflow-hidden">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col">
+              <main className="flex min-h-0 flex-col overflow-hidden h-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col h-full">
                   <TabsList variant="line" className="shrink-0 justify-start border-none p-0 gap-6 h-9 w-full">
                     <TabsTrigger 
                       value="roster" 
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none"
+                      className={`rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none ${
+                        hasRosterError ? 'text-destructive data-[state=active]:border-destructive' : ''
+                      }`}
                     >
-                      Học viên (Roster)
+                      Học viên {hasRosterError && <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive shrink-0 animate-pulse" />}
                     </TabsTrigger>
                     <TabsTrigger 
                       value="roadmap" 
@@ -543,39 +574,79 @@ export function ClassesDetailView({
                     </TabsTrigger>
                     <TabsTrigger 
                       value="schedule" 
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none"
+                      className={`rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none ${
+                        hasScheduleError ? 'text-destructive data-[state=active]:border-destructive' : ''
+                      }`}
                     >
-                      Lịch học cố định
+                      Lịch học cố định {hasScheduleError && <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive shrink-0 animate-pulse" />}
                     </TabsTrigger>
                     <TabsTrigger 
                       value="overview" 
-                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 ml-auto focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none"
+                      className={`rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-xs flex items-center gap-1.5 ml-auto focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none shadow-none border-none ${
+                        hasOverviewError ? 'text-destructive data-[state=active]:border-destructive' : ''
+                      }`}
                     >
-                      Tổng quan
+                      Tổng quan {hasOverviewError && <span className="inline-block w-1.5 h-1.5 rounded-full bg-destructive shrink-0 animate-pulse" />}
                     </TabsTrigger>
                   </TabsList>
 
                   {/* Tab scroll container */}
-                  <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+                  <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col h-full">
                     
                     {/* Tab Roster học viên */}
                     <TabsContent value="roster" className="m-0 focus-visible:outline-none">
                       <ClassesDetailRoster 
                         students={rosterState} 
                         onAddStudent={() => setIsStudentSelectOpen(true)} 
+                        onStudentClick={(id) => setSelectedStudentId(id)}
+                        rosterError={validationErrors?.roster}
                         onRemoveStudent={(studentId) => {
                           const student = rosterState.find(s => s.id === studentId)
                           if (!student) return
                           
-                          setRosterState((prev) => prev.filter((s) => s.id !== studentId))
+                          const nextRoster = rosterState.filter((s) => s.id !== studentId)
+                          setRosterState(nextRoster)
                           
                           // Log this removal
                           const now = new Date()
                           const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-                          setLogs((prev) => [
-                            { id: Math.random().toString(), action: `Đã xóa học viên ${student.name} khỏi lớp học.`, operator: 'Giáo vụ Lan', timestamp: timeStr },
-                            ...prev
-                          ])
+                          
+                          const auditLogs = [
+                            { id: Math.random().toString(), action: `Đã xóa học viên ${student.name} khỏi lớp học.`, operator: 'Giáo vụ Lan', timestamp: timeStr }
+                          ]
+
+                          // Check if class is 'dang_hoc' and there are no active students left
+                          const activeStudentsCount = nextRoster.filter(
+                            (s) => s.status === 'active' || s.status === 'new' || s.status === 'trial'
+                          ).length
+
+                          let newStatus = cls.status
+                          let finalRoster = nextRoster
+                          if (cls.status === 'dang_hoc' && activeStudentsCount === 0) {
+                            newStatus = 'huy'
+                            finalRoster = []
+                            setRosterState([])
+                            auditLogs.unshift({
+                              id: Math.random().toString(),
+                              action: `Lớp học tự động chuyển sang Đã kết thúc do không còn học viên đang học. Đã giải phóng toàn bộ học viên khỏi roster.`,
+                              operator: 'Hệ thống',
+                              timestamp: timeStr
+                            })
+                          }
+
+                          setLogs((prev) => [...auditLogs, ...prev])
+
+                          if (onSave) {
+                            onSave({
+                              ...cls,
+                              status: newStatus,
+                              enrolledStudents: finalRoster.filter((s) => s.status === 'active').length
+                            })
+                          }
+
+                          if (onStatusChange && newStatus !== cls.status) {
+                            onStatusChange(cls.id, newStatus)
+                          }
                         }}
                       />
                     </TabsContent>
@@ -604,7 +675,26 @@ export function ClassesDetailView({
                     <TabsContent value="schedule" className="m-0 focus-visible:outline-none">
                       <ClassesDetailSchedule 
                         cls={cls} 
+                        validationErrors={validationErrors}
                         onUpdateSchedule={(newSlots) => {
+                          // Clear schedule errors
+                          setValidationErrors((prev) => {
+                            if (!prev || Object.keys(prev).length === 0) return prev
+                            const copy = { ...prev }
+                            let changed = false
+                            if (copy.schedule) {
+                              delete copy.schedule
+                              changed = true
+                            }
+                            Object.keys(copy).forEach(k => {
+                              if (k.startsWith('room_') || k.startsWith('teacher_')) {
+                                delete copy[k]
+                                changed = true
+                              }
+                            })
+                            return changed ? copy : prev
+                          })
+
                           const now = new Date()
                           const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
                           setLogs((prev) => [
@@ -626,8 +716,9 @@ export function ClassesDetailView({
                         cls={editFormState || cls}
                         isEditing={isEditing}
                         editFormState={editFormState}
-                        onEditStateChange={setEditFormState}
+                        onEditStateChange={handleEditFormStateChange}
                         hideClassType={hideClassType}
+                        validationErrors={validationErrors}
                       />
                     </TabsContent>
 
@@ -636,7 +727,7 @@ export function ClassesDetailView({
               </main>
 
               {/* Right: 30% Notes & Logs Side Panel */}
-              <aside className="flex min-h-0 flex-col overflow-hidden border-l pl-6">
+              <aside className="flex min-h-0 flex-col overflow-hidden border-l pl-6 h-full">
                 <Tabs
                   value={activeSideTab}
                   onValueChange={(value) => setActiveSideTab(value as 'notes' | 'logs')}
@@ -663,14 +754,30 @@ export function ClassesDetailView({
                   {/* Tab Content notes */}
                   <TabsContent value="notes" className="min-h-0 flex-1 flex flex-col overflow-hidden m-0 pt-3 focus-visible:outline-none">
                     <div className="flex h-full min-h-0 flex-col justify-between">
-                      <div className="min-h-0 flex-1 overflow-y-auto space-y-3 pr-1">
+                      <div className="min-h-0 flex-1 overflow-y-auto pr-1 space-y-3 pt-1">
                         {notes.map((note) => (
-                          <div key={note.id} className="rounded-xl border bg-muted/25 p-3 shadow-xs border-muted">
-                            <p className="text-xs text-foreground leading-relaxed">{note.text}</p>
-                            <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
-                              <span className="font-semibold text-primary">{note.author}</span>
-                              <span className="font-mono">{note.timestamp}</span>
+                          <div key={note.id} className="group py-0.5">
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                              <PersonnelHoverCard
+                                person={{
+                                  name: note.author,
+                                  phone: '0901234567',
+                                  role: 'Bộ phận Giáo vụ'
+                                }}
+                                align="start"
+                              >
+                                <div className="flex items-center gap-1.5 cursor-help hover:text-primary transition-colors">
+                                  <Avatar className="h-5 w-5 shrink-0">
+                                    <AvatarFallback className="text-[8px] font-bold bg-primary/10 text-primary">
+                                      {getInitials(note.author)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="font-semibold text-foreground/80">{note.author}</span>
+                                </div>
+                              </PersonnelHoverCard>
+                              <span className="font-mono text-[9px]">{formatNoteTimestamp(note.timestamp)}</span>
                             </div>
+                            <p className="mt-1 text-xs text-foreground/90 leading-relaxed">{note.text}</p>
                           </div>
                         ))}
                       </div>
@@ -732,7 +839,7 @@ export function ClassesDetailView({
           const dateStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`
 
           const updatedRoster: RosterStudent[] = selectedList.map((item) => {
-            const existing = rosterState.find((s) => s.id === item.id)
+            const existing = rosterState.find((s) => s.id.split('-')[0] === item.id)
             if (existing) return existing
             
             return {
@@ -748,12 +855,34 @@ export function ClassesDetailView({
           })
 
           setRosterState(updatedRoster)
+          setValidationErrors((prev) => {
+            if (!prev || Object.keys(prev).length === 0) return prev
+            const copy = { ...prev }
+            delete copy.roster
+            return copy
+          })
+
+          // Calculate added and removed students for log
+          const oldIds = new Set(rosterState.map(s => s.id.split('-')[0]))
+          const newIds = new Set(selectedList.map(s => s.id))
+          
+          const addedCount = selectedList.filter(s => !oldIds.has(s.id)).length
+          const removedCount = rosterState.filter(s => !newIds.has(s.id.split('-')[0])).length
+          
+          let actionText = `Đã cập nhật danh sách xếp lớp học viên.`
+          if (addedCount > 0 && removedCount > 0) {
+            actionText = `Đã cập nhật danh sách xếp lớp: thêm ${addedCount} học viên mới và bớt ${removedCount} học viên khỏi lớp học.`
+          } else if (addedCount > 0) {
+            actionText = `Đã xếp lớp/thêm ${addedCount} học viên mới vào danh sách lớp học.`
+          } else if (removedCount > 0) {
+            actionText = `Đã bớt/xóa ${removedCount} học viên khỏi danh sách lớp học.`
+          }
 
           // Append log entry
           setLogs((prev) => [
             { 
               id: Math.random().toString(), 
-              action: `Đã xếp lớp/thêm ${selectedList.length} học viên mới vào danh sách lớp học.`, 
+              action: actionText, 
               operator: 'Giáo vụ Lan', 
               timestamp: timeStr 
             },
@@ -761,6 +890,13 @@ export function ClassesDetailView({
           ])
           
           setIsStudentSelectOpen(false)
+
+          if (onSave) {
+            onSave({
+              ...cls,
+              enrolledStudents: updatedRoster.filter((s) => s.status === 'active' || s.status === 'new').length
+            })
+          }
         }}
       />
 
@@ -779,6 +915,15 @@ export function ClassesDetailView({
             setConfirmStatusChange(null)
           }
         }}
+      />
+
+      <StudentDetailDialog
+        studentId={selectedStudentId}
+        open={!!selectedStudentId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudentId(null)
+        }}
+        fromClassName={cls.name}
       />
     </div>
   )

@@ -1,7 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { EmptyState, StudentNotePopover } from '@/components/shared'
+import { ConfirmDialog, EmptyState, StudentNotePopover } from '@/components/shared'
 import { UserPlus, Trash2 } from 'lucide-react'
 import { mockStudents } from '@/mocks/students'
 import {
@@ -28,6 +29,14 @@ export function ClassesCreateRoster({
   onAddStudent,
   onRemoveStudent,
 }: ClassesCreateRosterProps) {
+  const [removeConfirmStudent, setRemoveConfirmStudent] = useState<Student | null>(null)
+
+  const handleRemoveConfirm = () => {
+    if (removeConfirmStudent) {
+      onRemoveStudent(removeConfirmStudent.id)
+    }
+    setRemoveConfirmStudent(null)
+  }
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       {/* Selector Action Section */}
@@ -89,7 +98,7 @@ export function ClassesCreateRoster({
                             variant="ghost"
                             size="icon-sm"
                             className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 w-7"
-                            onClick={() => onRemoveStudent(student.id)}
+                            onClick={() => setRemoveConfirmStudent(student)}
                             title="Xóa học viên"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -131,6 +140,17 @@ export function ClassesCreateRoster({
           />
         </div>
       )}
+
+      {/* Confirm dialog for student removal */}
+      <ConfirmDialog
+        open={!!removeConfirmStudent}
+        onOpenChange={(open) => { if (!open) setRemoveConfirmStudent(null) }}
+        title="Xóa học viên khỏi lớp"
+        description={removeConfirmStudent ? `Bạn có chắc chắn muốn xóa học viên "${removeConfirmStudent.name}" khỏi danh sách lớp đang tạo? Hành động này không thể hoàn tác.` : ''}
+        confirmLabel="Xóa"
+        variant="destructive"
+        onConfirm={handleRemoveConfirm}
+      />
     </div>
   )
 }
