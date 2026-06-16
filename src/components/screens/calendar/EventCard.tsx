@@ -35,12 +35,24 @@ export function EventCard({
   }
 
   const booking = getAssociatedBookingTest(session)
-  const studentName = booking ? booking.childName : session.title
-  const teacherName = booking ? (booking.teacher || 'Chưa gán') : session.organizer
+  
+  // Extract student name and event subject/description
+  let studentName = session.title
+  let subjectAndLevel = session.subject || 'Trải nghiệm'
+  
+  if (booking) {
+    studentName = booking.childName
+    subjectAndLevel = `${booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy'} - ${booking.program}`
+  } else if (session.title.includes(' - ')) {
+    const parts = session.title.split(' - ')
+    subjectAndLevel = parts[0]
+    studentName = parts[1]
+  }
 
-  const subjectAndLevel = booking
-    ? `${booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy'} - ${booking.program}`
-    : session.subject || 'Trải nghiệm'
+  const teacherName = booking ? (booking.teacher || 'Chưa gán') : session.organizer
+  const location = activeBranch === 'all'
+    ? session.location
+    : session.location.replace(`${session.branch} - `, '')
 
   const bookingStatusMap: Record<string, string> = {
     booked_assessment: 'đã đặt lịch test',
@@ -102,7 +114,7 @@ export function EventCard({
       {activeBranch === 'all' && (
         <div className="mt-0.5 flex items-center gap-1 text-[9px] text-muted-foreground min-w-0">
           <MapPin className="h-3 w-3 shrink-0" />
-          <span className="truncate">{session.branch}</span>
+          <span className="truncate">{location}</span>
         </div>
       )}
 
