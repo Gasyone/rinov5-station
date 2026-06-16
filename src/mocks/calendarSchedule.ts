@@ -1,3 +1,5 @@
+import { mockBookingTests } from './bookingTests'
+
 export interface ClassSession {
   id: string; classCode: string; className: string; subject: string; teacher: string;
   branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
@@ -73,7 +75,7 @@ const parseWeekdays = (s: string) => s.split(',').map(t => WEEKDAY_MAP[t.trim().
 
 export function getMockClassSessions(): ClassSession[] {
   const today = new Date(); today.setHours(0, 0, 0, 0)
-  return CLASSES.flatMap(cls => {
+  const generated = CLASSES.flatMap(cls => {
     const days = parseWeekdays(cls.schedule)
     const lesson = PICK(LESSONS[cls.subject] || LESSONS['Tiếng Anh'], HASH(cls.id))
     const type = HASH(cls.id) % 4 === 0 ? 'supplementary' : 'class_session'
@@ -124,11 +126,59 @@ export function getMockClassSessions(): ClassSession[] {
         isOpeningDay: isOp || undefined,
       }
     }).filter(Boolean) as ClassSession[]
-  }).sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
+  })
+
+  const getMon = (input: Date) => {
+    const date = new Date(input)
+    const day = date.getDay()
+    date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
+    date.setHours(0, 0, 0, 0)
+    return date
+  }
+
+  const monday = getMon(new Date())
+  const tuesday = new Date(monday)
+  tuesday.setDate(tuesday.getDate() + 1) // Tuesday
+  const tuesdayKey = `${tuesday.getFullYear()}-${PAD(tuesday.getMonth() + 1)}-${PAD(tuesday.getDate())}`
+
+  const testSessions: ClassSession[] = Array.from({ length: 7 }, (_, idx) => {
+    const classId = `TEST_CLASS_0${idx + 1}`
+    return {
+      id: `CLS-${classId}-${tuesdayKey}`,
+      classCode: classId,
+      className: `Lớp Test 0${idx + 1}`,
+      subject: idx % 2 === 0 ? 'Tiếng Anh' : 'Toán tư duy',
+      teacher: ['Thu Hà', 'Mỹ Linh', 'Coenrad Redman', 'Thanh Bình'][idx % 4],
+      branch: 'RinoEdu Linh Đàm',
+      schoolRoom: `Phòng ${idx + 1}`,
+      level: 'Level 2',
+      date: tuesdayKey,
+      dateDisplay: `${PAD(tuesday.getDate())}/${PAD(tuesday.getMonth() + 1)}/${tuesday.getFullYear()}`,
+      dateBucket: 'upcoming',
+      timeLabel: '17:45',
+      endTimeLabel: '19:15',
+      scheduleLabel: 'T3',
+      status: 'confirmed',
+      statusLabel: 'Đã xác nhận',
+      type: 'class_session',
+      typeLabel: 'Chính thức',
+      title: `Bài học thử nghiệm ${idx + 1}`,
+      lessonSubtitle: 'Chi tiết bài test',
+      totalStudents: 15,
+      officialStudents: 12,
+      trialStudents: 3,
+      attendedStudents: undefined,
+      isRecurring: true,
+    }
+  })
+
+  return [...generated, ...testSessions].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
 }
 
 export function getMockEventSessions(): EventSession[] {
   const today = new Date(); today.setHours(0, 0, 0, 0)
+  
+  // 1. Generate standard events (filtering out default 'placement_test' to let them be driven by booking tests)
   const standardEvents = EVENT_NAMES.map((name, idx) => {
     const offset = (idx % 5) - 2 + Math.floor(idx / 5) * 3
     const d = addDays(today, offset)
@@ -144,13 +194,9 @@ export function getMockEventSessions(): EventSession[] {
       sts = idx % 6 === 0 ? 'cancelled' : 'scheduled'
     }
 
-    let maxP = 30 + (seed % 40)
-    let participants = sts === 'completed' ? Math.min(maxP, 15 + (seed % 30)) : sts === 'cancelled' ? 0 : Math.min(maxP, 5 + (seed % 20))
+    const maxP = 30 + (seed % 40)
+    const participants = sts === 'completed' ? Math.min(maxP, 15 + (seed % 30)) : sts === 'cancelled' ? 0 : Math.min(maxP, 5 + (seed % 20))
     
-    if (type === 'placement_test') {
-      maxP = 1
-      participants = sts === 'completed' ? 1 : 0
-    }
     const sh = 9 + (idx % 4), eh = 11 + (idx % 4)
     let subject = 'Tiếng Anh'
     if (name.includes('Toán') || name.includes('Archimedes') || name.includes('Columbus')) {
@@ -170,11 +216,64 @@ export function getMockEventSessions(): EventSession[] {
       status: sts, statusLabel: sts === 'scheduled' ? 'Đã lên lịch' : sts === 'completed' ? 'Hoàn thành' : 'Hủy',
       participants, maxParticipants: maxP,
       location: `${PICK(BRANCHES, idx)} - Hội trường`,
-      note: type === 'placement_test' 
-        ? (participants === 1 ? 'Đã hoàn thành trải nghiệm.' : 'Chờ học viên tham gia trải nghiệm.')
-        : bucket === 'upcoming' ? `Đã mở đăng ký, hiện có ${participants}/${maxP} người.` : bucket === 'today' ? 'Sắp diễn ra.' : `Đã diễn ra với ${participants} người.`,
+      note: bucket === 'upcoming' ? `Đã mở đăng ký, hiện có ${participants}/${maxP} người.` : bucket === 'today' ? 'Sắp diễn ra.' : `Đã diễn ra với ${participants} người.`,
       isRecurring: idx % 3 === 0,
       subject,
+    }
+  }).filter(evt => evt.type !== 'placement_test')
+
+  // 2. Map all 20 booking tests into EventSession items
+  const bookingEvents: EventSession[] = mockBookingTests.map((booking) => {
+    // booking.testTime is in "YYYY-MM-DD HH:mm" format
+    const [dateStr, timeStr] = booking.testTime.split(' ')
+    const [h, m] = timeStr.split(':').map(Number)
+    const endMinutes = h * 60 + m + 90
+    const endH = Math.floor(endMinutes / 60)
+    const endM = endMinutes % 60
+    const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
+
+    const sessionDate = new Date(dateStr)
+    sessionDate.setHours(0, 0, 0, 0)
+    
+    const isToday = sessionDate.getTime() === today.getTime()
+    const bucket = (isToday ? 'today' : sessionDate < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
+
+    let status: EventSession['status'] = 'scheduled'
+    if (booking.status === 'completed' || booking.status === 'failed') {
+      status = 'completed'
+    } else if (booking.status === 'cancelled') {
+      status = 'cancelled'
+    } else {
+      status = 'scheduled'
+    }
+    const statusLabel = status === 'scheduled' ? 'Đã lên lịch' : status === 'completed' ? 'Hoàn thành' : 'Hủy'
+
+    const dateDisplayParts = dateStr.split('-')
+    const dateDisplay = `${dateDisplayParts[2]}/${dateDisplayParts[1]}/${dateDisplayParts[0]}`
+
+    const subjectLabel = booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy'
+
+    return {
+      id: `EVT-${booking.id}`,
+      title: `Lịch trải nghiệm ${subjectLabel} - ${booking.childName}`,
+      description: `Buổi đánh giá năng lực đầu vào và học thử dành cho ${booking.childName}.`,
+      date: dateStr,
+      dateDisplay,
+      dateBucket: bucket,
+      timeLabel: timeStr,
+      endTimeLabel: endTimeStr,
+      branch: booking.school,
+      organizer: 'Phòng Tuyển sinh',
+      type: 'placement_test' as const,
+      typeLabel: 'Trải nghiệm',
+      status,
+      statusLabel,
+      participants: status === 'completed' ? 1 : 0,
+      maxParticipants: 1,
+      location: `${booking.school} - ${booking.room}`,
+      note: booking.msg || 'Chờ học viên.',
+      isRecurring: false,
+      subject: subjectLabel
     }
   })
 
@@ -248,5 +347,5 @@ export function getMockEventSessions(): EventSession[] {
     }
   ]
 
-  return [...standardEvents, ...customEvents].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
+  return [...standardEvents, ...bookingEvents, ...customEvents].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
 }
