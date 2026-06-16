@@ -227,7 +227,13 @@ export function getMockEventSessions(): EventSession[] {
     // booking.testTime is in "YYYY-MM-DD HH:mm" format
     const [dateStr, timeStr] = booking.testTime.split(' ')
     const [h, m] = timeStr.split(':').map(Number)
-    const endMinutes = h * 60 + m + 90
+    
+    // Snap/calculate start time to 30-minute boundary (e.g. 10:15 -> 10:00, 10:45 -> 10:30)
+    const slotM = m < 30 ? 0 : 30
+    const startTimeStr = `${String(h).padStart(2, '0')}:${String(slotM).padStart(2, '0')}`
+
+    // End time is exactly 30 minutes later
+    const endMinutes = h * 60 + slotM + 30
     const endH = Math.floor(endMinutes / 60)
     const endM = endMinutes % 60
     const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
@@ -260,7 +266,7 @@ export function getMockEventSessions(): EventSession[] {
       date: dateStr,
       dateDisplay,
       dateBucket: bucket,
-      timeLabel: timeStr,
+      timeLabel: startTimeStr,
       endTimeLabel: endTimeStr,
       branch: booking.school,
       organizer: 'Phòng Tuyển sinh',
@@ -287,7 +293,7 @@ export function getMockEventSessions(): EventSession[] {
       dateDisplay: `${PAD(addDays(today, 1).getDate())}/${PAD(addDays(today, 1).getMonth() + 1)}/${addDays(today, 1).getFullYear()}`,
       dateBucket: 'upcoming',
       timeLabel: '14:30',
-      endTimeLabel: '16:00',
+      endTimeLabel: '15:00',
       branch: 'RinoEdu Linh Đàm',
       organizer: 'Phòng Đào tạo',
       type: 'placement_test',
@@ -309,7 +315,7 @@ export function getMockEventSessions(): EventSession[] {
       dateDisplay: `${PAD(addDays(today, -1).getDate())}/${PAD(addDays(today, -1).getMonth() + 1)}/${addDays(today, -1).getFullYear()}`,
       dateBucket: 'past',
       timeLabel: '09:00',
-      endTimeLabel: '10:30',
+      endTimeLabel: '09:30',
       branch: 'RinoEdu Nguyễn Tuân',
       organizer: 'Phòng Tuyển sinh',
       type: 'placement_test',
@@ -331,7 +337,7 @@ export function getMockEventSessions(): EventSession[] {
       dateDisplay: `${PAD(addDays(today, -2).getDate())}/${PAD(addDays(today, -2).getMonth() + 1)}/${addDays(today, -2).getFullYear()}`,
       dateBucket: 'past',
       timeLabel: '18:00',
-      endTimeLabel: '19:30',
+      endTimeLabel: '18:30',
       branch: 'RinoEdu Smart City',
       organizer: 'Phòng Marketing',
       type: 'placement_test',
