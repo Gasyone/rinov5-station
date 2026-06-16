@@ -36,20 +36,24 @@ export function EventCard({
 
   const booking = getAssociatedBookingTest(session)
   
-  // Extract student name and event subject/description
+  // Resolve Student Name
   let studentName = session.title
-  let subjectAndLevel = session.subject || 'Trải nghiệm'
-  
   if (booking) {
     studentName = booking.childName
-    subjectAndLevel = `${booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy'} - ${booking.program}`
   } else if (session.title.includes(' - ')) {
-    const parts = session.title.split(' - ')
-    subjectAndLevel = parts[0]
-    studentName = parts[1]
+    studentName = session.title.split(' - ')[1]
   }
+  
+  // Resolve Teacher Name
+  const teacherName = booking
+    ? (booking.teacher || 'Chưa gán')
+    : (session.subject === 'Toán tư duy' ? 'Thay Hung' : 'Sarah J.')
 
-  const teacherName = booking ? (booking.teacher || 'Chưa gán') : session.organizer
+  // Resolve Subject and Level/Program
+  const subjectAndLevel = booking
+    ? `${booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy'} - ${booking.program}`
+    : `${session.subject || 'Tiếng Anh'} - ${session.subject === 'Toán tư duy' ? 'Toán tư duy Archimedes' : 'Tiếng Anh thiếu nhi'}`
+
   const location = activeBranch === 'all'
     ? session.location
     : session.location.replace(`${session.branch} - `, '')
