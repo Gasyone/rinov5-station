@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Users, CalendarClock } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
+
 import {
   BranchSelect,
   ExpandableSearch,
@@ -9,38 +10,38 @@ import {
   IconActionButton,
   SegmentedControl,
 } from '@/components/controls'
-import { FilterSheetPanel, type FilterSection } from '@/components/filters'
+import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { getMockEventSessions, type EventSession } from '@/mocks/calendarSchedule'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
-import { EventDetailDialog } from './calendar/EventDetailDialog'
 import { BookingTestDetailDialog } from './booking-test/BookingTestDetailDialog'
 import { mockBookingTests } from '@/mocks/bookingTests'
+import { EventCard, getAssociatedBookingTest } from './calendar/EventCard'
 
-const FILTER_BUCKETS = [
-  { value: 'today', label: 'Hôm nay' },
-  { value: 'upcoming', label: 'Sắp diễn ra' },
-  { value: 'past', label: 'Đã qua' },
+const PERIOD_OPTIONS = [
+  { value: 'morning', label: 'Sáng' },
+  { value: 'afternoon', label: 'Chiều' },
+  { value: 'evening', label: 'Tối' },
 ]
+
+const getSessionPeriod = (timeLabel: string): 'morning' | 'afternoon' | 'evening' => {
+  if (!timeLabel) return 'morning'
+  const hour = parseInt(timeLabel.split(':')[0], 10)
+  if (isNaN(hour)) return 'morning'
+  if (hour < 12) return 'morning'
+  if (hour < 18) return 'afternoon'
+  return 'evening'
+}
 
 const VIEW_MODES = [
   { value: 'day', label: 'Ngày' },
   { value: 'week', label: 'Tuần' },
 ]
 
-const EVENT_TYPES = [
-  { value: 'event', label: 'Sự kiện' },
-  { value: 'placement_test', label: 'Trải nghiệm' },
-  { value: 'workshop', label: 'Hội thảo' },
-  { value: 'consultation', label: 'Tư vấn' },
-]
-
-const getInitial = (name: string) =>
-  name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
 const getMonday = (input: Date) => {
   const date = new Date(input)
   const day = date.getDay()
@@ -48,6 +49,7 @@ const getMonday = (input: Date) => {
   date.setHours(0, 0, 0, 0)
   return date
 }
+
 const getWeekDays = (from: Date) =>
   Array.from({ length: 7 }, (_, index) => {
     const date = new Date(from)
@@ -55,15 +57,30 @@ const getWeekDays = (from: Date) =>
     date.setHours(0, 0, 0, 0)
     return date
   })
-const lineClamp2 = 'overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]'
 
 export function CalendarEventScheduleScreen() {
-  const allSessions = useMemo(() => getMockEventSessions(), [])
+  const allSessions = useMemo(() => {
+    return getMockEventSessions()
+      .filter((session) => session.type === 'placement_test')
+      .map((session, idx) => {
+        const updatedSession = { ...session }
+        if (idx % 4 === 0) {
+          updatedSession.status = 'rescheduled' as const
+          updatedSession.statusLabel = 'Đổi ngày'
+        }
+        return updatedSession
+      })
+  }, [])
+
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
-  const [bucketFilters, setBucketFilters] = useState<string[]>([])
-  const [typeFilters, setTypeFilters] = useState<string[]>([])
+  const [displayFormat, setDisplayFormat] = useState<'timeline' | 'list'>('timeline')
+  const [periodFilters, setPeriodFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
-  const [organizerFilters, setOrganizerFilters] = useState<string[]>([])
+  const [subjectFilters, setSubjectFilters] = useState<string[]>([])
+  const [programFilters, setProgramFilters] = useState<string[]>([])
+  const [saleFilters, setSaleFilters] = useState<string[]>([])
+  const [teacherFilters, setTeacherFilters] = useState<string[]>([])
+  const [bookingStatusFilters, setBookingStatusFilters] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [activeBranch, setActiveBranch] = useState('all')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -81,10 +98,20 @@ export function CalendarEventScheduleScreen() {
   const filtered = useMemo(() => {
     return allSessions.filter((session) => {
       if (activeBranch !== 'all' && session.branch !== activeBranch) return false
-      if (bucketFilters.length > 0 && !bucketFilters.includes(session.dateBucket)) return false
-      if (typeFilters.length > 0 && !typeFilters.includes(session.type)) return false
+      if (periodFilters.length > 0 && !periodFilters.includes(getSessionPeriod(session.timeLabel))) return false
       if (statusFilters.length > 0 && !statusFilters.includes(session.status)) return false
-      if (organizerFilters.length > 0 && !organizerFilters.includes(session.organizer)) return false
+      if (subjectFilters.length > 0 && !subjectFilters.includes(session.subject as string)) return false
+      
+      const booking = getAssociatedBookingTest(session)
+      if (booking) {
+        if (programFilters.length > 0 && !programFilters.includes(booking.program)) return false
+        if (saleFilters.length > 0 && !saleFilters.includes(booking.createdBy || '')) return false
+        if (teacherFilters.length > 0 && !teacherFilters.includes(booking.teacher || '')) return false
+        if (bookingStatusFilters.length > 0 && !bookingStatusFilters.includes(booking.status)) return false
+      } else {
+        if (programFilters.length > 0 || saleFilters.length > 0 || teacherFilters.length > 0 || bookingStatusFilters.length > 0) return false
+      }
+
       if (!search) return true
 
       const query = search.toLowerCase()
@@ -94,55 +121,96 @@ export function CalendarEventScheduleScreen() {
         session.organizer.toLowerCase().includes(query)
       )
     })
-  }, [activeBranch, allSessions, bucketFilters, search, typeFilters, statusFilters, organizerFilters])
+  }, [activeBranch, allSessions, periodFilters, search, statusFilters, subjectFilters, programFilters, saleFilters, teacherFilters, bookingStatusFilters])
 
   const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
-  const organizers = useMemo(() => [...new Set(allSessions.map((session) => session.organizer))], [allSessions])
-  const activeFilterCount = bucketFilters.length + typeFilters.length + statusFilters.length + organizerFilters.length
-  const filterSections = useMemo<FilterSection[]>(
+  const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject).filter(Boolean))], [allSessions])
+  
+  const activeFilterCount =
+    periodFilters.length +
+    statusFilters.length +
+    subjectFilters.length +
+    programFilters.length +
+    saleFilters.length +
+    teacherFilters.length +
+    bookingStatusFilters.length
+
+  const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
-      {
-        id: 'buckets',
-        title: 'Khoảng thời gian',
-        options: FILTER_BUCKETS.map((bucket) => ({
-          value: bucket.value,
-          label: bucket.label,
-          count: allSessions.filter((session) => session.dateBucket === bucket.value).length,
-          checked: bucketFilters.includes(bucket.value),
-        })),
-      },
-      {
-        id: 'types',
-        title: 'Loại sự kiện',
-        options: EVENT_TYPES.map((type) => ({
-          value: type.value,
-          label: type.label,
-          count: allSessions.filter((session) => session.type === type.value).length,
-          checked: typeFilters.includes(type.value),
-        })),
-      },
-      {
+      createFilterGroup({
+        id: 'bookingStatuses',
+        title: 'Trạng thái lịch test',
+        options: [
+          { value: 'booked_assessment', label: 'Đã đặt lịch test' },
+          { value: 'checkin', label: 'Đã check-in' },
+          { value: 'completed', label: 'Hoàn tất' },
+          { value: 'failed', label: 'Không đạt' },
+          { value: 'cancelled', label: 'Đã hủy' },
+        ],
+        selectedValues: bookingStatusFilters,
+        getOptionCount: (status) => allSessions.filter((session) => getAssociatedBookingTest(session)?.status === status).length,
+      }),
+      createFilterGroup({
+        id: 'programs',
+        title: 'Chương trình',
+        options: [
+          'Station Program',
+          'IELTS Foundation',
+          'Tiếng Anh thiếu nhi',
+          'Toán tư duy',
+          'Toán Olympiad',
+        ],
+        selectedValues: programFilters,
+        getOptionCount: (program) => allSessions.filter((session) => getAssociatedBookingTest(session)?.program === program).length,
+      }),
+      createFilterGroup({
+        id: 'sales',
+        options: [
+          'Hung Dao',
+          'Thanh Van',
+          'Yen Nhi',
+          'Le Hoang Nam',
+          'Tran Anh Kiet',
+          'Nguyen Thi Ha',
+        ],
+        selectedValues: saleFilters,
+        getOptionCount: (sale) => allSessions.filter((session) => getAssociatedBookingTest(session)?.createdBy === sale).length,
+        searchable: true,
+        scrollable: true,
+      }),
+      createFilterGroup({
+        id: 'teachers',
+        title: 'Giáo viên phụ trách',
+        options: [
+          'Sarah J.',
+          'Robert L.',
+          'Emily W.',
+          'Thay Hung',
+        ],
+        selectedValues: teacherFilters,
+        getOptionCount: (teacher) => allSessions.filter((session) => getAssociatedBookingTest(session)?.teacher === teacher).length,
+      }),
+      createFilterGroup({
+        id: 'subjects',
+        options: subjects.map((subject) => subject as string),
+        selectedValues: subjectFilters,
+        getOptionCount: (subject) => allSessions.filter((session) => session.subject === subject).length,
+      }),
+      createFilterGroup({
+        id: 'periods',
+        options: PERIOD_OPTIONS,
+        selectedValues: periodFilters,
+        getOptionCount: (period) => allSessions.filter((session) => getSessionPeriod(session.timeLabel) === period).length,
+      }),
+      createFilterGroup({
         id: 'statuses',
-        title: 'Trạng thái',
-        options: statuses.map(([value, label]) => ({
-          value,
-          label,
-          count: allSessions.filter((session) => session.status === value).length,
-          checked: statusFilters.includes(value),
-        })),
-      },
-      {
-        id: 'organizers',
-        title: 'Người tổ chức',
-        options: organizers.map((organizer) => ({
-          value: organizer,
-          label: organizer,
-          count: allSessions.filter((session) => session.organizer === organizer).length,
-          checked: organizerFilters.includes(organizer),
-        })),
-      },
+        title: 'Trạng thái sự kiện',
+        options: statuses.map(([value, label]) => ({ value, label })),
+        selectedValues: statusFilters,
+        getOptionCount: (status) => allSessions.filter((session) => session.status === status).length,
+      }),
     ],
-    [allSessions, bucketFilters, typeFilters, statusFilters, organizerFilters, statuses, organizers]
+    [allSessions, periodFilters, statusFilters, subjectFilters, statuses, subjects, programFilters, saleFilters, teacherFilters, bookingStatusFilters]
   )
 
   const calendarTitle = viewMode === 'day'
@@ -156,28 +224,18 @@ export function CalendarEventScheduleScreen() {
   }
 
   const [selectedEvent, setSelectedEvent] = useState<EventSession | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
   const [bookingTestOpen, setBookingTestOpen] = useState(false)
 
   const handleSelectEvent = (session: EventSession) => {
     setSelectedEvent(session)
-    if (session.type === 'placement_test') {
+    if (getAssociatedBookingTest(session)) {
       setBookingTestOpen(true)
-    } else {
-      setDetailOpen(true)
     }
-  }
-
-  const handleRegister = () => {
-    import('sonner').then(({ toast }) => {
-      toast.success(`Đăng ký tham gia thành công sự kiện: ${selectedEvent?.title}`)
-    })
-    setDetailOpen(false)
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between lg:px-6">
+      <div className="flex flex-col gap-2 px-3 py-3 md:flex-row md:items-center md:justify-between lg:px-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedDate(viewMode === 'day' ? new Date() : getMonday(new Date()))}>
             Hôm nay
@@ -193,8 +251,49 @@ export function CalendarEventScheduleScreen() {
           <SegmentedControl
             value={viewMode}
             options={VIEW_MODES.map((mode) => ({ value: mode.value as 'day' | 'week', label: mode.label }))}
-            onValueChange={setViewMode}
+            onValueChange={(value) => {
+              setViewMode(value)
+              if (value === 'day') {
+                setSelectedDate(new Date())
+              } else {
+                setSelectedDate(getMonday(selectedDate))
+              }
+            }}
           />
+          {viewMode === 'week' && (
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant={displayFormat === 'timeline' ? 'secondary' : 'ghost'}
+                size="icon-xs"
+                onClick={() => setDisplayFormat('timeline')}
+                className={cn(
+                  "h-8 w-8 rounded-md p-0 flex items-center justify-center transition-colors",
+                  displayFormat === 'timeline'
+                    ? "bg-secondary text-secondary-foreground font-semibold shadow-xs"
+                    : "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+                title="Lưới thời gian"
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant={displayFormat === 'list' ? 'secondary' : 'ghost'}
+                size="icon-xs"
+                onClick={() => setDisplayFormat('list')}
+                className={cn(
+                  "h-8 w-8 rounded-md p-0 flex items-center justify-center transition-colors",
+                  displayFormat === 'list'
+                    ? "bg-secondary text-secondary-foreground font-semibold shadow-xs"
+                    : "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+                title="Danh sách cột"
+              >
+                <Columns3 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
           <BranchSelect
             value={activeBranch}
             branches={branches}
@@ -204,76 +303,130 @@ export function CalendarEventScheduleScreen() {
           <ExpandableSearch
             value={search}
             onValueChange={setSearch}
-            label="Tìm sự kiện"
-            placeholder="Tìm sự kiện..."
+            label="Tìm lịch trải nghiệm"
+            placeholder="Tìm lịch trải nghiệm..."
             inputClassName="sm:w-72"
           />
-          <FilterIconButton count={activeFilterCount} label="Lọc sự kiện" onClick={() => setIsFilterOpen(true)} />
+          <FilterIconButton count={activeFilterCount} label="Lọc lịch trải nghiệm" onClick={() => setIsFilterOpen(true)} />
         </div>
       </div>
 
       {viewMode === 'day' ? (
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <EventColumn sessions={filtered} date={selectedDate} onSelectEvent={handleSelectEvent} single />
-        </div>
+        <DayTimelineView sessions={filtered} date={selectedDate} onSelectEvent={handleSelectEvent} activeBranch={activeBranch} />
       ) : (
-        <>
-          <WeekHeader days={weekDays} today={today} />
-          <div className="grid min-h-0 flex-1 grid-cols-7">
-            {weekDays.map((day, index) => (
-              <div key={day.toISOString()} className={cn('min-w-0', index < 6 && 'border-r border-border/40')}>
-                <div className="h-full overflow-y-auto p-1.5">
-                  <EventColumn sessions={filtered} date={day} onSelectEvent={handleSelectEvent} />
-                </div>
-              </div>
-            ))}
+        displayFormat === 'timeline' ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <WeekHeader days={weekDays} today={today} hasSpacer sessions={filtered} />
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {TIMELINE_SLOTS.map((slot) => {
+                return (
+                  <div key={slot} className="flex min-h-[56px] border-b border-border/30">
+                    {/* Hour label */}
+                    <div className="flex w-16 shrink-0 items-start justify-end pr-3 pt-2 border-r border-border/40">
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        {slot}
+                      </span>
+                    </div>
+                    {/* 7 Columns for this hour */}
+                    <div className="grid flex-1 grid-cols-7">
+                      {weekDays.map((day, index) => {
+                        const dayHourSessions = filtered.filter(
+                          (s) => s.date === toDateKey(day) && get30MinSlot(s.timeLabel) === slot
+                        )
+                        return (
+                          <div
+                            key={day.toISOString()}
+                            className={cn(
+                              'p-1.5 flex flex-col gap-1.5 min-w-0 h-full justify-start',
+                              index < 6 && 'border-r border-border/30'
+                            )}
+                          >
+                            {dayHourSessions.map((session) => (
+                              <EventCard
+                                key={session.id}
+                                session={session}
+                                onClick={() => handleSelectEvent(session)}
+                                activeBranch={activeBranch}
+                              />
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <WeekHeader days={weekDays} today={today} hasSpacer={false} sessions={filtered} />
+            <div className="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto">
+              {weekDays.map((day, index) => (
+                <div key={day.toISOString()} className={cn('min-w-0', index < 6 && 'border-r border-border/40')}>
+                  <div className="h-full overflow-y-auto p-1.5">
+                    <EventColumn sessions={filtered} date={day} onSelectEvent={handleSelectEvent} activeBranch={activeBranch} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
       )}
 
-      <FilterSheetPanel
+      <FilterGroupSheetPanel
         open={isFilterOpen}
-        title="Bộ lọc lịch sự kiện"
-        description="Lọc sự kiện theo thời gian và loại sự kiện."
-        sections={filterSections}
+        title="Bộ lọc lịch trải nghiệm"
+        description="Lọc lịch trải nghiệm theo môn học, khoảng thời gian và trạng thái."
+        groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
-          if (sectionId === 'buckets') {
-            setBucketFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'types') {
-            setTypeFilters((current) =>
+          if (sectionId === 'periods') {
+            setPeriodFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
           } else if (sectionId === 'statuses') {
             setStatusFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
-          } else if (sectionId === 'organizers') {
-            setOrganizerFilters((current) =>
+          } else if (sectionId === 'subjects') {
+            setSubjectFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'programs') {
+            setProgramFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'sales') {
+            setSaleFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'teachers') {
+            setTeacherFilters((current) =>
+              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+            )
+          } else if (sectionId === 'bookingStatuses') {
+            setBookingStatusFilters((current) =>
               current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
             )
           }
         }}
         onClearAll={() => {
-          setBucketFilters([])
-          setTypeFilters([])
+          setPeriodFilters([])
           setStatusFilters([])
-          setOrganizerFilters([])
+          setSubjectFilters([])
+          setProgramFilters([])
+          setSaleFilters([])
+          setTeacherFilters([])
+          setBookingStatusFilters([])
         }}
       />
 
-      <EventDetailDialog
-        session={selectedEvent}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        onRegister={handleRegister}
-      />
+
       
       {bookingTestOpen && selectedEvent?.type === 'placement_test' && (
         <BookingTestDetailDialog
-          booking={mockBookingTests[0]} // Mock data for demo
+          booking={getAssociatedBookingTest(selectedEvent) || mockBookingTests[0]} // Mock data for demo
           detailNote=""
           copiedKey=""
           onOpenChange={setBookingTestOpen}
@@ -285,26 +438,61 @@ export function CalendarEventScheduleScreen() {
           onAddNote={() => {}}
         />
       )}
+
+      {/* Chú giải màu sắc footer */}
+      <div className="border-t border-border/40 bg-muted/20 px-3 py-2 lg:px-3">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground/80">Chú giải màu sắc:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-white border border-border dark:bg-zinc-800" />
+            <span>Sự kiện hôm nay</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-sky-50 border border-sky-600 dark:bg-sky-400" />
+            <span className="font-medium text-sky-600 dark:text-sky-400">Sự kiện sắp diễn ra</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-orange-50 border border-orange-100 dark:bg-orange-950/30" />
+            <span className="font-medium text-orange-600 dark:text-orange-400 font-semibold">Sự kiện đã diễn ra</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-zinc-300 border border-zinc-400 dark:bg-zinc-700 opacity-50" />
+            <span className="line-through font-medium text-zinc-400 dark:text-zinc-500">Sự kiện đã hủy</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-function WeekHeader({ days, today }: { days: Date[]; today: Date }) {
+function WeekHeader({ days, today, hasSpacer = false, sessions }: { days: Date[]; today: Date; hasSpacer?: boolean; sessions: EventSession[] }) {
   return (
-    <div className="grid grid-cols-7 bg-muted/30">
-      {days.map((day) => {
-        const isToday = day.getTime() === today.getTime()
-        return (
-          <div key={day.toISOString()} className="flex flex-col items-center justify-center py-2">
-            <span className={cn('text-[10px] font-medium uppercase tracking-wider', isToday ? 'text-primary' : 'text-muted-foreground')}>
-              {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
-            </span>
-            <div className={cn('mt-1 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold', isToday ? 'bg-primary text-primary-foreground' : '')}>
-              {day.getDate()}
+    <div className="flex bg-muted/30 border-b border-border/40">
+      {/* Spacer for hour column */}
+      {hasSpacer && <div className="w-16 shrink-0 border-r border-border/40 bg-muted/10" />}
+      {/* Columns */}
+      <div className={cn("grid flex-1", days.length === 1 ? "grid-cols-1" : "grid-cols-7")}>
+        {days.map((day) => {
+          const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear()
+          const daySessions = sessions.filter((s) => s.date === toDateKey(day))
+          const count = daySessions.length
+          return (
+            <div key={day.toISOString()} className="flex flex-col items-center justify-center py-2.5">
+              <div className="flex items-center gap-1.5">
+                <span className={cn('text-[10px] font-semibold uppercase tracking-wider', isToday ? 'text-primary' : 'text-muted-foreground')}>
+                  {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
+                </span>
+                <span className={cn('flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold', isToday ? 'bg-primary text-primary-foreground' : 'text-foreground')}>
+                  {day.getDate()}
+                </span>
+              </div>
+              <span className="text-[9.5px] mt-1 text-muted-foreground font-semibold">
+                {count} sự kiện
+              </span>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -313,11 +501,13 @@ function EventColumn({
   sessions,
   date,
   onSelectEvent,
+  activeBranch = 'all',
   single,
 }: {
   sessions: EventSession[]
   date: Date
   onSelectEvent: (session: EventSession) => void
+  activeBranch?: string
   single?: boolean
 }) {
   const daySessions = sessions.filter((session) => session.date === toDateKey(date))
@@ -335,63 +525,88 @@ function EventColumn({
   return (
     <div className={single ? 'grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-2'}>
       {daySessions.map((session) => (
-        <EventCard key={session.id} session={session} onClick={() => onSelectEvent(session)} />
+        <EventCard key={session.id} session={session} onClick={() => onSelectEvent(session)} activeBranch={activeBranch} />
       ))}
     </div>
   )
 }
 
-function EventCard({ session, onClick }: { session: EventSession; onClick: () => void }) {
-  const initials = getInitial(session.organizer)
-  const isCancelled = session.status === 'cancelled'
-  const isRescheduled = session.status === 'rescheduled'
+const TIMELINE_SLOTS = Array.from({ length: 29 }, (_, i) => {
+  const hour = 8 + Math.floor(i / 2)
+  const minute = (i % 2) * 30
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+})
 
-  let bgClass = 'bg-card hover:bg-accent/60'
-  if (isCancelled) {
-    bgClass = 'bg-zinc-50 dark:bg-zinc-900/50 opacity-75 hover:bg-zinc-100'
-  } else if (session.dateBucket === 'past') {
-    bgClass = 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50'
-  } else if (session.dateBucket === 'upcoming') {
-    bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50'
+const get30MinSlot = (timeLabel: string): string => {
+  if (!timeLabel) return '08:00'
+  const [hStr, mStr] = timeLabel.split(':')
+  const hour = parseInt(hStr, 10)
+  const minute = parseInt(mStr, 10)
+  if (isNaN(hour) || isNaN(minute)) return '08:00'
+  const slotMinute = minute < 30 ? 0 : 30
+  return `${String(hour).padStart(2, '0')}:${String(slotMinute).padStart(2, '0')}`
+}
+
+function DayTimelineView({
+  sessions,
+  date,
+  onSelectEvent,
+  activeBranch = 'all',
+}: {
+  sessions: EventSession[]
+  date: Date
+  onSelectEvent: (session: EventSession) => void
+  activeBranch?: string
+}) {
+  const daySessions = sessions
+    .filter((session) => session.date === toDateKey(date))
+    .sort((a, b) => a.timeLabel.localeCompare(b.timeLabel))
+
+  if (daySessions.length === 0) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <WeekHeader days={[date]} today={new Date()} hasSpacer sessions={sessions} />
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          <EmptyState
+            className="py-10"
+            title="Chưa có sự kiện"
+            icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
+          />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div
-      onClick={onClick}
-      className={cn("group flex min-h-[76px] flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer", bgClass)}
-    >
-      <div className="p-2.5">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <div className={cn("flex items-center gap-1 text-[10px] font-bold text-primary", isCancelled && "text-muted-foreground")}>
-            {isRescheduled ? (
-              <CalendarClock className="h-3 w-3 text-amber-600 dark:text-amber-500" />
-            ) : (
-              <Clock className="h-3 w-3" />
-            )}
-            {session.timeLabel} - {session.endTimeLabel}
-          </div>
-          <span className={cn('ml-auto inline-block shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold', getStatusBadgeClass(session.type))}>
-            {session.typeLabel}
-          </span>
-        </div>
-        <h4 className={cn('text-[11px] font-bold leading-tight', lineClamp2, isCancelled && 'line-through text-muted-foreground')}>{session.title}</h4>
-        <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3 shrink-0" />
-            <span className="truncate">{session.location}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 shrink-0" />
-              <span>{session.participants}/{session.maxParticipants} đã đăng ký</span>
-            </div>
-            <div
-              className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[9px] font-bold text-muted-foreground"
-              title={session.organizer}
-            >
-              {initials}
-            </div>
-          </div>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <WeekHeader days={[date]} today={new Date()} hasSpacer sessions={sessions} />
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="relative">
+          {TIMELINE_SLOTS.map((slot) => {
+            const slotSessions = daySessions.filter((s) => get30MinSlot(s.timeLabel) === slot)
+            return (
+              <div key={slot} className="flex min-h-[56px] border-b border-border/30">
+                {/* Hour label */}
+                <div className="flex w-16 shrink-0 items-start justify-end pr-3 pt-2 border-r border-border/40">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    {slot}
+                  </span>
+                </div>
+                {/* Day column (1 column) */}
+                <div className="flex-1 p-1.5 flex flex-col gap-1.5 min-w-0 h-full justify-start items-start">
+                  {slotSessions.map((session) => (
+                    <div key={session.id} className="w-80 shrink-0">
+                      <EventCard
+                        session={session}
+                        onClick={() => onSelectEvent(session)}
+                        activeBranch={activeBranch}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
