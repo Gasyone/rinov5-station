@@ -71,9 +71,9 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
             value={filters.priority}
             options={[
               { value: 'all', label: 'Tất cả Mức ưu tiên', selectedLabel: 'Tất cả Mức ưu tiên' },
-              { value: 'urgent', label: 'Khẩn cấp (12h)' },
-              { value: 'high', label: 'Cao (24h)' },
-              { value: 'medium', label: 'Trung bình (48h)' },
+              { value: 'urgent', label: 'Khẩn cấp' },
+              { value: 'high', label: 'Cao' },
+              { value: 'medium', label: 'Trung bình' },
               { value: 'low', label: 'Thường' },
             ]}
             onValueChange={(val) => onFilterChange({ ...filters, priority: val })}
