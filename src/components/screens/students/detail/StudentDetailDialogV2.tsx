@@ -440,7 +440,6 @@ export function StudentDetailDialogV2({
           <main className="flex min-h-0 flex-col overflow-hidden space-y-4">
             {/* Student Info Card (Dùng Component dùng chung StudentHeaderInfoCard) */}
             <StudentHeaderInfoCard
-              onToggleVersion={onToggleVersion}
               studentAvatar={studentAvatar}
               studentName={student.name}
               status={student.status === 'active' ? 'Đang học' : student.status}
