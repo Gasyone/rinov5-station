@@ -378,7 +378,7 @@ export function EventManagementNewScreen() {
     advFilters.times.length
 
   return (
-    <div className="h-full flex flex-col min-h-0 space-y-4 px-4 py-3 lg:px-6 bg-background">
+    <div className="h-full flex flex-col min-h-0 space-y-4 px-3 py-3 lg:px-3 bg-background">
       
       {/* Horizontal Status Tiles bar */}
       <StatusTiles

@@ -53,7 +53,7 @@ export function DashboardScreen() {
   const visibleGroups = getNavigationGroupsForRole(userRole).filter((group) => !group.hiddenInSidebar)
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-auto px-4 py-3 lg:px-6 lg:py-6">
+    <div className="flex h-full flex-col gap-6 overflow-auto px-3 py-3 lg:px-3 lg:py-6">
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-xl font-semibold">Dashboard</h1>

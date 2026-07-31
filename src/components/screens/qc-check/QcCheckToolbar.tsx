@@ -63,7 +63,7 @@ export function QcCheckToolbar({
   }))
 
   return (
-    <div className="bg-card/50 px-4 py-3 lg:px-6">
+    <div className="bg-card/50 px-3 py-3 lg:px-3">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <SegmentedControl

@@ -142,12 +142,14 @@ Hộp thoại biểu mẫu mở ra dạng cửa sổ lớn phủ màn hình đ�
 - **Bước 1**: Chia làm 2 cột:
   - Cột bên trái: Điền các thông tin cơ bản của lớp học (Tên, mã, cơ sở, loại hình, khung chương trình, phụ trách chung).
   - Cột bên phải: Cấu hình lịch học và phân bổ phòng, giáo viên cho các ngày trong tuần. Có các thẻ chuyển tab hiển thị dạng danh sách hoặc lịch biểu (lịch biểu chưa phát triển).
-- **Bước 2**: Giao diện danh sách học viên, hiển thị danh sách các học viên được gán vào lớp và nút mở hộp thoại chọn học viên nâng cao.
+- **Bước 2**: Giao diện bố cục 2 cột trực tiếp:
+  - Cột bên trái: Danh sách học viên đã chọn vào lớp kèm chỉ số sĩ số real-time và nút xóa khỏi lớp.
+  - Cột bên phải: Kho danh sách học viên chờ xếp lớp của cơ sở kèm ô tìm kiếm, các thẻ lọc nhanh (Phù hợp môn, Chờ xếp, Bảo lưu, Tất cả) và nút chọn nhanh vào lớp.
 
 ### 4.2. Giao diện các Hộp thoại phụ
 
 - **Hộp thoại Điều phối giáo viên hệ thống**: Hộp thoại nổi chứa bảng danh sách nhân sự (đặc tả chi tiết các trường nhập liệu tại Mục 3.5).
-- **Hộp thoại Chọn học viên xếp lớp**: Hộp thoại nổi lớn kích hoạt khi nhấn "Chọn học viên xếp lớp" ở Bước 2. Giao diện dạng bảng, bộ lọc tab và quy tắc nghiệp vụ liên quan được đặc tả tập trung tại [US-CLS02-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/class-management/US-CLS02-05-them-hoc-vien-vao-lop.md) để tránh trùng lặp tài liệu thiết kế.
+- **Trạm chọn học viên xếp lớp trực tiếp (Bước 2)**: Tích hợp trực tiếp giao diện chọn học viên 2 cột ngay trong biểu mẫu tạo lớp, loại bỏ việc bật mở hộp thoại phụ chồng lặp. Giao diện dạng bảng 2 cột, bộ lọc tab và quy tắc nghiệp vụ liên quan được đặc tả tập trung tại [US-CLS02-05](file:///c:/Users/Jacky%20Tran/Documents/Rinov5/docs/business-functions/class-operations/class-management/US-CLS02-05-them-hoc-vien-vao-lop.md) để tránh trùng lặp tài liệu thiết kế.
 
 ### 4.3. Các bong bóng thông tin & Tương tác vi mô
 

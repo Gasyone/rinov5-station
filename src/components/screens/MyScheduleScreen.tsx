@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { toast } from 'sonner'
 import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
@@ -9,18 +9,23 @@ import { readTrialClasses } from '@/components/screens/trial-class/trialClassHel
 import {
   getScheduleMonday,
   getScheduleWeekDays,
-  ScheduleTimeGrid,
 } from '@/components/screens/schedule/ScheduleTimeGrid'
 import { getBookingTests, type BookingTest, mockBookingTests } from '@/mocks/bookingTests'
-import { getMockClassSessions, getMockEventSessions } from '@/mocks/calendarSchedule'
+import { getMockClassSessions, getMockEventSessions, type ClassSession } from '@/mocks/calendarSchedule'
 import type { TrialClass } from '@/mocks/trialClasses'
-import { MyScheduleCard } from './my-schedule/MyScheduleCard'
+import { ModuleLoadingSkeleton } from '@/components/shared'
+import { SessionDetailDialog } from '@/components/screens/calendar/SessionDetailDialog'
+import { StudentDetailDialog } from '@/components/screens/students/detail/StudentDetailDialog'
+
 import {
   buildUnifiedSlots,
   filterMyScheduleSlots,
 } from './my-schedule/myScheduleHelpers'
 import { MyScheduleToolbar } from './my-schedule/MyScheduleToolbar'
-import type { UnifiedSlot } from './my-schedule/myScheduleTypes'
+import type { ScheduleLayoutType, UnifiedSlot } from './my-schedule/myScheduleTypes'
+import { MyScheduleMatrixView } from './my-schedule/MyScheduleMatrixView'
+import { MySchedule1DView } from './my-schedule/MySchedule1DView'
+
 
 const PERIOD_OPTIONS = [
   { value: 'morning', label: 'Sáng' },
@@ -57,9 +62,16 @@ const SOURCE_FILTERS = [
 const formatLabel = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('vi-VN', opts)
 
 export function MyScheduleScreen() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
+
   const allClass = useMemo(() => getMockClassSessions(), [])
   const allEvent = useMemo(() => getMockEventSessions().filter((session) => session.type === 'placement_test'), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
+  const [layoutType, setLayoutType] = useState<ScheduleLayoutType>('matrix')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
   const [sourceFilters, setSourceFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
@@ -74,6 +86,8 @@ export function MyScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState(() => getScheduleMonday(new Date()))
   const [detailBooking, setDetailBooking] = useState<BookingTest | null>(null)
   const [detailTrial, setDetailTrial] = useState<TrialClass | null>(null)
+  const [selectedClassSession, setSelectedClassSession] = useState<ClassSession | null>(null)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [detailNote, setDetailNote] = useState('')
   const [copiedKey, setCopiedKey] = useState('')
 
@@ -128,9 +142,19 @@ export function MyScheduleScreen() {
     if (slot.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === 'E0007')
     if (slot.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === 'E0001')
     if (slot.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === 'E0006')
-    const seed = slot.title.charCodeAt(0) + slot.title.length
-    const bookingIdx = seed % mockBookingTests.length
-    return mockBookingTests[bookingIdx]
+    const bookingId = slot.id.replace('EVT-', '')
+    const directMatch = mockBookingTests.find(b => b.id === bookingId || b.id === slot.id)
+    if (directMatch) return directMatch
+    if (slot.title) {
+      const cleanTitle = slot.title.toLowerCase().trim()
+      const nameMatch = mockBookingTests.find(b => 
+        b.childName.toLowerCase().trim() === cleanTitle ||
+        cleanTitle.includes(b.childName.toLowerCase().trim()) ||
+        b.childName.toLowerCase().trim().includes(cleanTitle)
+      )
+      if (nameMatch) return nameMatch
+    }
+    return null
   }
 
   const activeFilterCount = (
@@ -254,9 +278,40 @@ export function MyScheduleScreen() {
       return
     }
 
-    if (slot.scheduleType === 'class' && (slot.subtitle.toLowerCase().includes('trial') || slot.typeLabel.toLowerCase().includes('trải nghiệm'))) {
-      const trial = readTrialClasses().trials.find((item) => item.id === slot.id) || readTrialClasses().trials[0]
-      if (trial) setDetailTrial(trial)
+    if (slot.scheduleType === 'class') {
+      if (slot.subtitle.toLowerCase().includes('trial') || slot.typeLabel.toLowerCase().includes('trải nghiệm')) {
+        const trial = readTrialClasses().trials.find((item) => item.id === slot.id) || readTrialClasses().trials[0]
+        if (trial) setDetailTrial(trial)
+        return
+      }
+
+      const classSession: ClassSession = {
+        id: slot.id,
+        classCode: slot.classCode || 'SA1_TA_001',
+        className: slot.subtitle,
+        subject: slot.subject || 'Tiếng Anh',
+        teacher: slot.personLabel || '',
+        substituteTeacher: slot.substituteTeacher,
+        branch: slot.branch,
+        schoolRoom: slot.schoolRoom || '',
+        level: slot.level || '',
+        date: slot.date,
+        dateDisplay: slot.date,
+        dateBucket: slot.dateBucket || 'upcoming',
+        timeLabel: slot.timeLabel,
+        endTimeLabel: slot.endTimeLabel,
+        statusLabel: slot.status || '',
+        type: (slot.type as ClassSession['type']) || 'class_session',
+        typeLabel: slot.typeLabel || 'Chính thức',
+        title: slot.title,
+        lessonSubtitle: slot.note || '',
+        totalStudents: slot.totalStudents || 0,
+        officialStudents: (slot.totalStudents || 0) - (slot.trialStudents || 0),
+        trialStudents: slot.trialStudents || 0,
+        attendedStudents: slot.attendedStudents,
+        isOpeningDay: slot.isOpeningDay,
+      }
+      setSelectedClassSession(classSession)
       return
     }
 
@@ -278,10 +333,15 @@ export function MyScheduleScreen() {
     ))
   }
 
+  if (!mounted) {
+    return <ModuleLoadingSkeleton className="h-full" />
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <MyScheduleToolbar
         viewMode={viewMode}
+        layoutType={layoutType}
         titleDate={titleDate}
         branches={branches}
         activeBranch={activeBranch}
@@ -295,6 +355,7 @@ export function MyScheduleScreen() {
             setSelectedDate(getScheduleMonday(selectedDate))
           }
         }}
+        onLayoutTypeChange={setLayoutType}
         onBranchChange={setActiveBranch}
         onSearchChange={setSearch}
         onToday={() => setSelectedDate(viewMode === 'day' ? new Date() : getScheduleMonday(new Date()))}
@@ -302,21 +363,26 @@ export function MyScheduleScreen() {
         onFilterOpen={() => setIsFilterOpen(true)}
       />
 
-      <ScheduleTimeGrid
-        items={slots}
-        days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
-        today={today}
-        overlapLayout="columns"
-        renderItem={(slot, context) => (
-          <MyScheduleCard
-            slot={slot}
-            compact
-            isOverlapped={context.isOverlapped}
-            showTime={false}
-            onClick={() => handleSlotClick(slot)}
-          />
-        )}
-      />
+      {layoutType === 'matrix' ? (
+        <MyScheduleMatrixView
+          slots={slots}
+          days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
+          today={today}
+          viewMode={viewMode}
+          activeBranch={activeBranch}
+          onSlotClick={handleSlotClick}
+        />
+      ) : (
+        <MySchedule1DView
+          slots={slots}
+          days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
+          today={today}
+          viewMode={viewMode}
+          activeBranch={activeBranch}
+          onSlotClick={handleSlotClick}
+        />
+      )}
+
 
       <FilterGroupSheetPanel
         open={isFilterOpen}
@@ -362,6 +428,7 @@ export function MyScheduleScreen() {
           toast.success('Đã thêm ghi chú')
           setDetailNote('')
         }}
+        onViewStudentDetail={(studentId) => setSelectedStudentId(studentId)}
       />
 
       <TrialClassDetailDialog
@@ -377,8 +444,20 @@ export function MyScheduleScreen() {
         }}
       />
 
+      <SessionDetailDialog
+        session={selectedClassSession}
+        open={!!selectedClassSession}
+        onOpenChange={(open) => { if (!open) setSelectedClassSession(null) }}
+      />
+
+      <StudentDetailDialog
+        studentId={selectedStudentId}
+        open={!!selectedStudentId}
+        onOpenChange={(open) => { if (!open) setSelectedStudentId(null) }}
+      />
+
       {/* Chú giải màu sắc footer */}
-      <div className="border-t border-border/40 bg-muted/20 px-4 py-2.5 lg:px-6">
+      <div className="border-t border-border/40 bg-muted/20 px-3 py-2 lg:px-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <span className="font-semibold text-foreground/80">Chú giải màu sắc:</span>
           <div className="flex items-center gap-1.5">
@@ -386,27 +465,27 @@ export function MyScheduleScreen() {
             <span>Buổi học hôm nay</span>
           </div>
           <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-emerald-500 border border-emerald-600 dark:bg-emerald-400" />
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">Buổi học sắp diễn ra</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-zinc-400 border border-zinc-500 dark:bg-zinc-500" />
+            <span className="font-medium text-zinc-600 dark:text-zinc-400">Buổi học đã diễn ra</span>
+          </div>
+          <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-sky-500 border border-sky-600 dark:bg-sky-400" />
-            <span className="font-medium text-sky-600 dark:text-sky-400">Buổi học sắp diễn ra</span>
+            <span className="font-semibold text-sky-700 dark:text-sky-400">Buổi dạy thay</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-orange-500 border border-orange-600 dark:bg-orange-400" />
-            <span className="font-medium text-orange-600 dark:text-orange-400">Buổi học đã diễn ra</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-violet-500 border border-violet-600 dark:bg-violet-400" />
-            <span className="font-semibold text-violet-700 dark:text-violet-400">Buổi dạy thay</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 border border-emerald-600 dark:bg-emerald-400 shadow-sm animate-pulse" />
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+            <span className="h-3 w-3 rounded-full bg-red-500 border border-red-600 dark:bg-red-400 shadow-sm" />
+            <span className="font-semibold text-red-700 dark:text-red-400 flex items-center gap-1">
               Ngày khai giảng (Lớp mới) 
-              <span className="inline-flex animate-pulse rounded bg-emerald-500 px-1.5 py-0.5 text-[8px] font-black uppercase text-emerald-950">KHAI GIẢNG</span>
+              <span className="inline-flex rounded bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-1.5 py-0.5 text-[8px] font-bold uppercase">KHAI GIẢNG</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-zinc-400 border border-zinc-50 dark:bg-zinc-600 opacity-75" />
-            <span className="line-through font-medium text-zinc-500 dark:text-zinc-400">Buổi học đã hủy</span>
+            <span className="h-3 w-3 rounded-full bg-zinc-300 border border-zinc-400 dark:bg-zinc-700 opacity-50" />
+            <span className="line-through font-medium text-zinc-400 dark:text-zinc-500">Buổi học đã hủy</span>
           </div>
         </div>
       </div>

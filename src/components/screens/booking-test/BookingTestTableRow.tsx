@@ -31,7 +31,6 @@ import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDial
 import {
   applyBookingCheckIn,
   canSelectPlacementLevel,
-  getMemberList,
   getStatusLabel,
   getSubjectLabel,
   isBookingCheckedIn,
@@ -128,7 +127,7 @@ export function BookingTestTableRow({
                 <UserCheck className="h-4 w-4 text-muted-foreground" />
               </Button>
             )}
-            {booking.subject === 'english' && booking.teacher?.trim() && booking.status === 'started_assessment' && (
+            {booking.subject === 'english' && booking.teacher?.trim() && booking.status === 'checkin' && (
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -277,9 +276,9 @@ export function BookingTestTableRow({
       </TableCell>
       <TableCell>
         <PersonnelCell
-          items={getMemberList(booking).map((member) => ({ name: member }))}
+          items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
           size="sm"
-          mode="stack"
+          mode="single"
         />
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>

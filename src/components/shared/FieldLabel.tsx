@@ -32,8 +32,8 @@ export function FieldLabel({
   className,
 }: FieldLabelProps) {
   return (
-    <label className={cn('grid gap-1.5', className)}>
-      <span className="flex items-center justify-between w-full text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <label className={cn('flex flex-col gap-1.5', className)}>
+      <span className="flex items-center justify-between w-full text-xs font-semibold text-muted-foreground">
         {typeof label === 'string' ? (
           <span className="flex items-center gap-1">
             {label}
@@ -97,6 +97,7 @@ interface PanelProps {
   actions?: ReactNode
   children: ReactNode
   className?: string
+  headerClassName?: string
 }
 
 /**
@@ -110,10 +111,11 @@ export function Panel({
   actions,
   children,
   className,
+  headerClassName,
 }: PanelProps) {
   return (
     <section className={className}>
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className={cn('mb-3 flex items-center justify-between gap-3', headerClassName)}>
         <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
           {icon}
           {title}

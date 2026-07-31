@@ -1,15 +1,14 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { getInitials } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { PersonnelHoverCard } from './PersonnelHoverCard'
+import { AppAvatar } from './AppAvatar'
 
 export interface PersonnelItem {
   id?: string
@@ -19,6 +18,7 @@ export interface PersonnelItem {
   phone?: string
   email?: string
   isSubstitute?: boolean // Dạy thay/tạm thời
+  isLeave?: boolean // Tạm nghỉ
   date?: string // Ngày dạy thay
   reason?: string // Lý do dạy thay
 }
@@ -28,8 +28,8 @@ interface PersonnelCellProps {
   items: PersonnelItem[]
   /** Số lượng hiển thị tối đa trong chế độ stack */
   maxVisible?: number
-  /** Kích thước: sm (28px), md (36px) */
-  size?: 'sm' | 'md'
+  /** Kích thước: xs (20px), sm (28px), md (36px) */
+  size?: 'xs' | 'sm' | 'md'
   /** Chế độ hiển thị: auto (1 người hiển thị chi tiết, nhiều người hiển thị stack), single, stack */
   mode?: 'auto' | 'single' | 'stack'
   className?: string
@@ -50,6 +50,12 @@ export function PersonnelCell({
   className,
 }: PersonnelCellProps) {
   const sizeClasses = {
+    xs: {
+      container: 'h-5 w-5 text-[9px] border',
+      fallback: 'text-[8px] font-bold',
+      singleText: 'text-xs',
+      singleContainer: 'h-5 w-5 rounded-md',
+    },
     sm: {
       container: 'h-7 w-7 text-xs border-2',
       fallback: 'text-[10px] font-bold',
@@ -76,28 +82,28 @@ export function PersonnelCell({
   // 1. Chế độ hiển thị đơn lẻ (Single Person Details)
   if (isSingleMode) {
     const person = list[0]
-    const initials = getInitials(person.name)
 
     const content = (
       <div className={cn('flex items-center gap-2 min-w-0', className)}>
-        <Avatar
-          className={cn(
-            'shrink-0 border bg-muted',
-            currentSize.singleContainer,
-            person.isSubstitute
-              ? 'border-dashed border-amber-500 bg-amber-50 text-amber-600 dark:bg-amber-950/20'
-              : 'border-border'
-          )}
-        >
-          {person.avatar && (
-            <AvatarImage src={person.avatar} alt={person.name} />
-          )}
-          <AvatarFallback className={currentSize.fallback}>
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <AppAvatar
+          src={person.avatar}
+          name={person.name}
+          size={size}
+          shape="circle"
+          isSubstitute={person.isSubstitute}
+          className="shrink-0"
+          userId={person.id || person.name}
+          userType={person.role && /teacher|giáo viên|trợ giảng|tutor/i.test(person.role) ? 'teacher' : 'staff'}
+        />
         <div className="min-w-0 leading-tight">
-          <p className={cn('font-semibold truncate text-foreground', currentSize.singleText)}>{person.name}</p>
+          <p className={cn('font-normal truncate text-foreground', currentSize.singleText)}>
+            <span>{person.name}</span>
+            {person.isLeave && (
+              <span className="text-red-600 dark:text-red-400 italic text-[11px] font-medium ml-1">
+                (Nghỉ)
+              </span>
+            )}
+          </p>
           {person.role && (
             <p className="text-[10px] text-muted-foreground truncate">{person.role}</p>
           )}
@@ -120,25 +126,18 @@ export function PersonnelCell({
     <TooltipProvider delayDuration={300}>
       <div className={cn('flex items-center -space-x-2', className)}>
         {visibleItems.map((person, index) => {
-          const initials = getInitials(person.name)
           return (
             <PersonnelHoverCard key={person.id || person.name || index} person={person} align="center">
-              <Avatar
-                className={cn(
-                  'shrink-0 border-2 border-card bg-muted cursor-help transition-transform hover:translate-y-[-2px] hover:z-35',
-                  currentSize.container,
-                  person.isSubstitute
-                    ? 'border-dashed border-amber-500 bg-amber-50 text-amber-600 dark:bg-amber-950/20'
-                    : 'bg-primary/10 text-primary'
-                )}
-              >
-                {person.avatar && (
-                  <AvatarImage src={person.avatar} alt={person.name} />
-                )}
-                <AvatarFallback className={currentSize.fallback}>
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <AppAvatar
+                src={person.avatar}
+                name={person.name}
+                size={size}
+                shape="circle"
+                isSubstitute={person.isSubstitute}
+                className="shrink-0 border-2 border-card cursor-help transition-transform hover:translate-y-[-2px] hover:z-35"
+                userId={person.id || person.name}
+                userType={person.role && /teacher|giáo viên|trợ giảng|tutor/i.test(person.role) ? 'teacher' : 'staff'}
+              />
             </PersonnelHoverCard>
           )
         })}

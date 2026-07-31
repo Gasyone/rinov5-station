@@ -10,9 +10,9 @@ export interface LeaveReserveFilterState {
 }
 
 export const TYPE_LABELS: Record<LeaveReserveRequest['type'], string> = {
-  leave: 'Nghỉ phép',
-  reserve: 'Bảo lưu',
-  suspend: 'Nghỉ học tạm thời',
+  off: 'Nghỉ phép',
+  reservation: 'Bảo lưu',
+  learn_again: 'Đi học lại',
 }
 
 export const DATE_RANGE_LABELS: Record<LeaveReserveFilterState['dateRanges'][number], string> = {
@@ -25,7 +25,6 @@ export const DATE_RANGE_LABELS: Record<LeaveReserveFilterState['dateRanges'][num
 export const STATUS_LABELS: Record<LeaveReserveRequest['status'], string> = {
   pending: 'Chờ duyệt',
   approved: 'Đã duyệt',
-  rejected: 'Không duyệt',
-  cancelled: 'Hủy duyệt',
+  not_approved: 'Không duyệt',
+  cancel: 'Hủy duyệt',
 }
-

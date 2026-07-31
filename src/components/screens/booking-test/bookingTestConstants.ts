@@ -7,7 +7,6 @@ export const STATUS_CONFIG: StatusConfigItem[] = [
   { id: 'booked_assessment', label: 'Đã đặt lịch test', status: 'booked_assessment' },
   { id: 'unassigned_teacher', label: 'Chưa gán GV', status: 'unassigned_teacher' },
   { id: 'checkin', label: 'Đã check-in', status: 'checkin' },
-  { id: 'started_assessment', label: 'Đang đánh giá', status: 'started_assessment' },
   { id: 'interviewed', label: 'Đã phỏng vấn', status: 'interviewed' },
   { id: 'tested', label: 'Đã làm bài', status: 'tested' },
   { id: 'completed', label: 'Hoàn tất', status: 'completed' },

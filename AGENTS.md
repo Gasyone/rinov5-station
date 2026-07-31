@@ -1,6 +1,6 @@
 # RINOV5 Project Context
 
-This is a Next.js 16 + React 19 + TypeScript frontend demo application, migrated from Vue 3 (Rinov4). It is an ERP system for education management and branch/school management. Everything uses mock data only. Do not add real API calls.
+This is a Next.js 16 + React 19 + TypeScript frontend demo application. It represents the Station frontend of Rinov5, separated for center/school management, while the CRM, ERP, and CARE systems of RinoEdu still use the same shared Backend (BE) and Database. Everything uses mock data only. Do not add real API calls.
 
 ## Project Structure
 
@@ -193,8 +193,15 @@ When writing or editing business documentation (CAP, BF, US, FLOW), you MUST:
     - Dev jargon: `API`, `Backend`, `Frontend`, `middleware`, `cookie`, `DOM`, `JSON` → Use: "hệ thống", "giao diện", "phiên làm việc"
     - Component tech names: `Div`, `Checkbox grid`, `Floating panel` → Use: "ô chọn", "bảng nổi", "hộp thoại"
     - Tailwind color names: `nền indigo`, `màu emerald` → Use: "màu nhấn", "màu tích cực"
-12. **Agent Guidelines section:** Technical jargon is ONLY permitted inside the dedicated "Chỉ dẫn cho AI Agent & Lập trình viên" section at the bottom of US/BF/FLOW templates.
+12. **Agent Guidelines section:** [REMOVED] Technical jargon is not permitted in business documentation.
 13. **Document Driven (US First):** AI MUST NOT write UI or Logic code without an existing Tier 4 User Story (`US-*.md`) document. If the user requests a new feature, AI must find the US first, or write it and get it approved before coding.
+14. **Database & Naming Convention (MANDATORY):** Khi mô tả luồng gọi từ giao diện mới tới hệ thống/CSDL, bắt buộc sử dụng cấu trúc ngôn ngữ tự nhiên: **"Gọi đến [Cơ sở dữ liệu / Nghiệp vụ] + [Tên thực thể]"** (VD: "gọi đến cơ sở dữ liệu học viên", "gọi đến nghiệp vụ xếp lớp"). Không dùng tên API hay thuật ngữ dev jargon.
+15. **Document Quality Verification (MANDATORY):** Trước khi xuất bản, cập nhật hoặc bàn giao bất kỳ tài liệu đặc tả nghiệp vụ nào (BF, US), AI Agent bắt buộc phải chạy `npm run lint:docs` để tự động kiểm tra lỗi từ cấm kỹ thuật, cấu trúc bảng 5 cột, định dạng logic AC Giả sử-Khi-Thì và số lượng Corner Cases. Tất cả các lỗi lints phát hiện phải được sửa đổi và đưa về 0 lỗi.
+16. **Code & API Auditing (MANDATORY - ANTI-HALLUCINATION):** Tuyệt đối KHÔNG viết tài liệu nghiệp vụ chỉ dựa trên hình ảnh Figma. AI Agent bắt buộc phải:
+    - Đối chiếu trực tiếp với file dữ liệu mẫu (`src/mocks/`) và code React thực tế của màn hình đó để đảm bảo sự đồng bộ 100% về danh sách trường thông tin (editable vs. read-only), kiểu dữ liệu, danh mục trạng thái lớp/học viên.
+    - Đối chiếu với DTO/API Contract của hệ thống Backend hiện tại. Không được tự vẽ ra các trường cho phép sửa trên UI nếu Backend không hỗ trợ nhận/cập nhật các trường đó.
+    - Nghiêm cấm tự vẽ thêm (ảo giác) các logic xử lý hệ quả phức tạp ở Frontend (như tự động dời lịch học, tự động đồng bộ chéo cơ sở dữ liệu) nếu code mẫu hoặc Backend cũ không hỗ trợ.
+
 
 ### Architecture and Simplicity
 
@@ -244,6 +251,18 @@ When creating a new screen:
 4. Create the screen component under `src/components/screens/` if needed.
 5. Keep the dynamic `/app/[menuId]` route as the resolver.
 
+## 🚫 Nguyên tắc bảo toàn logic & Tránh vẽ thêm logic (MANDATORY)
+
+Để tránh phát sinh lỗi lệch pha với các nghiệp vụ hiện tại của hệ thống CRM, ERP, CARE và giảm thiểu số lượng comment sửa đổi từ Tech Lead/Dev, tất cả AI Agent làm việc trên dự án bắt buộc phải tuân thủ nghiêm ngặt các nguyên tắc sau:
+
+1. **ERP chỉ Đọc và Cập nhật Trạng thái:** Phân hệ trên ERP (Station) chỉ có nhiệm vụ hiển thị danh sách, hiển thị chi tiết và thay đổi trạng thái phiếu. Toàn bộ logic nghiệp vụ xử lý hệ quả (như chuyển đổi trạng thái học viên, đảo buổi học, trừ quota, xử lý lịch học) đều do backend/CSDL tự xử lý. Tuyệt đối KHÔNG tự thiết kế thêm logic xử lý backend trong đặc tả (US/BF) hoặc code Front-end.
+2. **ERP & CARE dùng chung Cơ sở dữ liệu:** Không mô tả các cơ chế "đồng bộ", "gửi dữ liệu" hay "job đồng bộ" giữa ERP và CARE (CRM) vì hai hệ thống sử dụng chung một cơ sở dữ liệu (chung bảng).
+3. **Không tự vẽ thêm chức năng/giao diện cảnh báo:** Không tự thiết kế các tính năng kiểm tra chéo, cờ cảnh báo trùng lịch, icon cảnh báo nếu hệ thống cũ không có. Các tính năng kiểm soát (Validation) trùng lặp lịch trình đã được CARE xử lý tại bước tạo đơn.
+4. **Che số điện thoại chống Copy hàng loạt:** Trên bảng danh sách chính (List page), số điện thoại bắt buộc phải được che ẩn ở giữa dạng `091****111` để tránh nhân viên copy hàng loạt. Chỉ hiển thị số điện thoại đầy đủ ở màn hình Chi tiết (Detail Dialog) khi người dùng có quyền mở xem chi tiết.
+5. **Thẻ trạng thái (Status Tiles) đi theo bộ lọc:** Số lượng đếm trên thẻ trạng thái phải tự động cập nhật và tính toán lại theo toàn bộ các bộ lọc đang áp dụng trên màn hình (Trường học, Môn học và các bộ lọc nâng cao) để đảm bảo số liệu khớp với danh sách dòng hiển thị trên bảng.
+6. **Thống nhất định dạng Mã phiếu theo CSDL:** Không tự chuyển đổi hiển thị mã phiếu sang đầu mã giả định dạng `LR-xxx` như Figma vẽ nếu CSDL lưu mã dạng `{NP|BL|HL}+id`. Luôn hiển thị thống nhất theo mã thực tế dưới CSDL.
+7. **Phân quyền động thông qua hệ thống CRM/ERP:** Không set cứng (hardcode) các vai trò được phép thao tác trong code tĩnh. Việc phân quyền cần dựa trên hệ thống phân quyền động sẵn có của CRM/ERP qua token.
+
 ## No Real APIs
 
 - Do not import `@supabase/supabase-js` in screens.
@@ -282,14 +301,12 @@ Add `.stories.tsx` coverage for reusable components and important screen preview
 
 Storybook config lives in `.storybook/` and should include Tailwind styling through the existing preview setup.
 
-## Migration Context
+## System Architecture Context
 
-The original project was Vue 3 + Pinia + vue-router. The Rinov5 codebase is the Next.js migration target.
+Rinov5 separates the Station interface for center management, while the core CRM, ERP, and CARE modules of RinoEdu continue to share the same Backend (BE) and Database.
 
-- 60+ menu IDs are expected.
+- 60+ menu IDs are expected in the Station UI.
 - Around 30 screens may be implemented and around 30 may remain placeholders.
-- Migration checklist: `C:\Users\Jacky Tran\Documents\Rinov4-MIGRATION-CHECKLIST.md`.
-- Mock data structure should stay aligned with Rinov4 service/data files when practical.
 
 ## Agent Startup Checklist
 
@@ -309,6 +326,7 @@ When an AI agent starts work in this repo:
 12. Read `src/components/controls/index.ts`, `src/components/data-table/index.ts`, `src/components/filters/index.ts` — toolbar / table / filter primitives.
 13. Check `src/mocks/` for available data before creating new mock files.
 14. Check `docs/business-functions/CATALOG.md` for existing CAP/BF structure before creating new documentation.
+15. Read `docs/skills/DOCUMENT_WRITING_SKILL.md` — follow the document writing guidelines when creating or updating CAP, BF, or US files.
 
 ## Post-Coding Verification Checklist
 
@@ -324,6 +342,7 @@ Before reporting work as complete, the AI agent MUST verify:
 8. **Imports**: Are the new components imported from the barrel (`@/components/shared` etc.) rather than deep paths?
 9. **Build**: `npx tsc --noEmit` exits 0 and `npx eslint "src/**/*.{ts,tsx}"` exits 0 with zero errors.
 10. **Documentation**: Does the implemented UI match the patterns and validations described in the `US-*.md` document?
+11. **Documentation Linter**: Run `npm run lint:docs` and verify that all business documentation files (`docs/00-business/BF-*.md` and `docs/00-business/US-*.md`) pass the check without any errors.
 
 ## Current Guardrails
 

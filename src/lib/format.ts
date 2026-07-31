@@ -64,15 +64,15 @@ export function getInitials(name?: string | null): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-/** Mask a phone number: keep first 3 and last 3 digits, asterisk the middle. */
+/** Mask a phone number: mask first digits with x, keep last 3 digits. */
 export function maskPhone(phone?: string | null): string {
   if (!phone) return '-'
   const trimmed = phone.trim()
-  if (trimmed.length < 6) return trimmed
-  return `${trimmed.slice(0, 3)}${'*'.repeat(trimmed.length - 6)}${trimmed.slice(-3)}`
+  if (trimmed.length <= 3) return trimmed
+  return 'x'.repeat(trimmed.length - 3) + trimmed.slice(-3)
 }
 
-/** Humanize a snake_case status: `started_assessment` → `Started Assessment`. */
+/** Humanize a snake_case status: `booked_assessment` → `Booked Assessment`. */
 export function humanizeStatus(value?: string | null): string {
   if (!value) return '-'
   return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())

@@ -22,18 +22,27 @@ export const CLASS_TYPES = [
   { value: 'Workshop', label: 'Lớp Workshop' },
 ]
 
+export const GRADE_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
+  value: `Lớp ${i + 1}`,
+  label: `Lớp ${i + 1}`,
+}))
+
 export const TEACHER_TYPES = [
-  { value: 'Nước ngoài', label: 'Nước ngoài' },
   { value: 'Việt Nam', label: 'Việt Nam' },
-  { value: 'MIX', label: 'MIX' },
+  { value: 'Native', label: 'Native' },
+  { value: 'Philippin', label: 'Philippin' },
+  { value: 'Digital', label: 'Digital' },
+  { value: 'Mix', label: 'Mix' },
 ]
 
 export const CLASS_RATIOS = [
-  { value: '1:1', label: '1:1' },
   { value: '1:6', label: '1:6' },
+  { value: '1:7', label: '1:7' },
+  { value: '1:8', label: '1:8' },
+  { value: '1:9', label: '1:9' },
   { value: '1:10', label: '1:10' },
+  { value: '1:12', label: '1:12' },
   { value: '1:15', label: '1:15' },
-  { value: '1:20', label: '1:20' },
 ]
 
 export const CURRICULUM_FRAMES = [
@@ -181,4 +190,58 @@ export function getRoomsForBranch(branch: string) {
     'Phòng 202',
   ].map(mapRoom)
 }
+
+export const SHIFT_OPTIONS = [
+  { value: '08:00', label: 'Ca 1: 08:00' },
+  { value: '09:45', label: 'Ca 2: 09:45' },
+  { value: '14:00', label: 'Ca 3: 14:00' },
+  { value: '15:45', label: 'Ca 4: 15:45' },
+  { value: '17:30', label: 'Ca 5: 17:30' },
+  { value: '19:15', label: 'Ca 6: 19:15' },
+]
+export const isRoomConflict = (
+  roomVal: string,
+  dayOfWeekLabel: string,
+  startTime: string,
+  endTime: string,
+  mockClassRecords: import('@/mocks/classRecords').ClassRecord[]
+): boolean => {
+  if (!roomVal || !dayOfWeekLabel || !startTime || !endTime) return false
+
+  const toMin = (t: string) => {
+    const parts = t.split(':').map(Number)
+    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return 0
+    return parts[0] * 60 + parts[1]
+  }
+
+  const start1 = toMin(startTime)
+  const end1 = toMin(endTime)
+  if (start1 === 0 && end1 === 0) return false
+
+  // Extract clean number or name of room, e.g. "101" from "Phòng 101 (LĐ)"
+  const cleanRoom = roomVal.replace(/[^0-9]/g, '')
+
+  for (const c of mockClassRecords) {
+    if (!c.room || c.room === '—' || c.room === '---') continue
+
+    // Check if class branch is matching or if room has some matching signature
+    const cleanCRoom = c.room.replace(/[^0-9]/g, '')
+    const isMatchingRoom = cleanRoom && cleanCRoom && cleanRoom === cleanCRoom
+
+    if (isMatchingRoom) {
+      for (const slot of c.scheduleSlots || []) {
+        if (slot.dayOfWeek === dayOfWeekLabel) {
+          const start2 = toMin(slot.startTime)
+          const end2 = toMin(slot.endTime)
+          if (start1 < end2 && start2 < end1) {
+            return true // Conflicting!
+          }
+        }
+      }
+    }
+  }
+  return false
+}
+
+
 

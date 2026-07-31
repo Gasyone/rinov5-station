@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Filter, Search, type LucideIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
 
 export interface SegmentedControlOption<T extends string> {
   value: T
-  label: string
+  label: ReactNode
   disabled?: boolean
 }
 
@@ -67,6 +67,7 @@ export function SegmentedControl<T extends string>({
 export interface ToolbarSelectOption {
   value: string
   label: string
+  selectedLabel?: string
 }
 
 interface ToolbarSelectProps {
@@ -87,6 +88,9 @@ export function ToolbarSelect({
   ariaLabel,
 }: ToolbarSelectProps) {
   const EMPTY_SENTINEL = '__empty__'
+  const selectedOpt = options.find(
+    (o) => (o.value || EMPTY_SENTINEL) === (value || EMPTY_SENTINEL)
+  )
 
   return (
     <Select
@@ -99,11 +103,15 @@ export function ToolbarSelect({
         size="sm"
         className={cn('min-w-40 bg-background text-xs shadow-xs', className)}
       >
-        <SelectValue />
+        {selectedOpt?.selectedLabel ? (
+          <span className="line-clamp-1">{selectedOpt.selectedLabel}</span>
+        ) : (
+          <SelectValue />
+        )}
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value || EMPTY_SENTINEL} value={option.value || EMPTY_SENTINEL}>
+        {options.map((option, index) => (
+          <SelectItem key={`${option.value || EMPTY_SENTINEL}-${index}`} value={option.value || EMPTY_SENTINEL}>
             {option.label}
           </SelectItem>
         ))}
@@ -167,11 +175,11 @@ export function InlineSelect({
         </span>
       </SelectTrigger>
       <SelectContent>
-        {options.map((option) => {
+        {options.map((option, index) => {
           const itemVal = hasEmptyOption && !option.value ? EMPTY_SELECT_VALUE : option.value
           return (
             <SelectItem
-              key={itemVal || EMPTY_SELECT_VALUE}
+              key={`${itemVal || EMPTY_SELECT_VALUE}-${index}`}
               value={itemVal || EMPTY_SELECT_VALUE}
             >
               {option.label}
@@ -207,13 +215,13 @@ export function BranchSelect({
   value,
   branches = SYSTEM_BRANCHES,
   onValueChange,
-  allLabel = 'Tất cả trường',
+  allLabel = 'Tất cả cơ sở',
   allValue = 'all',
   includeAll,
   variant = 'toolbar',
-  placeholder = 'Chọn trường',
+  placeholder = 'Chọn cơ sở',
   disabled,
-  ariaLabel = 'Trường',
+  ariaLabel = 'Cơ sở',
   className,
 }: BranchSelectProps) {
   const shouldIncludeAll = includeAll ?? variant === 'toolbar'
@@ -282,16 +290,37 @@ export function SubjectSelect({
   ariaLabel = 'Môn học',
   className,
 }: SubjectSelectProps) {
-  const shouldIncludeAll = includeAll ?? variant === 'toolbar'
-  const leadingOption = shouldIncludeAll
-    ? { value: allValue, label: allLabel }
-    : variant === 'inline'
-      ? { value: '', label: placeholder }
-      : null
-  const options = [
-    ...(leadingOption ? [leadingOption] : []),
-    ...(customOptions ?? subjects.map((subject) => ({ value: subject, label: subject }))),
-  ]
+  let options = customOptions
+  if (!options) {
+    if (subjects.length > 0) {
+      const shouldIncludeAll = includeAll ?? variant === 'toolbar'
+      const leadingOption = shouldIncludeAll
+        ? { value: allValue, label: allLabel }
+        : variant === 'inline'
+          ? { value: '', label: placeholder }
+          : null
+      options = [
+        ...(leadingOption ? [leadingOption] : []),
+        ...subjects.map((subject) => ({ value: subject, label: subject })),
+      ]
+    } else {
+      const standardSubjects = [
+        { value: 'math', label: 'Toán' },
+        { value: 'english', label: 'Tiếng Anh' },
+        { value: 'vietnamese', label: 'Tiếng Việt' },
+      ]
+      const shouldIncludeAll = includeAll ?? variant === 'toolbar'
+      const leadingOption = shouldIncludeAll
+        ? { value: allValue, label: allLabel }
+        : variant === 'inline'
+          ? { value: '', label: placeholder }
+          : null
+      options = [
+        ...(leadingOption ? [leadingOption] : []),
+        ...standardSubjects,
+      ]
+    }
+  }
 
   if (variant === 'inline') {
     return (

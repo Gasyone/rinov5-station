@@ -53,7 +53,7 @@ RinoEdu hiện có nhiều domain phần mềm riêng biệt đang vận hành s
 
 ## 4. Định vị Rinov5 — Station ERP All-in-One
 
-**Dự án Rinov5** (kế thừa từ Rinov4) là phân hệ **All-in-One ERP chuyên biệt cho mô hình Station**, hợp nhất các domain phân mảnh (CRM, ERP cũ, CARE) vào 1 nền tảng duy nhất.
+**Dự án Rinov5** là phân hệ giao diện **Station frontend chuyên biệt cho mô hình đào tạo theo trung tâm (Station)**, tách biệt giao diện quản trị nhưng vẫn dùng chung cơ sở dữ liệu và Backend (BE) với các hệ thống CRM, ERP, CARE hiện tại của RinoEdu.
 
 **Rinov5 bao gồm 11 Business Capabilities (CAP)** — xem chi tiết tại [CAP-MAP.md](./business-functions/CAP-MAP.md) và [CATALOG.md](./business-functions/CATALOG.md).
 

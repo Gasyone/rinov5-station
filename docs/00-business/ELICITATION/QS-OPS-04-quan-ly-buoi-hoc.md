@@ -28,7 +28,7 @@ tags: [questionnaire, operations, session, substitute, reschedule]
 | 5 | Có bao giờ phải hủy buổi vì không tìm được GV thay? Tỷ lệ? | Có/Không + % | ○ Có (~___%) ○ Không | BR-002 §5 AC-03 |
 | 6 | Khi cần đổi phòng, quy trình thế nào? | Mở | ___ | US-OPS03-02 |
 | 7 | Khi hủy buổi, HV/phụ huynh được thông báo bằng cách nào? | Chọn nhiều | ☐ SMS ☐ Zalo ☐ GV nhắn ☐ Không thông báo | US-OPS03-03 notification |
-| 8 | Học bù tổ chức thế nào? Ai quyết định ngày giờ? | Mở | ___ | US-OPS03-04 |
+| 8 | Học bù tổ chức thế nào? Ai quyết định ngày giờ? | Mở | ___ | N/A (Học bù bỏ qua) |
 | 9 | Điều gì khó nhất khi xử lý biến động buổi học? | Mở | ___ | Pain point → SR |
 
 ---
@@ -50,5 +50,5 @@ tags: [questionnaire, operations, session, substitute, reschedule]
 | 1-5 | BF-OPS-03, US-OPS03-01, BR-002 | Dạy thay workflow + baseline |
 | 6 | US-OPS03-02 | Đổi phòng |
 | 7 | US-OPS03-03 | Hủy + notification |
-| 8 | US-OPS03-04 | Học bù |
+| 8 | N/A | Học bù (Bỏ qua) |
 | 9, T1-T3 | SR-BM-002, SR-TEACHER-002 | Pain point + validate |

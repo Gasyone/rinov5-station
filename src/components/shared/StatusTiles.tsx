@@ -26,6 +26,7 @@ interface StatusTilesProps<T extends string> {
   activeId: T
   onSelect: (id: T) => void
   className?: string
+  noOverflowCollapse?: boolean
 }
 
 /* ── Single tile button ───────────────────────────────────── */
@@ -102,12 +103,14 @@ export function StatusTiles<T extends string>({
   activeId,
   onSelect,
   className,
+  noOverflowCollapse = false,
 }: StatusTilesProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const measureRef = useRef<HTMLDivElement>(null)
   const [visibleCount, setVisibleCount] = useState(tiles.length)
 
   const recalc = useCallback(() => {
+    if (noOverflowCollapse) return
     const container = containerRef.current
     const measure = measureRef.current
     if (!container || !measure) return
@@ -141,19 +144,35 @@ export function StatusTiles<T extends string>({
     }
 
     setVisibleCount(Math.max(1, fitCount))
-  }, [])
+  }, [noOverflowCollapse])
 
   useEffect(() => {
     recalc()
   }, [tiles, recalc])
 
   useEffect(() => {
+    if (noOverflowCollapse) return
     const container = containerRef.current
     if (!container) return
     const ro = new ResizeObserver(recalc)
     ro.observe(container)
     return () => ro.disconnect()
-  }, [recalc])
+  }, [recalc, noOverflowCollapse])
+
+  if (noOverflowCollapse) {
+    return (
+      <div className={cn('flex items-center gap-2 flex-wrap min-w-0', className)}>
+        {tiles.map((tile) => (
+          <TileButton
+            key={tile.id}
+            tile={tile}
+            isActive={tile.id === activeId}
+            onSelect={onSelect}
+          />
+        ))}
+      </div>
+    )
+  }
 
   const visibleTiles = tiles.slice(0, visibleCount)
   const overflowTiles = tiles.slice(visibleCount)

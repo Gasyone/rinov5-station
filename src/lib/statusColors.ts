@@ -120,6 +120,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   tested: 'warning',
   checkin: 'success',
   completed: 'completed',
+  escalated: 'error',
   failed: 'error',
   cancelled: 'neutral',
 
@@ -170,6 +171,10 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   reserve: 'purple',
   session_ended: 'neutral',
   dropout: 'error',
+  buoi_1: 'info',
+  buoi_2: 'info',
+  buoi_3: 'info',
+  buoi_cuoi: 'error',
 
   // Products
   archived: 'neutral',
@@ -196,6 +201,17 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   tam_dung: 'warning',
   huy: 'completed',
 
+  // Tuition Renewal
+  chua_lien_he: 'neutral',
+  can_nhac: 'warning',
+  tiem_nang: 'info',
+  hen_tai: 'purple',
+  tai_phi: 'success',
+  chong_phi: 'success',
+  rut_phi: 'neutral',
+  that_bai: 'error',
+  dang_cham_soc: 'info',
+
   // Class Session (BF-OPS-02 / FLOW-OPS-01)
   // scheduled, in_progress, completed, cancelled already registered above
   audited: 'completed',
@@ -209,6 +225,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   excused: 'info',
   no_attendance: 'neutral',
   pending_review: 'warning',
+  submitted: 'success',
+  overdue: 'error',
 
   // Priority (Tickets, Rules)
   high: 'error',
@@ -217,6 +235,12 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
 
   // Leave/Reserve types
   leave: 'info',
+  off: 'info',
+  reservation: 'purple',
+  learn_again: 'success',
+  resume: 'success',
+  not_approved: 'error',
+  cancel: 'neutral',
   suspend: 'warning',
 
   // Teacher Schedule Status
@@ -254,11 +278,24 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   qc_error_overdue: 'purple',
   qc_error_not_met: 'error',
 
+  // Make-up Class Request Statuses
+  cho_duyet: 'warning',
+  da_xep_lich: 'info',
+  da_vang: 'error',
+  tu_choi: 'error',
+  het_han: 'neutral',
+
   // Generic
   draft: 'neutral',
   approved: 'success',
   rejected: 'error',
-  in_progress: 'info',
+  in_progress: 'warning',
+  dang_xu_ly: 'warning',
+  chua_xuly: 'warning',
+  dang_xuly: 'info',
+  da_xuly: 'success',
+  da_dong: 'neutral',
+  chua_cham_soc: 'info',
   paid: 'success',
   unpaid: 'warning',
   partial: 'info',

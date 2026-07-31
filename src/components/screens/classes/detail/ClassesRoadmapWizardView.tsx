@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/select'
 import { mockLMSRoadmaps } from '@/mocks/lmsRoadmaps'
 import type { RoadmapSession } from './classesDetailTypes'
-import { groupSessionsIntoPhases } from './classesDetailHelpers'
+import { groupSessionsIntoPhases, cleanTeacherName } from './classesDetailHelpers'
+import { getLessonsForRoadmapSession } from './classesSessionDetailHelpers'
 
 interface ClassesRoadmapWizardViewProps {
   sessions: RoadmapSession[]
@@ -32,6 +33,7 @@ interface ClassesRoadmapWizardViewProps {
   classTeacher: string
   classNameStr: string
   syllabusName: string
+  classStartDate?: string
   lastChangedInfo: string | null
   onBack: () => void
   onSave: (updatedSessions: RoadmapSession[], logMessage: string, newSyllabusName: string) => void
@@ -43,6 +45,7 @@ export function ClassesRoadmapWizardView({
   classTeacher,
   classNameStr,
   syllabusName,
+  classStartDate,
   lastChangedInfo,
   onBack,
   onSave
@@ -50,7 +53,9 @@ export function ClassesRoadmapWizardView({
   // 1. Calculate stats based on current sessions
   const maxSessionNum = Math.max(...sessions.map((s) => s.sessionNumber), 12)
   const firstUpcomingSession = sessions.find((s) => s.status === 'upcoming')
-  const firstUpcomingSessionNum = firstUpcomingSession ? firstUpcomingSession.sessionNumber : maxSessionNum + 1
+  const firstUpcomingSessionNum = sessions.length === 0
+    ? 1
+    : (firstUpcomingSession ? firstUpcomingSession.sessionNumber : maxSessionNum + 1)
 
   // Find current roadmap/syllabus based on the applied syllabusName
   let initialRoadmapId = ''
@@ -175,7 +180,7 @@ export function ClassesRoadmapWizardView({
 
     for (let sNum = firstUpcomingSessionNum; sNum <= maxSessionNum; sNum++) {
       const sessionData = sessions.find((s) => s.sessionNumber === sNum && s.status === 'upcoming')
-      if (sessionData) {
+      if (sessionData || sessions.length === 0) {
         if (currentLmsIndex < currentSyllabus.lessons.length) {
           mapped.push({
             sessionNum: sNum,
@@ -210,40 +215,6 @@ export function ClassesRoadmapWizardView({
     }))
   }
 
-  // Helper to convert RoadmapSession to lessons list (demonstrating "2 bài trong 1 buổi")
-  const getLessonsForRoadmapSession = (session: RoadmapSession) => {
-    const components = (session.materials || []).map((m) => ({
-      name: m.name,
-      type: (m.type === 'Phải làm' ? 'homework' : 'slide') as 'slide' | 'homework' | 'quiz' | 'audio' | 'video',
-      url: m.url
-    }))
-
-    const primaryLesson = {
-      id: session.id,
-      lessonNumber: session.sessionNumber,
-      title: session.topic,
-      description: session.description || '',
-      components
-    }
-
-    // If session.sessionNumber is 3, return two lessons to show "2 bài trong 1 buổi"
-    if (session.sessionNumber === 3) {
-      const secondaryLesson = {
-        id: `${session.id}-sub`,
-        lessonNumber: session.sessionNumber,
-        title: 'Thành phần buổi học 2 - 10 phút',
-        description: 'Luyện tập bổ trợ từ vựng và ngữ pháp nâng cao.',
-        components: [
-          { name: 'test kịch bản 2', type: 'quiz' as const, url: '#' },
-          { name: 'Bài ôn tập 1', type: 'homework' as const, url: '#' }
-        ]
-      }
-      return [primaryLesson, secondaryLesson]
-    }
-
-    return [primaryLesson]
-  }
-
   const handleSave = () => {
     if (firstUpcomingSessionNum > maxSessionNum) {
       setErrors({ global: 'Không thể đổi lộ trình vì toàn bộ các buổi học đã hoàn thành!' })
@@ -262,51 +233,70 @@ export function ClassesRoadmapWizardView({
       }
     })
 
-    // 2. Convert the upcoming sessions that we are replacing into cancelled historical sessions
-    const replacedCancelledSessions: RoadmapSession[] = upcomingToReplace.map((s) => ({
-      ...s,
-      id: `${s.id}-replaced-${Date.now()}`,
-      status: 'cancelled',
-      description: s.description ? `${s.description} (Lộ trình này đã được thay thế)` : 'Lộ trình này đã được thay thế'
-    }))
+    // 2. Create the new upcoming sessions using the previewMappedSessions (the new syllabus lessons)
+    const newUpcomingSessions: RoadmapSession[] = []
 
-    // 3. Create the new upcoming sessions using the previewMappedSessions (the new syllabus lessons)
-    const newUpcomingSessions: RoadmapSession[] = upcomingToReplace.map((s) => {
-      const mappedPreview = previewMappedSessions.find((p) => p.sessionNum === s.sessionNumber)
-      const lmsLesson = mappedPreview?.lmsLesson
+    if (sessions.length === 0) {
+      // Generate 12 sessions from scratch
+      const baseDate = new Date(classStartDate || new Date())
+      
+      for (let sNum = 1; sNum <= 12; sNum++) {
+        const mappedPreview = previewMappedSessions.find((p) => p.sessionNum === sNum)
+        const lmsLesson = mappedPreview?.lmsLesson
+        
+        const sessionDate = new Date(baseDate)
+        sessionDate.setDate(baseDate.getDate() + (sNum - 1) * 2) // mock: 2 days between sessions
+        const dateStr = `${sessionDate.getDate().toString().padStart(2, '0')}/${(sessionDate.getMonth() + 1).toString().padStart(2, '0')}/${sessionDate.getFullYear()}`
 
-      return {
-        ...s,
-        id: `session-new-${s.sessionNumber}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        topic: lmsLesson ? lmsLesson.title : s.topic,
-        description: lmsLesson ? lmsLesson.description : s.description,
-        materials: lmsLesson 
-          ? lmsLesson.components.map((c) => ({
-              name: c.name,
-              url: c.url,
-              type: c.type === 'slide' ? 'Phải làm' : 'Tham khảo' as 'Phải làm' | 'Tham khảo'
-            }))
-          : s.materials,
-        syllabusName: currentSyllabus.name,
-        status: 'upcoming' as const
+        newUpcomingSessions.push({
+          id: `session-new-${sNum}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          sessionNumber: sNum,
+          date: dateStr,
+          startTime: '18:00',
+          endTime: '19:30',
+          topic: lmsLesson ? lmsLesson.title : `Buổi học ${sNum}`,
+          description: lmsLesson ? lmsLesson.description : '',
+          room: classRoom || 'Chưa gán',
+          defaultRoom: classRoom || 'Chưa gán',
+          teacherName: classTeacher || 'Chưa gán',
+          status: 'upcoming' as const,
+          materials: lmsLesson 
+            ? lmsLesson.components.map((c) => ({
+                name: c.name,
+                url: c.url,
+                type: (c.type === 'homework' || c.type === 'quiz') ? 'Phải làm' : 'Tham khảo' as 'Phải làm' | 'Tham khảo'
+              }))
+            : [],
+          syllabusName: currentSyllabus.name
+        })
       }
-    })
+    } else {
+      upcomingToReplace.forEach((s) => {
+        const mappedPreview = previewMappedSessions.find((p) => p.sessionNum === s.sessionNumber)
+        const lmsLesson = mappedPreview?.lmsLesson
 
-    // 4. Combine all sessions and sort them
-    const combinedSessions = [...pastSessions, ...replacedCancelledSessions, ...newUpcomingSessions]
+        newUpcomingSessions.push({
+          ...s,
+          id: `session-new-${s.sessionNumber}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          topic: lmsLesson ? lmsLesson.title : s.topic,
+          description: lmsLesson ? lmsLesson.description : s.description,
+          materials: lmsLesson 
+            ? lmsLesson.components.map((c) => ({
+                name: c.name,
+                url: c.url,
+                type: (c.type === 'homework' || c.type === 'quiz') ? 'Phải làm' : 'Tham khảo' as 'Phải làm' | 'Tham khảo'
+              }))
+            : s.materials,
+          syllabusName: currentSyllabus.name,
+          status: 'upcoming' as const
+        })
+      })
+    }
 
-    combinedSessions.sort((a, b) => {
-      if (a.sessionNumber !== b.sessionNumber) {
-        return a.sessionNumber - b.sessionNumber
-      }
-      if (a.status === 'cancelled' && b.status !== 'cancelled') {
-        return -1
-      }
-      if (a.status !== 'cancelled' && b.status === 'cancelled') {
-        return 1
-      }
-      return 0
-    })
+    // 3. Combine all sessions and sort them
+    const combinedSessions = [...pastSessions, ...newUpcomingSessions]
+
+    combinedSessions.sort((a, b) => a.sessionNumber - b.sessionNumber)
 
     const logMessage = `Đã đổi lộ trình giảng dạy sang [${currentRoadmap.name} - ${currentSyllabus.name}] bắt đầu từ buổi ${firstUpcomingSessionNum} (Bài bắt đầu: ${currentStartLesson.title}).`
     onSave(combinedSessions, logMessage, currentSyllabus.name)
@@ -348,7 +338,7 @@ export function ClassesRoadmapWizardView({
           <div>
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Cấu hình thay đổi lộ trình</h4>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Chọn Lộ trình, Khung chương trình và Bài học xuất phát cho các buổi học tiếp theo.
+              Chọn Lộ trình, Chương trình và Bài học xuất phát cho các buổi học tiếp theo.
             </p>
           </div>
           <Button
@@ -381,7 +371,7 @@ export function ClassesRoadmapWizardView({
                 </Select>
               </FieldLabel>
 
-              <FieldLabel label="Khung giáo trình LMS" required>
+              <FieldLabel label="Chương trình LMS" required>
                 <Select value={selectedSyllabusId} onValueChange={handleSyllabusChange}>
                   <SelectTrigger className="w-full min-w-0 rounded-lg shadow-xs border border-muted text-xs bg-background h-9">
                     <SelectValue placeholder="Chọn giáo trình..." className="truncate text-left block w-full min-w-0" />
@@ -521,11 +511,11 @@ export function ClassesRoadmapWizardView({
                 </button>
 
                 {isOpen && (
-                  <div className="p-4 bg-muted/10 space-y-3">
+                  <div className="p-4 bg-transparent space-y-3">
                     {phase.sessions.length === 0 ? (
                       <p className="text-xs text-muted-foreground py-2 text-center">Không có buổi học nào trong giai đoạn này.</p>
                     ) : (
-                      <div className="border border-muted rounded-xl bg-background overflow-hidden divide-y divide-muted/60">
+                      <div className="divide-y divide-muted/60">
                         {phase.sessions.map((session) => {
                           const lessons = getLessonsForRoadmapSession(session)
                           
@@ -552,7 +542,7 @@ export function ClassesRoadmapWizardView({
                                   </span>
                                   <span>•</span>
                                   <span className="flex items-center gap-0.5">
-                                    Giáo viên chính: <span className="font-semibold text-foreground">{session.substituteTeacherName || session.teacherName}</span> <Pencil className="h-2.5 w-2.5 ml-0.5 inline text-primary/80 cursor-pointer" />
+                                    Giáo viên chính: <span className="font-semibold text-foreground">{cleanTeacherName(session.substituteTeacherName || session.teacherName)}</span> <Pencil className="h-2.5 w-2.5 ml-0.5 inline text-primary/80 cursor-pointer" />
                                   </span>
                                   <span>•</span>
                                   <span className="flex items-center gap-0.5">
@@ -568,7 +558,7 @@ export function ClassesRoadmapWizardView({
                                   const isExpanded = expandedLessons[lessonKey] ?? (lessonIdx === 0)
                                   
                                   return (
-                                    <div key={lesson.id} className="border border-muted rounded-xl bg-background overflow-hidden shadow-2xs">
+                                    <div key={lesson.id} className="border border-muted rounded-xl bg-transparent overflow-hidden shadow-2xs">
                                       {/* Lesson Header Accordion Toggle */}
                                       <button
                                         type="button"
@@ -587,39 +577,48 @@ export function ClassesRoadmapWizardView({
 
                                       {/* Lesson Components List */}
                                       {isExpanded && (
-                                        <div className="px-4 pb-3 pt-1 border-t border-muted/40 bg-muted/5 space-y-2.5">
+                                        <div className="px-4 pb-3 pt-1 border-t border-muted/40 bg-transparent space-y-2.5">
                                           {lesson.components.map((c, cIdx) => {
                                             let iconColor = 'text-primary'
                                             let iconBg = 'bg-primary/10'
-                                            let typeText = 'Tài liệu'
                                             
                                             if (c.type === 'slide') {
                                               iconColor = 'text-rose-600 dark:text-rose-400'
                                               iconBg = 'bg-rose-50 dark:bg-rose-950/20'
-                                              typeText = 'Kịch bản'
                                             } else if (c.type === 'homework') {
                                               iconColor = 'text-emerald-600 dark:text-emerald-400'
                                               iconBg = 'bg-emerald-50 dark:bg-emerald-950/20'
-                                              typeText = 'Bài luyện tập'
                                             } else if (c.type === 'quiz') {
                                               iconColor = 'text-amber-600 dark:text-amber-400'
                                               iconBg = 'bg-amber-50 dark:bg-amber-950/20'
-                                              typeText = 'Nhiệm vụ phải làm'
                                             }
+
+                                            const isHomework = c.type === 'homework' || c.type === 'quiz';
+                                            const line2 = isHomework ? 'Bài luyện tập' : 'File tài liệu tham khảo cho học sinh';
+                                            const line3 = isHomework ? 'Nhiệm vụ phải làm' : 'Tài liệu tham khảo';
 
                                             return (
                                               <div key={cIdx} className="flex items-start gap-3 pl-2 text-xs">
                                                 <div className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 ${iconBg} ${iconColor}`}>
-                                                  {c.type === 'homework' ? (
+                                                  {c.type === 'homework' || c.type === 'quiz' ? (
                                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                                   ) : (
                                                     <FileText className="h-3.5 w-3.5" />
                                                   )}
                                                 </div>
-                                                <div className="space-y-0.5 min-w-0">
-                                                  <p className="font-bold text-foreground truncate">{c.name}</p>
-                                                  <p className="text-[10px] text-muted-foreground flex items-center gap-2">
-                                                    <span>{typeText}</span>
+                                                <div className="space-y-1 min-w-0">
+                                                  <p className="font-bold text-foreground text-sm leading-snug">{c.name}</p>
+                                                  <p className="text-xs text-muted-foreground leading-normal">{line2}</p>
+                                                  <p className={cn(
+                                                    "text-[10px] flex items-center gap-1 leading-normal",
+                                                    isHomework ? "text-amber-600" : "text-muted-foreground"
+                                                  )}>
+                                                    {isHomework ? (
+                                                      <CheckCircle2 className="h-3 w-3 shrink-0 text-amber-500" />
+                                                    ) : (
+                                                      <FileText className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+                                                    )}
+                                                    <span>{line3}</span>
                                                     {c.url && c.url !== '#' && (
                                                       <>
                                                         <span>•</span>

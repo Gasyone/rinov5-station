@@ -1,0 +1,42 @@
+﻿[
+    {
+        "id":  "dashboard",
+        "url":  "https://www.figma.com/api/mcp/asset/71f53981-b6de-41f8-9282-979d9f8fed49"
+    },
+    {
+        "id":  "calendar_class_schedule",
+        "url":  "https://www.figma.com/api/mcp/asset/4a85e436-ad15-43b0-8fe1-b6841725a27c"
+    },
+    {
+        "id":  "booking_test",
+        "url":  "https://www.figma.com/api/mcp/asset/f17e00a8-c497-41c2-ad31-ca6daba3f3fc"
+    },
+    {
+        "id":  "students",
+        "url":  "https://www.figma.com/api/mcp/asset/d6367187-0c83-43a2-b412-0c5bc054f065"
+    },
+    {
+        "id":  "classes",
+        "url":  "https://www.figma.com/api/mcp/asset/14c6e2f5-7d72-42a1-b7b0-3632c3b9f1d7"
+    },
+    {
+        "id":  "orders",
+        "url":  "https://www.figma.com/api/mcp/asset/ce09ff90-d7a0-40ba-a149-cc91ce49ce86"
+    },
+    {
+        "id":  "hr_employees",
+        "url":  "https://www.figma.com/api/mcp/asset/1f948cd3-a9a3-4484-a757-1f347594bf46"
+    },
+    {
+        "id":  "products",
+        "url":  "https://www.figma.com/api/mcp/asset/4b5b6729-4255-4142-9483-8a875df025fb"
+    },
+    {
+        "id":  "qc_check",
+        "url":  "https://www.figma.com/api/mcp/asset/28bf3b91-af92-4153-b087-7528721abe3d"
+    },
+    {
+        "id":  "renewal",
+        "url":  "https://www.figma.com/api/mcp/asset/ce233bdf-067c-4434-97f7-794a35a91bb8"
+    }
+]

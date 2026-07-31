@@ -182,8 +182,8 @@ To maintain visual integrity, **status badge colors MUST NEVER be hardcoded inli
 
 | Semantic State | Tailwind Palette | Mapped Entity Statuses | Visual Treatment (Light Mode) |
 |---|---|---|---|
-| **success** | Emerald | `active`, `available`, `approved`, `registered`, `present`, `homework_done`, `mo_khai_giang`, `makeup`, `qc_draft` | 🟢 Green badge with subtle border |
-| **info** | Sky | `started_assessment`, `in_use`, `new`, `on_leave`, `scheduled`, `upcoming`, `online_tutor`, `excused`, `low` | 🔵 Light blue indicator |
+| **success** | Emerald | `active`, `available`, `approved`, `registered`, `present`, `homework_done`, `mo_khai_giang`, `makeup`, `qc_draft`, `checkin` | 🟢 Green badge with subtle border |
+| **info** | Sky | `in_use`, `new`, `on_leave`, `scheduled`, `upcoming`, `online_tutor`, `excused`, `low` | 🔵 Light blue indicator |
 | **warning** | Amber | `locked`, `pending`, `probation`, `unassigned_teacher`, `tested`, `seconded`, `late`, `pending_review`, `unpaid`, `medium` | 🟡 Amber/Yellow attention badge |
 | **error** | Red | `deactivated`, `failed`, `decommissioned`, `reschedule`, `absent`, `high`, `homework_missing`, `qc_not_met` | 🔴 Saturated red alert badge |
 | **neutral** | Zinc | `inactive`, `cancelled`, `draft`, `resigned`, `lost`, `archived`, `no_show`, `planned`, `session_ended` | ⬜ Gray/Neutral baseline badge |

@@ -145,6 +145,8 @@ export function getInitials(name?: string) {
 }
 
 export function getStatusLabel(status: BookingStatus) {
+  if (status === 'ipad_test_booked') return 'Đã book test'
+  if (status === 'ipad_test_started') return 'Đang test'
   return STATUS_META[status as keyof typeof STATUS_META]?.label ?? status
 }
 
@@ -157,7 +159,7 @@ export function isBookingCheckedIn(booking: BookingTest) {
 }
 
 export function shouldShowCheckInAction(booking: BookingTest) {
-  return !isBookingCheckedIn(booking) && !isTerminalBookingStatus(booking.status)
+  return !isBookingCheckedIn(booking) && !isTerminalBookingStatus(booking.status) && booking.status !== 'ipad_test_booked' && booking.status !== 'ipad_test_started'
 }
 
 export function applyBookingCheckIn(booking: BookingTest): BookingTest {
@@ -166,7 +168,7 @@ export function applyBookingCheckIn(booking: BookingTest): BookingTest {
     attendance: 'confirmed',
     status:
       booking.status === 'booked_assessment'
-        ? 'started_assessment'
+        ? 'checkin'
         : booking.status,
   }
 }
@@ -174,9 +176,9 @@ export function applyBookingCheckIn(booking: BookingTest): BookingTest {
 export function matchesStatusTile(booking: BookingTest, status: StatusTileId) {
   if (status === 'all') return true
   if (status === 'interviewed')
-    return booking.status === 'started_assessment' && Boolean(booking.isInterviewed)
+    return booking.status === 'checkin' && Boolean(booking.isInterviewed)
   if (status === 'tested')
-    return booking.status === 'started_assessment' && Boolean(booking.isTested)
+    return booking.status === 'checkin' && Boolean(booking.isTested)
   if (status === 'unassigned_teacher') return !String(booking.teacher ?? '').trim()
   if (status === 'checkin') return isBookingCheckedIn(booking)
   return booking.status === status
@@ -225,12 +227,13 @@ export function buildNewBooking({
 }: {
   id: string
   form: CreateBookingForm
-  activeSubject: BookingSubject
+  activeSubject: string
   authorName: string
   familyName: string
   phone: string
 }): BookingTest {
   const testTime = `${form.scheduleDate} ${form.scheduleTime}`.trim()
+  const resolvedSubject = activeSubject === 'math' ? 'math' : 'english'
   return {
     id,
     childName: form.childName.trim(),
@@ -245,7 +248,7 @@ export function buildNewBooking({
     ].filter((member) => member.phone),
     status: 'booked_assessment',
     attendance: 'pending',
-    subject: activeSubject,
+    subject: resolvedSubject,
     eventType: 'test',
     program: form.program,
     school: form.school,
@@ -256,7 +259,7 @@ export function buildNewBooking({
       level: form.level || 'Chưa xác định',
       speaking: '-',
       lwr: '-',
-      path: activeSubject === 'english' ? 'Kiểm tra đầu vào Tiếng Anh' : undefined,
+      path: resolvedSubject === 'english' ? 'Kiểm tra đầu vào Tiếng Anh' : undefined,
     },
     resultLink: '',
     testLink: `mock://booking-tests/${id.toLowerCase()}`,

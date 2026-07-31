@@ -3,106 +3,192 @@ id: US-XXX-YY-ZZ
 title: "[Tên Biểu Mẫu Tạo/Sửa]"
 bf: BF-XXX-YY
 domain: CAP-XXX
+persona: "PERSONA-XXX"          # Ví dụ: PERSONA-CSM, PERSONA-TEACHER...
+sr: "SR-PERSONA-XXX"           # Mã SR cha tương ứng, ví dụ: SR-CSM-001
 status: draft
 tags: [tag1, form]
 ---
 
 # US-XXX-YY-ZZ: [Tên Biểu Mẫu Tạo/Sửa]
 
-> **Tham chiếu:** BF-XXX-YY · Giao diện Mẫu §4.4 (Biểu mẫu)
+> **Tham chiếu:** BF-XXX-YY · SR-PERSONA-XXX · Giao diện Mẫu §4.4 (Biểu mẫu / Hộp thoại biểu mẫu)
 > **Đường dẫn màn hình & Trạng thái liên quan:**
 > - `[Đường dẫn gọi biểu mẫu hoặc Hộp thoại]` -> Trạng thái: `[Các trạng thái được phép]`
 
+---
 
+## 1. NHẬT KÝ THAY ĐỔI & BỐI CẢNH (CHANGELOG & CONTEXT)
 
-## 1. Yêu cầu Người dùng (User Story)
-**Là một** [Vai trò], **tôi muốn** [Hành động], **để** [Mục đích].
+### Lịch sử cập nhật tài liệu (Changelog)
 
-> **Kiểm tra chất lượng (INVEST):**
-> - [x] **I**ndependent — Triển khai độc lập.
-> - [x] **N**egotiable — Chi tiết giao diện có thể thương lượng.
-> - [x] **V**aluable — Mang lại giá trị rõ ràng.
-> - [x] **E**stimable — Đủ rõ để ước lượng công sức.
-> - [x] **S**mall — Hoàn thành trong 1 vòng phát triển.
-> - [x] **T**estable — Có tiêu chí nghiệm thu ở mục 7.
+| Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
+|---|---|---|
+| [Ngày/Tháng/Năm] | Tóm tắt nội dung thay đổi | Lý do (Ví dụ: Chốt luồng, thay đổi UI...) |
+
+### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
+* **Bối cảnh:** [Tóm tắt bối cảnh nghiệp vụ từ tài liệu BF cha để hiểu nguồn gốc tính năng.]
+* **Vấn đề hiện tại:** [Khó khăn/vấn đề cụ thể mà biểu mẫu này sẽ giải quyết (ví dụ: quy trình nhập liệu thủ công dễ sai sót, chưa có kiểm soát dữ liệu...).]
+* **Mục tiêu & Giá trị mang lại:** [Mục tiêu cụ thể khi biểu mẫu này đi vào vận hành và giá trị mang lại cho tổ chức. KPI đo lường nếu có.]
+
+### Hiểu người dùng & Tình huống sử dụng (User Needs & Use Cases)
+* **Người dùng chính (Persona):** [Persona] (Ví dụ: PERSONA-CSM)
+* **Khó khăn lớn nhất (Pain-points):** [Khó khăn lớn nhất của đối tượng này khi nhập liệu hoặc cập nhật thông tin.]
+* **Nhu cầu thực tế (Needs):** [Mong muốn thực tế của người dùng đối với các tính năng trên biểu mẫu (ví dụ: muốn tự động điền, muốn báo lỗi rõ ràng...).]
+* **Câu phát biểu nghiệp vụ:** **Là một** [Persona], **tôi muốn** [nhập thông tin trên biểu mẫu], **để** [tạo mới hoặc cập nhật dữ liệu của thực thể].
+
+### Phạm vi kiểm soát (Scope)
+* **Phạm vi đầu vào:** [Dữ liệu đầu vào và các thực thể liên quan]
+* **Ràng buộc nghiệp vụ toàn cục (Global Rules):**
+  > [!IMPORTANT]
+  > **Lưu ý di trú:**
+  > Đối với màn hình di trú giao diện và sử dụng hệ thống cũ, ghi rõ: *"Kế thừa toàn bộ ràng buộc nghiệp vụ từ hệ thống cũ"*. KHÔNG tự định nghĩa mới các quy tắc kinh doanh hoặc thông số định mức nghiệp vụ thuộc về hệ thống cũ.
+  - **[Mã quy tắc (Ví dụ: RULE-FORM-01)] [Tên quy tắc]:** Mô tả ràng buộc phụ thuộc giữa các trường hoặc điều kiện nhập liệu phía giao diện.
+  - **[Mã quy tắc (Ví dụ: RULE-FORM-02)] [Tên quy tắc]:** Mô tả quy cách hiển thị hoặc tự động định dạng nhập liệu (mặt nạ nhập liệu).
+  - **[Mã định mức (Ví dụ: GLOBAL-METRIC-01)] Giới hạn nhập liệu phía giao diện:** Các giới hạn ký tự, số lượng tối đa của tệp đính kèm được kiểm tra trực tiếp trên giao diện (hoặc kế thừa từ giới hạn hệ thống cũ).
 
 ---
 
-## 2. Quy tắc Nghiệp vụ (Business Rules)
+## 2. LUỒNG XỬ LÝ CHÍNH (MAIN FLOW - HAPPY PATH)
 
-1. **[RULE-FORM-01] Ràng buộc phụ thuộc:** `NẾU` [Phân loại] = 'A' `THÌ` [Trường B] chuyển thành bắt buộc điền.
-2. **[RULE-FORM-02] Quy tắc nội dung:** Không cho phép chứa ký tự đặc biệt ở trường Mã.
-3. **[RULE-FORM-03] Chống trùng lặp:** `NẾU` Mã đã tồn tại `THÌ` chặn lưu, báo lỗi "Mã đã tồn tại".
+*Mô tả luồng đi của người dùng từ khi mở biểu mẫu, nhập thông tin hợp lệ cho đến khi lưu dữ liệu thành công.*
 
-### 2.1. Thông số & Định mức (Metrics & Thresholds)
-*(Định nghĩa các con số giới hạn, định mức hoặc SLA áp dụng cho biểu mẫu này)*
-- **[METRIC-01] Giới hạn số lượng:** Tối đa tạo 50 bản ghi/ngày/user.
-- **[METRIC-02] Giới hạn thời gian:** Khóa form không cho sửa sau 24h kể từ khi tạo.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Persona
+    participant F as Giao diện (Biểu mẫu / Hộp thoại)
+    participant S as Hệ thống (Kiểm soát Nghiệp vụ)
+    participant DB as Cơ sở dữ liệu
 
----
-
-## 3. Cấu trúc Các trường nhập liệu
-
-**Bố cục:** [1 Cột / 2 Cột].
-
-### 3.1. Thông tin đầu vào
-
-| Tên trường | Loại hiển thị | Bắt buộc | Trường dữ liệu | Ghi chú & Quy tắc |
-|------------|---------------|----------|----------------|-------------------|
-| Tên [Thực thể] | Ô nhập chữ | Có | Tên | Tối đa 100 ký tự. Cảnh báo đỏ nếu bỏ trống. |
-| Phân loại | Danh sách thả xuống | Có | Loại | Thay đổi loại → xóa trống trường cấp dưới. |
-| Trạng thái | Công tắc bật/tắt | Không | Hoạt động | Mặc định: Bật. |
-| Ghi chú | Ô nhập văn bản dài | Không | Ghi chú | Tối đa 500 ký tự. |
-
-### 3.2. Ví dụ Dữ liệu mẫu
-
-*Giúp Lập trình viên tạo dữ liệu kiểm thử chính xác.*
-
-| Tình huống | Dữ liệu đầu vào | Kết quả mong đợi |
-|------------|-----------------|-------------------|
-| Tạo thành công | Tên: "Nguyễn Văn A", Loại: "Học viên", Hoạt động: Bật | Lưu thành công, danh sách tải lại. |
-| Trùng mã | Mã: "HV-24-0001" (đã tồn tại) | Báo lỗi "Mã đã tồn tại", chặn lưu. |
-| Thiếu trường bắt buộc | Tên: (bỏ trống) | Viền đỏ ô Tên, chặn lưu. |
-
-### 3.3. Nút hành động
-| Nút | Loại hiển thị | Logic xử lý |
-|-----|---------------|-------------|
-| Hủy bỏ | Nút viền nhạt | Đóng hộp thoại, xóa trắng dữ liệu đang nhập. |
-| Lưu | Nút màu nhấn | Kiểm tra → Lưu → Đóng → Tải lại danh sách. |
+    U->>F: Kích hoạt mở biểu mẫu (ví dụ: Bấm nút Tạo mới)
+    F->>S: Gửi yêu cầu lấy dữ liệu cấu hình/danh mục phụ (nếu có)
+    S-->>F: Phản hồi danh mục phụ
+    F-->>U: Hiển thị giao diện biểu mẫu trống
+    U->>F: Nhập các trường thông tin và bấm [Lưu]
+    F->>F: Kiểm tra dữ liệu đầu vào trên giao diện
+    F->>S: Gửi gói dữ liệu biểu mẫu lên máy chủ
+    S->>S: Kiểm tra quyền & ràng buộc nghiệp vụ
+    S->>DB: Ghi nhận dữ liệu thực thể vào cơ sở dữ liệu
+    DB-->>S: Xác nhận lưu dữ liệu thành công
+    S-->>F: Phản hồi kết quả thành công
+    F-->>U: Hiển thị thông báo lưu thành công, đóng biểu mẫu và làm mới danh sách
+```
 
 ---
 
-## 4. Mô tả chi tiết (Màn hình & Luồng)
+## 3. GIAO DIỆN & TRẠNG THÁI TĨNH (DATA & UI STATE)
 
-*(Mô tả dễ hiểu, đầy đủ bằng ngôn ngữ tự nhiên để đội ngũ kỹ thuật có thể hiểu rõ và thực hiện được đúng yêu cầu. Không quy định định dạng cụ thể, người viết chủ động chọn cách thể hiện phù hợp như văn bản tự do, các bước thực hiện step-by-step, mã giả nghiệp vụ, hoặc vẽ sơ đồ luồng hoạt động...)*
+### 3.1. Thiết kế trực quan (Figma)
+* **Link/Hình ảnh Figma:** [Ghi vị trí để User chèn link thiết kế]
 
-### 4.1. Mô tả Màn hình
-- [Người viết mô tả chi tiết bố cục của biểu mẫu (1 cột hay 2 cột), cách sắp xếp các nhóm trường thông tin nhập liệu, và các thành phần giao diện liên quan.]
+### 3.2. Cấu trúc các trường nhập liệu & Quy tắc kiểm tra (Validation Rules)
+*Bố cục biểu mẫu: [1 Cột / 2 Cột / Hộp thoại trượt]*
 
-### 4.2. Luồng Hoạt động (Workflow)
-- [Người viết mô tả luồng đi của biểu mẫu từ lúc mở ra, quá trình người dùng nhập liệu, kiểm tra tính hợp lệ thời gian thực, cho đến khi bấm Lưu hoặc Hủy.]
+| Tên trường thông tin | Kiểu hiển thị | Bắt buộc | Nguồn dữ liệu | Định dạng & Độ dài (Min/Max) | Ràng buộc Duy nhất (Unique) | Diễn giải quy tắc kiểm duyệt dữ liệu |
+|---|---|---|---|---|---|---|
+| [Tên trường A] | Ô nhập chữ | Có | Người dùng nhập | Chữ thường, 2-100 ký tự | [Có / Không] | Không chứa ký tự đặc biệt. Báo lỗi nếu bỏ trống. |
+| [Tên trường B] | Ô chọn thả xuống | Có | Danh mục hệ thống | - | Không | Chọn một trong các giá trị danh mục. |
+
+### 3.3. Nút hành động biểu mẫu
+| Tên nút | Kiểu hiển thị | Logic xử lý nghiệp vụ | Điều kiện hiển thị | Mobile Responsive |
+|---------|---------------|-----------------------|---------------------|-------------------|
+| Hủy bỏ | Nút viền nhạt | Đóng biểu mẫu, không lưu thông tin, xóa sạch dữ liệu vừa nhập. | Luôn hiển thị | Hiển thị đầy đủ |
+| Lưu | Nút màu nhấn | Thực hiện kiểm tra toàn bộ trường dữ liệu → Gửi lưu → Đóng biểu mẫu → Tải lại danh sách. | Luôn hiển thị | Hiển thị đầy đủ |
+
+### 3.4. Ma trận phân quyền (Permission Matrix)
+*Xác định vai trò nào được phép thao tác mở biểu mẫu và lưu dữ liệu.*
+
+| Vai trò người dùng | Mở biểu mẫu tạo (Create) | Mở biểu mẫu sửa (Edit) | Thực hiện Lưu (Save) |
+|---|:---:|:---:|:---:|
+| **Quản trị viên (Admin / Owner)** | ✅ | ✅ | ✅ |
+| **Quản lý cơ sở (Branch Manager)** | ✅ | ✅ | ✅ |
+| **Nhân viên CSKH (CSM)** | [Có/Không] | [Có/Không] | [Có/Không] |
+| **Nhân viên tư vấn (Sale)** | [Có/Không] | ❌ | [Có/Không] |
+| **Giáo viên (Teacher)** | ❌ | ❌ | ❌ |
 
 ---
 
-## 5. Corner Cases (Trường hợp góc cạnh & Đặc biệt)
+## 4. KHỐI CHỨC NĂNG CHI TIẾT: ACTION & LUỒNG KÍCH HOẠT (ACTIONS & EVENTS)
 
-*(Bắt buộc phải liệt kê đầy đủ các trường hợp đặc biệt, ngoại lệ hoặc lỗi có thể xảy ra trong thực tế. Trong quá trình xây dựng, nếu phát sinh thêm bất kỳ trường hợp đặc biệt nào, người viết và lập trình viên phải lập tức cập nhật bổ sung vào bảng này.)*
+### Khối chức năng 1: Tương tác và Lưu dữ liệu trên Biểu mẫu
 
-| # | Tình huống đặc biệt (Corner Case) | Cách xử lý chi tiết | Ghi chú / Trạng thái |
-|---|----------------------------------|---------------------|----------------------|
-| 5.1 | Người dùng bấm Lưu khi biểu mẫu trống | Viền đỏ ô nhập liệu bắt buộc và hiển thị dòng chữ báo lỗi tương ứng ngay bên dưới trường đó. | Kiểm tra thời gian thực |
-| 5.2 | Bấm ra ngoài biểu mẫu/hộp thoại khi đang điền | Ngăn chặn việc tự động đóng hộp thoại để tránh mất dữ liệu. Người dùng phải bấm nút Hủy để xác nhận đóng. | |
-| 5.3 | Trùng mã định danh hoặc dữ liệu duy nhất | Khi bấm Lưu, hệ thống kiểm tra và chặn hành động lưu, hiển thị thông báo lỗi trùng dữ liệu cụ thể. | Chặn lưu từ hệ thống |
-| 5.4 | Mất kết nối internet khi đang gửi biểu mẫu | Hiển thị trạng thái đang gửi bị lỗi và thông báo cho người dùng thử lại, giữ nguyên dữ liệu đã nhập trên biểu mẫu. | |
+#### Action 1.1: Bấm nút [Lưu]
+* **Luồng kích hoạt (Event/Flow):** Người dùng bấm nút [Lưu] sau khi hoàn thành nhập thông tin. Giao diện chạy kiểm tra dữ liệu, sau đó gửi gói dữ liệu biểu mẫu lên máy chủ để ghi nhận.
+* **Quy tắc kiểm soát & Kiểm tra dữ liệu (Validation & Rules):**
+  - Chặn không cho lưu nếu các trường bắt buộc (`Bắt buộc = Có`) bị trống hoặc sai định dạng.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):** (Yêu cầu $\ge 3$ AC, bao gồm happy + unhappy/alternate paths)
+  - **AC-1 (Happy Path - Lưu dữ liệu thành công):**
+    - **Giả sử:** Biểu mẫu đã điền đầy đủ các thông tin bắt buộc và đúng định dạng.
+    - **Khi:** Người dùng click nút [Lưu].
+    - **Thì:** Giao diện đóng biểu mẫu, hiển thị thông báo thành công "Lưu dữ liệu thành công", làm mới danh sách chính để cập nhật bản ghi mới.
+  - **AC-2 (Alternate Path - Lỗi bỏ trống trường bắt buộc):**
+    - **Giả sử:** Biểu mẫu đang mở và trường Tên thực thể đang để trống.
+    - **Khi:** Người dùng click nút [Lưu].
+    - **Thì:** Trường Tên hiển thị viền đỏ và dòng chữ cảnh báo lỗi "Vui lòng nhập tên thực thể", chặn không gửi yêu cầu lên máy chủ.
+  - **AC-3 (Alternate Path - Lỗi nhập sai định dạng đặc thù):**
+    - **Giả sử:** Ô nhập số điện thoại đang nhập chữ cái.
+    - **Khi:** Người dùng click nút [Lưu].
+    - **Thì:** Trường số điện thoại báo lỗi "Số điện thoại không hợp lệ", chặn không gửi lưu.
+
+#### Action 1.2: Bấm nút [Hủy bỏ]
+* **Luồng kích hoạt (Event/Flow):** Người dùng bấm nút Hủy bỏ hoặc bấm phím Esc. Giao diện thực hiện hủy bỏ phiên làm việc hiện tại và quay về màn trước.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  - **AC-1 (Happy Path - Hủy bỏ phiên thành công):**
+    - **Giả sử:** Người dùng đang mở biểu mẫu tạo mới và chưa thay đổi dữ liệu nào.
+    - **Khi:** Người dùng click nút [Hủy bỏ] (hoặc bấm dấu x ở góc).
+    - **Thì:** Biểu mẫu đóng lại ngay lập tức, không lưu dữ liệu, xóa sạch nội dung và hiển thị lại màn hình danh sách chính.
 
 ---
 
-## 6. Tiêu chí Nghiệm thu (Acceptance Criteria)
+## 5. ĐẶC TẢ KẾT NỐI HỆ THỐNG (API SPECIFICATION)
+*Mô tả cấu trúc dữ liệu trao đổi giữa giao diện và hệ thống phía sau khi gửi lưu biểu mẫu (hoặc ghi N/A nếu là màn hình tĩnh).*
 
-*(Liệt kê chi tiết các điều kiện xác định sản phẩm/tính năng được xem là hoàn thành. Viết dưới dạng danh sách gạch đầu dòng rõ ràng, cụ thể và dễ dàng kiểm thử.)*
+*   **Endpoint:** `POST /api/v1/[some-endpoint]` hoặc `PUT /api/v1/[some-endpoint]/{id}`
+*   **Cấu trúc dữ liệu gửi đi (Request Payload - JSON):**
+    ```json
+    {
+      "name": "string",
+      "category_id": "string"
+    }
+    ```
+*   **Cấu trúc dữ liệu phản hồi thành công (Response JSON - 200 OK / 201 Created):**
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": "string",
+        "name": "string",
+        "category_id": "string",
+        "created_at": "string"
+      }
+    }
+    ```
+*   **Mã lỗi thường gặp (Response Error Codes):**
+    *   `400 Bad Request`: Thiếu trường dữ liệu bắt buộc hoặc sai định dạng.
+    *   `409 Conflict`: Trùng lặp dữ liệu duy nhất (Unique constraint).
+    *   `401 Unauthorized`: Hết hạn phiên làm việc.
+    *   `403 Forbidden`: Không có quyền cập nhật dữ liệu.
+    *   `500 Internal Server Error`: Lỗi máy chủ.
 
-- **AC-1 (Bố cục chuẩn):** Biểu mẫu hiển thị đúng bố cục thiết kế đã chọn (1 cột hoặc 2 cột), các trường nhập liệu được gắn nhãn đầy đủ và rõ ràng.
-- **AC-2 (Kiểm tra hợp lệ):** Khi bỏ trống trường bắt buộc và bấm Lưu, hệ thống phải chặn lưu, đồng thời bôi đỏ viền ô nhập liệu và hiển thị thông báo lỗi chi tiết.
-- **AC-3 (Lưu dữ liệu thành công):** Khi điền thông tin hợp lệ và bấm Lưu, dữ liệu được ghi nhận vào hệ thống, hộp thoại đóng lại, danh sách chính tự động tải lại và hiển thị bản ghi mới.
-- **AC-4 (Hủy bỏ an toàn):** Khi bấm nút Hủy bỏ, hệ thống xóa sạch dữ liệu tạm trên biểu mẫu và đóng hộp thoại mà không thực hiện bất kỳ thay đổi nào trên hệ thống.
+---
+
+## 6. CÁC TRƯỜNG HỢP GÓC CẠNH & LUỒNG NGOẠI LỆ (CORNER CASES & EXCEPTION FLOWS)
+
+*Mô tả chi tiết xử lý ngoại lệ (dữ liệu sai, mất mạng, timeout, hết hạn phiên) đối với màn hình biểu mẫu:*
+
+- **[CASE-01] Người dùng nhập trùng dữ liệu duy nhất (Exception Flow - Unique Constraint):**
+  - *Tình huống:* Người dùng nhập mã hoặc tên thực thể đã tồn tại trong hệ thống.
+  - *Cách xử lý:* Máy chủ trả về mã lỗi 409, hệ thống hiển thị cảnh báo đỏ tại trường liên quan: "Thông tin này đã tồn tại. Vui lòng nhập giá trị khác."
+- **[CASE-02] Nhập ký tự đặc biệt hoặc mã script nguy hiểm (Exception Flow - Input Sanitization):**
+  - *Tình huống:* Người dùng cố tình sao chép các ký tự html/script để phá hoại giao diện.
+  - *Cách xử lý:* Hệ thống tự động lọc (sanitize) hoặc báo lỗi "Dữ liệu chứa ký tự không được cho phép".
+- **[CASE-03] Mất kết nối mạng khi đang gửi yêu cầu lưu (Exception Flow - Network Loss):**
+  - *Tình huống:* Người dùng bấm nút [Lưu] đúng lúc đường truyền internet bị ngắt.
+  - *Cách xử lý:* Hiển thị thông báo lỗi kết nối, giữ nguyên giao diện biểu mẫu và các thông tin đã nhập để người dùng không bị mất công gõ lại và có thể gửi lại khi mạng ổn định.
+- **[CASE-04] Thời gian phản hồi lưu dữ liệu bị timeout (Exception Flow - Timeout):**
+  - *Tình huống:* Máy chủ quá tải khiến yêu cầu lưu kéo dài quá 10 giây không có phản hồi.
+  - *Cách xử lý:* Hủy yêu cầu, hiển thị thông báo "Hệ thống phản hồi chậm. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau."
+- **[CASE-05] Đóng biểu mẫu khi có dữ liệu đã thay đổi chưa lưu (Exception Flow - Unsaved Changes):**
+  - *Tình huống:* Người dùng đã sửa một vài trường nhưng bấm [Hủy bỏ] hoặc click ra ngoài hộp thoại.
+  - *Cách xử lý:* Hiển thị một hộp thoại xác nhận (Confirm Dialog): "Bạn có những thay đổi chưa lưu. Bạn có chắc chắn muốn rời đi?" nhằm tránh mất mát dữ liệu do vô tình click nhầm.
 

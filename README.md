@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-Mở trình duyệt tại [http://localhost:3000](http://localhost:3000). Tại màn hình Login, bạn có thể nhập Email/Mật khẩu bất kỳ để đăng nhập hệ thống và xem các luồng demo.
+Mở trình duyệt tại [http://localhost:3001](http://localhost:3001). Tại màn hình Login, bạn có thể nhập Email/Mật khẩu bất kỳ để đăng nhập hệ thống và xem các luồng demo.
 
 ## Hướng Dẫn Đọc Tài Liệu (Dành cho Lập trình viên mới)
 

@@ -2,8 +2,8 @@
 
 import { type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import { getInitials } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { AppAvatar } from './AppAvatar'
 
 interface EntityCellProps {
   /** Primary line — usually the entity name */
@@ -17,6 +17,8 @@ interface EntityCellProps {
   /** Click handler — turns the cell into a button */
   onClick?: () => void
   className?: string
+  userId?: string
+  userType?: 'teacher' | 'student' | 'parent' | 'staff'
 }
 
 /**
@@ -34,20 +36,22 @@ export function EntityCell({
   initials,
   onClick,
   className,
+  userId,
+  userType,
 }: EntityCellProps) {
-  const resolvedInitials = initials ?? getInitials(name)
   const interactive = Boolean(onClick)
 
   const content = (
     <>
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-sm font-bold text-foreground">
-        {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatar} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span aria-hidden>{resolvedInitials}</span>
-        )}
-      </div>
+      <AppAvatar
+        src={avatar}
+        name={name}
+        initials={initials}
+        size="md"
+        shape="circle"
+        userId={userId}
+        userType={userType}
+      />
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold">{name}</p>
         {supporting ? (

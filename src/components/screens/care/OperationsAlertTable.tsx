@@ -1,227 +1,107 @@
 'use client'
 
-import { useMemo, useState, Fragment } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { EmptyState } from '@/components/shared'
+import { Users } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
-import { OperationsAlertTableRow } from './OperationsAlertTableRow'
-import { OperationsAlertTableSubRow } from './OperationsAlertTableSubRow'
+import { DataTablePagination } from '@/components/data-table'
+import { AlertRow } from './AlertRow'
 
 interface OperationsAlertTableProps {
   alerts: StudentCareAlert[]
-  onTagnhep: (student: StudentCareAlert) => void
   selectedIds: string[]
   onSelectChange: (id: string, checked: boolean) => void
   onSelectAll: (checked: boolean) => void
-}
-
-interface GroupedStudentAlert {
-  studentId: string
-  studentName: string
-  customerCode?: string
-  studentFolderLink: string
-  csStaff: string
-  classes: StudentCareAlert[]
+  className?: string
+  pagination?: {
+    page: number
+    total: number
+    pageSize: number
+    onPageChange: (page: number) => void
+    onPageSizeChange: (size: number) => void
+  }
+  viewMode?: 'service' | 'academic' | 'total'
+  onRefresh?: () => void
+  onViewDetail?: (id: string) => void
+  onOpenRoadmapModal?: (cls: StudentCareAlert) => void
 }
 
 export function OperationsAlertTable({
   alerts,
-  onTagnhep,
   selectedIds,
   onSelectChange,
   onSelectAll,
+  className,
+  pagination,
+  viewMode = 'service',
+  onRefresh,
+  onViewDetail,
+  onOpenRoadmapModal,
 }: OperationsAlertTableProps) {
-  // Group the flat alerts by studentId on the fly
-  const groupedAlerts = useMemo(() => {
-    const groups: Record<string, StudentCareAlert[]> = {}
-    for (const alert of alerts) {
-      if (!groups[alert.studentId]) {
-        groups[alert.studentId] = []
-      }
-      groups[alert.studentId].push(alert)
-    }
+  const allSelected = alerts.length > 0 && alerts.every((item) => selectedIds.includes(item.id))
 
-    return Object.entries(groups).map(([studentId, list]) => {
-      const first = list[0]
-      return {
-        studentId,
-        studentName: first.studentName,
-        customerCode: first.customerCode,
-        studentFolderLink: first.studentFolderLink,
-        csStaff: first.csStaff,
-        classes: list,
-      } as GroupedStudentAlert
-    })
-  }, [alerts])
-
-  // Track expanded student IDs
-  const [expandedStudentIds, setExpandedStudentIds] = useState<string[]>([])
-
-  const toggleExpand = (studentId: string) => {
-    setExpandedStudentIds((prev) =>
-      prev.includes(studentId)
-        ? prev.filter((id) => id !== studentId)
-        : [...prev, studentId]
+  if (alerts.length === 0) {
+    return (
+      <EmptyState
+        icon={<Users className="h-7 w-7 text-muted-foreground" />}
+        title="Không tìm thấy dữ liệu"
+        description="Điều chỉnh tìm kiếm hoặc bộ lọc để hiển thị kết quả."
+        className="py-10 border border-border rounded-lg bg-card"
+      />
     )
   }
 
-  // Handle select/deselect all classes of a student
-  const handleStudentSelectChange = (student: GroupedStudentAlert, checked: boolean) => {
-    student.classes.forEach((c) => {
-      onSelectChange(c.id, checked)
-    })
-  }
-
-  const allSelected = alerts.length > 0 && alerts.every((item) => selectedIds.includes(item.id))
-
   return (
-    <Table containerClassName="min-w-full overflow-visible" className="min-w-[1600px] align-top">
-      <TableHeader className="sticky top-0 bg-background z-20 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
-        <TableRow className="hover:bg-transparent border-b border-border bg-muted/30">
-            {/* 1. Checkbox */}
-            <TableHead className="w-12 text-center text-xs font-semibold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              <div className="flex justify-center">
+    <div className={cn("rounded-lg border border-border bg-card overflow-hidden flex flex-col min-h-0", className)}>
+      <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
+        <table className="w-full min-w-max text-xs text-left border-collapse">
+          <thead className="sticky top-0 z-10 bg-zinc-50 dark:bg-zinc-900 border-b border-border">
+            <tr className="border-b border-border bg-muted/40 dark:bg-muted/10 text-muted-foreground font-semibold">
+              <th className="py-1.5 px-2 w-9 text-center">
                 <Checkbox
                   checked={allSelected}
-                  onCheckedChange={(val) => onSelectAll(!!val)}
+                  onCheckedChange={(val) => onSelectAll(val === true)}
                   aria-label="Chọn tất cả"
                 />
-              </div>
-            </TableHead>
-            {/* 2. Student / Subject */}
-            <TableHead className="min-w-[200px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Học viên / Môn
-            </TableHead>
-            {/* 3. Điện thoại */}
-            <TableHead className="min-w-[160px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Liên hệ
-            </TableHead>
-            {/* 4. Lớp học */}
-            <TableHead className="min-w-[180px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Lớp học
-            </TableHead>
-            {/* 5. Cấp độ */}
-            <TableHead className="min-w-[120px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Cấp độ
-            </TableHead>
-            {/* 6. Sub-level */}
-            <TableHead className="min-w-[100px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Sub-level
-            </TableHead>
-            {/* 7. Ngày bắt đầu */}
-            <TableHead className="min-w-[120px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Ngày bắt đầu
-            </TableHead>
-            {/* 8. Hạn học dự kiến */}
-            <TableHead className="min-w-[130px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Hạn học dự kiến
-            </TableHead>
-            {/* 9. Trạng thái học */}
-            <TableHead className="min-w-[130px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Trạng thái học
-            </TableHead>
-            {/* 10. Trạng thái lớp */}
-            <TableHead className="min-w-[130px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Trạng thái lớp
-            </TableHead>
-            {/* 11. Giáo viên */}
-            <TableHead className="min-w-[140px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Giáo viên
-            </TableHead>
-            {/* 12. Lịch học */}
-            <TableHead className="min-w-[220px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Lịch học
-            </TableHead>
-            {/* 13. Tổng buổi */}
-            <TableHead className="min-w-[100px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Tổng buổi
-            </TableHead>
-            {/* 14. Còn lại */}
-            <TableHead className="min-w-[100px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Còn lại
-            </TableHead>
-            {/* 15. Chuyên cần */}
-            <TableHead className="min-w-[150px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              Chuyên cần
-            </TableHead>
-            {/* 16. BTVN */}
-            <TableHead className="min-w-[120px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              BTVN
-            </TableHead>
-            {/* 17. Test gần nhất */}
-            <TableHead className="min-w-[100px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Lần cuối
-            </TableHead>
-            {/* 18. Điểm TB */}
-            <TableHead className="min-w-[100px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Điểm TB
-            </TableHead>
-            {/* 19. Cảnh báo CS */}
-            <TableHead className="min-w-[120px] text-xs font-bold uppercase tracking-wider text-center py-3 px-4 sticky top-0 bg-background z-20">
-              Cảnh báo CS
-            </TableHead>
-            {/* 20. CSKH Tác nghiệp */}
-            <TableHead className="min-w-[240px] text-xs font-bold uppercase tracking-wider py-3 px-4 sticky top-0 bg-background z-20">
-              CSKH Tác nghiệp
-            </TableHead>
-            {/* 21. Thao tác */}
-            <TableHead className="w-20 text-right text-xs font-bold uppercase tracking-wider py-3 px-4 sticky right-0 top-0 bg-background z-30 shadow-[-1px_0_0_0_rgba(0,0,0,0.05)]">
-              Thao tác
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {groupedAlerts.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={21} className="h-32 text-center text-sm text-muted-foreground">
-                Không tìm thấy dữ liệu học viên vận hành phù hợp.
-              </TableCell>
-            </TableRow>
-          ) : (
-            groupedAlerts.map((student) => {
-              const isExpanded = expandedStudentIds.includes(student.studentId)
-              const allStudentClassIds = student.classes.map((c) => c.id)
-              const isStudentSelected = allStudentClassIds.every((id) => selectedIds.includes(id))
-
-              return (
-                <Fragment key={student.studentId}>
-                  {/* PARENT ROW (STUDENT SUMMARY) */}
-                  <OperationsAlertTableRow
-                    student={student}
-                    isExpanded={isExpanded}
-                    onToggleExpand={toggleExpand}
-                    isSelected={isStudentSelected}
-                    onSelectChange={handleStudentSelectChange}
-                    onTagnhep={onTagnhep}
-                  />
-
-                  {/* CHILD ROWS (EXPANDED CLASSES DETAIL) */}
-                  {isExpanded &&
-                    student.classes.map((c) => {
-                      const isChildSelected = selectedIds.includes(c.id)
-
-                      return (
-                        <OperationsAlertTableSubRow
-                          key={c.id}
-                          c={c}
-                          isSelected={isChildSelected}
-                          onSelectChange={onSelectChange}
-                          onTagnhep={onTagnhep}
-                        />
-                      )
-                    })}
-                </Fragment>
-              )
-            })
-          )}
-        </TableBody>
-      </Table>
+              </th>
+              <th className="py-1.5 px-2 min-w-[210px]">Học viên</th>
+              <th className="py-1.5 px-2 min-w-[130px]">Liên hệ</th>
+              <th className="py-1.5 px-2 min-w-[135px]">Phụ trách</th>
+              <th className="py-1.5 px-2 min-w-[165px]">Lớp học</th>
+              <th className="py-1.5 px-2 min-w-[140px]">Gói sản phẩm</th>
+              <th className="py-1.5 px-2 text-left min-w-[135px]">Thống kê học tập</th>
+              <th className="py-1.5 px-2 text-left min-w-[260px]">Nội dung chăm sóc</th>
+              <th className="py-1.5 px-2 text-left min-w-[140px]">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {alerts.map((cls, index) => (
+              <AlertRow
+                key={cls.id}
+                cls={cls}
+                isSelected={selectedIds.includes(cls.id)}
+                onSelectChange={onSelectChange}
+                viewMode={viewMode}
+                rowIndex={index}
+                onRefresh={onRefresh}
+                onViewDetail={onViewDetail}
+                onOpenRoadmapModal={onOpenRoadmapModal}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {pagination && (
+        <DataTablePagination
+          page={pagination.page}
+          total={pagination.total}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.onPageChange}
+          onPageSizeChange={pagination.onPageSizeChange}
+          className="border-t border-border shrink-0"
+        />
+      )}
+    </div>
   )
 }

@@ -31,7 +31,7 @@ interface ActionDeps {
   setSelectedIds: Dispatch<SetStateAction<Set<string>>>
   studentOptions: Array<{ id: string; label: string; familyName: string; phone: string }>
   authorName: string
-  activeSubject: BookingSubject
+  activeSubject: string
   assessmentBooking: BookingTest | null
   assessmentDraft: AssessmentDraft
   detailBooking: BookingTest | null
@@ -102,7 +102,7 @@ export function useBookingTestActions(deps: ActionDeps) {
         ...applyBookingCheckIn(current),
         status:
           current.status === 'booked_assessment'
-            ? 'started_assessment'
+            ? 'checkin'
             : current.status,
       }))
     }
@@ -129,7 +129,7 @@ export function useBookingTestActions(deps: ActionDeps) {
     updateBooking(deps.assessmentBooking.id, (booking) => {
       const updated: BookingTest = {
         ...booking,
-        status: booking.status === 'booked_assessment' ? 'started_assessment' : booking.status,
+        status: booking.status === 'booked_assessment' ? 'checkin' : booking.status,
         attendance: 'confirmed',
         isInterviewed: true,
         isTested: true,

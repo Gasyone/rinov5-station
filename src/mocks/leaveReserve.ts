@@ -10,11 +10,11 @@ export interface LeaveReserveRequest {
   studentName: string
   studentCode: string
   branch: string
-  type: 'leave' | 'reserve' | 'suspend'
+  type: 'off' | 'reservation' | 'learn_again'
   startDate: string
   endDate: string
   reason: string
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  status: 'pending' | 'approved' | 'not_approved' | 'cancel'
   requestedDate: string
   approvedBy?: string
   approvedDate?: string
@@ -27,16 +27,20 @@ export interface LeaveReserveRequest {
   productPackage: string
   parentName?: string
   additionalContacts?: AdditionalContact[]
+  cancelReason?: string
+  rejectReason?: string
+  quota?: number
+  usedAbsences?: number
 }
 
 export let mockLeaveReserveRequests: LeaveReserveRequest[] = [
   {
-    id: "LR-001",
+    id: "NP001",
     studentId: "s1",
     studentName: "Nguyễn An",
     studentCode: "STU-001",
     branch: "RinoEdu Nguyễn Tuân",
-    type: "leave",
+    type: "off",
     startDate: "2025-06-01",
     endDate: "2025-06-07",
     reason: "Nghỉ hè du lịch cùng gia đình",
@@ -50,18 +54,20 @@ export let mockLeaveReserveRequests: LeaveReserveRequest[] = [
     productPackage: "Gói IELTS cam kết 7.0",
     parentName: "Phụ huynh: Nguyễn Văn A",
     requestedBy: "Nguyễn Văn C",
+    quota: 12,
+    usedAbsences: 3,
     additionalContacts: [
       { name: "Mẹ: Trần Thị B", phone: "0911223344", email: "mother.an@email.com" },
       { name: "Anh trai: Nguyễn Bình", phone: "0911556677" }
     ]
   },
   {
-    id: "LR-002",
+    id: "BL002",
     studentId: "s3",
     studentName: "Lê Chi",
     studentCode: "STU-003",
     branch: "RinoEdu Nguyễn Tuân",
-    type: "reserve",
+    type: "reservation",
     startDate: "2025-06-10",
     endDate: "2025-09-10",
     reason: "Đi học quân sự tại trường Đại học",
@@ -77,41 +83,20 @@ export let mockLeaveReserveRequests: LeaveReserveRequest[] = [
     productPackage: "Gói Giao tiếp cơ bản",
     parentName: "Phụ huynh: Lê Văn C",
     requestedBy: "Lê Văn D",
+    quota: 12,
+    usedAbsences: 0,
     additionalContacts: [
       { name: "Mẹ: Nguyễn Thị D", phone: "0955667788" }
     ]
   },
+
   {
-    id: "LR-003",
-    studentId: "s5",
-    studentName: "Hoàng Văn Em",
-    studentCode: "STU-005",
-    branch: "RinoEdu Smart City",
-    type: "suspend",
-    startDate: "2025-05-20",
-    endDate: "2025-06-20",
-    reason: "Trùng lịch thi học kỳ ở trường phổ thông",
-    status: "pending",
-    requestedDate: "2025-05-18",
-    title: "Yêu cầu tạm dừng học tập",
-    phone: "0999999999",
-    email: "em@email.com",
-    className: "Tiếng Nhật N5",
-    classCode: "CLS-JPN-N5",
-    productPackage: "Gói Tiếng Nhật N5 cơ bản",
-    parentName: "Phụ huynh: Hoàng Văn E",
-    requestedBy: "Phạm Văn E",
-    additionalContacts: [
-      { name: "Chị gái: Hoàng Thị F", phone: "0910101012" }
-    ]
-  },
-  {
-    id: "LR-004",
+    id: "NP004",
     studentId: "s2",
     studentName: "Trần Thị Bình",
     studentCode: "STU-002",
     branch: "RinoEdu Smart City",
-    type: "leave",
+    type: "off",
     startDate: "2025-04-05",
     endDate: "2025-04-12",
     reason: "Phẫu thuật y tế điều trị cận thị",
@@ -127,21 +112,23 @@ export let mockLeaveReserveRequests: LeaveReserveRequest[] = [
     productPackage: "Gói TOEIC 4 kỹ năng",
     parentName: "Phụ huynh: Trần Thị B",
     requestedBy: "Trần Thị F",
+    quota: 12,
+    usedAbsences: 1,
     additionalContacts: [
       { name: "Bố: Trần Văn A", phone: "0944444445" }
     ]
   },
   {
-    id: "LR-005",
+    id: "NP005",
     studentId: "s8",
-    studentName: "Lê Thị Khánh",
+    studentName: "Trương Bảo An",
     studentCode: "STU-008",
     branch: "RinoEdu Smart City",
-    type: "leave",
+    type: "off",
     startDate: "2025-05-25",
     endDate: "2025-05-28",
     reason: "Có việc gia đình đột xuất ở quê",
-    status: "rejected",
+    status: "not_approved",
     requestedDate: "2025-05-20",
     approvedBy: "Lê Thị B (Quản lý)",
     approvedDate: "2025-05-21",
@@ -153,8 +140,91 @@ export let mockLeaveReserveRequests: LeaveReserveRequest[] = [
     productPackage: "Gói STEM Robotics cơ bản",
     parentName: "Phụ huynh: Lê Thị K",
     requestedBy: "Nguyễn Văn G",
+    quota: 12,
+    usedAbsences: 0,
+    rejectReason: "Học viên đã nghỉ quá nhiều buổi trong tháng này",
     additionalContacts: [
       { name: "Bố: Lê Văn L", phone: "0917171718" }
+    ]
+  },
+  {
+    id: "HL006",
+    studentId: "s3",
+    studentName: "Lê Chi",
+    studentCode: "STU-003",
+    branch: "RinoEdu Nguyễn Tuân",
+    type: "learn_again",
+    startDate: "2025-09-11",
+    endDate: "2025-09-11",
+    reason: "Hoàn thành khóa học quân sự ở trường Đại học, đăng ký đi học lại",
+    status: "pending",
+    requestedDate: "2025-09-01",
+    title: "Đề xuất đi học lại sau bảo lưu",
+    phone: "0955555555",
+    email: "chi@email.com",
+    className: "Tiếng Anh A1",
+    classCode: "CLS-ENG-01",
+    productPackage: "Gói Giao tiếp cơ bản",
+    parentName: "Phụ huynh: Lê Văn C",
+    requestedBy: "Lê Văn D",
+    quota: 12,
+    usedAbsences: 0,
+    additionalContacts: [
+      { name: "Mẹ: Nguyễn Thị D", phone: "0955667788" }
+    ]
+  },
+  {
+    id: "HL007",
+    studentId: "s1",
+    studentName: "Nguyễn An",
+    studentCode: "STU-001",
+    branch: "RinoEdu Nguyễn Tuân",
+    type: "learn_again",
+    startDate: "2025-06-08",
+    endDate: "2025-06-08",
+    reason: "Hoàn thành chuyến du lịch gia đình, xin đi học lại",
+    status: "approved",
+    requestedDate: "2025-06-05",
+    approvedBy: "Trần Văn A (Quản lý)",
+    approvedDate: "2025-06-06",
+    title: "Yêu cầu đi học lại sau nghỉ phép",
+    phone: "0911111111",
+    email: "an@email.com",
+    className: "IELTS A1",
+    classCode: "CLS-IELTS-01",
+    productPackage: "Gói IELTS cam kết 7.0",
+    parentName: "Phụ huynh: Nguyễn Văn A",
+    requestedBy: "Nguyễn Văn C",
+    quota: 12,
+    usedAbsences: 3,
+    additionalContacts: [
+      { name: "Mẹ: Trần Thị B", phone: "0911223344", email: "mother.an@email.com" }
+    ]
+  },
+  {
+    id: "BL008",
+    studentId: "s3",
+    studentName: "Lê Chi",
+    studentCode: "STU-003",
+    branch: "RinoEdu Nguyễn Tuân",
+    type: "reservation",
+    startDate: "2025-10-15",
+    endDate: "2025-12-15",
+    reason: "Đi học trao đổi ngắn hạn tại nước ngoài",
+    status: "pending",
+    requestedDate: "2025-10-01",
+    title: "Đơn xin bảo lưu học tập ngắn hạn",
+    phone: "0955555555",
+    email: "chi@email.com",
+    className: "Tiếng Anh A1",
+    classCode: "CLS-ENG-01",
+    productPackage: "Gói Giao tiếp cơ bản",
+    parentName: "Phụ huynh: Lê Văn C",
+    requestedBy: "Lê Văn D",
+    quota: 12,
+    usedAbsences: 0,
+    additionalContacts: [
+      { name: "Mẹ: Nguyễn Thị D", phone: "0955667788" }
     ]
   },
 ]
@@ -163,7 +233,7 @@ export function getLeaveReserveRequests(filters?: {
   search?: string
   branch?: string
   status?: string
-  types?: Array<'leave' | 'reserve' | 'suspend'>
+  types?: Array<'off' | 'reservation' | 'learn_again'>
   dateRanges?: Array<'this-week' | 'this-month' | 'last-month' | 'custom'>
 }): LeaveReserveRequest[] {
   const now = new Date()
@@ -231,23 +301,32 @@ export function getLeaveReserveRequests(filters?: {
 
 export function updateLeaveReserveStatus(
   id: string,
-  status: 'approved' | 'rejected' | 'cancelled',
-  adminName: string
+  status: 'approved' | 'not_approved' | 'cancel',
+  adminName: string,
+  reason?: string
 ): boolean {
   const req = mockLeaveReserveRequests.find((r) => r.id === id)
   if (req) {
     req.status = status
     req.approvedBy = adminName
     req.approvedDate = new Date().toISOString().split('T')[0]
+    if (status === 'cancel' && reason) {
+      req.cancelReason = reason
+    } else if (status === 'not_approved' && reason) {
+      req.rejectReason = reason
+    }
     return true
   }
   return false
 }
 
 export function createLeaveReserveRequest(req: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>): LeaveReserveRequest {
+  const count = mockLeaveReserveRequests.length + 1
+  const paddedNum = String(count).padStart(3, '0')
+  const prefix = req.type === 'off' ? 'NP' : req.type === 'reservation' ? 'BL' : 'HL'
   const newReq: LeaveReserveRequest = {
     ...req,
-    id: `LR-0${mockLeaveReserveRequests.length + 1}`,
+    id: `${prefix}${paddedNum}`,
     status: 'pending',
     requestedDate: new Date().toISOString().split('T')[0],
     requestedBy: 'Nguyễn Văn C'

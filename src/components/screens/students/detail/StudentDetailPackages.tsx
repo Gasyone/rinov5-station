@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { StatusBadge, FieldLabel } from '@/components/shared'
+import { FieldLabel, EmptyState } from '@/components/shared'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -30,20 +30,59 @@ import {
 import type { StudentPackage } from './studentDetailTypes'
 import { Link as LinkIcon, BookOpen, Pencil, ArrowLeftRight, Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { StudentClassAssignmentDialog } from './StudentClassAssignmentDialog'
+import type { EnrolledClass } from '@/mocks/students'
+import { mockClassRecords } from '@/mocks/classRecords'
 
 interface StudentDetailPackagesProps {
   packages: StudentPackage[]
+  studentName: string
+  studentCode: string
+  studentBranch: string
+  studentLevel?: string
+  studentClasses?: EnrolledClass[]
+  onConfirmAssignment?: (pkgId: string, classItem: { id: string; name: string; startSession?: string }) => void
 }
 
-export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) {
+export function StudentDetailPackages({
+  packages,
+  studentName,
+  studentCode,
+  studentBranch,
+  studentLevel,
+  studentClasses = [],
+  onConfirmAssignment,
+}: StudentDetailPackagesProps) {
   const [prevPackages, setPrevPackages] = useState<StudentPackage[]>(packages)
   const [localPackages, setLocalPackages] = useState<StudentPackage[]>(packages)
+  const [filter, setFilter] = useState<'all' | 'unlinked' | 'linked' | 'ended' | 'transferred' | 'cancelled'>('all')
+
+  // Dialog State: Class Assignment
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [selectedPkgToAssign, setSelectedPkgToAssign] = useState<StudentPackage | null>(null)
 
   // Sync state with props when packages change (e.g. different student loaded)
   if (packages !== prevPackages) {
     setPrevPackages(packages)
     setLocalPackages(packages)
   }
+
+  const filteredPackages = useMemo(() => {
+    switch (filter) {
+      case 'unlinked':
+        return localPackages.filter((p) => !p.linkedClassCode && p.remainingSessions > 0)
+      case 'linked':
+        return localPackages.filter((p) => !!p.linkedClassCode && p.remainingSessions > 0)
+      case 'ended':
+        return localPackages.filter((p) => p.remainingSessions === 0 && p.status !== 'transferred' && p.status !== 'cancelled')
+      case 'transferred':
+        return localPackages.filter((p) => p.status === 'transferred')
+      case 'cancelled':
+        return localPackages.filter((p) => p.status === 'cancelled')
+      default:
+        return localPackages
+    }
+  }, [localPackages, filter])
 
   // Dialog State: Edit Sessions
   const [editOpen, setEditOpen] = useState(false)
@@ -102,6 +141,7 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
   }
 
   // Open Transfer Fee Dialog
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleOpenTransfer = (pkg: StudentPackage) => {
     setSourcePkg(pkg)
     setTargetPkgId('')
@@ -161,26 +201,113 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
     setSourcePkg(null)
   }
 
+  const handleOpenAssignClass = (pkg: StudentPackage) => {
+    setSelectedPkgToAssign(pkg)
+    setAssignOpen(true)
+  }
+
+  const handleConfirmAssignment = (classItem: { id: string; name: string; startSession?: string }) => {
+    if (!selectedPkgToAssign) return
+
+    if (onConfirmAssignment) {
+      onConfirmAssignment(selectedPkgToAssign.id, classItem)
+    } else {
+      const foundClass = mockClassRecords.find((c) => c.id === classItem.id || c.code === classItem.id)
+      const assignedClassCode = foundClass?.code || classItem.id
+      setLocalPackages((prev) =>
+        prev.map((p) => {
+          if (p.id === selectedPkgToAssign.id) {
+            return {
+              ...p,
+              linkedClassCode: assignedClassCode,
+              linkedClassName: classItem.name,
+              startSessionDate: classItem.startSession,
+            }
+          }
+          return p
+        })
+      )
+
+      const startText = classItem.startSession ? ` (Bắt đầu từ: ${classItem.startSession})` : ''
+      toast.success(`Ghép lớp "${classItem.name}" thành công${startText} cho học viên "${studentName}"!`)
+    }
+
+    setAssignOpen(false)
+    setSelectedPkgToAssign(null)
+  }
+
   return (
-    <div className="w-full">
-      <Table containerClassName="w-full">
-        <TableHeader>
-          <TableRow className="bg-muted/40">
-            <TableHead className="w-[35%]">Tên gói học</TableHead>
-            <TableHead>Số buổi học</TableHead>
-            <TableHead>Ngày mua</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead className="w-[25%]">Lớp liên kết</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {localPackages.map((pkg) => (
+    <div className="w-full pt-0 space-y-4">
+      {/* Packages tab filters */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b mb-3 select-none">
+        <div className="flex flex-wrap gap-1.5">
+          {(
+            [
+              { value: 'all', label: 'Tất cả' },
+              { value: 'unlinked', label: 'Chưa ghép lớp' },
+              { value: 'linked', label: 'Đã ghép lớp' },
+              { value: 'ended', label: 'Hết buổi' },
+              { value: 'transferred', label: 'Chuyển phí' },
+              { value: 'cancelled', label: 'Gói hủy' }
+            ] as const
+          ).map((item) => {
+            const getCount = () => {
+              if (item.value === 'all') return localPackages.length
+              if (item.value === 'unlinked') return localPackages.filter((p) => !p.linkedClassCode && p.remainingSessions > 0).length
+              if (item.value === 'linked') return localPackages.filter((p) => !!p.linkedClassCode && p.remainingSessions > 0).length
+              if (item.value === 'ended') return localPackages.filter((p) => p.remainingSessions === 0 && p.status !== 'transferred' && p.status !== 'cancelled').length
+              if (item.value === 'transferred') return localPackages.filter((p) => p.status === 'transferred').length
+              if (item.value === 'cancelled') return localPackages.filter((p) => p.status === 'cancelled').length
+              return 0
+            }
+            return (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => setFilter(item.value)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  filter === item.value 
+                    ? 'bg-primary text-primary-foreground shadow-xs' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                {item.label} ({getCount()})
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {filteredPackages.length === 0 ? (
+        <div className="py-8">
+          <EmptyState
+            title="Không tìm thấy gói học"
+            description="Không có gói học nào phù hợp với bộ lọc đang chọn."
+            className="py-12"
+          />
+        </div>
+      ) : (
+        <Table containerClassName="w-full">
+          <TableHeader>
+            <TableRow className="bg-muted/40">
+              <TableHead className="w-[30%]">Tên gói học</TableHead>
+              <TableHead className="w-[18%]">Số buổi học</TableHead>
+              <TableHead className="w-[17%]">Ngày mua</TableHead>
+              <TableHead className="w-[20%]">Lớp liên kết</TableHead>
+              <TableHead className="w-[15%]">Buổi bắt đầu</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredPackages.map((pkg) => (
             <TableRow key={pkg.id} className="hover:bg-muted/20 group">
               <TableCell className="font-semibold text-foreground text-xs py-3.5">
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <BookOpen className="h-4 w-4 text-primary/70 shrink-0" />
-                    <span className="truncate" title={pkg.packageName}>{pkg.packageName}</span>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <BookOpen className="h-4 w-4 text-primary/70 shrink-0" />
+                      <span className="truncate font-semibold text-foreground text-xs" title={pkg.packageName}>{pkg.packageName}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-mono pl-6">{pkg.id}</span>
                   </div>
                   {/* Action Buttons visible on hover */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
@@ -196,12 +323,23 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      title="Chuyển phí học viên"
-                      onClick={() => handleOpenTransfer(pkg)}
+                      title="Chuyển phí học viên (Chưa phát triển)"
+                      onClick={() => toast.info('Tính năng chuyển phí đang được phát triển.')}
                       className="h-6 w-6 text-muted-foreground hover:text-amber-600 hover:bg-amber-50 rounded-md"
                     >
                       <ArrowLeftRight className="h-3.5 w-3.5" />
                     </Button>
+                    {!pkg.linkedClassCode && (
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        title="Ghép lớp cho học viên"
+                        onClick={() => handleOpenAssignClass(pkg)}
+                        className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </TableCell>
@@ -214,12 +352,6 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
               <TableCell className="text-xs text-muted-foreground">
                 {new Date(pkg.purchaseDate).toLocaleDateString('vi-VN')}
               </TableCell>
-              <TableCell>
-                <StatusBadge
-                  status={pkg.status}
-                  label={pkg.status === 'active' ? 'Đang kích hoạt' : 'Hết hạn'}
-                />
-              </TableCell>
               <TableCell className="py-3.5">
                 {pkg.linkedClassCode ? (
                   <div className="flex flex-col gap-0.5">
@@ -231,26 +363,30 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[9px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/20 border-amber-200">
-                      Chưa gắn lớp / Chờ xếp
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      title="Ghép lớp cho học viên"
-                      onClick={() => toast.info('Tính năng ghép lớp đang được phát triển...')}
-                      className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </Button>
+                  <Badge variant="outline" className="text-[9px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/20 border-amber-200">
+                    Chưa gắn lớp / Chờ xếp
+                  </Badge>
+                )}
+              </TableCell>
+              <TableCell className="py-3.5 text-xs text-muted-foreground">
+                {pkg.startSessionDate ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-semibold text-foreground text-[10px]">
+                      {pkg.startSessionDate.split(' (')[0]}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground truncate max-w-[120px]" title={pkg.startSessionDate.split(' (')[1]?.replace(')', '')}>
+                      {pkg.startSessionDate.split(' (')[1]?.replace(')', '') || ''}
+                    </span>
                   </div>
+                ) : (
+                  <span className="text-muted-foreground/50">—</span>
                 )}
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      )}
 
       {/* Dialog 1: Cập nhật số buổi học */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -364,6 +500,23 @@ export function StudentDetailPackages({ packages }: StudentDetailPackagesProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Dialog 3: Ghép lớp cho học viên */}
+      {assignOpen && selectedPkgToAssign && (
+        <StudentClassAssignmentDialog
+          open={assignOpen}
+          onOpenChange={setAssignOpen}
+          studentName={studentName}
+          studentCode={studentCode}
+          studentBranch={studentBranch}
+          studentLevel={studentLevel}
+          packageName={selectedPkgToAssign.packageName}
+          pkgRemainingSessions={selectedPkgToAssign.remainingSessions}
+          studentClasses={studentClasses}
+          onConfirm={handleConfirmAssignment}
+          currentClassCode={selectedPkgToAssign.linkedClassCode}
+          currentClassName={selectedPkgToAssign.linkedClassName}
+        />
+      )}
     </div>
   )
 }

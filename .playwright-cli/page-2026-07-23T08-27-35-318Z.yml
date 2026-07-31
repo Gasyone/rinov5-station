@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - button "VI" [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "RinoEdu Logo" [ref=e11]
+        - heading "Đăng nhập" [level=2] [ref=e12]
+        - paragraph [ref=e13]: Nhập thông tin đăng nhập để truy cập hệ thống
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - text: Email
+          - textbox "Email" [ref=e20]:
+            - /placeholder: Nhập email hoặc username
+            - text: teacher@example.com
+        - generic [ref=e21]:
+          - text: Mật khẩu
+          - generic [ref=e22]:
+            - textbox "Mật khẩu Hiện mật khẩu" [ref=e26]:
+              - /placeholder: Nhập mật khẩu
+              - text: demo
+            - button "Hiện mật khẩu" [ref=e27]
+        - button "Đang xử lý..." [disabled]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e39] [cursor=pointer]:
+    - generic [ref=e42]:
+      - text: Compiling
+      - generic [ref=e43]:
+        - generic [ref=e44]: .
+        - generic [ref=e45]: .
+        - generic [ref=e46]: .
+  - alert [ref=e38]

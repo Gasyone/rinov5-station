@@ -193,7 +193,7 @@ export function SystemConfigScreen() {
       />
 
       {/* Tabs list navigation */}
-      <div className="px-4 border-b border-border lg:px-6 py-2 bg-card/45 flex items-center">
+      <div className="px-3 border-b border-border lg:px-3 py-2 bg-card/45 flex items-center">
         <SegmentedControl
           value={activeTab}
           options={CONFIG_TABS}

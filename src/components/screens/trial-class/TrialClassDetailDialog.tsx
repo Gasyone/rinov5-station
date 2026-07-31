@@ -1,7 +1,7 @@
 'use client'
 
-import { CalendarDays, CheckCircle, Copy, ExternalLink, Phone, PhoneCall, PlusCircle, RefreshCw, User } from 'lucide-react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Ban, CalendarDays, CheckCircle, Copy, ExternalLink, Phone, PhoneCall, PlusCircle, RefreshCw, User } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,11 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { FieldLabel, InfoField, Panel, StatusBadge } from '@/components/shared'
-import { getStatusColors } from '@/lib/statusColors'
+import { FieldLabel, InfoField, Panel, StatusBadge, AppAvatar } from '@/components/shared'
+import { getStatusColors, getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import type { TrialClass } from '@/mocks/trialClasses'
-import { formatTrialDate, getTrialStatusLabel, maskPhone } from './trialClassHelpers'
+import { formatTrialDate, getTrialStatusLabel, maskPhone, getLeaveReserveTicketForTrial } from './trialClassHelpers'
 import type { AssignDialogMode } from './trialClassTypes'
 import { TrialClassDetailActions } from './TrialClassDetailActions'
 import { TrialClassDetailSidePanel } from './TrialClassDetailSidePanel'
@@ -59,6 +59,9 @@ export function TrialClassDetailDialog({
   const activeSessions = isPendingReschedule ? [] : trial.sessions
   const releasedSession = trial.previousSession ?? (isPendingReschedule ? trial.sessions[0] : undefined)
 
+  // Resolve reserve/leave ticket
+  const reserveTicket = getLeaveReserveTicketForTrial(trial.studentName, trial.familyPhone)
+
   return (
     <>
       <Dialog open onOpenChange={handleOpenChange}>
@@ -101,7 +104,7 @@ export function TrialClassDetailDialog({
               <InfoField label="Trường" value={trial.school} />
             </section>
 
-            <div className="grid min-h-0 flex-1 gap-6 overflow-hidden lg:grid-cols-[1fr_320px]">
+            <div className="grid min-h-0 flex-1 gap-3 overflow-hidden lg:grid-cols-[1fr_320px]">
               <main className="min-h-0 space-y-5 overflow-y-auto pr-2">
                 <Panel title="Thông tin liên hệ" icon={<Phone className="h-4 w-4" />}>
                   <div className="flex items-center justify-between gap-3 py-2">
@@ -128,6 +131,50 @@ export function TrialClassDetailDialog({
                     </Button>
                   </div>
                 </Panel>
+
+                {reserveTicket && (
+                  <Panel title="Thông tin Bảo lưu & Nghỉ phép liên quan" icon={<Ban className="h-4 w-4 text-amber-600" />}>
+                    <div className="rounded-lg border border-amber-250 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-950/10">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <InfoField
+                          label="Loại đề xuất bảo lưu/nghỉ"
+                          value={
+                            <div className="flex items-center gap-2">
+                              <Badge className={cn('rounded-md px-1.5 py-0.5 text-[10px]', getStatusBadgeClass(reserveTicket.type))}>
+                                {reserveTicket.type === 'reservation' ? 'Bảo lưu' : 'Nghỉ phép'}
+                              </Badge>
+                              <span className="font-mono text-xs text-muted-foreground">({reserveTicket.id})</span>
+                            </div>
+                          }
+                        />
+                        <InfoField
+                          label="Trạng thái phê duyệt"
+                          value={
+                            <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0.5', getStatusBadgeClass(reserveTicket.status))}>
+                              {reserveTicket.status === 'approved' ? 'Đã duyệt' : reserveTicket.status === 'pending' ? 'Chờ duyệt' : reserveTicket.status === 'not_approved' ? 'Không duyệt' : 'Hủy duyệt'}
+                            </Badge>
+                          }
+                        />
+                        <div className="sm:col-span-2 grid grid-cols-2 gap-4 border-t pt-3">
+                          <InfoField
+                            label="Ngày bắt đầu nghỉ"
+                            value={reserveTicket.startDate}
+                          />
+                          <InfoField
+                            label="Ngày kết thúc nghỉ"
+                            value={reserveTicket.endDate}
+                          />
+                        </div>
+                        <div className="sm:col-span-2 border-t pt-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground block mb-1">Lý do bảo lưu</span>
+                          <p className="text-sm bg-background/50 p-2.5 rounded border leading-relaxed text-foreground">
+                            {reserveTicket.reason || 'Không có lý do chi tiết.'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </Panel>
+                )}
 
                 <Panel title="Lớp & Buổi học" icon={<CalendarDays className="h-4 w-4" />}>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -199,18 +246,14 @@ export function TrialClassDetailDialog({
                 <Panel title="Phụ trách" icon={<User className="h-4 w-4" />}>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-10 w-10 rounded-lg">
-                        <AvatarFallback className="rounded-lg">{trial.creator.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                      <AppAvatar name={trial.creator} size="md" />
                       <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Sale</p>
                         <p className="truncate text-sm font-semibold">{trial.creator}</p>
                       </div>
                     </div>
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-10 w-10 rounded-lg">
-                        <AvatarFallback className="rounded-lg">{trial.owner.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                      <AppAvatar name={trial.owner} size="md" />
                       <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Người phụ trách</p>
                         <p className="truncate text-sm font-semibold">{trial.owner}</p>

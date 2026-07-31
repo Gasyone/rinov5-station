@@ -1,14 +1,23 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Phone, PhoneOff, Volume2, Mic, MicOff, Grid, Check, X } from 'lucide-react'
+import { Phone, PhoneOff, Volume2, Mic, MicOff, Grid, Check, X, BookOpen, Play, Pause } from 'lucide-react'
 import { useCallStore } from '@/stores/useCallStore'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { mockStudents } from '@/mocks/students'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { CallScriptPanel } from './CallScriptPanel'
+import { getScriptByMenuId } from '@/mocks/callScripts'
 
 export function CallDialog() {
+  const pathname = usePathname()
+  
+  const currentMenuId = pathname?.split('/app/')[1] || ''
+  const isV2Menu = pathname?.includes('_v2') || pathname?.includes('-v2')
+
   const {
     status,
     studentId,
@@ -26,9 +35,13 @@ export function CallDialog() {
   const [isMuted, setIsMuted] = useState(false)
   const [isSpeakerOn, setIsSpeakerOn] = useState(false)
   const [isKeypadOpen, setIsKeypadOpen] = useState(false)
+  const [isScriptExpanded, setIsScriptExpanded] = useState(false)
+
+  // Audio Playback Simulation State
+  const [playbackIsPlaying, setPlaybackIsPlaying] = useState(false)
+  const [playbackProgress, setPlaybackProgress] = useState(0)
 
   // Call Logging Form State
-  const [selectedStatus, setSelectedStatus] = useState('Đã gọi thành công')
   const [noteText, setNoteText] = useState('')
 
   // In-Call Live Bullet Notes list - initialized with one empty line representing the first bullet point input
@@ -41,9 +54,36 @@ export function CallDialog() {
     setIsMuted(false)
     setIsSpeakerOn(false)
     setIsKeypadOpen(false)
-    setSelectedStatus('Đã gọi thành công')
     setNoteText('')
     setQuickNotes([''])
+  }
+
+  // Auto-expand script if we are in V2 menus when a call starts
+  const [lastStatusForScript, setLastStatusForScript] = useState<typeof status>('idle')
+  if (status !== lastStatusForScript) {
+    setLastStatusForScript(status)
+    if (status === 'dialing') {
+      setIsScriptExpanded(isV2Menu)
+    }
+  }
+
+  const handleAppendQuickNote = (noteTextToAppend: string) => {
+    setQuickNotes((prev) => {
+      const copy = [...prev]
+      if (copy.length > 0 && !copy[copy.length - 1].trim()) {
+        copy[copy.length - 1] = noteTextToAppend
+      } else {
+        copy.push(noteTextToAppend)
+      }
+      return copy
+    })
+    
+    if (status === 'ended') {
+      setNoteText((prev) => {
+        const bullet = `• ${noteTextToAppend}`
+        return prev ? `${prev}\n${bullet}` : bullet
+      })
+    }
   }
 
   // Adjust states on phase status changes
@@ -58,8 +98,26 @@ export function CallDialog() {
     }
     if (status === 'dialing') {
       setQuickNotes([''])
+      setPlaybackIsPlaying(false)
+      setPlaybackProgress(0)
     }
   }
+
+  // Simulated playback progress
+  useEffect(() => {
+    if (!playbackIsPlaying) return
+    const interval = setInterval(() => {
+      setPlaybackProgress((prev) => {
+        if (prev >= 100) {
+          setPlaybackIsPlaying(false)
+          toast.info('Kết thúc nghe lại cuộc ghi âm')
+          return 0
+        }
+        return prev + 5
+      })
+    }, 250)
+    return () => clearInterval(interval)
+  }, [playbackIsPlaying])
 
   // Dialing simulation timeout ref
   const autoConnectRef = useRef<NodeJS.Timeout | null>(null)
@@ -106,7 +164,7 @@ export function CallDialog() {
         parentPhone: phone,
         parentName: finalParentName,
       })
-      toast.info(`Đang kết nối cuộc gọi CSKH tới: ${finalParentName}`)
+      toast.info(`Đang kết nối cuộc gọi CS tới: ${finalParentName}`)
     }
 
     window.addEventListener('rinov5:desk-call', handleGlobalDeskCall as EventListener)
@@ -131,10 +189,6 @@ export function CallDialog() {
     toast.success('Cuộc gọi được kết nối!')
   }
 
-  const handleSave = () => {
-    saveCallLog(selectedStatus, noteText)
-    toast.success('Đã lưu kết quả cuộc gọi thành công!')
-  }
 
   return (
     <>
@@ -165,15 +219,30 @@ export function CallDialog() {
       }} />
 
       {/* Floating Card container */}
-      <div className={`fixed bottom-6 right-6 z-[9999] w-[350px] overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-background/95 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-lg flex flex-col transition-all duration-300 ${
-        status === 'ended' ? 'h-[480px]' : ''
-      }`}>
-        
-        {/* Color Accent Bar */}
-        <div className={`h-1.5 w-full ${
-          status === 'dialing' ? 'bg-amber-500 animate-pulse' :
-          status === 'connected' ? 'bg-emerald-500' : 'bg-indigo-500'
-        }`} />
+      <div 
+        className={cn(
+          "fixed bottom-6 right-6 z-[9999] overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-background/95 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-lg flex flex-row transition-all duration-300 ease-in-out",
+          isScriptExpanded ? "w-[1000px] h-[550px]" : "w-[350px] h-auto",
+          !isScriptExpanded && status === 'ended' ? "h-[560px]" : ""
+        )}
+      >
+        {isScriptExpanded && (
+          <CallScriptPanel
+            studentName={studentName}
+            parentName={parentName}
+            onAppendNote={handleAppendQuickNote}
+            initialScript={getScriptByMenuId(currentMenuId)}
+          />
+        )}
+
+        {/* Right Column: Call control and logging */}
+        <div className="w-[350px] shrink-0 flex flex-col relative pt-1.5">
+          {/* Color Accent Bar */}
+          <div className={cn(
+            "absolute top-0 left-0 right-0 h-1.5",
+            status === 'dialing' ? 'bg-amber-500 animate-pulse' :
+            status === 'connected' ? 'bg-emerald-500' : 'bg-indigo-500'
+          )} />
 
         {/* --- PHASE 1: DIALING / RINGING --- */}
         {status === 'dialing' && (
@@ -183,7 +252,23 @@ export function CallDialog() {
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
                 Đang gọi đi...
               </span>
-              <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">VoIP</span>
+              <div className="flex items-center gap-2">
+                {isV2Menu && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-6 w-6 rounded-full",
+                      isScriptExpanded ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40" : "text-zinc-400 hover:text-zinc-650"
+                    )}
+                    onClick={() => setIsScriptExpanded(!isScriptExpanded)}
+                    title={isScriptExpanded ? "Thu nhỏ kịch bản" : "Mở rộng kịch bản gọi"}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">VoIP</span>
+              </div>
             </div>
 
             {/* Ripple Pulse Animation Avatar */}
@@ -232,14 +317,30 @@ export function CallDialog() {
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 Đang kết nối
               </span>
-              <div className="flex items-center gap-1.5">
-                <span className="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider select-none">
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
-                  REC
-                </span>
-                <span className="font-mono text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded text-[10px]">
-                  {formatDuration(duration)}
-                </span>
+              <div className="flex items-center gap-2">
+                {isV2Menu && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-6 w-6 rounded-full",
+                      isScriptExpanded ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40" : "text-zinc-400 hover:text-zinc-650"
+                    )}
+                    onClick={() => setIsScriptExpanded(!isScriptExpanded)}
+                    title={isScriptExpanded ? "Thu nhỏ kịch bản" : "Mở rộng kịch bản gọi"}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider select-none">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
+                    REC
+                  </span>
+                  <span className="font-mono text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded text-[10px]">
+                    {formatDuration(duration)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -394,14 +495,70 @@ export function CallDialog() {
 
         {/* --- PHASE 3: CALL ENDED / LOG NOTE FORM --- */}
         {status === 'ended' && (
-          <div className="p-5 flex flex-col gap-3 flex-1 min-h-0">
-            <div className="flex justify-between items-center text-xs text-muted-foreground font-semibold border-b pb-2 border-zinc-100 dark:border-zinc-800">
+          <div className="p-5 flex flex-col gap-3 flex-1 min-h-0 relative">
+            {/* Top Right Skip/Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-6 w-6 text-zinc-400 hover:text-zinc-650 hover:bg-zinc-150 rounded-full z-10"
+              onClick={resetCall}
+              title="Bỏ qua ghi chú"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+
+            <div className="flex justify-between items-center text-xs text-muted-foreground font-semibold pb-1.5 pr-6">
               <span className="flex items-center gap-1.5 uppercase tracking-wider text-indigo-500">
                 Cuộc gọi đã dừng
               </span>
-              <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">
-                Thời lượng: {formatDuration(duration)}
-              </span>
+              <div className="flex items-center gap-2">
+                {isV2Menu && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-6 w-6 rounded-full",
+                      isScriptExpanded ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40" : "text-zinc-400 hover:text-zinc-650"
+                    )}
+                    onClick={() => setIsScriptExpanded(!isScriptExpanded)}
+                    title={isScriptExpanded ? "Thu nhỏ kịch bản" : "Mở rộng kịch bản gọi"}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">
+                  Thời lượng: {formatDuration(duration)}
+                </span>
+              </div>
+            </div>
+
+            {/* Playback Simulation Player */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/80 rounded-xl p-2.5 flex items-center gap-2.5">
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="h-8 w-8 rounded-full border-indigo-200 text-indigo-600 hover:bg-indigo-50 shrink-0 shadow-sm"
+                onClick={() => setPlaybackIsPlaying(!playbackIsPlaying)}
+              >
+                {playbackIsPlaying ? (
+                  <Pause className="h-3.5 w-3.5 fill-indigo-600 text-indigo-600" />
+                ) : (
+                  <Play className="h-3.5 w-3.5 fill-indigo-600 text-indigo-600 ml-0.5" />
+                )}
+              </Button>
+              <div className="flex-1 space-y-1 text-left min-w-0">
+                <div className="flex justify-between items-center text-[9px] font-bold text-muted-foreground uppercase tracking-wide">
+                  <span>Nghe lại cuộc ghi âm</span>
+                  <span className="font-mono">{playbackIsPlaying ? `00:${Math.round(playbackProgress / 10).toString().padStart(2, '0')}` : '00:00'} / {formatDuration(duration)}</span>
+                </div>
+                <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${playbackProgress}%` }}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-0.5">
@@ -411,21 +568,6 @@ export function CallDialog() {
 
             {/* Form Fields */}
             <div className="flex-1 flex flex-col gap-2.5 min-h-0">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Kết quả cuộc gọi</label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-background px-3 py-1.5 text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
-                >
-                  <option value="Đã gọi thành công">Đã gọi thành công / Trao đổi tốt</option>
-                  <option value="Không nhấc máy">Không nghe máy (KNM)</option>
-                  <option value="Máy bận">Máy bận / Số bận</option>
-                  <option value="Hẹn gọi lại sau">Hẹn gọi lại sau</option>
-                  <option value="Số điện thoại sai">Số điện thoại không đúng</option>
-                </select>
-              </div>
-
               <div className="flex-1 flex flex-col gap-1 min-h-0">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex justify-between">
                   <span>Ghi chú cuộc gọi</span>
@@ -442,29 +584,81 @@ export function CallDialog() {
                   className="text-xs bg-background border border-zinc-200 dark:border-zinc-800 focus-visible:ring-1 flex-1 min-h-0 resize-none overflow-y-auto scrollbar-thin py-1.5 px-2.5"
                 />
               </div>
-            </div>
 
-            {/* Form Footer Action buttons */}
-            <div className="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 text-xs h-8"
-                onClick={resetCall}
-              >
-                Bỏ qua
-              </Button>
-              <Button
-                size="sm"
-                className="flex-1 text-xs h-8 font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={handleSave}
-              >
-                <Check className="h-3.5 w-3.5 mr-1" />
-                Lưu kết quả
-              </Button>
+              {/* Instant Outcomes Buttons Grid */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">Chọn kết quả để lưu luôn</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button
+                    size="xs"
+                    type="button"
+                    className="h-8 text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white col-span-2 flex items-center justify-center gap-1 shadow-sm rounded-lg"
+                    onClick={() => {
+                      saveCallLog('Đã gọi thành công', noteText)
+                      toast.success('Đã lưu kết quả: Đã gọi thành công')
+                    }}
+                  >
+                    <Check className="h-3 w-3" />
+                    Đã gọi thành công / Trao đổi tốt
+                  </Button>
+                  
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    className="h-7 text-[10px] font-semibold border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg py-0 px-1"
+                    onClick={() => {
+                      saveCallLog('Không nhấc máy', noteText)
+                      toast.success('Đã lưu kết quả: Không nghe máy')
+                    }}
+                  >
+                    Không nghe máy
+                  </Button>
+                  
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    className="h-7 text-[10px] font-semibold border-amber-200 text-amber-600 hover:bg-amber-50 rounded-lg py-0 px-1"
+                    onClick={() => {
+                      saveCallLog('Máy bận', noteText)
+                      toast.success('Đã lưu kết quả: Máy bận')
+                    }}
+                  >
+                    Máy bận / Số bận
+                  </Button>
+                  
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    className="h-7 text-[10px] font-semibold border-sky-200 text-sky-600 hover:bg-sky-50 rounded-lg py-0 px-1"
+                    onClick={() => {
+                      saveCallLog('Hẹn gọi lại sau', noteText)
+                      toast.success('Đã lưu kết quả: Hẹn gọi lại')
+                    }}
+                  >
+                    Hẹn gọi lại
+                  </Button>
+                  
+                  <Button
+                    size="xs"
+                    type="button"
+                    variant="outline"
+                    className="h-7 text-[10px] font-semibold border-zinc-200 text-zinc-650 hover:bg-zinc-50 rounded-lg py-0 px-1"
+                    onClick={() => {
+                      saveCallLog('Số điện thoại sai', noteText)
+                      toast.success('Đã lưu kết quả: SĐT không đúng')
+                    }}
+                  >
+                    SĐT không đúng
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
+        </div> {/* End Right Column (Call controls) */}
       </div>
     </>
   )

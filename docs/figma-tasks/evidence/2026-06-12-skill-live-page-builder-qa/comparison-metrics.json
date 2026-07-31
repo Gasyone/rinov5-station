@@ -1,0 +1,62 @@
+﻿[
+    {
+        "id":  "dashboard",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  2.13,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "calendar_class_schedule",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  3.01,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "booking_test",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  2.78,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "students",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  2.94,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "classes",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  3.15,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "orders",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  3.23,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "hr_employees",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  3.65,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "products",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  2.86,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "qc_check",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  3.05,
+        "structuralVerdict":  "pass"
+    },
+    {
+        "id":  "renewal",
+        "sampledPixels":  12960,
+        "averageRgbDiffPercent":  2.07,
+        "structuralVerdict":  "pass"
+    }
+]

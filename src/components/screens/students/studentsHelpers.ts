@@ -1,4 +1,4 @@
-import { mockStudents, type Student } from '@/mocks/students'
+import { mockStudents, type EnrolledClass, type Student } from '@/mocks/students'
 import type { StudentFilterState, StudentStatusFilter } from './studentsTypes'
 
 export function getStudentBranches(students: Student[]) {
@@ -9,11 +9,125 @@ export function getStudentLevels(students: Student[]) {
   return Array.from(new Set(students.map((s) => s.level))).sort()
 }
 
+export interface StudentFilterOptionCounters {
+  branches: (value: string) => number
+  levels: (value: string) => number
+  genders: (value: string) => number
+  classTypes: (value: string) => number
+  teachers: (value: string) => number
+  remainingSessionsRange: (value: string) => number
+  subjects: (value: string) => number
+  programs: (value: string) => number
+  classes: (value: string) => number
+  sales: (value: string) => number
+  packages: (value: string) => number
+  dateRanges: (value: string) => number
+  ageRanges: (value: string) => number
+}
+
+function countStudents(students: Student[], predicate: (student: Student) => boolean) {
+  return students.filter(predicate).length
+}
+
+function hasEnrolledClass(
+  student: Student,
+  predicate: (enrolledClass: EnrolledClass) => boolean
+) {
+  return student.enrolledClasses?.some(predicate) ?? false
+}
+
+function matchesRemainingSessionsRange(student: Student, range: string) {
+  const remainingSessions = student.remainingSessions ?? 0
+  if (range === 'empty') return remainingSessions === 0
+  if (range === 'low') return remainingSessions > 0 && remainingSessions < 5
+  if (range === 'normal') return remainingSessions >= 5
+  return false
+}
+
+function matchesEnrollmentDateRange(student: Student, range: string) {
+  const enrollDate = new Date(student.enrollmentDate)
+  const year = enrollDate.getFullYear()
+  const month = enrollDate.getMonth() + 1
+
+  if (range === 'this_month') return year === 2026 && month === 6
+  if (range === 'last_month') return year === 2026 && month === 5
+  if (range === 'past') return enrollDate < new Date('2026-05-01')
+  return false
+}
+
+function getStudentAge(student: Student) {
+  if (!student.dob) return 0
+
+  const birthDate = new Date(student.dob)
+  const today = new Date('2026-06-16')
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDelta = today.getMonth() - birthDate.getMonth()
+
+  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+
+  return Math.max(0, age)
+}
+
+function matchesAgeRange(student: Student, range: string) {
+  const age = getStudentAge(student)
+  if (range === 'pre_starters') return age <= 6
+  if (range === 'starters') return age > 6 && age <= 8
+  if (range === 'mover') return age > 8 && age <= 10
+  if (range === 'flyers') return age > 10
+  return false
+}
+
+export function createStudentFilterOptionCounters(
+  students: Student[]
+): StudentFilterOptionCounters {
+  return {
+    branches: (branch) => countStudents(students, (student) => student.branch === branch),
+    levels: (level) => countStudents(students, (student) => student.level === level),
+    genders: (gender) => countStudents(students, (student) => student.gender === gender),
+    classTypes: (classType) =>
+      countStudents(students, (student) =>
+        hasEnrolledClass(student, (enrolledClass) => enrolledClass.type === classType)
+      ),
+    teachers: (teacher) =>
+      countStudents(students, (student) =>
+        hasEnrolledClass(student, (enrolledClass) => enrolledClass.teacherName === teacher)
+      ),
+    remainingSessionsRange: (range) =>
+      countStudents(students, (student) => matchesRemainingSessionsRange(student, range)),
+    subjects: (subject) => countStudents(students, (student) => student.subject === subject),
+    programs: (program) =>
+      countStudents(students, (student) =>
+        hasEnrolledClass(
+          student,
+          (enrolledClass) => enrolledClass.programName === program
+        )
+      ),
+    classes: (classNameOrCode) =>
+      countStudents(students, (student) =>
+        hasEnrolledClass(
+          student,
+          (enrolledClass) =>
+            enrolledClass.className === classNameOrCode ||
+            enrolledClass.classCode === classNameOrCode
+        )
+      ),
+    sales: (sale) => countStudents(students, (student) => student.saleName === sale),
+    packages: (packageName) =>
+      countStudents(students, (student) => student.packageName === packageName),
+    dateRanges: (range) =>
+      countStudents(students, (student) => matchesEnrollmentDateRange(student, range)),
+    ageRanges: (range) => countStudents(students, (student) => matchesAgeRange(student, range)),
+  }
+}
+
 export function filterStudents(
   students: Student[],
   filters: {
     search: string
     branch: string
+    subject?: string
     status: StudentStatusFilter
     extra: StudentFilterState
   }
@@ -21,6 +135,9 @@ export function filterStudents(
   const query = filters.search.trim().toLowerCase()
 
   return students.filter((student) => {
+    // 0. Primary Subject (Toolbar dropdown)
+    if (filters.subject && filters.subject !== 'all' && student.subject !== filters.subject) return false
+
     // 1. Primary Campus (Toolbar dropdown)
     if (filters.branch !== 'all' && student.branch !== filters.branch) return false
 
@@ -57,12 +174,10 @@ export function filterStudents(
 
     // 8. Advanced Filter: Remaining Sessions Range
     if (filters.extra.remainingSessionsRange.length > 0) {
-      const rem = student.remainingSessions ?? 0
-      const matchesEmpty = filters.extra.remainingSessionsRange.includes('empty') && rem === 0
-      const matchesLow = filters.extra.remainingSessionsRange.includes('low') && rem > 0 && rem < 5
-      const matchesNormal = filters.extra.remainingSessionsRange.includes('normal') && rem >= 5
-
-      if (!matchesEmpty && !matchesLow && !matchesNormal) return false
+      const matches = filters.extra.remainingSessionsRange.some((range) =>
+        matchesRemainingSessionsRange(student, range)
+      )
+      if (!matches) return false
     }
 
     // 9. Advanced Filter: Subjects
@@ -88,6 +203,34 @@ export function filterStudents(
     // 12. Advanced Filter: Sales
     if (filters.extra.sales.length > 0 && (!student.saleName || !filters.extra.sales.includes(student.saleName)))
       return false
+
+    // Advanced Filter: Packages
+    if (filters.extra.packages && filters.extra.packages.length > 0 && (!student.packageName || !filters.extra.packages.includes(student.packageName)))
+      return false
+
+    // Advanced Filter: Date Ranges (Enrollment Date)
+    if (filters.extra.dateRanges && filters.extra.dateRanges.length > 0) {
+      const matches = filters.extra.dateRanges.some((range) => {
+        return matchesEnrollmentDateRange(student, range)
+      })
+      if (!matches) return false
+    }
+
+    if (filters.extra.startDate && student.enrollmentDate < filters.extra.startDate) {
+      return false
+    }
+
+    if (filters.extra.endDate && student.enrollmentDate > filters.extra.endDate) {
+      return false
+    }
+
+    // Advanced Filter: Age Ranges
+    if (filters.extra.ageRanges && filters.extra.ageRanges.length > 0) {
+      const matches = filters.extra.ageRanges.some((range) => {
+        return matchesAgeRange(student, range)
+      })
+      if (!matches) return false
+    }
 
     // 13. Extra tab status check (compatibility)
     if (filters.extra.status !== 'all' && student.status !== filters.extra.status) return false

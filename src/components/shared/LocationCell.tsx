@@ -37,12 +37,12 @@ export function LocationCell({
 
   const content = (
     <div className={cn('flex flex-col gap-0.5 min-w-0 text-left', className)}>
-      <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+      <div className="flex items-center gap-1.5 text-xs text-foreground">
         {showIcon && <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
         <span className="truncate" title={branch}>{branch}</span>
       </div>
       {room && (
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
           {showIcon && <MapPin className="h-3 w-3 shrink-0" />}
           <span className="truncate" title={room}>
             {room.toLowerCase().startsWith('phòng') ? room : `Phòng ${room}`}

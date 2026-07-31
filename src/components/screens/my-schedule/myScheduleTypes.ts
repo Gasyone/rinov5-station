@@ -17,6 +17,8 @@ export interface UnifiedSlot extends ScheduleGridItem {
   attendedStudents?: number
   isRecurring?: boolean
   substituteTeacher?: string
+  assistantTeacher?: string
+  assistantSubstitute?: string
   status?: string
   dateBucket: 'past' | 'today' | 'upcoming'
   isOpeningDay?: boolean
@@ -39,3 +41,5 @@ export interface MyScheduleFilters {
   roomFilters: string[]
   conditionFilters: string[]
 }
+
+export type ScheduleLayoutType = 'matrix' | 'schedule_1d'

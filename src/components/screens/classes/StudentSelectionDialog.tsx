@@ -8,14 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState, StudentNotePopover } from '@/components/shared'
 import { mockStudents } from '@/mocks/students'
-import { Search } from 'lucide-react'
 import { getStatusBadgeClass } from '@/lib/statusColors'
+import { MultiSelectDropdown } from '@/components/controls'
 
-interface SelectedStudentItem {
+export interface SelectedStudentItem {
   id: string
   name: string
   code: string
@@ -40,7 +39,6 @@ const AVAILABLE_PLACEMENT_STATUSES = [
   'awaiting_opening',
   'trial',
   'pending',
-  'reserve',
   'suspend',
 ]
 
@@ -49,6 +47,12 @@ const getMockPackage = (id: string, level?: string): string => {
   const idx = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % packages.length
   const prefix = level || 'IELTS'
   return `${prefix} ${packages[idx]}`
+}
+
+const getMockPackageExpiryDate = (id: string): string => {
+  const dates = ['15/12/2026', '20/10/2026', '31/01/2027', '05/09/2026', '12/11/2026', '28/02/2027']
+  const idx = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % dates.length
+  return dates[idx]
 }
 
 const getMockRemainingSessions = (id: string): string => {
@@ -86,40 +90,55 @@ export function StudentSelectionDialog({
   subject = '',
 }: StudentSelectionDialogProps) {
   const [studentSearch, setStudentSearch] = useState('')
-  const [studentTab, setStudentTab] = useState<'all' | 'suitable' | 'trial' | 'waiting' | 'reserve' | 'enroll_later' | 'pending_transfer' | 'suspend'>('all')
+  const [studentTab, setStudentTab] = useState<'all' | 'suitable' | 'trial' | 'waiting' | 'enroll_later' | 'pending_transfer' | 'suspend'>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([])
+  const [selectedPackages, setSelectedPackages] = useState<string[]>([])
 
   const normalizedInitialIds = useMemo(() => {
     return initialSelectedIds.map((id) => id.split('-')[0])
   }, [initialSelectedIds])
 
   const newStudentsCount = useMemo(() => {
-    const initialSet = new Set(normalizedInitialIds)
-    let count = 0
-    selectedIds.forEach((id) => {
-      if (!initialSet.has(id)) {
-        count++
-      }
-    })
-    return count
-  }, [selectedIds, normalizedInitialIds])
+    return selectedIds.size
+  }, [selectedIds])
 
-  // Sync selectedIds when dialog opens
+  // Dynamic selector options
+  const levelOptions = useMemo(() => {
+    const levels = [...new Set(mockStudents.map((s) => s.level).filter(Boolean))].sort()
+    return levels.map((l) => ({ value: l, label: l }))
+  }, [])
+
+  const packageOptions = useMemo(() => {
+    const packages = [
+      ...new Set(
+        mockStudents.map((s) => s.packageName || getMockPackage(s.id, s.level)).filter(Boolean)
+      ),
+    ].sort()
+    return packages.map((p) => ({ value: p, label: p }))
+  }, [])
+
+  // Sync selectedIds and filters when dialog opens
   useEffect(() => {
     if (open) {
-      setSelectedIds(new Set(normalizedInitialIds))
+      setSelectedIds(new Set())
       setStudentSearch('')
       setStudentTab('all')
+      setSelectedLevels([])
+      setSelectedPackages([])
     }
-  }, [open, normalizedInitialIds])
+  }, [open])
 
   // Filter students based on status eligibility and tabs
   const filteredStudents = useMemo(() => {
     return mockStudents.filter((student) => {
       const isInitiallySelected = normalizedInitialIds.includes(student.id)
+      if (isInitiallySelected) {
+        return false
+      }
+
       // 1. Only show students eligible for placement (ignore active/graduated/inactive)
-      // UNLESS they are already selected in the class roster
-      if (!isInitiallySelected && !AVAILABLE_PLACEMENT_STATUSES.includes(student.status)) {
+      if (!AVAILABLE_PLACEMENT_STATUSES.includes(student.status)) {
         return false
       }
 
@@ -134,7 +153,20 @@ export function StudentSelectionDialog({
         if (!match) return false
       }
 
-      // 3. Tab filter
+      // 3. Level filter
+      if (selectedLevels.length > 0 && (!student.level || !selectedLevels.includes(student.level))) {
+        return false
+      }
+
+      // 4. Package filter
+      if (selectedPackages.length > 0) {
+        const pkgName = student.packageName || getMockPackage(student.id, student.level)
+        if (!selectedPackages.includes(pkgName)) {
+          return false
+        }
+      }
+
+      // 5. Tab filter
       if (studentTab === 'suitable') {
         const sub = subject.toLowerCase()
         return student.status === 'wait_for_assignment' || (student.level && student.level.toLowerCase().includes(sub))
@@ -144,9 +176,6 @@ export function StudentSelectionDialog({
       }
       if (studentTab === 'waiting') {
         return student.status === 'wait_for_assignment'
-      }
-      if (studentTab === 'reserve') {
-        return student.status === 'reserve'
       }
       if (studentTab === 'enroll_later') {
         return student.status === 'enroll_later'
@@ -160,25 +189,41 @@ export function StudentSelectionDialog({
 
       return true
     })
-  }, [studentSearch, studentTab, subject, normalizedInitialIds])
+  }, [studentSearch, studentTab, subject, normalizedInitialIds, selectedLevels, selectedPackages])
 
   const tabCounts = useMemo(() => {
     const eligible = mockStudents.filter((student) => {
-      return AVAILABLE_PLACEMENT_STATUSES.includes(student.status) || normalizedInitialIds.includes(student.id)
+      const isInitiallySelected = normalizedInitialIds.includes(student.id)
+      if (isInitiallySelected) return false
+
+      const isEligible = AVAILABLE_PLACEMENT_STATUSES.includes(student.status)
+      if (!isEligible) return false
+
+      if (selectedLevels.length > 0 && (!student.level || !selectedLevels.includes(student.level))) {
+        return false
+      }
+
+      if (selectedPackages.length > 0) {
+        const pkgName = student.packageName || getMockPackage(student.id, student.level)
+        if (!selectedPackages.includes(pkgName)) {
+          return false
+        }
+      }
+
+      return true
     })
     const sub = subject.toLowerCase()
     
     return {
       all: eligible.length,
       suitable: eligible.filter((s) => (s.status as string) === 'wait_for_assignment' || (s.level && s.level.toLowerCase().includes(sub))).length,
-      trial: eligible.filter((s) => (s.status as string) === 'trial' || (normalizedInitialIds.includes(s.id) && (s.status as string) === 'trial')).length,
+      trial: eligible.filter((s) => (s.status as string) === 'trial').length,
       waiting: eligible.filter((s) => (s.status as string) === 'wait_for_assignment').length,
-      reserve: eligible.filter((s) => (s.status as string) === 'reserve' || (normalizedInitialIds.includes(s.id) && (s.status as string) === 'reserve')).length,
       enroll_later: eligible.filter((s) => (s.status as string) === 'enroll_later').length,
       pending_transfer: eligible.filter((s) => (s.status as string) === 'pending_transfer').length,
       suspend: eligible.filter((s) => (s.status as string) === 'suspend').length,
     }
-  }, [subject, normalizedInitialIds])
+  }, [subject, normalizedInitialIds, selectedLevels, selectedPackages])
 
   const handleStudentSelectToggle = (id: string) => {
     setSelectedIds((prev) => {
@@ -223,152 +268,128 @@ export function StudentSelectionDialog({
       <DialogContent className="sm:max-w-6xl h-[75vh] flex flex-col p-0 overflow-hidden rounded-2xl border bg-background shadow-xl">
         <DialogTitle className="sr-only">Chọn học viên xếp lớp</DialogTitle>
 
-        <div className="p-4 border-b space-y-3 shrink-0">
+        <div className="px-5 py-3 border-b space-y-2 shrink-0">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-md font-bold text-foreground">Chọn học viên xếp lớp</h3>
-              <p className="text-xs text-muted-foreground">
-                Hiển thị học viên chưa xếp lớp, học viên bảo lưu, học thử hoặc chờ chuyển lớp.
-              </p>
+            <h3 className="text-md font-bold text-foreground">Chọn học viên xếp lớp</h3>
+          </div>
+
+          {/* Filter Tabs (Left) + MultiSelect Filters (Right) on the same row */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto select-none custom-scrollbar pb-0.5 min-w-0 flex-1">
+              <Button
+                variant={studentTab === 'suitable' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('suitable')}
+                className={`h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5 transition-all duration-200 ${
+                  studentTab !== 'suitable'
+                    ? 'border-primary/60 bg-primary/5 text-primary font-bold hover:bg-primary/10 shadow-xs'
+                    : 'font-bold shadow-xs'
+                }`}
+              >
+                <span>Phù hợp Trình độ</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'suitable'
+                    ? 'bg-background text-primary'
+                    : 'bg-primary/20 text-primary'
+                }`}>
+                  {tabCounts.suitable}
+                </span>
+              </Button>
+              <Button
+                variant={studentTab === 'all' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('all')}
+                className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
+              >
+                <span>Tất cả</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'all'
+                    ? 'bg-background text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {tabCounts.all}
+                </span>
+              </Button>
+              <Button
+                variant={studentTab === 'trial' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('trial')}
+                className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
+              >
+                <span>Học thử</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'trial'
+                    ? 'bg-background text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {tabCounts.trial}
+                </span>
+              </Button>
+              <Button
+                variant={studentTab === 'waiting' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('waiting')}
+                className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
+              >
+                <span>Chờ xếp lớp</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'waiting'
+                    ? 'bg-background text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {tabCounts.waiting}
+                </span>
+              </Button>
+
+              <Button
+                variant={studentTab === 'enroll_later' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('enroll_later')}
+                className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
+              >
+                <span>Xếp lớp sau</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'enroll_later'
+                    ? 'bg-background text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {tabCounts.enroll_later}
+                </span>
+              </Button>
+              <Button
+                variant={studentTab === 'pending_transfer' ? 'default' : 'outline'}
+                size="xs"
+                onClick={() => setStudentTab('pending_transfer')}
+                className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
+              >
+                <span>Chờ chuyển lớp</span>
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                  studentTab === 'pending_transfer'
+                    ? 'bg-background text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {tabCounts.pending_transfer}
+                </span>
+              </Button>
             </div>
-          </div>
 
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Tìm theo tên, email, số điện thoại..."
-              value={studentSearch}
-              onChange={(e) => setStudentSearch(e.target.value)}
-              className="pl-9 h-9"
-            />
-          </div>
-
-          {/* Expanded Tab filters */}
-          <div className="flex gap-2 pt-1 overflow-x-auto select-none custom-scrollbar pb-1.5">
-            <Button
-              variant={studentTab === 'all' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('all')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Tất cả</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'all'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.all}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'suitable' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('suitable')}
-              className={`h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5 transition-all duration-200 ${
-                studentTab !== 'suitable'
-                  ? 'border-primary/60 bg-primary/5 text-primary font-bold hover:bg-primary/10 shadow-xs'
-                  : 'font-bold shadow-xs'
-              }`}
-            >
-              <span>Phù hợp môn học</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'suitable'
-                  ? 'bg-background text-primary'
-                  : 'bg-primary/20 text-primary'
-              }`}>
-                {tabCounts.suitable}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'trial' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('trial')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Học viên Trial</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'trial'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.trial}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'waiting' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('waiting')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Chờ xếp lớp</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'waiting'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.waiting}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'reserve' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('reserve')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Bảo lưu</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'reserve'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.reserve}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'enroll_later' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('enroll_later')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Xếp lớp sau</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'enroll_later'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.enroll_later}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'pending_transfer' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('pending_transfer')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Chờ chuyển lớp</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'pending_transfer'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.pending_transfer}
-              </span>
-            </Button>
-            <Button
-              variant={studentTab === 'suspend' ? 'default' : 'outline'}
-              size="xs"
-              onClick={() => setStudentTab('suspend')}
-              className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
-            >
-              <span>Tạm dừng</span>
-              <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
-                studentTab === 'suspend'
-                  ? 'bg-background text-primary'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                {tabCounts.suspend}
-              </span>
-            </Button>
+            {/* Dropdown Filters (Right) */}
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
+              <MultiSelectDropdown
+                value={selectedLevels}
+                onValueChange={setSelectedLevels}
+                options={levelOptions}
+                placeholder="Trình độ"
+                className="h-7 w-36 text-xs bg-background"
+              />
+              <MultiSelectDropdown
+                value={selectedPackages}
+                onValueChange={setSelectedPackages}
+                options={packageOptions}
+                placeholder="Gói đăng ký"
+                className="h-7 w-44 text-xs bg-background"
+              />
+            </div>
           </div>
         </div>
 
@@ -431,8 +452,13 @@ export function StudentSelectionDialog({
                           {student.level}
                         </span>
                       </div>
-                      <div className="col-span-2 text-xs text-muted-foreground truncate">
-                        {getMockPackage(student.id, student.level)}
+                      <div className="col-span-2 min-w-0">
+                        <div className="text-xs text-muted-foreground font-medium truncate">
+                          {getMockPackage(student.id, student.level)}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground/70 font-mono truncate">
+                          Hạn: {getMockPackageExpiryDate(student.id)}
+                        </div>
                       </div>
                       <div className="col-span-2 text-right text-xs font-semibold text-foreground">
                         {getMockRemainingSessions(student.id)}

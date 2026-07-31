@@ -5,14 +5,26 @@ import {
 import type { MyScheduleFilters, UnifiedSlot } from './myScheduleTypes'
 import { mockBookingTests } from '@/mocks/bookingTests'
 
-const getAssociatedBookingTest = (slot: UnifiedSlot) => {
-  if (slot.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === 'E0007') // Gia Bao
-  if (slot.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === 'E0001') // Vu Phuc An
-  if (slot.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === 'E0006') // Minh Khoa
+export const getAssociatedBookingTest = (slot: UnifiedSlot) => {
+  if (slot.id === 'EVT-CUSTOM-001') return mockBookingTests.find(b => b.id === 'E0007')
+  if (slot.id === 'EVT-CUSTOM-002') return mockBookingTests.find(b => b.id === 'E0001')
+  if (slot.id === 'EVT-CUSTOM-003') return mockBookingTests.find(b => b.id === 'E0006')
   
-  const seed = slot.title.charCodeAt(0) + slot.title.length
-  const bookingIdx = seed % mockBookingTests.length
-  return mockBookingTests[bookingIdx]
+  const bookingId = slot.id.replace('EVT-', '')
+  const directMatch = mockBookingTests.find(b => b.id === bookingId || b.id === slot.id)
+  if (directMatch) return directMatch
+
+  if (slot.title) {
+    const cleanTitle = slot.title.toLowerCase().trim()
+    const nameMatch = mockBookingTests.find(b => 
+      b.childName.toLowerCase().trim() === cleanTitle ||
+      cleanTitle.includes(b.childName.toLowerCase().trim()) ||
+      b.childName.toLowerCase().trim().includes(cleanTitle)
+    )
+    if (nameMatch) return nameMatch
+  }
+
+  return null
 }
 
 export function buildUnifiedSlots(
@@ -37,6 +49,8 @@ export function buildUnifiedSlots(
       attendedStudents: session.attendedStudents,
       isRecurring: session.isRecurring,
       substituteTeacher: session.substituteTeacher,
+      assistantTeacher: session.assistantTeacher,
+      assistantSubstitute: session.assistantSubstitute,
       status: session.status,
       dateBucket: session.dateBucket,
       startMin: parseScheduleTime(session.timeLabel),
@@ -73,7 +87,7 @@ export function filterMyScheduleSlots(
   slots: UnifiedSlot[],
   filters: MyScheduleFilters
 ): UnifiedSlot[] {
-  return slots
+  const filtered = slots
     .filter((slot) => {
       if (filters.activeBranch && filters.activeBranch !== 'all' && slot.branch !== filters.activeBranch) {
         return false
@@ -170,6 +184,41 @@ export function filterMyScheduleSlots(
       return true
     })
     .sort((a, b) => a.startMin - b.startMin || a.date.localeCompare(b.date))
+
+  // Enforce max 2 concurrent overlapping slots per time interval per day
+  const result: UnifiedSlot[] = []
+  const slotsByDate: Record<string, UnifiedSlot[]> = {}
+
+  for (const slot of filtered) {
+    const dateKey = slot.date
+    const existing = slotsByDate[dateKey] || []
+    const start = slot.startMin
+    const end = parseScheduleTime(slot.endTimeLabel) || (start + 60)
+
+    let exceedsMaxOverlap = false
+    for (let m = start; m < end; m += 5) {
+      let count = 0
+      for (const ex of existing) {
+        const exStart = ex.startMin
+        const exEnd = parseScheduleTime(ex.endTimeLabel) || (exStart + 60)
+        if (m >= exStart && m < exEnd) {
+          count++
+        }
+      }
+      if (count >= 2) {
+        exceedsMaxOverlap = true
+        break
+      }
+    }
+
+    if (!exceedsMaxOverlap) {
+      existing.push(slot)
+      slotsByDate[dateKey] = existing
+      result.push(slot)
+    }
+  }
+
+  return result
 }
 
 export function getMyScheduleStatusLabel(status?: string): string {

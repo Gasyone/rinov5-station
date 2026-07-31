@@ -200,14 +200,12 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     sessions: [{ className: 'IELTS Junior J1', classId: 'CLS-005', sessionName: 'IELTS J1', sessionId: 'SESS-9905', trialDate: '2026-05-18 09:00' }],
     creator: 'Thanh Vân',
     owner: 'Ms. Anna',
-    status: 'cancelled',
+    status: 'confirmed',
     branch: 'RinoEdu Linh Đàm',
     notes: '',
     auditLog: [
       { timestamp: '2026-05-10 11:00', author: 'Thanh Vân', action: 'Tạo booking' },
-      { timestamp: '2026-05-16 09:00', author: 'Thanh Vân', action: 'Hủy lịch', detail: 'Phụ huynh không muốn học thử nữa' },
     ],
-    cancelReason: 'Khách bận',
   },
   {
     id: 'TR-2605-006',
@@ -299,6 +297,32 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     auditLog: [
       { timestamp: '2026-05-23 09:00', author: 'Minh Quân', action: 'Tạo booking' },
       { timestamp: '2026-05-23 14:30', author: 'Minh Quân', action: 'Chọn buổi học', detail: 'Coding C1 - 29/05/2026 19:15' },
+    ],
+  },
+  {
+    id: 'TR-2605-010',
+    trialName: 'Học thử IELTS Starter',
+    customerId: 'KH-10355',
+    studentName: 'Lê Chi',
+    parentName: 'Lê Văn C',
+    familyName: 'Gia đình Lê Chi',
+    familyPhone: '0955555555',
+    familyMembers: [
+      { name: 'Lê Văn C (Bố)', phone: '0955555555', isPrimary: true },
+      { name: 'Nguyễn Thị D (Mẹ)', phone: '0955667788' }
+    ],
+    attempt: 'Lần 1',
+    school: 'RinoEdu Nguyễn Tuân',
+    program: 'IELTS Starter',
+    subject: 'Tiếng Anh',
+    sessions: [{ className: 'IELTS Starter A1', classId: 'CLS-011', sessionName: 'Flyers F1', sessionId: 'SESS-11001', trialDate: '2026-05-28 18:30' }],
+    creator: 'Lan Anh',
+    owner: 'Ms. Sarah',
+    status: 'pending_approval',
+    branch: 'RinoEdu Nguyễn Tuân',
+    notes: 'Học viên bảo lưu muốn học thử lại để đánh giá xếp lớp mới',
+    auditLog: [
+      { timestamp: '2026-05-24 10:00', author: 'Lan Anh', action: 'Tạo booking' }
     ],
   },
 ]

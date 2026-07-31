@@ -5,13 +5,16 @@ import {
   MapPin, 
   User, 
   FileText,
-  CalendarX
+  CalendarX,
+  Eye
 } from 'lucide-react'
 import { EmptyState } from '@/components/shared'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { StudentScheduleSession } from './studentDetailTypes'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { SessionDetailDialog } from '@/components/screens/calendar/SessionDetailDialog'
+import type { ClassSession } from '@/mocks/calendarSchedule'
 
 interface StudentDetailScheduleProps {
   sessions: StudentScheduleSession[]
@@ -19,7 +22,9 @@ interface StudentDetailScheduleProps {
 
 export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) {
   // Set default filter to 'active' ("Đang học/Tiếp theo")
-  const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed' | 'rescheduled' | 'cancelled'>('active')
+  const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed' | 'cancelled'>('active')
+  const [selectedSession, setSelectedSession] = useState<ClassSession | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   // Filter calculations
   const getFilteredSessions = (): StudentScheduleSession[] => {
@@ -43,9 +48,6 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
       case 'completed':
         return sessions.filter((s) => s.status === 'completed')
       
-      case 'rescheduled':
-        return sessions.filter((s) => s.status === 'rescheduled' || !!s.substituteTeacherName)
-      
       case 'cancelled':
         return sessions.filter((s) => s.status === 'cancelled')
       
@@ -53,20 +55,10 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
         return sessions
     }
   }
-
+ 
   const filteredSessions = getFilteredSessions()
 
-  const getSessionStatusLabel = (status: StudentScheduleSession['status']) => {
-    switch (status) {
-      case 'completed': return 'Đã học'
-      case 'ongoing': return 'Đang học'
-      case 'upcoming': return 'Chờ diễn ra'
-      case 'rescheduled': return 'Đổi lịch'
-      case 'cancelled': return 'Đã hủy'
-      case 'absent': return 'Xin nghỉ'
-      default: return status
-    }
-  }
+
 
   const renderSessionCard = (session: StudentScheduleSession) => {
     const isOngoing = session.status === 'ongoing'
@@ -93,18 +85,13 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
             <span className="text-xs font-semibold text-foreground font-mono shrink-0">
               {session.date} ({session.startTime} - {session.endTime})
             </span>
-            <span className="text-[10px] font-bold text-muted-foreground font-mono bg-muted/70 px-1.5 py-0.5 rounded truncate max-w-[200px]" title={`${session.className} (${session.classCode})`}>
-              {session.className}
-            </span>
           </div>
 
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
-            isOngoing 
-              ? 'border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950'
-              : getStatusBadgeClass(session.status)
-          }`}>
-            {getSessionStatusLabel(session.status)}
-          </span>
+          {session.status === 'absent' && (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${getStatusBadgeClass('absent')}`}>
+              Xin nghỉ
+            </span>
+          )}
         </div>
 
         {/* Topic Title & Subtitle + Teacher/Room consolidated in a single line or tight block */}
@@ -179,27 +166,66 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
             )}
           </div>
 
-          {/* Action button: Xin nghỉ */}
-          {!isCancelled && !isAbsent && session.status !== 'completed' && (
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 ml-auto shrink-0">
             <Button
               variant="ghost"
-              size="sm"
-              title="Xin nghỉ học buổi này"
-              onClick={() => toast.info('Tính năng xin nghỉ đang được phát triển.')}
-              className="h-6 px-2 text-[10px] font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/30 gap-1 rounded-md"
+              size="xs"
+              className="text-[10px] text-primary hover:text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
+              onClick={() => {
+                const classSession: ClassSession = {
+                  id: session.id,
+                  classCode: session.classCode,
+                  className: session.className,
+                  subject: 'Tiếng Anh',
+                  teacher: session.teacherName,
+                  substituteTeacher: session.substituteTeacherName,
+                  branch: 'RinoEdu Nguyễn Tuân',
+                  schoolRoom: session.room,
+                  level: 'Standard',
+                  date: session.date,
+                  dateDisplay: session.date,
+                  dateBucket: session.status === 'completed' ? 'past' : session.status === 'ongoing' ? 'today' : 'upcoming',
+                  timeLabel: session.startTime,
+                  endTimeLabel: session.endTime,
+                  statusLabel: session.status === 'completed' ? 'Đã học' : session.status === 'ongoing' ? 'Đang học' : 'Chờ diễn ra',
+                  type: 'class_session',
+                  typeLabel: 'Lớp học',
+                  title: session.topic,
+                  lessonSubtitle: session.description || '',
+                  totalStudents: 12,
+                  officialStudents: 10,
+                  trialStudents: 2,
+                }
+                setSelectedSession(classSession)
+                setIsDetailOpen(true)
+              }}
             >
-              <CalendarX className="h-3.5 w-3.5" /> Xin nghỉ
+              <Eye className="h-3.5 w-3.5" /> Xem buổi học
             </Button>
-          )}
+
+            {!isCancelled && !isAbsent && session.status !== 'completed' && (
+              <Button
+                variant="ghost"
+                size="xs"
+                className="text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
+                onClick={() => {
+                  toast.info('Tính năng chưa phát triển')
+                }}
+              >
+                <CalendarX className="h-3.5 w-3.5" /> Xin nghỉ
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4 pt-1">
+    <div className="space-y-4 pt-0">
       {/* Sessions segment toolbar filters */}
-      <div className="sticky top-0 bg-background z-10 flex flex-wrap items-center justify-between gap-3 pb-3 pt-1 border-b mb-3">
+      <div className="sticky top-0 bg-background z-30 flex flex-wrap items-center justify-between gap-3 pb-3 pt-1 border-b mb-3">
         <div className="flex flex-wrap gap-1.5">
           {(
             [
@@ -207,7 +233,6 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
               { value: 'active', label: 'Đang học/Tiếp theo' },
               { value: 'upcoming', label: 'Sắp tới' },
               { value: 'completed', label: 'Đã học' },
-              { value: 'rescheduled', label: 'Đổi lịch' },
               { value: 'cancelled', label: 'Hủy' }
             ] as const
           ).map((item) => {
@@ -219,7 +244,6 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
               }
               if (item.value === 'upcoming') return sessions.filter((s) => s.status === 'upcoming').length
               if (item.value === 'completed') return sessions.filter((s) => s.status === 'completed').length
-              if (item.value === 'rescheduled') return sessions.filter((s) => s.status === 'rescheduled' || !!s.substituteTeacherName).length
               if (item.value === 'cancelled') return sessions.filter((s) => s.status === 'cancelled').length
               return 0
             }
@@ -227,7 +251,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
               <button
                 key={item.value}
                 onClick={() => setFilter(item.value)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   filter === item.value 
                     ? 'bg-primary text-primary-foreground shadow-xs' 
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -253,6 +277,12 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
           />
         </div>
       )}
+
+      <SessionDetailDialog
+        session={selectedSession}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+      />
     </div>
   )
 }

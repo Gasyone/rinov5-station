@@ -27,6 +27,7 @@ export function TrialClassScreen() {
   const [trialState, setTrialState] = useState(readTrialClasses)
   const [isLoading, setIsLoading] = useState(false)
   const [activeBranch, setActiveBranch] = useState('all')
+  const [activeSubject, setActiveSubject] = useState('all')
   const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<TrialClassFilterState>({
@@ -74,8 +75,8 @@ export function TrialClassScreen() {
   }, [trials, filters.weekdays])
 
   const filtered = useMemo(
-    () => filterTrialClasses(trials, searchTerm, activeBranch, activeStatus, filters),
-    [trials, searchTerm, activeBranch, activeStatus, filters]
+    () => filterTrialClasses(trials, searchTerm, activeBranch, activeStatus, filters, activeSubject),
+    [trials, searchTerm, activeBranch, activeStatus, filters, activeSubject]
   )
 
   const reloadTrials = () => {
@@ -251,18 +252,20 @@ export function TrialClassScreen() {
     <div className="flex h-full min-h-0 flex-col bg-background">
       <TrialClassToolbar
         activeBranch={activeBranch}
+        activeSubject={activeSubject}
         activeStatus={activeStatus}
         searchTerm={searchTerm}
         branchOptions={branchOptions}
         baseForStatus={trials}
         activeFilterCount={activeFilterCount}
         onBranchChange={(branch) => { setActiveBranch(branch); setPage(1) }}
+        onSubjectChange={(subject) => { setActiveSubject(subject); setPage(1) }}
         onStatusChange={(status) => { setActiveStatus(status); setPage(1) }}
         onSearchChange={(value) => { setSearchTerm(value); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-2 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
         <TrialClassTableFrame
           loading={isLoading}
           error={error?.message ?? null}

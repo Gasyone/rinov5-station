@@ -76,7 +76,7 @@ export function StudentTicketDialog({
                 <span className="font-semibold text-foreground text-xs font-mono">{studentCode}</span>
               </div>
               <div className="font-bold text-foreground text-sm">{student.name}</div>
-              <div className="text-muted-foreground text-xs mt-1">Chi nhánh: {student.branch}</div>
+              <div className="text-muted-foreground text-xs mt-1">Trường: {student.branch}</div>
             </div>
 
             <FieldLabel label="Tiêu đề vụ việc / Sự kiện" required>

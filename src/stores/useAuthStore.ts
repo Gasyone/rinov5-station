@@ -9,7 +9,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
  * value is a plain literal and a determined client could set it manually.
  */
 
-type DemoRole = 'admin' | 'branch_manager' | 'sale' | 'csm' | 'teacher'
+export type DemoRole = 'admin' | 'branch_manager' | 'ops' | 'academic' | 'teacher' | 'sale' | 'csm'
 
 interface User {
   id: string
@@ -25,6 +25,7 @@ interface AuthState {
   error: string | null
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
+  switchRole: (role: DemoRole) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
 }
@@ -91,6 +92,14 @@ export const useAuthStore = create<AuthState>()(
           // ignore — we still clear local state below
         }
         set({ isAuthenticated: false, user: null, error: null })
+      },
+
+      switchRole: (role: DemoRole) => {
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, role }
+            : { id: 'demo-user', name: 'Demo User', email: 'demo@rinoedu.ai', role },
+        }))
       },
 
       setLoading: (loading: boolean) => {

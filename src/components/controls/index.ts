@@ -16,4 +16,6 @@ export {
 export * from './StudentCombobox'
 export * from './SearchableCombobox'
 export * from './MultiBranchSelect'
-
+export { FilterChipGroup, type FilterChipOption } from './FilterChipGroup'
+export * from './MultiSelectDropdown'
+export * from './HoverExpandableSearch'

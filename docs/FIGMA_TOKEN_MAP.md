@@ -81,8 +81,8 @@ status string in Figma, look it up here to know which semantic palette to bind.
 
 | Entity status (Vietnamese / data value) | Semantic |
 |---|---|
-| `active`, `available`, `qualified`, `registered`, `approved`, `paid`, `confirmed` | `success` |
-| `in_use`, `started_assessment`, `class_session`, `event`, `scheduled`, `upcoming`, `in_progress`, `partial`, `new`, `on_leave` | `info` |
+| `active`, `available`, `qualified`, `registered`, `approved`, `paid`, `confirmed`, `checkin` | `success` |
+| `in_use`, `class_session`, `event`, `scheduled`, `upcoming`, `in_progress`, `partial`, `new`, `on_leave` | `info` |
 | `locked`, `probation`, `maintenance`, `tested`, `pending`, `contacted`, `seconded` (biệt phái), `needs_attention`, `placement_test`, `ongoing`, `unpaid` | `warning` |
 | `deactivated`, `decommissioned`, `failed`, `rejected`, `declined` | `error` |
 | `inactive`, `resigned`, `cancelled`, `lost`, `archived`, `draft`, `refunded`, `transferred`, `planned` | `neutral` |

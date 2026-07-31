@@ -70,23 +70,32 @@ Nằm ngay dưới thanh công cụ, hiển thị tổng số đếm lớp cho t
 | Tạm nghỉ | Cam/Hổ phách | Lớp tạm thời dừng dạy vì lý do khách quan. | Có số đếm động. |
 | Đã kết thúc | Xám | Lớp đã hoàn thành lộ trình hoặc bị hủy bỏ giữa chừng. | Có số đếm động. |
 
+### 3.2.1. Bộ lọc nhanh Cảnh báo Vấn đề (Nằm cùng hàng, căn lề phải - Không khung nền)
+Căn phải cùng hàng với các ô đếm trạng thái, nằm trực tiếp trên nền trang với các nút chip phẳng:
+| Thẻ lọc vấn đề | Mức độ cảnh báo | Logic lọc dữ liệu | Ghi chú |
+|----------------|-----------------|-------------------|---------|
+| Có CSĐB | Đỏ/Cảnh báo cao | Lớp có ít nhất 1 học viên thuộc danh sách Chăm sóc đặc biệt. | Hiển thị kèm số lượng lớp có CSĐB. |
+| ACS thấp | Đỏ/Sĩ số thấp | Lớp đang mở/học có tỷ lệ sĩ số lấp đầy < 50%. | Hiển thị kèm số lượng lớp sĩ số thấp. |
+| Chuyên cần thấp | Cam/Cảnh báo vừa | Lớp đang học có tỷ lệ chuyên cần < 85%. | Hiển thị kèm số lượng lớp chuyên cần thấp. |
+| BTVN thấp | Xanh dương/Theo dõi | Lớp đang học có tỷ lệ làm BTVN < 80%. | Hiển thị kèm số lượng lớp có tỷ lệ BTVN thấp. |
+
 ### 3.3. Bảng danh sách chính (Data Table)
-Bảng có tổng cộng 11 cột thông tin, cho phép cuộn ngang trên màn hình nhỏ. Cột Hộp chọn và Cột Lớp học được cố định (sticky) ở lề trái khi cuộn.
+Bảng có tổng cộng 12 cột thông tin tối ưu bề rộng, cho phép cuộn ngang trên màn hình nhỏ. Cột Hộp chọn và Cột Lớp học được cố định (sticky) ở lề trái khi cuộn.
 
 | Cột hiển thị | Loại hiển thị | Trường Dữ liệu | Ghi chú |
 |--------------|---------------|----------------|---------|
 | Hộp chọn | Checkbox | Chọn dòng | Nằm ngoài cùng bên trái, dùng để tích chọn đa dòng. |
 | Lớp học | Chữ in đậm kèm liên kết | Tên lớp & Mã lớp | Sticky bên trái. Rê chuột vào hiển thị thanh tác vụ nhanh trên dòng. |
-| Chương trình | Văn bản | Tên chương trình học | Hiển thị lộ trình học tập tóm tắt ở dưới. |
-| Khung chương trình | Văn bản | Tên giáo trình đã gán | Hiển thị "Chưa gán" chữ nghiêng nếu trống. |
-| Trình độ | Văn bản | Cấp độ lớp | Hiển thị trình độ chính và trình độ phụ. |
+| Môn học | Văn bản | Trình độ & Chương trình | Hiển thị trình độ và giáo trình đã gán. |
 | Giáo viên | Ô danh sách xếp chồng | Giáo viên phụ trách | Hiển thị giáo viên chủ nhiệm và danh sách giáo viên dạy thay. |
-| Sĩ số | Số / Số (Phần trăm) | Sĩ số thực tế/tối đa | Chữ màu đen bình thường, màu vàng/cam (nếu >=70%), màu đỏ (nếu >=90%). |
+| Sĩ số | Số / Số (Phần trăm) | Sĩ số thực tế/tối đa | Chữ màu đen bình thường, màu hổ phách (nếu >=70%), màu đỏ (nếu >=90%). |
 | Lịch học | Văn bản tóm tắt | Các ca học tuần | Tổng hợp các ngày học và khung giờ cố định trong tuần. |
-| Buổi học tiếp theo | Văn bản | Chi tiết buổi kế tiếp | Hiển thị ngày, giờ, chủ đề và nhãn trạng thái buổi học (sắp tới, đang học). |
+| Trạng thái | Nhãn màu & Văn bản | Trạng thái & Ngày/Giờ buổi học | Badge trạng thái kèm 1 dòng ngày/giờ động (Khai giảng đối với lớp chưa học hoặc Tiếp theo đối với lớp đang học). |
+| Chuyên cần | Nhãn phần trăm màu | Tỷ lệ đi học | Thống kê tỷ lệ chuyên cần của lớp học. |
+| BTVN | Văn bản phần trăm | Tỷ lệ nộp BTVN | Thống kê tỷ lệ làm bài tập về nhà của học viên. |
+| Kiểm tra | Số điểm | Điểm trung bình | Thống kê điểm kiểm tra trung bình của lớp. |
+| Cần CSĐB | Nhãn số lượng | Số học viên cảnh báo | Thống kê số lượng học viên thuộc diện chăm sóc đặc biệt. |
 | Cơ sở / Phòng | Văn bản | Tên chi nhánh & Phòng | Hiển thị cơ sở quản lý và phòng học cố định. |
-| Trạng thái | Nhãn màu | Trạng thái hiện tại | Badge màu chuẩn tương ứng với trạng thái lớp. |
-| Thời gian | Ngày tháng | Ngày bắt đầu & kết thúc | Định dạng ngày/tháng/năm của thời gian khóa học. |
 
 ### 3.4. Thanh tác vụ nhanh trên dòng (Hiển thị khi rê chuột)
 Khi giáo vụ di chuột vào khu vực cột Lớp học, một thanh nút hành động nhỏ xuất hiện phía bên phải tên lớp học để thao tác nhanh:

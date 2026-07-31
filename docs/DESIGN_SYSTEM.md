@@ -158,8 +158,8 @@ Mọi quyết định UI/UX trong RinoEdu PHẢI tuân thủ 5 nguyên tắc sau
 
 | Semantic | Palette | Entity statuses | Ý nghĩa |
 |----------|---------|----------------|---------|
-| `success` | Emerald | `active`, `available`, `approved` | ✅ Tích cực |
-| `info` | Sky | `started_assessment`, `in_use`, `in_progress` | 🔵 Đang xử lý |
+| `success` | Emerald | `active`, `available`, `approved`, `checkin` | ✅ Tích cực |
+| `info` | Sky | `in_use`, `in_progress` | 🔵 Đang xử lý |
 | `warning` | Amber | `locked`, `pending`, `maintenance` | ⚠️ Cần chú ý |
 | `error` | Red | `deactivated`, `failed`, `rejected` | ❌ Nghiêm trọng |
 | `neutral` | Zinc | `inactive`, `cancelled`, `draft` | ⬜ Trung tính |
@@ -176,6 +176,9 @@ import { getStatusBadgeClass } from '@/lib/statusColors'
 ```
 
 **Thêm status mới:** Thêm vào `ENTITY_STATUS_MAP` trong `statusColors.ts`, KHÔNG hardcode ở screen.
+
+> [!NOTE]
+> **Nhãn tag buổi học (Session Milestone Tags):** Các nhãn cột mốc tiến trình của học viên như `buoi_1`, `buoi_2`, `buoi_3`, `buoi_cuoi` được đăng ký màu sắc trong `statusColors.ts` để tối ưu hóa khả năng tái sử dụng. Tuy nhiên, đây là **nhãn tag buổi học** phản ánh tiến trình học tại thời điểm cụ thể, **không phải là trạng thái thực thể (entity status)** chính thức của học viên. Tránh nhầm lẫn khi thiết lập tài liệu nghiệp vụ hoặc cơ sở dữ liệu.
 
 ### 3.3. Typography
 

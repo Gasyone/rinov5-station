@@ -86,3 +86,4 @@ stateDiagram-v2
 | US-CLS06-01 | Phụ huynh/CSM báo nghỉ phép 1 buổi (Biểu mẫu) | /app/leave_reserve | Đang soạn thảo |
 | US-CLS06-02 | Tạo và phê duyệt Phiếu Bảo lưu (Danh sách & Form) | /app/leave_reserve | Đang soạn thảo |
 | US-CLS06-03 | Tạo và phê duyệt Phiếu Chuyển lớp (Danh sách & Form) | /app/leave_reserve | Đang soạn thảo |
+| US-CLS06-06 | Đăng ký & Quản lý Học bù (Danh sách & Form) | /app/makeup_schedule | Đã soạn thảo |

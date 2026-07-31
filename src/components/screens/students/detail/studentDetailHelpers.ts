@@ -9,6 +9,7 @@ export function getStudentPackages(student: Student): StudentPackage[] {
 
   // Main package from student data
   if (student.packageName) {
+    const mainClass = student.enrolledClasses?.[0]
     list.push({
       id: `PKG-${student.id}-1`,
       packageName: student.packageName,
@@ -16,25 +17,35 @@ export function getStudentPackages(student: Student): StudentPackage[] {
       remainingSessions: student.remainingSessions ?? 24,
       price: (student.totalSessions ?? 24) * 150000,
       purchaseDate: student.enrollmentDate,
+      endDate: new Date(new Date(student.enrollmentDate).getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: student.remainingSessions && student.remainingSessions > 0 ? 'active' : 'expired',
-      linkedClassCode: student.enrolledClasses?.[0]?.classCode,
-      linkedClassName: student.enrolledClasses?.[0]?.className,
+      linkedClassCode: mainClass?.classCode,
+      linkedClassName: mainClass?.className,
+      startSessionDate: mainClass?.scheduleSlots?.[0]
+        ? `${mainClass.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
+        : '02/06 (Buổi 1: Nhập môn & Định hướng)',
     })
   }
 
   // Add a secondary package if the student has multiple classes
   if (student.enrolledClasses && student.enrolledClasses.length > 1) {
     student.enrolledClasses.slice(1).forEach((cls, idx) => {
+      const pDate = new Date(new Date(student.enrollmentDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      const eDate = new Date(new Date(pDate).getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       list.push({
         id: `PKG-${student.id}-${idx + 2}`,
         packageName: cls.programName || `Gói Bổ Trợ Kỹ Năng ${cls.className}`,
         totalSessions: 12,
         remainingSessions: 8,
         price: 1200000,
-        purchaseDate: new Date(new Date(student.enrollmentDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        purchaseDate: pDate,
+        endDate: eDate,
         status: 'active',
         linkedClassCode: cls.classCode,
         linkedClassName: cls.className,
+        startSessionDate: cls.scheduleSlots?.[0]
+          ? `${cls.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
+          : '02/06 (Buổi 1: Nhập môn & Định hướng)',
       })
     })
   }
@@ -47,7 +58,61 @@ export function getStudentPackages(student: Student): StudentPackage[] {
     remainingSessions: 16,
     price: 2400000,
     purchaseDate: student.enrollmentDate,
+    endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'active',
+  })
+
+  // Add a transferred-fee package for demo
+  const pTransDate = new Date(new Date(student.enrollmentDate).getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  list.push({
+    id: `PKG-${student.id}-transferred`,
+    packageName: 'Gói IELTS Intensive 5.0 (Cũ)',
+    totalSessions: 20,
+    remainingSessions: 8,
+    price: 1800000,
+    purchaseDate: pTransDate,
+    endDate: new Date(new Date(pTransDate).getTime() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'transferred',
+    linkedClassCode: 'CLS-OLD-01',
+    linkedClassName: 'IELTS Intensive 5.0 - K12',
+    startSessionDate: '15/11/2024 (Buổi 1: Cam kết đầu ra & Chẩn đoán)',
+  })
+
+  // Add a cancelled package for demo
+  const pCancelDate = new Date(new Date(student.enrollmentDate).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  list.push({
+    id: `PKG-${student.id}-cancelled`,
+    packageName: 'Gói Speaking Club Tháng 3',
+    totalSessions: 8,
+    remainingSessions: 6,
+    price: 800000,
+    purchaseDate: pCancelDate,
+    endDate: new Date(new Date(pCancelDate).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'cancelled',
+  })
+
+  // Add an expired package for demo
+  list.push({
+    id: `PKG-${student.id}-expired`,
+    packageName: 'Gói Tiếng Anh Trẻ Em Standard (Hết hạn)',
+    totalSessions: 24,
+    remainingSessions: 0,
+    price: 3600000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() - 185 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'expired',
+  })
+
+  // Add a suspended/reserved package for demo
+  list.push({
+    id: `PKG-${student.id}-suspended`,
+    packageName: 'Gói Luyện Thi IELTS Target 6.5 (Bảo lưu)',
+    totalSessions: 48,
+    remainingSessions: 32,
+    price: 7200000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'suspended',
   })
 
   // Fallback if no package is recorded
@@ -59,6 +124,7 @@ export function getStudentPackages(student: Student): StudentPackage[] {
       remainingSessions: 24,
       price: 3600000,
       purchaseDate: student.enrollmentDate,
+      endDate: new Date(new Date(student.enrollmentDate).getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'active',
     })
   }
@@ -257,8 +323,6 @@ export function getStudentScheduleSessions(student: Student): StudentScheduleSes
         status = 'completed'
       } else if (sessionNum === 4) {
         status = sessions.some((s) => s.status === 'ongoing') ? 'upcoming' : 'ongoing'
-      } else if (sessionNum === 5) {
-        status = 'rescheduled'
       } else if (sessionNum === 6) {
         status = 'cancelled'
       } else if (sessionNum === 7) {
@@ -296,5 +360,54 @@ export function getStudentScheduleSessions(student: Student): StudentScheduleSes
     return parseDate(a.date) - parseDate(b.date)
   })
 }
+
+/**
+ * Returns initials of a full name (e.g. 'Phạm Văn Giảng' -> 'VG')
+ */
+export function getInitials(name: string): string {
+  if (!name || name === '—') return ''
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(-2)
+    .join('')
+    .toUpperCase()
+}
+
+/**
+ * Converts a HH:MM time string to minutes from start of day
+ */
+export function timeToMinutes(timeStr: string): number {
+  if (!timeStr) return 0
+  const parts = timeStr.split(':')
+  if (parts.length < 2) return 0
+  const hours = parseInt(parts[0], 10)
+  const minutes = parseInt(parts[1], 10)
+  if (isNaN(hours) || isNaN(minutes)) return 0
+  return hours * 60 + minutes
+}
+
+/**
+ * Checks if two schedule slots overlap in time on the same day
+ */
+export function checkSlotsOverlap(
+  slotA: { dayOfWeek: string; startTime: string; endTime: string },
+  slotB: { dayOfWeek: string; startTime: string; endTime: string }
+): boolean {
+  const dayA = slotA.dayOfWeek.trim().toLowerCase()
+  const dayB = slotB.dayOfWeek.trim().toLowerCase()
+  if (dayA !== dayB) return false
+
+  const startA = timeToMinutes(slotA.startTime)
+  const endA = timeToMinutes(slotA.endTime)
+  const startB = timeToMinutes(slotB.startTime)
+  const endB = timeToMinutes(slotB.endTime)
+
+  if (startA === 0 && endA === 0) return false
+  if (startB === 0 && endB === 0) return false
+
+  return Math.max(startA, startB) < Math.min(endA, endB)
+}
+
 
 

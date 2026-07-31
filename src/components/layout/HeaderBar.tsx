@@ -5,18 +5,29 @@ import {
   Check,
   ExternalLink,
   Globe,
+  Home,
   LogOut,
   Menu,
   Moon,
   Search,
   Settings,
+  ShieldCheck,
   Sun,
 } from 'lucide-react'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { toast } from 'sonner'
+import { useAuthStore, type DemoRole } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
+import { screens } from '@/config/screens'
+import { navigationGroups } from '@/config/navigation'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+
+const DEMO_ROLE_OPTIONS: Array<{ role: DemoRole; label: string; desc: string }> = [
+  { role: 'csm', label: 'CS', desc: 'Chuyên cần, Dịch vụ & Rủi ro dừng học' },
+  { role: 'teacher', label: 'Giáo viên (Teacher)', desc: 'Lớp của tôi & Chăm sóc chuyên môn' },
+  { role: 'branch_manager', label: 'Quản lý Chi nhánh (BM)', desc: 'Góc nhìn Presets Quản trị' },
+]
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,11 +56,24 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const switchRole = useAuthStore((s) => s.switchRole)
+
+  const handleRoleSelect = (role: DemoRole, label: string) => {
+    switchRole(role)
+    toast.success(`Đã chuyển vai trò giả lập sang: ${label}`)
+  }
   const theme = useUIStore((s) => s.theme)
   const setTheme = useUIStore((s) => s.setTheme)
   const locale = useUIStore((s) => s.locale)
   const setLocale = useUIStore((s) => s.setLocale)
+  const currentMenuId = useUIStore((s) => s.currentMenuId)
   const router = useRouter()
+
+  const menuLabel = currentMenuId ? screens[currentMenuId]?.label : null
+  const currentGroup = currentMenuId
+    ? navigationGroups.find((g) => g.items.some((item) => item.id === currentMenuId))
+    : null
+  const GroupIcon = currentMenuId === 'dashboard' ? Home : (currentGroup?.icon || null)
 
   const handleLogout = async () => {
     await logout()
@@ -80,6 +104,15 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
         </Button>
 
         <HeaderBrand />
+
+        {menuLabel && (
+          <div className="flex items-center gap-2 border-l border-border pl-3 md:pl-4">
+            {GroupIcon && <GroupIcon className="h-4 w-4 text-muted-foreground/80 shrink-0" />}
+            <span className="text-sm font-semibold text-foreground tracking-tight truncate max-w-[140px] sm:max-w-none">
+              {menuLabel}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
@@ -233,6 +266,35 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                 <p className="mt-1 text-[11px] font-semibold capitalize text-muted-foreground">
                   {user?.role ?? ''}
                 </p>
+              </div>
+            </div>
+            <div className="p-2 border-b border-border bg-muted/20">
+              <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                <span>Giả lập Vai trò Demo</span>
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="space-y-0.5">
+                {DEMO_ROLE_OPTIONS.map((item) => {
+                  const isActive = user?.role === item.role
+                  return (
+                    <DropdownMenuItem
+                      key={item.role}
+                      onClick={() => handleRoleSelect(item.role, item.label)}
+                      className={cn(
+                        'flex cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
+                        isActive ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-accent'
+                      )}
+                    >
+                      <div className="flex flex-col min-w-0 pr-2">
+                        <span className="truncate">{item.label}</span>
+                        <span className="text-[10px] text-muted-foreground/80 font-normal truncate">
+                          {item.desc}
+                        </span>
+                      </div>
+                      {isActive && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                    </DropdownMenuItem>
+                  )
+                })}
               </div>
             </div>
             <div className="p-2 border-b border-border">

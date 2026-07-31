@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".obsidian/**",
+    "storybook-static/**",
+    ".gemini/**",
+    "scratch/**",
+    "scripts/**",
+    "coverage/**",
   ]),
 ]);
 

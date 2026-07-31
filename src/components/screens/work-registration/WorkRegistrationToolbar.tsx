@@ -49,7 +49,7 @@ export function WorkRegistrationToolbar({
   const showSearch = activeTab !== 'mine'
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-3 lg:px-6">
+    <div className="flex flex-col gap-3 px-3 py-3 lg:px-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <SegmentedControl

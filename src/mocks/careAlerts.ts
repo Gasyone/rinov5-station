@@ -1,9 +1,21 @@
+export interface MissedCallLogItem {
+  time: string
+  status: string
+  note: string
+  nextCallback?: string
+}
+
 export interface CareInteractionLog {
   id: string
   date: string
   staffName: string
-  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi'
+  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Đã tương tác'
   notes: string
+  staffAvatar?: string
+  parentOpinion?: string
+  audioDuration?: string
+  audioUrl?: string
+  missedCallsList?: MissedCallLogItem[]
 }
 
 export interface StudentCareAlert {
@@ -26,7 +38,7 @@ export interface StudentCareAlert {
   homeworkCompletion: number // BTVN (%)
   lastTestScore: number   // Điểm kiểm tra (Lần gần nhất)
   priorTestScore: number  // Điểm kiểm tra (Trước lần gần nhất)
-  careAlert?: 'C90B' | 'Học lực yếu' | 'Chuyên cần thấp' // Cảnh báo CSKH
+  careAlert?: string // Cảnh báo CSKH
   studentFolderLink: string // Link folder thông tin HS (ảnh, video)
   realtimeStatus: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' // Trạng thái (Real-time)
   teacherEvaluation?: string // CSSR GV đánh giá
@@ -35,10 +47,17 @@ export interface StudentCareAlert {
   csStaff: string         // Tên CS
   confirmC90B?: 'ĐÃ CSDB' | 'ĐANG XỬ LÝ' | 'CHƯA XÁC NHẬN' // Xác nhận C90B
   firstTwoSessionsNotes?: string // Nội dung trao đổi 2 buổi học đầu tiên
-  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' // Xác nhận cuộc gọi
+  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Đã tương tác' // Xác nhận cuộc gọi
   interactionNotes?: string // Nội dung trao đổi
   interactionLogs: CareInteractionLog[]
   substituteTeacher?: string // GV dạy thay (optional)
+  completedCareTags?: string[] // Các nhãn cảnh báo chăm sóc đã hoàn thành
+  customCareTags?: Array<{ code: string; name: string; description: string; sla: number }> // Các thẻ chăm sóc tự tạo
+  activeUpsale?: boolean // Thẻ upsale có đang hoạt động hay không
+  activeCSTP?: boolean // Thẻ CSTP có đang hoạt động hay không (mặc định ban đầu là true nếu chưa hoàn thành hoặc chưa có ghi nhận thành công)
+  upsaleClassification?: string // Phân loại upsale (chọn trạng thái tương tự tái phí)
+  monthlyReportLinks?: string[] // Danh sách link báo cáo tháng
+  studentNote?: string // Ghi chú học viên (thói quen, sở thích, mục tiêu học tập)
 }
 
 export interface FamilyContact {
@@ -46,33 +65,42 @@ export interface FamilyContact {
   relationship: string
   phone: string
   isPrimary?: boolean
+  note?: string
 }
 
 export function getFamilyContacts(studentId: string, studentName: string): FamilyContact[] {
   const lastDigit = parseInt(studentId.slice(-1), 10) || 0
   const contacts: FamilyContact[] = []
-  const cleanNum = (studentId.replace(/\D/g, '') + '123').slice(0, 3)
+  let cleanNum = (studentId.replace(/\D/g, '') + '123').slice(0, 3)
+
+  // Force siblings relation for Trần Minh Châu and Kim Nhật Anh
+  if (studentName === "Trần Minh Châu" || studentName === "Kim Nhật Anh") {
+    cleanNum = "161"
+  }
 
   if (studentName === "Trần Minh Châu" || studentName === "Kim Nhật Anh" || lastDigit % 3 === 0) {
     contacts.push({
-      name: `${studentName.split(' ').slice(-1)[0]} Mẹ Nguyễn Thị Mai`,
+      name: "Nguyễn Thị Mai",
       relationship: "Mẹ",
       phone: `090${cleanNum}294`,
-      isPrimary: true
+      isPrimary: true,
+      note: "Người liên hệ chính. Rất quan tâm lộ trình của con, thích trao đổi qua Zalo."
     })
     contacts.push({
-      name: `${studentName.split(' ').slice(-1)[0]} Bố Trần Văn Sơn`,
+      name: "Trần Văn Sơn",
       relationship: "Bố",
-      phone: `091${cleanNum}999`
+      phone: `091${cleanNum}999`,
+      note: "Chỉ liên hệ khi khẩn cấp hoặc không gọi được cho mẹ."
     })
   } else {
     const prefixes = ["038", "094", "091", "097", "086", "098"]
     const prefix = prefixes[lastDigit % prefixes.length]
     contacts.push({
-      name: `${studentName.split(' ').slice(-1)[0]} Mẹ Lê Thu Thủy`,
+      name: "Lê Thu Thủy",
       relationship: "Mẹ",
       phone: `${prefix}${cleanNum}122`,
-      isPrimary: true
+      isPrimary: true,
+      note: "Thường nghe máy sau giờ hành chính. Thích nhận tin nhắn Zalo hơn gọi trực tiếp."
     })
   }
 
@@ -82,7 +110,7 @@ export function getFamilyContacts(studentId: string, studentName: string): Famil
 export const mockCareAlerts: StudentCareAlert[] = [
   {
     id: "1",
-    studentId: "140330",
+    studentId: "s13",
     customerCode: "",
     studentName: "Trần Minh Châu",
     startDate: "17/08/2023",
@@ -99,17 +127,19 @@ export const mockCareAlerts: StudentCareAlert[] = [
     attendanceRatio: "0/0",
     homeworkCompletion: 80.0,
     lastTestScore: 9.8,
-    priorTestScore: 0.3,
+    priorTestScore: 9.5,
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-1",
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-1",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
+    completedCareTags: ['ĐK1'],
+    studentNote: 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
     interactionLogs: []
   },
   {
     id: "2",
-    studentId: "140305",
+    studentId: "s14",
     customerCode: "10210078",
     studentName: "Nguyễn Phương Vy",
     startDate: "31/07/2023",
@@ -126,17 +156,18 @@ export const mockCareAlerts: StudentCareAlert[] = [
     attendanceRatio: "0/0",
     homeworkCompletion: 80.0,
     lastTestScore: 9.8,
-    priorTestScore: 0.3,
+    priorTestScore: 9.5,
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-2",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-2",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
+    studentNote: '',
     interactionLogs: []
   },
   {
     id: "3",
-    studentId: "113838",
+    studentId: "s15",
     customerCode: "9986363",
     studentName: "Nguyễn Hà Phương",
     startDate: "17/08/2023",
@@ -159,14 +190,16 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-3",
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-3",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
+    completedCareTags: ['ĐB1', 'TB1'],
+    studentNote: 'Con tiếp thu nhanh các bài học logic, hay đặt câu hỏi phản biện trên lớp.',
     interactionNotes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới.",
     interactionLogs: [
       {
         id: "log-c3-1",
         date: "2026-05-25",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         notes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới."
       }
@@ -174,7 +207,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "4",
-    studentId: "149235",
+    studentId: "s16",
     customerCode: "3488383",
     studentName: "Kim Nhật Anh",
     startDate: "19/08/2023",
@@ -195,14 +228,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-4",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-4",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
     interactionNotes: "Gọi điện cho mẹ qua zalo, mẹ bày tỏ băn khoăn vì gần đây cuối tuần con hay nghỉ học. CS đã định hướng việc học lên lớp 5 sắp tới và giải thích để mẹ sắp xếp cho con.",
     interactionLogs: [
       {
         id: "log-c4-1",
         date: "2026-05-24",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         notes: "Gọi điện cho mẹ qua zalo, mẹ bày tỏ băn khoăn vì gần đây cuối tuần con hay nghỉ học. CS đã định hướng việc học lên lớp 5 sắp tới và giải thích để mẹ sắp xếp cho con."
       }
@@ -210,7 +243,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "5",
-    studentId: "149231",
+    studentId: "s17",
     customerCode: "4542038",
     studentName: "Nguyễn Mỹ Linh",
     startDate: "11/10/2023",
@@ -233,13 +266,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-5",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-5",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "6",
-    studentId: "152149",
+    studentId: "s18",
     customerCode: "10404458",
     studentName: "Phạm Đình Nguyên",
     startDate: "02/11/2023",
@@ -260,14 +293,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-6",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-6",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
     interactionNotes: "Đợt này mẹ phản hồi cho con chơi nhiều, tối nay về sẽ nhắc con làm BTVN và chuẩn bị bài học.",
     interactionLogs: [
       {
         id: "log-c6-1",
         date: "2026-05-26",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         notes: "Đợt này mẹ phản hồi cho con chơi nhiều, tối nay về sẽ nhắc con làm BTVN và chuẩn bị bài học."
       }
@@ -275,7 +308,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "7",
-    studentId: "152149",
+    studentId: "s18",
     customerCode: "10404458",
     studentName: "Phạm Đình Nguyên",
     startDate: "02/11/2023",
@@ -296,13 +329,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-7",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-7",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "8",
-    studentId: "152292",
+    studentId: "s19",
     customerCode: "10057474",
     studentName: "Minh Vy",
     startDate: "05/11/2023",
@@ -323,14 +356,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-8",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-8",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã nhắn Zalo",
     interactionNotes: "Trao đổi với mẹ bằng zalo trung tâm để nhắc mẹ nhắc con làm lại bài kiểm tra và làm bài tập về nhà đầy đủ.",
     interactionLogs: [
       {
         id: "log-c8-1",
         date: "2026-05-26",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã nhắn Zalo",
         notes: "Trao đổi với mẹ bằng zalo trung tâm để nhắc mẹ nhắc con làm lại bài kiểm tra và làm bài tập về nhà đầy đủ."
       }
@@ -338,7 +371,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "9",
-    studentId: "152414",
+    studentId: "s8",
     customerCode: "10695953",
     studentName: "Trương Bảo An",
     startDate: "21/11/2023",
@@ -359,14 +392,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-9",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-9",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã nhắn Zalo",
     interactionNotes: "Nhờ ba mẹ nhắc nhở con làm bài tập về nhà vì tỷ lệ hoàn thành hiện tại đang rất thấp.",
     interactionLogs: [
       {
         id: "log-c9-1",
         date: "2026-05-26",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã nhắn Zalo",
         notes: "Nhờ ba mẹ nhắc nhở con làm bài tập về nhà vì tỷ lệ hoàn thành hiện tại đang rất thấp."
       }
@@ -374,7 +407,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "10",
-    studentId: "152817",
+    studentId: "s9",
     customerCode: "4542201",
     studentName: "Nguyễn Lan Hương",
     startDate: "21/11/2023",
@@ -395,13 +428,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-10",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-10",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "11",
-    studentId: "152910",
+    studentId: "s10",
     customerCode: "10558339",
     studentName: "Đặng Thiên An",
     startDate: "23/11/2023",
@@ -422,13 +455,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-11",
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-11",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "12",
-    studentId: "152920",
+    studentId: "s11",
     customerCode: "10500409",
     studentName: "Đào Viết An",
     startDate: "23/11/2023",
@@ -449,14 +482,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-12",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-12",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
     interactionNotes: "Nhắn tin qua Zalo với mẹ, mẹ hứa nhắc nhở con làm bài tập về nhà nhiều hơn khi thi xong.",
     interactionLogs: [
       {
         id: "log-c12-1",
         date: "2026-05-26",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         notes: "Nhắn tin qua Zalo với mẹ, mẹ hứa nhắc nhở con làm bài tập về nhà nhiều hơn khi thi xong."
       }
@@ -464,7 +497,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "13",
-    studentId: "152940",
+    studentId: "s12",
     customerCode: "10688414",
     studentName: "Nguyễn Hoàng Vũ",
     startDate: "23/11/2023",
@@ -485,14 +518,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-13",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-13",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
     interactionNotes: "Mẹ phản hồi đợt này do con bận ôn thi, mong muốn trung tâm gửi thêm tài liệu để con tự ôn. Đã gửi link tài liệu cho mẹ và add Zalo nhóm.",
     interactionLogs: [
       {
         id: "log-c13-1",
         date: "2026-05-26",
-        staffName: "AnhNTN33",
+        staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         notes: "Mẹ phản hồi đợt này do con bận ôn thi, mong muốn trung tâm gửi thêm tài liệu để con tự ôn. Đã gửi link tài liệu cho mẹ và add Zalo nhóm."
       }
@@ -500,7 +533,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "14",
-    studentId: "153100",
+    studentId: "s5",
     customerCode: "6043770",
     studentName: "Trần Tuấn Khang",
     startDate: "04/12/2023",
@@ -521,13 +554,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-14",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-14",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "15",
-    studentId: "54057",
+    studentId: "s6",
     customerCode: "3382666",
     studentName: "Đặng Hồng Phúc",
     startDate: "08/12/2023",
@@ -550,13 +583,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-15",
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-15",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "16",
-    studentId: "153623",
+    studentId: "s7",
     customerCode: "7943384",
     studentName: "Nguyễn Hoàng Dũng",
     startDate: "07/12/2023",
@@ -579,13 +612,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-16",
     realtimeStatus: "Hết buổi",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-16",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "17",
-    studentId: "140330",
+    studentId: "s13",
     customerCode: "",
     studentName: "Trần Minh Châu",
     startDate: "17/08/2023",
@@ -606,13 +639,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-1",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-1",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "18",
-    studentId: "140330",
+    studentId: "s13",
     customerCode: "",
     studentName: "Trần Minh Châu",
     startDate: "17/08/2023",
@@ -633,14 +666,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-1",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-1",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: [],
     substituteTeacher: "GV_TUTOR_SUB"
   },
   {
     id: "19",
-    studentId: "160999",
+    studentId: "s20",
     customerCode: "10999888",
     studentName: "Nguyễn Hoàng Nam",
     startDate: "20/12/2023",
@@ -661,13 +694,13 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
   {
     id: "20",
-    studentId: "160999",
+    studentId: "s20",
     customerCode: "10999888",
     studentName: "Nguyễn Hoàng Nam",
     startDate: "20/12/2023",
@@ -688,14 +721,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: [],
     substituteTeacher: "GV_TA_SUB"
   },
   {
     id: "21",
-    studentId: "160999",
+    studentId: "s20",
     customerCode: "10999888",
     studentName: "Nguyễn Hoàng Nam",
     startDate: "22/12/2023",
@@ -716,7 +749,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "AnhNTN33",
+    csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   }
@@ -752,9 +785,10 @@ export function getCareAlerts(filters?: {
 export function updateCareAlertInteraction(
   id: string,
   log: Omit<CareInteractionLog, 'id' | 'date'>,
-  confirmC90B?: StudentCareAlert['confirmC90B']
+  confirmC90B?: StudentCareAlert['confirmC90B'],
+  careType?: 'DB' | 'TB' | 'DK' | 'OTHER'
 ): boolean {
-  const item = mockCareAlerts.find((i) => i.id === id)
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
   if (item) {
     const newLog: CareInteractionLog = {
       ...log,
@@ -767,6 +801,39 @@ export function updateCareAlertInteraction(
     if (confirmC90B) {
       item.confirmC90B = confirmC90B
     }
+    if (careType) {
+      if (!item.customCareTags) {
+        item.customCareTags = []
+      }
+      let code = ''
+      let name = ''
+      switch (careType) {
+        case 'DB':
+          code = 'ĐB-YC'
+          name = 'Chăm sóc Đặc biệt'
+          break
+        case 'TB':
+          code = 'TB-YC'
+          name = 'Chăm sóc Học tập (Theo buổi)'
+          break
+        case 'DK':
+          code = 'ĐK-YC'
+          name = 'Chăm sóc Định kỳ'
+          break
+        case 'OTHER':
+          code = 'T-YC'
+          name = 'Chăm sóc Khác'
+          break
+      }
+      if (code && !item.customCareTags.some(t => t.code === code)) {
+        item.customCareTags.push({
+          code,
+          name,
+          description: `Yêu cầu ${name} vừa được khởi tạo.`,
+          sla: 3
+        })
+      }
+    }
     return true
   }
   return false
@@ -776,3 +843,88 @@ export function triggerCareAlertCalculation(): boolean {
   // Simulator for updating statistics
   return true
 }
+
+export function completeCareTag(id: string, tagLabel: string): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    if (!item.completedCareTags) {
+      item.completedCareTags = []
+    }
+    if (!item.completedCareTags.includes(tagLabel)) {
+      item.completedCareTags.push(tagLabel)
+    }
+
+    // Add completion log to interactionLogs
+    const now = new Date()
+    const dateStr = now.toISOString() // Store full ISO string for precise time!
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+    
+    // Check if a completion log already exists to avoid duplicates
+    const logPrefix = `[${tagLabel}]`
+    const hasCompletionLog = item.interactionLogs.some(
+      (l) => l.notes.includes(logPrefix) && (l.notes.includes('Hoàn thành') || l.notes.includes('tích chăm sóc') || l.notes.includes('tái phí'))
+    )
+    if (!hasCompletionLog) {
+      const isCstp = tagLabel === 'CSTP'
+      item.interactionLogs.push({
+        id: `complete-${tagLabel}-${now.getTime()}`,
+        date: dateStr,
+        staffName: 'CS Staff',
+        callConfirmation: 'Đã gọi',
+        notes: isCstp
+          ? `[${tagLabel}] [Hoàn thành Chăm sóc] Đã tái phí thành công lúc ${timeStr} ngày ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}.`
+          : `[${tagLabel}] [Hoàn thành Chăm sóc] Đã hoàn thành chăm sóc thẻ ${tagLabel} lúc ${timeStr} ngày ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}.`,
+      })
+    }
+    return true
+  }
+  return false
+}
+
+export function uncompleteCareTag(id: string, tagLabel: string): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    if (item.completedCareTags) {
+      item.completedCareTags = item.completedCareTags.filter((t) => t !== tagLabel)
+    }
+    // Remove the completion log from interactionLogs if any
+    item.interactionLogs = item.interactionLogs.filter(
+      (l) => !(l.notes.includes(`[${tagLabel}]`) && l.notes.includes('Hoàn thành Chăm sóc'))
+    )
+    return true
+  }
+  return false
+}
+
+export function updateRenewalClassification(id: string, classification: string): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    ;(item as StudentCareAlert & { renewalClassification?: string }).renewalClassification = classification
+    return true
+  }
+  return false
+}
+
+export function updateUpsaleClassification(id: string, classification: string): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    item.upsaleClassification = classification
+    return true
+  }
+  return false
+}
+
+// Populate mock monthly report links programmatically
+mockCareAlerts.forEach((item, index) => {
+  const hash = index + 1
+  item.monthlyReportLinks = hash % 3 === 0 
+    ? [
+        `https://docs.google.com/document/d/report-t5-${item.studentId}`,
+        `https://docs.google.com/document/d/report-t6-${item.studentId}`
+      ]
+    : hash % 3 === 1 
+      ? [
+          `https://docs.google.com/document/d/report-t6-${item.studentId}`
+        ]
+      : []
+})

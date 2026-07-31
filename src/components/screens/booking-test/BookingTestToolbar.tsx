@@ -6,7 +6,7 @@ import {
   BranchSelect,
   ExpandableSearch,
   FilterIconButton,
-  SegmentedControl,
+  SubjectSelect,
 } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import type { BookingSubject, BookingTest } from '@/mocks/bookingTests'
@@ -15,7 +15,7 @@ import { countStatus, getSubjectLabel } from './bookingTestHelpers'
 import type { StatusTileId } from './bookingTestTypes'
 
 interface BookingTestToolbarProps {
-  activeSubject: BookingSubject
+  activeSubject: string
   activeSchool: string
   activeStatus: StatusTileId
   searchTerm: string
@@ -23,7 +23,7 @@ interface BookingTestToolbarProps {
   baseForStatus: BookingTest[]
   activeFilterCount: number
   isTeacherRole?: boolean
-  onSubjectChange: (subject: BookingSubject) => void
+  onSubjectChange: (subject: string) => void
   onSchoolChange: (school: string) => void
   onStatusChange: (status: StatusTileId) => void
   onSearchChange: (value: string) => void
@@ -63,16 +63,18 @@ export function BookingTestToolbar({
   ]
 
   return (
-    <div className="flex shrink-0 flex-col gap-2 bg-background px-4 py-3 lg:px-6">
+    <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-3 lg:px-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <SegmentedControl
+          <SubjectSelect
             value={activeSubject}
-            options={(['english', 'math'] as BookingSubject[]).map((subject) => ({
-              value: subject,
-              label: getSubjectLabel(subject),
-            }))}
             onValueChange={onSubjectChange}
+            options={[
+              { value: 'all', label: 'Tất cả môn' },
+              { value: 'english', label: 'Tiếng Anh' },
+              { value: 'math', label: 'Toán học' }
+            ]}
+            className="h-9 min-w-36 text-sm"
           />
 
           <BranchSelect

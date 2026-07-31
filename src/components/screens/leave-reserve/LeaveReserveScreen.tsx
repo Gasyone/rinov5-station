@@ -8,13 +8,16 @@ import { getLeaveReserveRequests, updateLeaveReserveStatus, createLeaveReserveRe
 import { LeaveReserveToolbar } from './LeaveReserveToolbar'
 import { LeaveReserveTable } from './LeaveReserveTable'
 import { LeaveReserveCreateDialog } from './LeaveReserveCreateDialog'
+import { LeaveReserveDetailDialog } from './LeaveReserveDetailDialog'
 import { TYPE_LABELS, type LeaveReserveFilterState } from './leaveReserveTypes'
 import { SYSTEM_BRANCHES } from '@/components/controls'
+import { getRequestSubject } from './leaveReserveHelpers'
 
 export function LeaveReserveScreen() {
-  const [activeStatus, setActiveStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'cancelled'>('all')
+  const [activeStatus, setActiveStatus] = useState<'all' | 'pending' | 'approved' | 'not_approved' | 'cancel'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [branchFilter, setBranchFilter] = useState('all')
+  const [activeSubject, setActiveSubject] = useState('all')
   const [filters, setFilters] = useState<LeaveReserveFilterState>({
     types: [],
     dateRanges: [],
@@ -29,6 +32,8 @@ export function LeaveReserveScreen() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [createOpen, setCreateOpen] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [selectedDetailRequest, setSelectedDetailRequest] = useState<LeaveReserveRequest | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   // Force re-fetch mock data when state updates locally
   const [updateTrigger, setUpdateTrigger] = useState(0)
@@ -46,6 +51,9 @@ export function LeaveReserveScreen() {
       dateRanges: filters.dateRanges.length > 0 ? filters.dateRanges : undefined,
     })
 
+    if (activeSubject !== 'all') {
+      reqs = reqs.filter((r) => getRequestSubject(r) === activeSubject)
+    }
     if (filters.schools.length > 0) {
       reqs = reqs.filter((r) => filters.schools.includes(r.branch))
     }
@@ -65,7 +73,7 @@ export function LeaveReserveScreen() {
       reqs = reqs.filter((r) => filters.classes.includes(r.className))
     }
     return reqs
-  }, [searchQuery, branchFilter, activeStatus, filters, updateTrigger])
+  }, [searchQuery, branchFilter, activeSubject, activeStatus, filters, updateTrigger])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -162,14 +170,14 @@ export function LeaveReserveScreen() {
     })
   }
 
-  const handleAction = (id: string, action: 'approved' | 'rejected' | 'cancelled') => {
-    const success = updateLeaveReserveStatus(id, action, 'Trần Văn A (Quản lý)')
+  const handleAction = (id: string, action: 'approved' | 'not_approved' | 'cancel', reason?: string) => {
+    const success = updateLeaveReserveStatus(id, action, 'Trần Văn A (Quản lý)', reason)
     if (success) {
       setUpdateTrigger((prev) => prev + 1)
       toast.success(
         action === 'approved'
           ? 'Đã phê duyệt đơn yêu cầu thành công'
-          : action === 'rejected'
+          : action === 'not_approved'
           ? 'Đã từ chối đơn yêu cầu thành công'
           : 'Đã hủy duyệt đơn yêu cầu thành công'
       )
@@ -204,12 +212,13 @@ export function LeaveReserveScreen() {
         onSearchChange={(q) => { setSearchQuery(q); setPage(1); setSelectedIds(new Set()) }}
         branchFilter={branchFilter}
         onBranchChange={(b) => { setBranchFilter(b); setPage(1); setSelectedIds(new Set()) }}
+        activeSubject={activeSubject}
+        onSubjectChange={(s) => { setActiveSubject(s); setPage(1); setSelectedIds(new Set()) }}
         activeFilterCount={activeFilterCount}
         onOpenFilters={() => setIsFilterOpen(true)}
-        onCreateRequest={() => setCreateOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-2 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
         <DataTableFrame
           footer={
             <DataTablePagination
@@ -234,6 +243,10 @@ export function LeaveReserveScreen() {
               })
             }}
             onAction={handleAction}
+            onRowClick={(req) => {
+              setSelectedDetailRequest(req)
+              setIsDetailOpen(true)
+            }}
           />
         </DataTableFrame>
       </div>
@@ -262,6 +275,13 @@ export function LeaveReserveScreen() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={handleCreateRequest}
+      />
+
+      <LeaveReserveDetailDialog
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        request={selectedDetailRequest}
+        onAction={handleAction}
       />
     </div>
   )

@@ -51,7 +51,7 @@ export function EmployeesToolbar({
   }))
 
   return (
-    <div className="flex shrink-0 flex-col gap-2 bg-background px-4 py-3 lg:px-6">
+    <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-3 lg:px-3">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <BranchSelect
           value={activeBranch}

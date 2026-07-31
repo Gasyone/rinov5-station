@@ -4,6 +4,7 @@ import {
   BranchSelect,
   ExpandableSearch,
   FilterIconButton,
+  SubjectSelect,
 } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import type { TrialClass } from '@/mocks/trialClasses'
@@ -13,12 +14,14 @@ import type { StatusTileId } from './trialClassTypes'
 
 interface TrialClassToolbarProps {
   activeBranch: string
+  activeSubject: string
   activeStatus: StatusTileId
   searchTerm: string
   branchOptions: string[]
   baseForStatus: TrialClass[]
   activeFilterCount: number
   onBranchChange: (branch: string) => void
+  onSubjectChange: (subject: string) => void
   onStatusChange: (status: StatusTileId) => void
   onSearchChange: (value: string) => void
   onOpenFilters: () => void
@@ -26,12 +29,14 @@ interface TrialClassToolbarProps {
 
 export function TrialClassToolbar({
   activeBranch,
+  activeSubject,
   activeStatus,
   searchTerm,
   branchOptions,
   baseForStatus,
   activeFilterCount,
   onBranchChange,
+  onSubjectChange,
   onStatusChange,
   onSearchChange,
   onOpenFilters,
@@ -52,11 +57,16 @@ export function TrialClassToolbar({
   ]
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 border-b border-border/40 bg-background px-4 py-3 lg:px-6">
+    <div className="flex shrink-0 flex-col gap-3 border-b border-border/40 bg-background px-3 py-3 lg:px-3">
       {/* Row 1: Toolbar Controls */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Left side: Branch Selector */}
         <div className="flex flex-wrap items-center gap-2">
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            className="h-9 min-w-36 text-sm"
+          />
           <BranchSelect
             value={activeBranch}
             branches={branchOptions}

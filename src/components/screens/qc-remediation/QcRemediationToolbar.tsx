@@ -45,7 +45,7 @@ export function QcRemediationToolbar({
   }))
 
   return (
-    <div className="bg-background px-4 py-3 lg:px-6 border-b-0">
+    <div className="bg-background px-3 py-3 lg:px-3 border-b-0">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <SegmentedControl

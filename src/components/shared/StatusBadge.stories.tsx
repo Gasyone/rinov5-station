@@ -25,7 +25,7 @@ export const Completed: Story = { args: { status: 'completed' } }
 export const Merged: Story = { args: { status: 'merged' } }
 export const WithDot: Story = { args: { status: 'active', withDot: true } }
 export const CustomLabel: Story = {
-  args: { status: 'started_assessment', label: 'In Progress', withDot: true },
+  args: { status: 'checkin', label: 'Đã check-in', withDot: true },
 }
 
 export const CssCheck: Story = {

@@ -40,7 +40,7 @@ export function OrdersToolbar({
   }))
 
   return (
-    <div className="flex shrink-0 items-center justify-between gap-4 bg-background px-4 py-3 lg:px-6">
+    <div className="flex shrink-0 items-center justify-between gap-4 bg-background px-3 py-3 lg:px-3">
       <div className="flex-1 overflow-x-auto min-w-0">
         <StatusTiles
           tiles={tiles}

@@ -23,6 +23,7 @@ export interface ScheduleTimeGridProps<T extends ScheduleGridItem> {
   hourEnd?: number
   overlapLayout?: 'stack' | 'columns'
   rowClassName?: string
+  fixedWidthItems?: boolean
 }
 
 export interface LayoutItem<T> {

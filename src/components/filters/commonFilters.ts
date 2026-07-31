@@ -8,6 +8,8 @@ import {
 import { mockEmployees } from '@/mocks/employees'
 import { mockTeachers } from '@/mocks/teacherRecords'
 import { BRANCHES } from '@/mocks'
+import { mockClassRecords } from '@/mocks/classRecords'
+import { mockStudents } from '@/mocks/students'
 
 /**
  * 1. Bộ lọc TRƯỜNG / CHI NHÁNH dùng chung
@@ -162,7 +164,7 @@ export function getClassTypeFilterGroup(
   options?: readonly FilterGroupOptionSource[]
 ): FilterGroupConfig {
   const defaultTypes = [
-    { value: 'offline', label: 'Lớp Offline' },
+    { value: 'offline', label: 'Lớp Station' },
     { value: 'online_tutor', label: 'Lớp Online Tutor' },
   ]
   return createFilterGroup({
@@ -232,5 +234,86 @@ export function getGenderFilterGroup(
     getOptionCount,
   })
 }
+
+/**
+ * 12. Bộ lọc LỘ TRÌNH dùng chung
+ */
+export function getLearningPathFilterGroup(
+  selectedValues?: readonly string[] | ReadonlySet<string>,
+  getOptionCount?: (val: string) => number,
+  options?: readonly FilterGroupOptionSource[]
+): FilterGroupConfig {
+  const defaultPaths = Array.from(
+    new Set(
+      mockClassRecords
+        .map((c) => c.learningPath)
+        .filter(Boolean)
+        .map((p) => p!.split('→')[0].trim())
+    )
+  ).sort()
+
+  return createFilterGroup({
+    id: 'learningPaths',
+    title: 'Lộ trình',
+    options: options ?? defaultPaths,
+    selectedValues,
+    getOptionCount,
+    searchable: true,
+  })
+}
+
+/**
+ * 13. Bộ lọc CHƯƠNG TRÌNH dùng chung
+ */
+export function getSyllabusFilterGroup(
+  selectedValues?: readonly string[] | ReadonlySet<string>,
+  getOptionCount?: (val: string) => number,
+  options?: readonly FilterGroupOptionSource[]
+): FilterGroupConfig {
+  const defaultSyllabuses = Array.from(
+    new Set(
+      mockClassRecords
+        .map((c) => c.syllabus)
+        .filter((s) => s && s !== '—')
+    )
+  ).sort() as string[]
+
+  return createFilterGroup({
+    id: 'syllabuses',
+    title: 'Chương trình',
+    options: options ?? defaultSyllabuses,
+    selectedValues,
+    getOptionCount,
+    searchable: true,
+  })
+}
+
+/**
+ * 14. Bộ lọc GÓI SẢN PHẨM (GÓI ĐĂNG KÝ) dùng chung
+ */
+export function getPackageFilterGroup(
+  selectedValues?: readonly string[] | ReadonlySet<string>,
+  getOptionCount?: (val: string) => number,
+  options?: readonly FilterGroupOptionSource[]
+): FilterGroupConfig {
+  const defaultPackages = Array.from(
+    new Set(
+      mockStudents
+        .map((s) => s.packageName)
+        .filter(Boolean)
+    )
+  ).sort() as string[]
+
+  return createFilterGroup({
+    id: 'packages',
+    title: 'Gói đăng ký',
+    options: options ?? defaultPackages,
+    selectedValues,
+    getOptionCount,
+    searchable: true,
+    scrollable: true,
+  })
+}
+
 
 

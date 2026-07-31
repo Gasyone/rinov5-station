@@ -1,0 +1,13 @@
+Vấn đề thực tế:  Chưa đồng bộ học vi&ecirc;n nghỉ ph&eacute;p v&agrave; gi&aacute;o vi&ecirc;n chưa ghi nhận được học vi&ecirc;n đến muộn.
+chỉ hỗ trợ n&uacute;t chọn điểm danh đơn giản, chưa t&iacute;ch hợp đồng bộ tự động với dữ liệu xin nghỉ ph&eacute;p đ&atilde; được duyệt từ hệ thống quản l&yacute; học vụ, khiến gi&aacute;o vi&ecirc;n vẫ
+acute;ch hợp t&iacute;nh năng đồng bộ tự động trạng th&aacute;i chuy&ecirc;n cần với c&aacute;c đơn nghỉ ph&eacute;p đ&atilde; ph&ecirc; duyệt từ nghiệp vụ học vụ.
+Tỷ lệ tự động đồng bộ v&agrave; hiển thị ch&iacute;nh x&aacute;c học vi&ecirc;n nghỉ ph&eacute;p.
+Gi&aacute;o vi&ecirc;n phải tự tra cứu danh s&aacute;ch nghỉ ph&eacute;p được duyệt b&ecirc;n ngo&agrave;i hoặc dễ xảy ra điểm danh sai lệch.
+100% học vi&ecirc;n c&oacute; đơn nghỉ ph&eacute;p đ&atilde; ph&ecirc; duyệt trước giờ học tự động hiển thị trạng th&aacute;i &quot;Nghỉ p
+đối so&aacute;t giữa danh s&aacute;ch chuy&ecirc;n cần chốt của buổi học với cơ sở dữ liệu đơn xin nghỉ đ&atilde; được duyệt.
+u thủ c&ocirc;ng tiến tr&igrave;nh học tập của lớp v&agrave; kiểm tra danh s&aacute;ch học sinh xin nghỉ ph&eacute;p đ&atilde; được duyệt.&quot;
+Nhu cầu thực tế (Needs):  &quot;Hệ thống tự động hiển thị trạng th&aacute;i nghỉ ph&eacute;p đồng bộ v&agrave; hiển thị đề cương b&agrave;i học r&otilde; r&agrave;ng theo lộ tr&igr
+hi tiết buổi học để kiểm tra sĩ số, số học vi&ecirc;n c&oacute; mặt/vắng mặt, v&agrave; xem đơn xin nghỉ ph&eacute;p của c&aacute;c học vi&ecirc;n vắng c&oacute; ph&eacute;p.&quot;
+Chức năng điểm danh chuy&ecirc;n cần của học vi&ecirc;n v&agrave; nh&atilde;n nghỉ ph&eacute;p từ đơn đ&atilde; được duyệt được đồng bộ.
+[RULE-OPS-03-02] Đồng bộ nghỉ ph&eacute;p: : &quot;Học vi&ecirc;n đ&atilde; được duyệt đơn xin nghỉ ph&eacute;p từ trước giờ học lẻ sẽ tự động hiển thị nh&atilde;n 'Nghỉ ph&eacute;p' m&agrave;u hồng
+nhạt . Click v&agrave;o nh&atilde;n để xem chi tiết đơn xin nghỉ dạng chỉ đọc.&quot;

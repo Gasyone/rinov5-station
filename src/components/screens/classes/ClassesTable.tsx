@@ -28,17 +28,17 @@ interface ClassesTableProps {
 }
 
 const COLUMN_DEFS: Array<{ label: string; className: string }> = [
-  { label: 'Lớp học', className: 'sticky left-10 z-20 w-[420px] min-w-[420px] max-w-[420px] bg-muted' },
-  { label: 'Chương trình', className: 'min-w-48' },
-  { label: 'Khung chương trình', className: 'min-w-56' },
-  { label: 'Trình độ', className: 'min-w-40' },
-  { label: 'Giáo viên', className: 'min-w-48' },
-  { label: 'Sĩ số', className: 'min-w-32' },
-  { label: 'Lịch học', className: 'min-w-64' },
-  { label: 'Buổi học tiếp theo', className: 'min-w-52' },
-  { label: 'Trường', className: 'min-w-48' },
-  { label: 'Trạng thái', className: 'min-w-36' },
-  { label: 'Thời gian', className: 'min-w-44' },
+  { label: 'Lớp học', className: 'sticky left-10 z-30 w-[280px] min-w-[280px] max-w-[280px] bg-muted' },
+  { label: 'Môn học', className: 'min-w-36' },
+  { label: 'Giáo viên', className: 'min-w-40' },
+  { label: 'Sĩ số', className: 'min-w-28' },
+  { label: 'Lịch học', className: 'min-w-44' },
+  { label: 'Trạng thái', className: 'min-w-32' },
+  { label: 'Cơ sở', className: 'min-w-40' },
+  { label: 'Chuyên cần', className: 'sticky right-[240px] z-30 w-[90px] min-w-[90px] max-w-[90px] bg-slate-100 dark:bg-slate-800/80 text-center shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.08)]' },
+  { label: 'BTVN', className: 'sticky right-[160px] z-30 w-[80px] min-w-[80px] max-w-[80px] bg-slate-100 dark:bg-slate-800/80 text-center' },
+  { label: 'Kiểm tra', className: 'sticky right-[80px] z-30 w-[80px] min-w-[80px] max-w-[80px] bg-slate-100 dark:bg-slate-800/80 text-center' },
+  { label: 'CSĐB', className: 'sticky right-0 z-30 w-[80px] min-w-[80px] max-w-[80px] bg-slate-100 dark:bg-slate-800/80 text-center' },
 ]
 
 export function ClassesTable({
@@ -59,7 +59,7 @@ export function ClassesTable({
   return (
     <Table
       containerClassName="min-w-full overflow-visible align-top"
-      className="min-w-[2200px]"
+      className="min-w-[1500px]"
     >
       <TableHeader className="[&_tr]:border-b-0">
         <TableRow className="border-b-0 bg-muted hover:bg-muted">

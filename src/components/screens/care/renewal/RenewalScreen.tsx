@@ -1,53 +1,137 @@
+/* eslint-disable react-hooks/preserve-manual-memoization */
 'use client'
 
 import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import {
-  updateRenewalRecordAction,
-  runMonthEndSimulation,
-  getCareStage,
-  mockRenewalRecords,
-  addRenewalRecord,
-  type RenewalCareRecord
-} from '@/mocks/renewalCare'
+import { getCareAlerts, mockCareAlerts, getFamilyContacts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
-import { RenewalToolbar } from './RenewalToolbar'
 import { RenewalTable } from './RenewalTable'
-import { RenewalActionDialog } from './RenewalActionDialog'
-import { RenewalAddDialog } from './RenewalAddDialog'
-import { filterRenewalData } from './renewalHelpers'
-import { RenewalStageFilter } from './renewalTypes'
-import { type StudentOption } from '@/components/controls'
+import { RenewalToolbar } from './RenewalToolbar'
+import { RenewalDetailPage } from './RenewalDetailPage'
+import { useCallStore } from '@/stores/useCallStore'
+import { FilterGroupSheetPanel, createFilterGroup } from '@/components/filters'
+import type { StatusTile } from '@/components/shared'
+import { RenewalDashboardView } from './RenewalDashboardView'
+import { toast } from 'sonner'
+import { stableHash, getRenewalClassification } from './renewalHelpers'
+
+// Helper functions for tag extraction
+function getStudentActiveTags(item: StudentCareAlert) {
+  const tags = [];
+  const hash = stableHash(item.studentId);
+  const avgScore = ((item.lastTestScore + item.priorTestScore) / 2).toFixed(1);
+  
+  // 1. CS Đặc biệt (Red / Error) -> ĐB
+  if (item.careAlert === 'C90B' || item.homeworkCompletion < 70 || parseFloat(avgScore) < 5.0) {
+    tags.push('ĐB1');
+  }
+  
+  // 2. CS Định kỳ (Purple) -> ĐK
+  if (hash % 3 === 0) {
+    tags.push('ĐK1');
+    tags.push('ĐK2');
+  } else if (hash % 4 === 0) {
+    tags.push('ĐK1');
+  }
+  
+  // 3. CS Theo buổi (Warning / Amber) -> TB
+  if (item.remainingSessions <= 5 || hash % 5 === 0) {
+    tags.push('TB1');
+  }
+  if (hash % 6 === 0) {
+    tags.push('TB2');
+  }
+
+  // 4. CS Tái phí (Success / Green) -> CSTP
+  tags.push('CSTP');
+  
+  const completed = item.completedCareTags || [];
+  return tags.filter(tag => !completed.includes(tag));
+}
+
+function hasActiveTags(item: StudentCareAlert) {
+  return getStudentActiveTags(item).length > 0;
+}
+
+// Helper predicates for tuition renewal care progress
+const isChuaLienHe = (item: StudentCareAlert) => getRenewalClassification(item) === 'chua_lien_he'
+const isCanNhac = (item: StudentCareAlert) => getRenewalClassification(item) === 'can_nhac'
+const isTiemNang = (item: StudentCareAlert) => getRenewalClassification(item) === 'tiem_nang'
+const isHenTai = (item: StudentCareAlert) => getRenewalClassification(item) === 'hen_tai'
+const isDaTaiPhi = (item: StudentCareAlert) => getRenewalClassification(item) === 'tai_phi'
+const isThatBai = (item: StudentCareAlert) => getRenewalClassification(item) === 'that_bai'
 
 
 export function RenewalScreen() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [branchFilter, setBranchFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [classFilter, setClassFilter] = useState('all')
-  const [stageFilter, setStageFilter] = useState<RenewalStageFilter>('T')
-
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
-
-  const [selectedRecord, setSelectedRecord] = useState<RenewalCareRecord | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
-  const [isSyncing, setIsSyncing] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const careViewMode = 'total'
+  const [selectedToolbarBranch, setSelectedToolbarBranch] = useState('all')
+  const [selectedSubject, setSelectedSubject] = useState('all')
+  const [selectedStudentStatus, setSelectedStudentStatus] = useState('all')
+  const [careProgressTab, setCareProgressTab] = useState('all')
+
+  // Advanced filters state (Sets for multi-select checkboxes)
+  const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
+  const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set())
+  const [selectedCalls, setSelectedCalls] = useState<Set<string>>(new Set())
+  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set())
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  // Pagination states for the unified table
+  const [pageSingle, setPageSingle] = useState(1)
+  const [pageSizeSingle, setPageSizeSingle] = useState(20)
+
+  const [selectedMonth, setSelectedMonth] = useState('all')
+  const [customStartDate, setCustomStartDate] = useState('')
+  const [customEndDate, setCustomEndDate] = useState('')
+  const [viewMode, setViewMode] = useState<'table' | 'dashboard'>('table')
+
+  const exportFields = [
+    { id: 'studentId', label: 'Mã học viên', defaultChecked: true },
+    { id: 'customerCode', label: 'Mã khách hàng', defaultChecked: true },
+    { id: 'studentName', label: 'Họ và tên học viên', defaultChecked: true },
+    { id: 'productName', label: 'Gói sản phẩm hiện tại', defaultChecked: true },
+    { id: 'expectedEndDate', label: 'Hạn kết thúc học phí dự kiến', defaultChecked: true },
+    { id: 'remainingSessions', label: 'Số buổi học còn lại', defaultChecked: true },
+    { id: 'subjectAndSchedule', label: 'Môn học & Lịch học', defaultChecked: true },
+    { id: 'officialRenewalStatus', label: 'Phân loại tái phí thực tế', defaultChecked: true },
+    { id: 'virtualRenewalStatus', label: 'Phân loại tái phí ảo', defaultChecked: true },
+    { id: 'latestRenewalNote', label: 'Ghi chú tương tác tái phí gần nhất', defaultChecked: true },
+    { id: 'csStaff', label: 'Người phụ trách chăm sóc', defaultChecked: true }
+  ]
+
+  const handleConfirmExport = (
+    selectedFieldIds: string[],
+    filters: { month: string; startDate: string; endDate: string }
+  ) => {
+    let filterDesc = ''
+    if (filters.month !== 'all') {
+      filterDesc += ` trong Tháng ${filters.month}`
+    } else if (filters.startDate || filters.endDate) {
+      const fromStr = filters.startDate ? filters.startDate.split('-').reverse().join('/') : '...'
+      const toStr = filters.endDate ? filters.endDate.split('-').reverse().join('/') : '...'
+      filterDesc += ` từ ${fromStr} đến ${toStr}`
+    }
+    toast.success(`Đã xuất thành công danh sách ${filtered.length} học viên${filterDesc} với ${selectedFieldIds.length} trường thông tin đã chọn sang Excel!`);
+  }
+
+  const startCall = useCallStore((state) => state.startCall)
 
   // Selection states
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  // Student options for manual addition combobox
-  const studentOptions = useMemo<StudentOption[]>(() => {
-    return mockStudents.map((s) => ({
-      id: s.id,
-      label: s.name,
-      familyName: s.parentName,
-      phone: s.phone
-    }))
+  // Helper to reset pagination when filters change
+  const resetPagination = () => {
+    setPageSingle(1)
+  }
+
+  // 1. Get class list and branch options
+  const classList = useMemo(() => {
+    const list = mockCareAlerts.map((item) => item.classCode)
+    return Array.from(new Set(list)).sort()
   }, [])
 
   const branchOptions = useMemo(
@@ -55,175 +139,436 @@ export function RenewalScreen() {
     []
   )
 
-  // Handle adding new renewal record
-  const handleAddRenewal = (newRecord: Omit<RenewalCareRecord, 'id' | 'renewalStatus' | 'subStatus' | 'resultType' | 'interactionLogs'>) => {
-    const record = addRenewalRecord(newRecord)
-    setRefreshTrigger((prev) => prev + 1)
-    toast.success(`Đã thêm học viên ${record.studentName} vào danh sách chăm sóc tái phí lớp ${record.classCode}!`)
-  }
-
-
-  // 1. Get class list for filters
-  const classList = useMemo(() => {
-    const list = mockRenewalRecords.map((item) => item.classCode)
-    return Array.from(new Set(list)).sort()
-  }, [])
-
-  // 2. Tab counts calculations
-  const counts = useMemo(() => {
+  // 2. Perform search and filtering logic (before care progress tab)
+  const baseFiltered = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    refreshTrigger // Recalculate on refresh
-    let past = 0
-    let present = 0
-    let future = 0
+    refreshTrigger
+    // Base alerts from mock
+    const baseAlerts = getCareAlerts()
+    let res = baseAlerts
 
-    mockRenewalRecords.forEach((item) => {
-      const stage = getCareStage(item.expirationDate)
-      if (stage === 'T-1') past++
-      else if (stage === 'T') present++
-      else if (stage === 'T+1' || stage === 'T+2') future++
-    })
-
-    return { past, present, future }
-  }, [refreshTrigger])
-
-  // 3. Perform search and filtering logic
-  const filtered = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    refreshTrigger; // Trigger recalculation
-    
-    // Base records from mock
-    const baseRecords = mockRenewalRecords
-    
-    // Apply UI filtering logic
-    return filterRenewalData(baseRecords, {
-      search: searchQuery,
-      branch: branchFilter,
-      renewalStatus: statusFilter,
-      classCode: classFilter,
-      stage: stageFilter
-    })
-  }, [searchQuery, branchFilter, statusFilter, classFilter, stageFilter, refreshTrigger])
-
-  // 4. Pagination calculations
-  const totalRecords = filtered.length
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize))
-  const currentPage = Math.min(page, totalPages)
-  const pagedRecords = useMemo(() => {
-    return filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-  }, [filtered, currentPage, pageSize])
-
-  // 5. Synchronize data action simulation (Simulates T Month End)
-  const handleSyncData = () => {
-    setIsSyncing(true)
-    setTimeout(() => {
-      const affected = runMonthEndSimulation()
-      setIsSyncing(false)
-      setRefreshTrigger((prev) => prev + 1)
-      if (affected) {
-        toast.success(`Giả lập hết tháng thành công! Tự động quét và chuyển ${affected} hồ sơ quá hạn (Tháng T) sang Thất bại.`)
-      } else {
-        toast.info('Đã đồng bộ chỉ số tái phí mới nhất. Không phát sinh hồ sơ quá hạn mới.')
-      }
-    }, 800)
-  }
-
-  // 6. Open Action Dialog
-  const handleTagnhep = (record: RenewalCareRecord) => {
-    setSelectedRecord(record)
-    setDialogOpen(true)
-  }
-
-  // 7. Save Action handler
-  const handleSaveAction = (
-    id: string,
-    actionType: 'Khách cọc' | 'Hoàn tất' | 'Đóng full' | 'Từ chối' | 'Liên hệ lại',
-    notes: string,
-    churnReason?: 'Học phí cao' | 'Chuyển nơi ở' | 'Không tiến bộ' | 'Trùng lịch học' | 'Dịch vụ chưa tốt' | 'Khác'
-  ) => {
-    const success = updateRenewalRecordAction(id, actionType, notes, churnReason)
-    if (success) {
-      setRefreshTrigger((prev) => prev + 1)
-      if (actionType === 'Khách cọc') {
-        toast.success('Đặt cọc thành công! Hệ thống tự động gia hạn ngày hết hạn thêm 30 ngày.')
-      } else if (actionType === 'Từ chối') {
-        toast.error('Ghi nhận từ chối tái phí thành công!')
-      } else {
-        toast.success(`Cập nhật trạng thái thành công: ${actionType}!`)
-      }
-    } else {
-      toast.error('Có lỗi xảy ra khi cập nhật tác nghiệp!')
+    // Exclude 'that_bai' from base tab pool unless explicitly selected in advanced filters
+    const includesThatBai = selectedCalls.has('that_bai') || selectedCalls.has('Thất bại')
+    if (!includesThatBai) {
+      res = res.filter(item => !isThatBai(item))
     }
+
+    // Filter by branch
+    if (selectedBranches.size > 0) {
+      res = res.filter((item) => {
+        const student = mockStudents.find(
+          (s) => s.id === item.studentId || s.name === item.studentName
+        )
+        return student && selectedBranches.has(student.branch)
+      })
+    }
+
+    // Filter by status
+    if (selectedStatuses.size > 0) {
+      res = res.filter((item) => selectedStatuses.has(item.status))
+    }
+
+    // Filter by careAlert
+    if (selectedAlerts.size > 0) {
+      res = res.filter((item) => item.careAlert && selectedAlerts.has(item.careAlert))
+    }
+
+    // Filter by callConfirmation & renewal status (including Thất bại)
+    if (selectedCalls.size > 0) {
+      res = res.filter((item) => {
+        if (item.callConfirmation && selectedCalls.has(item.callConfirmation)) return true
+        if ((selectedCalls.has('that_bai') || selectedCalls.has('Thất bại')) && isThatBai(item)) return true
+        return false
+      })
+    }
+
+    // Filter by classCode
+    if (selectedClasses.size > 0) {
+      res = res.filter((item) => selectedClasses.has(item.classCode))
+    }
+
+    // Filter by toolbar branch
+    if (selectedToolbarBranch !== 'all') {
+      res = res.filter((item) => {
+        const student = mockStudents.find(
+          (s) => s.id === item.studentId || s.name === item.studentName
+        )
+        return student && student.branch === selectedToolbarBranch
+      })
+    }
+
+    // Filter by subject
+    if (selectedSubject !== 'all') {
+      res = res.filter((item) => item.subject === selectedSubject)
+    }
+
+    // Filter by general search query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase().trim()
+      res = res.filter((item) => 
+        item.studentName.toLowerCase().includes(q) ||
+        item.studentId.includes(q) ||
+        item.classCode.toLowerCase().includes(q) ||
+        item.teacherCode.toLowerCase().includes(q) ||
+        (item.customerCode && item.customerCode.toLowerCase().includes(q))
+      )
+    }
+
+    // Filter by tuition renewal care status (callConfirmation)
+    if (selectedStudentStatus !== 'all') {
+      res = res.filter((item) => item.callConfirmation === selectedStudentStatus)
+    }
+
+    // Filter by expected expiration month (with Dec/Jan transition support) or custom range
+    if (selectedMonth !== 'all') {
+      res = res.filter((item) => {
+        if (!item.expectedEndDate) return false
+        const parts = item.expectedEndDate.split('/')
+        if (parts.length < 3) return false
+        const day = parseInt(parts[0], 10)
+        const month = parseInt(parts[1], 10)
+        const year = parseInt(parts[2], 10)
+        const itemDate = new Date(year, month - 1, day)
+
+        if (selectedMonth === 'custom') {
+          if (customStartDate) {
+            const start = new Date(customStartDate)
+            start.setHours(0, 0, 0, 0)
+            if (itemDate < start) return false
+          }
+          if (customEndDate) {
+            const end = new Date(customEndDate)
+            end.setHours(23, 59, 59, 999)
+            if (itemDate > end) return false
+          }
+          return true
+        }
+        
+        if (selectedMonth === '1') {
+          return month === 1 || month === 12
+        }
+        if (selectedMonth === '12') {
+          return month === 12 || month === 1
+        }
+        return month === parseInt(selectedMonth, 10)
+      })
+    }
+
+    return res.filter(hasActiveTags)
+  }, [
+    selectedBranches,
+    selectedStatuses,
+    selectedAlerts,
+    selectedCalls,
+    selectedClasses,
+    searchQuery,
+    selectedToolbarBranch,
+    selectedSubject,
+    selectedStudentStatus,
+    selectedMonth,
+    customStartDate,
+    customEndDate,
+    refreshTrigger
+  ])
+
+  // Compute care progress tiles from baseFiltered
+  const careProgressTiles: StatusTile<string>[] = useMemo(() => {
+    const chuaLienHeCount = baseFiltered.filter(isChuaLienHe).length
+    const canNhacCount = baseFiltered.filter(isCanNhac).length
+    const tiemNangCount = baseFiltered.filter(isTiemNang).length
+    const henTaiCount = baseFiltered.filter(isHenTai).length
+    const taiPhiCount = baseFiltered.filter(isDaTaiPhi).length
+    
+    return [
+      { id: 'all', label: 'Tất cả', count: baseFiltered.length, semantic: 'neutral' as const },
+      { id: 'chua_lien_he', label: 'Chưa liên hệ', count: chuaLienHeCount, semantic: 'neutral' as const },
+      { id: 'can_nhac', label: 'Cân nhắc', count: canNhacCount, semantic: 'warning' as const },
+      { id: 'tiem_nang', label: 'Tiềm năng', count: tiemNangCount, semantic: 'info' as const },
+      { id: 'hen_tai', label: 'Hẹn tái', count: henTaiCount, semantic: 'purple' as const },
+      { id: 'tai_phi', label: 'Đã tái phí', count: taiPhiCount, semantic: 'success' as const }
+    ]
+  }, [baseFiltered])
+
+  // 3. Apply care progress tab filter & sort by expectedEndDate ascending (nearest to furthest)
+  const filtered = useMemo(() => {
+    let result = baseFiltered
+    if (careProgressTab === 'chua_lien_he') result = baseFiltered.filter(isChuaLienHe)
+    else if (careProgressTab === 'can_nhac') result = baseFiltered.filter(isCanNhac)
+    else if (careProgressTab === 'tiem_nang') result = baseFiltered.filter(isTiemNang)
+    else if (careProgressTab === 'hen_tai') result = baseFiltered.filter(isHenTai)
+    else if (careProgressTab === 'tai_phi') result = baseFiltered.filter(isDaTaiPhi)
+    else if (careProgressTab === 'that_bai') result = baseFiltered.filter(isThatBai)
+
+    return [...result].sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return Infinity
+        const parts = dateStr.split('/')
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10)
+          const year = parseInt(parts[2], 10)
+          return new Date(year, month - 1, day).getTime()
+        }
+        return Infinity
+      }
+      return parseDate(a.expectedEndDate) - parseDate(b.expectedEndDate)
+    })
+  }, [baseFiltered, careProgressTab])
+
+  const paginatedSingle = useMemo(() => {
+    const start = (pageSingle - 1) * pageSizeSingle
+    return filtered.slice(start, start + pageSizeSingle)
+  }, [filtered, pageSingle, pageSizeSingle])
+
+
+
+
+
+  const handleOpenCallModal = (student: StudentCareAlert) => {
+    const contacts = getFamilyContacts(student.studentId, student.studentName)
+    const primaryContact = contacts.find((c) => c.isPrimary) || contacts[0]
+    
+    startCall({
+      studentId: student.studentId,
+      studentName: student.studentName,
+      parentPhone: primaryContact?.phone || '0912345678',
+      parentName: primaryContact ? `GĐ ${student.studentName.split(' ').pop()?.toUpperCase()}` : 'Phụ huynh',
+    })
   }
 
-  // 8. Checkbox selection handlers
+
+
+  // 6. Save Interaction handler
+
+
+  // 7. Checkbox selection handlers
   const handleSelectChange = (id: string, checked: boolean) => {
     setSelectedIds((prev) =>
       checked ? [...prev, id] : prev.filter((x) => x !== id)
     )
   }
 
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedIds(checked ? pagedRecords.map((x) => x.id) : [])
+  // Calculate active filters count
+  const activeFilterCount = useMemo(() => {
+    return [
+      selectedBranches.size > 0,
+      selectedStatuses.size > 0,
+      selectedAlerts.size > 0,
+      selectedCalls.size > 0,
+      selectedClasses.size > 0,
+    ].filter(Boolean).length
+  }, [selectedBranches, selectedStatuses, selectedAlerts, selectedCalls, selectedClasses])
+
+  // Advanced Filters Sheet configuration sections
+  const filterGroups = useMemo(() => {
+    return [
+      createFilterGroup({
+        id: 'branches',
+        title: 'Trường',
+        options: branchOptions,
+        selectedValues: selectedBranches,
+        defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'statuses',
+        title: 'Trạng thái học',
+        options: [
+          { value: 'Đang học', label: 'Đang học' },
+          { value: 'Chờ chuyển lớp', label: 'Chờ chuyển lớp' },
+          { value: 'Hết buổi', label: 'Hết buổi' },
+        ],
+        selectedValues: selectedStatuses,
+        defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'careAlerts',
+        title: 'Cảnh báo CS',
+        options: [
+          { value: 'C90B', label: 'Cảnh báo C90B' },
+          { value: 'Học lực yếu', label: 'Học lực yếu' },
+          { value: 'Chuyên cần thấp', label: 'Chuyên cần thấp' },
+        ],
+        selectedValues: selectedAlerts,
+        defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'callConfirmations',
+        title: 'Trạng thái CS & Tái phí',
+        options: [
+          { value: 'Đã gọi', label: 'Đã gọi' },
+          { value: 'KNM', label: 'Không nghe máy (KNM)' },
+          { value: 'Đã nhắn Zalo', label: 'Đã nhắn Zalo' },
+          { value: 'Chưa gọi', label: 'Chưa gọi / Liên hệ' },
+          { value: 'that_bai', label: 'Thất bại' },
+        ],
+        selectedValues: selectedCalls,
+        defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'classes',
+        title: 'Lớp học',
+        options: classList,
+        selectedValues: selectedClasses,
+        defaultOpen: false,
+        searchable: true,
+        scrollable: true,
+      }),
+    ]
+  }, [branchOptions, selectedBranches, selectedStatuses, selectedAlerts, selectedCalls, classList, selectedClasses])
+
+  const handleFilterToggle = (groupId: string, value: string) => {
+    const updateSet = (prev: Set<string>) => {
+      const next = new Set(prev)
+      if (next.has(value)) {
+        next.delete(value)
+      } else {
+        next.add(value)
+      }
+      return next
+    }
+    
+    if (groupId === 'branches') setSelectedBranches(updateSet)
+    else if (groupId === 'statuses') setSelectedStatuses(updateSet)
+    else if (groupId === 'careAlerts') setSelectedAlerts(updateSet)
+    else if (groupId === 'callConfirmations') setSelectedCalls(updateSet)
+    else if (groupId === 'classes') setSelectedClasses(updateSet)
+    
+    resetPagination()
+  }
+
+  const handleClearAllFilters = () => {
+    setSelectedBranches(new Set())
+    setSelectedStatuses(new Set())
+    setSelectedAlerts(new Set())
+    setSelectedCalls(new Set())
+    setSelectedClasses(new Set())
+    resetPagination()
+  }
+
+  const handleClearSection = (groupId: string) => {
+    if (groupId === 'branches') setSelectedBranches(new Set())
+    else if (groupId === 'statuses') setSelectedStatuses(new Set())
+    else if (groupId === 'careAlerts') setSelectedAlerts(new Set())
+    else if (groupId === 'callConfirmations') setSelectedCalls(new Set())
+    else if (groupId === 'classes') setSelectedClasses(new Set())
+    resetPagination()
+  }
+
+  if (activeDetailStudentId) {
+    return (
+      <RenewalDetailPage
+        studentId={activeDetailStudentId}
+        onBack={() => {
+          setActiveDetailStudentId(null)
+          setIsDetailOpen(false)
+        }}
+        alerts={mockCareAlerts}
+        onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
+      />
+    )
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <RenewalToolbar
         searchQuery={searchQuery}
-        onSearchChange={(q) => { setSearchQuery(q); setPage(1) }}
-        branchFilter={branchFilter}
+        onSearchChange={(q) => { setSearchQuery(q); resetPagination() }}
+        activeFilterCount={activeFilterCount}
+        alertsCount={filtered.length}
+        onOpenFilter={() => setIsFilterOpen(true)}
+        selectedBranch={selectedToolbarBranch}
+        onBranchChange={(b) => { setSelectedToolbarBranch(b); resetPagination() }}
         branchOptions={branchOptions}
-        onBranchChange={(b) => { setBranchFilter(b); setPage(1) }}
-        statusFilter={statusFilter}
-        onStatusChange={(s) => { setStatusFilter(s); setPage(1) }}
-        classFilter={classFilter}
-        onClassChange={(c) => { setClassFilter(c); setPage(1) }}
-        stageFilter={stageFilter}
-        onStageChange={(s) => { setStageFilter(s); setPage(1) }}
-        onSyncData={handleSyncData}
-        isSyncing={isSyncing}
-        classList={classList}
-        counts={counts}
-        onAddClick={() => setAddDialogOpen(true)}
+        selectedSubject={selectedSubject}
+        onSubjectChange={(s) => { setSelectedSubject(s); resetPagination() }}
+        selectedStudentStatus={selectedStudentStatus}
+        onStudentStatusChange={(s) => { setSelectedStudentStatus(s); resetPagination() }}
+        careProgressTab={careProgressTab}
+        onCareProgressTabChange={(t) => { setCareProgressTab(t); resetPagination() }}
+        careProgressTiles={careProgressTiles}
+        selectedMonth={selectedMonth}
+        onMonthChange={(m) => { setSelectedMonth(m); resetPagination() }}
+        exportFields={exportFields}
+        onConfirmExport={handleConfirmExport}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-1 lg:px-4 lg:pb-4 flex flex-col gap-2">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={totalRecords}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          }
-        >
+      {viewMode === 'dashboard' ? (
+        <RenewalDashboardView alerts={filtered} />
+      ) : (
+        <div className="min-h-0 flex-1 px-2 py-1.5 lg:px-3 pb-3 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col">
           <RenewalTable
-            records={pagedRecords}
-            onTagnhep={handleTagnhep}
+            alerts={paginatedSingle}
             selectedIds={selectedIds}
             onSelectChange={handleSelectChange}
-            onSelectAll={handleSelectAll}
+            onSelectAll={(checked) => {
+              setSelectedIds((prev) => {
+                const otherIds = prev.filter((id) => !paginatedSingle.some((x) => x.id === id))
+                return checked ? [...otherIds, ...paginatedSingle.map((x) => x.id)] : otherIds
+              })
+            }}
+            className="border-zinc-200 dark:border-zinc-800 flex-1 min-h-0"
+            pagination={{
+              page: pageSingle,
+              total: filtered.length,
+              pageSize: pageSizeSingle,
+              onPageChange: setPageSingle,
+              onPageSizeChange: setPageSizeSingle,
+            }}
+            viewMode={careViewMode}
+            onOpenCallModal={handleOpenCallModal}
+            onRefresh={() => setRefreshTrigger(prev => prev + 1)}
+            onViewDetail={(id) => {
+              setActiveDetailStudentId(id)
+              setIsDetailOpen(true)
+            }}
           />
-        </DataTableFrame>
+        </div>
       </div>
+      )}
 
-      <RenewalActionDialog
-        key={selectedRecord?.id || 'none'}
-        record={selectedRecord}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSaveAction={handleSaveAction}
-      />
 
-      <RenewalAddDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        studentOptions={studentOptions}
-        onAdd={handleAddRenewal}
+
+      {/* Advanced Filters Sheet Panel */}
+      <FilterGroupSheetPanel
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        title="Bộ lọc nâng cao"
+        description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
+        groups={filterGroups}
+        onToggle={handleFilterToggle}
+        onClearAll={handleClearAllFilters}
+        onClearSection={handleClearSection}
+      >
+        {/* Search inside filter panel as requested */}
+        <div className="mb-4">
+          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
+            Tìm theo học viên
+          </label>
+          <input
+            type="text"
+            placeholder="Nhập tên, SĐT hoặc mã học viên..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              resetPagination()
+            }}
+            className="w-full h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        </div>
+      </FilterGroupSheetPanel>
+
+      {/* Student Care Detail Dialog (Temporarily Disabled)
+      <StudentCareDetailDialog
+        studentId={activeDetailStudentId}
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        alerts={mockCareAlerts}
+        onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
       />
+      */}
     </div>
   )
 }

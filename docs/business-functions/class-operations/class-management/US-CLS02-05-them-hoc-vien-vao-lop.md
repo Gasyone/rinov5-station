@@ -90,26 +90,25 @@ tags: [class, student, roster, form]
 ## 4. Mô tả chi tiết (Màn hình & Luồng)
 
 ### 4.1. Mô tả Màn hình
-- Biểu mẫu mở ra dưới dạng hộp thoại nổi lớn nằm giữa màn hình. Phía trên cùng hiển thị tiêu đề "Chọn học viên xếp lớp" và dòng mô tả ngắn.
-- Bên dưới tiêu đề là ô nhập tìm kiếm có biểu tượng kính lúp và dãy 8 nút tab lọc nhanh trạng thái. Mỗi tab hiển thị tên và số lượng học viên tương ứng trong ngoặc tròn.
-- Khu vực chính hiển thị danh sách dạng bảng gồm các cột: Học viên (ảnh đại diện, họ tên, mã số, số điện thoại đã che), Trình độ, Gói đăng ký, Số buổi còn lại, Ghi chú từ Sale (dạng biểu tượng ghi chú nhỏ, rê chuột vào hiển thị nội dung), và Trạng thái.
-- Dưới cùng là chân hộp thoại chứa nút **Hủy** và nút **Đồng ý** (nút đồng ý có kèm số lượng học viên mới được tích chọn bổ sung).
+- Màn hình được bố trí theo mô hình 2 cột trực tiếp trong khung làm việc Step 2:
+  - **Cột bên trái (Danh sách học viên đã chọn vào lớp):** Hiển thị tổng số lượng học viên đã chọn kèm thanh tiến độ sĩ số (ví dụ: "Đã chọn: 3 / 15 học viên"). Bảng hiển thị thông tin học viên gồm Avatar/Họ tên/Mã số, Trình độ, Gói đăng ký, Số buổi còn lại, Ghi chú từ tư vấn tuyển sinh và nút biểu tượng Thùng rác để bỏ chọn học viên ra khỏi lớp.
+  - **Cột bên phải (Kho học viên chờ xếp lớp):** Phía trên gồm ô nhập tìm kiếm từ khóa và dãy thẻ lọc nhanh trạng thái ("Phù hợp môn học", "Chờ xếp lớp", "Bảo lưu", "Tất cả"). Phía dưới là danh sách kho học viên khả dụng kèm ô tích chọn đầu dòng hoặc nút Thêm (+). Khi tích chọn học viên ở cột bên phải, học viên đó ngay lập tức chuyển sang hiển thị ở cột bên trái.
 
 ### 4.2. Luồng Hoạt động (Workflow)
 
-#### Nhánh A: Gọi từ biểu mẫu Tạo mới lớp học (Step 2)
-1. Tại Bước 2 của biểu mẫu Tạo mới lớp học, giáo vụ bấm nút **Chọn học viên xếp lớp**.
-2. Hộp thoại mở ra, mặc định hiển thị tab **Tất cả** nạp toàn bộ học viên có trạng thái khả dụng để xếp lớp của cơ sở, cùng với các học viên đã tích chọn từ trước (được tích sẵn đầu dòng).
-3. Giáo vụ thực hiện chọn thêm học viên mới bằng cách tích chọn, hoặc bỏ tích chọn học viên đã chọn từ trước để bớt đi. Số lượng chọn mới (học viên mới được thêm) được cập nhật thời gian thực vào nút **Đồng ý** (Ví dụ: "Đồng ý (2)").
-4. Giáo vụ bấm **Đồng ý**. Hệ thống chuyển danh sách học viên đã chọn về bảng danh sách Bước 2 của biểu mẫu Tạo mới lớp học và đóng hộp thoại. Sĩ số lớp được cập nhật tương ứng trên biểu mẫu.
-5. Nếu giáo vụ bấm nút xóa trực tiếp (biểu tượng Thùng rác) bên cạnh học viên trên danh sách bảng Bước 2, một hộp thoại xác nhận nhỏ xuất hiện. Giáo vụ bấm "Xóa" để xác nhận bỏ học viên khỏi lớp.
+#### Nhánh A: Thao tác tại biểu mẫu Tạo mới lớp học (Step 2)
+1. Tại Bước 2 của biểu mẫu Tạo mới lớp học, màn hình tự động nạp danh sách 2 cột: Cột bên trái là các học viên đã gán vào lớp, Cột bên phải là danh sách học viên chờ xếp lớp của cơ sở (mặc định mở tab "Phù hợp môn học").
+2. Giáo vụ gõ tìm kiếm hoặc nhấp chọn các tab lọc ở cột bên phải.
+3. Giáo vụ thực hiện chọn thêm học viên mới bằng cách tích chọn ở cột bên phải. Học viên được tích lập tức xuất hiện tại bảng cột bên trái và chỉ số sĩ số lớp được cập nhật thời gian thực.
+4. Nếu giáo vụ bấm nút xóa (biểu tượng Thùng rác) bên cạnh học viên tại cột bên trái, một hộp thoại xác nhận nhỏ xuất hiện. Giáo vụ bấm "Xóa" để xác nhận bỏ học viên khỏi lớp. Học viên này tự động quay lại trạng thái chưa chọn ở kho cột bên phải.
+5. Giáo vụ tiếp tục quy trình tạo lớp bằng cách bấm **Tạo lớp nháp** hoặc **Khai giảng**.
 
 #### Nhánh B: Gọi từ phân mục Học viên tại trang Chi tiết lớp học
 1. Giáo vụ mở phân mục **Học viên** tại chi tiết lớp học và bấm nút **Thêm học viên** (hoặc nhấp trực tiếp vào biểu tượng xóa trên thẻ học viên để bớt học viên).
-2. Khi bấm nút **Thêm học viên**, hộp thoại mở ra tương tự Nhánh A, hiển thị các học viên hiện tại của lớp ở đầu danh sách (được tích chọn sẵn) và danh sách học viên chờ xếp lớp bên dưới.
+2. Khi bấm nút **Thêm học viên**, hộp thoại mở ra hiển thị danh sách học viên hiện tại của lớp ở đầu danh sách (được tích chọn sẵn) và danh sách học viên chờ xếp lớp bên dưới.
 3. Giáo vụ thực hiện tích thêm học viên hoặc bỏ tích học viên hiện tại, sau đó bấm **Đồng ý**.
 4. Hệ thống ghi nhận các thay đổi học viên mới vào lớp học, đóng hộp thoại, tự động cập nhật lại sĩ số lớp và hiển thị danh sách học sinh mới tức thì trong bảng phân mục Học viên. Đồng thời, hệ thống tự động chèn một bản ghi nhật ký vận hành ghi nhận hành động thêm/bớt xếp lớp này vào phân mục Nhật ký hoạt động của lớp.
-5. Nếu giáo vụ bấm xóa trực tiếp trên thẻ học viên tại tab Học viên của trang chi tiết lớp học, hộp thoại xác nhận nổi lớn xuất hiện: *"Bạn có chắc chắn muốn xóa học viên khỏi lớp học này?"*. Sau khi giáo vụ xác nhận, học viên được xóa khỏi danh sách, hệ thống cập nhật lại sĩ số và ghi nhận nhật ký vận hành.
+5. Nếu giáo vụ bấm xóa trực tiếp trên thẻ học viên tại tab Học viên của trang chi tiết lớp học, hộp thoại xác nhận nổi xuất hiện: *"Bạn có chắc chắn muốn xóa học viên khỏi lớp học này?"*. Sau khi giáo vụ xác nhận, học viên được xóa khỏi danh sách, hệ thống cập nhật lại sĩ số và ghi nhận nhật ký vận hành.
 
 ---
 

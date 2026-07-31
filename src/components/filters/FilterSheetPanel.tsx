@@ -25,6 +25,7 @@ export interface FilterSection {
   defaultOpen?: boolean
   searchable?: boolean
   scrollable?: boolean
+  customContent?: React.ReactNode
 }
 
 interface FilterSheetPanelProps {
@@ -207,10 +208,16 @@ function FilterSectionBlock({
                   ) : null}
                 </label>
               ))
-            ) : (
+            ) : section.options.length > 0 ? (
               <p className="text-xs text-muted-foreground py-2 text-center">Không tìm thấy tùy chọn.</p>
-            )}
+            ) : null}
           </div>
+
+          {section.customContent && (
+            <div className="mt-3 pt-3 border-t border-dashed border-border">
+              {section.customContent}
+            </div>
+          )}
         </div>
       </CollapsibleContent>
     </Collapsible>

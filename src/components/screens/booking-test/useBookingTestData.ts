@@ -28,7 +28,7 @@ import {
 
 interface UseBookingTestDataArgs {
   bookings: BookingTest[]
-  activeSubject: BookingSubject
+  activeSubject: string
   activeSchool: string
   activeStatus: StatusTileId
   searchTerm: string
@@ -83,7 +83,7 @@ export function useBookingTestData({
         if (userRole === 'teacher' && booking.teacher !== userName && booking.tester !== userName) {
           return false
         }
-        if (booking.subject !== activeSubject) return false
+        if (activeSubject !== 'all' && booking.subject !== activeSubject) return false
         if (activeSchool !== 'all' && booking.school !== activeSchool) return false
         return true
       }),
@@ -144,7 +144,7 @@ export function useBookingTestData({
       if (userRole === 'teacher' && booking.teacher !== userName && booking.tester !== userName) {
         return false
       }
-      if (booking.subject !== activeSubject) return false
+      if (activeSubject !== 'all' && booking.subject !== activeSubject) return false
       if (activeSchool !== 'all' && booking.school !== activeSchool) return false
       if (!matchesStatusTile(booking, activeStatus)) return false
       if (filters.schools.length > 0 && !filters.schools.includes(booking.school)) return false
@@ -186,9 +186,9 @@ export function useBookingTestData({
       if (filters.conditions.length > 0) {
         const conditionMatched = filters.conditions.some((condition) => {
           if (condition === 'interviewed')
-            return booking.status === 'started_assessment' && Boolean(booking.isInterviewed)
+            return booking.status === 'checkin' && Boolean(booking.isInterviewed)
           if (condition === 'tested')
-            return booking.status === 'started_assessment' && Boolean(booking.isTested)
+            return booking.status === 'checkin' && Boolean(booking.isTested)
           if (condition === 'checkin') return isBookingCheckedIn(booking)
           return booking.status === 'failed'
         })

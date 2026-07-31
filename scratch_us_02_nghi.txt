@@ -1,0 +1,23 @@
+Gi&aacute;o vi&ecirc;n kh&ocirc;ng ghi nhận được được th&ocirc;ng tin học vi&ecirc;n nghỉ ph&eacute;p
+Kh&oacute; khăn lớn nhất (Pain-points): Nắm bắt th&ocirc;ng tin học vi&ecirc;n nghỉ ph&eacute;p v&agrave; ghi nhận học vi&ecirc;n đến muộn
+[RULE-DETAIL-01] Hiển thị trạng th&aacute;i nghỉ ph&eacute;p đồng bộ: Học vi&ecirc;n đ&atilde; được ph&ecirc; duyệt đơn xin nghỉ ph&eacute;p trước g
+iờ học lẻ sẽ tự động hiển thị trạng th&aacute;i &quot;Nghỉ ph&eacute;p&quot; m&agrave;u hồng nhạt. . Bấm v&agrave;o nh&atilde;n &quot;Nghỉ ph&eacute;p&quot; s
+ẽ mở popup chi tiết đơn xin nghỉ.
+# M&ocirc; tả luồng thao t&aacute;c điểm danh v&agrave; đồng bộ nghỉ ph&eacute;p tự động của gi&aacute;o vi&ecirc;n.
+S-&gt;&gt;DB: Kiểm tra đơn xin nghỉ ph&eacute;p đ&atilde; ph&ecirc; duyệt của học vi&ecirc;n
+DB--&gt;&gt;S: Phản hồi th&ocirc;ng tin đơn nghỉ ph&eacute;p
+S-&gt;&gt;S: Tự động g&aacute;n trạng th&aacute;i &quot;Nghỉ ph&eacute;p&quot; cho học vi&ecirc;n c&oacute; đơn được duyệt
+F--&gt;&gt;T: Hiển thị nh&atilde;n &quot;Nghỉ ph&eacute;p&quot; m&agrave;u hồng (bị kh&oacute;a) v&agrave; n&uacute;t điểm danh cho học vi&ecirc;
+Hiển thị định dạng: [Số nghỉ ph&eacute;p] &middot; [Số vắng].
+Trường hợp nghỉ ph&eacute;p: Nh&atilde;n hồng nhạt &quot;Nghỉ ph&eacute;p&quot; k&egrave;m icon li&ecirc;n kết ngo&agrave;i — bấm v&agrave;o mở popup chi tiết đơ
+n xin nghỉ (chỉ đọc). C&oacute; icon theo trạng th&aacute;i của phiếu
+Trường hợp nghỉ ph&eacute;p: Nh&atilde;n hồng nhạt &quot;Nghỉ ph&eacute;p&quot; k&egrave;m icon li&ecirc;n kết ngo&agrave;i — bấm v&agrave;o mở popup chi tiết đơ
+n xin nghỉ (chỉ đọc). C&oacute; icon theo trạng th&aacute;i của phiếu
+AC-3 (Exception Path — Học vi&ecirc;n c&oacute; đơn nghỉ ph&eacute;p):
+Giả sử: Học vi&ecirc;n c&oacute; đơn nghỉ ph&eacute;p đ&atilde; duyệt, hiển thị nh&atilde;n hồng &quot;Nghỉ ph&eacute;p&quot;.
+Khi: Gi&aacute;o vi&ecirc;n bấm v&agrave;o nh&atilde;n &quot;Nghỉ ph&eacute;p&quot;.
+Th&igrave;: Mở popup chi tiết đơn xin nghỉ chỉ đọc.
+[CASE-06] Nhiều học vi&ecirc;n nghỉ ph&eacute;p c&ugrave;ng l&uacute;c
+T&igrave;nh huống: Ca dạy c&oacute; từ 2 học vi&ecirc;n trở l&ecirc;n c&oacute; đơn nghỉ ph&eacute;p đ&atilde; được ph&ecirc; duyệt trước giờ học.
+C&aacute;ch xử l&yacute;: Tất cả học vi&ecirc;n c&oacute; đơn nghỉ ph&eacute;p đều hiển thị nh&atilde;n hồng &quot;Nghỉ ph&eacute;p&quot; với viền tr&aacute;i cam. Bấ
+m v&agrave;o nh&atilde;n của từng học vi&ecirc;n mở popup chi tiết đơn nghỉ ri&ecirc;ng biệt.

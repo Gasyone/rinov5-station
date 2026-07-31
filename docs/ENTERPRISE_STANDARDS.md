@@ -90,3 +90,33 @@ Tài liệu nghiệp vụ (CAP, BF, US, FLOW) PHẢI sử dụng **100% ngôn ng
 3. **Dev jargon:** `API`, `Backend`, `Frontend`, `middleware`, `token`, `cookie`, `session`, `DOM`, `JSON`, `REST`. → Dùng: "Hệ thống", "Giao diện", "Phiên làm việc", "Thông tin phiên".
 4. **Component tech names:** `Div`, `Checkbox grid`, `Floating panel`. → Dùng: "Ô chọn", "Bảng nổi", "Hộp thoại".
 5. **Color names Tailwind:** `nền indigo`, `màu emerald`. → Dùng: "Màu nhấn", "Màu tích cực". Tham chiếu `statusColors.ts` nếu cần ghi rõ.
+
+### `[POLICY-DS-06]` Quy chuẩn Gọi Tên Kết nối Cơ sở Dữ liệu & Nghiệp vụ (Data/Process Naming Standard)
+Khi đặc tả các luồng hành động hoặc kết nối từ giao diện mới tới hệ thống, tài liệu nghiệp vụ PHẢI sử dụng cấu trúc ngôn ngữ tự nhiên thống nhất: **"Gọi đến [Cơ sở dữ liệu / Nghiệp vụ] + [Tên thực thể đang thao tác]"**. Nghiêm cấm sử dụng tên API endpoint, REST method, hoặc các thuật ngữ công nghệ backend.
+- *Ví dụ về Học viên*: "gọi đến cơ sở dữ liệu học viên"
+- *Ví dụ về Xếp lớp*: "gọi đến nghiệp vụ xếp lớp" hoặc "cơ sở dữ liệu lớp học"
+- *Ví dụ về Gói học*: "gọi đến cơ sở dữ liệu đơn hàng & học phí"
+- *Ví dụ về Ghi chú*: "gọi đến cơ sở dữ liệu nhật ký chăm sóc khách hàng"
+
+---
+
+
+## CHƯƠNG 5: TIÊU CHUẨN DI TRÚ & TÁI SỬ DỤNG API (MIGRATION & API REUSE STANDARDS)
+
+### `[POLICY-MIG-01]` Phân định Đặc tả Giao diện và Nghiệp vụ API sẵn có
+Đối với các màn hình thực hiện di trú giao diện và tái sử dụng 100% các API hiện có:
+1. **Mục 2. Quy tắc Nghiệp vụ (Business Rules):** Ghi rõ: "Kế thừa toàn bộ logic nghiệp vụ từ API hiện tại của hệ thống". Chỉ đặc tả thêm các quy tắc kiểm thử/ràng buộc dữ liệu ở phía giao diện (Client-side validation, mặt nạ nhập liệu, định dạng số, giới hạn ký tự) và quy trình đồng bộ hiển thị.
+2. **Mục 4. Mô tả chi tiết (Workflow):** Tập trung mô tả hành vi tương tác trên giao diện (User Interaction), cách gọi API (Payload đầu vào, Response đầu ra) và cách giao diện xử lý phản hồi từ API (hiển thị skeleton khi đang tải, thông báo thành công/thất bại, tự động chuyển trang hoặc đóng form).
+3. **Mục 5. Corner Cases:** Tập trung vào các tình huống phát sinh ở phía giao diện (Mất kết nối mạng giữa chừng, API trả về lỗi hệ thống 500 hoặc phân quyền 403, dữ liệu phản hồi trống rỗng, người dùng bấm nút gửi liên tục khi đang xử lý).
+4. **Mục 6. Tiêu chí Nghiệm thu (Acceptance Criteria):** Tập trung vào việc xác thực tính chính xác của giao diện (hiển thị đúng thiết kế, responsive co giãn ổn định) và việc truyền/nhận đúng cấu trúc dữ liệu từ API cũ.
+
+---
+
+## CHƯƠNG 6: QUẢN TRỊ CHẤT LƯỢNG SẢN PHẨM (PRODUCT QUALITY GOVERNANCE)
+
+### `[POLICY-QA-01]` Quy trình Đảm bảo Chất lượng Tài liệu Sản phẩm (Quality Gate Gating)
+Mọi tính năng/phân hệ trước khi tiến hành viết mã nguồn phát triển và kiểm thử bắt buộc phải trải qua 02 Cửa kiểm soát chất lượng (Quality Gates) được định nghĩa chi tiết tại [PRODUCT_DEVELOPMENT_PROCESS.md](file:///c:/Users/Jacky/Tran/Documents/Rinov5/docs/PRODUCT_DEVELOPMENT_PROCESS.md):
+1. **Quality Gate 1 (Do the Right Product):** Quản lý sản phẩm (PM / Product Lead) phê duyệt dựa trên Checklist A. Mục tiêu xác nhận đội ngũ đang xây đúng sản phẩm, đáp ứng đúng nhu cầu thực tế của người dùng.
+2. **Quality Gate 2 (Do the Product Right):** Trưởng nhóm kỹ thuật (Tech Lead) phê duyệt dựa trên Checklist B. Mục tiêu xác nhận tài liệu đặc tả đã đủ chi tiết, rõ ràng để phát triển và kiểm thử, bảo đảm sự đồng thuận từ các bộ phận liên quan.
+
+

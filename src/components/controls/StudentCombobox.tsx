@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AppAvatar } from '@/components/shared'
 
 export interface StudentOption {
   id: string
@@ -72,12 +72,6 @@ export function StudentCombobox({
     }
   }, [selectedOption])
 
-  const getInitials = (name: string) => {
-    if (!name) return '?'
-    const parts = name.trim().split(' ')
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
-  }
 
   const handleSelect = (currentValue: string) => {
     const selected = currentValue === value ? null : options.find(o => o.id === currentValue) || null
@@ -175,12 +169,12 @@ export function StudentCombobox({
                   className="flex items-center justify-between gap-2 py-2"
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={option.avatar} alt={option.label} />
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                        {getInitials(option.label)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <AppAvatar
+                      src={option.avatar}
+                      name={option.label}
+                      size="default"
+                      shape="circle"
+                    />
                     <div className="flex flex-col truncate">
                       <span className="truncate font-medium leading-none">{option.label}</span>
                       {option.phone ? (

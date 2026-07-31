@@ -1,0 +1,245 @@
+Capability: CAP-OPS (Năng lực Quản l&yacute; Học vi&ecirc;n &amp; Vận h&agrave;nh Lớp)
+
+Giai đoạn: 2 - Vận h&agrave;nh
+
+Nh&oacute;m chức năng: Vận h&agrave;nh / Quản l&yacute; buổi học
+
+---
+Lịch sử cập nhật t&agrave;i liệu (Changelog)
+
+# Ng&agrave;y cập nhật
+Nội dung cập nhật
+L&yacute; do cập nhật
+06/07/2026
+Ph&aacute;t h&agrave;nh t&agrave;i liệu đặc tả nghiệp vụ quản l&yacute; buổi học
+Ph&aacute;t h&agrave;nh t&agrave;i liệu lần đầu
+---
+1. Bối cảnh &amp; Vấn đề hiện tại (Context &amp; Problem Statement)
+
+# Bối cảnh: Hệ thống quản l&yacute; lớp học của RinoEdu hiện đang vận h&agrave;nh một giao diện hộp thoại &quot;Th&ocirc;ng tin lớp học&quot; hiển thị c&aacute;c th&ocirc;ng tin cơ bản của lớp, lịch dạy trong tuần, th&ocirc;ng tin gi&aacute;o vi&ecirc;n, th&ocirc;ng tin địa điểm v&agrave; danh s&aacute;ch học sinh để điểm danh. Dự &aacute;n thực hiện thiết kế lại v&agrave; cải tiến giao diện n&agrave;y d&agrave;nh ri&ecirc;ng cho ph&acirc;n hệ giao diện tại lớp nhằm tối ưu h&oacute;a trải nghiệm trực quan tr&ecirc;n thiết bị lớp học của gi&aacute;o vi&ecirc;n v&agrave; đồng bộ h&oacute;a với m&ocirc; h&igrave;nh tổ chức thực tế.
+
+Vấn đề thực tế:  Chưa đồng bộ học vi&ecirc;n nghỉ ph&eacute;p v&agrave; gi&aacute;o vi&ecirc;n chưa ghi nhận được học vi&ecirc;n đến muộn.
+
+Chưa c&oacute; định danh Cơ sở Đ&agrave;o tạo: Hệ thống cũ lưu th&ocirc;ng tin địa điểm dạy học dưới dạng văn bản tự do. Hiện tại, RinoEdu đ&atilde; chuyển sang m&ocirc; h&igrave;nh chuỗi c&aacute;c cơ sở đ&agrave;o tạo trực tiếp (cơ sở) c&oacute; định danh trong cơ sở dữ liệu, v&igrave; vậy giao diện mới cần t&iacute;ch hợp v&agrave; hiển thị r&otilde; r&agrave;ng th&ocirc;ng tin Cơ sở đ&agrave;o tạo n&agrave;y thay cho văn bản tĩnh cũ.
+
+Điểm danh chưa linh hoạt: Hệ thống cũ chỉ hỗ trợ n&uacute;t chọn điểm danh đơn giản, chưa t&iacute;ch hợp đồng bộ tự động với dữ liệu xin nghỉ ph&eacute;p đ&atilde; được duyệt từ hệ thống quản l&yacute; học vụ, khiến gi&aacute;o vi&ecirc;n vẫn phải kiểm tra thủ c&ocirc;ng.
+
+---
+2. Mục ti&ecirc;u, Gi&aacute; trị mang lại &amp; Chỉ số đo lường (Objectives, Value &amp; KPIs)
+
+# Mục ti&ecirc;u:
+T&iacute;ch hợp t&iacute;nh năng đồng bộ tự động trạng th&aacute;i chuy&ecirc;n cần với c&aacute;c đơn nghỉ ph&eacute;p đ&atilde; ph&ecirc; duyệt từ nghiệp vụ học vụ.
+
+Bổ sung ghi nhận điểm danh vắng mặt.
+
+Gi&aacute; trị mang lại:
+Cho Gi&aacute;o vi&ecirc;n: Hỗ trợ theo d&otilde;i tiến tr&igrave;nh học tập của lớp, xem đề cương b&agrave;i giảng v&agrave; t&agrave;i liệu slide để giảng dạy trực tiếp đ&uacute;ng lộ tr&igrave;nh.
+
+Cho Gi&aacute;o vụ / Vận h&agrave;nh: Theo d&otilde;i sĩ số chuy&ecirc;n cần thời gian thực của buổi học để gi&aacute;m s&aacute;t chất lượng đ&agrave;o tạo v&agrave; xử l&yacute; sự cố.
+
+Mục ti&ecirc;u đo lường hiệu quả (KPI target):
+
+Chỉ số đo lường (KPI)
+Hiện trạng (Baseline)
+Mục ti&ecirc;u (Target)
+Phương ph&aacute;p đo lường
+[KPI-001] Tỷ lệ hiển thị ch&iacute;nh x&aacute;c th&ocirc;ng tin gi&aacute;o vi&ecirc;n dạy thay
+Gi&aacute;o vi&ecirc;n dạy thay hiển thị chồng lấn hoặc kh&ocirc;ng gạch t&ecirc;n gi&aacute;o vi&ecirc;n ch&iacute;nh
+100% ca dạy thay hiển thị đ&uacute;ng quy tắc gạch ngang t&ecirc;n gi&aacute;o vi&ecirc;n cũ v&agrave; trỏ mũi t&ecirc;n sang t&ecirc;n gi&aacute;o vi&ecirc;n dạy thay lẻ
+Thống k&ecirc; phản hồi hiển thị từ gi&aacute;o vi&ecirc;n đứng lớp
+[KPI-002] Thời gian hiển thị chi tiết ca học lẻ
+Tải trang chi tiết mất trung b&igrave;nh 3 gi&acirc;y do tải k&egrave;m nhiều dữ liệu li&ecirc;n kết
+Thời gian hiển thị chi tiết ca học lẻ dưới 1 gi&acirc;y
+Hệ thống tự động đo lường thời gian phản hồi khi bấm xem buổi học
+Tỷ lệ tự động đồng bộ v&agrave; hiển thị ch&iacute;nh x&aacute;c học vi&ecirc;n nghỉ ph&eacute;p.
+Gi&aacute;o vi&ecirc;n phải tự tra cứu danh s&aacute;ch nghỉ ph&eacute;p được duyệt b&ecirc;n ngo&agrave;i hoặc dễ xảy ra điểm danh sai lệch.
+100% học vi&ecirc;n c&oacute; đơn nghỉ ph&eacute;p đ&atilde; ph&ecirc; duyệt trước giờ học tự động hiển thị trạng th&aacute;i &quot;Nghỉ ph&eacute;p&quot; m&agrave;u hồng nhạt khi mở modal chi tiết.
+Hệ thống tự động đối so&aacute;t giữa danh s&aacute;ch chuy&ecirc;n cần chốt của buổi học với cơ sở dữ liệu đơn xin nghỉ đ&atilde; được duyệt.
+---
+3. Hiểu người d&ugrave;ng (Target Users &amp; Personas)
+
+# Gi&aacute;o vi&ecirc;n (PERSONA-TEACHER):
+Bối cảnh sử dụng: Gi&aacute;o vi&ecirc;n mở chi tiết ca dạy trước hoặc trong giờ học tr&ecirc;n thiết bị m&aacute;y t&iacute;nh bảng tại lớp để kiểm tra b&agrave;i giảng, địa điểm ph&ograve;ng học v&agrave; thực hiện điểm danh.
+
+Kh&oacute; khăn hiện tại (Pain-points): &quot;Mất nhiều thời gian đối chiếu thủ c&ocirc;ng tiến tr&igrave;nh học tập của lớp v&agrave; kiểm tra danh s&aacute;ch học sinh xin nghỉ ph&eacute;p đ&atilde; được duyệt.&quot;
+
+Nhu cầu thực tế (Needs):  &quot;Hệ thống tự động hiển thị trạng th&aacute;i nghỉ ph&eacute;p đồng bộ v&agrave; hiển thị đề cương b&agrave;i học r&otilde; r&agrave;ng theo lộ tr&igrave;nh thực tế.&quot;
+
+T&igrave;nh huống sử dụng ch&iacute;nh (Use Cases):
+Use Case 1 : &quot;Gi&aacute;o vi&ecirc;n, CS mở chi tiết buổi học để kiểm tra sĩ số, số học vi&ecirc;n c&oacute; mặt/vắng mặt, v&agrave; xem đơn xin nghỉ ph&eacute;p của c&aacute;c học vi&ecirc;n vắng c&oacute; ph&eacute;p.&quot;
+
+Use Case 2 :  &quot;Gi&aacute;o vụ, gi&aacute;o vi&ecirc;n mở xem đề cương b&agrave;i giảng của buổi học để đối chiếu với tiến độ chương tr&igrave;nh chung.&quot;
+
+---
+4. Ranh giới Nghiệp vụ &amp; Ph&acirc;n loại Risk / Standard (Scope &amp; Classification)
+
+# C&oacute; bao gồm (In Scope)
+
+# Hiển thị th&ocirc;ng tin h&agrave;nh ch&iacute;nh chi tiết của một ca học lẻ (Thời gian, Gi&aacute;o vi&ecirc;n, Cơ sở đ&agrave;o tạo, Ph&ograve;ng học).
+
+Hiển thị danh s&aacute;ch học vi&ecirc;n trong lớp c&ugrave;ng bộ thẻ đếm chuy&ecirc;n cần thời gian thực (Sĩ số, C&oacute; mặt, Vắng, Trễ/Ph&eacute;p, Trial).
+
+Chức năng điểm danh chuy&ecirc;n cần của học vi&ecirc;n v&agrave; nh&atilde;n nghỉ ph&eacute;p từ đơn đ&atilde; được duyệt được đồng bộ.
+
+Tự động hiển thị kết quả học tập (điểm thi c&aacute;c kỹ năng, nhận x&eacute;t th&aacute;i độ học tập v&agrave; mức sao đ&aacute;nh gi&aacute;) ở dạng chỉ đọc.
+
+&quot;Khung ch&agrave;o mừng (Welcome Banner) tự động hiển thị dạng đ&oacute;ng/mở khi ca học lẻ c&oacute; học vi&ecirc;n mới hoặc học vi&ecirc;n học thử (trial) tham gia.&quot;
+
+&quot;Quy tắc tự động sắp xếp học vi&ecirc;n mới v&agrave; học vi&ecirc;n học thử l&ecirc;n đầu danh s&aacute;ch chuy&ecirc;n cần.&quot;
+
+&quot;Cơ chế tự động thay đổi cấu tr&uacute;c bảng chuy&ecirc;n cần động theo 3 loại ca học: Ca học thường (4 cột),  Ca Kiểm tra to&aacute;n (4 cột), Ca kiểm tra tiếng anh(7 cột điểm chi tiết kỹ năng v&agrave; Overall), .&quot;
+
+&quot;Bộ lọc thời gian b&agrave;i học (B&agrave;i h&ocirc;m nay, B&agrave;i tiếp theo, B&agrave;i trước đ&oacute;, Tất cả) của khung gi&aacute;o &aacute;n ở Panel phải.&quot;
+
+Kh&ocirc;ng bao gồm (Out of Scope)
+
+# &quot;C&aacute;c thao t&aacute;c điều phối ca dạy lẻ (hủy buổi học, đổi gi&aacute;o vi&ecirc;n dạy thay, đổi ph&ograve;ng học, tải t&agrave;i liệu mới) ho&agrave;n to&agrave;n kh&ocirc;ng được hỗ trợ tr&ecirc;n giao diện n&agrave;y (kh&ocirc;ng c&oacute; n&uacute;t bấm/lối v&agrave;o). Việc điều phối phải thực hiện qua hệ thống quản l&yacute; admin tập trung.&quot;
+
+&quot;Chức năng ghi nhận Ghi ch&uacute; nội bộ v&agrave; Nhật k&yacute; vận h&agrave;nh tự động ca dạy lẻ tr&ecirc;n UI.&quot;
+
+&quot;C&aacute;c thao t&aacute;c phụ như xem chi tiết học vi&ecirc;n, gọi phụ huynh trực tiếp từ d&ograve;ng học vi&ecirc;n (kh&ocirc;ng hiển thị n&uacute;t/icon tr&ecirc;n giao diện).&quot;
+
+Đ&aacute;nh gi&aacute; &amp; Ph&acirc;n loại Risk / Standard (Quality Gate 1)
+
+# Ti&ecirc;u ch&iacute;
+Nội dung đ&aacute;nh gi&aacute; thực tế
+Điểm (0 / 1)
+A. Ảnh hưởng hệ thống
+1 module (Station), kh&ocirc;ng thay đổi kiến tr&uacute;c cơ sở dữ liệu, chỉ hiển thị dữ liệu đ&atilde; c&oacute;.
+0
+B. T&aacute;c động t&agrave;i ch&iacute;nh
+Kh&ocirc;ng ảnh hưởng trực tiếp đến doanh thu/chi ph&iacute;/ph&aacute;p l&yacute;.
+0
+C1. Loại thay đổi
+Giao diện mới cải tiến cho chức năng đ&atilde; vận h&agrave;nh ở hệ thống cũ.
+0
+C2. Độ mới nghiệp vụ
+Nghiệp vụ điểm danh v&agrave; xem buổi học đ&atilde; hiểu r&otilde; từ hệ thống cũ.
+0
+D. Phụ thuộc b&ecirc;n ngo&agrave;i
+Kh&ocirc;ng phụ thuộc b&ecirc;n thứ ba hay m&aacute;y chủ đối t&aacute;c b&ecirc;n ngo&agrave;i.
+0
+Tổng điểm: 0
+
+Kết luận ph&acirc;n loại: 🟢 Standard
+
+Luồng ph&ecirc; duyệt Gate 1: Tự động th&ocirc;ng qua (Standard)
+
+---
+5. M&ocirc; h&igrave;nh Dữ liệu Nghiệp vụ (Data Entities)
+
+# T&ecirc;n Thực thể
+Trường định danh
+Thuộc t&iacute;nh quan trọng
+R&agrave;ng buộc quan hệ
+Diễn giải
+Buổi học thực tế (Class Session)
+M&atilde; buổi học
+Ng&agrave;y học thực tế, Giờ bắt đầu, Giờ kết th&uacute;c, Chủ đề b&agrave;i học, Gi&aacute;o vi&ecirc;n thực tế, Ph&ograve;ng thực tế, Nh&atilde;n ph&acirc;n loại buổi học
+Trỏ về Lớp học gốc
+Đại diện cho một ca học cụ thể của lớp tr&ecirc;n thực tế.
+5.1. Nh&atilde;n buổi học &amp; R&agrave;ng buộc hiển thị giao diện
+
+# Tiếp theo (Upcoming): Hiển thị nh&atilde;n xanh dương, banner cảnh b&aacute;o x&aacute;m, v&agrave; kh&oacute;a t&iacute;nh năng điểm danh.
+
+Đang học (Ongoing): Hiển thị nh&atilde;n xanh dương nhạt/trời, banner cảnh b&aacute;o xanh dương, mở n&uacute;t điểm danh.
+
+Đ&atilde; học (Completed): Hiển thị nh&atilde;n xanh l&aacute;, banner cảnh b&aacute;o xanh l&aacute;, Vẫn cho ph&eacute;p cập nhật điểm danh v&agrave; nhận x&eacute;t, chấm điểm
+
+Đ&atilde; hủy (Cancelled): Hiển thị nh&atilde;n đỏ, banner cảnh b&aacute;o đỏ, kh&oacute;a cứng to&agrave;n bộ chuy&ecirc;n cần v&agrave; nhận x&eacute;t.
+
+5.2. V&iacute; dụ Dữ liệu mẫu
+
+# T&igrave;nh huống
+Dữ liệu đầu v&agrave;o
+Kết quả mong đợi
+Ca học dạy thay lẻ
+Gi&aacute;o vi&ecirc;n ch&iacute;nh: &quot;C&ocirc; Lan&quot;, Gi&aacute;o vi&ecirc;n dạy thay: &quot;C&ocirc; Mai&quot;
+T&ecirc;n &quot;C&ocirc; Lan&quot; hiển thị gạch ngang, b&ecirc;n cạnh c&oacute; mũi t&ecirc;n chỉ sang t&ecirc;n gi&aacute;o vi&ecirc;n dạy thay &quot;C&ocirc; Mai&quot;.
+Ca học bị hủy lẻ
+Nh&atilde;n buổi học: &quot;Hủy/Cancelled&quot;
+Banner ti&ecirc;u đề hiển thị m&agrave;u đỏ b&aacute;o buổi học đ&atilde; bị hủy k&egrave;m l&yacute; do chi tiết, kh&oacute;a to&agrave;n bộ t&iacute;nh năng điểm danh học sinh.
+Ca học ng&agrave;y h&ocirc;m nay
+Ng&agrave;y học tr&ugrave;ng với ng&agrave;y hiện tại của hệ thống
+Hiển thị nh&atilde;n nổi bật b&aacute;o buổi học h&ocirc;m nay để gi&aacute;o vi&ecirc;n tập trung thực hiện điểm danh.
+---
+6. Quy tắc Nghiệp vụ Tổng thể (Business Rules)
+
+# [!IMPORTANT]
+
+Lưu &yacute; di tr&uacute;:
+
+Kế thừa to&agrave;n bộ logic nghiệp vụ cốt l&otilde;i từ hệ thống cũ. T&agrave;i liệu n&agrave;y chỉ đặc tả c&aacute;c r&agrave;ng buộc dữ liệu ở ph&iacute;a giao diện v&agrave; quy tr&igrave;nh tương t&aacute;c thực tế của ph&acirc;n hệ Station.
+
+[RULE-OPS-03-01] Nhận diện gi&aacute;o vi&ecirc;n dạy thay: 
+Nếu ca học lẻ c&oacute; gi&aacute;o vi&ecirc;n dạy thay được cập nhật từ cơ sở dữ liệu, giao diện bắt buộc phải gạch ngang t&ecirc;n gi&aacute;o vi&ecirc;n ch&iacute;nh v&agrave; hiển thị t&ecirc;n gi&aacute;o vi&ecirc;n dạy thay b&ecirc;n cạnh để người d&ugrave;ng dễ nhận biết.
+[RULE-OPS-03-02] Đồng bộ nghỉ ph&eacute;p: : &quot;Học vi&ecirc;n đ&atilde; được duyệt đơn xin nghỉ ph&eacute;p từ trước giờ học lẻ sẽ tự động hiển thị nh&atilde;n 'Nghỉ ph&eacute;p' m&agrave;u hồng nhạt . Click v&agrave;o nh&atilde;n để xem chi tiết đơn xin nghỉ dạng chỉ đọc.&quot;
+[RULE-OPS-03-03] Điểm số chỉ đọc m&ocirc;n thi:&quot;Trong ca kiểm tra, c&aacute;c cột điểm Nghe, Đọc, Viết l&agrave; chỉ đọc từ LMS. Ri&ecirc;ng kỹ năng N&oacute;i (Speaking) hiển thị n&uacute;t 'SCORE' (chưa chấm) hoặc điểm số dạng link k&egrave;m icon b&uacute;t (đ&atilde; chấm) để mở hộp thoại chấm N&oacute;i.&quot;
+[RULE-OPS-03-04] R&agrave;ng buộc kh&oacute;a buổi học hủy: 
+&quot;Với nh&atilde;n 'Đ&atilde; hủy' (Cancelled): Hệ thống tự động kh&oacute;a cứng to&agrave;n bộ t&iacute;nh năng điểm danh học sinh v&agrave; nhận x&eacute;t th&aacute;i độ.&quot;
+
+&quot;Với nh&atilde;n 'Đ&atilde; học' (Completed): Gi&aacute;o vi&ecirc;n vẫn c&oacute; thể cập nhật điểm danh, nhận x&eacute;t th&aacute;i độ v&agrave; chấm điểm n&oacute;i (Speaking) nếu chưa ho&agrave;n th&agrave;nh.&quot;
+
+&quot;Với nh&atilde;n 'Tiếp theo' (Upcoming): Kh&oacute;a t&iacute;nh năng điểm danh học vi&ecirc;n. Nếu bấm n&uacute;t cộng [+] hiện th&ocirc;ng b&aacute;o: 'Buổi học chưa bắt đầu, kh&ocirc;ng thể điểm danh'.&quot;
+
+6.1. Th&ocirc;ng số &amp; Định mức cấp Ph&acirc;n hệ (Global Metrics &amp; Thresholds)
+
+# [GLOBAL-METRIC-0] Ph&acirc;n trang danh s&aacute;ch học vi&ecirc;n: Kh&ocirc;ng ph&acirc;n trang danh s&aacute;ch học vi&ecirc;n trong chi tiết ca học lẻ, hiển thị to&agrave;n bộ học vi&ecirc;n c&oacute; hiệu lực tại thời điểm buổi học diễn ra.
+
+---
+7. Danh s&aacute;ch Y&ecirc;u cầu Người d&ugrave;ng (User Stories)
+
+# M&atilde; Y&ecirc;u cầu
+T&ecirc;n Y&ecirc;u cầu (Loại m&agrave;n h&igrave;nh)
+Độ ưu ti&ecirc;n
+Ph&acirc;n loại nh&atilde;n
+Đường dẫn truy cập
+Trạng th&aacute;i
+US-OPS-03-01
+Modal Chi tiết buổi học (Hộp thoại)
+Must / Bắt buộc
+🟢 Standard
+Click v&agrave;o ca học tr&ecirc;n lịch
+Sẵn s&agrave;ng
+US-OPS-03-02
+Khung Chuy&ecirc;n cần học vi&ecirc;n (Khung th&ocirc;ng tin)
+Must / Bắt buộc
+🟢 Standard
+Nằm trong Hộp thoại Chi tiết
+Sẵn s&agrave;ng
+US-OPS-03-03
+Khung B&agrave;i học &amp; Chương tr&igrave;nh (Khung th&ocirc;ng tin)
+Must / Bắt buộc
+🟢 Standard
+Nằm trong Hộp thoại Chi tiết
+Sẵn s&agrave;ng
+---
+8. Thiết kế giao diện &amp; Cấu tr&uacute;c m&agrave;n h&igrave;nh
+
+# Bố cục của hộp thoại chi tiết buổi học: 
+Header (Đầu trang): Chỉ chứa t&ecirc;n b&agrave;i học, nh&atilde;n buổi học, n&uacute;t mũi t&ecirc;n điều hướng nhanh &quot;Buổi trước/Buổi sau&quot;, v&agrave; c&aacute;c th&ocirc;ng tin h&agrave;nh ch&iacute;nh (Ng&agrave;y giờ, Gi&aacute;o vi&ecirc;n, Cơ sở, Ph&ograve;ng học). Kh&ocirc;ng chứa bất kỳ n&uacute;t bấm h&agrave;nh động n&agrave;o kh&aacute;c.
+
+Bố cục hai cột chia đ&ocirc;i tr&aacute;i-phải:
+Panel b&ecirc;n tr&aacute;i (70%): Hiển thị Bộ thẻ thống k&ecirc; chuy&ecirc;n cần, Khung ch&agrave;o mừng học vi&ecirc;n mới (Welcome Banner - collapsible), v&agrave; Bảng danh s&aacute;ch học vi&ecirc;n điểm danh (cấu tr&uacute;c cột thay đổi động theo loại ca học).
+
+Panel b&ecirc;n phải (30%): Hiển thị lộ tr&igrave;nh b&agrave;i học k&egrave;m slide t&agrave;i liệu giảng dạy, hỗ trợ 4 tab bộ lọc nhanh (&quot;B&agrave;i h&ocirc;m nay&quot;, &quot;B&agrave;i trước đ&oacute;&quot;, &quot;B&agrave;i tiếp theo&quot;, &quot;Tất cả&quot;).
+
+Figma li&ecirc;n kết: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4312-29163 
+
+---
+Phụ lục: Tự đ&aacute;nh gi&aacute; Quality Gate 1 (Checklist A)
+
+# [x] 1. V&igrave; sao phải l&agrave;m? Mục 1 đ&atilde; n&ecirc;u r&otilde; bối cảnh, vấn đề thực tế, v&agrave; hệ quả nếu kh&ocirc;ng l&agrave;m.
+
+[x] 2. L&agrave;m cho ai? Persona v&agrave; Use Case được định nghĩa cụ thể trong Mục 3 (Gi&aacute;o vi&ecirc;n, Gi&aacute;o vụ).
+
+[x] 3. Người d&ugrave;ng sử dụng thế n&agrave;o? Luồng sử dụng được x&acirc;y dựng r&otilde; r&agrave;ng (tham chiếu User Flow trong US-OPS-03-02).
+
+[x] 4. Business Rules? Quy tắc nghiệp vụ được định nghĩa đầy đủ ở Mục 6.
+
+[x] 5. Feature Scope? Danh s&aacute;ch chức năng ở Mục 4 c&oacute; ID, độ ưu ti&ecirc;n v&agrave; nh&atilde;n ph&acirc;n loại Risk/Standard.
+
+[x] 6. Thiết kế giao diện dễ d&ugrave;ng? Tu&acirc;n thủ ti&ecirc;u chuẩn tối giản nội dung, kh&ocirc;ng hiển thị tr&ugrave;ng lặp, tối ưu trải nghiệm thiết bị.
+
+[x] 7. Người d&ugrave;ng nhận gi&aacute; trị g&igrave;? Mục 2 x&aacute;c định r&otilde; KPI mục ti&ecirc;u v&agrave; c&aacute;ch đo lường cụ thể.
+

@@ -21,7 +21,7 @@ export function BookingTestDetailNotes({
   const notes = booking.notes ?? []
 
   return (
-    <aside className="flex min-h-0 flex-col border-t border-border pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+    <aside className="flex min-h-0 flex-col border-t border-border pt-2 lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
       <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         <MessageSquare className="h-4 w-4" />
         Ghi chú
@@ -31,7 +31,7 @@ export function BookingTestDetailNotes({
           {notes.map((note, index) => (
             <div
               key={`${note.timestamp}-${index}`}
-              className="border-b border-border/50 py-3 first:pt-0 last:border-b-0"
+              className="border-b border-border/50 py-1.5 first:pt-0 last:border-b-0"
             >
               <div className="flex items-center justify-between gap-3 text-xs">
                 <span className="font-semibold text-foreground">{note.author}</span>
@@ -46,7 +46,7 @@ export function BookingTestDetailNotes({
           {booking.msg || 'Chưa có ghi chú.'}
         </p>
       )}
-      <div className="mt-3 flex shrink-0 gap-2">
+      <div className="mt-1.5 flex shrink-0 gap-2">
         <Textarea
           value={detailNote}
           onChange={(event) => onDetailNoteChange(event.target.value)}

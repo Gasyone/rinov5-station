@@ -182,11 +182,18 @@ export function filterTrialClasses(
   search: string,
   activeBranch: string,
   activeStatus: StatusTileId,
-  filters: TrialClassFilterState
+  filters: TrialClassFilterState,
+  activeSubject?: string
 ): TrialClass[] {
   return trials.filter((trial) => {
     if (activeBranch !== 'all' && trial.branch !== activeBranch) return false
     if (activeStatus !== 'all' && trial.status !== activeStatus) return false
+    if (activeSubject && activeSubject !== 'all') {
+      const ts = trial.subject.toLowerCase()
+      if (activeSubject === 'english' && !ts.includes('anh')) return false
+      if (activeSubject === 'math' && !ts.includes('toán')) return false
+      if (activeSubject === 'stem' && !ts.includes('stem')) return false
+    }
     if (filters.programs.length > 0 && !filters.programs.includes(trial.program)) return false
     if (filters.creators.length > 0 && !filters.creators.includes(trial.creator)) return false
     if (filters.subjects.length > 0 && !filters.subjects.includes(trial.subject)) return false
@@ -225,3 +232,16 @@ export function maskPhone(phone: string): string {
   if (phone.length <= 4) return phone
   return phone.slice(0, 4) + '****' + phone.slice(-2)
 }
+
+import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
+
+export function getLeaveReserveTicketForTrial(studentName: string, familyPhone: string): LeaveReserveRequest | null {
+  const cleanPhone = familyPhone.replace(/\s+/g, '')
+  return mockLeaveReserveRequests.find((r) => {
+    const isNameMatch = r.studentName.toLowerCase() === studentName.toLowerCase()
+    const cleanRequestPhone = r.phone.replace(/\s+/g, '')
+    const isPhoneMatch = cleanRequestPhone.length > 0 && cleanRequestPhone === cleanPhone
+    return (isNameMatch || isPhoneMatch) && (r.type === 'reservation' || r.type === 'off')
+  }) || null
+}
+

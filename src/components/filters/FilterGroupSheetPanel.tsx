@@ -23,6 +23,7 @@ export interface FilterGroupConfig {
   defaultOpen?: boolean
   searchable?: boolean
   scrollable?: boolean
+  customContent?: React.ReactNode
 }
 
 interface CreateFilterGroupConfig {
@@ -34,6 +35,7 @@ interface CreateFilterGroupConfig {
   defaultOpen?: boolean
   searchable?: boolean
   scrollable?: boolean
+  customContent?: React.ReactNode
   getOptionLabel?: (value: string) => string
   getOptionCount?: (value: string) => number
 }
@@ -58,7 +60,7 @@ const FILTER_GROUP_TITLES: Record<string, string> = {
   attendance: 'Điểm danh',
   availabilities: 'Tình trạng chỗ',
   bookingStatuses: 'Trạng thái lịch test',
-  branches: 'Trường',
+  branches: 'Cơ sở',
   buckets: 'Khoảng thời gian',
   capacity: 'Sĩ số & Độ lấp đầy',
   capacities: 'Sức chứa',
@@ -90,7 +92,7 @@ const FILTER_GROUP_TITLES: Record<string, string> = {
   rooms: 'Phòng học',
   roomFilters: 'Phòng học',
   sales: 'Sale',
-  schools: 'Trường',
+  schools: 'Cơ sở',
   sources: 'Nguồn',
   statuses: 'Trạng thái',
   subjectFilters: 'Môn học',
@@ -113,6 +115,7 @@ export function createFilterGroup({
   defaultOpen,
   searchable,
   scrollable,
+  customContent,
   getOptionLabel,
   getOptionCount,
 }: CreateFilterGroupConfig): FilterGroupConfig {
@@ -124,6 +127,7 @@ export function createFilterGroup({
     defaultOpen,
     searchable,
     scrollable,
+    customContent,
     options: options.map((option) => {
       const value = typeof option === 'string' ? option : option.value
       const base = typeof option === 'string' ? { value } : option
@@ -149,6 +153,7 @@ export function buildFilterSections(groups: readonly FilterGroupConfig[]): Filte
       defaultOpen: group.defaultOpen,
       searchable: group.searchable,
       scrollable: group.scrollable,
+      customContent: group.customContent,
       options: group.options.map((option) => {
         const value = typeof option === 'string' ? option : option.value
         const label = typeof option === 'string' ? option : option.label ?? value

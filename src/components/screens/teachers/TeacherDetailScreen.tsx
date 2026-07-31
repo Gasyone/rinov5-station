@@ -28,7 +28,7 @@ export function TeacherDetailScreen({ teacher, isLoading = false }: TeacherDetai
 
   if (!teacher) {
     return (
-      <div className="px-4 py-3 lg:px-6">
+      <div className="px-3 py-3 lg:px-3">
         <EmptyState title="Không tìm thấy giáo viên" description="Giáo viên này không tồn tại hoặc đã bị xóa." />
       </div>
     )
@@ -36,7 +36,7 @@ export function TeacherDetailScreen({ teacher, isLoading = false }: TeacherDetai
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <div className="flex shrink-0 flex-col border-b bg-background px-4 py-3 lg:px-6">
+      <div className="flex shrink-0 flex-col border-b bg-background px-3 py-3 lg:px-3">
         <div className="flex items-center gap-2">
           <BackButton onClick={() => router.push('/app/teachers')} />
           <PageHeader
@@ -50,7 +50,7 @@ export function TeacherDetailScreen({ teacher, isLoading = false }: TeacherDetai
 
       <div className="min-h-0 flex-1 overflow-hidden">
         <Tabs defaultValue="overview" className="flex h-full min-h-0 flex-col">
-          <div className="border-b px-4 lg:px-6">
+          <div className="border-b px-3 lg:px-3">
             <TabsList className="w-full justify-start rounded-none border-b-0 bg-transparent p-0">
               {TEACHER_TABS.map((tab) => (
                 <TabsTrigger
@@ -64,7 +64,7 @@ export function TeacherDetailScreen({ teacher, isLoading = false }: TeacherDetai
             </TabsList>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 lg:px-3">
             <TabsContent value="overview" className="m-0 p-0">
               <TeacherOverviewTab teacher={teacher} />
             </TabsContent>

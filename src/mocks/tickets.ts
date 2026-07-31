@@ -25,8 +25,46 @@ export interface SupportTicket {
 
 export let mockTickets: SupportTicket[] = [
   {
+    id: "TCK-101",
+    studentId: "s1",
+    studentName: "Nguyễn An",
+    studentCode: "STU-001",
+    title: "Yêu cầu thay đổi ca học thứ 4",
+    category: "attendance",
+    priority: "medium",
+    status: "in_progress",
+    assignee: "AnhNTN33",
+    createdDate: "2026-06-10",
+    description: "Phụ huynh gọi điện báo lịch thứ 4 con bận học thêm ở trường, muốn chuyển sang ca tối thứ 6 cùng khung giờ.",
+    interactionLogs: [
+      {
+        id: "log-a1",
+        date: "2026-06-11",
+        staffName: "CSM Minh Phương",
+        channel: "phone",
+        notes: "Đã liên hệ với giáo viên chủ nhiệm xác nhận sĩ số lớp thứ 6 vẫn còn slot nhận thêm."
+      }
+    ],
+    type: "support"
+  },
+  {
+    id: "TCK-102",
+    studentId: "s1",
+    studentName: "Nguyễn An",
+    studentCode: "STU-001",
+    title: "Cảnh báo kết quả học tập giảm nhẹ",
+    category: "academic",
+    priority: "low",
+    status: "new",
+    assignee: "AnhNTN33",
+    createdDate: "2026-06-15",
+    description: "Điểm kiểm tra giữa kỳ 2 đạt 7.0/10, giảm nhẹ so với kỳ 1 (8.5/10). Giáo viên lưu ý cần hỗ trợ thêm phần phát âm.",
+    interactionLogs: [],
+    type: "care"
+  },
+  {
     id: "TCK-001",
-    studentId: "149231",
+    studentId: "s17",
     studentName: "Nguyễn Mỹ Linh",
     studentCode: "STU-001",
     title: "Cảnh báo gia hạn số buổi học C90B",
@@ -42,7 +80,7 @@ export let mockTickets: SupportTicket[] = [
   },
   {
     id: "TCK-002",
-    studentId: "113838",
+    studentId: "s15",
     studentName: "Nguyễn Hà Phương",
     studentCode: "STU-003",
     title: "Xác nhận chuyển lớp & Bài tập về nhà C90B",
@@ -66,7 +104,7 @@ export let mockTickets: SupportTicket[] = [
   },
   {
     id: "TCK-003",
-    studentId: "152149",
+    studentId: "s18",
     studentName: "Phạm Đình Nguyên",
     studentCode: "STU-006",
     title: "Cảnh báo hoàn thành BTVN thấp dưới 70%",
@@ -90,7 +128,7 @@ export let mockTickets: SupportTicket[] = [
   },
   {
     id: "TCK-004",
-    studentId: "152292",
+    studentId: "s19",
     studentName: "Minh Vy",
     studentCode: "STU-008",
     title: "Hỗ trợ phụ huynh - Phản hồi bài kiểm tra điểm kém",
@@ -113,7 +151,7 @@ export let mockTickets: SupportTicket[] = [
   },
   {
     id: "TCK-005",
-    studentId: "152940",
+    studentId: "s12",
     studentName: "Nguyễn Hoàng Vũ",
     studentCode: "STU-013",
     title: "Yêu cầu tài liệu ôn thi học kỳ",

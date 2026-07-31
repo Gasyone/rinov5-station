@@ -20,7 +20,7 @@ export function LeaveReserveCreateDialog({
   onSubmit,
 }: LeaveReserveCreateDialogProps) {
   const [studentId, setStudentId] = useState(mockStudents[0]?.id || '')
-  const [type, setType] = useState<LeaveReserveRequest['type']>('leave')
+  const [type, setType] = useState<LeaveReserveRequest['type']>('off')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [reason, setReason] = useState('')
@@ -46,7 +46,7 @@ export function LeaveReserveCreateDialog({
       startDate,
       endDate,
       reason,
-      title: type === 'leave' ? 'Đơn xin nghỉ học' : type === 'reserve' ? 'Đơn xin bảo lưu học tập' : 'Yêu cầu tạm dừng học tập',
+      title: type === 'off' ? 'Đơn xin nghỉ học' : type === 'reservation' ? 'Đơn xin bảo lưu học tập' : 'Yêu cầu đi học lại',
       phone: student.phone || '',
       email: student.email || '',
       className: student.enrolledClass || 'Lớp học mới',
@@ -56,6 +56,8 @@ export function LeaveReserveCreateDialog({
       additionalContacts: student.parentPhone ? [
         { name: `Mẹ: ${student.parentName || 'Phụ huynh'}`, phone: student.parentPhone }
       ] : [],
+      quota: 12,
+      usedAbsences: 0,
     })
 
     handleClearAndClose()
@@ -67,9 +69,8 @@ export function LeaveReserveCreateDialog({
   }))
 
   const typeOptions = [
-    { value: 'leave', label: 'Nghỉ phép' },
-    { value: 'reserve', label: 'Bảo lưu' },
-    { value: 'suspend', label: 'Nghỉ học tạm thời' },
+    { value: 'off', label: 'Nghỉ phép' },
+    { value: 'reservation', label: 'Bảo lưu' },
   ]
 
   return (

@@ -513,7 +513,7 @@ export function QcCheckScreen() {
         onCreate={() => setIsCreateOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-2 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
         <DataTableFrame
           footer={
             <DataTablePagination

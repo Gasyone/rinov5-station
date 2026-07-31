@@ -47,7 +47,7 @@ export function MetricTile({
         <p className={cn('font-medium uppercase tracking-wide text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>
           {label}
         </p>
-        <p className={cn('font-semibold', compact ? 'text-lg' : 'mt-1 text-2xl')}>{value}</p>
+        <div className={cn('font-semibold', compact ? 'text-lg' : 'mt-1 text-2xl')}>{value}</div>
         {trend ? (
           <p
             className={cn(

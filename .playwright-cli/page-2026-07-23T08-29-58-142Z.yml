@@ -1,0 +1,469 @@
+- generic:
+  - generic:
+    - generic:
+      - banner:
+        - generic: Thiết lập điều kiện
+        - generic:
+          - generic:
+            - button
+            - textbox:
+              - /placeholder: Search...
+          - button
+          - generic:
+            - button
+            - generic: "6"
+          - button:
+            - generic: A
+      - generic:
+        - complementary:
+          - generic:
+            - generic:
+              - button
+            - generic:
+              - button
+            - generic:
+              - button
+            - generic:
+              - button [expanded]
+            - generic:
+              - button
+        - main:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - combobox:
+                        - generic: Tất cả Vai trò
+                      - combobox:
+                        - generic: Tất cả Mức ưu tiên
+                      - combobox:
+                        - generic: Tất cả Trạng thái
+                      - combobox:
+                        - generic: Tất cả Nguồn
+                    - generic:
+                      - generic:
+                        - button
+                      - button:
+                        - generic: Xuất dữ liệu
+                      - button:
+                        - generic: Thêm điều kiện mới
+                  - generic:
+                    - generic:
+                      - button:
+                        - generic: Tất cả danh mục
+                        - generic: "10"
+                      - button:
+                        - generic: Chăm sóc đặc biệt
+                        - generic: "5"
+                      - button:
+                        - generic: Tái phí
+                        - generic: "1"
+                      - button:
+                        - generic: Theo hành trình học
+                        - generic: "3"
+                      - button:
+                        - generic: Định kỳ
+                        - generic: "1"
+                      - button:
+                        - generic: Theo yêu cầu
+                        - generic: "0"
+                      - button:
+                        - generic: Đang áp dụng
+                        - generic: "10"
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader:
+                            - checkbox
+                          - columnheader: Điều kiện phát sinh chăm sóc
+                          - columnheader: Nguồn chỉ số
+                          - columnheader: Tiêu chí theo dõi (Chi tiết thiết lập)
+                          - columnheader: Thời hạn SLA
+                          - columnheader: Tính chất
+                          - columnheader: Vai trò chính
+                          - columnheader: Mức ưu tiên
+                          - columnheader: Trạng thái
+                      - rowgroup:
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Nghỉ không phép từ 2 buổi trong 8 buổi gần nhất
+                                - generic: "Mã: ĐB-01"
+                              - generic:
+                                - button
+                                - button
+                          - cell: CSDL Buổi học
+                          - cell:
+                            - generic:
+                              - generic: Số buổi nghỉ không phép ≥ (Lớn hơn hoặc bằng) 2 buổi
+                              - generic: Trong 8 buổi cuộn gần nhất • Tính riêng theo môn / lớp
+                          - cell:
+                            - generic: Trong 24 giờ
+                          - cell:
+                            - generic: Chăm sóc đặc biệt
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: CS
+                                - generic: GV
+                              - generic: • Chỉ cần 1 hoàn thành (OR)
+                          - cell: 🟠 Cao
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Không làm bài tập từ 3 buổi trong 8 buổi gần nhất
+                                - generic: "Mã: ĐB-02"
+                              - generic:
+                                - button
+                                - button
+                          - cell: CSDL BTVN
+                          - cell:
+                            - generic:
+                              - generic: Số buổi thiếu / chưa nộp BTVN ≥ (Lớn hơn hoặc bằng) 3 buổi
+                              - generic: Trong 8 buổi cuộn gần nhất • Tính riêng theo môn / lớp
+                          - cell:
+                            - generic: Trong 24 giờ
+                          - cell:
+                            - generic: Chăm sóc đặc biệt
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: CS
+                                - generic: GV
+                              - generic: • Cần cả 2 hoàn thành (AND)
+                          - cell: 🟠 Cao
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Có bất kỳ bài kiểm tra nào đạt điểm ≤ 7.0
+                                - generic: "Mã: ĐB-03"
+                              - generic:
+                                - button
+                                - button
+                          - cell: CSDL Điểm Kiểm tra
+                          - cell:
+                            - generic:
+                              - generic: Điểm bài kiểm tra bất kỳ ≤ (Nhỏ hơn hoặc bằng) 7 điểm
+                              - generic: Ngay sau bài test gần nhất • Tính riêng theo môn
+                          - cell:
+                            - generic: Trong 24 giờ
+                          - cell:
+                            - generic: Chăm sóc đặc biệt
+                          - cell:
+                            - generic:
+                              - generic: CS
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🟠 Cao
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Prestudy trước khi khai giảng lớp mới
+                                - generic: "Mã: TH-01"
+                              - generic:
+                                - button
+                                - button
+                          - cell: Lộ trình - Khung chương trình
+                          - cell:
+                            - generic:
+                              - generic: Theo loại buổi (buoi_prestudy)
+                              - generic: Tự động kích hoạt tức thời khi diễn ra mốc buổi học trong môn
+                          - cell:
+                            - generic: ⏳ Trước buổi tiếp theo 48 giờ
+                          - cell:
+                            - generic: Theo hành trình
+                          - cell:
+                            - generic:
+                              - generic: CS
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🔵 Trung bình
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Hoàn thành buổi học đầu tiên (First Class Care)
+                                - generic: "Mã: TH-02"
+                              - generic:
+                                - button
+                                - button
+                          - cell: Lộ trình - Khung chương trình
+                          - cell:
+                            - generic:
+                              - generic: Theo số buổi (1)
+                              - generic: Tự động kích hoạt tức thời khi diễn ra mốc buổi học trong môn
+                          - cell:
+                            - generic: ⏱️ Trong vòng 24 giờ
+                          - cell:
+                            - generic: Theo hành trình
+                          - cell:
+                            - generic:
+                              - generic: CS
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🔵 Trung bình
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Báo cáo mốc Mini Project theo kế hoạch học tập
+                                - generic: "Mã: TH-03"
+                              - generic:
+                                - button
+                                - button
+                          - cell: Lộ trình - Khung chương trình
+                          - cell:
+                            - generic:
+                              - generic: Theo loại buổi (buoi_project)
+                              - generic: Tự động kích hoạt tức thời khi diễn ra mốc buổi học trong môn
+                          - cell:
+                            - generic: ⌛ Sau buổi tiếp theo 24 giờ
+                          - cell:
+                            - generic: Theo mốc
+                          - cell:
+                            - generic:
+                              - generic: GV
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🔵 Trung bình
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Kỳ lập Báo cáo học tập và chăm sóc hằng tháng
+                                - generic: "Mã: ĐK-01"
+                              - generic:
+                                - button
+                                - button
+                          - cell: Định kỳ - Theo thời gian
+                          - cell:
+                            - generic:
+                              - generic: Báo cáo học tập định kỳ hằng tháng
+                              - generic: Định kỳ ngày 25 hằng tháng • Toàn trung tâm
+                          - cell:
+                            - generic: Từ ngày 25 đến cuối tháng
+                          - cell:
+                            - generic: Định kỳ
+                          - cell:
+                            - generic:
+                              - generic: GV
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🔵 Trung bình
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Cảnh báo Gói học sắp hết hạn / còn ≤ 5 buổi học
+                                - generic: "Mã: GO-01"
+                              - generic:
+                                - button
+                                - button
+                          - cell: Gói đăng ký
+                          - cell:
+                            - generic:
+                              - generic: Số buổi học còn lại trong gói ≤ (Nhỏ hơn hoặc bằng) 5 buổi
+                              - generic: Tức thời theo thời gian thực (Real-time) • Tính riêng theo Gói đăng ký
+                          - cell:
+                            - generic: Trong vòng 24 giờ
+                          - cell:
+                            - generic: Tái phí
+                          - cell:
+                            - generic:
+                              - generic: CS
+                              - generic: • 1 vai trò hoàn thành
+                          - cell: 🟠 Cao
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Phát sinh Đổi / Thế ca Giáo viên phụ trách
+                                - generic: "Mã: LH-01"
+                              - generic:
+                                - button
+                                - button
+                          - cell: CSDL Lớp học
+                          - cell:
+                            - generic:
+                              - generic: Phát sinh Đổi / Thế ca Giáo viên phụ trách
+                              - generic: Tức thời khi ghi nhận thay đổi (Real-time) • Tính riêng theo từng Lớp học
+                          - cell:
+                            - generic: 🏫 Trước buổi học biến động 12 giờ
+                          - cell:
+                            - generic: Chăm sóc đặc biệt
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: CS
+                                - generic: GV
+                              - generic: • Chỉ cần 1 hoàn thành (OR)
+                          - cell: 🟠 Cao
+                          - cell:
+                            - generic: Áp dụng
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Phát sinh Hủy / Hoãn hoặc Đổi phòng học đột xuất
+                                - generic: "Mã: LH-02"
+                              - generic:
+                                - button
+                                - button
+                          - cell: CSDL Lớp học
+                          - cell:
+                            - generic:
+                              - generic: Phát sinh Hủy / Hoãn buổi học đột xuất
+                              - generic: Tức thời khi thông báo hoãn/hủy (Real-time) • Tính riêng theo từng Lớp học
+                          - cell:
+                            - generic: 🏫 Trước buổi học biến động 12 giờ
+                          - cell:
+                            - generic: Chăm sóc đặc biệt
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: CS
+                                - generic: GV
+                              - generic: • Cần cả 2 hoàn thành (AND)
+                          - cell: 🔴 Khẩn cấp
+                          - cell:
+                            - generic: Áp dụng
+                  - generic:
+                    - generic: Hiển thị 1–10 / 10
+                    - generic:
+                      - generic:
+                        - generic: Dòng
+                        - combobox:
+                          - generic: "20"
+                      - generic:
+                        - button [disabled]
+                        - button [disabled]
+                        - generic: 1 / 1
+                        - button [disabled]
+                        - button [disabled]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f2e473] [cursor=pointer]
+  - alert
+  - dialog [ref=f2e486]:
+    - heading "Thêm mới Điều kiện Chăm sóc" [level=2] [ref=f2e488]
+    - generic [ref=f2e489]:
+      - generic [ref=f2e490]:
+        - generic [ref=f2e491]:
+          - generic [ref=f2e492]:
+            - generic [ref=f2e493]:
+              - generic [ref=f2e495]:
+                - text: Mã điều kiện
+                - generic [ref=f2e496]: "*"
+              - textbox "Mã điều kiện *" [active] [ref=f2e497]:
+                - /placeholder: "VD: ĐB-01..."
+            - generic [ref=f2e498]:
+              - generic [ref=f2e499]: Mức ưu tiên
+              - combobox "Mức ưu tiên" [ref=f2e501]:
+                - generic [ref=f2e502]: 🟠 Cao
+              - combobox [ref=f2e503]
+          - generic [ref=f2e504]:
+            - generic [ref=f2e506]:
+              - text: Tên sự kiện phát sinh
+              - generic [ref=f2e507]: "*"
+            - textbox "Tên sự kiện phát sinh *" [ref=f2e508]:
+              - /placeholder: "VD: Học viên nghỉ không phép từ 2 buổi trong 8 buổi gần nhất..."
+          - generic [ref=f2e509]:
+            - generic [ref=f2e510]: Tính chất chăm sóc
+            - combobox "Tính chất chăm sóc" [ref=f2e512]:
+              - generic [ref=f2e513]: Chăm sóc đặc biệt
+            - combobox [ref=f2e514]
+          - generic [ref=f2e515]:
+            - generic [ref=f2e517]:
+              - text: Các vai trò phụ trách chăm sóc
+              - generic [ref=f2e518]: "*"
+            - generic [ref=f2e519]:
+              - button "Các vai trò phụ trách chăm sóc * GV Giáo viên Chủ nhiệm" [ref=f2e520] [cursor=pointer]:
+                - generic [ref=f2e524]:
+                  - generic [ref=f2e525]: CS
+                  - generic [ref=f2e526]: Chuyên viên CSKH
+              - button "GV Giáo viên Chủ nhiệm" [ref=f2e527] [cursor=pointer]:
+                - generic [ref=f2e529]:
+                  - generic [ref=f2e530]: GV
+                  - generic [ref=f2e531]: Giáo viên Chủ nhiệm
+          - generic [ref=f2e532]:
+            - generic [ref=f2e533]: Nội dung chăm sóc trọng tâm
+            - textbox "Nội dung chăm sóc trọng tâm" [ref=f2e535]:
+              - /placeholder: Xác minh nguyên nhân nghỉ học... Đánh giá khả năng tham gia... Thống nhất phương án học bù...
+        - generic [ref=f2e536]:
+          - generic [ref=f2e537]:
+            - generic [ref=f2e538]: Cấu hình quy tắc tự động kích hoạt
+            - generic [ref=f2e539]:
+              - switch "Đang áp dụng" [checked] [ref=f2e540]
+              - checkbox [checked]
+              - generic [ref=f2e541] [cursor=pointer]: Đang áp dụng
+          - generic [ref=f2e542]:
+            - generic [ref=f2e543]: Nguồn chỉ số
+            - combobox "Nguồn chỉ số" [ref=f2e545]:
+              - generic [ref=f2e546]: Lộ trình - Khung chương trình
+            - combobox [ref=f2e547]
+          - generic [ref=f2e548]:
+            - generic [ref=f2e549]: Loại tiêu chí kích hoạt mốc
+            - combobox "Loại tiêu chí kích hoạt mốc" [ref=f2e551]:
+              - generic [ref=f2e552]: "Theo số buổi học cụ thể (Ví dụ: Buổi 1, 5, 10)"
+            - combobox [ref=f2e553]
+          - generic [ref=f2e554]:
+            - generic [ref=f2e555]: Giá trị kích hoạt mốc
+            - textbox "Giá trị kích hoạt mốc" [ref=f2e557]:
+              - /placeholder: "Nhập số buổi, cách nhau bởi dấu ; (VD: 1; 5; 10)"
+              - text: 1; 5; 10
+          - generic [ref=f2e558]:
+            - generic [ref=f2e559]:
+              - generic [ref=f2e560]: Phương thức tính Thời hạn SLA chăm sóc
+              - combobox "Phương thức tính Thời hạn SLA chăm sóc" [ref=f2e562]:
+                - generic [ref=f2e563]: ⏱️ Cố định theo thời gian (Nhập giá trị)
+              - combobox [ref=f2e564]
+            - generic [ref=f2e565]:
+              - generic [ref=f2e566]: Giá trị thời gian xử lý
+              - generic [ref=f2e568]:
+                - spinbutton "Giá trị thời gian xử lý" [ref=f2e569]: "24"
+                - generic [ref=f2e570]:
+                  - combobox [ref=f2e571]:
+                    - generic [ref=f2e572]: giờ
+                  - combobox [ref=f2e573]
+      - generic [ref=f2e575]:
+        - button "Hủy bỏ" [ref=f2e576]
+        - button "Tạo điều kiện mới" [ref=f2e577]
+    - button "Close" [ref=f2e578]

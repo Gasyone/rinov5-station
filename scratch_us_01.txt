@@ -1,0 +1,181 @@
+Tham chiếu: BF-OPS-03 &middot; SR-BRANCH_MANAGER-002 
+
+Đường dẫn m&agrave;n h&igrave;nh &amp; Trạng th&aacute;i li&ecirc;n quan:  Mở bằng c&aacute;ch click v&agrave;o xem buổi học trong detail lịch học, tab buổi học thực tế. Nh&atilde;n buổi học : Tiếp theo, Đang học, Đ&atilde; học, Đ&atilde; hủy.
+
+---
+1. NHẬT K&Yacute; THAY ĐỔI &amp; BỐI CẢNH (CHANGELOG &amp; CONTEXT)
+
+# Lịch sử cập nhật t&agrave;i liệu (Changelog)
+
+# Ng&agrave;y cập nhật
+Nội dung cập nhật
+L&yacute; do cập nhật
+6/07/2026
+Ph&aacute;t h&agrave;nh t&agrave;i liệu
+Ph&aacute;t h&agrave;nh lần đầu
+Bối cảnh &amp; Vấn đề nghiệp vụ (Context &amp; Problem)
+
+# Bối cảnh: Hộp thoại chi tiết buổi học l&agrave; bộ điều phối ch&iacute;nh chứa th&ocirc;ng tin h&agrave;nh ch&iacute;nh của buổi học lẻ (ng&agrave;y giờ, ph&ograve;ng học, gi&aacute;o vi&ecirc;n đứng lớp, địa điểm cơ sở trực tiếp) v&agrave; l&agrave; khung chứa c&aacute;c th&ocirc;ng tin chuy&ecirc;n cần, nội dung học tập.
+
+Vấn đề hiện tại: N/a
+
+Mục ti&ecirc;u &amp; Gi&aacute; trị mang lại: T&aacute;i cấu tr&uacute;c giao diện hộp thoại sang bố cục co gi&atilde;n 2 cột, gi&uacute;p gi&aacute;o vi&ecirc;n dễ d&agrave;ng điểm danh ở Panel tr&aacute;i v&agrave; xem đề cương b&agrave;i giảng ở Panel phải để trực quan.
+
+Hiểu người d&ugrave;ng &amp; T&igrave;nh huống sử dụng (User Needs &amp; Use Cases)
+
+# Người d&ugrave;ng ch&iacute;nh (Persona): Quản l&yacute; chi nh&aacute;nh, v&agrave; Gi&aacute;o vi&ecirc;n .
+
+Kh&oacute; khăn lớn nhất (Pain-points): Hiển thị trạng th&aacute;i học vi&ecirc;n v&agrave; điểm danh chưa đầy đủ.
+
+Nhu cầu thực tế (Needs): Mong muốn một m&agrave;n h&igrave;nh chi tiết buổi học hiển thị đồng thời cả danh s&aacute;ch điểm danh chuy&ecirc;n cần v&agrave; đề cương b&agrave;i học h&ocirc;m nay.
+
+C&acirc;u ph&aacute;t biểu nghiệp vụ: L&agrave; một Gi&aacute;o vi&ecirc;n, t&ocirc;i muốn c&oacute; một hộp thoại nổi chi tiết buổi học hiển thị đồng thời th&ocirc;ng tin chuy&ecirc;n cần v&agrave; b&agrave;i học, để t&ocirc;i c&oacute; thể dễ d&agrave;ng điểm danh v&agrave; giảng dạy đ&uacute;ng lộ tr&igrave;nh.
+
+Phạm vi kiểm so&aacute;t (Scope)
+
+# Phạm vi hiển thị: Th&ocirc;ng tin h&agrave;nh ch&iacute;nh buổi học, banner cảnh b&aacute;o theo nh&atilde;n buổi học, chia 2 cột (Tr&aacute;i 70% d&agrave;nh cho Chuy&ecirc;n cần học vi&ecirc;n, Phải 30% d&agrave;nh cho B&agrave;i học v&agrave; chương tr&igrave;nh).
+
+R&agrave;ng buộc nghiệp vụ to&agrave;n cục (Global Rules):
+
+[RULE-DETAIL-01] Bố cục hai cột co gi&atilde;n: Khung hộp thoại kh&ocirc;ng sử dụng tab thanh ti&ecirc;u đề. Bố cục chia đ&ocirc;i: Panel b&ecirc;n tr&aacute;i (chiếm 7/10 chiều rộng) hiển thị danh s&aacute;ch chuy&ecirc;n cần, Panel b&ecirc;n phải (chiếm 3/10 chiều rộng) hiển thị đề cương b&agrave;i học v&agrave; gi&aacute;o &aacute;n.
+
+---
+2. LUỒNG XỬ L&Yacute; CH&Iacute;NH (MAIN FLOW - HAPPY PATH)
+
+# M&ocirc; tả luồng tương t&aacute;c khi người d&ugrave;ng mở xem chi tiết v&agrave; di chuyển qua lại giữa c&aacute;c buổi học.
+sequenceDiagram     autonumber     actor U as Gi&aacute;o vi&ecirc;n / Gi&aacute;o vụ     participant F as Giao diện (Hộp thoại nổi)     participant S as M&aacute;y chủ / Hệ thống     participant DB as Cơ sở dữ liệu      U-&gt;&gt;{Lịch học}: Click v&agrave;o Thẻ buổi học lẻ     {Lịch học}-&gt;&gt;F: K&iacute;ch hoạt hiển thị Hộp thoại chi tiết     F-&gt;&gt;S: Gửi m&atilde; buổi học y&ecirc;u cầu dữ liệu     S-&gt;&gt;DB: Truy vấn th&ocirc;ng tin h&agrave;nh ch&iacute;nh, danh s&aacute;ch học vi&ecirc;n, b&agrave;i học     DB--&gt;&gt;S: Trả về g&oacute;i dữ liệu ca dạy     S--&gt;&gt;F: Phản hồi th&ocirc;ng tin buổi học     F--&gt;&gt;U: Hiển thị giao diện hộp thoại chia 2 cột (Tr&aacute;i: Chuy&ecirc;n cần, Phải: B&agrave;i học)     U-&gt;&gt;F: Bấm n&uacute;t mũi t&ecirc;n &quot;Buổi sau&quot;     F-&gt;&gt;S: Gửi m&atilde; buổi học tiếp theo     S--&gt;&gt;F: Phản hồi th&ocirc;ng tin mới     F--&gt;&gt;U: Cập nhật nội dung của buổi học kế tiếp tr&ecirc;n giao diện
+---
+3. GIAO DIỆN &amp; TRẠNG TH&Aacute;I TĨNH (DATA &amp; UI STATE)
+
+# 3.1. Thiết kế trực quan (Figma)
+
+# Link/H&igrave;nh ảnh Figma: 
+Truy cập modal: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4892-71376&amp;t=w5fTZOOEeieVMsO8-4 
+
+C&aacute;c loại buổi học: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4667-159303&amp;t=w5fTZOOEeieVMsO8-4 
+Chưa c&oacute; học vi&ecirc;n:https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4312-29413&amp;t=w5fTZOOEeieVMsO8-4 
+
+Buổi thường: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4312-29164&amp;t=w5fTZOOEeieVMsO8-4 
+
+Buổi kiểm tra Tiếng anh:https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4312-29209&amp;t=w5fTZOOEeieVMsO8-4 
+
+Buổi kiểm tra to&aacute;n: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=5106-14419&amp;t=EXUwcNH1WlOsOMKO-4  
+
+Khung th&ocirc;ng b&aacute;o loại buổi học: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4667-167456&amp;t=w5fTZOOEeieVMsO8-4 
+Nh&atilde;n hủy: https://www.figma.com/design/frct7JUaJQBN2uOSyfMqcL/Rinoedu?node-id=4711-72776&amp;t=w5fTZOOEeieVMsO8-4 
+
+3.2. Cấu tr&uacute;c c&aacute;c v&ugrave;ng giao diện
+
+# A. Th&ocirc;ng tin t&oacute;m tắt buổi học (Dưới ti&ecirc;u đề)
+
+# Th&ocirc;ng tin hiển thị
+Kiểu hiển thị
+Nguồn dữ liệu
+Quy tắc thị gi&aacute;c &amp; Trạng th&aacute;i
+N&uacute;t Buổi trước / Buổi sau
+N&uacute;t icon mũi t&ecirc;n &amp; Button v&agrave; Texttime
+Chuyển đổi nhanh sang buổi học kề cạnh trong danh s&aacute;ch lớp
+V&ocirc; hiệu h&oacute;a n&uacute;t &quot;Buổi trước&quot; ở buổi 1; v&ocirc; hiệu h&oacute;a n&uacute;t &quot;Buổi sau&quot; ở buổi cuối.
+Hiển thị + Giờ ở giữa của buổi hiện tại.
+Thay đổi ng&agrave;y giờ khi trước/sau khi chuyển buổi.
+Chủ đề b&agrave;i học
+Chữ đậm k&iacute;ch thước lớn
+Trường T&ecirc;n b&agrave;i học
+Hiển thị ở đầu th&ocirc;ng tin h&agrave;nh ch&iacute;nh
+Nh&atilde;n loại buổi học
+Nh&atilde;n m&agrave;u (Badge)
+Từ Nh&atilde;n của buổi học trong lớp học
+Hiển thị nh&atilde;n của buổi học đ&oacute; (Đang học, Đ&atilde; học, Chưa học, Đ&atilde; hủy)
+B. Khối Banner Cảnh b&aacute;o theo Nh&atilde;n buổi học (Đầu hộp thoại)
+
+# Hệ thống tự động hiển thị banner Nh&atilde;n buổi học hủy dưới đ&acirc;y:
+1. Banner Buổi học đ&atilde; hủy (Cancelled):
+Nền đỏ nhạt, viền đỏ, biểu tượng Lịch Hủy m&agrave;u đỏ.
+
+Nội dung: &quot;Buổi học n&agrave;y đ&atilde; bị hủy. L&yacute; do hủy: [Nội dung l&yacute; do hủy ca dạy từ hệ thống].&quot;
+
+Tự động kh&oacute;a cứng to&agrave;n bộ t&iacute;nh năng điểm danh học sinh.
+
+3.3. C&aacute;c trạng th&aacute;i giao diện mặc định
+
+# 1. Trạng th&aacute;i đang tải (Loading state): Hiển thị c&aacute;c khối chờ tải th&ocirc;ng tin (Skeleton) tương ứng với cấu tr&uacute;c 2 cột.
+2. Trạng th&aacute;i kh&ocirc;ng t&igrave;m thấy dữ liệu (Empty state): Hiển thị th&ocirc;ng b&aacute;o dữ liệu buổi học kh&ocirc;ng tồn tại k&egrave;m n&uacute;t đ&oacute;ng hộp thoại.
+3. Trạng th&aacute;i lỗi tải dữ liệu (Error state): Hiển thị th&ocirc;ng b&aacute;o cảnh b&aacute;o lỗi kết nối m&aacute;y chủ/hệ thống v&agrave; n&uacute;t bấm &quot;Tải lại&quot;.
+---
+Danh s&aacute;ch quyền
+
+# X&aacute;c định vai tr&ograve; tương ứng với quyền xem/điểm danh/Nhận x&eacute;t/Chấm điểm/Đ&aacute;nh gi&aacute; định kỳ (C&aacute;c quyền Nhận x&eacute;t, chấm điểm, đ&aacute;nh gi&aacute; được m&ocirc; tả ở epic sau, nhưng vẫn chung với quyền n&agrave;y).
+Danh s&aacute;ch quyền được tạo v&agrave; cập nhật v&agrave;o Ph&acirc;n hệ quản l&yacute; nh&oacute;m quyền tr&ecirc;n CRM để admin xử l&yacute; nghiệp vụ ph&acirc;n quyền. 
+Xem chi tiết buổi học (View Session Details):
+M&ocirc; tả: Quyền truy cập mở xem to&agrave;n bộ th&ocirc;ng tin trong Hộp thoại chi tiết buổi học (bao gồm th&ocirc;ng tin h&agrave;nh ch&iacute;nh, danh s&aacute;ch học vi&ecirc;n, trạng th&aacute;i chuy&ecirc;n cần, điểm số hiện c&oacute;, đơn xin nghỉ ph&eacute;p v&agrave; lộ tr&igrave;nh b&agrave;i học).
+
+Điểm danh chuy&ecirc;n cần (Manage Attendance):
+M&ocirc; tả: Quyền thực hiện điểm danh hoặc thay đổi trạng th&aacute;i chuy&ecirc;n cần (Đ&atilde; đến, Đến muộn, Vắng mặt) của từng học vi&ecirc;n tr&ecirc;n danh s&aacute;ch.
+
+---
+4. KHỐI CHỨC NĂNG CHI TIẾT: ACTION &amp; LUỒNG K&Iacute;CH HOẠT (ACTIONS &amp; EVENTS)
+
+# Khối chức năng: Điều phối khung giao diện ch&iacute;nh
+
+# Action 4.1: Chuyển đổi buổi học kề cạnh
+
+# Luồng k&iacute;ch hoạt (Event/Flow): Người d&ugrave;ng bấm n&uacute;t biểu tượng mũi t&ecirc;n &quot;Buổi trước&quot; hoặc &quot;Buổi sau&quot; ở đầu trang. Hệ thống tải lại to&agrave;n bộ th&ocirc;ng tin của buổi học đ&oacute;.
+
+Ti&ecirc;u ch&iacute; nghiệm thu (Acceptance Criteria):
+
+AC-1 (Happy Path - Chuyển đổi buổi học kế tiếp th&agrave;nh c&ocirc;ng):
+Giả sử: Hộp thoại chi tiết đang mở buổi học thứ 3, v&agrave; danh s&aacute;ch c&ograve;n c&oacute; buổi học thứ 4 (buổi sau).
+
+Khi: Người d&ugrave;ng bấm n&uacute;t biểu tượng mũi t&ecirc;n &quot;Buổi sau&quot;.
+
+Th&igrave;: Giao diện cập nhật to&agrave;n bộ th&ocirc;ng tin ti&ecirc;u đề, nh&atilde;n ph&acirc;n loại, banner v&agrave; dữ liệu của buổi học thứ 4, bố cục 2 cột giữ nguy&ecirc;n v&agrave; kh&ocirc;ng thay đổi.
+
+AC-2 (Exception Path - Buổi học cuối c&ugrave;ng):
+Giả sử: Buổi học đang xem l&agrave; buổi cuối c&ugrave;ng của kh&oacute;a học.
+
+Khi: Người d&ugrave;ng kiểm tra n&uacute;t biểu tượng mũi t&ecirc;n &quot;Buổi sau&quot;.
+
+Th&igrave;: N&uacute;t biểu tượng mũi t&ecirc;n &quot;Buổi sau&quot; tự động chuyển sang trạng th&aacute;i v&ocirc; hiệu h&oacute;a (disabled), chặn người d&ugrave;ng bấm k&iacute;ch hoạt.
+
+---
+5. C&aacute;c trường hợp g&oacute;c cạnh
+
+# [CASE-01] Buổi học thuộc Nh&atilde;n Đ&atilde; hủy (cancelled):
+T&igrave;nh huống: Buổi học lẻ được x&aacute;c định hủy tr&ecirc;n hệ thống.
+
+C&aacute;ch xử l&yacute;: Nh&atilde;n hiển thị: &quot;Đ&atilde; hủy&quot; (m&agrave;u đỏ). Banner hiển thị viền đỏ, nền đỏ nhạt, biểu tượng Lịch Hủy m&agrave;u đỏ. Ti&ecirc;u đề banner: &quot;Buổi học n&agrave;y đ&atilde; bị hủy. L&yacute; do hủy: [Nội dung l&yacute; do hủy ca dạy từ hệ thống].&quot; Hệ thống tự động kh&oacute;a cứng to&agrave;n bộ t&iacute;nh năng điểm danh học sinh.
+
+[CASE-02] Buổi học l&agrave; buổi đầu ti&ecirc;n hoặc cuối c&ugrave;ng trong danh s&aacute;ch lớp:
+T&igrave;nh huống: Buổi học đang xem l&agrave; buổi đầu ti&ecirc;n của kh&oacute;a học hoặc buổi cuối c&ugrave;ng của kh&oacute;a học.
+
+C&aacute;ch xử l&yacute;: Hệ thống tự động v&ocirc; hiệu h&oacute;a n&uacute;t biểu tượng mũi t&ecirc;n &quot;Buổi trước&quot; (nếu l&agrave; buổi đầu ti&ecirc;n) hoặc &quot;Buổi sau&quot; (nếu l&agrave; buổi cuối c&ugrave;ng).
+
+[CASE-03] Mất kết nối khi đang mở hộp thoại chi tiết:
+T&igrave;nh huống: Đường truyền internet bị gi&aacute;n đoạn đ&uacute;ng l&uacute;c người d&ugrave;ng mở hộp thoại.
+
+C&aacute;ch xử l&yacute;: Giao diện hiển thị cảnh b&aacute;o lỗi kết nối m&aacute;y chủ/hệ thống v&agrave; cung cấp n&uacute;t bấm &quot;Tải lại&quot;.
+
+---
+Quy tắc kiểm so&aacute;t dữ liệu (Validation Rules)
+
+# Hộp thoại nổi n&agrave;y chỉ hiển thị th&ocirc;ng tin dạng chỉ đọc từ m&aacute;y chủ hệ thống, kế thừa c&aacute;c quy tắc kiểm so&aacute;t dữ liệu từ hệ thống cũ.
+---
+Luồng ngoại lệ (Exception Flow)
+
+# Lỗi mất kết nối mạng: Khi mở hộp thoại chi tiết buổi học m&agrave; gặp lỗi mất mạng, hệ thống hiển thị m&agrave;n h&igrave;nh cảnh b&aacute;o kết nối lỗi k&egrave;m n&uacute;t bấm &quot;Tải lại&quot;.
+
+Lỗi kh&ocirc;ng t&igrave;m thấy bản ghi: Khi m&atilde; ID buổi học kh&ocirc;ng tồn tại trong cơ sở dữ liệu, hiển thị th&ocirc;ng b&aacute;o &quot;Buổi học kh&ocirc;ng tồn tại&quot; v&agrave; tự động đ&oacute;ng hộp thoại.
+
+---
+Y&ecirc;u cầu phi chức năng (Non-functional)
+
+# Thời gian phản hồi: Tải dữ liệu h&agrave;nh ch&iacute;nh v&agrave; danh s&aacute;ch lớp học dưới 1 gi&acirc;y để đảm bảo trải nghiệm th&ocirc;ng suốt tại lớp học trực tiếp.
+
+---
+6. Đặc tả kết nối hệ thống
+
+# M&agrave;n h&igrave;nh thực hiện gọi c&aacute;c t&agrave;i nguy&ecirc;n chỉ đọc từ m&aacute;y chủ hệ thống v&agrave; cập nhật từ ph&iacute;a người d&ugrave;ng.
+  Đường dẫn kết nối:
+
+  Cấu tr&uacute;c dữ liệu phản hồi th&agrave;nh c&ocirc;ng :
+

@@ -1,0 +1,19 @@
+23: Gi&aacute;o vi&ecirc;n kh&ocirc;ng ghi nhận được học vi&ecirc;n đến trễ
+33: Kh&oacute; khăn lớn nhất (Pain-points): Nắm bắt th&ocirc;ng tin học vi&ecirc;n nghỉ ph&eacute;p v&agrave; ghi nhận học vi&ecirc;n đến muộn
+46: [RULE-DETAIL-02] T&iacute;nh to&aacute;n thẻ thống k&ecirc; thời gian thực: C&aacute;c thẻ đếm chuy&ecirc;n cần ở đầu bảng (Sĩ số, C&oacute; mặt, Ph&eacute;p/Vắng, Trễ, Trial) phải tự động t&iacute;nh to&aacute;n lại số liệu v&agrave; cập nhật ngay lập tức khi gi&aacute;o vi&ecirc;n thay đổi trạng th&aacute;i điểm danh của bất kỳ học vi&ecirc;n n&agrave;o tr&ecirc;n bảng danh s&aacute;ch.
+107: Ph&eacute;p/Vắng
+109: Hiển thị định dạng: [Số nghỉ ph&eacute;p] &middot; [Số vắng].
+111: Trễ
+113: Tổng số học vi&ecirc;n đi trễ
+159: N&uacute;t cộng x&aacute;m [+] — bấm v&agrave;o mở menu thả xuống gồm 3 lựa chọn: &quot;Đ&atilde; đến&quot; (xanh l&aacute;), &quot;Đến muộn&quot; (cam), &quot;Vắng mặt&quot; (đỏ).
+160: Sau khi đ&atilde; điểm danh (hoặc buổi đ&atilde; qua): Hiển thị nh&atilde;n trạng th&aacute;i tương ứng (&quot;Đ&atilde; đến&quot; xanh l&aacute; / &quot;Đến muộn&quot; cam / &quot;Vắng mặt&quot; đỏ). Bấm lại v&agrave;o nh&atilde;n vẫn mở menu thả xuống cho ph&eacute;p thay đổi trạng th&aacute;i.
+215: N&uacute;t cộng x&aacute;m [+] — bấm v&agrave;o mở menu thả xuống gồm 3 lựa chọn: &quot;Đ&atilde; đến&quot; (xanh l&aacute;), &quot;Đến muộn&quot; (cam), &quot;Vắng mặt&quot; (đỏ).
+216: Sau khi đ&atilde; điểm danh (hoặc buổi đ&atilde; qua): Hiển thị nh&atilde;n trạng th&aacute;i tương ứng (&quot;Đ&atilde; đến&quot; xanh l&aacute; / &quot;Đến muộn&quot; cam / &quot;Vắng mặt&quot; đỏ). Bấm lại v&agrave;o nh&atilde;n vẫn mở menu thả xuống cho ph&eacute;p thay đổi trạng th&aacute;i.
+322: Khi: Gi&aacute;o vi&ecirc;n bấm lại nh&atilde;n v&agrave; chọn &quot;Đến muộn&quot;.
+324: Th&igrave;: Nh&atilde;n chuyển th&agrave;nh &quot;Đến muộn&quot; cam. Thẻ &quot;Trễ&rdquo; tăng 1.
+364: # [CASE-01] Ca kiểm tra chuyển đổi cấu tr&uacute;c bảng
+369: [CASE-02] Điểm kỹ năng ở trạng th&aacute;i kh&aacute;c nhau tr&ecirc;n c&ugrave;ng một học vi&ecirc;n
+374: [CASE-03] Danh s&aacute;ch học vi&ecirc;n rỗng
+379: [CASE-04] Kh&ocirc;ng c&oacute; học vi&ecirc;n học thử (Trial)
+384: [CASE-05] Kh&ocirc;ng c&oacute; học vi&ecirc;n mới v&agrave; kh&ocirc;ng c&oacute; học vi&ecirc;n trial
+389: [CASE-06] Nhiều học vi&ecirc;n nghỉ ph&eacute;p c&ugrave;ng l&uacute;c

@@ -39,8 +39,8 @@ export const DetailPage: Story = {
     title: 'Booking E0042',
     description: 'IELTS Foundation · Scheduled 2026-05-20 08:30',
     code: 'E0042',
-    status: 'started_assessment',
-    statusLabel: 'Assessing',
+    status: 'checkin',
+    statusLabel: 'Đã check-in',
     showBackButton: true,
     actions: (
       <>

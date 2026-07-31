@@ -43,7 +43,7 @@ const COLUMN_DEFS: Array<{ label: string; className: string; sticky?: boolean }>
   { label: 'LWR', className: 'min-w-48' },
   { label: 'Trạng thái', className: 'min-w-44' },
   { label: 'Kết quả', className: 'min-w-28' },
-  { label: 'Nhân sự', className: 'min-w-36' },
+  { label: 'Giáo viên', className: 'min-w-36' },
   { label: 'Ghi chú', className: 'min-w-48' },
 ]
 

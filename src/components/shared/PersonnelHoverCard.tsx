@@ -43,7 +43,7 @@ export function PersonnelHoverCard({
     e.stopPropagation()
     e.preventDefault()
     if (!person.phone) return
-    toast.success(`Đang thực hiện cuộc gọi CSKH tới nhân viên: ${person.name} (${person.phone})`)
+    toast.success(`Đang thực hiện cuộc gọi CS tới nhân viên: ${person.name} (${person.phone})`)
   }
 
   return (
@@ -123,6 +123,14 @@ export function PersonnelHoverCard({
                 <span className="font-semibold text-foreground truncate block" title={person.email || undefined}>{person.email || '—'}</span>
               </div>
             </div>
+
+            {person.isLeave && (
+              <div className="mt-2.5 pt-2 border-t border-dashed border-rose-500/30 text-[11px] text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10 p-2 rounded-lg">
+                <p className="font-bold flex items-center gap-1">
+                  ⚠️ Đang tạm nghỉ (Nghỉ)
+                </p>
+              </div>
+            )}
 
             {person.isSubstitute && (
               <div className="mt-2.5 pt-2 border-t border-dashed border-amber-500/30 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/10 p-2 rounded-lg">

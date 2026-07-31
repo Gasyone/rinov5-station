@@ -30,6 +30,7 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
   hourStart = 7,
   hourEnd = 22,
   rowClassName,
+  fixedWidthItems,
 }: ScheduleTimeGridProps<T>) {
   // Generate the fixed 30-minute slots
   const first = hourStart * 60
@@ -53,27 +54,52 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
         <div className="border-r border-border/40" />
         {days.map((day) => {
           const isToday = day.getTime() === today.getTime()
+          const dayKey = toScheduleDateKey(day)
+          const dayItems = items.filter((item) => item.date === dayKey)
+          const hasScheduleType = dayItems.some((item) => 'scheduleType' in item)
+          let countLabel = ''
+          if (hasScheduleType) {
+            const classCount = dayItems.filter((item) => (item as { scheduleType?: string }).scheduleType === 'class').length
+            const eventCount = dayItems.filter((item) => (item as { scheduleType?: string }).scheduleType === 'event').length
+            if (classCount > 0 && eventCount > 0) {
+              countLabel = `${classCount} lớp, ${eventCount} sk`
+            } else if (classCount > 0) {
+              countLabel = `${classCount} lớp`
+            } else if (eventCount > 0) {
+              countLabel = `${eventCount} sự kiện`
+            } else {
+              countLabel = '0 lịch'
+            }
+          } else {
+            countLabel = dayItems.length > 0 ? `${dayItems.length} lớp` : '0 lịch'
+          }
+
           return (
             <div
               key={day.toISOString()}
-              className="flex min-w-0 flex-col items-center border-r border-border/40 py-2 last:border-r-0"
+              className="flex min-w-0 flex-col items-center border-r border-border/40 py-2.5 last:border-r-0"
             >
-              <span
-                className={cn(
-                  'text-[11px] font-medium',
-                  isToday ? 'text-primary' : 'text-muted-foreground'
-                )}
-              >
-                {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
-              </span>
-              <div
-                className={cn(
-                  'mt-0.5 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold',
-                  isToday ? 'bg-primary text-primary-foreground' : ''
-                )}
-              >
-                {day.getDate()}
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    'text-[11px] font-semibold uppercase tracking-wider',
+                    isToday ? 'text-primary' : 'text-muted-foreground'
+                  )}
+                >
+                  {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
+                </span>
+                <span
+                  className={cn(
+                    'flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
+                    isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
+                  )}
+                >
+                  {day.getDate()}
+                </span>
               </div>
+              <span className="text-[9.5px] mt-1 text-muted-foreground font-semibold">
+                {countLabel}
+              </span>
             </div>
           )
         })}
@@ -150,25 +176,31 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
                   height: `${totalSlots * rowHeight}px`,
                 }}
               >
-                {laidOutItems.map(({ item, top, height, left, width }) => (
-                  <div
-                    key={item.id}
-                    className="absolute p-0.5"
-                    style={{
-                      top: `${top}px`,
-                      height: `${height}px`,
-                      left: `${left}%`,
-                      width: `${width}%`,
-                      zIndex: 10,
-                    }}
-                  >
-                    {renderItem(item, {
-                      overlapCount: Math.round(100 / width),
-                      overlapIndex: Math.round(left / width),
-                      isOverlapped: width < 99,
-                    })}
-                  </div>
-                ))}
+                {laidOutItems.map(({ item, top, height, left, width }) => {
+                  const overlapCount = Math.round(100 / width)
+                  const overlapIndex = Math.round(left / width)
+                  const styleLeft = fixedWidthItems ? `${overlapIndex * 288}px` : `${left}%`
+                  const styleWidth = fixedWidthItems ? '280px' : `${width}%`
+                  return (
+                    <div
+                      key={item.id}
+                      className="absolute p-0.5"
+                      style={{
+                        top: `${top}px`,
+                        height: `${height}px`,
+                        left: styleLeft,
+                        width: styleWidth,
+                        zIndex: 10,
+                      }}
+                    >
+                      {renderItem(item, {
+                        overlapCount,
+                        overlapIndex,
+                        isOverlapped: width < 99,
+                      })}
+                    </div>
+                  )
+                })}
               </div>
             )
           })}

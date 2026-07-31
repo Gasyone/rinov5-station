@@ -58,7 +58,7 @@ export function TrialClassDetailSidePanel({
               {(trial.internalNotes ?? []).length > 0 ? (
                 <div className="space-y-2 pt-1">
                   {(trial.internalNotes ?? []).map((note, index) => (
-                    <div key={`${note.timestamp}-${index}`} className="rounded-md bg-muted p-2.5">
+                    <div key={`${note.timestamp}-${index}`} className="rounded-md bg-muted p-1.5">
                       <p className="text-sm">{note.text}</p>
                       <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                         <span className="text-xs font-semibold">{note.author}</span>
@@ -71,7 +71,7 @@ export function TrialClassDetailSidePanel({
                 <p className="pt-3 text-sm text-muted-foreground">Chưa có ghi chú.</p>
               )}
             </div>
-            <div className="relative shrink-0 border-t pt-3">
+            <div className="relative shrink-0 border-t pt-1.5">
               <Textarea
                 value={internalNote}
                 onChange={(event) => setInternalNote(event.target.value)}

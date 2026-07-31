@@ -52,8 +52,7 @@ export default function LoginPage() {
     setError(null)
     const ok = await login(identifier, password)
     if (ok) {
-      router.push('/app/calendar_class_schedule')
-      router.refresh()
+      window.location.href = '/app/calendar_class_schedule'
     }
   }
 

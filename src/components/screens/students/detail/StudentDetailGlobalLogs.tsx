@@ -9,7 +9,7 @@ interface StudentDetailGlobalLogsProps {
 
 export function StudentDetailGlobalLogs({ logs }: StudentDetailGlobalLogsProps) {
   return (
-    <div className="relative border-l border-border pl-6 ml-3 space-y-6 pt-1">
+    <div className="relative border-l border-border pl-6 ml-3 space-y-6 pt-0">
       {logs.map((log) => (
         <div key={log.id} className="relative text-xs">
           {/* Timeline Dot */}

@@ -26,7 +26,7 @@ export function BookingTestResultPage({ bookingId }: BookingTestResultPageProps)
 
   if (!booking) {
     return (
-      <div className="flex h-full min-h-0 flex-col bg-background px-4 py-3 lg:px-6">
+      <div className="flex h-full min-h-0 flex-col bg-background px-3 py-3 lg:px-3">
         <EmptyState
           icon={<FileText className="h-7 w-7 text-muted-foreground" />}
           title="Không tìm thấy kết quả đánh giá"
@@ -58,7 +58,7 @@ export function BookingTestResultPage({ bookingId }: BookingTestResultPageProps)
         }
       />
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-4 pb-6 lg:px-6">
+      <main className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 lg:px-3">
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
             <Panel title="Tổng quan học viên" icon={<UserRound className="h-4 w-4" />}>

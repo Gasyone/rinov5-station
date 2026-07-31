@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { AppAvatar } from '@/components/shared'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -19,7 +15,7 @@ import type {
   WorkRegistrationRecord,
   WorkRegistrationStatus,
 } from '@/mocks/workRegistrations'
-import { formatMinutes, getInitials, getSlot } from './workRegistrationHelpers'
+import { formatMinutes, getSlot } from './workRegistrationHelpers'
 
 interface WorkRegistrationSlotDetailDialogProps {
   open: boolean
@@ -64,10 +60,7 @@ export function WorkRegistrationSlotDetailDialog({
                 className="flex items-center justify-between gap-3 rounded-md border border-border p-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={employee.avatar} alt={employee.name} />
-                    <AvatarFallback>{getInitials(employee.name)}</AvatarFallback>
-                  </Avatar>
+                  <AppAvatar src={employee.avatar} name={employee.name} size="default" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{employee.name}</p>
                     <p className="truncate text-xs text-muted-foreground">

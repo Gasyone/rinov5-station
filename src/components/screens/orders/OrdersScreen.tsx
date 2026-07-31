@@ -160,7 +160,7 @@ export function OrdersScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="grid shrink-0 gap-3 px-4 pb-3 sm:grid-cols-2 lg:grid-cols-4 lg:px-6">
+      <div className="grid shrink-0 gap-3 px-3 pb-3 sm:grid-cols-2 lg:grid-cols-4 lg:px-3">
         <MetricTile label="Filtered orders" value={metrics.total} icon={ReceiptText} />
         <MetricTile
           label="Paid revenue"
@@ -175,7 +175,7 @@ export function OrdersScreen() {
         <MetricTile label="Completed" value={metrics.completed} icon={CheckCircle} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
         <DataTableFrame
           footer={
             <DataTablePagination

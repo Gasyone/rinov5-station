@@ -3,10 +3,9 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { AppAvatar } from '@/components/shared'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { getInitials } from './bookingTestHelpers'
 import type { BookingTest } from '@/mocks/bookingTests'
 import { UserSearch } from 'lucide-react'
 
@@ -165,11 +164,7 @@ export function BookingTestSchedulePanel({
                     >
                       <div className="flex items-center gap-2">
                         {!isDefault && (
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-[10px]">
-                              {getInitials(t)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <AppAvatar name={t} size="sm" />
                         )}
                         <span className="text-sm font-medium">
                           {isDefault ? 'Không chọn giáo viên' : t}
@@ -204,16 +199,12 @@ export function BookingTestSchedulePanel({
                         setExpandedTeacherDate(null)
                       }}
                     >
-                      <Avatar className="h-10 w-10 border">
-                        <AvatarFallback>{getInitials(t)}</AvatarFallback>
-                      </Avatar>
+                      <AppAvatar name={t} size="md" />
                     </div>
                   </HoverCardTrigger>
                   <HoverCardContent className="w-64 p-3" align="start">
                     <div className="flex justify-between space-x-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback>{getInitials(t)}</AvatarFallback>
-                      </Avatar>
+                      <AppAvatar name={t} size="lg" />
                       <div className="space-y-1 text-sm">
                         <h4 className="font-semibold">{t}</h4>
                         <p className="text-xs text-muted-foreground">Giáo viên Tiếng Anh</p>

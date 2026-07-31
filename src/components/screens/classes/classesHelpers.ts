@@ -13,14 +13,29 @@ export interface ClassFilterState {
   times: string[]
   subjects: string[]
   programs: string[]
+  learningPaths: string[]
+  syllabuses: string[]
+  packages: string[]
   statuses: string[]
   dateRanges: string[]
   studentSearch: string
 }
 
+
 export function countClassesByStatus(items: ClassRecord[], status: ClassStatusFilter): number {
-  if (status === 'all') return items.length
+  if (status === 'all') return items.filter((c) => c.status !== 'huy').length
   return items.filter((c) => c.status === status).length
+}
+
+export const getSubjectByLevel = (level: string): string => {
+  const l = level.toLowerCase()
+  if (l.includes('ielts') || l.includes('toeic') || l.includes('beginner') || l.includes('english') || l.includes('prep') || l.includes('movers') || l.includes('flyers')) {
+    return 'english'
+  }
+  if (l.includes('japanese')) return 'japanese'
+  if (l.includes('stem')) return 'stem'
+  if (l.includes('math')) return 'math'
+  return 'english'
 }
 
 export function filterClasses(
@@ -29,23 +44,13 @@ export function filterClasses(
     search: string
     branch: string
     status: ClassStatusFilter
+    subject?: string
     extra: ClassFilterState
   }
 ): ClassRecord[] {
   const query = filters.search.trim().toLowerCase()
   
   // Helpers for mapping and schedule checks
-  const getSubjectByLevel = (level: string): string => {
-    const l = level.toLowerCase()
-    if (l.includes('ielts') || l.includes('toeic') || l.includes('beginner') || l.includes('english') || l.includes('prep') || l.includes('movers') || l.includes('flyers')) {
-      return 'english'
-    }
-    if (l.includes('japanese')) return 'japanese'
-    if (l.includes('stem')) return 'stem'
-    if (l.includes('math')) return 'math'
-    return 'english'
-  }
-
   const getProgramByLevel = (level: string): string => {
     const l = level.toLowerCase()
     if (l.includes('ielts')) return 'IELTS Foundation'
@@ -100,6 +105,9 @@ export function filterClasses(
   return items.filter((c) => {
     if (filters.branch !== 'all' && c.branch !== filters.branch) return false
     if (filters.status !== 'all' && c.status !== filters.status) return false
+    if (filters.status === 'all' && c.status === 'huy') return false
+    if (filters.subject && filters.subject !== 'all' && getSubjectByLevel(c.level) !== filters.subject) return false
+
     
     // Multi-select basic filters
     if (filters.extra.branches.length > 0 && !filters.extra.branches.includes(c.branch)) return false
@@ -110,7 +118,29 @@ export function filterClasses(
     // Expanded academic filters
     if (filters.extra.subjects.length > 0 && !filters.extra.subjects.includes(getSubjectByLevel(c.level))) return false
     if (filters.extra.programs.length > 0 && !filters.extra.programs.includes(getProgramByLevel(c.level))) return false
+
+    // Pathway (Lộ trình)
+    if (filters.extra.learningPaths && filters.extra.learningPaths.length > 0) {
+      const currentPath = c.learningPath ? c.learningPath.split('→')[0].trim() : ''
+      if (!filters.extra.learningPaths.includes(currentPath)) return false
+    }
+
+    // Syllabus (Chương trình)
+    if (filters.extra.syllabuses && filters.extra.syllabuses.length > 0) {
+      if (!c.syllabus || !filters.extra.syllabuses.includes(c.syllabus)) return false
+    }
+
+    // Package (Gói đăng ký)
+    if (filters.extra.packages && filters.extra.packages.length > 0) {
+      const classStudents = mockStudents.filter(
+        (s) => s.enrolledClass === c.name || (s.enrolledClasses && s.enrolledClasses.some((ec) => ec.className === c.name))
+      )
+      const studentPackages = classStudents.map((s) => s.packageName).filter(Boolean) as string[]
+      if (!studentPackages.some((pkg) => filters.extra.packages.includes(pkg))) return false
+    }
+
     if (filters.extra.statuses.length > 0 && !filters.extra.statuses.includes(c.status)) return false
+
 
     // Weekdays and shifts
     if (filters.extra.weekdays.length > 0 && !filters.extra.weekdays.some(w => matchWeekday(c.schedule, c.scheduleSlots || [], w))) return false
@@ -180,3 +210,93 @@ export const CLASS_LEVEL_LABELS: Record<string, string> = {
 export function getClassLevelLabel(level: string): string {
   return CLASS_LEVEL_LABELS[level] ?? level
 }
+
+export function getClassAttendanceRate(cls: ClassRecord): number {
+  if (typeof cls.attendanceRate === 'number') return cls.attendanceRate
+  if (cls.status === 'nhap' || cls.status === 'cho_khai_giang') return 0
+  const len = cls.name.length
+  return Math.min(100, Math.max(72, 85 + ((len * 7) % 15)))
+}
+
+export function getClassHomeworkRate(cls: ClassRecord): number {
+  if (typeof cls.homeworkRate === 'number') return cls.homeworkRate
+  if (cls.status === 'nhap' || cls.status === 'cho_khai_giang') return 0
+  const len = cls.name.length
+  return Math.min(100, Math.max(65, 78 + ((len * 9) % 21)))
+}
+
+export function getClassAvgTestScore(cls: ClassRecord): number {
+  if (typeof cls.avgTestScore === 'number') return cls.avgTestScore
+  if (cls.status === 'nhap' || cls.status === 'cho_khai_giang') return 0
+  const len = cls.name.length
+  const score = 6.8 + ((len * 11) % 28) / 10
+  return Number(score.toFixed(1))
+}
+
+export function getClassSpecialCareCount(cls: ClassRecord): number {
+  if (typeof cls.specialCareCount === 'number') return cls.specialCareCount
+  if (cls.status === 'nhap' || cls.status === 'cho_khai_giang') return 0
+  const len = cls.name.length
+  return len % 5 === 0 ? 3 : len % 3 === 0 ? 2 : len % 2 === 0 ? 1 : 0
+}
+
+export function getClassNewStudents(cls: ClassRecord): number {
+  if (typeof cls.newStudents === 'number') return cls.newStudents
+  if (cls.status === 'nhap' || cls.status === 'cho_khai_giang') return 0
+  const len = cls.name.length
+  return len % 4 === 0 ? 3 : len % 3 === 0 ? 2 : len % 2 === 0 ? 1 : 0
+}
+
+export function hasTeacherLeave(cls: ClassRecord): boolean {
+  if (!cls) return false
+  if (cls.scheduleSlots && cls.scheduleSlots.some((s) => s.isLeave)) return true
+  return false
+}
+
+const TEACHER_FULL_NAME_MAP: Record<string, string> = {
+  'Cô Hoàng Thị Mai': 'Hoàng Thị Mai',
+  'Hoàng Thị Mai': 'Hoàng Thị Mai',
+  'Cô Mai': 'Hoàng Thị Mai',
+  'Mai': 'Hoàng Thị Mai',
+  'Thầy Đức': 'Trịnh Minh Đức',
+  'Đức': 'Trịnh Minh Đức',
+  'Thầy Hùng': 'Nguyễn Mạnh Hùng',
+  'Hùng': 'Nguyễn Mạnh Hùng',
+  'Cô Hương': 'Nguyễn Thu Hương',
+  'Hương': 'Nguyễn Thu Hương',
+  'Cô Nga': 'Trịnh Thúy Nga',
+  'Nga': 'Trịnh Thúy Nga',
+  'Thầy Quân': 'Trần Minh Quân',
+  'Quân': 'Trần Minh Quân',
+  'Cô Lan': 'Lê Thị Lan',
+  'Lan': 'Lê Thị Lan',
+  'Thầy Nam': 'Nguyễn Hoàng Nam',
+  'Nam': 'Nguyễn Hoàng Nam',
+  'Cô Hoa': 'Nguyễn Thị Hoa',
+  'Hoa': 'Nguyễn Thị Hoa',
+  'Cô Mỹ Linh': 'Phạm Mỹ Linh',
+  'Mỹ Linh': 'Phạm Mỹ Linh',
+  'Thầy Minh': 'Nguyễn Văn Minh',
+  'Minh': 'Nguyễn Văn Minh',
+  'Thầy Tuấn': 'Lê Anh Tuấn',
+  'Tuấn': 'Lê Anh Tuấn',
+  'Cô Phương': 'Trần Hà Phương',
+  'Phương': 'Trần Hà Phương',
+  'Cô Hải': 'Đỗ Thanh Hải',
+  'Hải': 'Đỗ Thanh Hải',
+}
+
+export function formatTeacherFullName(name?: string): string {
+  if (!name) return ''
+  const trimmed = name.trim()
+  if (TEACHER_FULL_NAME_MAP[trimmed]) {
+    return TEACHER_FULL_NAME_MAP[trimmed]
+  }
+  const cleaned = trimmed.replace(/^(Cô|Thầy|GV\.|GV)\s+/i, '').trim()
+  if (TEACHER_FULL_NAME_MAP[cleaned]) {
+    return TEACHER_FULL_NAME_MAP[cleaned]
+  }
+  return cleaned
+}
+
+

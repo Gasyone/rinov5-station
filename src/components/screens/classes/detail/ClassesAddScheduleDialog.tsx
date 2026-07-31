@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Globe } from 'lucide-react'
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FieldLabel } from '@/components/shared'
 import { InlineSelect, SearchableCombobox } from '@/components/controls'
-import { TeacherDirectoryDialog } from '../TeacherDirectoryDialog'
+
 import { mockTeachers } from '@/mocks/teacherRecords'
 import type { ScheduleSlot, ClassRecord } from '@/mocks/classRecords'
 
@@ -24,6 +23,7 @@ interface ScheduleDayState {
   startTime: string
   endTime: string
   teachers: string[]
+  assistants: string[]
   room: string
 }
 
@@ -130,20 +130,18 @@ export function ClassesAddScheduleDialog({
     return active
   }, [cls.scheduleSlots])
 
-  // Global Teacher Directory Modal state
-  const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false)
-  const [activeDayIdForTeacherModal, setActiveDayIdForTeacherModal] = useState<string | null>(null)
+
 
   // Initialize configurations for all days of the week
   const [scheduleDays, setScheduleDays] = useState<Record<string, ScheduleDayState>>(() => {
     const initial: Record<string, ScheduleDayState> = {
-      monday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], room: cls.room || 'A101' },
-      tuesday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: [], room: 'A102' },
-      wednesday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], room: cls.room || 'A101' },
-      thursday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: [], room: 'B201' },
-      friday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], room: cls.room || 'A101' },
-      saturday: { enabled: false, startTime: '09:00', endTime: '10:30', teachers: [], room: 'C301' },
-      sunday: { enabled: false, startTime: '09:00', endTime: '10:30', teachers: [], room: 'C301' },
+      monday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], assistants: ['Hoàng Anh'], room: cls.room || 'A101' },
+      tuesday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: [], assistants: [], room: 'A102' },
+      wednesday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], assistants: [], room: cls.room || 'A101' },
+      thursday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: [], assistants: [], room: 'B201' },
+      friday: { enabled: false, startTime: '18:00', endTime: '19:30', teachers: cls.teacher ? [cls.teacher] : [], assistants: ['Bảo Ngọc'], room: cls.room || 'A101' },
+      saturday: { enabled: false, startTime: '09:00', endTime: '10:30', teachers: [], assistants: [], room: 'C301' },
+      sunday: { enabled: false, startTime: '09:00', endTime: '10:30', teachers: [], assistants: [], room: 'C301' },
     }
 
     if (cls.scheduleSlots && cls.scheduleSlots.length > 0) {
@@ -164,6 +162,7 @@ export function ClassesAddScheduleDialog({
             startTime: slot.startTime,
             endTime: slot.endTime,
             teachers: slot.teachers && slot.teachers.length > 0 ? slot.teachers : (cls.teacher ? [cls.teacher] : []),
+            assistants: key === 'monday' ? ['Hoàng Anh'] : key === 'friday' ? ['Bảo Ngọc'] : [],
             room: slot.room || cls.room || 'A101'
           }
         }
@@ -204,6 +203,32 @@ export function ClassesAddScheduleDialog({
 
     return list
   }, [scheduleDays])
+
+  const shiftOptions = useMemo(() => {
+    const baseTimes = ['08:00', '09:00', '09:45', '14:00', '15:45', '16:00', '17:00', '17:30', '18:00', '18:30', '19:00', '19:15', '20:00']
+    
+    // Add existing ones if not in list
+    const times = [...baseTimes]
+    Object.values(scheduleDays).forEach((dayState) => {
+      if (dayState.enabled && dayState.startTime && !times.includes(dayState.startTime)) {
+        times.push(dayState.startTime)
+      }
+    })
+    
+    times.sort((a, b) => {
+      const [ha, ma] = a.split(':').map(Number)
+      const [hb, mb] = b.split(':').map(Number)
+      return (ha * 60 + ma) - (hb * 60 + mb)
+    })
+    
+    return times.map((time) => {
+      const end = calculateEndTime(time, duration)
+      return {
+        value: time,
+        label: `Ca từ ${time} - đến ${end}`,
+      }
+    })
+  }, [duration, scheduleDays])
 
   const handleToggleDay = (dayId: string) => {
     setScheduleDays((prev) => {
@@ -265,16 +290,13 @@ export function ClassesAddScheduleDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[720px] p-0 overflow-hidden rounded-2xl border border-muted shadow-2xl flex flex-col max-h-[90vh]">
-          {/* Header */}
-          <div className="bg-primary/5 px-6 py-4 border-b border-muted shrink-0">
-            <DialogHeader>
+        <DialogContent className="sm:max-w-[840px] p-0 overflow-hidden rounded-2xl border border-muted shadow-2xl flex flex-col max-h-[90vh]">
+          {/* Header (No top gap, no subtitle) */}
+          <div className="bg-muted/30 px-6 py-3.5 border-b border-border/60 shrink-0">
+            <DialogHeader className="p-0 space-y-0">
               <DialogTitle className="text-base font-bold text-foreground">
                 Thiết lập thời lượng & Lịch học cố định
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Tạo lịch học hàng tuần cho lớp {cls.name}. Chọn các buổi học, thiết lập giờ học, phòng học, và điều phối giảng viên.
-              </DialogDescription>
             </DialogHeader>
           </div>
 
@@ -314,32 +336,27 @@ export function ClassesAddScheduleDialog({
 
                       {state.enabled && (
                         <div className="flex items-center gap-2">
-                          <Input 
-                            type="time"
+                          <InlineSelect
                             value={state.startTime}
-                            onChange={(e) => handleStartTimeChange(day.id, e.target.value)}
-                            className="h-8 w-24 rounded border px-2 text-[12px] bg-background"
-                          />
-                          <span className="text-[11px] text-muted-foreground">đến</span>
-                          <Input 
-                            type="time"
-                            value={state.endTime}
-                            readOnly
-                            className="h-8 w-24 rounded border bg-muted/40 px-2 text-[12px] opacity-70 cursor-not-allowed"
+                            options={shiftOptions}
+                            placeholder="Chọn ca..."
+                            onValueChange={(val) => handleStartTimeChange(day.id, val)}
+                            className="h-8 w-[220px] rounded border px-2 text-[12px] bg-background justify-between"
+                            variant="solid"
                           />
                         </div>
                       )}
                     </div>
 
                     {state.enabled && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2.5 border-t border-dashed">
-                        {/* Room Selection */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-2.5 border-t border-dashed">
+                        {/* 1. Room Selection */}
                         <FieldLabel 
                           label={
                             <div className="flex items-center justify-between w-full">
                               <span>Phòng học</span>
                               {state.startTime && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                   {getMockRoomCount(day.id, state.startTime)} trống
                                 </span>
                               )}
@@ -350,20 +367,20 @@ export function ClassesAddScheduleDialog({
                           <InlineSelect
                             value={state.room}
                             options={ROOM_OPTIONS}
-                            placeholder="Chọn phòng học..."
+                            placeholder="Chọn phòng..."
                             onValueChange={(val) => handleRoomChange(day.id, val)}
-                            className="w-full justify-between h-8 text-[12px] bg-background"
+                            className="w-full justify-between h-8 text-[11px] bg-background"
                             variant="solid"
                           />
                         </FieldLabel>
 
-                        {/* Single teacher selection */}
+                        {/* 2. Main Teacher selection (Renamed to "Giáo viên") */}
                         <FieldLabel 
                           label={
                             <div className="flex items-center justify-between w-full">
-                              <span>Giáo viên giảng dạy</span>
+                              <span>Giáo viên</span>
                               {state.startTime && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                   {getMockTeacherCount(day.id, state.startTime)} khả dụng
                                 </span>
                               )}
@@ -385,22 +402,41 @@ export function ClassesAddScheduleDialog({
                                     },
                                   }))
                                 }}
-                                placeholder="Chọn giáo viên giảng dạy..."
+                                placeholder="Chọn giáo viên..."
                               />
                             </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 shrink-0 border border-input"
-                              onClick={() => {
-                                setActiveDayIdForTeacherModal(day.id)
-                                setIsTeacherModalOpen(true)
-                              }}
-                              title="Lọc giáo viên toàn hệ thống"
-                            >
-                              <Globe className="h-3.5 w-3.5" />
-                            </Button>
+                          </div>
+                        </FieldLabel>
+
+                        {/* 3. Assistant Teacher selection ("Trợ giảng") */}
+                        <FieldLabel 
+                          label={
+                            <div className="flex items-center justify-between w-full">
+                              <span>Trợ giảng</span>
+                              <span className="text-[9px] text-muted-foreground font-medium normal-case">
+                                (Tùy chọn)
+                              </span>
+                            </div>
+                          }
+                          className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                        >
+                          <div className="flex items-center gap-1.5 w-full">
+                            <div className="flex-1 min-w-0">
+                              <SearchableCombobox
+                                options={teacherComboboxOptions}
+                                value={state.assistants?.[0] || ''}
+                                onChange={(val) => {
+                                  setScheduleDays((prev) => ({
+                                    ...prev,
+                                    [day.id]: {
+                                      ...prev[day.id],
+                                      assistants: val ? [val as string] : [],
+                                    },
+                                  }))
+                                }}
+                                placeholder="Chọn trợ giảng..."
+                              />
+                            </div>
                           </div>
                         </FieldLabel>
                       </div>
@@ -432,25 +468,7 @@ export function ClassesAddScheduleDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Global Teacher Directory Dialog */}
-      {isTeacherModalOpen && activeDayIdForTeacherModal && (
-        <TeacherDirectoryDialog
-          open={isTeacherModalOpen}
-          onOpenChange={setIsTeacherModalOpen}
-          dayOfWeek={WEEKDAY_DAYS.find((d) => d.id === activeDayIdForTeacherModal)?.label || ''}
-          startTime={scheduleDays[activeDayIdForTeacherModal]?.startTime}
-          onSelectTeacher={(teacherId, teacherName) => {
-            setScheduleDays((prev) => ({
-              ...prev,
-              [activeDayIdForTeacherModal]: {
-                ...prev[activeDayIdForTeacherModal],
-                teachers: [teacherName],
-              },
-            }))
-            setIsTeacherModalOpen(false)
-          }}
-        />
-      )}
+
     </>
   )
 }

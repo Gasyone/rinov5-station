@@ -13,7 +13,12 @@ export interface StudentFilterState {
   subjects: string[]
   classes: string[]
   sales: string[]
+  packages: string[]
+  dateRanges: string[]
+  ageRanges: string[]
   status: StudentStatusFilter
+  startDate?: string
+  endDate?: string
 }
 
 export const INITIAL_FILTER_STATE: StudentFilterState = {
@@ -27,7 +32,12 @@ export const INITIAL_FILTER_STATE: StudentFilterState = {
   subjects: [],
   classes: [],
   sales: [],
+  packages: [],
+  dateRanges: [],
+  ageRanges: [],
   status: 'all',
+  startDate: '',
+  endDate: '',
 }
 
 export const STUDENT_STATUS_TABS: Array<{

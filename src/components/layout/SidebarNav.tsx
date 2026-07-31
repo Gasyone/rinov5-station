@@ -105,12 +105,12 @@ export function SidebarNav({
               onClick={() => handleGroupClick(group)}
             >
               {open ? (
-                <div className="flex min-w-0 flex-1 items-center gap-3 pr-2">
+                <span className="flex min-w-0 flex-1 items-center gap-3 pr-2">
                   <group.icon className="h-5 w-5 flex-shrink-0" />
                   <span className="flex-1 truncate text-left text-inherit text-sm">
                     {group.label}
                   </span>
-                </div>
+                </span>
               ) : (
                 <group.icon className="h-5 w-5 flex-shrink-0" />
               )}

@@ -8,7 +8,7 @@ export interface NotificationItem {
   category: NotificationCategory
   priority: NotificationPriority
   read: boolean
-  timestamp: Date
+  timestamp: Date | string
   targetRoute: string
 }
 
@@ -35,9 +35,10 @@ export function getCategoryLabel(category: NotificationCategory): string {
   return CATEGORY_LABELS[category]
 }
 
-export function getRelativeTime(date: Date): string {
+export function getRelativeTime(date: Date | string): string {
+  const parsedDate = typeof date === 'string' ? new Date(date) : date
   const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
+  const diffMs = now.getTime() - parsedDate.getTime()
   const diffMin = Math.floor(diffMs / 60000)
   const diffHour = Math.floor(diffMs / 3600000)
   const diffDay = Math.floor(diffMs / 86400000)
@@ -46,7 +47,7 @@ export function getRelativeTime(date: Date): string {
   if (diffMin < 60) return `${diffMin} phút trước`
   if (diffHour < 24) return `${diffHour} giờ trước`
   if (diffDay < 7) return `${diffDay} ngày trước`
-  return date.toLocaleDateString('vi-VN')
+  return parsedDate.toLocaleDateString('vi-VN')
 }
 
 export const MOCK_NOTIFICATIONS: NotificationItem[] = [

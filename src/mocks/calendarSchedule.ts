@@ -9,8 +9,13 @@ export interface ClassSession {
   totalStudents: number; officialStudents: number; trialStudents: number;
   attendedStudents?: number; isRecurring?: boolean;
   substituteTeacher?: string;
+  assistantTeacher?: string;
+  assistantSubstitute?: string;
   status?: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'rescheduled';
   isOpeningDay?: boolean;
+  ratingAverage?: number;
+  ratingCount?: number;
+  homeworkSubmitted?: number;
 }
 
 export interface EventSession {
@@ -95,7 +100,10 @@ export function getMockClassSessions(): ClassSession[] {
       const [eh, em] = cls.time.split('-')[1].split(':').map(Number)
       
       const totalStudents = 12 + (seed % 8)
-      const trialStudents = 2 + (seed % 3)
+      const isTrialClass = cls.name.toLowerCase().includes('trial') || cls.name.toLowerCase().includes('học thử')
+      const trialStudents = isTrialClass 
+        ? 2 + (seed % 2) 
+        : (seed % 3 === 0 ? 0 : seed % 3)
       const attendedStudents = bucket === 'past' && sts !== 'cancelled' ? totalStudents - (seed % 3) : undefined
       const statusLabelMap: Record<string, string> = {
         confirmed: 'Đã xác nhận',
@@ -106,11 +114,31 @@ export function getMockClassSessions(): ClassSession[] {
       }
       
       const teacher = PICK(['Thu Hà', 'Mỹ Linh', 'Coenrad Redman'], seed)
-      // Inject substitute teacher randomly for upcoming or today classes
       const substituteTeacher = (seed % 7 === 0 && sts !== 'cancelled') ? PICK(['Hương Ly', 'Thanh Bình', 'David John'], seed) : undefined
-      
-      const isOp = cls.id === 'SA1_TA_001' && d.getDay() === days[0] && i > 14 && i <= 21
-      
+      const assistantTeacher = PICK(['Hoàng Nam', 'Lan Anh', 'Minh Trang', 'Đức Anh'], seed + 3)
+      const assistantSubstitute = (seed % 9 === 0 && sts !== 'cancelled') ? PICK(['Phương Thảo', 'Gia Huy'], seed + 5) : undefined
+
+      // Guaranteed opening day and substitute teacher in active week
+      const getMon = (input: Date) => {
+        const date = new Date(input)
+        const day = date.getDay()
+        date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
+        date.setHours(0, 0, 0, 0)
+        return date
+      }
+      const curMonday = getMon(today)
+      const wedKey = toDateKey(addDays(curMonday, 2))
+      const thuKey = toDateKey(addDays(curMonday, 3))
+
+      const isOpening = (toDateKey(d) === wedKey && cls.id === 'AK_TA_012') || (cls.id === 'SA1_TA_001' && d.getDay() === days[0] && i > 14 && i <= 21)
+      const subTeacher = (toDateKey(d) === thuKey && cls.id === 'SA1_TA_001')
+        ? 'Thanh Bình'
+        : substituteTeacher
+
+      const ratingCount = bucket === 'upcoming' || sts === 'cancelled' ? 0 : Math.max(0, totalStudents - (seed % 4))
+      const ratingAverage = ratingCount > 0 ? Number((4.5 + ((seed % 6) * 0.1)).toFixed(1)) : undefined
+      const homeworkSubmitted = bucket === 'upcoming' || sts === 'cancelled' ? 0 : Math.max(0, totalStudents - (seed % 5))
+
       return {
         id: `CLS-${cls.id}-${toDateKey(d)}`, classCode: cls.id, className: cls.name,
         subject: cls.subject, teacher,
@@ -122,57 +150,17 @@ export function getMockClassSessions(): ClassSession[] {
         type, typeLabel: type === 'class_session' ? 'Chính thức' : 'Bổ trợ',
         title: lesson.title, lessonSubtitle: lesson.subtitle,
         totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
-        attendedStudents, isRecurring: true, substituteTeacher,
-        isOpeningDay: isOp || undefined,
+        attendedStudents, isRecurring: true, substituteTeacher: subTeacher,
+        assistantTeacher, assistantSubstitute,
+        isOpeningDay: isOpening || undefined,
+        ratingAverage,
+        ratingCount,
+        homeworkSubmitted,
       }
     }).filter(Boolean) as ClassSession[]
   })
 
-  const getMon = (input: Date) => {
-    const date = new Date(input)
-    const day = date.getDay()
-    date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
-    date.setHours(0, 0, 0, 0)
-    return date
-  }
-
-  const monday = getMon(new Date())
-  const tuesday = new Date(monday)
-  tuesday.setDate(tuesday.getDate() + 1) // Tuesday
-  const tuesdayKey = `${tuesday.getFullYear()}-${PAD(tuesday.getMonth() + 1)}-${PAD(tuesday.getDate())}`
-
-  const testSessions: ClassSession[] = Array.from({ length: 7 }, (_, idx) => {
-    const classId = `TEST_CLASS_0${idx + 1}`
-    return {
-      id: `CLS-${classId}-${tuesdayKey}`,
-      classCode: classId,
-      className: `Lớp Test 0${idx + 1}`,
-      subject: idx % 2 === 0 ? 'Tiếng Anh' : 'Toán tư duy',
-      teacher: ['Thu Hà', 'Mỹ Linh', 'Coenrad Redman', 'Thanh Bình'][idx % 4],
-      branch: 'RinoEdu Linh Đàm',
-      schoolRoom: `Phòng ${idx + 1}`,
-      level: 'Level 2',
-      date: tuesdayKey,
-      dateDisplay: `${PAD(tuesday.getDate())}/${PAD(tuesday.getMonth() + 1)}/${tuesday.getFullYear()}`,
-      dateBucket: 'upcoming',
-      timeLabel: '17:45',
-      endTimeLabel: '19:15',
-      scheduleLabel: 'T3',
-      status: 'confirmed',
-      statusLabel: 'Đã xác nhận',
-      type: 'class_session',
-      typeLabel: 'Chính thức',
-      title: `Bài học thử nghiệm ${idx + 1}`,
-      lessonSubtitle: 'Chi tiết bài test',
-      totalStudents: 15,
-      officialStudents: 12,
-      trialStudents: 3,
-      attendedStudents: undefined,
-      isRecurring: true,
-    }
-  })
-
-  return [...generated, ...testSessions].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
+  return generated.sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
 }
 
 export function getMockEventSessions(): EventSession[] {

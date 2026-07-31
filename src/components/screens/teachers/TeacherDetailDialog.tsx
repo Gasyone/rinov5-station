@@ -75,7 +75,7 @@ export function TeacherDetailDialog({
       <Tabs defaultValue="overview" className="flex h-full min-h-0 flex-col">
         <DetailDialogTabsList tabs={TEACHER_TABS} />
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 lg:px-3">
           <TabsContent value="overview" className="m-0 p-0">
             <TeacherOverviewTab teacher={teacher} />
           </TabsContent>

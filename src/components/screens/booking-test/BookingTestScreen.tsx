@@ -33,7 +33,7 @@ export function BookingTestScreen() {
   const authorName = user?.name ?? 'Người dùng hiện tại'
 
   const [bookings, setBookings] = useState<BookingTest[]>(() => getBookingTests())
-  const [activeSubject, setActiveSubject] = useState<BookingSubject>('english')
+  const [activeSubject, setActiveSubject] = useState<string>('english')
   const [activeSchool, setActiveSchool] = useState('all')
   const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -133,7 +133,7 @@ export function BookingTestScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-2 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
         <DataTableFrame
           footer={
             <DataTablePagination

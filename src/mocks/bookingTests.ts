@@ -151,10 +151,10 @@ export const mockBookingTests: BookingTest[] = [
     testResult: {
       level: "Level 1A",
       subLevel: "A",
-      speaking: "5/8",
-      speakingAi: "6/8",
+      speaking: "-",
+      speakingAi: "-",
       speakingScore: "0",
-      lwr: "19/40",
+      lwr: "-",
       lwrLevel: "Pre-Starters",
       lwrScore: "0",
       path: "Kiểm tra đầu vào Tiếng Anh",

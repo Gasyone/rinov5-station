@@ -57,6 +57,7 @@ next-env.d.ts
 
 # docs/assets (session screenshots, reference images)
 /docs/assets/
+/docs/drafts/
 
 # wrangler files
 .wrangler

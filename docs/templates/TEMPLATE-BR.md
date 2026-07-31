@@ -115,12 +115,10 @@ tags: [br, business, stakeholder]
 
 ---
 
-## 9. Tuân thủ Đạo luật (Policy Compliance)
+## 9. Tuân thủ Quy định & Tiêu chuẩn (Compliance)
 
-> Tham chiếu `ENTERPRISE_STANDARDS.md`.
-
-- Tuân thủ `[POLICY-XXX-YY]`: [Mô tả ngắn]
-- Tuân thủ `[POLICY-AAA-BB]`: [Mô tả ngắn]
+- [Quy định 1]: Mô tả yêu cầu tuân thủ quy định pháp lý hoặc tiêu chuẩn vận hành áp dụng cho yêu cầu kinh doanh này.
+- [Quy định 2]: Mô tả yêu cầu tuân thủ khác nếu có.
 
 ---
 

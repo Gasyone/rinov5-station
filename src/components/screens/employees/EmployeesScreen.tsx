@@ -181,7 +181,7 @@ export function EmployeesScreen() {
         onCreate={() => setDialog({ mode: 'create' })}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 lg:px-6 lg:pb-6">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
         <DataTableFrame
           footer={
             <DataTablePagination

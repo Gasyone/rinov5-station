@@ -168,7 +168,7 @@ export function WorkRegistrationScreen() {
         onStaffLayoutChange={setStaffLayout}
       />
 
-      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 lg:px-6 lg:pb-6">
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
         {activeTab === 'mine' ? (
           <WorkRegistrationEditablePanel
             weekDays={weekDays}

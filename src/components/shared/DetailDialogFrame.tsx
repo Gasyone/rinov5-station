@@ -68,7 +68,7 @@ export function DetailDialogFrame({
             status={status}
             statusLabel={statusLabel}
             actions={actions}
-            className={cn('pr-12', headerClassName)}
+            className={cn('pr-16 lg:pr-16', headerClassName)}
           />
         </div>
 
@@ -86,13 +86,13 @@ interface DetailDialogTabsListProps {
 
 export function DetailDialogTabsList({ tabs }: DetailDialogTabsListProps) {
   return (
-    <div className="shrink-0 overflow-x-auto border-b px-4 lg:px-6">
-      <TabsList className="inline-flex h-10 min-w-max justify-start rounded-none border-b-0 bg-transparent p-0 sm:min-w-full">
+    <div className="shrink-0 overflow-x-auto overflow-y-hidden px-4 py-2">
+      <TabsList className="flex h-9 w-full justify-start rounded-md bg-transparent p-0 gap-1">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.id}
             value={tab.id}
-            className="h-10 shrink-0 rounded-none border-b-2 border-transparent px-4 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            className="h-8 shrink-0 flex-1 min-w-[100px] md:min-w-[120px] rounded-md px-4 text-sm font-medium transition-all data-[state=active]:!bg-primary/10 data-[state=active]:!text-primary data-[state=active]:shadow-none hover:bg-muted/30"
           >
             {tab.label}
           </TabsTrigger>

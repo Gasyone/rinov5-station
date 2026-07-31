@@ -1,0 +1,52 @@
+[
+  {
+    "id": "dashboard",
+    "averageRgbDiffPercent": 1.62,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "calendar_class_schedule",
+    "averageRgbDiffPercent": 2.35,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "booking_test",
+    "averageRgbDiffPercent": 2.23,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "students",
+    "averageRgbDiffPercent": 2.58,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "classes",
+    "averageRgbDiffPercent": 2.38,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "orders",
+    "averageRgbDiffPercent": 2.65,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "hr_employees",
+    "averageRgbDiffPercent": 3.4,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "products",
+    "averageRgbDiffPercent": 2.56,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "qc_check",
+    "averageRgbDiffPercent": 2.94,
+    "note": "weak metric; white UI lowers signal"
+  },
+  {
+    "id": "renewal",
+    "averageRgbDiffPercent": 2.05,
+    "note": "weak metric; white UI lowers signal"
+  }
+]

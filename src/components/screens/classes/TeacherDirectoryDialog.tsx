@@ -23,13 +23,80 @@ interface TeacherDirectoryDialogProps {
   dayOfWeek?: string
 }
 
-const isTeacherConflicting = (teacherId: string, dayOfWeek?: string, startTime?: string): boolean => {
+export const normalizeDay = (day?: string): string => {
+  if (!day) return ''
+  const d = day.toLowerCase().trim()
+  if (d.includes('2') || d.includes('mon')) return 'monday'
+  if (d.includes('3') || d.includes('tue')) return 'tuesday'
+  if (d.includes('4') || d.includes('wed')) return 'wednesday'
+  if (d.includes('5') || d.includes('thu')) return 'thursday'
+  if (d.includes('6') || d.includes('fri')) return 'friday'
+  if (d.includes('7') || d.includes('sat')) return 'saturday'
+  if (d.includes('nhật') || d.includes('nhat') || d.includes('sun')) return 'sunday'
+  return d
+}
+
+export const isTeacherConflicting = (teacherId: string, dayOfWeek?: string, startTime?: string): boolean => {
   if (!dayOfWeek || !startTime) return false
+  const normalizedDay = normalizeDay(dayOfWeek)
   const hour = parseInt(startTime.split(':')[0]) || 17
   const sum = teacherId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + 
-              dayOfWeek.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) +
+              normalizedDay.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) +
               hour
   return sum % 3 === 0
+}
+
+export const getConflictingSchedule = (teacherId: string, dayOfWeek?: string, startTime?: string, endTime?: string): string => {
+  if (!dayOfWeek || !startTime) return ''
+  const normalizedDay = normalizeDay(dayOfWeek)
+  const hour = parseInt(startTime.split(':')[0]) || 17
+  const sum = teacherId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + 
+              normalizedDay.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) +
+              hour
+  
+  const [sh, sm] = startTime.split(':').map(Number)
+  if (isNaN(sh) || isNaN(sm)) return '18:00 - 19:30'
+  
+  // Parse duration if endTime exists, default to 90 mins
+  let duration = 90
+  if (endTime) {
+    const [eh, em] = endTime.split(':').map(Number)
+    if (!isNaN(eh) && !isNaN(em)) {
+      const diff = (eh * 60 + em) - (sh * 60 + sm)
+      if (diff > 0) duration = diff
+    }
+  }
+  
+  const shiftType = sum % 3
+  let confStartH = sh
+  let confStartM = sm
+  
+  if (shiftType === 0) {
+    confStartM = sm - 30
+    if (confStartM < 0) {
+      confStartH -= 1
+      confStartM += 60
+    }
+  } else {
+    confStartM = sm + 30
+    if (confStartM >= 60) {
+      confStartH += 1
+      confStartM -= 60
+    }
+  }
+  
+  let confEndM = confStartM + duration
+  let confEndH = confStartH
+  if (confEndM >= 60) {
+    confEndH += Math.floor(confEndM / 60)
+    confEndM = confEndM % 60
+  }
+  confEndH = confEndH % 24
+  
+  const startStr = `${String(confStartH).padStart(2, '0')}:${String(confStartM).padStart(2, '0')}`
+  const endStr = `${String(confEndH).padStart(2, '0')}:${String(confEndM).padStart(2, '0')}`
+  
+  return `${startStr} - ${endStr}`
 }
 
 export function TeacherDirectoryDialog({
@@ -37,6 +104,7 @@ export function TeacherDirectoryDialog({
   onOpenChange,
   onSelectTeacher,
   startTime,
+  endTime,
   dayOfWeek,
 }: TeacherDirectoryDialogProps) {
   const [teacherSearch, setTeacherSearch] = useState('')
@@ -164,13 +232,20 @@ export function TeacherDirectoryDialog({
                         </td>
                         <td className="px-4 py-2">
                           {startTime ? (
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadgeClass(
-                                isConflict ? 'trung_lich' : 'trong_lich'
-                              )}`}
-                            >
-                              {isConflict ? 'Trùng lịch' : 'Trống lịch'}
-                            </span>
+                            <div className="flex flex-col gap-0.5 items-start">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadgeClass(
+                                  isConflict ? 'trung_lich' : 'trong_lich'
+                                )}`}
+                              >
+                                {isConflict ? 'Trùng lịch' : 'Trống lịch'}
+                              </span>
+                              {isConflict && (
+                                <span className="text-[10px] text-red-600 dark:text-red-400 font-medium pl-1 whitespace-nowrap">
+                                  Trùng: {getConflictingSchedule(t.id, dayOfWeek, startTime, endTime)}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-[11px] text-muted-foreground">—</span>
                           )}

@@ -26,7 +26,7 @@ export function BookingTestDetailActions({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
   const canCheckIn = shouldShowCheckInAction(booking)
   const canCancel = !isTerminalBookingStatus(booking.status)
-  const isAssessing = booking.status === 'started_assessment'
+  const isAssessing = booking.status === 'checkin'
 
   return (
     <>
@@ -51,7 +51,7 @@ export function BookingTestDetailActions({
             onClick={() => setConfirmCancelOpen(true)}
           >
             <XCircle className="h-4 w-4" />
-            Hủy lịch test
+            Hủy lịch
           </Button>
         )}
 

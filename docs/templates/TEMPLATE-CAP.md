@@ -17,6 +17,14 @@ tags: [capability]
 
 ---
 
+## Lịch sử cập nhật tài liệu (Changelog)
+
+| Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
+|---|---|---|
+| [Ngày/Tháng/Năm] | [Tóm tắt nội dung] | [Lý do cập nhật] |
+
+---
+
 ## 1. Mục tiêu & Phạm vi
 
 [Mô tả ngắn gọn mục tiêu của khối năng lực này. Nó sinh ra để giải quyết bài toán gì cho tổ chức? Phạm vi quản lý của nó đến đâu?]
@@ -26,11 +34,11 @@ tags: [capability]
 *   **[Thực thể 1]:** [Mô tả vai trò của thực thể này trong nghiệp vụ]
 *   **[Thực thể 2]:** [Mô tả vai trò của thực thể này trong nghiệp vụ]
 
-## 3. Tuân thủ Tiêu chuẩn (Policy Compliance)
+## 3. Tuân thủ Quy định & Tiêu chuẩn (Compliance)
 
-Khối năng lực này chịu sự ràng buộc của các điều luật cốt lõi trong `ENTERPRISE_STANDARDS.md`:
-1. **Tuân thủ `[POLICY-XXX-YY]`:** [Mô tả ngắn gọn cách áp dụng chính sách này]
-2. **Tuân thủ `[POLICY-AAA-BB]`:** [Mô tả ngắn gọn]
+Khối năng lực này tuân thủ các tiêu chuẩn vận hành nghiệp vụ:
+1. **Tuân thủ [Quy định A]:** [Mô tả ngắn gọn cách áp dụng quy định này]
+2. **Tuân thủ [Quy định B]:** [Mô tả ngắn gọn]
 
 ## 4. Kiến trúc & Nguyên tắc cốt lõi
 

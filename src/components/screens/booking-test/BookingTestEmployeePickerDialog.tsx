@@ -12,10 +12,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { EmptyState, StatusBadge } from '@/components/shared'
+import { EmptyState, StatusBadge, AppAvatar } from '@/components/shared'
 import { cn } from '@/lib/utils'
-import { getInitials, maskPhone } from '@/lib/format'
+import { maskPhone } from '@/lib/format'
 import type { Employee } from '@/mocks/employees'
 import type { BookingTest } from '@/mocks/bookingTests'
 import { getPersonTitle, isTeacherLikeEmployee } from './bookingTestStaffHelpers'
@@ -151,12 +150,12 @@ export function BookingTestEmployeePickerDialog({
                       isDoubleBooked ? 'opacity-50 cursor-not-allowed hover:bg-transparent' : ''
                     )}
                   >
-                    <Avatar className="h-11 w-11 rounded-lg">
-                      <AvatarImage src={employee.avatar} alt={employee.name} />
-                      <AvatarFallback className="rounded-lg">
-                        {getInitials(employee.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <AppAvatar
+                      src={employee.avatar}
+                      name={employee.name}
+                      size="lg"
+                      shape="circle"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex min-w-0 items-center gap-2">
                         <p className="truncate text-sm font-semibold">{employee.name}</p>

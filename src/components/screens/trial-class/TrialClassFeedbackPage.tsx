@@ -32,7 +32,7 @@ export function TrialClassFeedbackPage({ trialId }: TrialClassFeedbackPageProps)
 
   if (!trial) {
     return (
-      <div className="flex h-full min-h-0 flex-col bg-background px-4 py-3 lg:px-6">
+      <div className="flex h-full min-h-0 flex-col bg-background px-3 py-3 lg:px-3">
         <EmptyState
           icon={<AlertCircle className="h-7 w-7 text-muted-foreground" />}
           title="Không tìm thấy thông tin nhận xét"
@@ -64,7 +64,7 @@ export function TrialClassFeedbackPage({ trialId }: TrialClassFeedbackPageProps)
         }
       />
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 lg:px-6">
+      <main className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 lg:px-3">
         <div className="mx-auto max-w-6xl space-y-6">
           {/* Top Summary Cards */}
           <div className="grid gap-6 md:grid-cols-3">

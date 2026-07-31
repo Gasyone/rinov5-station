@@ -5,9 +5,11 @@ export interface StudentPackage {
   remainingSessions: number
   price: number
   purchaseDate: string
-  status: 'active' | 'expired' | 'pending'
+  status: 'active' | 'expired' | 'pending' | 'transferred' | 'cancelled' | 'suspended' | 'reserved'
   linkedClassCode?: string
   linkedClassName?: string
+  startSessionDate?: string
+  endDate?: string
 }
 
 export interface StudentGlobalLog {
@@ -45,7 +47,7 @@ export interface StudentScheduleSession {
   room: string
   teacherName: string
   substituteTeacherName?: string
-  status: 'completed' | 'ongoing' | 'upcoming' | 'rescheduled' | 'cancelled' | 'absent'
+  status: 'completed' | 'ongoing' | 'upcoming' | 'cancelled' | 'absent'
   materials?: Array<{ name: string; url: string; type?: string }>
 }
 

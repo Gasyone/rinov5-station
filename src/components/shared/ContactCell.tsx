@@ -29,6 +29,8 @@ interface ContactCellProps {
   masked?: boolean
   /** Danh sách liên hệ bổ sung (ví dụ: các thành viên khác trong gia đình) */
   additionalContacts?: AdditionalContact[]
+  /** Hiển thị nút gọi điện thoại hay không */
+  showCallButton?: boolean
   className?: string
 }
 
@@ -46,6 +48,7 @@ export function ContactCell({
   studentName,
   masked = false,
   additionalContacts = [],
+  showCallButton = true,
   className,
 }: ContactCellProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -83,7 +86,7 @@ export function ContactCell({
       {/* Tên liên hệ chính hoặc nhãn phụ */}
       {name && (
         <div className="flex items-center gap-1">
-          <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground" title={name}>
+          <p className="truncate text-xs font-semibold text-muted-foreground" title={name}>
             {name}
           </p>
 
@@ -120,14 +123,16 @@ export function ContactCell({
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            aria-label={`Gọi ${member.name}`}
-                            onClick={(e) => handleCall(member.phone, member.name, e)}
-                          >
-                            <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
+                          {showCallButton && (
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              aria-label={`Gọi ${member.name}`}
+                              onClick={(e) => handleCall(member.phone, member.name, e)}
+                            >
+                              <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon-xs"
@@ -158,14 +163,14 @@ export function ContactCell({
           <span className="truncate">{masked ? maskPhone(phone) : phone}</span>
 
           {/* Action buttons cho phone */}
-          <div className="invisible opacity-0 group-hover/contact:visible group-hover/contact:opacity-100 flex items-center gap-0.5 ml-1 transition-all duration-150">
+          <div className="flex items-center gap-0.5 ml-1.5 shrink-0">
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
               title="Sao chép số điện thoại"
               onClick={(e) => handleCopy(phone, 'phone-main', e)}
-              className="h-4 w-4 p-0 shrink-0"
+              className="h-4 w-4 p-0 shrink-0 text-muted-foreground hover:text-foreground"
             >
               {copiedKey === 'phone-main' ? (
                 <Check className="h-2.5 w-2.5 text-emerald-500" />
@@ -173,16 +178,18 @@ export function ContactCell({
                 <Copy className="h-2.5 w-2.5" />
               )}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              title="Gọi điện"
-              onClick={(e) => handleCall(phone, name ?? undefined, e)}
-              className="h-4 w-4 p-0 text-emerald-600 hover:text-emerald-700 shrink-0"
-            >
-              <Phone className="h-2.5 w-2.5 fill-emerald-600/10" />
-            </Button>
+            {showCallButton && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                title="Gọi điện"
+                onClick={(e) => handleCall(phone, name ?? undefined, e)}
+                className="h-4 w-4 p-0 text-emerald-600 hover:text-emerald-700 shrink-0"
+              >
+                <Phone className="h-2.5 w-2.5 fill-emerald-600/10" />
+              </Button>
+            )}
           </div>
         </div>
       )}

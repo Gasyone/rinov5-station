@@ -38,4 +38,10 @@ export const STUDENT_STATUS_LABELS: Record<string, string> = {
   active: 'Đang học',
   reserve: 'Bảo lưu',
   session_ended: 'Hết buổi',
+  // EnrolledClass-specific statuses
+  inactive: 'Không hoạt động',
+  absent: 'Vắng mặt',
+  excused: 'Nghỉ phép',
+  paused: 'Tạm dừng',
+  dropped: 'Đã hủy',
 }

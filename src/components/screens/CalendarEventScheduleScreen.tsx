@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
 
 import {
@@ -11,7 +11,7 @@ import {
   SegmentedControl,
 } from '@/components/controls'
 import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
-import { EmptyState } from '@/components/shared'
+import { EmptyState, ModuleLoadingSkeleton } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { getMockEventSessions, type EventSession } from '@/mocks/calendarSchedule'
 import { cn } from '@/lib/utils'
@@ -59,6 +59,12 @@ const getWeekDays = (from: Date) =>
   })
 
 export function CalendarEventScheduleScreen() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
+
   const allSessions = useMemo(() => {
     return getMockEventSessions()
       .filter((session) => session.type === 'placement_test')
@@ -228,9 +234,13 @@ export function CalendarEventScheduleScreen() {
 
   const handleSelectEvent = (session: EventSession) => {
     setSelectedEvent(session)
-    if (getAssociatedBookingTest(session)) {
+    if (session.type === 'placement_test') {
       setBookingTestOpen(true)
     }
+  }
+
+  if (!mounted) {
+    return <ModuleLoadingSkeleton className="h-full" />
   }
 
   return (
@@ -593,7 +603,7 @@ function DayTimelineView({
                   </span>
                 </div>
                 {/* Day column (1 column) */}
-                <div className="flex-1 p-1.5 flex flex-col gap-1.5 min-w-0 h-full justify-start items-start">
+                <div className="flex-1 p-1.5 flex flex-row flex-wrap gap-1.5 min-w-0 h-full justify-start items-start">
                   {slotSessions.map((session) => (
                     <div key={session.id} className="w-80 shrink-0">
                       <EventCard

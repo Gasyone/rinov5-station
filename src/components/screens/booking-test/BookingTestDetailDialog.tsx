@@ -43,6 +43,7 @@ interface BookingTestDetailDialogProps {
   onCopy: (text: string, key: string) => Promise<void>
   onDetailNoteChange: (value: string) => void
   onAddNote: () => void
+  onViewStudentDetail?: (studentId: string) => void
 }
 
 export function BookingTestDetailDialog({
@@ -57,6 +58,7 @@ export function BookingTestDetailDialog({
   onCopy,
   onDetailNoteChange,
   onAddNote,
+  onViewStudentDetail,
 }: BookingTestDetailDialogProps) {
   const canEditPlacementLevel = Boolean(booking && canSelectPlacementLevel(booking))
 
@@ -72,25 +74,35 @@ export function BookingTestDetailDialog({
     )
   }
 
+  const handleStudentClick = () => {
+    if (onViewStudentDetail) {
+      onViewStudentDetail(booking.id || 's1')
+    }
+  }
+
   return (
     <Dialog open onOpenChange={handleOpenChange}>
       <DialogContent className="grid h-[82vh] max-h-[760px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-5xl">
         <DialogHeader className="shrink-0 px-6 pb-4 pt-6">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div
+              className={`flex items-start gap-3 min-w-0 flex-1 ${onViewStudentDetail ? 'cursor-pointer group' : ''}`}
+              onClick={handleStudentClick}
+              title={onViewStudentDetail ? 'Bấm để xem chi tiết học viên' : undefined}
+            >
               {booking.avatar ? (
                 <img
                   src={booking.avatar}
                   alt={booking.childName}
-                  className="h-11 w-11 shrink-0 rounded-xl object-cover shadow-sm border border-border"
+                  className="h-11 w-11 shrink-0 rounded-xl object-cover shadow-sm border border-border group-hover:border-primary transition-all"
                 />
               ) : (
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20 group-hover:bg-primary/20 transition-all">
                   {booking.childName?.charAt(0) || '?'}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <DialogTitle className="flex flex-wrap items-center gap-2">
+                <DialogTitle className="flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
                   {booking.childName}
                   <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
                   <Badge variant="outline" className="rounded-md font-mono">
@@ -102,7 +114,7 @@ export function BookingTestDetailDialog({
                 </DialogDescription>
               </div>
             </div>
-            <div className="shrink-0 pr-8">
+            <div className="flex shrink-0 items-center gap-2 self-center">
               <BookingTestDetailActions
                 booking={booking}
                 onUpdateBooking={onUpdateBooking}
@@ -136,7 +148,7 @@ export function BookingTestDetailDialog({
             <InfoField label="Môn học" value={getSubjectLabel(booking.subject)} />
           </section>
 
-          <div className="grid min-h-0 flex-1 gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_320px]">
             <main className="min-h-0 space-y-6 overflow-y-auto pr-2">
               <Panel title="Gia đình" icon={<Users className="h-4 w-4" />}>
                 <div className="space-y-2">
@@ -256,7 +268,7 @@ export function BookingTestDetailDialog({
                       <Button asChild variant="link" className="h-auto p-0 justify-start">
                         <a href={getBookingResultHref(booking.id)} target="_blank" rel="noreferrer">
                           <ExternalLink className="mr-2 h-4 w-4" />
-                          Kết quả đánh giá (Giáo viên)
+                          Kết quả đánh giá
                         </a>
                       </Button>
                     )}
@@ -273,7 +285,6 @@ export function BookingTestDetailDialog({
             />
           </div>
         </div>
-
 
       </DialogContent>
     </Dialog>

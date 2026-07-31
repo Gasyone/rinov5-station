@@ -6,9 +6,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { ClassesDetailView } from './ClassesDetailView'
+import { ClassesDetailViewV2 } from './ClassesDetailViewV2'
 
-interface ClassesDetailDialogProps {
+export interface ClassesDetailDialogProps {
   cls: ClassRecord | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -31,17 +31,17 @@ export function ClassesDetailDialog({
   initialStudentSelect = false,
   onEdit,
   onSave,
-  onStatusChange
+  onStatusChange,
 }: ClassesDetailDialogProps) {
   if (!cls) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid h-[90vh] max-h-[900px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1380px]">
+      <DialogContent className="flex flex-col h-[90vh] max-h-[900px] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1440px]">
         <DialogTitle className="sr-only">
           Chi tiết lớp học {cls.name}
         </DialogTitle>
-        <ClassesDetailView
+        <ClassesDetailViewV2
           cls={cls}
           initialEditMode={initialEditMode}
           initialTab={initialTab}
@@ -51,9 +51,11 @@ export function ClassesDetailDialog({
           onSave={onSave}
           onStatusChange={onStatusChange}
           onClose={() => onOpenChange(false)}
-          hideClassType={true}
         />
       </DialogContent>
     </Dialog>
   )
 }
+
+export { ClassesDetailDialogV2 } from './ClassesDetailDialogV2'
+

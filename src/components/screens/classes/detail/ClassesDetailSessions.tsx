@@ -1,490 +1,425 @@
 'use client'
 
-import { useState } from 'react'
-import { 
-  MapPin, 
-  User, 
-  Upload, 
-  FileText, 
-  UserCog, 
-  DoorClosed, 
-  ArrowRight,
-  Eye
-} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
-import { EmptyState, ConfirmDialog } from '@/components/shared'
-import { getStatusBadgeClass } from '@/lib/statusColors'
+import { cn } from '@/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { ConfirmDialog, EmptyState, FieldLabel } from '@/components/shared'
 import type { ClassRecord } from '@/mocks/classRecords'
-import type { RoadmapSession, RosterStudent } from './classesDetailTypes'
+
 import { ClassesSessionActionDialog } from './ClassesSessionActionDialog'
+import { ClassesSessionCard } from './ClassesSessionCard'
 import { ClassesSessionDetailDialog } from './ClassesSessionDetailDialog'
+import type { RoadmapSession, RosterStudent } from './classesDetailTypes'
+
+import type { ClassNote, ClassAuditLog } from './classesDetailTypes'
 
 interface ClassesDetailSessionsProps {
   cls: ClassRecord
   sessions: RoadmapSession[]
   roster: RosterStudent[]
   onUpdateSession: (id: string, updates: Partial<RoadmapSession>) => void
+  classNotes?: ClassNote[]
+  classLogs?: ClassAuditLog[]
+  onAddClassNote?: (text: string) => void
 }
 
-export function ClassesDetailSessions({ 
+type SessionFilter = 'all' | 'active' | 'upcoming' | 'completed' | 'cancelled'
+type SessionEditType = 'teacher' | 'room' | 'upload'
+type CancelBy = 'HỌC SINH' | 'GIÁO VIÊN' | 'KHÁC'
+
+const studentCancelReasons = [
+  'Cancel 10 phút',
+  'Cancel 20 phút',
+  'Học sinh nghỉ đột xuất',
+  'Học sinh gặp sự cố kĩ thuật trong giờ (trước ST+15/30)',
+  'Học sinh gặp sự cố kĩ thuật trong giờ (sau ST+15/30)',
+]
+
+const teacherCancelReasons = [
+  'Hủy 1A - Báo trước ngày học',
+  'Hủy 1B - Báo trong ngày học, trước 17h30',
+  'Hủy 2 - Báo trước 30 phút trước giờ học',
+  'Hủy 3A - Giáo viên không vào lớp',
+  'Hủy 3B - Giáo viên vào lớp nhưng xin nghỉ đột xuất',
+  'Giáo viên gặp sự cố kĩ thuật trong giờ (trước ST+15/30)',
+  'Giáo viên gặp sự cố kĩ thuật trong giờ (sau ST+15/30)',
+]
+
+function countInactiveSessions(sessions: RoadmapSession[]): number {
+  return sessions.filter((session) => session.status === 'cancelled' || session.status === 'absent').length
+}
+
+function getFilteredSessions(filter: SessionFilter, rollingSessions: RoadmapSession[]): RoadmapSession[] {
+  switch (filter) {
+    case 'all':
+      return rollingSessions
+    case 'active': {
+      const ongoing = rollingSessions.filter((session) => session.status === 'ongoing')
+      const firstUpcoming = rollingSessions.find((session) => session.status === 'upcoming')
+      return firstUpcoming ? [...ongoing, firstUpcoming] : ongoing
+    }
+    case 'upcoming':
+      return rollingSessions.filter((session) => session.status === 'upcoming')
+    case 'completed':
+      return rollingSessions.filter((session) => session.status === 'completed')
+    case 'cancelled':
+      return rollingSessions.filter((session) => session.status === 'cancelled' || session.status === 'absent')
+    default:
+      return rollingSessions
+  }
+}
+
+export function ClassesDetailSessions({
   cls,
-  sessions, 
+  sessions,
   roster,
-  onUpdateSession 
+  onUpdateSession,
+  classNotes,
+  classLogs,
+  onAddClassNote,
 }: ClassesDetailSessionsProps) {
-  
-  // Set default filter to 'active' ("Đang học/Tiếp theo") as it is the most operationally relevant
-  const [filter, setFilter] = useState<'all' | 'active' | 'upcoming' | 'completed' | 'rescheduled' | 'cancelled'>('active')
-  
-  // States for session detail dialog
+  const [filter, setFilter] = useState<SessionFilter>('active')
   const [selectedDetailSession, setSelectedDetailSession] = useState<RoadmapSession | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
-
-  // States to manage the substitution dialog modals
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
-  const [editType, setEditType] = useState<'teacher' | 'room' | 'upload' | null>(null)
-
-  // Confirm Dialog states for delete
+  const [editType, setEditType] = useState<SessionEditType | null>(null)
+  const [selectedStudentForUpload, setSelectedStudentForUpload] = useState<RosterStudent | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [sessionToDeleteMat, setSessionToDeleteMat] = useState<{ sessionId: string; materialName: string; isSlide: boolean } | null>(null)
+  const [sessionToDeleteMat, setSessionToDeleteMat] = useState<{
+    sessionId: string
+    materialName: string
+    isSlide: boolean
+  } | null>(null)
 
-  const handleOpenEdit = (sessionId: string, type: 'teacher' | 'room' | 'upload') => {
+  const [cancelingSessionId, setCancelingSessionId] = useState<string | null>(null)
+  const [cancelBy, setCancelBy] = useState<CancelBy>('HỌC SINH')
+  const [cancelReason, setCancelReason] = useState(studentCancelReasons[0])
+  const [cancelDescription, setCancelDescription] = useState('')
+  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({})
+
+  const rollingSessions = useMemo(() => {
+    const activeIndex = sessions.findIndex(
+      (session) => session.status === 'ongoing' || session.status === 'upcoming'
+    )
+
+    if (activeIndex === -1) {
+      return sessions.slice(-5)
+    }
+
+    const start = Math.max(0, activeIndex - 1)
+    return sessions.slice(start, start + 5)
+  }, [sessions])
+
+  const filteredSessions = useMemo(
+    () => getFilteredSessions(filter, rollingSessions),
+    [filter, rollingSessions]
+  )
+
+  const activeSession = sessions.find((session) => session.id === editingSessionId) || null
+
+  const handleOpenEdit = (sessionId: string, type: SessionEditType, student?: RosterStudent) => {
     setEditingSessionId(sessionId)
     setEditType(type)
+    setSelectedStudentForUpload(student || null)
   }
 
-  // Filter calculations matching user requirements
-  const getFilteredSessions = (): RoadmapSession[] => {
-    switch (filter) {
-      case 'all':
-        return sessions
-      
-      case 'active': {
-        // "Đang học/Tiếp theo" -> ongoing sessions + first upcoming session
-        const ongoing = sessions.filter((s) => s.status === 'ongoing')
-        const firstUpcoming = sessions.find((s) => s.status === 'upcoming')
-        const list = [...ongoing]
-        if (firstUpcoming) {
-          list.push(firstUpcoming)
-        }
-        return list
-      }
-      
-      case 'upcoming':
-        return sessions.filter((s) => s.status === 'upcoming')
-      
-      case 'completed':
-        return sessions.filter((s) => s.status === 'completed')
-      
-      case 'rescheduled':
-        return sessions.filter((s) => s.status === 'rescheduled' || !!s.substituteTeacherName)
-      
-      case 'cancelled':
-        return sessions.filter((s) => s.status === 'cancelled')
-      
-      default:
-        return sessions
+  const handleCancelByChange = (value: CancelBy) => {
+    setCancelBy(value)
+    if (value === 'HỌC SINH') {
+      setCancelReason(studentCancelReasons[0])
+    } else if (value === 'GIÁO VIÊN') {
+      setCancelReason(teacherCancelReasons[0])
+    } else {
+      setCancelReason('Hủy do các sự cố khách quan khác')
     }
+    setCancelErrors({})
   }
 
-  const filteredSessions = getFilteredSessions()
+  const handleOpenCancelModal = (sessionId: string) => {
+    setCancelingSessionId(sessionId)
+    setCancelBy('HỌC SINH')
+    setCancelReason(studentCancelReasons[0])
+    setCancelDescription('')
+    setCancelErrors({})
+  }
 
-  const getSessionStatusLabel = (status: RoadmapSession['status']) => {
-    switch (status) {
-      case 'completed': return 'Đã học'
-      case 'ongoing': return 'Đang học'
-      case 'upcoming': return 'Chờ diễn ra'
-      case 'rescheduled': return 'Đổi lịch'
-      case 'cancelled': return 'Đã hủy'
-      default: return status
+  const handleConfirmCancel = () => {
+    if (!cancelingSessionId) return
+
+    const newErrors: Record<string, string> = {}
+    if (!cancelReason) {
+      newErrors.reason = 'Vui lòng chọn hoặc điền lý do hủy buổi.'
     }
+    if (!cancelDescription.trim()) {
+      newErrors.description = 'Vui lòng nhập mô tả chi tiết lý do.'
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setCancelErrors(newErrors)
+      return
+    }
+
+    onUpdateSession(cancelingSessionId, {
+      status: 'cancelled',
+      cancelBy,
+      cancelReason,
+      cancelDescription,
+    })
+
+    toast.success('Đã hủy buổi học thành công.')
+    setCancelingSessionId(null)
   }
 
-  // Visual card block builder
-  const renderSessionCard = (session: RoadmapSession) => {
-    const isCompleted = session.status === 'completed'
-    const isCancelled = session.status === 'cancelled'
-    const isOngoing = session.status === 'ongoing'
-    
-    const slide = session.materials?.find(
-      (m) => m.name.toLowerCase().includes('slide') || m.name.toLowerCase().includes('bài giảng')
-    ) || null
-    const isSlideAttached = !!(slide && slide.url && slide.url !== '#')
-    
-    return (
-      <div 
-        key={session.id} 
-        className={`p-2.5 px-3 border rounded-xl bg-background shadow-2xs transition-all flex flex-col gap-2 ${
-          isOngoing 
-            ? 'border-primary/40 bg-primary/[0.03] ring-1 ring-primary/10 shadow-xs' 
-            : isCancelled
-            ? 'border-muted bg-muted/5 opacity-65 border-dashed'
-            : 'border-muted hover:border-muted-foreground/30'
-        }`}
-      >
-        {/* Top Header info */}
-        <div className="flex items-center justify-between gap-2 border-b border-muted/50 pb-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-primary font-mono uppercase bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
-              Buổi {session.sessionNumber}
-            </span>
-            <span className="text-xs font-semibold text-foreground font-mono">
-              {session.date} ({session.startTime} - {session.endTime})
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedDetailSession(session)
-                setIsDetailOpen(true)
-              }}
-              className="text-muted-foreground hover:text-primary p-0.5 rounded transition-colors"
-              title="Xem chi tiết buổi học"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </button>
-          </div>
+  const handleConfirmDeleteMaterial = () => {
+    if (!sessionToDeleteMat) {
+      setDeleteConfirmOpen(false)
+      return
+    }
 
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
-            isOngoing 
-              ? 'border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950'
-              : getStatusBadgeClass(session.status)
-          }`}>
-            {getSessionStatusLabel(session.status)}
-          </span>
-        </div>
+    const targetSession = sessions.find((session) => session.id === sessionToDeleteMat.sessionId)
+    if (!targetSession) {
+      setDeleteConfirmOpen(false)
+      return
+    }
 
-        {/* Topic Title & Subtitle + Teacher/Room consolidated in a single line or tight block */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-2.5 my-0.5">
-          {/* Topic Title & Subtitle */}
-          <div className="min-w-0 flex-1">
-            <h5 className={`text-xs font-bold leading-snug ${isCancelled ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-              {session.topic}
-            </h5>
-            {session.description && (
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-normal font-normal truncate">
-                {session.description}
-              </p>
-            )}
-          </div>
+    const updatedMats = sessionToDeleteMat.isSlide
+      ? targetSession.materials?.map((material) =>
+          material.name === sessionToDeleteMat.materialName ? { ...material, url: '#' } : material
+        ) || []
+      : targetSession.materials?.filter((material) => material.name !== sessionToDeleteMat.materialName) || []
 
-          {/* Compact Teacher & Room Inline Bar */}
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs shrink-0 self-center bg-muted/40 px-2 py-0.5 rounded-md border border-muted/30">
-            <span className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground">GV:</span>
-              <span className="font-semibold text-foreground font-sans">
-                {session.substituteTeacherName ? (
-                  <span className="flex items-center gap-0.5">
-                    <span className="line-through text-muted-foreground/60">{session.teacherName}</span>
-                    <ArrowRight className="h-2.5 w-2.5 text-muted-foreground/50 mx-0.5" />
-                    <span className="text-amber-600 dark:text-amber-400 font-bold">{session.substituteTeacherName}</span>
-                  </span>
-                ) : (
-                  session.teacherName
-                )}
-              </span>
-            </span>
-            <span className="text-muted-foreground/30 font-mono">|</span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground">Phòng:</span>
-              <span className="font-semibold text-foreground font-sans">
-                {session.defaultRoom && session.room !== session.defaultRoom ? (
-                  <span className="flex items-center gap-0.5">
-                    <span className="line-through text-muted-foreground/60">{session.defaultRoom}</span>
-                    <ArrowRight className="h-2.5 w-2.5 text-muted-foreground/50 mx-0.5" />
-                    <span className="text-amber-600 dark:text-amber-400 font-bold">{session.room}</span>
-                  </span>
-                ) : (
-                  session.room
-                )}
-              </span>
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom Panel: Materials (left) & Actions (right) consolidated */}
-        <div className="border-t border-dashed border-muted/70 pt-2 flex flex-wrap items-center justify-between gap-2 mt-0.5">
-          {/* Materials */}
-          <div className="flex flex-wrap gap-1.5 items-center">
-            {session.materials && session.materials.length > 0 ? (
-              session.materials
-                .filter((mat) => {
-                  const isSlide = mat.name.toLowerCase().includes('slide') || mat.name.toLowerCase().includes('bài giảng')
-                  const isAttached = !!(mat.url && mat.url !== '#')
-                  return !(isSlide && isAttached)
-                })
-                .map((mat, matIdx) => (
-                  <div key={matIdx} className="flex items-center gap-1 bg-muted/50 border px-1.5 py-0.5 rounded text-[10px] text-muted-foreground hover:border-primary/30 transition-all">
-                    <a 
-                      href={mat.url && mat.url !== '#' ? mat.url : undefined} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="hover:underline flex items-center gap-1 font-sans font-medium text-primary"
-                      onClick={(e) => {
-                        if (!mat.url || mat.url === '#') {
-                          e.preventDefault()
-                          alert('Tài liệu chưa có đường dẫn trực tuyến!')
-                        }
-                      }}
-                    >
-                      <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>{mat.name} {mat.type ? `[${mat.type}]` : ''}</span>
-                    </a>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSessionToDeleteMat({ sessionId: session.id, materialName: mat.name, isSlide: false })
-                        setDeleteConfirmOpen(true)
-                      }}
-                      className="text-muted-foreground hover:text-destructive font-bold text-[11px] ml-1 px-1 shrink-0 transition-colors"
-                      title="Xóa tài liệu"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))
-            ) : (
-              <span className="text-[10px] text-muted-foreground/60 italic">
-                {isCancelled ? 'Bài học đã hủy' : 'Chưa có bài giảng'}
-              </span>
-            )}
-            {/* If the filtered list is empty and slide is attached, show placeholder if no other materials exist */}
-            {session.materials && session.materials.length > 0 && 
-             session.materials.filter((mat) => {
-               const isSlide = mat.name.toLowerCase().includes('slide') || mat.name.toLowerCase().includes('bài giảng')
-               const isAttached = !!(mat.url && mat.url !== '#')
-               return !(isSlide && isAttached)
-             }).length === 0 && (
-              <span className="text-[10px] text-muted-foreground/60 italic">
-                Chỉ có Slide bài giảng đính kèm
-              </span>
-            )}
-          </div>
-
-          {/* Right actions / attached slide */}
-          <div className="flex items-center gap-2 ml-auto shrink-0">
-            {/* Attached Slide Link (if attached) */}
-            {isSlideAttached && slide ? (
-              <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[10px] font-semibold text-primary transition-all">
-                <a 
-                  href={slide.url} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="hover:underline flex items-center gap-1 font-sans"
-                >
-                  <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span>{slide.name} {slide.type ? `[${slide.type}]` : ''}</span>
-                </a>
-                {!isCompleted && !isCancelled && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSessionToDeleteMat({ sessionId: session.id, materialName: slide.name, isSlide: true })
-                      setDeleteConfirmOpen(true)
-                    }}
-                    className="text-primary hover:text-destructive font-bold text-[12px] ml-1.5 px-0.5 shrink-0 transition-colors"
-                    title="Xóa slide bài giảng"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ) : null}
-
-            {/* Other Actions (GV, Phòng, Upload Slide) */}
-            {!isCompleted && !isCancelled && (
-              <div className="flex gap-1">
-                {session.status !== 'ongoing' && (
-                  <>
-                    <Button 
-                      size="xs" 
-                      variant="outline" 
-                      className="rounded-md h-6 text-[10px] px-2 font-medium bg-background border-muted-foreground/20 hover:bg-muted hover:text-foreground text-muted-foreground"
-                      onClick={() => handleOpenEdit(session.id, 'teacher')}
-                      title="Đổi giáo viên"
-                    >
-                      <UserCog className="h-3 w-3 mr-1 shrink-0" /> GV
-                    </Button>
-                    
-                    <Button 
-                      size="xs" 
-                      variant="outline" 
-                      className="rounded-md h-6 text-[10px] px-2 font-medium bg-background border-muted-foreground/20 hover:bg-muted hover:text-foreground text-muted-foreground"
-                      onClick={() => handleOpenEdit(session.id, 'room')}
-                      title="Đổi phòng"
-                    >
-                      <DoorClosed className="h-3 w-3 mr-1 shrink-0" /> Phòng
-                    </Button>
-                  </>
-                )}
-                
-                {/* Only show the slide upload button if it is NOT attached yet */}
-                {!isSlideAttached && (
-                  <Button 
-                    size="xs" 
-                    variant="outline" 
-                    className="rounded-md h-6 text-[10px] px-2 font-medium bg-background border-muted-foreground/20 hover:bg-muted hover:text-foreground text-muted-foreground"
-                    onClick={() => handleOpenEdit(session.id, 'upload')}
-                    title="Upload bài giảng"
-                  >
-                    <Upload className="h-3 w-3 mr-1 shrink-0" /> Upload
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-      </div>
-    )
+    onUpdateSession(sessionToDeleteMat.sessionId, { materials: updatedMats })
+    setDeleteConfirmOpen(false)
   }
-
-  const activeSession = sessions.find((s) => s.id === editingSessionId) || null
 
   return (
-    <div className="space-y-4 pt-1">
-      
-      {/* Sessions segment toolbar filters (Sticky to top) */}
-      <div className="sticky top-0 bg-background z-10 flex flex-wrap items-center justify-between gap-3 pb-3 pt-1 border-b mb-3">
-        <div className="flex flex-wrap gap-1.5">
-          <Button
-            variant={filter === 'all' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('all')}
-            className="rounded-lg text-xs"
-          >
-            Tất cả ({sessions.length})
-          </Button>
-          <Button
-            variant={filter === 'active' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('active')}
-            className="rounded-lg text-xs"
-          >
-            Đang học/Tiếp theo ({
-              sessions.filter((s) => s.status === 'ongoing').length + 
-              (sessions.find((s) => s.status === 'upcoming') ? 1 : 0)
-            })
-          </Button>
-          <Button
-            variant={filter === 'upcoming' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('upcoming')}
-            className="rounded-lg text-xs"
-          >
-            Sắp tới ({sessions.filter((s) => s.status === 'upcoming').length})
-          </Button>
-          <Button
-            variant={filter === 'completed' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('completed')}
-            className="rounded-lg text-xs"
-          >
-            Đã học ({sessions.filter((s) => s.status === 'completed').length})
-          </Button>
-          <Button
-            variant={filter === 'rescheduled' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('rescheduled')}
-            className="rounded-lg text-xs"
-          >
-            Đổi lịch ({sessions.filter((s) => s.status === 'rescheduled' || !!s.substituteTeacherName).length})
-          </Button>
-          <Button
-            variant={filter === 'cancelled' ? 'default' : 'ghost'}
-            size="xs"
-            onClick={() => setFilter('cancelled')}
-            className="rounded-lg text-xs"
-          >
-            Hủy ({sessions.filter((s) => s.status === 'cancelled').length})
-          </Button>
-        </div>
+    <div className="flex h-full min-h-0 flex-col gap-3 p-3">
+      <div className="flex flex-wrap items-center gap-6 border-b border-border pb-2">
+        <button
+          type="button"
+          className={cn(
+            'px-1 pb-2 text-xs font-semibold border-b-2 transition-all focus:outline-none',
+            filter === 'active'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => setFilter('active')}
+        >
+          Đang học/Tiếp ({getFilteredSessions('active', rollingSessions).length})
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'px-1 pb-2 text-xs font-semibold border-b-2 transition-all focus:outline-none',
+            filter === 'all'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => setFilter('all')}
+        >
+          Tất cả ({rollingSessions.length})
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'px-1 pb-2 text-xs font-semibold border-b-2 transition-all focus:outline-none',
+            filter === 'upcoming'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => setFilter('upcoming')}
+        >
+          Sắp tới ({rollingSessions.filter((session) => session.status === 'upcoming').length})
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'px-1 pb-2 text-xs font-semibold border-b-2 transition-all focus:outline-none',
+            filter === 'completed'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => setFilter('completed')}
+        >
+          Đã học ({rollingSessions.filter((session) => session.status === 'completed').length})
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'px-1 pb-2 text-xs font-semibold border-b-2 transition-all focus:outline-none',
+            filter === 'cancelled'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => setFilter('cancelled')}
+        >
+          Hủy ({countInactiveSessions(rollingSessions)})
+        </button>
       </div>
 
-      {/* List rendering filtered sessions (one row per session) */}
       {filteredSessions.length > 0 ? (
         <div className="flex flex-col gap-3">
-          {filteredSessions.map((session) => renderSessionCard(session))}
+          {filteredSessions.map((session) => (
+            <ClassesSessionCard
+              key={session.id}
+              session={session}
+              onView={(targetSession) => setSelectedDetailSession(targetSession)}
+              onCancel={handleOpenCancelModal}
+              onEditTeacher={(sessionId) => handleOpenEdit(sessionId, 'teacher')}
+              onEditRoom={(sessionId) => handleOpenEdit(sessionId, 'room')}
+              onUpload={(sessionId) => handleOpenEdit(sessionId, 'upload')}
+              onDeleteMaterial={(sessionId, materialName, isSlide) => {
+                setSessionToDeleteMat({ sessionId, materialName, isSlide })
+                setDeleteConfirmOpen(true)
+              }}
+            />
+          ))}
         </div>
       ) : (
         <div className="py-8">
           <EmptyState
-            title="Không tìm thấy buổi học"
-            description="Hiện tại không có buổi học nào tương ứng với bộ lọc đang chọn."
+            title="Không có buổi học"
+            description="Không tìm thấy buổi học phù hợp với bộ lọc hiện tại."
           />
         </div>
       )}
 
-      {/* Interactive substitution and slides upload Modal Dialog */}
       {editingSessionId !== null && editType !== null && (
         <ClassesSessionActionDialog
           key={`${editingSessionId}-${editType}`}
-          isOpen={editingSessionId !== null && editType !== null}
+          isOpen={editingSessionId !== null}
           onClose={() => {
             setEditingSessionId(null)
             setEditType(null)
+            setSelectedStudentForUpload(null)
           }}
           session={activeSession}
           type={editType}
           onSave={onUpdateSession}
+          student={selectedStudentForUpload}
         />
       )}
 
-      {/* Confirm deletion Dialog */}
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
-        title="Xác nhận xóa tài liệu"
+        title="Xóa tài liệu"
         description={
-          <span>
-            Bạn có chắc chắn muốn xóa tài liệu <strong>{sessionToDeleteMat?.materialName}</strong> không? Hành động này không thể hoàn tác.
-          </span>
+          sessionToDeleteMat
+            ? `Bạn có chắc muốn xóa tài liệu "${sessionToDeleteMat.materialName}" khỏi buổi học này?`
+            : ''
         }
         confirmLabel="Xóa"
         cancelLabel="Hủy"
         variant="destructive"
-        onConfirm={() => {
-          if (sessionToDeleteMat) {
-            const { sessionId, materialName, isSlide } = sessionToDeleteMat
-            const targetSession = sessions.find((s) => s.id === sessionId)
-            if (targetSession) {
-              let updatedMats = []
-              if (isSlide) {
-                updatedMats = targetSession.materials?.map((m) => {
-                  if (m.name === materialName) {
-                    return { ...m, url: '#' }
-                  }
-                  return m
-                }) || []
-              } else {
-                updatedMats = targetSession.materials?.filter((m) => m.name !== materialName) || []
-              }
-              onUpdateSession(sessionId, { materials: updatedMats })
-            }
-          }
-          setDeleteConfirmOpen(false)
-        }}
+        onConfirm={handleConfirmDeleteMaterial}
       />
 
-      {/* Session detail dialog */}
-      {isDetailOpen && selectedDetailSession && (
+      {selectedDetailSession && (
         <ClassesSessionDetailDialog
-          isOpen={isDetailOpen}
-          onClose={() => {
-            setIsDetailOpen(false)
-            setSelectedDetailSession(null)
-          }}
+          isOpen={!!selectedDetailSession}
+          onClose={() => setSelectedDetailSession(null)}
           session={selectedDetailSession}
           sessions={sessions}
           cls={cls}
           roster={roster}
+          onCancel={handleOpenCancelModal}
+          onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
+          onEditRoom={(id) => handleOpenEdit(id, 'room')}
+          onUpload={(id, student) => handleOpenEdit(id, 'upload', student)}
+          classNotes={classNotes}
+          classLogs={classLogs}
+          onAddClassNote={onAddClassNote}
+          isOpenedFromClassScreen={true}
         />
       )}
 
+      {cancelingSessionId !== null && (
+        <Dialog open={cancelingSessionId !== null} onOpenChange={(open) => { if (!open) setCancelingSessionId(null) }}>
+          <DialogContent className="max-w-[450px] rounded-lg bg-background p-5 shadow-2xl">
+            <DialogHeader className="mb-4 border-b pb-3">
+              <DialogTitle className="text-base font-bold text-foreground">
+                Khai báo buổi hủy
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <FieldLabel label="Hủy do" required>
+                <Select value={cancelBy} onValueChange={handleCancelByChange}>
+                  <SelectTrigger className="h-9 w-full text-xs">
+                    <SelectValue placeholder="Chọn đối tượng hủy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="HỌC SINH">HỌC SINH</SelectItem>
+                    <SelectItem value="GIÁO VIÊN">GIÁO VIÊN</SelectItem>
+                    <SelectItem value="KHÁC">KHÁC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldLabel>
+
+              <FieldLabel label="Lý do hủy buổi" required>
+                {cancelBy === 'KHÁC' ? (
+                  <Input value="Hủy do các sự cố khách quan khác" disabled className="h-9 w-full bg-muted text-xs text-muted-foreground" />
+                ) : (
+                  <Select value={cancelReason} onValueChange={setCancelReason}>
+                    <SelectTrigger className="h-9 w-full text-xs">
+                      <SelectValue placeholder="Chọn lý do hủy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(cancelBy === 'HỌC SINH' ? studentCancelReasons : teacherCancelReasons).map((reason) => (
+                        <SelectItem key={reason} value={reason} className="text-xs">
+                          {reason}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {cancelErrors.reason && (
+                  <p className="mt-1 text-[10px] font-medium text-destructive">{cancelErrors.reason}</p>
+                )}
+              </FieldLabel>
+
+              <FieldLabel label="Mô tả chi tiết lý do" required>
+                <Textarea
+                  value={cancelDescription}
+                  onChange={(event) => setCancelDescription(event.target.value)}
+                  placeholder="Nhập mô tả chi tiết lý do hủy buổi..."
+                  className="min-h-[80px] text-xs"
+                />
+                {cancelErrors.description && (
+                  <p className="mt-1 text-[10px] font-medium text-destructive">{cancelErrors.description}</p>
+                )}
+              </FieldLabel>
+            </div>
+
+            <DialogFooter className="mt-5 flex flex-row items-center justify-end gap-2 border-t pt-3">
+              <Button type="button" variant="outline" size="sm" className="h-8 px-4 text-xs font-semibold" onClick={() => setCancelingSessionId(null)}>
+                Đóng
+              </Button>
+              <Button type="button" size="sm" className="h-8 px-4 text-xs font-semibold" onClick={handleConfirmCancel}>
+                Xác nhận
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

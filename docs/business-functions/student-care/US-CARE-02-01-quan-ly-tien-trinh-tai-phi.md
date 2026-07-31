@@ -77,19 +77,15 @@ Bảng sử dụng mô hình dòng cha-con tương tự màn hình vận hành:
 
 Các cột hiển thị chính của bảng:
 1.  **Hộp kiểm:** Cho phép chọn hàng loạt học viên.
-2.  **Học viên / Môn học:** Thông tin tên học viên (mã ID, mã khách hàng) trên dòng cha, tên môn học phân nhánh trên dòng con.
-3.  **Lớp học:** Tên lớp học xếp trên mã lớp (ở dòng con), dòng cha để trống.
-4.  **Cấp độ (Level) & Sub-level:** Hiển thị thông tin trình độ.
+2.  **Học viên:** Thông tin học viên, đi kèm mã ID, mã khách hàng, và thông tin môn học - trình độ (không có tiêu đề "Trình độ") bên dưới.
+3.  **Phụ trách:** Cột hiển thị danh sách dòng gồm ảnh đại diện và tên nhân sự phụ trách (CS hiển thị dòng trên với nhãn CS, GV hiển thị dòng dưới với nhãn GV, hỗ trợ nhiều GV).
+4.  **Lớp học:** Tên lớp học xếp trên mã lớp.
 5.  **Hạn hết phí:** Ngày hết hạn học phí của lớp (Rất quan trọng cho chiến dịch).
 6.  **Trạng thái Tái phí:** Nhãn màu chuẩn thể hiện tiến độ (Đang chăm sóc, Thành công, Thất bại).
 7.  **Kết quả hành động:** Mô tả chi tiết kết quả (Ví dụ: `Vợt fail thành công`, `Tái phí thành công`, `Chồng phí thành công`, `Gia hạn thời gian hết phí`).
-8.  **Giáo viên & Lịch dạy:** Hiển thị avatar của giáo viên và giáo viên dạy thay (avatar màu vàng).
-9.  **Số buổi còn lại / Tổng buổi:** Chỉ số học vụ.
-10. **Chuyên cần:** Tỷ lệ đi học (thanh phần trăm trực quan).
-11. **BTVN:** Tỷ lệ làm bài tập về nhà.
-12. **Test gần nhất & Điểm Trung bình:** Kết quả học thuật để CSM làm căn cứ thuyết phục phụ huynh học tiếp.
-13. **CSKH Tác nghiệp:** Tên nhân viên phụ trách và ghi chép trao đổi tái phí.
-14. **Thao tác:** Nút ghi nhận tác vụ tái phí nhanh.
+8.  **Thống kê học tập:** Kết quả học vụ (Đi học, Bài tập về nhà, Điểm kiểm tra gần nhất). Hỗ trợ hiển thị biểu tượng cảnh báo màu đỏ dạng bong bóng bật lên chứa chi tiết vi phạm nếu học viên vi phạm ít nhất một trong các điều kiện cảnh báo chủ động (CSCĐ).
+9.  **Tác nghiệp CSKH:** Tên nhân viên phụ trách và ghi chép trao đổi tái phí (sử dụng nhãn GV cho giáo viên và nhãn CS cho chăm sóc viên).
+10. **Thao tác:** Nút ghi nhận tác vụ tái phí nhanh.
 
 ---
 

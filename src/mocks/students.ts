@@ -1,14 +1,14 @@
-import type { ScheduleSlot } from './classRecords'
+import { mockClassRecords, type ScheduleSlot } from './classRecords'
 
 export interface EnrolledClass {
   classCode: string
   className: string
-  type: 'offline' | 'online_tutor'
+  type: 'offline' | 'online_tutor' | 'tutor' | 'station' | 'online'
   scheduleSlots: ScheduleSlot[]
   teacherName: string
-  status: 'active' | 'inactive' | 'pending_transfer' | 'session_ended' | 'wait_for_assignment' | 'absent' | 'excused'
+  status: 'active' | 'inactive' | 'pending_transfer' | 'session_ended' | 'wait_for_assignment' | 'absent' | 'excused' | 'paused' | 'dropped'
   progress: string
-  branch?: string       // Trường học/Chi nhánh của lớp
+  branch?: string       // Trường học của lớp
   room?: string         // Phòng học
   level?: string        // Trình độ lớp
   subLevel?: string     // Sub level lớp
@@ -16,10 +16,11 @@ export interface EnrolledClass {
   pathCode?: string     // Mã lộ trình
   startDate?: string    // Từ ngày
   endDate?: string      // Đến ngày
-  curriculumName?: string  // Tên khung chương trình
-  curriculumCode?: string  // Mã khung chương trình
+  curriculumName?: string  // Tên chương trình
+  curriculumCode?: string  // Mã chương trình
   nextLessonName?: string  // Tên bài học tiếp theo
   nextLessonDate?: string  // Lịch học buổi tiếp theo
+  packageId?: string       // Mã gói đăng ký liên kết
 }
 
 export interface Student {
@@ -48,7 +49,7 @@ export interface Student {
   level: string
   subLevel?: string        // Sub level của học viên
   learningPath?: string    // Lộ trình đang học của học viên
-  curriculum?: string      // Khung chương trình đang học của học viên
+  curriculum?: string      // Chương trình đang học của học viên
   parentName?: string
   parentPhone?: string
   enrollmentDate: string
@@ -63,554 +64,543 @@ export interface Student {
   branches?: string[]      // Các cơ sở theo học/liên kết
 }
 
-const firstNames = ["An", "Bình", "Chi", "Dũng", "Em", "Giang", "Hiếu", "Khánh", "Mai", "Nam", "Oanh", "Phong", "Quỳnh", "Sơn", "Trang", "Việt", "Xuân", "Yến", "Long", "Hằng"]
-const lastNames = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Nguyễn", "Trần", "Vũ", "Đặng", "Ngô", "Bùi", "Đỗ", "Hồ"]
-
-const makeName = (i: number) => `${lastNames[i % lastNames.length]} ${firstNames[i % firstNames.length]}`
-
 export const mockStudents: Student[] = [
-  { 
-    id: "s1", 
-    name: makeName(0), 
-    email: `an@email.com`, 
-    phone: "0911111111", 
-    gender: "Male", 
-    dob: "2005-03-15", 
-    status: "active", 
-    enrolledClass: "IELTS A1", 
-    branch: "RinoEdu Nguyễn Tuân", 
-    level: "IELTS", 
+  {
+    id: "s1",
+    name: "Nguyễn An",
+    email: "an@email.com",
+    phone: "0911111111",
+    gender: "Male",
+    dob: "2005-03-15",
+    status: "active",
+    enrolledClass: "IELTS A1",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "IELTS",
     subLevel: "A1",
     learningPath: "Lộ trình IELTS tinh gọn từ mất gốc đến 7.5",
-    curriculum: "Khung giáo trình chuẩn Cambridge Academic v2026",
-    parentName: "Nguyễn Văn A", 
-    parentPhone: "0922222222", 
+    curriculum: "Khung chương trình chuẩn Cambridge Academic v2026",
+    parentName: "Nguyễn Văn A",
+    parentPhone: "0922222222",
     enrollmentDate: "2025-01-10",
     packageName: "Gói IELTS cam kết 7.0",
     remainingSessions: 18,
     totalSessions: 36,
     enrolledClasses: [
-      { 
-        classCode: "CLS-IELTS-01", 
-        className: "IELTS A1", 
-        type: "offline", 
+      {
+        classCode: "CLS-IELTS-001",
+        className: "IELTS Junior 1A",
+        type: "offline",
         scheduleSlots: [
-          { dayOfWeek: "Thứ 2", date: "02/06", startTime: "18:00", endTime: "20:00" },
-          { dayOfWeek: "Thứ 4", date: "04/06", startTime: "18:00", endTime: "20:00" },
-          { dayOfWeek: "Thứ 6", date: "06/06", startTime: "18:00", endTime: "20:00" }
-        ], 
-        teacherName: "Phạm Văn Giảng Dạy", 
-        status: "active", 
+          { dayOfWeek: "Thứ 2", date: "02/06", startTime: "18:00", endTime: "19:30" },
+          { dayOfWeek: "Thứ 4", date: "04/06", startTime: "18:00", endTime: "19:30" },
+          { dayOfWeek: "Thứ 6", date: "06/06", startTime: "18:00", endTime: "19:30" }
+        ],
+        teacherName: "Cô Lan",
+        status: "active",
         progress: "12 / 24 buổi",
-        branch: "RinoEdu Nguyễn Tuân",
-        room: "P201",
+        branch: "RinoEdu Linh Đàm",
+        room: "A101",
         level: "IELTS",
-        subLevel: "A1",
+        subLevel: "5.0–5.5",
         programName: "Chương trình IELTS chuẩn quốc tế",
         pathCode: "PATH-IELTS-A1",
-        startDate: "2025-01-15",
-        endDate: "2025-04-15"
-      },
-      { 
-        classCode: "TUTOR-IELTS-WR", 
-        className: "Tutor IELTS Writing", 
-        type: "online_tutor", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 7", date: "07/06", startTime: "20:00", endTime: "21:30" }
-        ], 
-        teacherName: "Ms. Emily Watson", 
-        status: "active", 
-        progress: "6 / 12 buổi",
-        level: "IELTS",
-        subLevel: "Writing",
-        programName: "Luyện chuyên đề IELTS Online",
-        pathCode: "PATH-IELTS-WR-TUTOR",
-        startDate: "2025-02-10",
-        endDate: "2025-05-10"
+        startDate: "2026-05-01",
+        endDate: "2026-08-01"
       },
       {
-        classCode: "CLS-MATH-01",
-        className: "Toán tư duy nâng cao",
-        type: "offline",
+        classCode: "CLS-TOEIC-001",
+        className: "TOEIC Foundation 2A",
+        type: "online_tutor",
         scheduleSlots: [
-          { dayOfWeek: "Thứ Bảy", date: "07/06", startTime: "14:00", endTime: "16:00" }
+          { dayOfWeek: "Thứ 4", date: "04/06", startTime: "19:00", endTime: "21:00" },
+          { dayOfWeek: "Thứ 7", date: "07/06", startTime: "19:00", endTime: "21:00" }
         ],
-        teacherName: "Thay Hung",
+        teacherName: "Cô Hương",
         status: "active",
-        progress: "4 / 24 buổi",
+        progress: "4 / 12 buổi",
         branch: "RinoEdu Nguyễn Tuân",
-        room: "P301",
-        level: "Math",
-        subLevel: "Algebra v1",
-        programName: "Toán tư duy",
-        startDate: "2025-04-15",
-        endDate: "2025-07-15"
-      },
-      {
-        classCode: "CLS-STEM-01",
-        className: "STEM Robotics Junior",
-        type: "offline",
-        scheduleSlots: [
-          { dayOfWeek: "Chủ nhật", date: "08/06", startTime: "09:00", endTime: "11:00" }
-        ],
-        teacherName: "Mr. David",
-        status: "active",
-        progress: "2 / 12 buổi",
-        branch: "RinoEdu Nguyễn Tuân",
-        room: "P108",
-        level: "STEM",
-        subLevel: "Robotics v1",
-        programName: "STEM Robotics",
-        startDate: "2025-05-01",
-        endDate: "2025-08-01"
+        room: "C301",
+        level: "TOEIC",
+        subLevel: "450–550",
+        programName: "Khóa bổ trợ phát âm chuyên sâu",
+        pathCode: "PATH-PRONUN",
+        startDate: "2026-05-06",
+        endDate: "2026-08-06"
       }
     ]
   },
-  { 
-    id: "s2", 
-    name: makeName(1), 
-    email: `binh@email.com`, 
-    phone: "0933333333", 
-    gender: "Female", 
-    dob: "2007-07-20", 
-    status: "pending_payment", 
-    enrolledClass: "TOEIC B2", 
-    branch: "RinoEdu Smart City", 
-    level: "TOEIC", 
+  {
+    id: "s2",
+    name: "Trần Bình",
+    email: "binh@email.com",
+    phone: "0933333333",
+    gender: "Female",
+    dob: "2007-07-20",
+    status: "pending_payment",
+    enrolledClass: "TOEIC B2",
+    branch: "RinoEdu Smart City",
+    level: "TOEIC",
     subLevel: "B2",
     learningPath: "Lộ trình TOEIC bứt phá mục tiêu 850+",
-    curriculum: "Giáo trình ETS Toeic Test cập nhật mới nhất",
-    parentName: "Trần Thị B", 
-    parentPhone: "0944444444", 
+    curriculum: "Khung chương trình ETS Toeic Test cập nhật mới nhất",
+    parentName: "Trần Thị B",
+    parentPhone: "0944444444",
     enrollmentDate: "2025-02-15",
     packageName: "Gói TOEIC 4 kỹ năng",
     remainingSessions: 24,
     totalSessions: 24,
     enrolledClasses: []
   },
-  { 
-    id: "s3", 
-    name: makeName(2), 
-    email: `chi@email.com`, 
-    phone: "0955555555", 
-    gender: "Female", 
-    dob: "2008-11-05", 
-    status: "draft_class", 
-    enrolledClass: "Tiếng Anh A1", 
-    branch: "RinoEdu Nguyễn Tuân", 
-    level: "Beginner", 
+  {
+    id: "s3",
+    name: "Lê Chi",
+    email: "chi@email.com",
+    phone: "0955555555",
+    gender: "Female",
+    dob: "2008-11-05",
+    status: "draft_class",
+    enrolledClass: "Tiếng Anh A1",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "Beginner",
     subLevel: "A1",
     learningPath: "Lộ trình Tiếng Anh giao tiếp cơ bản",
     curriculum: "Khung chuẩn giao tiếp quốc tế CEFR",
-    parentName: "Lê Văn C", 
-    parentPhone: "0966666666", 
-    enrollmentDate: "2025-03-01", 
+    parentName: "Lê Văn C",
+    parentPhone: "0966666666",
+    enrollmentDate: "2025-03-01",
     packageName: "Gói Giao tiếp cơ bản",
     remainingSessions: 22,
     totalSessions: 34,
     notes: "Chưa thanh toán đủ học phí",
     enrolledClasses: [
-      { 
-        classCode: "CLS-ENG-01", 
-        className: "Tiếng Anh A1", 
-        type: "offline", 
+      {
+        classCode: "CLS-BEG-001",
+        className: "Tiếng Anh A1",
+        type: "offline",
         scheduleSlots: [
-          { dayOfWeek: "Thứ 2", date: "02/06", startTime: "18:30", endTime: "20:30" },
-          { dayOfWeek: "Thứ 6", date: "06/06", startTime: "18:30", endTime: "20:30" }
-        ], 
-        teacherName: "Hoàng Thị Giáo Viên", 
-        status: "active", 
+          { dayOfWeek: "Thứ 4", date: "01/07", startTime: "18:00", endTime: "19:30" },
+          { dayOfWeek: "Thứ 7", date: "04/07", startTime: "18:00", endTime: "19:30" }
+        ],
+        teacherName: "Cô Mai",
+        status: "active",
         progress: "8 / 24 buổi",
         branch: "RinoEdu Nguyễn Tuân",
-        room: "P302",
+        room: "A102",
         level: "Beginner",
         subLevel: "A1",
         programName: "Tiếng Anh nền tảng cơ bản",
         pathCode: "PATH-ENG-A1",
-        startDate: "2025-03-05",
-        endDate: "2025-06-05"
+        startDate: "2026-07-01",
+        endDate: "2026-10-01"
       },
-      { 
-        classCode: "TUTOR-ENG-PH", 
-        className: "Tutor Phát âm Tiếng Anh", 
-        type: "online_tutor", 
+      {
+        classCode: "CLS-TOEIC-002",
+        className: "TOEIC B2",
+        type: "online_tutor",
         scheduleSlots: [
-          { dayOfWeek: "Chủ nhật", date: "08/06", startTime: "10:00", endTime: "11:30" }
-        ], 
-        teacherName: "Mr. John Doe", 
-        status: "active", 
-        progress: "4 / 10 buổi",
-        level: "Beginner",
-        subLevel: "Phát âm",
-        programName: "Luyện phát âm chuẩn Mỹ 1-1",
-        pathCode: "PATH-TUTOR-ENG-PRON",
-        startDate: "2025-03-10",
-        endDate: "2025-05-10"
+          { dayOfWeek: "Thứ 3", date: "16/06", startTime: "19:00", endTime: "21:00" },
+          { dayOfWeek: "Thứ 5", date: "18/06", startTime: "19:00", endTime: "21:00" }
+        ],
+        teacherName: "Cô Lan",
+        status: "active",
+        progress: "2 / 10 buổi",
+        branch: "RinoEdu Smart City",
+        room: "D402",
+        level: "TOEIC",
+        subLevel: "550–650",
+        programName: "Tiếng Anh giao tiếp phản xạ",
+        pathCode: "PATH-ENG-COMM",
+        startDate: "2026-06-15",
+        endDate: "2026-09-15"
+      },
+      {
+        classCode: "CLS-FLY-001",
+        className: "Flyers 3A",
+        type: "offline",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 2", date: "08/06", startTime: "16:00", endTime: "17:30" },
+          { dayOfWeek: "Thứ 4", date: "10/06", startTime: "16:00", endTime: "17:30" }
+        ],
+        teacherName: "Cô Nga",
+        status: "pending_transfer",
+        progress: "0 / 16 buổi",
+        branch: "RinoEdu Linh Đàm",
+        room: "A103",
+        level: "Flyers",
+        subLevel: "A2–B1",
+        programName: "Tư duy lập trình & Robotics trẻ em",
+        pathCode: "PATH-STEM-ROBO",
+        startDate: "2026-06-10",
+        endDate: "2026-09-10"
       }
     ]
   },
-  { 
-    id: "s4", 
-    name: makeName(3), 
-    email: `dung@email.com`, 
-    phone: "0977777777", 
-    gender: "Male", 
-    dob: "2006-04-10", 
-    status: "wait_for_assignment", 
-    enrolledClass: "IELTS B1", 
-    branch: "RinoEdu Linh Đàm", 
-    level: "IELTS", 
+  {
+    id: "s4",
+    name: "Phạm Dũng",
+    email: "dung@email.com",
+    phone: "0977777777",
+    gender: "Male",
+    dob: "2006-04-10",
+    status: "wait_for_assignment",
+    enrolledClass: "IELTS B1",
+    branch: "RinoEdu Linh Đàm",
+    level: "IELTS",
     subLevel: "B1",
     learningPath: "Lộ trình IELTS bứt phá 6.0+",
-    curriculum: "Giáo trình Cambridge IELTS Framework v4.0",
-    parentName: "Phạm Thị D", 
-    parentPhone: "0988888888", 
+    curriculum: "Khung chương trình Cambridge IELTS Framework v4.0",
+    parentName: "Phạm Thị D",
+    parentPhone: "0988888888",
     enrollmentDate: "2025-04-20",
     packageName: "Gói IELTS VIP 1-1",
     remainingSessions: 24,
     totalSessions: 24,
     enrolledClasses: []
   },
-  { 
-    id: "s5", 
-    name: makeName(4), 
-    email: `em@email.com`, 
-    phone: "0999999999", 
-    gender: "Other", 
-    dob: "2009-08-25", 
-    status: "enroll_later", 
-    enrolledClass: "Tiếng Nhật N5", 
-    branch: "RinoEdu Smart City", 
-    level: "Japanese", 
+  {
+    id: "s5",
+    name: "Trần Tuấn Khang",
+    email: "khang@email.com",
+    phone: "0999999999",
+    gender: "Male",
+    dob: "2009-08-25",
+    status: "enroll_later",
+    enrolledClass: "Tiếng Nhật N5",
+    branch: "RinoEdu Smart City",
+    level: "Japanese",
     subLevel: "N5",
     learningPath: "Lộ trình chinh phục JLPT N5 từ con số 0",
-    curriculum: "Giáo trình Minna no Nihongo I",
-    parentName: "Hoàng Văn E", 
-    parentPhone: "0910101010", 
+    curriculum: "Khung chương trình Minna no Nihongo I",
+    parentName: "Hoàng Văn E",
+    parentPhone: "0910101010",
     enrollmentDate: "2025-05-15",
     packageName: "Gói Tiếng Nhật N5 cơ bản",
     remainingSessions: 24,
     totalSessions: 24,
     enrolledClasses: []
   },
-  { 
-    id: "s6", 
-    name: makeName(5), 
-    email: `giang@email.com`, 
-    phone: "0912121212", 
-    gender: "Female", 
-    dob: "2004-12-01", 
-    status: "pending_transfer", 
-    enrolledClass: "IELTS C1", 
-    branch: "RinoEdu Nguyễn Tuân", 
-    level: "IELTS", 
+  {
+    id: "s6",
+    name: "Đặng Hồng Phúc",
+    email: "phuc@email.com",
+    phone: "0912121212",
+    gender: "Male",
+    dob: "2004-12-01",
+    status: "pending_transfer",
+    enrolledClass: "IELTS C1",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "IELTS",
     subLevel: "C1",
     learningPath: "Lộ trình IELTS Advanced Target 8.0+",
-    curriculum: "Khung giáo trình học thuật cao cấp Cambridge Academic v2026",
-    parentName: "Nguyễn Thị G", 
-    parentPhone: "0913131313", 
+    curriculum: "Khung chương trình học thuật cao cấp Cambridge Academic v2026",
+    parentName: "Nguyễn Thị G",
+    parentPhone: "0913131313",
     enrollmentDate: "2024-09-01",
     packageName: "Gói IELTS Mastery",
     remainingSessions: 6,
     totalSessions: 24,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-IELTS-09", 
-        className: "IELTS C1", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 3", date: "03/06", startTime: "19:00", endTime: "21:00" },
-          { dayOfWeek: "Thứ 5", date: "05/06", startTime: "19:00", endTime: "21:00" }
-        ], 
-        teacherName: "Ms. Emily Watson", 
-        status: "pending_transfer", 
-        progress: "18 / 24 buổi",
-        branch: "RinoEdu Nguyễn Tuân",
-        room: "P204",
-        level: "IELTS",
-        subLevel: "C1",
-        programName: "IELTS Advanced Intensive",
-        pathCode: "PATH-IELTS-C1",
-        startDate: "2024-09-10",
-        endDate: "2024-12-10"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s7", 
-    name: makeName(6), 
-    email: `hieu@email.com`, 
-    phone: "0914141414", 
-    gender: "Male", 
-    dob: "2003-06-30", 
-    status: "fee_transfer", 
-    enrolledClass: "TOEIC A2", 
-    branch: "RinoEdu Linh Đàm", 
-    level: "TOEIC", 
+  {
+    id: "s7",
+    name: "Nguyễn Hoàng Dũng",
+    email: "dung.nguyen@email.com",
+    phone: "0914141414",
+    gender: "Male",
+    dob: "2003-06-30",
+    status: "fee_transfer",
+    enrolledClass: "TOEIC A2",
+    branch: "RinoEdu Linh Đàm",
+    level: "TOEIC",
     subLevel: "A2",
     learningPath: "Lộ trình TOEIC nền tảng đến 500+",
-    curriculum: "Giáo trình TOEIC Starter ETS 2025",
-    parentName: "Trần Văn H", 
-    parentPhone: "0915151515", 
-    enrollmentDate: "2024-11-15", 
+    curriculum: "Khung chương trình TOEIC Starter ETS 2025",
+    parentName: "Trần Văn H",
+    parentPhone: "0915151515",
+    enrollmentDate: "2024-11-15",
     packageName: "Gói TOEIC mục tiêu 500",
     remainingSessions: 0,
     totalSessions: 24,
-    notes: "Chuyển sang CN HCM",
-    enrolledClasses: [
-      { 
-        classCode: "CLS-TOEIC-03", 
-        className: "TOEIC A2", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 2", date: "02/06", startTime: "19:00", endTime: "21:00" },
-          { dayOfWeek: "Thứ 4", date: "04/06", startTime: "19:00", endTime: "21:00" }
-        ], 
-        teacherName: "Phạm Văn Giảng Dạy", 
-        status: "session_ended", 
-        progress: "24 / 24 buổi",
-        branch: "RinoEdu Linh Đàm",
-        room: "P102",
-        level: "TOEIC",
-        subLevel: "A2",
-        programName: "TOEIC Foundation",
-        pathCode: "PATH-TOEIC-A2",
-        startDate: "2024-11-20",
-        endDate: "2025-02-20"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s8", 
-    name: makeName(7), 
-    email: `khanh@email.com`, 
-    phone: "0916161616", 
-    gender: "Male", 
-    dob: "2008-01-11", 
-    status: "awaiting_opening", 
-    enrolledClass: "STEM Junior 01", 
-    branch: "RinoEdu Smart City", 
-    level: "STEM", 
+  {
+    id: "s8",
+    name: "Trương Bảo An",
+    email: "an.truong@email.com",
+    phone: "0916161616",
+    gender: "Male",
+    dob: "2008-01-11",
+    status: "awaiting_opening",
+    enrolledClass: "STEM Junior 01",
+    branch: "RinoEdu Smart City",
+    level: "STEM",
     subLevel: "Robotics v1",
     learningPath: "Lộ trình Robotics & Tư duy lập trình",
     curriculum: "Khung chuẩn STEM Robotics cơ bản",
-    parentName: "Lê Thị K", 
-    parentPhone: "0917171717", 
+    parentName: "Lê Thị K",
+    parentPhone: "0917171717",
     enrollmentDate: "2025-02-28",
     packageName: "Gói STEM Robotics cơ bản",
     remainingSessions: 24,
     totalSessions: 24,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-STEM-08", 
-        className: "STEM Junior 01", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 3", date: "03/06", startTime: "18:30", endTime: "20:30" },
-          { dayOfWeek: "Thứ 7", date: "07/06", startTime: "18:30", endTime: "20:30" }
-        ], 
-        teacherName: "Hoàng Thị Giáo Viên", 
-        status: "active", 
-        progress: "4 / 24 buổi",
-        branch: "RinoEdu Smart City",
-        room: "P108",
-        level: "STEM",
-        subLevel: "Robotics v1",
-        programName: "STEM Robotics",
-        pathCode: "PATH-STEM-ROB",
-        startDate: "2025-03-15",
-        endDate: "2025-06-15"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s9", 
-    name: makeName(8), 
-    email: `mai@email.com`, 
-    phone: "0918181818", 
-    gender: "Female", 
-    dob: "2010-05-18", 
-    status: "trial", 
-    enrolledClass: "Toán tư duy M1", 
-    branch: "RinoEdu Nguyễn Tuân", 
-    level: "Math", 
+  {
+    id: "s9",
+    name: "Nguyễn Lan Hương",
+    email: "huong@email.com",
+    phone: "0918181818",
+    gender: "Female",
+    dob: "2010-05-18",
+    status: "trial",
+    enrolledClass: "Toán tư duy M1",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "Math",
     subLevel: "Algebra v1",
     learningPath: "Lộ trình Toán tư duy toàn diện cấp tiểu học",
-    curriculum: "Giáo trình toán tư duy Singapore v2025",
-    parentName: "Vũ Văn M", 
-    parentPhone: "0919191919", 
+    curriculum: "Khung chương trình toán tư duy Singapore v2025",
+    parentName: "Vũ Văn M",
+    parentPhone: "0919191919",
     enrollmentDate: "2025-04-10",
     packageName: "Gói Toán tư duy tiểu học",
     remainingSessions: 2,
     totalSessions: 3,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-MATH-09", 
-        className: "Toán tư duy M1", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 7", date: "07/06", startTime: "14:00", endTime: "16:00" }
-        ], 
-        teacherName: "Ms. Emily Watson", 
-        status: "active", 
-        progress: "1 / 3 buổi",
-        branch: "RinoEdu Nguyễn Tuân",
-        room: "P301",
-        level: "Math",
-        subLevel: "Algebra v1",
-        programName: "Toán tư duy",
-        pathCode: "PATH-MATH-ALG",
-        startDate: "2025-04-15",
-        endDate: "2025-04-18"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s10", 
-    name: makeName(9), 
-    email: `nam@email.com`, 
-    phone: "0920202020", 
-    gender: "Male", 
-    dob: "2002-09-22", 
-    status: "reserve", 
-    enrolledClass: "IELTS A2", 
-    branch: "RinoEdu Linh Đàm", 
-    level: "IELTS", 
+  {
+    id: "s10",
+    name: "Đặng Thiên An",
+    email: "an.dang@email.com",
+    phone: "0920202020",
+    gender: "Male",
+    dob: "2002-09-22",
+    status: "reserve",
+    enrolledClass: "IELTS A2",
+    branch: "RinoEdu Linh Đàm",
+    level: "IELTS",
     subLevel: "A2",
     learningPath: "Lộ trình IELTS tinh gọn từ mất gốc đến 7.5",
-    curriculum: "Khung giáo trình chuẩn Cambridge Academic v2026",
-    parentName: "Nguyễn Văn D", 
-    parentPhone: "0921212121", 
+    curriculum: "Khung chương trình chuẩn Cambridge Academic v2026",
+    parentName: "Nguyễn Văn D",
+    parentPhone: "0921212121",
     enrollmentDate: "2025-05-01",
     packageName: "Gói IELTS Pro v2026",
     remainingSessions: 19,
     totalSessions: 24,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-IELTS-03", 
-        className: "IELTS A2", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 3", date: "03/06", startTime: "18:00", endTime: "20:00" },
-          { dayOfWeek: "Thứ 5", date: "05/06", startTime: "18:00", endTime: "20:00" }
-        ], 
-        teacherName: "Mr. John Doe", 
-        status: "inactive", 
-        progress: "5 / 24 buổi",
-        branch: "RinoEdu Linh Đàm",
-        room: "P103",
-        level: "IELTS",
-        subLevel: "A2",
-        programName: "Chương trình IELTS chuẩn quốc tế",
-        pathCode: "PATH-IELTS-A2",
-        startDate: "2025-05-05",
-        endDate: "2025-08-05"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s11", 
-    name: makeName(10), 
-    email: `long@email.com`, 
-    phone: "0922222222", 
-    gender: "Male", 
-    dob: "2006-07-15", 
-    status: "session_ended", 
-    enrolledClass: "TOEIC B1", 
-    branch: "RinoEdu Nguyễn Tuân", 
-    level: "TOEIC", 
+  {
+    id: "s11",
+    name: "Đào Viết An",
+    email: "an.dao@email.com",
+    phone: "0922222222",
+    gender: "Male",
+    dob: "2006-07-15",
+    status: "session_ended",
+    enrolledClass: "TOEIC B1",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "TOEIC",
     subLevel: "B1",
     learningPath: "Lộ trình TOEIC chinh phục 650+ tự tin",
     curriculum: "ETS TOEIC L&R Test Series 2025",
-    parentName: "Phạm Văn L", 
-    parentPhone: "0923232323", 
+    parentName: "Phạm Văn L",
+    parentPhone: "0923232323",
     enrollmentDate: "2025-01-05",
     packageName: "Gói Combo TOEIC trọn gói",
     remainingSessions: 0,
     totalSessions: 34,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-TOEIC-11", 
-        className: "TOEIC B1", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 2", date: "02/06", startTime: "19:30", endTime: "21:30" },
-          { dayOfWeek: "Thứ 5", date: "05/06", startTime: "19:30", endTime: "21:30" }
-        ], 
-        teacherName: "Phạm Văn Giảng Dạy", 
-        status: "session_ended", 
-        progress: "24 / 24 buổi",
-        branch: "RinoEdu Nguyễn Tuân",
-        room: "P205",
-        level: "TOEIC",
-        subLevel: "B1",
-        programName: "Luyện thi TOEIC Cấp tốc",
-        pathCode: "PATH-TOEIC-B1",
-        startDate: "2025-01-10",
-        endDate: "2025-04-10"
-      },
-      { 
-        classCode: "TUTOR-TOEIC-LC", 
-        className: "Tutor TOEIC Listening & Reading", 
-        type: "online_tutor", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ Bảy", date: "07/06", startTime: "09:00", endTime: "10:30" }
-        ], 
-        teacherName: "Mr. John Doe", 
-        status: "session_ended", 
-        progress: "10 / 10 buổi",
-        level: "TOEIC",
-        subLevel: "L&R",
-        programName: "Tutor TOEIC 1-1 Online",
-        pathCode: "PATH-TOEIC-LC-TUTOR",
-        startDate: "2025-01-15",
-        endDate: "2025-03-15"
-      }
-    ]
+    enrolledClasses: []
   },
-  { 
-    id: "s12", 
-    name: makeName(11), 
-    email: `hang@email.com`, 
-    phone: "0924242424", 
-    gender: "Female", 
-    dob: "2008-02-28", 
-    status: "session_ended", 
-    enrolledClass: "IELTS B2", 
-    branch: "RinoEdu Smart City", 
-    level: "IELTS", 
+  {
+    id: "s12",
+    name: "Nguyễn Hoàng Vũ",
+    email: "vu.nguyen@email.com",
+    phone: "0924242424",
+    gender: "Female",
+    dob: "2008-02-28",
+    status: "session_ended",
+    enrolledClass: "IELTS B2",
+    branch: "RinoEdu Smart City",
+    level: "IELTS",
     subLevel: "B2",
     learningPath: "Lộ trình IELTS bứt phá 6.0+",
-    curriculum: "Giáo trình Cambridge IELTS Framework v4.0",
-    parentName: "Trần Thị H", 
-    parentPhone: "0925252525", 
+    curriculum: "Khung chương trình Cambridge IELTS Framework v4.0",
+    parentName: "Trần Thị H",
+    parentPhone: "0925252525",
     enrollmentDate: "2025-02-10",
     packageName: "Gói IELTS Prep B2",
     remainingSessions: 0,
     totalSessions: 24,
-    enrolledClasses: [
-      { 
-        classCode: "CLS-IELTS-12", 
-        className: "IELTS B2", 
-        type: "offline", 
-        scheduleSlots: [
-          { dayOfWeek: "Thứ 3", date: "03/06", startTime: "18:00", endTime: "20:00" },
-          { dayOfWeek: "Thứ 6", date: "06/06", startTime: "18:00", endTime: "20:00" }
-        ], 
-        teacherName: "Ms. Emily Watson", 
-        status: "session_ended", 
-        progress: "24 / 24 buổi",
-        branch: "RinoEdu Smart City",
-        room: "P109",
-        level: "IELTS",
-        subLevel: "B2",
-        programName: "Chương trình IELTS chuẩn quốc tế",
-        pathCode: "PATH-IELTS-B2",
-        startDate: "2025-02-15",
-        endDate: "2025-05-15"
-      }
-    ]
+    enrolledClasses: []
   },
+  {
+    id: "s13",
+    name: "Trần Minh Châu",
+    email: "chau.tran@email.com",
+    phone: "0931403302",
+    gender: "Female",
+    dob: "2015-08-17",
+    status: "active",
+    branch: "RinoEdu Linh Đàm",
+    level: "Math",
+    subLevel: "Einstein 0",
+    learningPath: "Lộ trình Toán tư duy toàn diện cấp tiểu học",
+    curriculum: "Khung chuẩn Toán học Singapore",
+    parentName: "Trần Văn Sơn",
+    parentPhone: "0901403302",
+    enrollmentDate: "2023-08-17",
+    packageName: "Gói Toán tư duy nâng cao",
+    remainingSessions: 68,
+    totalSessions: 102,
+    enrolledClasses: []
+  },
+  {
+    id: "s14",
+    name: "Nguyễn Phương Vy",
+    email: "vy.nguyen@email.com",
+    phone: "0931403052",
+    gender: "Female",
+    dob: "2016-04-12",
+    status: "active",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "English",
+    subLevel: "Level 4",
+    learningPath: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Nguyễn Văn A",
+    parentPhone: "0901403052",
+    enrollmentDate: "2023-07-31",
+    packageName: "Gói tiếng Anh Cambridge",
+    remainingSessions: 60,
+    totalSessions: 110,
+    enrolledClasses: []
+  },
+  {
+    id: "s15",
+    name: "Nguyễn Hà Phương",
+    email: "phuong.nguyen@email.com",
+    phone: "0931138382",
+    gender: "Female",
+    dob: "2015-11-20",
+    status: "active",
+    branch: "RinoEdu Linh Đàm",
+    level: "English",
+    subLevel: "Level 5",
+    learningPath: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Nguyễn Văn B",
+    parentPhone: "0901138382",
+    enrollmentDate: "2023-08-17",
+    packageName: "Gói tiếng Anh Cambridge",
+    remainingSessions: 1,
+    totalSessions: 96,
+    enrolledClasses: []
+  },
+  {
+    id: "s16",
+    name: "Kim Nhật Anh",
+    email: "anh.kim@email.com",
+    phone: "0931492352",
+    gender: "Male",
+    dob: "2016-05-18",
+    status: "active",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "English",
+    subLevel: "Level 4",
+    learningPath: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Kim Văn C",
+    parentPhone: "0901492352",
+    enrollmentDate: "2023-08-19",
+    packageName: "Gói tiếng Anh Cambridge",
+    remainingSessions: 42,
+    totalSessions: 108,
+    enrolledClasses: []
+  },
+  {
+    id: "s17",
+    name: "Nguyễn Mỹ Linh",
+    email: "linh.nguyen@email.com",
+    phone: "0931492312",
+    gender: "Female",
+    dob: "2015-12-05",
+    status: "active",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "Math",
+    subLevel: "Archimedes 5",
+    learningPath: "Lộ trình Toán tư duy Archimedes",
+    curriculum: "Khung chuẩn Toán học Singapore",
+    parentName: "Nguyễn Văn D",
+    parentPhone: "0901492312",
+    enrollmentDate: "2023-10-11",
+    packageName: "Gói Toán tư duy Archimedes",
+    remainingSessions: 54,
+    totalSessions: 98,
+    enrolledClasses: []
+  },
+  {
+    id: "s18",
+    name: "Phạm Đình Nguyên",
+    email: "nguyen.pham@email.com",
+    phone: "0931521492",
+    gender: "Male",
+    dob: "2016-01-20",
+    status: "active",
+    branch: "RinoEdu Linh Đàm",
+    level: "English",
+    subLevel: "Level 4",
+    learningPath: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Phạm Văn E",
+    parentPhone: "0901521492",
+    enrollmentDate: "2023-11-02",
+    packageName: "Gói tiếng Anh Cambridge",
+    remainingSessions: 15,
+    totalSessions: 59,
+    enrolledClasses: []
+  },
+  {
+    id: "s19",
+    name: "Minh Vy",
+    email: "vy.minh@email.com",
+    phone: "0931522922",
+    gender: "Female",
+    dob: "2016-09-15",
+    status: "active",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "English",
+    subLevel: "Level 4",
+    learningPath: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Nguyễn Văn F",
+    parentPhone: "0901522922",
+    enrollmentDate: "2023-11-05",
+    packageName: "Gói tiếng Anh Cambridge",
+    remainingSessions: 41,
+    totalSessions: 106,
+    enrolledClasses: []
+  },
+  {
+    id: "s20",
+    name: "Nguyễn Hoàng Nam",
+    email: "nam.nguyen@email.com",
+    phone: "0931609992",
+    gender: "Male",
+    dob: "2015-03-25",
+    status: "active",
+    branch: "RinoEdu Smart City",
+    level: "Math",
+    subLevel: "Archimedes 5",
+    learningPath: "Lộ trình Toán tư duy Archimedes",
+    curriculum: "Khung chuẩn Toán học Singapore",
+    parentName: "Nguyễn Văn G",
+    parentPhone: "0901609992",
+    enrollmentDate: "2023-12-20",
+    packageName: "Gói Toán tư duy Archimedes",
+    remainingSessions: 45,
+    totalSessions: 80,
+    enrolledClasses: []
+  }
 ]
 
 // Enrich mockStudents with saleName and subject dynamically
@@ -628,6 +618,41 @@ mockStudents.forEach((student, index) => {
       const secondBranch = MOCK_SYSTEM_BRANCHES[(mainIdx + 1) % MOCK_SYSTEM_BRANCHES.length];
       student.branches.push(secondBranch);
     }
+  }
+
+  // Populate enrolled classes dynamically if empty
+  if (student.enrolledClass && (!student.enrolledClasses || student.enrolledClasses.length === 0)) {
+    const levelLower = (student.level || '').toLowerCase()
+    const matchedClass = mockClassRecords.find((c) => {
+      const clsLevel = (c.level || '').toLowerCase()
+      return clsLevel.includes(levelLower) || levelLower.includes(clsLevel)
+    }) || mockClassRecords[index % mockClassRecords.length]
+
+    let type: 'offline' | 'online_tutor' | 'tutor' | 'station' | 'online' = 'offline'
+    if (index % 5 === 0) type = 'offline'
+    else if (index % 5 === 1) type = 'online_tutor'
+    else if (index % 5 === 2) type = 'tutor'
+    else if (index % 5 === 3) type = 'station'
+    else type = 'online'
+
+    let statusVal: 'active' | 'paused' | 'dropped' | 'session_ended' = 'active'
+    if (index % 4 === 0) statusVal = 'active'
+    else if (index % 4 === 1) statusVal = 'paused'
+    else if (index % 4 === 2) statusVal = 'dropped'
+    else statusVal = 'session_ended'
+
+    student.enrolledClasses = [
+      {
+        classCode: matchedClass.code,
+        className: matchedClass.name,
+        type: type,
+        scheduleSlots: matchedClass.scheduleSlots,
+        teacherName: matchedClass.teacher,
+        status: statusVal,
+        progress: "12 / 24 buổi",
+        branch: matchedClass.branch || student.branch,
+      }
+    ]
   }
 
   if (student.level === 'Japanese') {

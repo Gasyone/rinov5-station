@@ -8,7 +8,7 @@ import { SidebarNav } from './SidebarNav'
 import { getNavigationGroupsForRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
-import { CallDialog } from '@/components/shared'
+import { UserProfileDialog } from '@/components/shared'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -82,7 +82,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {isDev && DevPanel ? <DevPanel /> : null}
-      <CallDialog />
+      <UserProfileDialog />
     </div>
   )
 }
