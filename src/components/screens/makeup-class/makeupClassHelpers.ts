@@ -155,3 +155,12 @@ export function isExpiryApproaching(expiryDate: string): boolean {
 export function isExpired(expiryDate: string): boolean {
   return new Date(expiryDate) < new Date()
 }
+
+/** Get unified attendance status text */
+export function getAttendanceStatusText(req: MakeupClassRequest): string {
+  if (req.attendanceStatus) return req.attendanceStatus
+  if (req.status === 'completed') return 'Có mặt'
+  if (req.status === 'da_vang') return 'Vắng mặt'
+  return 'Chưa điểm danh'
+}
+

@@ -33,6 +33,10 @@ export interface MakeupClassRequest {
   makeupClassId?: string
   makeupSessionName?: string
   makeupSessionDate?: string
+  leaveRequestId?: string
+  attendanceStatus?: string
+  teacherComment?: string
+  exchangeNotes?: string
   status: MakeupClassStatus
   expiryDate: string
   notes: string
@@ -58,6 +62,10 @@ export const MOCK_MAKEUP_CLASSES: MakeupClassRequest[] = [
     originalSessionName: 'Starter S2',
     originalSessionDate: '2026-07-18 18:00',
     absenceReason: 'Ốm sốt',
+    leaveRequestId: 'NP-2607-001',
+    attendanceStatus: 'Chưa điểm danh',
+    teacherComment: 'Chưa có nhận xét buổi bù',
+    exchangeNotes: 'Phụ huynh xin dời buổi bù sang cuối tuần do trùng lịch học văn hóa',
     status: 'cho_duyet',
     expiryDate: '2026-08-18',
     notes: 'Phụ huynh gọi báo nghỉ trước 2 tiếng',
@@ -83,10 +91,14 @@ export const MOCK_MAKEUP_CLASSES: MakeupClassRequest[] = [
     originalSessionName: 'Robo Level 1',
     originalSessionDate: '2026-07-21 19:30',
     absenceReason: 'Gia đình có việc',
+    leaveRequestId: 'NP-2607-002',
     makeupClassName: 'STEM Robotics S2',
     makeupClassId: 'CLS-016',
     makeupSessionName: 'Robo S2',
     makeupSessionDate: '2026-07-29 10:00',
+    attendanceStatus: 'Đã điểm danh',
+    teacherComment: 'Bé làm sản phẩm Robot sáng tạo, tích cực thảo luận nhóm',
+    exchangeNotes: 'Đã duyệt xếp bù vào lớp STEM Robotics S2 ngày 29/07',
     status: 'da_xep_lich',
     expiryDate: '2026-08-21',
     notes: '',
@@ -113,10 +125,14 @@ export const MOCK_MAKEUP_CLASSES: MakeupClassRequest[] = [
     originalSessionName: 'Thinking M1',
     originalSessionDate: '2026-07-15 18:45',
     absenceReason: 'Đi thi học kỳ',
+    leaveRequestId: 'NP-2607-003',
     makeupClassName: 'Math Thinking M3',
     makeupClassId: 'CLS-014',
     makeupSessionName: 'Thinking M3',
     makeupSessionDate: '2026-07-23 09:30',
+    attendanceStatus: 'Có mặt',
+    teacherComment: 'Học viên hoàn thành 100% bài tập trên lớp, tiếp thu bài tốt',
+    exchangeNotes: 'Phụ huynh đã xác nhận đưa học viên đến lớp bù đúng giờ',
     status: 'completed',
     expiryDate: '2026-08-15',
     notes: 'Học viên đã tham gia buổi bù đầy đủ',
@@ -144,6 +160,10 @@ export const MOCK_MAKEUP_CLASSES: MakeupClassRequest[] = [
     originalSessionName: 'IELTS J2',
     originalSessionDate: '2026-07-20 09:00',
     absenceReason: 'Nghỉ hè đi du lịch',
+    leaveRequestId: 'NP-2607-004',
+    attendanceStatus: 'Chưa điểm danh',
+    teacherComment: '—',
+    exchangeNotes: 'Từ chối dời buổi bù do lý do nghỉ không đủ điều kiện theo quy định',
     status: 'tu_choi',
     expiryDate: '2026-08-20',
     notes: 'Từ chối — lý do vắng không hợp lệ (nghỉ hè không báo trước)',

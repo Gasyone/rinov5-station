@@ -20,9 +20,9 @@ const COLUMN_DEFS: Array<{ label: string; className: string }> = [
   { label: 'Lớp gốc', className: 'min-w-44' },
   { label: 'Buổi nghỉ', className: 'min-w-44' },
   { label: 'Lớp ghép', className: 'min-w-44' },
-  { label: 'Buổi bù', className: 'min-w-44' },
-  { label: 'Hạn bù', className: 'min-w-24' },
-  { label: 'Người phụ trách', className: 'min-w-32' },
+  {label: 'Buổi bù', className: 'min-w-44' },
+  { label: 'Kết quả', className: 'min-w-36' },
+  { label: 'Người phụ trách', className: 'min-w-36' },
   { label: 'Trạng thái', className: 'min-w-32' },
 ]
 

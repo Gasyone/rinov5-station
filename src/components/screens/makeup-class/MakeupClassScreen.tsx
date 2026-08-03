@@ -234,6 +234,39 @@ export function MakeupClassScreen() {
     toast.success('Đã đánh dấu vắng mặt buổi bù')
   }
 
+  const handleAssignSession = (
+    requestId: string,
+    session: import('@/components/screens/trial-class/trialClassTypes').TrialSessionSelection,
+    notes: string
+  ) => {
+    const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
+    setRequests((current) =>
+      current.map((r) => {
+        if (r.id !== requestId) return r
+        return {
+          ...r,
+          makeupClassName: session.className,
+          makeupClassId: session.classId,
+          makeupSessionName: session.sessionName,
+          makeupSessionDate: session.trialDate,
+          attendanceStatus: 'Đã điểm danh',
+          status: 'da_xep_lich',
+          exchangeNotes: notes || r.exchangeNotes,
+          auditLog: [
+            ...r.auditLog,
+            {
+              timestamp: now,
+              author: 'Người dùng hiện tại',
+              action: 'Ghép / Đổi buổi học bù',
+              detail: `Xếp vào ${session.className} - ${session.sessionName} (${session.trialDate})`,
+            },
+          ],
+        }
+      })
+    )
+    toast.success(`Đã ghép vào lớp ${session.className} (${session.sessionName})`)
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <MakeupClassToolbar
@@ -314,6 +347,7 @@ export function MakeupClassScreen() {
         onCancel={handleCancel}
         onMarkCompleted={handleMarkCompleted}
         onMarkAbsent={handleMarkAbsent}
+        onAssignSession={handleAssignSession}
       />
     </div>
   )
