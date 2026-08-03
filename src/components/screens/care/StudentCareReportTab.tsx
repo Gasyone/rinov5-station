@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react'
 import {
   ChevronDown,
   ChevronUp,
-  UserPlus,
   Check,
   Search,
 } from 'lucide-react'
@@ -528,7 +527,6 @@ Phát huy tinh thần chủ động sáng tạo.`,
                         : /toán|math|LD_TOAN/i.test(text)
                           ? 'Toán tư duy'
                           : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Lớp học'
-                      const displayLabel = pItem.classCode ? `${shortSubject} (${pItem.classCode})` : shortSubject
                       const isPkgActive = pItem.status === 'active'
                       return (
                         <button
@@ -536,18 +534,32 @@ Phát huy tinh thần chủ động sáng tạo.`,
                           type="button"
                           onClick={() => setSelectedPackageId(pItem.id)}
                           className={cn(
-                            "h-6 px-2.5 text-xs rounded-md transition-all flex items-center justify-center cursor-pointer",
+                            "h-[40px] px-3 py-1 text-xs rounded-lg transition-all flex flex-col justify-center items-center text-center cursor-pointer select-none border",
                             isSelected
-                              ? "bg-sky-600 text-white font-medium shadow-2xs"
+                              ? "bg-sky-600 text-white font-medium shadow-2xs border-sky-600"
                               : isPkgActive
-                                ? "bg-muted/40 text-foreground hover:bg-muted/70"
-                                : "bg-transparent text-muted-foreground hover:bg-muted/30"
+                                ? "bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60"
+                                : "bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30"
                           )}
                         >
-                          <span>{displayLabel}</span>
-                          {!isPkgActive && (
-                            <span className="text-[9px] text-muted-foreground/70 ml-1 font-normal">
-                              ({pItem.status === 'pending' ? 'Chờ' : 'Cũ'})
+                          <span className="font-semibold text-xs leading-none">
+                            {shortSubject}
+                          </span>
+                          {pItem.classCode && (
+                            <span
+                              className={cn(
+                                "text-[9.5px] font-mono tracking-tight leading-none mt-1",
+                                isSelected
+                                  ? "text-sky-100 opacity-90 font-normal"
+                                  : "text-muted-foreground/80 font-normal"
+                              )}
+                            >
+                              ({pItem.classCode})
+                              {!isPkgActive && (
+                                <span className="ml-0.5 opacity-70">
+                                  ({pItem.status === 'pending' ? 'Chờ' : 'Cũ'})
+                                </span>
+                              )}
                             </span>
                           )}
                         </button>
@@ -557,7 +569,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                       <button
                         type="button"
                         onClick={() => setShowAllPrograms(!showAllPrograms)}
-                        className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
+                        className="h-[40px] px-2.5 text-xs text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer rounded-lg border border-border/40 hover:bg-muted/40"
                       >
                         <span>{showAllPrograms ? 'Thu gọn' : `Khác (${otherPackages.length})`}</span>
                         {showAllPrograms ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
@@ -572,15 +584,15 @@ Phát huy tinh thần chủ động sáng tạo.`,
                   <div className="space-y-0.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] text-muted-foreground font-medium">Cơ sở & CS phụ trách</span>
-                      {/* Icon đổi CS phụ trách ở góc phải cùng hàng với nhãn */}
+                      {/* Text Đổi CS màu xanh ở góc phải cùng hàng với nhãn */}
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
                             type="button"
-                            className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                            className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline cursor-pointer transition-colors"
                             title={`Đổi CS phụ trách tại ${currentBranchName}`}
                           >
-                            <UserPlus className="h-3.5 w-3.5" />
+                            Đổi CS
                           </button>
                         </PopoverTrigger>
                         <PopoverContent align="end" className="w-64 p-2.5 space-y-2 text-xs z-50 shadow-md border bg-popover text-popover-foreground">

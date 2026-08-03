@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import { 
@@ -40,7 +41,7 @@ interface ClassesSessionActionDialogProps {
   isOpen: boolean
   onClose: () => void
   session: RoadmapSession | null
-  type: 'teacher' | 'room' | 'upload' | null
+  type: 'teacher' | 'room' | 'upload' | 'reschedule' | null
   onSave: (sessionId: string, updates: Partial<RoadmapSession>) => void
   student?: RosterStudent | null
 }
@@ -87,6 +88,13 @@ export function ClassesSessionActionDialog({
   const [isCover, setIsCover] = useState(!!session?.coverType)
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const [roomPickerOpen, setRoomPickerOpen] = useState(false)
+
+  const [rescheduleDate, setRescheduleDate] = useState(
+    session ? (session.rescheduleDate || session.date || '') : ''
+  )
+  const [rescheduleReason, setRescheduleReason] = useState(
+    session ? (session.rescheduleNote || '') : ''
+  )
 
   // Early return if dependencies are not loaded
   if (!session || !type) return null
@@ -193,6 +201,29 @@ export function ClassesSessionActionDialog({
     onClose()
   }
 
+  const handleSaveReschedule = () => {
+    if (!rescheduleDate) {
+      setErrors({ rescheduleDate: 'Vui lòng chọn ngày học mới!' })
+      return
+    }
+    let formattedDate = rescheduleDate
+    if (rescheduleDate.includes('-')) {
+      const parts = rescheduleDate.split('-')
+      if (parts.length === 3) {
+        formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`
+      }
+    }
+
+    onSave(session.id, {
+      originalDate: session.originalDate || session.date,
+      date: formattedDate,
+      rescheduleDate: formattedDate,
+      rescheduleNote: rescheduleReason,
+    })
+    toast.success(`Đã đổi lịch học thành công sang ngày ${formattedDate}!`)
+    onClose()
+  }
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -214,6 +245,7 @@ export function ClassesSessionActionDialog({
                 {type === 'teacher' && 'Đổi giáo viên giảng dạy'}
                 {type === 'room' && 'Đổi phòng học'}
                 {type === 'upload' && 'Quản lý tài liệu bài giảng'}
+                {type === 'reschedule' && 'Đổi lịch ngày học'}
               </DialogTitle>
               
               <DialogDescription className="text-xs text-muted-foreground mt-1 truncate">
@@ -687,6 +719,56 @@ export function ClassesSessionActionDialog({
               </div>
             )}
 
+            {/* D. RESCHEDULE MODE */}
+            {type === 'reschedule' && (
+              <div className="space-y-3">
+                <div className="rounded-xl border bg-muted/20 p-2.5 text-xs space-y-1.5 border-muted">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground font-medium">Lịch học hiện tại:</span>
+                    <span className="font-semibold text-foreground">
+                      {session.originalDate || session.date} ({session.startTime} - {session.endTime})
+                    </span>
+                  </div>
+                </div>
+
+                <FieldLabel label="Chọn ngày học mới" required>
+                  <Input
+                    type="date"
+                    value={
+                      rescheduleDate.includes('/')
+                        ? rescheduleDate.split('/').reverse().join('-')
+                        : rescheduleDate
+                    }
+                    onChange={(e) => {
+                      setRescheduleDate(e.target.value)
+                      if (errors.rescheduleDate) {
+                        setErrors((prev) => ({ ...prev, rescheduleDate: '' }))
+                      }
+                    }}
+                    className={cn(
+                      'h-9 text-xs bg-background rounded-lg',
+                      errors.rescheduleDate ? 'border-destructive' : 'border-muted'
+                    )}
+                  />
+                  {errors.rescheduleDate && (
+                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                      {errors.rescheduleDate}
+                    </span>
+                  )}
+                </FieldLabel>
+
+                <FieldLabel label="Lý do đổi lịch">
+                  <Textarea
+                    value={rescheduleReason}
+                    onChange={(e) => setRescheduleReason(e.target.value)}
+                    placeholder="Nhập lý do dời lịch / đổi ngày học..."
+                    rows={3}
+                    className="rounded-lg shadow-xs border-muted text-xs bg-background resize-y"
+                  />
+                </FieldLabel>
+              </div>
+            )}
+
           </div>
 
           {/* Footer actions */}
@@ -727,6 +809,16 @@ export function ClassesSessionActionDialog({
                 className="rounded-lg text-xs bg-primary"
               >
                 Lưu lại
+              </Button>
+            )}
+
+            {type === 'reschedule' && (
+              <Button 
+                size="sm" 
+                onClick={handleSaveReschedule}
+                className="rounded-lg text-xs bg-primary"
+              >
+                Lưu thay đổi lịch học
               </Button>
             )}
           </DialogFooter>

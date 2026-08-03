@@ -7,6 +7,19 @@ import { CareTagHoverCard } from '@/components/shared'
 import { formatFullStaffName } from './operationsAlertHelpers'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
 
+import { PersonnelHoverCard } from '@/components/shared'
+
+function getCSStaffPerson(name: string) {
+  return {
+    id: 'EMP-NTA',
+    name: name || 'Nguyễn Thị Ngọc Anh',
+    role: 'Chuyên viên CSKH',
+    phone: '0901612940',
+    email: 'ngocanh@rinoedu.com',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=NgocAnh'
+  }
+}
+
 interface StudentActiveCareCardProps {
   student?: StudentCareAlert
   chatRecipient: string
@@ -22,23 +35,26 @@ export function StudentActiveCareCard({
 
   if (isCaredStatus) return null
 
-  return (
-    <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-border/60 shadow-2xs text-left mb-3 p-3.5 space-y-2 select-none">
-      <div className="flex items-center justify-between select-none py-0.5 px-0.5 flex-wrap gap-2">
-        <h4 className="text-xs font-bold text-amber-700 dark:text-amber-400">
-          Lần chăm sóc hiện tại (Đang xử lý)
-        </h4>
-      </div>
+  const csStaffName = formatFullStaffName(student?.csStaff || 'Nguyễn Thị Ngọc Anh')
 
+  return (
+    <div className="space-y-1 text-left select-none pt-1">
       {/* Active Care Card Item */}
       <div className="space-y-1">
         {/* Header row */}
         <div className="flex items-center justify-between flex-wrap gap-2 pt-0.5 pb-1 select-none">
           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 shrink-0">
+              Đang xử lý
+            </span>
             <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300 flex items-center gap-1">
               <span>CS</span>
             </span>
-            <span className="font-bold text-foreground text-xs">{formatFullStaffName(student?.csStaff)}</span>
+            <PersonnelHoverCard person={getCSStaffPerson(csStaffName)}>
+              <span className="font-bold text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+                {csStaffName}
+              </span>
+            </PersonnelHoverCard>
             <span className="text-muted-foreground text-xs font-medium">• Cuộc gọi: {chatRecipient}</span>
             <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
               2026-07-20 14:00

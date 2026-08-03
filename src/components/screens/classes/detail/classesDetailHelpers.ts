@@ -409,6 +409,14 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
       substituteTeacherName = 'Cô Mai'
     }
 
+    // Rescheduled date mock for session 8
+    let originalDate: string | undefined = undefined
+    let rescheduleDate: string | undefined = undefined
+    if (sessionNum === 8) {
+      originalDate = '13/05/2026'
+      rescheduleDate = dateStr
+    }
+
     // Classroom mock
     let room = cls.room
     if (sessionNum === 2) room = 'A102' // mock room change
@@ -435,6 +443,8 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
       defaultRoom: cls.room,
       teacherName: cls.teacher,
       substituteTeacherName,
+      originalDate,
+      rescheduleDate,
       status,
       materials: (() => {
         // Only completed sessions have post-class attached photos/materials

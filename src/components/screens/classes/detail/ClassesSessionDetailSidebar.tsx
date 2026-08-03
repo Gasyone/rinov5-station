@@ -80,66 +80,32 @@ export function ClassesSessionDetailSidebar({
 
   return (
     <div className="flex-[3] flex flex-col min-h-0 overflow-y-auto gap-3 pt-0.5 px-1 pr-1.5">
-      {/* ── SMART CARDS THỐNG KÊ (NẰM TRÊN KHUNG THÔNG TIN BUỔI HỌC) ── */}
-      <div className="shrink-0 grid grid-cols-3 gap-1.5">
-        <div className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-800 p-2 shadow-2xs">
-          <Users className="h-4 w-4 text-zinc-400 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[9px] text-muted-foreground font-medium leading-none">Sĩ số</p>
-            <p className="text-xs font-bold font-mono text-foreground leading-tight mt-0.5">{activeRosterCount}</p>
-          </div>
+      {/* ── SMART CARDS THỐNG KÊ (NẰM TRÊN KHUNG THÔNG TIN BUỔI HỌC - 5 CARDS ON 1 ROW, NO ICONS) ── */}
+      <div className="shrink-0 grid grid-cols-5 gap-1.5">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-800 p-1.5 text-center shadow-2xs">
+          <p className="text-[9px] text-muted-foreground font-medium leading-none">Sĩ số</p>
+          <p className="text-xs font-bold font-mono text-foreground leading-tight mt-1">{activeRosterCount}</p>
         </div>
 
-        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-2 shadow-2xs">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
-            <p className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-0.5">{presentCount}/{activeRosterCount}</p>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-1.5 text-center shadow-2xs">
+          <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
+          <p className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-1">{presentCount}/{activeRosterCount}</p>
         </div>
 
-        <div className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20 p-2 shadow-2xs">
-          <XCircle className="h-4 w-4 text-red-500 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[9px] text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
-            <p className="text-xs font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-0.5">{excusedCount}·{absentCount}</p>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20 p-1.5 text-center shadow-2xs">
+          <p className="text-[9px] text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
+          <p className="text-xs font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-1">{excusedCount}·{absentCount}</p>
         </div>
 
-        <div className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20 p-2 shadow-2xs">
-          <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
-            <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-0.5">{lateCount}</p>
-          </div>
+        <div className="flex flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20 p-1.5 text-center shadow-2xs">
+          <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
+          <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-1">{lateCount}</p>
         </div>
 
-        {(cls.trialStudents ?? 0) > 0 && (
-          <div className="flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-900/50 dark:bg-violet-950/20 p-2 shadow-2xs">
-            <BookOpen className="h-4 w-4 text-violet-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[9px] text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
-              <p className="text-xs font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-0.5">{sessionTrialCount}</p>
-            </div>
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={onToggleCareOnlyFilter}
-          className={`flex items-center gap-1.5 rounded-lg border p-2 shadow-2xs transition-colors cursor-pointer text-left ${
-            isCareOnlyFilter
-              ? 'border-rose-500 bg-rose-500 text-white font-bold'
-              : 'border-rose-200 bg-rose-50/60 text-rose-700 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300'
-          }`}
-          title="Nhấp để lọc danh sách học viên cần chăm sóc"
-        >
-          <HeartHandshake className={`h-4 w-4 shrink-0 ${isCareOnlyFilter ? 'text-white' : 'text-rose-500'}`} />
-          <div className="min-w-0">
-            <p className={`text-[9px] font-medium leading-none ${isCareOnlyFilter ? 'text-white/80' : 'text-rose-600 dark:text-rose-400'}`}>Cần CS</p>
-            <p className="text-xs font-bold font-mono leading-tight mt-0.5">{careStudentsCount}</p>
-          </div>
-        </button>
+        <div className="flex flex-col items-center justify-center rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-900/50 dark:bg-violet-950/20 p-1.5 text-center shadow-2xs">
+          <p className="text-[9px] text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
+          <p className="text-xs font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-1">{sessionTrialCount}</p>
+        </div>
       </div>
 
       {/* ── KHUNG THÔNG TIN BUỔI HỌC ── */}

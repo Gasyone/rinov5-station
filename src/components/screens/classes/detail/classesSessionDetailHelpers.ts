@@ -61,6 +61,16 @@ export function formatDateWithDay(dateStr?: string): string {
   return dayOfWeek ? `${dayOfWeek}, ${trimmed}` : trimmed
 }
 
+export function splitDateWithDay(dateStr?: string): { dayOfWeek: string; dateRest: string } | null {
+  if (!dateStr) return null
+  const formatted = formatDateWithDay(dateStr)
+  const parts = formatted.split(', ')
+  if (parts.length === 2) {
+    return { dayOfWeek: parts[0], dateRest: parts[1] }
+  }
+  return { dayOfWeek: '', dateRest: formatted }
+}
+
 export function getInitials(name: string): string {
   const parts = name.replace(/\s*\(.*\)\s*$/, '').trim().split(/\s+/)
   if (parts.length === 0) return '?'

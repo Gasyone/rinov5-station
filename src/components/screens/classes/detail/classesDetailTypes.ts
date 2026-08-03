@@ -60,6 +60,9 @@ export interface RoadmapSession {
   assistantName?: string
   coverType?: string
   coverNote?: string
+  rescheduleDate?: string
+  originalDate?: string
+  rescheduleNote?: string
   status: 'completed' | 'ongoing' | 'upcoming' | 'cancelled' | 'absent'
   materials?: Array<{ name: string; url: string; type?: string }>
   syllabusName?: string

@@ -114,12 +114,12 @@ export function ClassesSessionAttendanceTab({
         (s) => s.status === 'trial' || s.status === 'new' || !!s.sessionLabel
       )
     }
-    // Sort: New and Trial students always at the top
+    // Sort: Care students (trial, new, or has sessionLabel) always at the top
     return list.sort((a, b) => {
-      const aIsNew = a.status === 'new' || a.status === 'trial'
-      const bIsNew = b.status === 'new' || b.status === 'trial'
-      if (aIsNew && !bIsNew) return -1
-      if (!aIsNew && bIsNew) return 1
+      const aIsCare = a.status === 'new' || a.status === 'trial' || !!a.sessionLabel
+      const bIsCare = b.status === 'new' || b.status === 'trial' || !!b.sessionLabel
+      if (aIsCare && !bIsCare) return -1
+      if (!aIsCare && bIsCare) return 1
       return 0
     })
   }, [rosterState, isCareOnlyFilter])

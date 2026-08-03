@@ -14,6 +14,7 @@ import { getCareTagAssignees, isCSDBTag, type CareTag } from './operationsAlertH
 import type { StudentCareAlert, FamilyContact } from '@/mocks/careAlerts'
 import type { CareTopic } from './studentCareDetailTypes'
 import { CallConnectionBanner } from './CallConnectionBanner'
+import { StudentActiveCareCard } from './StudentActiveCareCard'
 import { useAuthStore } from '@/stores/useAuthStore'
 
 export function formatContactDisplayName(name: string, relationship: string): string {
@@ -113,9 +114,11 @@ export function StudentCareFormCard({
   isCaredStatus,
 }: StudentCareFormCardProps) {
   const [isCallActive, setIsCallActive] = useState(false)
+  const [renewalStatus, setRenewalStatus] = useState<string>('chua_lien_he')
   const { user } = useAuthStore()
   const showAvatarOnTag = user?.role === 'branch_manager' || user?.role === 'admin'
   const isCSOnly = user?.role === 'csm' || user?.role === 'sale'
+  const chatRecipient = formatContactDisplayName(selectedContact.name, selectedContact.relationship)
 
   // Filter Care Tags:
   // Completed regular tags are HIDDEN.
@@ -169,47 +172,47 @@ export function StudentCareFormCard({
                   type="button"
                   onClick={() => setExpandedTopicCode(isExpanded ? null : topic.code)}
                   className={cn(
-                    "h-5.5 px-1.5 text-[10px] font-semibold rounded-md flex items-center gap-1 cursor-pointer border transition-all shadow-none select-none",
+                    "h-8 px-2.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer border transition-all shadow-none select-none",
                     getTagColorClass(topic.code, isExpanded),
                     isCompletedTag && isCSDB && "opacity-75 border-dashed border-emerald-400 bg-emerald-50/80 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
                   )}
                   title={isCompletedTag && isCSDB ? `Nhãn CSĐB đã hoàn thành chăm sóc` : undefined}
                 >
                   {!isCompletedTag && slaStatus === 'overdue' && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse shrink-0" title="Quá hạn" />
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse shrink-0" title="Quá hạn" />
                   )}
                   {!isCompletedTag && slaStatus === 'due_today' && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Đến hạn" />
+                    <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" title="Đến hạn" />
                   )}
                   {isCompletedTag && isCSDB && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" title="Đã hoàn thành" />
+                    <span className="h-2 w-2 rounded-full bg-emerald-600 shrink-0" title="Đã hoàn thành" />
                   )}
                   <span className={cn("font-semibold", isCompletedTag && isCSDB && "line-through decoration-emerald-700 decoration-2")}>
-                    {topic.code}
+                    {topic.code === 'CSTP' ? `CSTP (${cstpStatus === 'cham_soc' ? 'Chăm sóc' : cstpStatus === 'tiem_nang' ? 'Tiềm năng' : cstpStatus === 'can_nhac' ? 'Cân nhắc' : 'Hẹn tái'})` : topic.code}
                   </span>
                   {showAvatarOnTag && (
-                    <div className="flex items-center gap-0.5 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0 -mr-1">
                       {assignees.includes('CS') && (
                         <Avatar
-                          className="h-4 w-4 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[8px] font-bold"
+                          className="h-7.5 w-7.5 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold"
                           title="CS phụ trách"
                         >
                           <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${student?.csStaff || 'CS'}`} alt="CS" />
-                          <AvatarFallback className="bg-emerald-600 text-white font-bold text-[7px]">CS</AvatarFallback>
+                          <AvatarFallback className="bg-emerald-600 text-white font-bold text-[8px]">CS</AvatarFallback>
                         </Avatar>
                       )}
                       {assignees.includes('GV') && (
                         <Avatar
-                          className="h-4 w-4 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[8px] font-bold"
+                          className="h-7.5 w-7.5 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[8px] font-bold"
                           title="GV phụ trách"
                         >
                           <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${student?.teacherCode || 'GV'}`} alt="GV" />
-                          <AvatarFallback className="bg-purple-600 text-white font-bold text-[7px]">GV</AvatarFallback>
+                          <AvatarFallback className="bg-purple-600 text-white font-bold text-[8px]">GV</AvatarFallback>
                         </Avatar>
                       )}
                     </div>
                   )}
-                  {isExpanded ? <ChevronUp className="h-3 w-3 shrink-0 opacity-70" /> : <ChevronDown className="h-3 w-3 shrink-0 opacity-70" />}
+                  {isExpanded ? <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-70" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-70" />}
                 </button>
               )
             })
@@ -268,13 +271,16 @@ export function StudentCareFormCard({
                     )}
                   </div>
 
-                  {/* Deadline info on the top right on the same row */}
-                  <div className="flex items-center gap-1.5 text-[10px] ml-auto select-none">
+                  {/* Deadline & Assignee info on the top right on the same row */}
+                  <div className="flex items-center gap-2 text-[10.5px] ml-auto select-none flex-wrap justify-end">
+                    <span className="text-muted-foreground font-normal shrink-0">
+                      Phụ trách: <strong className="text-foreground font-semibold">CS {student?.csStaff || 'Nguyễn Thị Ngọc Anh'}</strong> • <strong className="text-foreground font-semibold">GV {(student as any)?.teacher || 'Hoàng Thị Mai'}</strong>
+                    </span>
                     {(() => {
                       const slaStatus = expandedTopic.slaStatus || (expandedTopic.code === 'ĐB1' ? 'overdue' : expandedTopic.code === 'ĐK1' ? 'due_today' : 'within_sla')
                       if (slaStatus === 'overdue') {
                         return (
-                          <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-900 flex items-center gap-1">
+                          <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-900 flex items-center gap-1 shrink-0">
                             <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
                             Quá hạn: 2026-07-21 - Cần xử lý ngay
                           </span>
@@ -282,14 +288,14 @@ export function StudentCareFormCard({
                       }
                       if (slaStatus === 'due_today') {
                         return (
-                          <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900 flex items-center gap-1">
+                          <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900 flex items-center gap-1 shrink-0">
                             <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
                             Đến hạn: 2026-07-24 - Cần chăm sóc hôm nay
                           </span>
                         )
                       }
                       return (
-                        <span className="text-foreground font-medium bg-muted/40 px-2 py-0.5 rounded border border-border">
+                        <span className="text-foreground font-medium bg-muted/40 px-2 py-0.5 rounded border border-border shrink-0">
                           Hạn: 2026-07-26
                         </span>
                       )
@@ -391,37 +397,6 @@ export function StudentCareFormCard({
                 </button>
               </div>
             </div>
-
-            {/* Channels: Zalo, Gọi điện, Gặp mặt (Converted to Selection with gray label) */}
-            <div className="flex items-center gap-1.5 shrink-0 text-xs">
-              <span className="text-muted-foreground font-normal text-xs shrink-0">
-                Chọn Kênh liên hệ:
-              </span>
-              <select
-                value={chatChannel}
-                onChange={(e) => {
-                  const val = e.target.value as 'zalo' | 'telephone' | 'direct'
-                  setChatChannel(val)
-                  if (val === 'telephone') {
-                    if (setCallOutcome) setCallOutcome('nghe_may')
-                    startCall({
-                      studentName: student?.studentName || 'Alex (Nguyễn An)',
-                      studentCode: student?.classCode || 'HV-S4-10',
-                      contactName: selectedContact.name,
-                      contactPhone: activeContactPhone,
-                      contactRole: selectedContact.relationship,
-                    })
-                  } else if (val === 'direct') {
-                    if (setCallOutcome) setCallOutcome('da_gap')
-                  }
-                }}
-                className="h-7 text-xs px-2.5 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs"
-              >
-                <option value="zalo">Zalo</option>
-                <option value="telephone">Gọi điện</option>
-                <option value="direct">Gặp mặt</option>
-              </select>
-            </div>
           </div>
 
           {/* Live Call Connection Banner (FULL WIDTH 100%, BELOW BOTH CONTACT & CHANNELS) */}
@@ -435,65 +410,101 @@ export function StudentCareFormCard({
             }}
           />
 
-          {/* Call / Interaction Outcome Options */}
-          <div className="pt-1.5 pb-1 border-t border-border/40 select-none animate-in fade-in-50 duration-150 flex items-center justify-between gap-2 flex-wrap">
-            {(chatChannel === 'telephone' || chatChannel === 'direct') ? (
-              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide shrink-0">
-                  Kết quả:
-                </span>
+          {/* Row 1: Kênh, Kết quả, Lịch hẹn, Gia hạn - ĐỒNG BỘ ĐỀU BỀ NGANG 4 CỘT */}
+          <div className="pt-1.5 pb-1 border-t border-border/40 select-none animate-in fade-in-50 duration-150 grid grid-cols-4 gap-2 w-full">
+            {/* 1. Kênh */}
+            <div className="flex flex-col items-start gap-1 min-w-0 w-full">
+              <span className="text-[10.5px] text-muted-foreground font-normal truncate w-full">
+                Kênh:
+              </span>
+              <select
+                value={chatChannel}
+                onChange={(e) => {
+                  const val = e.target.value as 'zalo' | 'telephone' | 'direct'
+                  setChatChannel(val)
+                  if (val === 'telephone' && setCallOutcome) {
+                    setCallOutcome('nghe_may')
+                  } else if (val === 'direct' && setCallOutcome) {
+                    setCallOutcome('da_gap')
+                  }
+                }}
+                className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs w-full min-w-0 truncate"
+              >
+                <option value="zalo">Zalo</option>
+                <option value="telephone">Gọi điện</option>
+                <option value="direct">Gặp mặt</option>
+              </select>
+            </div>
+
+            {/* 2. Kết quả (Droplist) */}
+            <div className="flex flex-col items-start gap-1 min-w-0 w-full">
+              <span className="text-[10.5px] text-muted-foreground font-normal truncate w-full">
+                Kết quả:
+              </span>
+              <select
+                value={callOutcome}
+                onChange={(e) => setCallOutcome && setCallOutcome(e.target.value)}
+                className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs w-full min-w-0 truncate"
+              >
                 {chatChannel === 'telephone' ? (
                   <>
-                    {[
-                      { id: 'nghe_may', label: 'Nghe máy', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300' },
-                      { id: 'khong_nghe', label: 'Không nghe máy', color: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300' },
-                      { id: 'may_ban', label: 'Máy bận', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300' },
-                      { id: 'hen_goi_lai', label: 'Hẹn gọi lại', color: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          if (setCallOutcome) setCallOutcome(opt.id)
-                        }}
-                        className={cn(
-                          'px-2 py-0.5 text-[11px] font-semibold rounded-md border transition-all cursor-pointer',
-                          callOutcome === opt.id
-                            ? 'ring-2 ring-sky-500 font-bold shadow-2xs ' + opt.color
-                            : 'bg-background hover:bg-muted text-muted-foreground border-border/70'
-                        )}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                    <option value="nghe_may">Nghe máy</option>
+                    <option value="khong_nghe">Không nghe máy</option>
+                    <option value="may_ban">Máy bận</option>
+                  </>
+                ) : chatChannel === 'direct' ? (
+                  <>
+                    <option value="da_gap">Đã gặp</option>
+                    <option value="vang_mat">Vắng mặt</option>
                   </>
                 ) : (
                   <>
-                    {[
-                      { id: 'da_gap', label: 'Đã gặp', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300' },
-                      { id: 'hen_gap_lai', label: 'Hẹn gặp lại', color: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300' },
-                      { id: 'vang_mat', label: 'Vắng mặt', color: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          if (setCallOutcome) setCallOutcome(opt.id)
-                        }}
-                        className={cn(
-                          'px-2 py-0.5 text-[11px] font-semibold rounded-md border transition-all cursor-pointer',
-                          callOutcome === opt.id
-                            ? 'ring-2 ring-sky-500 font-bold shadow-2xs ' + opt.color
-                            : 'bg-background hover:bg-muted text-muted-foreground border-border/70'
-                        )}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                    <option value="da_nhan">Đã gửi tin nhắn</option>
+                    <option value="da_phan_hoi">Phụ huynh đã phản hồi</option>
                   </>
                 )}
-              </div>
-            ) : <div />}
+              </select>
+            </div>
+
+            {/* 3. Lịch hẹn */}
+            <div className="flex flex-col items-start gap-1 min-w-0 w-full">
+              <span className="text-[10.5px] text-muted-foreground font-normal truncate w-full">
+                Lịch hẹn:
+              </span>
+              <input
+                type={callbackTime ? 'datetime-local' : 'text'}
+                value={callbackTime}
+                placeholder="Lên lịch"
+                onFocus={(e) => {
+                  e.target.type = 'datetime-local'
+                  try { e.target.showPicker() } catch {}
+                }}
+                onBlur={(e) => {
+                  if (!e.target.value) e.target.type = 'text'
+                }}
+                onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
+                className="h-7 text-[11px] px-2 rounded-md border border-border bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary shadow-3xs w-full min-w-0 placeholder:text-muted-foreground/70"
+              />
+            </div>
+
+            {/* 4. Gia hạn */}
+            <div className="flex flex-col items-start gap-1 min-w-0 w-full">
+              <span className="text-[10.5px] text-muted-foreground font-normal truncate w-full">
+                Gia hạn:
+              </span>
+              <select
+                value={renewalStatus}
+                onChange={(e) => setRenewalStatus(e.target.value)}
+                className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs w-full min-w-0 truncate"
+              >
+                <option value="chua_lien_he">Chưa liên hệ</option>
+                <option value="can_nhac">Cân nhắc</option>
+                <option value="tiem_nang">Tiềm năng</option>
+                <option value="hen_tai">Hẹn tái</option>
+                <option value="tai_phi">Đã tái phí</option>
+                <option value="that_bai">Thất bại</option>
+              </select>
+            </div>
           </div>
 
           {/* Row 2: Ô Textarea chính & ô Phụ huynh phản hồi */}
@@ -517,65 +528,57 @@ export function StudentCareFormCard({
               className="w-full min-h-[44px] max-h-[90px] py-1.5 px-3 text-xs border border-border rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-muted/40 disabled:cursor-not-allowed text-foreground resize-y overflow-y-auto leading-relaxed"
             />
 
-            {/* Input Phụ huynh phản hồi: Nhãn màu xanh emerald lấy mốc từ phần Lịch sử */}
-            <div className="flex items-center gap-1.5 text-xs pt-0.5">
-              <span className="shrink-0 font-semibold text-xs text-emerald-800 dark:text-emerald-300">
-                Phụ huynh phản hồi:
-              </span>
+            {/* Input Phụ huynh phản hồi (Full width sát ngoài, không nhãn) */}
+            <div className="pt-0.5">
               <input
                 type="text"
                 value={parentOpinionText}
                 onChange={(e) => setParentOpinionText(e.target.value)}
                 placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
-                className="w-full h-7 text-xs px-2 rounded-md border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-emerald-700/50 dark:placeholder:text-emerald-400/50 placeholder:font-normal"
+                className="w-full h-7 text-xs px-2.5 rounded-md border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-emerald-700/50 dark:placeholder:text-emerald-400/50 placeholder:font-normal"
               />
             </div>
 
-            {/* Bottom Action Row: Lịch hẹn bên trái, Hoàn thành + Lưu bên phải */}
-            <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
-              {/* Left side: Lịch hẹn Field */}
-              <div className="flex items-center gap-1.5 text-xs shrink-0">
-                <span className="text-muted-foreground font-normal text-xs shrink-0">
-                  Lịch hẹn:
-                </span>
-                <input
-                  type="datetime-local"
-                  value={callbackTime}
-                  onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                  className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+            {/* Bottom Action Row: Button Lưu & Hoàn thành + Button Lưu bên phải */}
+            <div className="flex items-center justify-end gap-1.5 pt-1.5 flex-wrap">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  if (handleCompleteCare) handleCompleteCare()
+                  setIsCallActive(false)
+                }}
+                className="h-7 px-3 text-xs font-semibold cursor-pointer shrink-0 bg-transparent text-sky-600 border border-sky-600/40 hover:bg-sky-600 hover:text-white dark:text-sky-400 dark:border-sky-500/40 dark:hover:bg-sky-600 dark:hover:text-white rounded-lg transition-colors shadow-none"
+                title="Đánh dấu lưu & hoàn thành đợt chăm sóc này"
+              >
+                Lưu & Hoàn thành
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                disabled={!chatText.trim() && !parentOpinionText.trim()}
+                onClick={() => {
+                  handleSendChat()
+                  setIsCallActive(false)
+                }}
+                className="h-7 px-4 text-xs font-semibold cursor-pointer shrink-0 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs"
+                title="Lưu ghi chú nội dung đã trao đổi"
+              >
+                Lưu
+              </Button>
+            </div>
+
+            {/* Active Care Card merged into the same section frame at the bottom */}
+            {!isCaredStatus && (
+              <div className="border-t border-border/50 pt-2.5 mt-3">
+                <StudentActiveCareCard
+                  student={student}
+                  chatRecipient={chatRecipient}
+                  isCaredStatus={isCaredStatus}
                 />
               </div>
-
-              {/* Right side: Button Hoàn thành + Button Lưu */}
-              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    if (handleCompleteCare) handleCompleteCare()
-                    setIsCallActive(false)
-                  }}
-                  className="h-7 px-3 text-xs font-semibold cursor-pointer shrink-0 bg-transparent text-sky-600 border border-sky-600/40 hover:bg-sky-600 hover:text-white dark:text-sky-400 dark:border-sky-500/40 dark:hover:bg-sky-600 dark:hover:text-white rounded-lg transition-colors shadow-none"
-                  title="Đánh dấu hoàn thành đợt chăm sóc này"
-                >
-                  Hoàn thành
-                </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={!chatText.trim() && !parentOpinionText.trim()}
-                  onClick={() => {
-                    handleSendChat()
-                    setIsCallActive(false)
-                  }}
-                  className="h-7 px-4 text-xs font-semibold cursor-pointer shrink-0 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs"
-                  title="Lưu ghi chú nội dung đã trao đổi"
-                >
-                  Lưu
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
     </div>

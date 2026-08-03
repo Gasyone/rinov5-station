@@ -674,9 +674,10 @@ export function ClassesDetailViewV2({
                     </TabsContent>
 
                     {/* Tab 4: Logs (Lịch sử cập nhật) */}
-                    <TabsContent value="logs" className="m-0 focus-visible:outline-none flex-1">
-                      <div className="space-y-3 p-4 rounded-2xl border border-border/70 bg-card/40">
-                        <div className="flex items-center justify-between border-b pb-2.5">
+                    <TabsContent value="logs" className="m-0 focus-visible:outline-none flex-1 pb-4">
+                      <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+                        {/* Header with light gray background matching Overview headers */}
+                        <div className="bg-muted/40 dark:bg-muted/20 px-4 py-3 border-b border-border flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-primary" />
                             <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
@@ -685,31 +686,33 @@ export function ClassesDetailViewV2({
                           </div>
                         </div>
 
-                        <div className="space-y-2.5 pt-1">
-                          {logs.length === 0 ? (
+                        {/* Clean history rows without dots, vertical lines, or individual card borders */}
+                        {logs.length === 0 ? (
+                          <div className="p-4">
                             <EmptyState
                               icon={<Clock className="h-7 w-7 text-muted-foreground/40" />}
                               title="Chưa có lịch sử cập nhật nào"
                               description="Lịch sử cập nhật trạng thái, thêm học viên và đổi lịch học sẽ được ghi vết tự động tại đây."
                               className="border-dashed border-border/70 rounded-xl bg-muted/15 py-8"
                             />
-                          ) : (
-                            logs.map((log) => (
-                              <div key={log.id} className="rounded-xl border border-border/60 bg-background p-3 text-xs space-y-1 shadow-2xs">
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-border/40">
+                            {logs.map((log) => (
+                              <div key={log.id} className="px-4 py-3 text-xs space-y-1 hover:bg-muted/20 transition-colors">
                                 <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                                  <span className="font-bold text-foreground flex items-center gap-1.5">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                  <span className="font-bold text-foreground">
                                     {log.operator}
                                   </span>
                                   <span className="font-mono text-[10px]">{formatNoteTimestamp(log.timestamp)}</span>
                                 </div>
-                                <p className="font-medium text-foreground/90 leading-relaxed ps-3 border-s-2 border-primary/30 mt-1">
+                                <p className="font-medium text-foreground/90 leading-relaxed">
                                   {log.action}
                                 </p>
                               </div>
-                            ))
-                          )}
-                        </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </TabsContent>
                   </div>

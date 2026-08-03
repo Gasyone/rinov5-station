@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
-import { CareTagHoverCard } from '@/components/shared'
+import { CareTagHoverCard, PersonnelHoverCard } from '@/components/shared'
 import { formatFullStaffName } from './operationsAlertHelpers'
 import type { CareInteractionLog } from '@/mocks/careAlerts'
 
@@ -16,6 +16,23 @@ interface HistoryLogCardItemProps {
   staffName?: string
   date?: string
   channel?: string
+}
+
+function getStaffPerson(name: string, isGV: boolean) {
+  const isHTM = name.toLowerCase().includes('hoàng thị mai')
+  const isHH = name.toLowerCase().includes('nguyễn huy hoàng')
+  return {
+    id: isHTM ? 'EMP-HTM' : isHH ? 'EMP-NHH' : `EMP-${name.split(' ').map(n => n[0]).join('').toUpperCase()}`,
+    name: name,
+    role: isGV ? 'Giáo viên chính' : 'Chuyên viên CSKH',
+    phone: isHTM ? '0901234567' : isHH ? '0987654321' : '0912345678',
+    email: isHTM ? 'hongthmai@rinoedu.com' : isHH ? 'huyhoang@rinoedu.com' : 'cskh@rinoedu.com',
+    avatar: isHTM 
+      ? 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangThiMai' 
+      : isHH 
+      ? 'https://api.dicebear.com/7.x/adventurer/svg?seed=HuyHoang'
+      : 'https://api.dicebear.com/7.x/adventurer/svg?seed=NgocMai'
+  }
 }
 
 export function HistoryLogCardItem({
@@ -90,7 +107,13 @@ export function HistoryLogCardItem({
           >
             {isGV ? 'GV' : 'CS'}
           </span>
-          <span className="font-bold text-foreground text-xs">{effectiveStaffName}</span>
+          
+          <PersonnelHoverCard person={getStaffPerson(effectiveStaffName, isGV)}>
+            <span className="font-bold text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+              {effectiveStaffName}
+            </span>
+          </PersonnelHoverCard>
+
           <span className="text-[11px] text-muted-foreground font-normal truncate">
             • {effectiveChannel}: {effectiveRecipient}
           </span>

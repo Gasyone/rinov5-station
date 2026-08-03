@@ -33,19 +33,18 @@ import { useCallStore } from '@/stores/useCallStore'
 import { toast } from 'sonner'
 
 // Import Tab Components
-import { StudentDetailOverview } from './StudentDetailOverview'
 import { StudentDetailClasses } from './StudentDetailClasses'
-import { StudentDetailGlobalLogs } from './StudentDetailGlobalLogs'
-import { StudentDetailSchedule } from './StudentDetailSchedule'
 import { StudentDetailLevelDialog } from './StudentDetailLevelDialog'
 import { StudentDetailSessionsDialog } from './StudentDetailSessionsDialog'
 import { StudentDetailV2SidePanel } from './StudentDetailV2SidePanel'
 import { StudentDetailPackagesBar } from './StudentDetailPackagesBar'
 
 // Import Helper utilities
-import { getStudentPackages, getStudentGlobalLogs, getStudentNotes, getStudentScheduleSessions, getStudentFamilyMembers } from './studentDetailHelpers'
+import { getStudentPackages, getStudentNotes, getStudentFamilyMembers } from './studentDetailHelpers'
 import type { StudentNote, StudentGlobalLog, StudentPackage } from './studentDetailTypes'
 import { mockClassRecords } from '@/mocks/classRecords'
+
+import { cn } from '@/lib/utils'
 
 export interface StudentDetailDialogV2Props {
   studentId: string | null
@@ -60,19 +59,15 @@ export function StudentDetailDialogV2({
   studentId,
   open,
   onOpenChange,
-  fromClassName,
-  onToggleVersion,
 }: StudentDetailDialogV2Props) {
-  const [activeTab, setActiveTab] = useState('classes')
-  const [activeSideTab, setActiveSideTab] = useState<'notes' | 'logs'>('notes')
-  const [noteInput, setNoteInput] = useState('')
+  const [mainTab, setMainTab] = useState<'classes' | 'logs'>('classes')
   const [selectedPackageId, setSelectedPackageId] = useState<string>('all')
 
   const [revision, setRevision] = useState(0)
 
   // State to hold notes and system audit logs locally
   const [prevStudentId, setPrevStudentId] = useState<string | null>(null)
-  const [notes, setNotes] = useState<StudentNote[]>([])
+  const [, setNotes] = useState<StudentNote[]>([])
   const [sideLogs, setSideLogs] = useState<StudentGlobalLog[]>([])
   const [packagesList, setPackagesList] = useState<StudentPackage[]>([])
   const [enrolledClasses, setEnrolledClasses] = useState<EnrolledClass[]>([])
@@ -120,7 +115,7 @@ export function StudentDetailDialogV2({
     setSideLogs((prev) => [
       {
         id: Math.random().toString(),
-        action: `[V2] Đã cập nhật trình độ học viên: ${newLevel} (${newSubLevel})${newSchoolClass ? ` - ${newSchoolClass}` : ''}.`,
+        action: `Đã cập nhật trình độ học viên: ${newLevel} (${newSubLevel})${newSchoolClass ? ` - ${newSchoolClass}` : ''}.`,
         operator: 'Giáo vụ Lan',
         timestamp: timestampStr
       },
@@ -129,7 +124,7 @@ export function StudentDetailDialogV2({
 
     setRevision((r) => r + 1)
     setIsEditLevelOpen(false)
-    toast.success('Cập nhật trình độ & lớp thành công (V2)!')
+    toast.success('Cập nhật trình độ & lớp thành công!')
   }
 
   const handleOpenEditSessions = () => {
@@ -163,7 +158,7 @@ export function StudentDetailDialogV2({
     setSideLogs((prev) => [
       {
         id: Math.random().toString(),
-        action: `[V2] Cập nhật số buổi gói "${pkg.packageName}": Đã học ${newStudiedSessions}/${total} buổi.`,
+        action: `Cập nhật số buổi gói "${pkg.packageName}": Đã học ${newStudiedSessions}/${total} buổi.`,
         operator: 'Giáo vụ Lan',
         timestamp: timestampStr
       },
@@ -171,7 +166,7 @@ export function StudentDetailDialogV2({
     ])
 
     setIsEditSessionsOpen(false)
-    toast.success('Cập nhật số buổi thành công (V2)!')
+    toast.success('Cập nhật số buổi thành công!')
   }
 
   const student = useMemo(() => {
@@ -201,16 +196,13 @@ export function StudentDetailDialogV2({
 
     setSideLogs([
       {
-        id: 'init-v2',
+        id: 'init-detail',
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString('vi-VN'),
-        action: `Mở hồ sơ chi tiết học viên ${student.name} (Giao diện V2).`,
-        operator: 'Hệ thống V2',
+        action: `Mở hồ sơ chi tiết học viên ${student.name}.`,
+        operator: 'Hệ thống',
       }
     ])
   }
-
-  const globalTimelineLogs = useMemo(() => (student ? getStudentGlobalLogs(student) : []), [student])
-  const scheduleSessions = useMemo(() => (student ? getStudentScheduleSessions(student) : []), [student])
 
   const filteredEnrolledClasses = useMemo(() => {
     if (selectedPackageId === 'all') return enrolledClasses
@@ -222,12 +214,6 @@ export function StudentDetailDialogV2({
       return activePkg ? c.classCode === activePkg.linkedClassCode : false
     })
   }, [enrolledClasses, packagesList, selectedPackageId])
-
-  const filteredScheduleSessions = useMemo(() => {
-    if (selectedPackageId === 'all') return scheduleSessions
-    const associatedClassCodes = filteredEnrolledClasses.map((c) => c.classCode)
-    return scheduleSessions.filter((s) => associatedClassCodes.includes(s.classCode))
-  }, [scheduleSessions, filteredEnrolledClasses, selectedPackageId])
 
   const activeClass = useMemo(() => {
     if (selectedPackageId === 'all') return null
@@ -242,10 +228,6 @@ export function StudentDetailDialogV2({
     return packagesList.find((p) => p.id === selectedPackageId) || null
   }, [packagesList, selectedPackageId])
 
-  const birthYear = useMemo(() => {
-    return student?.dob ? new Date(student.dob).getFullYear() : '2015'
-  }, [student])
-
   const parentMembers = useMemo<ParentMemberInfo[]>(() => {
     if (!student) return []
     const raw = getStudentFamilyMembers(student)
@@ -255,9 +237,6 @@ export function StudentDetailDialogV2({
       relationship: m.relationship,
       isPrimary: idx === 0,
       phone: m.phone,
-      note: idx === 0
-        ? 'Người liên hệ chính. Rất quan tâm lộ trình của con, thích nhận tin nhắn Zalo hơn gọi trực tiếp.'
-        : 'Chỉ liên hệ khi khẩn cấp hoặc không gọi được cho mẹ.',
     }))
   }, [student])
 
@@ -322,8 +301,8 @@ export function StudentDetailDialogV2({
     
     const isTransfer = !!oldClassCode
     const actionText = isTransfer
-      ? `[V2] Chuyển lớp học viên từ ${pkg?.linkedClassName} sang ${classItem.name}.`
-      : `[V2] Ghép học viên vào lớp ${classItem.name}.`
+      ? `Chuyển lớp học viên từ ${pkg?.linkedClassName} sang ${classItem.name}.`
+      : `Ghép học viên vào lớp ${classItem.name}.`
 
     setSideLogs((prev) => [
       {
@@ -335,7 +314,7 @@ export function StudentDetailDialogV2({
       ...prev
     ])
 
-    toast.success(isTransfer ? `[V2] Chuyển lớp thành công!` : `[V2] Ghép lớp thành công!`)
+    toast.success(isTransfer ? `Chuyển lớp thành công!` : `Ghép lớp thành công!`)
   }
 
   const handleChangeClassStatus = (classCode: string, newStatus: EnrolledClass['status']) => {
@@ -365,42 +344,12 @@ export function StudentDetailDialogV2({
     setSideLogs((prev) => [
       {
         id: Math.random().toString(),
-        action: `[V2] Đã thôi học lớp ${classCode}.`,
+        action: `Đã thôi học lớp ${classCode}.`,
         operator: 'Giáo vụ Lan',
         timestamp: timestampStr
       },
       ...prev
     ])
-  }
-
-  const handleAddNote = () => {
-    if (!noteInput.trim()) return
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-    
-    const newNoteText = noteInput.trim()
-    
-    setNotes((prev) => [
-      {
-        id: Math.random().toString(),
-        text: newNoteText,
-        author: 'Giáo vụ Lan (V2)',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
-
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: `[V2] Thêm ghi chú: "${newNoteText.substring(0, 35)}..."`,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
-
-    setNoteInput('')
   }
 
   if (!student) {
@@ -434,11 +383,16 @@ export function StudentDetailDialogV2({
           <DialogTitle>Chi tiết học viên: {student.name}</DialogTitle>
         </DialogHeader>
 
-        {/* Split Body Layout V2: Full height top to bottom */}
+        {/* Split Body Layout: Full height top to bottom */}
         <div className="grid min-h-0 flex-1 gap-4 p-6 lg:grid-cols-[1fr_430px] overflow-hidden">
-          {/* Left CONTENT: Student Info Card + Main Tabs */}
-          <main className="flex min-h-0 flex-col overflow-hidden space-y-4">
-            {/* Student Info Card (Dùng Component dùng chung StudentHeaderInfoCard) */}
+          {/* Left CONTENT: Header + Student Info Card + Main Tabs */}
+          <main className="flex min-h-0 flex-col overflow-hidden space-y-3">
+            {/* Top Subtitle Label: Chi tiết xếp lớp */}
+            <div className="text-xs font-medium text-muted-foreground select-none shrink-0">
+              Chi tiết xếp lớp
+            </div>
+
+            {/* Student Info Card */}
             <StudentHeaderInfoCard
               studentAvatar={studentAvatar}
               studentName={student.name}
@@ -453,34 +407,98 @@ export function StudentDetailDialogV2({
               parents={parentMembers}
             />
 
-            {/* Dynamic Package details pills OUTSIDE and BELOW Student Info Card */}
-            <div className="shrink-0">
-              <StudentDetailPackagesBar
-                packagesList={packagesList}
-                selectedPackageId={selectedPackageId}
-                setSelectedPackageId={setSelectedPackageId}
-                student={student}
-                activeClass={activeClass}
-                onEditLevel={handleOpenEditLevel}
-                onEditSessions={handleOpenEditSessions}
-                hideMetadata
-              />
-            </div>
+            {/* Main Tabs Section: Xếp lớp & Nhật ký (Tab menu LÊN TRÊN GÓI HỌC) */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-1">
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'classes' | 'logs')} className="flex min-h-0 flex-1 flex-col h-full space-y-3">
+                {/* 1. Tab menu */}
+                <TabsList className="shrink-0 grid w-full grid-cols-2 gap-1 bg-muted/60 p-1 h-9 rounded-lg border border-border/40">
+                  <TabsTrigger
+                    value="classes"
+                    className={cn(
+                      "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                      "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
+                      "hover:text-foreground"
+                    )}
+                  >
+                    <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    <span>Xếp lớp</span>
+                  </TabsTrigger>
 
-            {/* Main Section Content: Lớp học */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-2 pt-2">
-              <StudentDetailClasses
-                classes={filteredEnrolledClasses}
-                packages={packagesList}
-                selectedPackageId={selectedPackageId}
-                studentName={student.name}
-                studentCode={studentCode}
-                studentBranch={student.branch}
-                studentLevel={student.level}
-                onConfirmAssignment={handleConfirmAssignment}
-                onChangeClassStatus={handleChangeClassStatus}
-                onRegisterAssignHandler={handleRegisterAssignHandler}
-              />
+                  <TabsTrigger
+                    value="logs"
+                    className={cn(
+                      "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                      "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
+                      "hover:text-foreground"
+                    )}
+                  >
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    <span>Nhật ký</span>
+                    <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-[10px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                      {sideLogs.length}
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* 2. Content */}
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                  <TabsContent value="classes" className="m-0 focus-visible:outline-none flex flex-col space-y-3">
+                    {/* Dynamic Package details pills (GÓI HỌC Ở DƯỚI TAB MENU) */}
+                    <div className="shrink-0">
+                      <StudentDetailPackagesBar
+                        packagesList={packagesList}
+                        selectedPackageId={selectedPackageId}
+                        setSelectedPackageId={setSelectedPackageId}
+                        student={student}
+                        activeClass={activeClass}
+                        onEditLevel={handleOpenEditLevel}
+                        onEditSessions={handleOpenEditSessions}
+                        hideMetadata
+                      />
+                    </div>
+
+                    <StudentDetailClasses
+                      classes={filteredEnrolledClasses}
+                      packages={packagesList}
+                      selectedPackageId={selectedPackageId}
+                      studentName={student.name}
+                      studentCode={studentCode}
+                      studentBranch={student.branch}
+                      studentLevel={student.level}
+                      onConfirmAssignment={handleConfirmAssignment}
+                      onChangeClassStatus={handleChangeClassStatus}
+                      onRegisterAssignHandler={handleRegisterAssignHandler}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="logs" className="m-0 focus-visible:outline-none h-full pt-1">
+                    <div className="space-y-3 pr-1">
+                      {sideLogs.length === 0 ? (
+                        <div className="py-8 text-center text-xs text-muted-foreground italic">
+                          Chưa có nhật ký hoạt động.
+                        </div>
+                      ) : (
+                        sideLogs.map((log) => (
+                          <div key={log.id} className="rounded-xl border border-border/60 bg-card p-3.5 space-y-1.5 shadow-2xs text-xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <AppAvatar
+                                  name={log.operator}
+                                  size="xs"
+                                  className="h-6 w-6 border border-primary/10"
+                                />
+                                <span className="font-bold text-foreground">{log.operator}</span>
+                              </div>
+                              <span className="text-[10px] font-mono text-muted-foreground">{log.timestamp}</span>
+                            </div>
+                            <p className="text-xs text-foreground/90 leading-relaxed pl-8">{log.action}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
             </div>
           </main>
 
@@ -494,11 +512,6 @@ export function StudentDetailDialogV2({
               activeClass={activeClass}
               onEditLevel={handleOpenEditLevel}
               onEditSessions={handleOpenEditSessions}
-              notes={notes}
-              sideLogs={sideLogs}
-              noteInput={noteInput}
-              onNoteInputChange={setNoteInput}
-              onAddNote={handleAddNote}
             />
           </aside>
         </div>

@@ -6,7 +6,7 @@ import { getCareAlerts, mockCareAlerts, getFamilyContacts, type StudentCareAlert
 import { mockStudents } from '@/mocks/students'
 import { RenewalTable } from './RenewalTable'
 import { RenewalToolbar } from './RenewalToolbar'
-import { RenewalDetailPage } from './RenewalDetailPage'
+import { StudentCareDetailPage } from '../StudentCareDetailPage'
 import { useCallStore } from '@/stores/useCallStore'
 import { FilterGroupSheetPanel, createFilterGroup } from '@/components/filters'
 import type { StatusTile } from '@/components/shared'
@@ -456,7 +456,7 @@ export function RenewalScreen() {
 
   if (activeDetailStudentId) {
     return (
-      <RenewalDetailPage
+      <StudentCareDetailPage
         studentId={activeDetailStudentId}
         onBack={() => {
           setActiveDetailStudentId(null)
@@ -464,6 +464,8 @@ export function RenewalScreen() {
         }}
         alerts={mockCareAlerts}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
+        onStudentSelect={(id) => setActiveDetailStudentId(id)}
+        initialTab="orders"
       />
     )
   }

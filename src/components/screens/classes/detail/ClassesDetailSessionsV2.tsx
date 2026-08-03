@@ -36,7 +36,7 @@ interface ClassesDetailSessionsV2Props {
   onEditRoadmap?: () => void
 }
 
-type SessionEditType = 'teacher' | 'room' | 'upload'
+type SessionEditType = 'teacher' | 'room' | 'upload' | 'reschedule'
 type CancelBy = 'HỌC SINH' | 'GIÁO VIÊN' | 'KHÁC'
 
 const studentCancelReasons = [
@@ -183,6 +183,7 @@ export function ClassesDetailSessionsV2({
                 onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
                 onEditRoom={(id) => handleOpenEdit(id, 'room')}
                 onUpload={(id) => handleOpenEdit(id, 'upload')}
+                onReschedule={(id) => handleOpenEdit(id, 'reschedule')}
                 onDeleteMaterial={(id, name, isSlide) => {
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)
@@ -221,6 +222,7 @@ export function ClassesDetailSessionsV2({
                 onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
                 onEditRoom={(id) => handleOpenEdit(id, 'room')}
                 onUpload={(id) => handleOpenEdit(id, 'upload')}
+                onReschedule={(id) => handleOpenEdit(id, 'reschedule')}
                 onDeleteMaterial={(id, name, isSlide) => {
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)
@@ -259,6 +261,7 @@ export function ClassesDetailSessionsV2({
                 onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
                 onEditRoom={(id) => handleOpenEdit(id, 'room')}
                 onUpload={(id) => handleOpenEdit(id, 'upload')}
+                onReschedule={(id) => handleOpenEdit(id, 'reschedule')}
                 onDeleteMaterial={(id, name, isSlide) => {
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)

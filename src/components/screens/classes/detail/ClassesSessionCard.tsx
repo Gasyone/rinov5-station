@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   ArrowRight,
+  Calendar,
   CalendarX,
   CheckCircle2,
   ChevronDown,
@@ -47,7 +48,7 @@ import {
 import { AtSign } from 'lucide-react'
 
 import type { RoadmapSession, RosterStudent } from './classesDetailTypes'
-import { getLessonsForRoadmapSession, stableHash, formatDateWithDay } from './classesSessionDetailHelpers'
+import { getLessonsForRoadmapSession, stableHash, formatDateWithDay, splitDateWithDay } from './classesSessionDetailHelpers'
 import { cleanTeacherName, cleanAssistantName } from './classesDetailHelpers'
 import { PersonnelHoverCard } from '@/components/shared/PersonnelHoverCard'
 import type { PersonnelItem } from '@/components/shared/PersonnelCell'
@@ -61,6 +62,7 @@ interface ClassesSessionCardProps {
   onEditTeacher: (sessionId: string) => void
   onEditRoom: (sessionId: string) => void
   onUpload: (sessionId: string) => void
+  onReschedule?: (sessionId: string) => void
   onDeleteMaterial: (sessionId: string, materialName: string, isSlide: boolean) => void
 }
 
@@ -356,6 +358,7 @@ export function ClassesSessionCard({
   onEditTeacher,
   onEditRoom,
   onUpload,
+  onReschedule,
   onDeleteMaterial,
 }: ClassesSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -412,8 +415,28 @@ export function ClassesSessionCard({
               Đã điểm danh
             </Badge>
           )}
-          <span className="text-xs font-semibold text-foreground">
-            {formatDateWithDay(session.date)} ({session.startTime} - {session.endTime})
+          <span className="text-xs font-normal text-muted-foreground">
+            {session.rescheduleDate || session.originalDate ? (
+              <>
+                <span className="line-through opacity-60 me-1">
+                  {formatDateWithDay(session.originalDate || session.date)}
+                </span>
+                <span className="text-amber-600 dark:text-amber-400 font-bold me-1">
+                  → {formatDateWithDay(session.rescheduleDate || session.date)}
+                </span>
+              </>
+            ) : (() => {
+              const dInfo = splitDateWithDay(session.date)
+              return dInfo ? (
+                <>
+                  {dInfo.dayOfWeek && <strong className="font-bold text-foreground me-1">{dInfo.dayOfWeek},</strong>}
+                  {dInfo.dateRest}
+                </>
+              ) : (
+                formatDateWithDay(session.date)
+              )
+            })()}{' '}
+            ({session.startTime} - {session.endTime})
           </span>
           <Button
             type="button"
@@ -721,6 +744,17 @@ export function ClassesSessionCard({
                   >
                     <Upload className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Tải lên</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onReschedule?.(session.id)
+                    }}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <Calendar className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    <span>Đổi lịch</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuSeparator />

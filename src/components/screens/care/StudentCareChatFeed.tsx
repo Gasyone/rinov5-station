@@ -95,7 +95,7 @@ export function StudentCareChatFeed({
   const [chatChannel, setChatChannel] = useState<'telephone' | 'zalo' | 'direct'>('zalo')
   const [chatText, setChatText] = useState('')
   const [callOutcome, setCallOutcome] = useState<string>('nghe_may')
-  const [callbackTime, setCallbackTime] = useState<string>('2026-07-20T14:00')
+  const [callbackTime, setCallbackTime] = useState<string>('')
   const [showCallbackInput, setShowCallbackInput] = useState<boolean>(true)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -320,7 +320,6 @@ export function StudentCareChatFeed({
     <div className="flex-1 min-h-0 bg-transparent flex flex-col border-none shadow-none overflow-y-auto custom-scrollbar relative">
       {/* Chat Stream (Right - Full Width) */}
       <div className="flex flex-col min-w-0 bg-transparent text-left relative border-none shadow-none">
-
         {/* Conversation Header Care Form (Card 1) - STICKY ONLY UP TO Ý KIẾN PHỤ HUYNH */}
         <StudentCareFormCard
           careFormRef={careFormRef}
@@ -362,13 +361,6 @@ export function StudentCareChatFeed({
           isFormCollapsed={isFormCollapsed}
           setIsFormCollapsed={setIsFormCollapsed}
           getTagColorClass={getTagColorClass}
-          isCaredStatus={isCaredStatus}
-        />
-
-        {/* Lần chăm sóc hiện tại (Đang xử lý) - Card 2 (SCROLLS NORMALLY WITH CONTENT) */}
-        <StudentActiveCareCard
-          student={student}
-          chatRecipient={chatRecipient}
           isCaredStatus={isCaredStatus}
         />
 

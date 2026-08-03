@@ -42,7 +42,7 @@ interface ClassesDetailSessionsProps {
 }
 
 type SessionFilter = 'all' | 'active' | 'upcoming' | 'completed' | 'cancelled'
-type SessionEditType = 'teacher' | 'room' | 'upload'
+type SessionEditType = 'teacher' | 'room' | 'upload' | 'reschedule'
 type CancelBy = 'HỌC SINH' | 'GIÁO VIÊN' | 'KHÁC'
 
 const studentCancelReasons = [
@@ -285,6 +285,7 @@ export function ClassesDetailSessions({
               onEditTeacher={(sessionId) => handleOpenEdit(sessionId, 'teacher')}
               onEditRoom={(sessionId) => handleOpenEdit(sessionId, 'room')}
               onUpload={(sessionId) => handleOpenEdit(sessionId, 'upload')}
+              onReschedule={(sessionId) => handleOpenEdit(sessionId, 'reschedule')}
               onDeleteMaterial={(sessionId, materialName, isSlide) => {
                 setSessionToDeleteMat({ sessionId, materialName, isSlide })
                 setDeleteConfirmOpen(true)

@@ -173,38 +173,38 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
         <Badge
           variant="outline"
           className={cn(
-            'text-[11px] px-2 py-0.5 min-h-[22px] font-semibold flex items-center gap-1.5 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded-md shadow-none',
+            'text-xs px-2.5 py-1 min-h-[30px] font-semibold flex items-center gap-1.5 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded-lg shadow-none',
             colorClass
           )}
         >
           {!tag.isCompleted && (
             <>
               {isOverdue && (
-                <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-red-600 animate-pulse" title="Quá hạn" />
+                <span className="flex h-2 w-2 shrink-0 rounded-full bg-red-600 animate-pulse" title="Quá hạn" />
               )}
               {isDueToday && (
-                <span className="flex h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Đến hạn hôm nay" />
+                <span className="flex h-2 w-2 shrink-0 rounded-full bg-amber-500" title="Đến hạn hôm nay" />
               )}
             </>
           )}
-          <span className="font-semibold text-[11px]">{tag.label}</span>
-          <div className="flex items-center gap-0.5 shrink-0">
+          <span className="font-semibold text-xs">{tag.label}</span>
+          <div className="flex items-center gap-1 shrink-0">
             {assignees.includes('CS') && (
               <Avatar
-                className="h-4.5 w-4.5 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[8px] font-bold"
+                className="h-6.5 w-6.5 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] font-bold"
                 title={cls.csStaff ? `CS phụ trách: ${cls.csStaff}` : 'Phụ trách: Chuyên viên CS (CSM)'}
               >
                 <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${cls.csStaff || 'CS'}`} alt={cls.csStaff || 'CS'} />
-                <AvatarFallback className="bg-emerald-600 text-white font-bold text-[7px]">CS</AvatarFallback>
+                <AvatarFallback className="bg-emerald-600 text-white font-bold text-[8px]">CS</AvatarFallback>
               </Avatar>
             )}
             {assignees.includes('GV') && (
               <Avatar
-                className="h-4.5 w-4.5 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[8px] font-bold"
+                className="h-6.5 w-6.5 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[9px] font-bold"
                 title={cls.teacherCode ? `GV phụ trách: ${cls.teacherCode}` : 'Phụ trách: Giáo viên (GV)'}
               >
                 <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${cls.teacherCode || 'GV'}`} alt={cls.teacherCode || 'GV'} />
-                <AvatarFallback className="bg-purple-600 text-white font-bold text-[7px]">GV</AvatarFallback>
+                <AvatarFallback className="bg-purple-600 text-white font-bold text-[8px]">GV</AvatarFallback>
               </Avatar>
             )}
           </div>

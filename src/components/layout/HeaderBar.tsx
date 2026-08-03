@@ -67,9 +67,11 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const locale = useUIStore((s) => s.locale)
   const setLocale = useUIStore((s) => s.setLocale)
   const currentMenuId = useUIStore((s) => s.currentMenuId)
+  const customHeaderTitle = useUIStore((s) => s.customHeaderTitle)
   const router = useRouter()
 
-  const menuLabel = currentMenuId ? screens[currentMenuId]?.label : null
+  const defaultMenuLabel = currentMenuId ? screens[currentMenuId]?.label : null
+  const menuLabel = customHeaderTitle || defaultMenuLabel
   const currentGroup = currentMenuId
     ? navigationGroups.find((g) => g.items.some((item) => item.id === currentMenuId))
     : null

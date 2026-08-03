@@ -21,6 +21,7 @@ import {
 import { toast } from 'sonner'
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
+import { useUIStore } from '@/stores/useUIStore'
 import { StudentCareHeaderClusterInfo, StudentCareHeaderClusterNote } from './StudentCareHeaderCluster'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
@@ -43,6 +44,7 @@ interface StudentCareDetailPageProps {
   alerts: StudentCareAlert[]
   onRefresh?: () => void
   onStudentSelect?: (studentId: string) => void
+  initialTab?: 'learning' | 'orders'
 }
 
 export function StudentCareDetailPage({
@@ -50,8 +52,23 @@ export function StudentCareDetailPage({
   onBack,
   alerts,
   onRefresh,
+  initialTab = 'learning',
 }: StudentCareDetailPageProps) {
-  const [leftTab, setLeftTab] = useState<'learning' | 'orders'>('learning')
+  const setCustomHeaderTitle = useUIStore((s) => s.setCustomHeaderTitle)
+
+  useEffect(() => {
+    setCustomHeaderTitle('Chi tiết chăm sóc')
+    return () => {
+      setCustomHeaderTitle(null)
+    }
+  }, [setCustomHeaderTitle])
+
+  const [leftTab, setLeftTab] = useState<'learning' | 'orders'>(initialTab)
+
+  useEffect(() => {
+    setLeftTab(initialTab)
+  }, [initialTab, studentId])
+
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
   const [assignedCS, setAssignedCS] = useState('Lê Thị Lan')

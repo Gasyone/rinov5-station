@@ -14,6 +14,7 @@ interface UIState {
   locale: 'vi' | 'en' | 'zh'
   notifications: Notification[]
   currentMenuId: string | null
+  customHeaderTitle: string | null
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
   setTheme: (theme: 'light' | 'dark') => void
@@ -21,6 +22,7 @@ interface UIState {
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
   removeNotification: (id: string) => void
   setCurrentMenuId: (menuId: string | null) => void
+  setCustomHeaderTitle: (title: string | null) => void
 }
 
 const generateId = () => {
@@ -39,6 +41,7 @@ export const useUIStore = create<UIState>()(
       locale: 'vi',
       notifications: [],
       currentMenuId: null,
+      customHeaderTitle: null,
 
       setSidebarOpen: (open: boolean) => {
         set({ sidebarOpen: open })
@@ -76,7 +79,11 @@ export const useUIStore = create<UIState>()(
       },
 
       setCurrentMenuId: (menuId: string | null) => {
-        set({ currentMenuId: menuId })
+        set({ currentMenuId: menuId, customHeaderTitle: null })
+      },
+
+      setCustomHeaderTitle: (title: string | null) => {
+        set({ customHeaderTitle: title })
       },
     }),
     {

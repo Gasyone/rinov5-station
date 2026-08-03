@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Copy,
   Check,
@@ -11,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export interface FamilyContact {
   name: string
@@ -50,7 +52,7 @@ export function StudentCareHeaderClusterInfo({
         </span>
       </div>
 
-      {/* ── Section: Phụ huynh (Chỉ gồm Tên + SĐT + Nút Sao chép & Xem danh sách, BỎ HOÀN TOÀN ghi chú phụ huynh) ── */}
+      {/* ── Section: Phụ huynh ── */}
       <div className="group/parent pt-0.5 text-xs text-muted-foreground font-medium">
         <div className="flex items-center gap-2 min-w-0 w-full justify-between select-none">
           {primaryContact && (() => {
@@ -100,7 +102,7 @@ export function StudentCareHeaderClusterInfo({
           </button>
         </div>
 
-        {/* Expanded View for All Parents (BỎ HOÀN TOÀN ghi chú phụ huynh) */}
+        {/* Expanded View for All Parents */}
         {isParentsExpanded && (
           <div className="mt-2 space-y-1.5 border-t border-border/40 pt-2 text-left">
             {contactsList.map((contact, idx) => {
@@ -163,6 +165,9 @@ export function StudentCareHeaderClusterNote({
   editingStudentNoteText,
   setEditingStudentNoteText,
 }: StudentCareHeaderClusterNoteProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const isLongNote = Boolean(studentNote && studentNote.length > 55)
+
   return (
     <div className="pt-2 mt-1 border-t border-border/40 w-full select-none text-left">
       {isEditingStudentNote ? (
@@ -205,35 +210,73 @@ export function StudentCareHeaderClusterNote({
         </div>
       ) : (
         <div className="group/note flex items-start justify-between gap-1.5 w-full">
-          <div
-            className="flex items-start gap-1.5 flex-1 min-w-0 cursor-pointer"
-            onClick={() => {
-              setIsEditingStudentNote(true)
-              setEditingStudentNoteText(studentNote)
-            }}
-            title="Nhấp để sửa ghi chú học viên"
-          >
+          <div className="flex items-start gap-1.5 flex-1 min-w-0">
             <button
               type="button"
+              onClick={() => {
+                setIsEditingStudentNote(true)
+                setEditingStudentNoteText(studentNote)
+              }}
               className="p-0.5 mt-0.5 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded text-amber-600 dark:text-amber-400 shrink-0 cursor-pointer transition-colors"
               title="Sửa trực tiếp ghi chú"
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
 
-            {/* Ghi chú luôn 2 dòng text, bắt đầu sát cạnh trái, full bề ngang */}
-            <p className="text-xs leading-relaxed font-semibold italic text-amber-600 dark:text-amber-400 line-clamp-2 flex-1 min-w-0">
-              {studentNote ? (
-                studentNote
-              ) : (
-                <span className="italic text-muted-foreground font-normal">
-                  Thói quen, sở thích và mục tiêu học tập
-                </span>
+            <div className="relative flex-1 min-w-0">
+              <p
+                className={cn(
+                  'text-xs leading-relaxed font-semibold italic text-amber-600 dark:text-amber-400 cursor-pointer',
+                  !isExpanded && 'line-clamp-2 pr-16'
+                )}
+                onClick={() => {
+                  if (isLongNote) {
+                    setIsExpanded(!isExpanded)
+                  } else {
+                    setIsEditingStudentNote(true)
+                    setEditingStudentNoteText(studentNote)
+                  }
+                }}
+                title={isLongNote ? (isExpanded ? 'Nhấp để thu gọn' : 'Nhấp để xem đầy đủ ghi chú') : 'Nhấp để sửa ghi chú học viên'}
+              >
+                {studentNote ? (
+                  <>
+                    {studentNote}
+                    {isExpanded && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setIsExpanded(false)
+                        }}
+                        className="ml-1.5 text-[11px] font-normal not-italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                      >
+                        Thu gọn
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="italic text-muted-foreground font-normal">
+                    Thói quen, sở thích và mục tiêu học tập
+                  </span>
+                )}
+              </p>
+
+              {!isExpanded && isLongNote && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsExpanded(true)
+                  }}
+                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-[11px] font-normal italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                >
+                  ... xem thêm
+                </button>
               )}
-            </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover/note:opacity-100 transition-opacity">
             <Popover>
               <PopoverTrigger asChild>
                 <button
