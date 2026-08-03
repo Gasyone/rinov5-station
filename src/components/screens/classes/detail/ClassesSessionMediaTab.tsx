@@ -9,12 +9,13 @@ import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { formatDateWithDay, splitDateWithDay } from './classesSessionDetailHelpers'
-import { ConfirmDialog } from '@/components/shared'
+import { ConfirmDialog, PersonnelHoverCard } from '@/components/shared'
 
 import {
   RosterStudentOption,
   DEFAULT_ROSTER_STUDENTS,
   SessionMediaItem,
+  SessionMediaTeacher,
 } from './media/classesSessionMediaTypes'
 import { ClassesSessionMediaCard } from './media/ClassesSessionMediaCard'
 import { ClassesSessionMediaToolbar } from './media/ClassesSessionMediaToolbar'
@@ -352,6 +353,15 @@ export function ClassesSessionMediaTab({
     return 'Khoảng thời gian'
   }, [dateFilterPreset, customStartDate, customEndDate])
 
+  const DEFAULT_TEACHER: SessionMediaTeacher = {
+    id: 't1',
+    name: 'Hoàng Thị Mai',
+    code: 'EMP-HTM',
+    role: 'Giáo viên chính',
+    phone: '0901234567',
+    email: 'hongthmai@rinoedu.com',
+  }
+
   const groupedSessions = useMemo(() => {
     const map = new Map<string, {
       sessionId: string
@@ -359,6 +369,7 @@ export function ClassesSessionMediaTab({
       sessionTitle: string
       sessionDate: string
       sessionTime: string
+      teacher: SessionMediaTeacher
       items: SessionMediaItem[]
     }>()
 
@@ -371,6 +382,7 @@ export function ClassesSessionMediaTab({
           sessionTitle: item.sessionTitle || 'Nội dung buổi học',
           sessionDate: item.sessionDate || '09/05/2026',
           sessionTime: item.sessionTime || '18:00 - 19:30',
+          teacher: item.teacher || DEFAULT_TEACHER,
           items: [],
         })
       }
@@ -451,18 +463,36 @@ export function ClassesSessionMediaTab({
                   <h3 className="text-sm font-bold text-foreground">
                     Buổi {group.sessionNumber}: {group.sessionTitle}
                   </h3>
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {(() => {
-                      const dInfo = splitDateWithDay(group.sessionDate)
-                      return dInfo ? (
-                        <>
-                          {dInfo.dayOfWeek && <strong className="font-bold text-foreground me-1">{dInfo.dayOfWeek},</strong>}
-                          {dInfo.dateRest}
-                        </>
-                      ) : (
-                        formatDateWithDay(group.sessionDate)
-                      )
-                    })()} ({group.sessionTime})
+                  <span className="text-xs font-normal text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                    <span>
+                      {(() => {
+                        const dInfo = splitDateWithDay(group.sessionDate)
+                        return dInfo ? (
+                          <>
+                            {dInfo.dayOfWeek && <strong className="font-bold text-foreground me-1">{dInfo.dayOfWeek},</strong>}
+                            {dInfo.dateRest}
+                          </>
+                        ) : (
+                          formatDateWithDay(group.sessionDate)
+                        )
+                      })()} ({group.sessionTime})
+                    </span>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span className="text-muted-foreground font-normal">GV:</span>
+                    <PersonnelHoverCard
+                      person={{
+                        id: group.teacher.code || 'EMP-HTM',
+                        name: group.teacher.name,
+                        role: group.teacher.role || 'Giáo viên chính',
+                        phone: group.teacher.phone || '0901234567',
+                        email: group.teacher.email || 'hongthmai@rinoedu.com',
+                      }}
+                      align="start"
+                    >
+                      <span className="text-xs font-normal text-foreground cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 hover:underline hover:underline-offset-2 transition-colors">
+                        {group.teacher.name}
+                      </span>
+                    </PersonnelHoverCard>
                   </span>
                 </div>
 

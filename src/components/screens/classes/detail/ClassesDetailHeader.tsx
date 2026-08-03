@@ -73,7 +73,9 @@ export function ClassesDetailHeader({
             </div>
             <DialogTitle className="flex min-w-0 flex-wrap items-center gap-2 text-xl md:text-2xl leading-none font-bold text-foreground">
               <span className="truncate tracking-tight">
-                <span className="font-normal text-muted-foreground me-1.5">{cls.classType === 'Workshop' ? 'Workshop:' : 'Lớp:'}</span>
+                {cls.classType === 'Workshop' && (
+                  <span className="font-normal text-muted-foreground me-1.5">Workshop:</span>
+                )}
                 {cls.name}
               </span>
               <StatusBadge

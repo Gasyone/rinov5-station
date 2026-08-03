@@ -16,6 +16,15 @@ export const DEFAULT_ROSTER_STUDENTS: RosterStudentOption[] = [
   { id: 's6', name: 'Nguyễn Hoàng Vũ', code: 'HV-S12-5', initials: 'NV', colorBg: 'bg-teal-100 dark:bg-teal-950/60', colorText: 'text-teal-800 dark:text-teal-300 border-teal-200' },
 ]
 
+export interface SessionMediaTeacher {
+  id?: string
+  name: string
+  code?: string
+  phone?: string
+  email?: string
+  role?: string
+}
+
 export interface SessionMediaItem {
   id: string
   sessionId: string
@@ -23,6 +32,7 @@ export interface SessionMediaItem {
   sessionTitle: string
   sessionDate: string
   sessionTime: string
+  teacher?: SessionMediaTeacher
   name: string
   type: 'image' | 'video' | 'doc'
   url: string

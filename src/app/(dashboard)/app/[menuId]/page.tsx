@@ -87,6 +87,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { LeaveReserveScreen } = await import('@/components/screens/leave-reserve/LeaveReserveScreen')
     return { default: LeaveReserveScreen }
   }),
+  makeup_class: lazy(async () => {
+    const { MakeupClassScreen } = await import('@/components/screens/makeup-class/MakeupClassScreen')
+    return { default: MakeupClassScreen }
+  }),
   student_operations_alert: lazy(async () => {
     const { OperationsAlertScreen } = await import('@/components/screens/care/OperationsAlertScreen')
     return { default: OperationsAlertScreen }

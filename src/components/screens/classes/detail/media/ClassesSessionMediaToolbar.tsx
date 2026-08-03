@@ -5,7 +5,7 @@ import {
   Users,
   CalendarDays,
   ChevronDown,
-  Plus,
+  Upload,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -256,7 +256,7 @@ export function ClassesSessionMediaToolbar({
           onClick={() => fileInputRef.current?.click()}
           className="h-7 px-2.5 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/60 rounded-lg cursor-pointer transition-colors gap-1"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Upload className="h-3.5 w-3.5" />
           <span>Tải lên</span>
         </Button>
       </div>

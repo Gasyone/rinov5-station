@@ -6,6 +6,7 @@ import {
   ChevronUp,
   Check,
   Search,
+  History,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { type SimulatedPackage } from './studentCareDetailTypes'
@@ -580,82 +581,93 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                 {/* 2-Column Grid with Merged Groups */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 pt-1 text-left">
-                  {/* Group 1: Cơ sở & CS phụ trách (Icon Đổi CS ở góc phải hàng nhãn) */}
+                  {/* Group 1: Cơ sở & CS phụ trách (Đổi CS ở ngay sau tên CS, có PersonnelHoverCard) */}
                   <div className="space-y-0.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-muted-foreground font-medium">Cơ sở & CS phụ trách</span>
-                      {/* Text Đổi CS màu xanh ở góc phải cùng hàng với nhãn */}
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline cursor-pointer transition-colors"
-                            title={`Đổi CS phụ trách tại ${currentBranchName}`}
-                          >
-                            Đổi CS
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-64 p-2.5 space-y-2 text-xs z-50 shadow-md border bg-popover text-popover-foreground">
-                          <div className="pb-1 border-b border-border/40 space-y-0.5">
-                            <p className="font-bold text-foreground text-[11px]">Đổi CS phụ trách</p>
-                            <p className="text-[10px] text-muted-foreground italic">Danh sách thuộc {currentBranchName}</p>
-                          </div>
-                          
-                          <div className="relative flex items-center">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                            <input
-                              type="text"
-                              value={csSearchQuery}
-                              onChange={(e) => setCsSearchQuery(e.target.value)}
-                              placeholder="Tìm nhân viên CS..."
-                              className="w-full pl-8 pr-2 py-1.5 bg-muted/30 border border-border/60 rounded-md text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-sky-500"
-                            />
-                          </div>
-
-                          <div className="max-h-52 overflow-y-auto space-y-1 pt-0.5">
-                            {filteredBranchCsList.length === 0 ? (
-                              <p className="text-[11px] text-muted-foreground italic text-center py-2">Không tìm thấy nhân viên thuộc cơ sở</p>
-                            ) : (
-                              filteredBranchCsList.map((csItem) => (
-                                <button
-                                  key={csItem.id}
-                                  type="button"
-                                  onClick={() => {
-                                    handleCSChange(csItem.name)
-                                    toast.success(`Đã đổi CS phụ trách (${currentBranchName}) thành: ${csItem.name}`)
-                                  }}
-                                  className={cn(
-                                    'w-full text-left p-1.5 rounded-lg text-xs font-semibold hover:bg-muted transition-colors flex items-center justify-between gap-2 cursor-pointer',
-                                    currentCSName === csItem.name ? 'bg-muted text-foreground font-bold' : 'text-foreground'
-                                  )}
-                                >
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <AppAvatar src={csItem.avatar} name={csItem.name} size="xs" className="h-6 w-6 border border-primary/10 shrink-0" />
-                                    <div className="min-w-0 space-y-0.5">
-                                      <p className="font-bold text-xs truncate leading-none">{csItem.name}</p>
-                                      <p className="font-mono text-[9.5px] text-muted-foreground font-normal leading-none">{csItem.code}</p>
-                                    </div>
-                                  </div>
-                                  {currentCSName === csItem.name && <Check className="h-3.5 w-3.5 text-foreground shrink-0" />}
-                                </button>
-                              ))
-                            )}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
+                    <span className="text-[11px] text-muted-foreground font-medium block">Cơ sở & CS phụ trách</span>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground flex-wrap">
                       <span>{currentBranchName}</span>
                       <span className="text-border/60 font-normal">•</span>
-                      <div className="flex items-center gap-1.5">
-                        <AppAvatar
-                          src={currentCSObj.avatar}
-                          name={currentCSObj.name}
-                          size="xs"
-                          className="h-4 w-4 border border-primary/10 shrink-0"
-                        />
-                        <span>{currentCSName}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <PersonnelHoverCard
+                          person={{
+                            id: currentCSObj.code || 'EMP-CS-001',
+                            name: currentCSName,
+                            role: 'Chuyên viên CSKH',
+                            phone: '0912345678',
+                            email: 'lan.lt@rinoedu.vn',
+                            avatar: currentCSObj.avatar,
+                          }}
+                        >
+                          <span className="inline-flex items-center gap-1 text-foreground font-semibold hover:underline cursor-pointer">
+                            <AppAvatar
+                              src={currentCSObj.avatar}
+                              name={currentCSObj.name}
+                              size="xs"
+                              className="h-4 w-4 border border-primary/10 shrink-0"
+                            />
+                            <span>{currentCSName}</span>
+                          </span>
+                        </PersonnelHoverCard>
+
+                        {/* Text Đổi CS màu xanh ở ngay sau tên CS */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline cursor-pointer transition-colors ml-0.5"
+                              title={`Đổi CS phụ trách tại ${currentBranchName}`}
+                            >
+                              Đổi CS
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-64 p-2.5 space-y-2 text-xs z-50 shadow-md border bg-popover text-popover-foreground">
+                            <div className="pb-1 border-b border-border/40 space-y-0.5">
+                              <p className="font-bold text-foreground text-[11px]">Đổi CS phụ trách</p>
+                              <p className="text-[10px] text-muted-foreground italic">Danh sách thuộc {currentBranchName}</p>
+                            </div>
+                            
+                            <div className="relative flex items-center">
+                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                              <input
+                                type="text"
+                                value={csSearchQuery}
+                                onChange={(e) => setCsSearchQuery(e.target.value)}
+                                placeholder="Tìm nhân viên CS..."
+                                className="w-full pl-8 pr-2 py-1.5 bg-muted/30 border border-border/60 rounded-md text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-sky-500"
+                              />
+                            </div>
+
+                            <div className="max-h-52 overflow-y-auto space-y-1 pt-0.5">
+                              {filteredBranchCsList.length === 0 ? (
+                                <p className="text-[11px] text-muted-foreground italic text-center py-2">Không tìm thấy nhân viên thuộc cơ sở</p>
+                              ) : (
+                                filteredBranchCsList.map((csItem) => (
+                                  <button
+                                    key={csItem.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleCSChange(csItem.name)
+                                      toast.success(`Đã đổi CS phụ trách (${currentBranchName}) thành: ${csItem.name}`)
+                                    }}
+                                    className={cn(
+                                      'w-full text-left p-1.5 rounded-lg text-xs font-semibold hover:bg-muted transition-colors flex items-center justify-between gap-2 cursor-pointer',
+                                      currentCSName === csItem.name ? 'bg-muted text-foreground font-bold' : 'text-foreground'
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <AppAvatar src={csItem.avatar} name={csItem.name} size="xs" className="h-6 w-6 border border-primary/10 shrink-0" />
+                                      <div className="min-w-0 space-y-0.5">
+                                        <p className="font-bold text-xs truncate leading-none">{csItem.name}</p>
+                                        <p className="font-mono text-[9.5px] text-muted-foreground font-normal leading-none">{csItem.code}</p>
+                                      </div>
+                                    </div>
+                                    {currentCSName === csItem.name && <Check className="h-3.5 w-3.5 text-foreground shrink-0" />}
+                                  </button>
+                                ))
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   </div>
@@ -698,29 +710,38 @@ Phát huy tinh thần chủ động sáng tạo.`,
                     </span>
                   </div>
 
-                  {/* Group 6: Giáo viên (GV) */}
-                  <div className="space-y-0.5 flex flex-col justify-between h-full">
-                    <div>
-                      <span className="text-[11px] text-muted-foreground font-medium block">Giáo viên (GV)</span>
-                      {staffInfo && (
-                        <div className="flex items-center gap-1 text-xs flex-wrap font-semibold text-foreground">
-                          {staffInfo.teachers.map((teacher, idx) => {
-                            const cleanedTeacherName = teacher.name.replace(/^GV\.?\s*/i, '')
-                            return (
-                              <React.Fragment key={teacher.id}>
-                                <PersonnelHoverCard person={{ ...teacher, name: cleanedTeacherName }}>
-                                  <span className="text-foreground font-semibold hover:underline cursor-pointer text-xs">{cleanedTeacherName}</span>
-                                </PersonnelHoverCard>
-                                {idx < staffInfo.teachers.length - 1 && <span>,</span>}
-                              </React.Fragment>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex justify-end pt-1">
-                      <ClassTeacherHistoryPopover />
-                    </div>
+                  {/* Group 6: Giáo viên (GV) (Lịch sử đổi GV dạng icon cam + (3) ở ngay sau tên GV) */}
+                  <div className="space-y-0.5">
+                    <span className="text-[11px] text-muted-foreground font-medium block">Giáo viên (GV)</span>
+                    {staffInfo && (
+                      <div className="flex items-center gap-1 text-xs flex-wrap font-semibold text-foreground">
+                        {staffInfo.teachers.map((teacher, idx) => {
+                          const cleanedTeacherName = teacher.name.replace(/^GV\.?\s*/i, '')
+                          return (
+                            <React.Fragment key={teacher.id}>
+                              <PersonnelHoverCard person={{ ...teacher, name: cleanedTeacherName }}>
+                                <span className="text-foreground font-semibold hover:underline cursor-pointer text-xs">{cleanedTeacherName}</span>
+                              </PersonnelHoverCard>
+                              {idx < staffInfo.teachers.length - 1 && <span>,</span>}
+                            </React.Fragment>
+                          )
+                        })}
+
+                        {/* Icon đổi GV màu cam nhạt & số (3) ngay sau tên giáo viên */}
+                        <ClassTeacherHistoryPopover
+                          trigger={
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-0.5 text-xs text-amber-500/90 dark:text-amber-400/90 hover:text-amber-600 font-medium cursor-pointer transition-colors ml-1"
+                              title="Lịch sử đổi giáo viên (3)"
+                            >
+                              <History className="h-3.5 w-3.5 text-amber-500/80" />
+                              <span className="text-[11px] font-semibold text-amber-600/90 dark:text-amber-400/90">(3)</span>
+                            </button>
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

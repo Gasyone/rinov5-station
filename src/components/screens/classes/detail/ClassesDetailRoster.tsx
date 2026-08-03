@@ -623,11 +623,10 @@ export function ClassesDetailRoster({
                               e.stopPropagation()
                               setIsMonthlyReportModalOpen(true)
                             }}
-                            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0088cc] hover:underline cursor-pointer group/report"
+                            className="inline-flex items-center text-xs font-normal text-foreground hover:text-sky-600 dark:hover:text-sky-400 hover:underline hover:underline-offset-2 cursor-pointer transition-colors"
                             title="Bấm để xem/chỉnh sửa báo cáo tháng"
                           >
                             <span>Tháng {new Date().getMonth() + 1}</span>
-                            <Pencil className="h-3.5 w-3.5 text-amber-500 group-hover/report:text-amber-600 transition-colors shrink-0" />
                           </button>
                         ) : (
                           <div className="flex items-center justify-center w-full">
