@@ -53,7 +53,7 @@ function hasActiveTags(item: StudentCareAlert) {
 }
 
 // Helper predicates for tuition renewal care progress
-const isChuaLienHe = (item: StudentCareAlert) => getRenewalClassification(item) === 'chua_lien_he'
+const isMoi = (item: StudentCareAlert) => getRenewalClassification(item) === 'moi'
 const isCanNhac = (item: StudentCareAlert) => getRenewalClassification(item) === 'can_nhac'
 const isTiemNang = (item: StudentCareAlert) => getRenewalClassification(item) === 'tiem_nang'
 const isHenTai = (item: StudentCareAlert) => getRenewalClassification(item) === 'hen_tai'
@@ -273,7 +273,7 @@ export function RenewalScreen() {
 
   // Compute care progress tiles from baseFiltered
   const careProgressTiles: StatusTile<string>[] = useMemo(() => {
-    const chuaLienHeCount = baseFiltered.filter(isChuaLienHe).length
+    const moiCount = baseFiltered.filter(isMoi).length
     const canNhacCount = baseFiltered.filter(isCanNhac).length
     const tiemNangCount = baseFiltered.filter(isTiemNang).length
     const henTaiCount = baseFiltered.filter(isHenTai).length
@@ -281,7 +281,7 @@ export function RenewalScreen() {
     
     return [
       { id: 'all', label: 'Tất cả', count: baseFiltered.length, semantic: 'neutral' as const },
-      { id: 'chua_lien_he', label: 'Chưa liên hệ', count: chuaLienHeCount, semantic: 'neutral' as const },
+      { id: 'moi', label: 'Mới', count: moiCount, semantic: 'neutral' as const },
       { id: 'can_nhac', label: 'Cân nhắc', count: canNhacCount, semantic: 'warning' as const },
       { id: 'tiem_nang', label: 'Tiềm năng', count: tiemNangCount, semantic: 'info' as const },
       { id: 'hen_tai', label: 'Hẹn tái', count: henTaiCount, semantic: 'purple' as const },
@@ -292,7 +292,7 @@ export function RenewalScreen() {
   // 3. Apply care progress tab filter & sort by expectedEndDate ascending (nearest to furthest)
   const filtered = useMemo(() => {
     let result = baseFiltered
-    if (careProgressTab === 'chua_lien_he') result = baseFiltered.filter(isChuaLienHe)
+    if (careProgressTab === 'moi') result = baseFiltered.filter(isMoi)
     else if (careProgressTab === 'can_nhac') result = baseFiltered.filter(isCanNhac)
     else if (careProgressTab === 'tiem_nang') result = baseFiltered.filter(isTiemNang)
     else if (careProgressTab === 'hen_tai') result = baseFiltered.filter(isHenTai)

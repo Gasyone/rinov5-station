@@ -36,13 +36,6 @@ function getDetailedMetricDisplay(item: CareConditionConfig): { mainText: string
     }
   }
 
-  if (rule.source === 'curriculum_path') {
-    return {
-      mainText: rule.metricLabel || 'Lộ trình - Khung chương trình',
-      subText: 'Tự động kích hoạt tức thời khi diễn ra mốc buổi học trong môn',
-    }
-  }
-
   // Tiêu chí định lượng hoặc mốc sự kiện
   const opLabel = rule.operator === 'milestone' ? '' : rule.operatorLabel ? ` ${rule.operatorLabel}` : ''
   const valLabel = rule.operator !== 'milestone' && rule.thresholdValue !== undefined ? ` ${rule.thresholdValue} ${rule.metricUnit || ''}` : ''
@@ -51,7 +44,6 @@ function getDetailedMetricDisplay(item: CareConditionConfig): { mainText: string
   
   const parts: string[] = []
   if (rule.windowRangeLabel) parts.push(rule.windowRangeLabel)
-  if (rule.scopeLabel) parts.push(rule.scopeLabel)
 
   const subText = parts.length > 0 ? parts.join(' • ') : item.autoTriggerRule || ''
 
@@ -169,7 +161,7 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
               <th className="py-2.5 px-3 min-w-[150px]">Nguồn chỉ số</th>
               <th className="py-2.5 px-3 min-w-[240px]">Tiêu chí theo dõi (Chi tiết thiết lập)</th>
               <th className="py-2.5 px-3 min-w-[120px]">Thời hạn SLA</th>
-              <th className="py-2.5 px-3 min-w-[120px]">Tính chất</th>
+
               <th className="py-2.5 px-3 min-w-[130px]">Vai trò chính</th>
               <th className="py-2.5 px-3 min-w-[110px]">Mức ưu tiên</th>
               <th className="py-2.5 px-3 min-w-[100px]">Trạng thái</th>
@@ -202,13 +194,16 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center justify-between gap-2 max-w-[320px]">
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                        <span className="font-medium text-xs text-foreground group-hover:text-primary transition-colors">
+                        <span
+                          className="font-medium text-xs text-foreground group-hover:text-primary transition-colors truncate block"
+                          title={item.name}
+                        >
                           {item.name}
                         </span>
                         
-                        <span className="font-mono text-[11px] text-muted-foreground">
-                          Mã: {item.code}
-                        </span>
+                        <Badge variant="outline" className={`text-[10px] w-fit px-1.5 py-0 h-4 ${natureBadge.badgeClass}`}>
+                          {natureBadge.label}
+                        </Badge>
                       </div>
 
                       {/* NÚT BẬT/TẮT ÁP DỤNG & NÚT XÓA INLINE (HOVER MỚI HIỆN) */}
@@ -274,12 +269,6 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
                     <span className="text-xs text-muted-foreground font-normal">{item.slaLabel}</span>
                   </td>
 
-                  {/* 6. TÍNH CHẤT */}
-                  <td className="py-2.5 px-3">
-                    <Badge variant="outline" className={`text-[10.5px] font-medium px-2 py-0.5 ${natureBadge.badgeClass}`}>
-                      {natureBadge.label}
-                    </Badge>
-                  </td>
 
                   {/* 7. VAI TRÒ PHỤ TRÁCH & QUY TẮC HOÀN THÀNH */}
                   <td className="py-2.5 px-3">

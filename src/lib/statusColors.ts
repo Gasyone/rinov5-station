@@ -202,7 +202,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   huy: 'completed',
 
   // Tuition Renewal
-  chua_lien_he: 'neutral',
+  moi: 'neutral',
+  chua_den_han: 'neutral',
   can_nhac: 'warning',
   tiem_nang: 'info',
   hen_tai: 'purple',

@@ -81,7 +81,9 @@ export function ClassSessionHoverCard({
               ? 'bg-sky-50 text-sky-900 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900/60'
               : session.dateBucket === 'past'
               ? 'bg-zinc-100/80 text-zinc-700 border-zinc-200 dark:bg-zinc-800/80 dark:text-zinc-300'
-              : 'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60'
+              : session.dateBucket === 'today'
+              ? 'bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60'
+              : 'bg-card text-foreground border-border dark:bg-zinc-900'
           )}
         >
           {/* Time & Slot */}

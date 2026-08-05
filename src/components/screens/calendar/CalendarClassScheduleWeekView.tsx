@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { cn } from '@/lib/utils'
 import type { ClassSession, WeekLayoutMode } from './calendarClassScheduleTypes'
 import { SessionCard } from './SessionCardV2'
+import { SessionHoverCard } from './SessionHoverCard'
 import { getSessionPeriod, toDateKey } from './calendarClassScheduleHelpers'
 import { parseScheduleTime as parseTime } from '@/components/screens/schedule/ScheduleTimeGrid'
 
@@ -522,29 +523,33 @@ function CompactWeekSessionCard({ session, onClick }: { session: ClassSession; o
     bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 shadow-2xs'
   } else if (session.dateBucket === 'past') {
     bgClass = 'bg-zinc-100/90 hover:bg-zinc-200/90 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60'
-  } else if (session.dateBucket === 'upcoming') {
+  } else if (session.dateBucket === 'today') {
     bgClass = 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs'
+  } else if (session.dateBucket === 'upcoming') {
+    bgClass = 'bg-card hover:bg-accent/60 border border-border dark:border-zinc-800/60 shadow-2xs'
   }
 
   return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "group relative flex flex-col justify-center overflow-hidden rounded-md text-left shadow-2xs transition cursor-pointer p-1.5 h-full border text-[10px] leading-tight",
-        bgClass
-      )}
-    >
-      {session.isOpeningDay && (
-        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500" />
-      )}
-      <div className={cn("truncate font-bold text-foreground flex items-center gap-1", session.isOpeningDay && "pl-1")}>
-        <span className="truncate">{session.classCode} - {session.subject}</span>
-        <span className="text-muted-foreground font-normal">({session.level})</span>
+    <SessionHoverCard session={session}>
+      <div
+        onClick={onClick}
+        className={cn(
+          "group relative flex flex-col justify-center overflow-hidden rounded-md text-left shadow-2xs transition cursor-pointer p-1.5 h-full border text-[10px] leading-tight",
+          bgClass
+        )}
+      >
+        {session.isOpeningDay && (
+          <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500" />
+        )}
+        <div className={cn("truncate font-bold text-foreground flex items-center gap-1", session.isOpeningDay && "pl-1")}>
+          <span className="truncate">{session.classCode} - {session.subject}</span>
+          <span className="text-muted-foreground font-normal">({session.level})</span>
+        </div>
+        <div className={cn("mt-0.5 truncate text-[9.5px] text-muted-foreground flex items-center justify-between", session.isOpeningDay && "pl-1")}>
+          <span>{session.totalStudents} HS</span>
+          <span className="font-semibold text-foreground/80 truncate max-w-[60%]">{activeTeacher}</span>
+        </div>
       </div>
-      <div className={cn("mt-0.5 truncate text-[9.5px] text-muted-foreground flex items-center justify-between", session.isOpeningDay && "pl-1")}>
-        <span>{session.totalStudents} HS</span>
-        <span className="font-semibold text-foreground/80 truncate max-w-[60%]">{activeTeacher}</span>
-      </div>
-    </div>
+    </SessionHoverCard>
   )
 }

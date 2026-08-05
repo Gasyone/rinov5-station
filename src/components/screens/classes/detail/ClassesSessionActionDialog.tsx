@@ -307,11 +307,14 @@ export function ClassesSessionActionDialog({
                           }}
                           className="rounded border-muted text-primary focus:ring-primary h-3 w-3"
                         />
-                        <span>Dạy Cover</span>
+                        <span>Tìm mở rộng</span>
                       </label>
                     </div>
                   }
                 >
+                  <span className="text-[10px] text-muted-foreground block mb-1.5 font-normal leading-tight">
+                    Hệ thống sẽ tìm các GV dạy môn học này (Bao gồm cả GV đang có lịch trùng, GV Cover chéo...)
+                  </span>
                   <Popover open={teacherPickerOpen} onOpenChange={setTeacherPickerOpen}>
                     <PopoverTrigger asChild>
                       <button
@@ -335,7 +338,7 @@ export function ClassesSessionActionDialog({
                                 <>
                                   <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{found.id}</span>
                                   {found.isCover && (
-                                    <span className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded-sm">Cover</span>
+                                    <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
                                   )}
                                 </>
                               ) : null
@@ -399,7 +402,7 @@ export function ClassesSessionActionDialog({
                                     <span className="font-bold text-foreground truncate">{teacher.value}</span>
                                     <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{teacher.id}</span>
                                     {isCover && teacher.isCover && (
-                                      <span className="text-[9px] font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded-sm">Cover</span>
+                                      <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
                                     )}
                                   </div>
                                   <div className="flex flex-col gap-0.5 mt-0.5 text-[10px] text-muted-foreground leading-tight">

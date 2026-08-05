@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, type ReactNode } from 'react'
-import { Filter, Search, type LucideIcon } from 'lucide-react'
+import { Filter, Search, X, type LucideIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -477,25 +477,49 @@ export function ExpandableSearch({
     <div className={cn('flex items-center gap-1.5', open ? 'w-full sm:w-auto' : '', className)}>
       <IconActionButton icon={Search} label={label} onClick={openSearch} />
       {open ? (
-        <Input
-          ref={inputRef}
-          value={value}
-          onChange={(event) => onValueChange(event.target.value)}
-          onBlur={(event) => {
-            if (!event.currentTarget.value.trim()) setOpen(false)
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              event.currentTarget.blur()
-              if (!value.trim()) setOpen(false)
-            }
-          }}
-          placeholder={placeholder}
-          className={cn(
-            'h-8 w-full min-w-0 border border-input bg-background px-3 text-xs shadow-xs focus-visible:ring-[3px] sm:w-72',
-            inputClassName
-          )}
-        />
+        <div className="relative flex w-full items-center sm:w-72">
+          <Input
+            ref={inputRef}
+            value={value}
+            onChange={(event) => onValueChange(event.target.value)}
+            onBlur={(event) => {
+              const related = event.relatedTarget as HTMLElement | null
+              if (!event.currentTarget.value.trim() && !related?.getAttribute('data-clear-button')) {
+                setOpen(false)
+              }
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                if (value.trim()) {
+                  onValueChange('')
+                } else {
+                  event.currentTarget.blur()
+                  setOpen(false)
+                }
+              }
+            }}
+            placeholder={placeholder}
+            className={cn(
+              'h-8 w-full min-w-0 border border-input bg-background pl-3 pr-8 text-xs shadow-xs focus-visible:ring-[3px]',
+              inputClassName
+            )}
+          />
+          {value ? (
+            <button
+              type="button"
+              data-clear-button="true"
+              title="Xóa tìm kiếm"
+              aria-label="Xóa nội dung tìm kiếm"
+              onClick={() => {
+                onValueChange('')
+                inputRef.current?.focus()
+              }}
+              className="absolute right-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted/80 text-muted-foreground transition-colors hover:bg-destructive/15 hover:text-destructive cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   )

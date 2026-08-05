@@ -81,7 +81,7 @@ function DetailCard({
 }) {
   return (
     <div className={cn('rounded-xl border border-border/80 bg-background p-4 shadow-2xs', className)}>
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3 flex items-center justify-between gap-3 shrink-0">
         <h3 className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
           {icon}
           {title}
@@ -175,7 +175,7 @@ export function MakeupClassDetailDialog({
           {/* Body area with uniform flat gray background (bg-muted/40) */}
           <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-muted/40 p-6 pt-2">
             {/* Grid layout: Left column 60% (col-span-3), Right info column 40% (col-span-2) */}
-            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-5">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-5">
               {/* CỘT TRÁI (60%): Buổi bù (Lớp ghép) trước, Buổi nghỉ (Lớp gốc) sau */}
               <div className="flex flex-col gap-4 min-w-0 md:col-span-3">
                 {/* 1. Buổi bù (Lớp ghép) */}
@@ -364,7 +364,7 @@ export function MakeupClassDetailDialog({
               </div>
 
               {/* CỘT PHẢI THÔNG TIN (40%): Thời hạn & Phụ trách (gộp), Ghi chú & Lịch sử */}
-              <div className="flex flex-col gap-4 min-w-0 md:col-span-2">
+              <div className="flex flex-col gap-4 min-w-0 md:col-span-2 h-full">
                 {/* Thời hạn & Phụ trách (gộp vào 1 section) */}
                 <DetailCard title="Thời hạn & Phụ trách" icon={<Clock className="h-4 w-4 text-primary" />}>
                   <div className="space-y-3">
@@ -406,8 +406,8 @@ export function MakeupClassDetailDialog({
                 </DetailCard>
 
                 {/* Lịch sử thao tác */}
-                <DetailCard title="Lịch sử thao tác">
-                  <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                <DetailCard title="Lịch sử thao tác" className="flex-1 flex flex-col min-h-0">
+                  <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1">
                     {request.auditLog.map((log, idx) => (
                       <div key={idx} className="flex items-start gap-2 rounded-md p-1.5 hover:bg-muted/40 text-xs">
                         <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary/60" />

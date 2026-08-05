@@ -161,7 +161,7 @@ export function RenewalChatFeed({
   }
 
   const classificationOptions: { value: RenewalClassification; label: string; badgeClass: string }[] = [
-    { value: 'chua_lien_he', label: 'Chưa liên hệ', badgeClass: getStatusBadgeClass('chua_lien_he') },
+    { value: 'moi', label: 'Mới', badgeClass: getStatusBadgeClass('moi') },
     { value: 'can_nhac', label: 'Cân nhắc', badgeClass: getStatusBadgeClass('can_nhac') },
     { value: 'tiem_nang', label: 'Tiềm năng', badgeClass: getStatusBadgeClass('tiem_nang') },
     { value: 'hen_tai', label: 'Hẹn tái', badgeClass: getStatusBadgeClass('hen_tai') },

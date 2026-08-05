@@ -65,12 +65,19 @@ export const CareConditionFormBasicFields: React.FC<BasicFieldsProps> = ({
   return (
     <div className="space-y-3.5">
       <div className="grid grid-cols-2 gap-3">
-        <FieldLabel label="Mã điều kiện" required error={errors.code}>
-          <Input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="VD: ĐB-01..."
-            className="h-8 text-xs font-mono font-bold uppercase"
+        <FieldLabel label="Tính chất chăm sóc" required>
+          <InlineSelect
+            value={nature || 'dac_biet'}
+            options={[
+              { value: 'dac_biet', label: 'CSĐB — Chăm sóc đặc biệt' },
+              { value: 'tai_phi', label: 'TP — Tái phí' },
+              { value: 'dinh_ky', label: 'ĐK — Định kỳ' },
+              { value: 'theo_hanh_trinh', label: 'THT — Theo hành trình' },
+              { value: 'theo_moc', label: 'TM — Theo mốc học tập' },
+              { value: 'theo_yeu_cau', label: 'TYC — Theo yêu cầu' },
+            ]}
+            onValueChange={(val: string) => setNature(val as ConditionNature)}
+            className="w-full h-8 text-xs font-bold"
           />
         </FieldLabel>
 
@@ -95,22 +102,6 @@ export const CareConditionFormBasicFields: React.FC<BasicFieldsProps> = ({
           onChange={(e) => setName(e.target.value)}
           placeholder="VD: Học viên nghỉ không phép từ 2 buổi trong 8 buổi gần nhất..."
           className="h-8 text-xs"
-        />
-      </FieldLabel>
-
-      <FieldLabel label="Tính chất chăm sóc">
-        <InlineSelect
-          value={nature || 'dac_biet'}
-          options={[
-            { value: 'dac_biet', label: 'Chăm sóc đặc biệt' },
-            { value: 'tai_phi', label: 'Tái phí' },
-            { value: 'dinh_ky', label: 'Định kỳ' },
-            { value: 'theo_hanh_trinh', label: 'Theo hành trình' },
-            { value: 'theo_moc', label: 'Theo mốc học tập' },
-            { value: 'theo_yeu_cau', label: 'Theo yêu cầu' },
-          ]}
-          onValueChange={(val: string) => setNature(val as ConditionNature)}
-          className="w-full h-8 text-xs"
         />
       </FieldLabel>
 

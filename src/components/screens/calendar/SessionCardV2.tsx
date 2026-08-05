@@ -50,8 +50,10 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
     bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 shadow-xs'
   } else if (session.dateBucket === 'past') {
     bgClass = 'bg-zinc-100/90 hover:bg-zinc-200/90 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60'
-  } else if (session.dateBucket === 'upcoming') {
+  } else if (session.dateBucket === 'today') {
     bgClass = 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 shadow-xs'
+  } else if (session.dateBucket === 'upcoming') {
+    bgClass = 'bg-card hover:bg-accent/60 border border-border dark:border-zinc-800/60 shadow-xs'
   }
 
   return (

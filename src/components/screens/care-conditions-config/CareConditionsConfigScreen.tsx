@@ -91,12 +91,12 @@ export const CareConditionsConfigScreen: React.FC = () => {
     const activeCount = conditions.filter((c) => c.isActive).length
 
     return [
-      { id: 'all', label: 'Tất cả danh mục', count: total },
-      { id: 'dac_biet', label: 'Chăm sóc đặc biệt', count: dacBiet },
-      { id: 'tai_phi', label: 'Tái phí', count: taiPhi },
-      { id: 'theo_hanh_trinh', label: 'Theo hành trình học', count: hanhTrinh },
-      { id: 'dinh_ky', label: 'Định kỳ', count: dinhKy },
-      { id: 'theo_yeu_cau', label: 'Theo yêu cầu', count: yeuCau },
+      { id: 'all', label: 'Tất cả danh mục', count: total, semantic: 'neutral' as const },
+      { id: 'dac_biet', label: 'CSĐB · Chăm sóc đặc biệt', count: dacBiet, semantic: 'error' as const },
+      { id: 'tai_phi', label: 'TP · Tái phí', count: taiPhi, semantic: 'success' as const },
+      { id: 'theo_hanh_trinh', label: 'THT · Theo hành trình học', count: hanhTrinh, semantic: 'info' as const },
+      { id: 'dinh_ky', label: 'ĐK · Định kỳ', count: dinhKy, semantic: 'purple' as const },
+      { id: 'theo_yeu_cau', label: 'TYC · Theo yêu cầu', count: yeuCau, semantic: 'warning' as const },
     ]
   }, [conditions])
 

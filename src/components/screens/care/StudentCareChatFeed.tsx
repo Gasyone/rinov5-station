@@ -6,7 +6,8 @@ import { useCallStore } from '@/stores/useCallStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { updateCareAlertInteraction, completeCareTag, type StudentCareAlert, type CareInteractionLog, type FamilyContact } from '@/mocks/careAlerts'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { isCared, isOverdue } from './operationsAlertHelpers'
+import { isCared, isOverdue, stableHash } from './operationsAlertHelpers'
+import { getRenewalClassification } from './renewal/renewalHelpers'
 import { type CareTopic, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
 import {
   getCombinedLogs,
@@ -16,7 +17,7 @@ import {
 } from './studentCareDetailHelpers'
 import { StudentCareTimeline } from './StudentCareTimeline'
 import { StudentActiveCareCard } from './StudentActiveCareCard'
-import { StudentCareFormCard } from './StudentCareFormCard'
+import { StudentCareFormCard, type CareMode } from './StudentCareFormCard'
 
 const getTagColorClass = (code: string, isExpanded: boolean) => {
   if (code.startsWith('ĐB')) {
@@ -105,13 +106,21 @@ export function StudentCareChatFeed({
   
   // States for Pinned Tags design
   const [expandedTopicCode, setExpandedTopicCode] = useState<string | null>(null)
-  const [cstpStatus] = useState<'cham_soc' | 'tiem_nang' | 'can_nhac' | 'hen_tai'>('cham_soc')
+  const [cstpStatus, setCstpStatus] = useState<string>('moi')
   const [parentOpinionText, setParentOpinionText] = useState('')
   const [showParentOpinion, setShowParentOpinion] = useState(false)
   const [localLogs, setLocalLogs] = useState<CareInteractionLog[]>([])
   const [isFormCollapsed, setIsFormCollapsed] = useState(false)
   const [showAllTags, setShowAllTags] = useState(false)
+  const [careMode, setCareMode] = useState<CareMode>('regular')
   const isCaredStatus = student ? isCared(student) : false
+
+  // Sync cstpStatus with student data using the exact classification helper from renewal module
+  useEffect(() => {
+    if (!student) return
+    const classification = getRenewalClassification(student)
+    setCstpStatus(classification)
+  }, [student])
 
   const careFormRef = useRef<HTMLDivElement>(null)
   const [careFormHeight, setCareFormHeight] = useState(160)
@@ -358,10 +367,13 @@ export function StudentCareChatFeed({
           expandedTopic={expandedTopic}
           setExpandedTopicCode={setExpandedTopicCode}
           cstpStatus={cstpStatus}
+          onCstpStatusChange={setCstpStatus}
           isFormCollapsed={isFormCollapsed}
           setIsFormCollapsed={setIsFormCollapsed}
           getTagColorClass={getTagColorClass}
           isCaredStatus={isCaredStatus}
+          careMode={careMode}
+          onCareModeChange={setCareMode}
         />
 
         {/* Message timelines & history below care form */}

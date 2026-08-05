@@ -13,6 +13,8 @@ export interface MakeupClassFilterState {
   subjects: string[]
   owners: string[]
   schools: string[]
+  attendanceResults: string[]
+  weekdays: string[]
 }
 
 export interface MakeupStatusConfigItem {

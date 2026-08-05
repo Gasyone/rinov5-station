@@ -213,7 +213,7 @@ export function getExpirationCategory(expectedEndDateStr: string): 'T' | 'T1' | 
 }
 
 export type RenewalClassification =
-  | 'chua_lien_he'
+  | 'moi'
   | 'can_nhac'
   | 'tiem_nang'
   | 'hen_tai'
@@ -225,7 +225,7 @@ export type RenewalClassification =
 
 export function getOfficialStatus(classification: RenewalClassification): 'dang_cham_soc' | 'tai_phi' | 'chong_phi' | 'rut_phi' | 'that_bai' {
   switch (classification) {
-    case 'chua_lien_he':
+    case 'moi':
     case 'can_nhac':
     case 'tiem_nang':
     case 'hen_tai':
@@ -280,12 +280,12 @@ export function getRenewalClassification(item: StudentCareAlert): RenewalClassif
   if (item.interactionNotes?.includes('cân nhắc')) {
     return 'can_nhac'
   }
-  if (item.interactionNotes?.includes('chưa liên hệ')) {
-    return 'chua_lien_he'
+  if (item.interactionNotes?.includes('mới')) {
+    return 'moi'
   }
 
   const mod = hash % 6
-  if (mod === 0) return 'chua_lien_he'
+  if (mod === 0) return 'moi'
   if (mod === 1) return 'can_nhac'
   if (mod === 2) return 'tiem_nang'
   if (mod === 3) return 'hen_tai'
@@ -295,13 +295,13 @@ export function getRenewalClassification(item: StudentCareAlert): RenewalClassif
 
 export function getUpsaleClassification(item: StudentCareAlert): RenewalClassification {
   if (item.upsaleClassification) return item.upsaleClassification as RenewalClassification
-  return 'chua_lien_he'
+  return 'moi'
 }
 
 export function getRenewalClassificationLabel(classification: RenewalClassification): string {
   switch (classification) {
-    case 'chua_lien_he':
-      return 'Chưa liên hệ'
+    case 'moi':
+      return 'Mới'
     case 'can_nhac':
       return 'Cân nhắc'
     case 'tiem_nang':

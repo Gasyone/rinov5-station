@@ -35,8 +35,8 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
       return cls === 'can_nhac' || cls === 'tiem_nang' || cls === 'hen_tai'
     }).length
 
-    // Pending (Chưa liên hệ)
-    const pending = alerts.filter(item => getRenewalClassification(item) === 'chua_lien_he').length
+    // Pending (Mới)
+    const pending = alerts.filter(item => getRenewalClassification(item) === 'moi').length
 
     // Conversion rate
     const conversionRate = total > 0 ? Math.round((success / total) * 100) : 0
@@ -57,7 +57,7 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
 
     alerts.forEach(item => {
       const cls = getRenewalClassification(item)
-      if (cls === 'chua_lien_he') chuaLienHe++
+      if (cls === 'moi') chuaLienHe++
       else if (cls === 'can_nhac') canNhac++
       else if (cls === 'tiem_nang') tiemNang++
       else if (cls === 'hen_tai') henTai++
@@ -70,7 +70,7 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
     const data = [
       { name: 'Đã tái phí', count: daTai + chongPhi, color: 'bg-emerald-500' },
       { name: 'Đang cân nhắc / Hẹn tái', count: canNhac + tiemNang + henTai, color: 'bg-sky-500' },
-      { name: 'Chưa liên hệ', count: chuaLienHe, color: 'bg-zinc-400' },
+      { name: 'Mới', count: chuaLienHe, color: 'bg-zinc-400' },
       { name: 'Thất bại / Rút phí', count: thatBai + rutPhi, color: 'bg-rose-500' }
     ]
 

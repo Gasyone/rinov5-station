@@ -11,14 +11,26 @@ import { MakeupClassDetailDialog } from './MakeupClassDetailDialog'
 import {
   filterMakeupClasses,
   readMakeupClasses,
+  getWeekday,
   type MakeupClassUpdater,
 } from './makeupClassHelpers'
 import { SYSTEM_BRANCHES } from '@/components/controls'
-import { ALL_MAKEUP_STATUS_CONFIG } from './makeupClassConstants'
+import { MAKEUP_LIFECYCLE_CONFIG } from './makeupClassConstants'
 import type { MakeupStatusTileId, MakeupClassFilterState, MakeupResultFilterId } from './makeupClassTypes'
 
 function getUniqueStringValues(requests: MakeupClassRequest[], key: 'branch' | 'program' | 'creator' | 'subject' | 'owner' | 'school'): string[] {
   return [...new Set(requests.map((r) => r[key]).filter(Boolean))] as string[]
+}
+
+const EMPTY_FILTERS: MakeupClassFilterState = {
+  programs: [],
+  creators: [],
+  statuses: [],
+  subjects: [],
+  owners: [],
+  schools: [],
+  attendanceResults: [],
+  weekdays: [],
 }
 
 export function MakeupClassScreen() {
@@ -29,14 +41,7 @@ export function MakeupClassScreen() {
   const [activeStatus, setActiveStatus] = useState<MakeupStatusTileId>('all')
   const [activeResultFilter, setActiveResultFilter] = useState<MakeupResultFilterId>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [filters, setFilters] = useState<MakeupClassFilterState>({
-    programs: [],
-    creators: [],
-    statuses: [],
-    subjects: [],
-    owners: [],
-    schools: [],
-  })
+  const [filters, setFilters] = useState<MakeupClassFilterState>(EMPTY_FILTERS)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
@@ -54,11 +59,25 @@ export function MakeupClassScreen() {
   }
 
   const branchOptions = SYSTEM_BRANCHES
-  const programOptions = useMemo(() => getUniqueStringValues(requests, 'program'), [requests])
   const creatorOptions = useMemo(() => getUniqueStringValues(requests, 'creator'), [requests])
   const subjectOptions = useMemo(() => getUniqueStringValues(requests, 'subject'), [requests])
   const ownerOptions = useMemo(() => getUniqueStringValues(requests, 'owner'), [requests])
   const schoolOptions = SYSTEM_BRANCHES
+
+  // Dynamic program options dependent on selected subjects
+  const programOptions = useMemo(() => {
+    if (filters.subjects.length > 0) {
+      return [
+        ...new Set(
+          requests
+            .filter((r) => filters.subjects.includes(r.subject))
+            .map((r) => r.program)
+            .filter(Boolean)
+        ),
+      ]
+    }
+    return getUniqueStringValues(requests, 'program')
+  }, [requests, filters.subjects])
 
   const filtered = useMemo(
     () => filterMakeupClasses(requests, searchTerm, activeBranch, activeStatus, filters, activeSubject, activeResultFilter),
@@ -83,7 +102,9 @@ export function MakeupClassScreen() {
     filters.statuses.length +
     filters.subjects.length +
     filters.owners.length +
-    filters.schools.length
+    filters.schools.length +
+    filters.attendanceResults.length +
+    filters.weekdays.length
 
   const detailRequest = requests.find((r) => r.id === detailId) ?? null
 
@@ -91,13 +112,15 @@ export function MakeupClassScreen() {
     () => [
       createFilterGroup({
         id: 'schools',
+        title: 'Cơ sở',
         options: schoolOptions,
         selectedValues: filters.schools,
-        getOptionCount: (school) => requests.filter((r) => r.school === school).length,
+        getOptionCount: (school) => requests.filter((r) => r.school === school || r.branch === school).length,
       }),
       createFilterGroup({
         id: 'statuses',
-        options: ALL_MAKEUP_STATUS_CONFIG.map((s) => ({
+        title: 'Trạng thái phiếu',
+        options: MAKEUP_LIFECYCLE_CONFIG.map((s) => ({
           value: s.id,
           label: s.label,
           count: requests.filter((r) => r.status === s.id).length,
@@ -105,19 +128,32 @@ export function MakeupClassScreen() {
         selectedValues: filters.statuses,
       }),
       createFilterGroup({
+        id: 'attendanceResults',
+        title: 'Kết quả điểm danh',
+        options: [
+          { value: 'co_mat', label: 'Có mặt / Đã điểm danh', count: requests.filter((r) => (r.attendanceStatus === 'Có mặt' || r.attendanceStatus === 'Đã điểm danh' || r.status === 'completed')).length },
+          { value: 'da_vang', label: 'Vắng mặt', count: requests.filter((r) => (r.attendanceStatus === 'Vắng mặt' || r.status === 'da_vang')).length },
+          { value: 'chua_diem_danh', label: 'Chưa điểm danh', count: requests.filter((r) => (!r.attendanceStatus || r.attendanceStatus === 'Chưa điểm danh') && r.status !== 'completed' && r.status !== 'da_vang').length },
+        ],
+        selectedValues: filters.attendanceResults,
+      }),
+      createFilterGroup({
         id: 'subjects',
+        title: 'Môn học',
         options: subjectOptions,
         selectedValues: filters.subjects,
         getOptionCount: (subject) => requests.filter((r) => r.subject === subject).length,
       }),
       createFilterGroup({
         id: 'programs',
+        title: 'Chương trình',
         options: programOptions,
         selectedValues: filters.programs,
         getOptionCount: (program) => requests.filter((r) => r.program === program).length,
       }),
       createFilterGroup({
         id: 'owners',
+        title: 'Người phụ trách',
         options: ownerOptions,
         selectedValues: filters.owners,
         getOptionCount: (owner) => requests.filter((r) => r.owner === owner).length,
@@ -128,6 +164,13 @@ export function MakeupClassScreen() {
         options: creatorOptions,
         selectedValues: filters.creators,
         getOptionCount: (creator) => requests.filter((r) => r.creator === creator).length,
+      }),
+      createFilterGroup({
+        id: 'weekdays',
+        title: 'Thứ trong tuần',
+        options: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+        selectedValues: filters.weekdays,
+        getOptionCount: (abbr) => requests.filter((r) => getWeekday(r.originalSessionDate) === abbr || (r.makeupSessionDate && getWeekday(r.makeupSessionDate) === abbr)).length,
       }),
     ],
     [schoolOptions, subjectOptions, programOptions, ownerOptions, creatorOptions, requests, filters]
@@ -327,14 +370,7 @@ export function MakeupClassScreen() {
           toggleArrayFilter(sectionId as keyof MakeupClassFilterState, value)
         }}
         onClearAll={() => {
-          setFilters({
-            programs: [],
-            creators: [],
-            statuses: [],
-            subjects: [],
-            owners: [],
-            schools: [],
-          })
+          setFilters(EMPTY_FILTERS)
           setPage(1)
         }}
       />

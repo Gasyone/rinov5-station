@@ -124,7 +124,25 @@ export function filterMakeupClasses(
     if (filters.subjects.length > 0 && !filters.subjects.includes(req.subject)) return false
     if (filters.owners.length > 0 && !filters.owners.includes(req.owner)) return false
     if (filters.statuses.length > 0 && !filters.statuses.includes(req.status)) return false
-    if (filters.schools.length > 0 && !filters.schools.includes(req.school)) return false
+    if (filters.schools.length > 0 && !filters.schools.includes(req.school) && !filters.schools.includes(req.branch)) return false
+
+    if (filters.attendanceResults && filters.attendanceResults.length > 0) {
+      const attText = getAttendanceStatusText(req)
+      const matches = filters.attendanceResults.some((val) => {
+        if (val === 'co_mat' && (attText === 'Có mặt' || attText === 'Đã điểm danh')) return true
+        if (val === 'da_vang' && attText === 'Vắng mặt') return true
+        if (val === 'chua_diem_danh' && attText === 'Chưa điểm danh') return true
+        return false
+      })
+      if (!matches) return false
+    }
+
+    if (filters.weekdays && filters.weekdays.length > 0) {
+      const origWk = getWeekday(req.originalSessionDate)
+      const makeupWk = req.makeupSessionDate ? getWeekday(req.makeupSessionDate) : ''
+      if (!filters.weekdays.includes(origWk) && !filters.weekdays.includes(makeupWk)) return false
+    }
+
     if (search) {
       const q = search.toLowerCase()
       const haystack = [

@@ -461,12 +461,12 @@ export function MyScheduleScreen() {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
           <span className="font-semibold text-foreground/80">Chú giải màu sắc:</span>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-white border border-border dark:bg-zinc-800" />
-            <span>Buổi học hôm nay</span>
+            <span className="h-3 w-3 rounded-full bg-emerald-500 border border-emerald-600 dark:bg-emerald-400" />
+            <span className="font-medium text-emerald-600 dark:text-emerald-400">Buổi học hôm nay</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 border border-emerald-600 dark:bg-emerald-400" />
-            <span className="font-medium text-emerald-600 dark:text-emerald-400">Buổi học sắp diễn ra</span>
+            <span className="h-3 w-3 rounded-full bg-white border border-border dark:bg-zinc-800" />
+            <span>Buổi học sắp diễn ra</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-zinc-400 border border-zinc-500 dark:bg-zinc-500" />

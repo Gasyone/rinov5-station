@@ -60,17 +60,14 @@ export function MakeupClassAssignDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] flex flex-col overflow-hidden sm:max-w-3xl">
         <DialogHeader className="shrink-0">
-          <DialogTitle className="text-lg font-semibold">
-            {isChange ? 'Đổi buổi học' : 'Ghép lớp học bù'}
+          <DialogTitle className="text-xs font-normal text-muted-foreground">
+            Chi tiết ghép lớp
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-5 pr-2">
           {/* Thông tin hiện tại */}
-          <div className="rounded-xl border border-border/80 bg-muted/30 p-3.5 space-y-2 text-sm">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Thông tin hiện tại
-            </h4>
+          <div className="rounded-xl border border-border/80 bg-muted/30 p-3.5 text-sm">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
                 <span className="text-muted-foreground">Lớp gốc:</span>{' '}

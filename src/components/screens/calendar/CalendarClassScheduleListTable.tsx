@@ -52,9 +52,9 @@ export function CalendarClassScheduleListTable({
 
     return [
       { id: 'all', label: 'Tất cả', count: allCount, semantic: 'neutral' },
-      { id: 'today', label: 'Hôm nay', count: todayCount, semantic: 'info' },
-      { id: 'upcoming', label: 'Sắp diễn ra', count: upcomingCount, semantic: 'info' },
-      { id: 'past', label: 'Đã diễn ra', count: pastCount, semantic: 'success' },
+      { id: 'today', label: 'Hôm nay', count: todayCount, semantic: 'success' },
+      { id: 'upcoming', label: 'Sắp diễn ra', count: upcomingCount, semantic: 'neutral' },
+      { id: 'past', label: 'Đã diễn ra', count: pastCount, semantic: 'neutral' },
       { id: 'cancelled', label: 'Đã hủy', count: cancelledCount, semantic: 'warning' },
     ]
   }, [sessions])

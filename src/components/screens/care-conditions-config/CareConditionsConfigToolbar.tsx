@@ -36,12 +36,10 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
             value={filters.metricSource || 'all'}
             options={[
               { value: 'all', label: 'Tất cả Nguồn chỉ số', selectedLabel: 'Tất cả Nguồn' },
-              { value: 'curriculum_path', label: 'Lộ trình - Khung chương trình' },
               { value: 'class_db', label: 'CSDL Lớp học' },
               { value: 'attendance_session', label: 'CSDL Buổi học' },
               { value: 'exam_grade', label: 'CSDL Điểm Kiểm tra' },
               { value: 'homework_db', label: 'CSDL BTVN' },
-              { value: 'attitude_rating', label: 'CSDL Thái độ' },
               { value: 'subscription_package', label: 'Gói đăng ký' },
               { value: 'periodic_time', label: 'Định kỳ thời gian' },
               { value: 'student_account', label: 'Học viên & Tài khoản' },

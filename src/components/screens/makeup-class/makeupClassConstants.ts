@@ -3,7 +3,7 @@ import type { MakeupStatusConfigItem } from './makeupClassTypes'
 /** Lifecycle statuses — shown as StatusTiles (left) */
 export const MAKEUP_LIFECYCLE_CONFIG: MakeupStatusConfigItem[] = [
   { id: 'cho_duyet', label: 'Mới', status: 'cho_duyet' },
-  { id: 'da_xep_lich', label: 'Đã duyệt', status: 'da_xep_lich' },
+  { id: 'da_xep_lich', label: 'Đã xếp lịch', status: 'da_xep_lich' },
   { id: 'tu_choi', label: 'Từ chối', status: 'tu_choi' },
   { id: 'cancelled', label: 'Hủy', status: 'cancelled' },
 ]

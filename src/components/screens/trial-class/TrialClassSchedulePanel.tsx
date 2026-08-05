@@ -118,48 +118,47 @@ export function TrialClassSchedulePanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Lịch khả dụng</h3>
-        {program && (
-          <Badge variant="outline" className="text-xs font-normal">
-            Lọc theo: {program}
-          </Badge>
-        )}
-      </div>
-
-      {program && (
-        <div className="mb-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-left font-normal h-9 text-xs"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
-                {dateRange && dateRange.from ? (
-                  dateRange.to ? (
-                    <>
-                      Thời gian học thử: <strong className="text-foreground mx-1">{formatRangeDate(dateRange.from)}</strong> - <strong className="text-foreground ml-1">{formatRangeDate(dateRange.to)}</strong>
-                    </>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold shrink-0">Lịch khả dụng</h3>
+        <div className="flex items-center gap-2">
+          {program && (
+            <Badge variant="outline" className="text-xs font-normal shrink-0">
+              {program}
+            </Badge>
+          )}
+          {program && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="justify-start text-left font-normal h-8 text-xs px-2.5"
+                >
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                  {dateRange && dateRange.from ? (
+                    dateRange.to ? (
+                      <>
+                        Thời gian: <strong className="text-foreground mx-1">{formatRangeDate(dateRange.from)}</strong> - <strong className="text-foreground ml-1">{formatRangeDate(dateRange.to)}</strong>
+                      </>
+                    ) : (
+                      formatRangeDate(dateRange.from)
+                    )
                   ) : (
-                    formatRangeDate(dateRange.from)
-                  )
-                ) : (
-                  <span>Chọn khoảng thời gian học thử mong muốn...</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={1}
-              />
-            </PopoverContent>
-          </Popover>
+                    <span>Chọn khoảng thời gian...</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={1}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
-      )}
+      </div>
 
       <ScrollArea className="h-[360px] pr-3">
         {!program ? (
