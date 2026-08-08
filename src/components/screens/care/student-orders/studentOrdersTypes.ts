@@ -49,6 +49,7 @@ export interface DetailedOrder extends Order {
   payments?: OrderPaymentTransaction[]
   sourceOrderNo?: string
   sourcePackageName?: string
+  linkedDraftOrderNo?: string
 }
 
 export interface FeeTransferRecord {
@@ -131,7 +132,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
       paymentMethod: 'cash',
       paymentMethodTag: 'T3-COD',
       paymentStatus: 'unpaid',
-      status: 'pending',
+      status: 'completed',
       branch: 'RinoEdu Nguyễn Tuân',
       saleBy: 'Vũ Thị Lan 1',
       saleRep: 'Vũ Thị Lan 1',

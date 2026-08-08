@@ -27,11 +27,11 @@ export interface ChildDataOption {
 export const RICH_CHILD_OPTIONS: ChildDataOption[] = [
   {
     value: 'con-1',
-    name: 'Đặng Nguyễn Phương Linh',
-    account: '0971273828',
-    lastOrderDate: '30/06/2026',
+    name: 'Đặng Thiên An',
+    account: '0903279888',
+    lastOrderDate: '25/07/2026',
     studentId: 'HV-8849',
-    branch: 'Rino Linh Đàm',
+    branch: 'RinoEdu Nguyễn Tuân',
     status: 'Đang học',
   },
   {
@@ -197,6 +197,7 @@ function CleanChildSelect({
 interface ChildGroupCardProps {
   group: ChildGroup
   assignedChildAccounts?: string[]
+  canRemoveGroup?: boolean
   onUpdateGroupChild: (groupId: string, childAccount: string, childName: string) => void
   onRemoveGroup: (groupId: string) => void
   onAddItemToGroup: (groupId: string, category: 'gia_su' | 'khoa_hoc' | 'combo') => void
@@ -209,6 +210,7 @@ interface ChildGroupCardProps {
 export function ChildGroupCard({
   group,
   assignedChildAccounts = [],
+  canRemoveGroup = true,
   onUpdateGroupChild,
   onRemoveGroup,
   onAddItemToGroup,
@@ -293,17 +295,19 @@ export function ChildGroupCard({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Delete Child Group Button */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onRemoveGroup(group.id)}
-            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 h-8 px-2 cursor-pointer"
-            title="Xóa nhóm con này"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {/* Delete Child Group Button (Only for additional children, NOT primary child) */}
+          {canRemoveGroup && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveGroup(group.id)}
+              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 h-8 px-2 cursor-pointer"
+              title="Xóa nhóm con này"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 

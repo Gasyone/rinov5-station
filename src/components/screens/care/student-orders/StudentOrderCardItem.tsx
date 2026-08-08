@@ -8,7 +8,10 @@ import {
   ChevronUp,
   ChevronDown,
   Trash2,
+  Pencil,
+  Share2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { DetailedOrder } from './studentOrdersTypes'
@@ -18,6 +21,7 @@ interface StudentOrderCardItemProps {
   isDraft: boolean
   isCurrent: boolean
   isPaymentsExpanded: boolean
+  draftOrders?: DetailedOrder[]
   onToggleExpandPayments: (orderId: string) => void
   onViewDetail: (order: DetailedOrder) => void
   onCreateDraftFromPackage: (order: DetailedOrder) => void
@@ -30,6 +34,7 @@ export function StudentOrderCardItem({
   isDraft,
   isCurrent,
   isPaymentsExpanded,
+  draftOrders,
   onToggleExpandPayments,
   onViewDetail,
   onCreateDraftFromPackage,
@@ -38,116 +43,139 @@ export function StudentOrderCardItem({
 }: StudentOrderCardItemProps) {
   const isCancelled = order.status === 'cancelled'
 
+  const existingDraft =
+    isCurrent && draftOrders && draftOrders.length > 0
+      ? draftOrders.find(
+          (d) =>
+            d.sourceOrderNo === order.orderNo ||
+            d.sourceOrderNo === order.id ||
+            (order.linkedDraftOrderNo && (d.id === order.linkedDraftOrderNo || d.orderNo === order.linkedDraftOrderNo))
+        )
+      : null
+
   return (
     <div
       id={`order-card-${order.orderNo || order.id}`}
       className={cn(
-        'bg-card dark:bg-zinc-900 border rounded-2xl p-4 shadow-2xs space-y-3 select-none text-left transition-all group overflow-hidden',
+        'bg-card dark:bg-zinc-900 border rounded-2xl p-2.5 shadow-2xs space-y-2 select-none text-left transition-all group overflow-hidden',
         isDraft
-          ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50/20 dark:bg-amber-950/10'
+          ? 'border-amber-200/80 dark:border-amber-900/60 bg-amber-50/15 dark:bg-amber-950/10'
           : 'border-border/80'
       )}
     >
-      {/* Draft Order Link to Source Package & Hover Delete Icon */}
-      {isDraft && (
-        <div className="flex items-center justify-between text-xs py-0.5 px-1 flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-amber-800 dark:text-amber-400">🔗 Đơn nháp tái phí từ gói:</span>
-            <button
-              type="button"
-              onClick={() => onScrollToOrder(order.sourceOrderNo || 'OD800436')}
-              className="font-bold font-mono text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <span>{order.sourcePackageName || '[IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi'}</span>
-              <span className="text-muted-foreground font-normal">({order.sourceOrderNo || 'OD800436'})</span>
-              <ExternalLink className="h-3 w-3" />
-            </button>
-          </div>
+      {/* Unified Top Header Area (Combined Draft Link & Order Header with 1 background color) */}
+      <div
+        className={cn(
+          '-mx-2.5 -mt-2.5 px-3 py-2 border-b text-xs space-y-1.5 rounded-t-2xl',
+          isDraft
+            ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/50'
+            : 'bg-muted/40 dark:bg-zinc-800/40 border-border/20'
+        )}
+      >
+        {/* Line 1 (for Draft Orders): Link to source package & Delete icon */}
+        {isDraft && (
+          <div className="flex items-center justify-between gap-2 text-xs pb-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-semibold text-amber-800 dark:text-amber-400">🔗 Đơn nháp tái phí từ gói:</span>
+              <button
+                type="button"
+                onClick={() => onScrollToOrder(order.sourceOrderNo || 'OD800436')}
+                className="font-bold font-mono text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>{order.sourcePackageName || '[IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi'}</span>
+                <span className="text-muted-foreground font-normal">({order.sourceOrderNo || 'OD800436'})</span>
+                <ExternalLink className="h-3 w-3" />
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200">
-              Đang chờ duyệt & thanh toán
-            </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100/90 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200">
+                Đang chờ duyệt & thanh toán
+              </span>
 
-            {onDeleteDraft && (
+              {/* Edit Icon Button */}
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onDeleteDraft(order.id)
+                  onViewDetail(order)
                 }}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-100/70 dark:hover:bg-red-950/60 dark:hover:text-red-400 transition-all cursor-pointer opacity-70 hover:opacity-100 active:scale-95 shrink-0"
-                title="Xóa đơn nháp này"
+                className="p-1 rounded text-zinc-500 hover:text-amber-700 hover:bg-amber-100/80 dark:hover:bg-amber-950/60 dark:hover:text-amber-300 transition-all cursor-pointer"
+                title="Chỉnh sửa đơn nháp"
               >
-                <Trash2 className="h-4 w-4" />
+                <Pencil className="h-3.5 w-3.5" />
               </button>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Header Row: Mã đơn hàng - Giá tiền / Trạng thái | Sale Rep | Nút Tạo đơn nháp */}
-      <div
-        className={cn(
-          'flex items-center justify-between gap-2 flex-wrap -mx-4 px-4 py-3 bg-muted/40 dark:bg-zinc-800/40 border-b border-border/20 text-xs',
-          !isDraft ? '-mt-4 rounded-t-2xl' : '-mt-1 border-t'
+              {/* Share / Copy Landing Page Link Icon Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+                  const quoteUrl = `${origin}/quote/${order.orderNo || order.id}`
+                  navigator.clipboard.writeText(quoteUrl)
+                  toast.success('Đã sao chép link báo giá gửi phụ huynh!', {
+                    description: quoteUrl,
+                    action: {
+                      label: 'Xem Landing Page ↗',
+                      onClick: () => window.open(quoteUrl, '_blank'),
+                    },
+                  })
+                }}
+                className="p-1 rounded text-zinc-500 hover:text-sky-600 hover:bg-sky-100/80 dark:hover:bg-sky-950/60 dark:hover:text-sky-300 transition-all cursor-pointer"
+                title="Chia sẻ link báo giá (Landing Page)"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         )}
-      >
-        <div className="flex items-center gap-1.5 flex-wrap font-mono">
-          <button
-            type="button"
-            onClick={() => onViewDetail(order)}
-            className="font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
-            title={isDraft ? 'Chỉnh sửa đơn hàng nháp' : 'Nhấp xem chi tiết đơn hàng'}
-          >
-            <span>{order.orderNo || order.id}</span>
-            <ExternalLink className="h-3 w-3" />
-          </button>
-          <span className="text-muted-foreground">-</span>
-          <span className="font-bold text-foreground">{formatCurrency(order.finalAmount)}</span>
-          <span className="text-muted-foreground">/</span>
-          {isDraft ? (
-            <span className="font-medium px-2 py-0.5 rounded text-[10.5px] bg-amber-50 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200/80 inline-flex items-center gap-1">
-              <FileEdit className="h-3 w-3" /> Đơn hàng nháp
-            </span>
-          ) : (
-            <span
-              className={cn(
-                'font-medium px-1.5 py-0.5 rounded text-[10.5px]',
-                isCancelled
-                  ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                  : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-              )}
-            >
-              {order.paymentMethodTag || 'Đã nhận bank'}
-            </span>
-          )}
-        </div>
 
-        <div className="flex items-center gap-3 text-xs shrink-0 flex-wrap">
-          <div className="text-[11px] text-muted-foreground shrink-0 font-normal">
-            Sale: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
-          </div>
-
-          {isCurrent && (
+        {/* Line 2: Order Summary Row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+          <div className="flex items-center gap-1.5 flex-wrap font-mono">
             <button
               type="button"
-              onClick={() => onCreateDraftFromPackage(order)}
-              className="bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 text-xs px-2.5 py-1 rounded-md font-medium cursor-pointer transition-all shadow-2xs shrink-0"
-              title="Tạo đơn nháp gia hạn từ gói học này"
+              onClick={() => onViewDetail(order)}
+              className="font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
+              title={isDraft ? 'Chỉnh sửa đơn hàng nháp' : 'Nhấp xem chi tiết đơn hàng'}
             >
-              Tạo đơn nháp
+              <span>{order.orderNo || order.id}</span>
+              <ExternalLink className="h-3 w-3" />
             </button>
-          )}
+            <span className="text-muted-foreground">-</span>
+            <span className="font-bold text-foreground">{formatCurrency(order.finalAmount)}</span>
+            <span className="text-muted-foreground">/</span>
+            {isDraft ? (
+              <span className="font-medium px-1.5 py-0.2 rounded text-[10.5px] bg-amber-100/80 text-amber-800 dark:bg-amber-900/70 dark:text-amber-300 inline-flex items-center gap-1">
+                <FileEdit className="h-3 w-3" /> Đơn hàng nháp
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  'font-medium px-1.5 py-0.5 rounded text-[10.5px]',
+                  isCancelled
+                    ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                )}
+              >
+                {order.paymentMethodTag || 'Đã nhận bank'}
+              </span>
+            )}
+          </div>
+
+            <div className="text-[11px] text-muted-foreground shrink-0 font-normal">
+              Sale: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Products List Breakdown */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {order.detailedItems?.map((item, idx) => (
           <div
             key={idx}
-            className="p-2.5 rounded-xl bg-muted/20 dark:bg-zinc-800/30 border border-border/40 space-y-2 text-xs"
+            className="p-2 rounded-xl bg-muted/20 dark:bg-zinc-800/30 border border-border/40 space-y-1.5 text-xs"
           >
             {/* Product Item Line 1: Check Icon + Title + Student Tag */}
             <div className="flex items-[flex-start] justify-between gap-2 flex-wrap">
@@ -219,14 +247,24 @@ export function StudentOrderCardItem({
               {isPaymentsExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
             </button>
 
-            <div className="flex items-center gap-3 text-xs shrink-0">
+            <div className="flex items-center gap-2.5 text-xs shrink-0 flex-wrap">
               <span className="text-muted-foreground font-normal">
                 Tổng tiền đã thanh toán: <strong className="font-mono font-extrabold text-foreground">{formatCurrency(order.totalPaidAmount ?? 0)}</strong>
               </span>
-              {order.saleRep && (
-                <span className="text-muted-foreground font-normal hidden sm:inline">
-                  Sale: <strong className="font-medium text-foreground">{order.saleRep}</strong>
-                </span>
+
+              {/* + Thanh toán thêm Button (Chỉ dành cho đơn đã thanh toán 1 phần nhưng chưa hết) */}
+              {(order.totalPaidAmount ?? 0) > 0 && (order.totalPaidAmount ?? 0) < order.finalAmount && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onViewDetail(order)
+                  }}
+                  className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
+                  title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
+                >
+                  <span>+ Thanh toán thêm</span>
+                </button>
               )}
             </div>
           </div>

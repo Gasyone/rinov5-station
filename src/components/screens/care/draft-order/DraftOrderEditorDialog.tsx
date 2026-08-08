@@ -16,6 +16,7 @@ import { PRODUCT_CATALOG, type DraftOrderItem, type ChildGroup } from './draftOr
 import { ChildGroupCard, ChildProfileHoverCard, RICH_CHILD_OPTIONS } from './ChildGroupCard'
 import { DraftOrderPaymentSummary } from './DraftOrderPaymentSummary'
 import { StudentDetailDialog } from '@/components/screens/students/detail/StudentDetailDialog'
+import { AddPaymentModalDialog } from './AddPaymentModalDialog'
 
 interface DraftOrderEditorDialogProps {
   open: boolean
@@ -26,6 +27,7 @@ interface DraftOrderEditorDialogProps {
   studentAddress?: string
   existingOrder?: DetailedOrder | null
   onSaveSuccess?: (order: DetailedOrder) => void
+  onDeleteDraft?: (orderId: string) => void
 }
 
 const CHILD_POOL = [
@@ -44,13 +46,14 @@ export function DraftOrderEditorDialog({
   studentAddress = '13 Tông Đản, Phường Tràng Tiền, Quận Hoàn Kiếm, TP. Hà Nội',
   existingOrder,
   onSaveSuccess,
+  onDeleteDraft,
 }: DraftOrderEditorDialogProps) {
   // Form State: Child Groups containing items grouped by child
   const [childGroups, setChildGroups] = useState<ChildGroup[]>([
     {
       id: 'group-1',
-      childAccount: '',
-      childName: '',
+      childAccount: 'con-1',
+      childName: studentName || 'Đặng Thiên An',
       items: [
         {
           id: 'item-1',
@@ -67,15 +70,97 @@ export function DraftOrderEditorDialog({
           quantity: 1,
           unitPrice: 0,
           discount: 0,
-          childAccount: '',
+          childAccount: 'con-1',
         },
       ],
     },
   ])
 
-  const [paymentOption, setPaymentOption] = useState<'MOT_LAN' | 'NHIEU_LAN'>('MOT_LAN')
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK'>('COD')
+  // Sync primary child and order pre-fill whenever dialog opens or props change
+  React.useEffect(() => {
+    if (open) {
+      const primaryName = studentName || 'Đặng Thiên An'
+      const primaryChildOpt = RICH_CHILD_OPTIONS.find(
+        (c) =>
+          c.name.toLowerCase().includes(primaryName.toLowerCase()) ||
+          primaryName.toLowerCase().includes(c.name.split(' ')[0].toLowerCase())
+      ) || { value: 'con-1', name: primaryName }
+
+      if (existingOrder && existingOrder.detailedItems && existingOrder.detailedItems.length > 0) {
+        const firstItem = existingOrder.detailedItems[0]
+        setChildGroups([
+          {
+            id: 'group-1',
+            childAccount: primaryChildOpt.value,
+            childName: primaryChildOpt.name,
+            items: [
+              {
+                id: `item-${Date.now()}`,
+                category: 'gia_su',
+                categoryName: 'Sản phẩm gia sư',
+                isNew: false,
+                isRenewal: true,
+                program: '',
+                teacher: '',
+                packageType: firstItem.durationText || '40 buổi',
+                center: 'RinoEdu Nguyễn Tuân',
+                productCode: firstItem.productId || 'P-001',
+                productName: firstItem.productName || 'Gói học tái phí',
+                quantity: firstItem.quantity || 1,
+                unitPrice: firstItem.unitPrice || existingOrder.finalAmount || 8400000,
+                discount: 0,
+                childAccount: primaryChildOpt.value,
+              },
+            ],
+          },
+        ])
+      } else {
+        setChildGroups([
+          {
+            id: 'group-1',
+            childAccount: primaryChildOpt.value,
+            childName: primaryChildOpt.name,
+            items: [
+              {
+                id: 'item-1',
+                category: 'gia_su',
+                categoryName: 'Sản phẩm gia sư',
+                isNew: true,
+                isRenewal: false,
+                program: '',
+                teacher: '',
+                packageType: '',
+                center: '',
+                productCode: '',
+                productName: '',
+                quantity: 1,
+                unitPrice: 0,
+                discount: 0,
+                childAccount: primaryChildOpt.value,
+              },
+            ],
+          },
+        ])
+      }
+    }
+  }, [open, existingOrder, studentName])
+
+  const [paymentOption, setPaymentOption] = useState<'MOT_LAN' | 'NHIEU_LAN'>('NHIEU_LAN')
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK'>('BANK')
   const [profileStudentId, setProfileStudentId] = useState<string | null>(null)
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false)
+  const [totalPaidAmount, setTotalPaidAmount] = useState(0)
+
+  // Sync totalPaidAmount based on existingOrder when opening modal
+  React.useEffect(() => {
+    if (open) {
+      if (existingOrder && existingOrder.totalPaidAmount !== undefined) {
+        setTotalPaidAmount(existingOrder.totalPaidAmount)
+      } else {
+        setTotalPaidAmount(0)
+      }
+    }
+  }, [open, existingOrder])
 
   // List of child accounts currently assigned across all groups
   const assignedChildAccounts = useMemo(
@@ -142,6 +227,10 @@ export function DraftOrderEditorDialog({
   }
 
   const handleRemoveGroup = (groupId: string) => {
+    if (childGroups.length > 0 && childGroups[0].id === groupId) {
+      toast.error('Tài khoản con mặc định đầu tiên không thể xóa!')
+      return
+    }
     if (childGroups.length <= 1) {
       toast.error('Đơn hàng phải có ít nhất 1 nhóm sản phẩm cho con')
       return
@@ -294,6 +383,93 @@ export function DraftOrderEditorDialog({
     onOpenChange(false)
   }
 
+  const handleCreateLandingPage = () => {
+    if (allItems.length === 0) {
+      toast.error('Vui lòng thêm và chọn ít nhất 1 sản phẩm trước khi tạo Landing Page!')
+      return
+    }
+
+    const hasIncompleteItems = allItems.some(
+      (i) =>
+        !i.productName ||
+        i.productName.trim() === '' ||
+        i.productName === 'Chọn...' ||
+        !i.program ||
+        i.program.trim() === '' ||
+        i.program === 'Chọn...' ||
+        i.unitPrice <= 0
+    )
+
+    if (hasIncompleteItems) {
+      toast.error('Vui lòng chọn đầy đủ thông tin sản phẩm (Chương trình, Tên sản phẩm & Đơn giá) trước khi tạo Landing Page!')
+      return
+    }
+
+    const orderNo = existingOrder?.orderNo || existingOrder?.id || `OD-DRAFT-${Math.floor(1000 + Math.random() * 9000)}`
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    const quoteUrl = `${origin}/quote/${orderNo}`
+
+    // Build dynamic payload for Landing Page
+    const quoteChildGroups = childGroups.map((g) => ({
+      childId: g.childAccount || studentId,
+      childName: g.childAccount || studentName,
+      studentCode: g.childAccount || studentId,
+      accountPhone: studentPhone,
+      branch: 'RinoEdu Nguyễn Tuân',
+      items: g.items.map((i, idx) => ({
+        id: i.id || `item-${idx}`,
+        productName: i.productName || i.program || 'Sản phẩm học tập',
+        orderType: i.isRenewal ? 'Gia hạn gói học' : 'Mua mới',
+        durationText: i.packageType || '40 buổi học (Gia sư 1:1)',
+        giftText: i.category === 'combo' ? 'Tặng 1 Bảng vẽ điện tử Canva & 1 Bộ Giáo trình Digital' : 'Tặng 1 x [IELTS] Khóa 5.0 nâng cao',
+        unitPrice: i.unitPrice,
+        quantity: i.quantity,
+      })),
+    }))
+
+    const quoteData = {
+      quoteNo: orderNo,
+      createdDate: new Date().toLocaleDateString('vi-VN'),
+      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN'),
+      customer: {
+        parentName: studentName,
+        role: 'Phụ huynh học viên',
+        phone: studentPhone,
+        email: `${studentPhone.replace(/\D/g, '')}@gmail.com`,
+        address: studentAddress || 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+      },
+      delivery: {
+        recipientName: `${studentName} - ${studentPhone}`,
+        address: studentAddress || 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+      },
+      branch: {
+        centerName: 'RinoEdu Nguyễn Tuân',
+        csmName: 'Trần Nguyễn CSM',
+        csmPhone: '0903.279.888',
+      },
+      childGroups: quoteChildGroups,
+      subtotalAmount,
+      totalDiscount,
+      finalAmount,
+    }
+
+    // Save to localStorage so DraftQuoteLandingScreen receives dynamic data!
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`quote_data_${orderNo}`, JSON.stringify(quoteData))
+      localStorage.setItem('latest_quote_data', JSON.stringify(quoteData))
+    }
+
+    // Trigger order save
+    handleSaveOrder()
+
+    // Copy link & Open Landing Page in new tab
+    navigator.clipboard.writeText(quoteUrl)
+    toast.success('Đã tạo và mở trang Landing Page Báo Giá!', {
+      description: quoteUrl,
+    })
+    window.open(quoteUrl, '_blank')
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false} className="w-[98vw] sm:max-w-[1440px] h-[90vh] flex flex-col p-0 gap-0 bg-zinc-50 dark:bg-zinc-950 text-foreground border border-border rounded-xl shadow-2xl overflow-hidden">
@@ -420,11 +596,12 @@ export function DraftOrderEditorDialog({
 
               {/* Child Groups Cards List */}
               <div className="space-y-4">
-                {childGroups.map((group) => (
+                {childGroups.map((group, index) => (
                   <ChildGroupCard
                     key={group.id}
                     group={group}
                     assignedChildAccounts={assignedChildAccounts}
+                    canRemoveGroup={index > 0}
                     onUpdateGroupChild={handleUpdateGroupChild}
                     onRemoveGroup={handleRemoveGroup}
                     onAddItemToGroup={handleAddItemToGroup}
@@ -443,22 +620,42 @@ export function DraftOrderEditorDialog({
                 subtotalAmount={subtotalAmount}
                 totalDiscount={totalDiscount}
                 finalAmount={finalAmount}
+                totalPaidAmount={totalPaidAmount}
                 paymentOption={paymentOption}
                 setPaymentOption={setPaymentOption}
                 paymentMethod={paymentMethod}
                 setPaymentMethod={setPaymentMethod}
                 onSubmit={handleSaveOrder}
+                onCreateLandingPage={handleCreateLandingPage}
+                onAddPaymentMore={() => setIsAddPaymentOpen(true)}
+                onCancelRemaining={() => toast.info('Đã hủy phần nợ còn lại của đơn hàng!')}
+                isEditing={!!existingOrder}
+                orderNo={existingOrder?.orderNo || existingOrder?.id}
               />
             </div>
           </div>
         </div>
       </DialogContent>
 
-      {/* Existing Student Detail Profile Modal Call */}
+      {/* Student Detail Profile Modal Call */}
       <StudentDetailDialog
         studentId={profileStudentId}
         open={!!profileStudentId}
         onOpenChange={(open) => !open && setProfileStudentId(null)}
+      />
+
+      {/* Add Additional Payment Record Modal Call */}
+      <AddPaymentModalDialog
+        open={isAddPaymentOpen}
+        onOpenChange={setIsAddPaymentOpen}
+        orderNo={existingOrder?.orderNo || 'OD793011'}
+        remainingAmount={Math.max(0, finalAmount - totalPaidAmount)}
+        onAddPayment={(amount, method, note) => {
+          setTotalPaidAmount((prev) => prev + amount)
+          toast.success(`Đã ghi nhận giao dịch thanh toán thêm ${formatCurrency(amount)} (${method}) thành công!`, {
+            description: `Mã phiếu thu: ${note}`,
+          })
+        }}
       />
     </Dialog>
   )

@@ -101,8 +101,8 @@ export function HistoryLogCardItem({
           <span
             className={
               isGV
-                ? 'px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-950 dark:text-purple-300'
-                : 'px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300'
+                ? 'text-[11px] font-extrabold text-purple-700 dark:text-purple-400 shrink-0'
+                : 'text-[11px] font-extrabold text-sky-700 dark:text-sky-400 shrink-0'
             }
           >
             {isGV ? 'GV' : 'CS'}
@@ -117,7 +117,7 @@ export function HistoryLogCardItem({
           <span className="text-[11px] text-muted-foreground font-normal truncate">
             • {effectiveChannel}: {effectiveRecipient}
           </span>
-          <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
+          <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100/70 dark:bg-zinc-800/60 px-1.5 py-0.5 rounded-md shrink-0">
             {effectiveDate}
           </span>
         </div>
@@ -131,7 +131,7 @@ export function HistoryLogCardItem({
       </div>
 
       {/* Card Content Box */}
-      <div className="rounded-lg border border-sky-200/70 dark:border-sky-900/50 bg-sky-50/30 dark:bg-sky-950/20 p-1.5 space-y-1 text-xs text-left shadow-2xs">
+      <div className="rounded-lg border border-slate-200/60 dark:border-zinc-800/60 bg-slate-50/30 dark:bg-zinc-900/20 p-2 space-y-1 text-xs text-left">
         {/* Continuous Stream: Audio (if any) + Notes + Parent Feedback Label & Text */}
         <div className="text-xs text-foreground/90 font-normal leading-relaxed">
           {log.audioDuration && (

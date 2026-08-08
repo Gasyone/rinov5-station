@@ -1,6 +1,6 @@
-'use client'
-
 import React, { useMemo, useState, useCallback } from 'react'
+import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { type Order } from '@/mocks/orders'
 import { OrderDetailDialog } from '@/components/screens/orders/OrderDetailDialog'
 import { DraftOrderEditorDialog } from './DraftOrderEditorDialog'
@@ -36,51 +36,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const [editingDraftOrder, setEditingDraftOrder] = useState<DetailedOrder | null>(null)
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null)
 
-  const [customDraftOrders, setCustomDraftOrders] = useState<DetailedOrder[]>([
-    {
-      id: 'OD-DRAFT-8849',
-      orderNo: 'OD-DRAFT-8849',
-      studentId: studentId,
-      studentName: studentName,
-      items: [
-        {
-          productId: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_72 buổi',
-          productName: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_72 buổi',
-          quantity: 1,
-          unitPrice: 21600000,
-          subtotal: 19440000,
-        },
-      ],
-      totalAmount: 21600000,
-      discountAmount: 2160000,
-      finalAmount: 19440000,
-      paymentMethod: 'cash',
-      paymentStatus: 'unpaid',
-      status: 'pending',
-      branch: 'Chi nhánh Tràng Tiền - Hà Nội',
-      saleBy: 'Trần Nguyễn CSM',
-      createdAt: new Date().toISOString(),
-      paymentMethodTag: 'COD / Đơn nháp',
-      totalPaidAmount: 0,
-      saleRep: 'Trần Nguyễn CSM',
-      saleDate: new Date().toLocaleDateString('vi-VN'),
-      detailedItems: [
-        {
-          productId: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_72 buổi',
-          productName: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_72 buổi',
-          quantity: 1,
-          unitPrice: 21600000,
-          subtotal: 19440000,
-          studentName: studentName,
-          orderType: 'Gia hạn',
-          durationText: '72 buổi',
-        },
-      ],
-      sourceOrderNo: 'OD800436',
-      sourcePackageName: '[IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi',
-      payments: [],
-    },
-  ])
+  const [customDraftOrders, setCustomDraftOrders] = useState<DetailedOrder[]>([])
 
   const initialOrders = useMemo(() => getStudentOrders(studentId, studentName), [studentId, studentName])
   const transfers = useMemo(() => getFeeTransfers(studentId, studentName), [studentId, studentName])
@@ -91,7 +47,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   }, [customDraftOrders, initialOrders])
 
   const isDraftOrder = useCallback((order: DetailedOrder): boolean => {
-    return order.status === 'pending' || order.id.includes('DRAFT') || order.paymentMethodTag?.includes('Đơn nháp') || false
+    return order.id.includes('DRAFT') || order.orderNo.includes('DRAFT') || order.paymentMethodTag?.includes('Đơn nháp') || false
   }, [])
 
   const isCurrentPackageOrder = useCallback(
@@ -180,10 +136,10 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
         payments: [],
       }
 
+      sourceOrder.linkedDraftOrderNo = draftId
       setCustomDraftOrders((prev) => [newDraft, ...prev])
       setEditingDraftOrder(newDraft)
       setIsDraftEditorOpen(true)
-      toast.success(`Khởi tạo đơn nháp tái phí từ gói ${sourceNo}`)
     },
     [studentId, studentName]
   )
@@ -191,7 +147,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const handleDeleteDraftOrder = useCallback((orderId: string) => {
     setCustomDraftOrders((prev) => prev.filter((o) => o.id !== orderId))
     setDeletingDraftId(null)
-    toast.success('Đã xóa đơn nháp gia hạn')
+    toast.success('Đã xóa đơn hàng')
   }, [])
 
   const handleSaveDraftSuccess = useCallback((newOrder: DetailedOrder) => {
@@ -221,52 +177,34 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
 
   return (
     <div className="space-y-5 text-left select-none">
-      {/* ── SECTION 1: GÓI NHÁP ── */}
-      {draftOrders.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-0.5 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-              <span>Gói nháp</span>
-              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-[11px] font-mono font-bold">
-                {draftOrders.length}
-              </span>
-            </div>
-            <span className="text-[11px] font-normal text-muted-foreground italic">
-              (Đơn gia hạn đang lập & chờ duyệt)
-            </span>
-          </div>
-          <div className="space-y-3.5">
-            {draftOrders.map((order) => (
-              <StudentOrderCardItem
-                key={order.id}
-                order={order}
-                isDraft={true}
-                isCurrent={false}
-                isPaymentsExpanded={expandedPayments[order.id] ?? false}
-                onToggleExpandPayments={toggleExpandPayments}
-                onViewDetail={handleViewDetail}
-                onCreateDraftFromPackage={handleCreateDraftFromPackage}
-                onDeleteDraft={(orderId) => setDeletingDraftId(orderId)}
-                onScrollToOrder={scrollToOrder}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── SECTION 2: GÓI HIỆN TẠI ── */}
+      {/* ── SECTION: GÓI HIỆN TẠI + NÚT TẠO ĐƠN TRÊN CÙNG ── */}
       {currentOrders.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between py-0.5 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
-              <span>Gói hiện tại</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[11px] font-mono font-bold">
-                {currentOrders.length}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+                <span>Gói hiện tại</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[11px] font-mono font-bold">
+                  {currentOrders.length}
+                </span>
+              </div>
+              <span className="text-[11px] font-normal text-muted-foreground italic hidden sm:inline">
+                (Gói học đang áp dụng & sắp tái phí)
               </span>
             </div>
-            <span className="text-[11px] font-normal text-muted-foreground italic">
-              (Gói học đang áp dụng & sắp tái phí)
-            </span>
+
+            {/* Button Tạo đơn ở trên cùng, bên phải cùng dòng với Gói hiện tại */}
+            <Button
+              type="button"
+              onClick={() => {
+                setEditingDraftOrder(null)
+                setIsDraftEditorOpen(true)
+              }}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Tạo đơn</span>
+            </Button>
           </div>
           <div className="space-y-3.5">
             {currentOrders.map((order) => (
@@ -276,6 +214,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
                 isDraft={false}
                 isCurrent={true}
                 isPaymentsExpanded={expandedPayments[order.id] ?? false}
+                draftOrders={draftOrders}
                 onToggleExpandPayments={toggleExpandPayments}
                 onViewDetail={handleViewDetail}
                 onCreateDraftFromPackage={handleCreateDraftFromPackage}
@@ -308,6 +247,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
                 isDraft={false}
                 isCurrent={false}
                 isPaymentsExpanded={expandedPayments[order.id] ?? false}
+                draftOrders={draftOrders}
                 onToggleExpandPayments={toggleExpandPayments}
                 onViewDetail={handleViewDetail}
                 onCreateDraftFromPackage={handleCreateDraftFromPackage}
@@ -363,6 +303,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
         studentName={studentName}
         existingOrder={editingDraftOrder}
         onSaveSuccess={handleSaveDraftSuccess}
+        onDeleteDraft={(orderId) => setDeletingDraftId(orderId)}
       />
 
       {/* Confirm Delete Draft Dialog */}

@@ -392,9 +392,6 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                                     : 'Học viên nghỉ học 2 buổi liên tiếp không xin phép'
                                 }
                               />
-                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300">
-                                📅 Hẹn gọi lại: {historyLog.date.split(' ')[0]} 14:00
-                              </span>
                             </div>
 
                             {/* Audio Player */}

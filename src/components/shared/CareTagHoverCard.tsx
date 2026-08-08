@@ -123,7 +123,7 @@ export function CareTagHoverCard({
   code,
   label,
   fullLabel,
-  colorClass = 'bg-purple-50 text-purple-700 border-purple-200/80 dark:bg-purple-950/40 dark:text-purple-400',
+  colorClass = 'bg-purple-50/40 text-purple-700 border-purple-200/50 dark:bg-purple-950/20 dark:text-purple-300',
   description,
   configRule,
   realDataIssue,
@@ -154,20 +154,9 @@ export function CareTagHoverCard({
             )}
           >
             <span>{label || code}</span>
-            <div className="flex items-center gap-0.5 shrink-0">
-              {assignees.includes('CS') && (
-                <Avatar className="h-4.5 w-4.5 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[8px] font-bold">
-                  <AvatarImage src="https://api.dicebear.com/7.x/adventurer/svg?seed=CS" alt="CS" />
-                  <AvatarFallback className="bg-emerald-600 text-white font-bold text-[7px]">CS</AvatarFallback>
-                </Avatar>
-              )}
-              {assignees.includes('GV') && (
-                <Avatar className="h-4.5 w-4.5 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[8px] font-bold">
-                  <AvatarImage src="https://api.dicebear.com/7.x/adventurer/svg?seed=GV" alt="GV" />
-                  <AvatarFallback className="bg-purple-600 text-white font-bold text-[7px]">GV</AvatarFallback>
-                </Avatar>
-              )}
-            </div>
+            <span className="text-[10px] font-bold opacity-85 shrink-0 ml-0.5">
+              {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
+            </span>
           </Badge>
         )}
       </HoverCardTrigger>

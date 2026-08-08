@@ -213,14 +213,6 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                   {/* Collapsible Inner Card (CLOSED BY DEFAULT) */}
                   {isOpen && (
                     <div className="rounded-lg border border-border bg-background p-1.5 space-y-1 text-xs text-left shadow-2xs animate-in fade-in-50 duration-150">
-                      {/* Appointment Badge */}
-                      {isCall && (
-                        <div className="flex items-center justify-end">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300">
-                            📅 Hẹn gọi lại: {logItem.date.split(' ')[0]} 14:00
-                          </span>
-                        </div>
-                      )}
 
                       {/* Continuous Stream: Audio + Note + Parent Feedback Label & Text */}
                       <div className="text-xs text-foreground/90 leading-relaxed font-normal">

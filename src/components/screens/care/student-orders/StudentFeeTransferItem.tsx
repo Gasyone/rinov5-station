@@ -12,9 +12,9 @@ interface StudentFeeTransferItemProps {
 
 export function StudentFeeTransferItem({ transfer: tf, onScrollToOrder }: StudentFeeTransferItemProps) {
   return (
-    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none">
+    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-2.5 shadow-2xs space-y-2.5 text-left select-none overflow-hidden">
       {/* Transfer Card Header */}
-      <div className="flex items-center justify-between gap-2 flex-wrap p-2.5 bg-muted/40 dark:bg-zinc-800/30 rounded-xl text-xs">
+      <div className="flex items-center justify-between gap-2 flex-wrap -mx-2.5 -mt-2.5 px-3 py-2 bg-muted/40 dark:bg-zinc-800/40 rounded-t-2xl border-b border-border/20 text-xs">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shrink-0">
             🔄 Chuyển phí

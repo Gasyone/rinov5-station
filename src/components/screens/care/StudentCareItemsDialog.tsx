@@ -119,26 +119,9 @@ export function StudentCareItemsDialog({
                         </>
                       )}
                       <span className="font-extrabold tracking-wide text-[11.5px]">{tag.label}</span>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {assignees.includes('CS') && (
-                          <Avatar
-                            className="h-6 w-6 shrink-0 border border-emerald-500/50 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] font-bold shadow-3xs"
-                            title="Phụ trách: Chuyên viên CS (CSM)"
-                          >
-                            <AvatarImage src="https://api.dicebear.com/7.x/adventurer/svg?seed=CS" alt="CS" />
-                            <AvatarFallback className="bg-emerald-600 text-white font-extrabold text-[8px]">CS</AvatarFallback>
-                          </Avatar>
-                        )}
-                        {assignees.includes('GV') && (
-                          <Avatar
-                            className="h-6 w-6 shrink-0 border border-purple-500/50 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[9px] font-bold shadow-3xs"
-                            title="Phụ trách: Giáo viên (GV)"
-                          >
-                            <AvatarImage src="https://api.dicebear.com/7.x/adventurer/svg?seed=GV" alt="GV" />
-                            <AvatarFallback className="bg-purple-600 text-white font-extrabold text-[8px]">GV</AvatarFallback>
-                          </Avatar>
-                        )}
-                      </div>
+                      <span className="text-[10.5px] font-bold text-muted-foreground shrink-0 ml-1" title={`Phụ trách: ${assignees.join(' · ')}`}>
+                        {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
+                      </span>
                     </Badge>
                   </CareTagHoverCard>
 

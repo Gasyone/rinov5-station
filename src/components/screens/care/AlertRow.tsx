@@ -111,7 +111,7 @@ function getCareTagFullLabel(tag: CareTag): string {
 export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh, onViewDetail, onOpenRoadmapModal }: AlertRowProps) {
   const { user } = useAuthStore()
   const currentRole = user?.role || 'csm'
-  const showTagsInColumn = currentRole === 'branch_manager' || currentRole === 'admin'
+  const showTagsInColumn = true
 
   // Family contacts
   const contacts = getFamilyContacts(cls.studentId, cls.studentName)
@@ -188,26 +188,9 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
             </>
           )}
           <span className="font-semibold text-xs">{tag.label}</span>
-          <div className="flex items-center gap-1 shrink-0">
-            {assignees.includes('CS') && (
-              <Avatar
-                className="h-6.5 w-6.5 shrink-0 border border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] font-bold"
-                title={cls.csStaff ? `CS phụ trách: ${cls.csStaff}` : 'Phụ trách: Chuyên viên CS (CSM)'}
-              >
-                <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${cls.csStaff || 'CS'}`} alt={cls.csStaff || 'CS'} />
-                <AvatarFallback className="bg-emerald-600 text-white font-bold text-[8px]">CS</AvatarFallback>
-              </Avatar>
-            )}
-            {assignees.includes('GV') && (
-              <Avatar
-                className="h-6.5 w-6.5 shrink-0 border border-purple-500/30 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[9px] font-bold"
-                title={cls.teacherCode ? `GV phụ trách: ${cls.teacherCode}` : 'Phụ trách: Giáo viên (GV)'}
-              >
-                <AvatarImage src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${cls.teacherCode || 'GV'}`} alt={cls.teacherCode || 'GV'} />
-                <AvatarFallback className="bg-purple-600 text-white font-bold text-[8px]">GV</AvatarFallback>
-              </Avatar>
-            )}
-          </div>
+          <span className="text-[10px] font-bold opacity-85 shrink-0 ml-0.5" title={`Phụ trách: ${assignees.join(' · ')}`}>
+            {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
+          </span>
         </Badge>
       </CareTagHoverCard>
     )
@@ -585,13 +568,13 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) */}
               <div className="text-[10px] font-mono">
                 {isCompleted ? (
-                  <span className="text-muted-foreground">Gần nhất: {latestDate}</span>
+                  <span className="text-muted-foreground font-normal">Gần nhất: {latestDate}</span>
                 ) : isOverdueAlert ? (
-                  <span className="text-red-600 dark:text-red-400 font-bold">Quá hạn: {slaDeadline}</span>
+                  <span className="text-red-600 dark:text-red-400 font-normal">Quá hạn: {slaDeadline}</span>
                 ) : isDueTodayAlert ? (
-                  <span className="text-amber-600 dark:text-amber-400 font-semibold">Đến hạn: {slaDeadline}</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-normal">Đến hạn: {slaDeadline}</span>
                 ) : (
-                  <span className="text-muted-foreground">Hạn: {slaDeadline}</span>
+                  <span className="text-muted-foreground font-normal">Hạn: {slaDeadline}</span>
                 )}
               </div>
 

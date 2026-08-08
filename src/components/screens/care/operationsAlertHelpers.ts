@@ -328,17 +328,11 @@ export function getCareTagAssignees(tag: CareTag): ('CS' | 'GV')[] {
     return tag.assignees
   }
   const code = (tag.label || '').trim().toUpperCase()
-  if (code.startsWith('ĐB')) {
-    return ['CS']
-  }
-  if (code === 'CSCĐ') {
+  if (code.startsWith('ĐB') || code === 'TB1' || code === 'TB2' || code === 'CSCĐ') {
     return ['CS', 'GV']
   }
-  if (code === 'ĐK1' || code === 'TB2') {
+  if (code === 'ĐK1') {
     return ['GV']
-  }
-  if (code === 'ĐK2' || code === 'TB1' || code === 'CSTP') {
-    return ['CS']
   }
   return ['CS']
 }
@@ -540,7 +534,18 @@ export function hasActiveTags(item: StudentCareAlert): boolean {
 }
 
 export const isCared = (item: StudentCareAlert): boolean => {
-  return item.callConfirmation === 'Đã gọi' || item.callConfirmation === 'Đã nhắn Zalo' || item.callConfirmation === 'Đã tương tác' || item.callConfirmation === 'Đã gặp trực tiếp'
+  if (!item) return false
+  const statusStr = (item.status || '').toLowerCase()
+  return (
+    item.callConfirmation === 'Đã gọi' ||
+    item.callConfirmation === 'Đã nhắn Zalo' ||
+    item.callConfirmation === 'Đã tương tác' ||
+    item.callConfirmation === 'Đã gặp trực tiếp' ||
+    statusStr === 'da_cham_soc' ||
+    statusStr === 'completed' ||
+    statusStr === 'hoàn thành' ||
+    statusStr === 'đã chăm sóc'
+  )
 }
 
 export const isOverdue = (item: StudentCareAlert): boolean => {
