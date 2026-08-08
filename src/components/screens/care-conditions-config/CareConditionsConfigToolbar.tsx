@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Plus, Download } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusTiles, StatusTile } from '@/components/shared'
 import { ToolbarSelect, ExpandableSearch } from '@/components/controls'
@@ -14,7 +14,6 @@ interface CareConditionsConfigToolbarProps {
   statusTiles: StatusTile<string>[]
   totalCount: number
   onOpenCreateDialog: () => void
-  onExportData: () => void
 }
 
 export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarProps> = ({
@@ -22,7 +21,6 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
   onFilterChange,
   statusTiles,
   onOpenCreateDialog,
-  onExportData,
 }) => {
   return (
     <div className="flex flex-col gap-2 py-0.5 shrink-0">
@@ -56,7 +54,7 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
             options={[
               { value: 'all', label: 'Tất cả Vai trò', selectedLabel: 'Tất cả Vai trò' },
               { value: 'CS', label: 'CS (Chuyên viên CS)' },
-              { value: 'GV', label: 'GV (Giáo viên chủ nhiệm)' },
+              { value: 'GV', label: 'Giáo viên (GV)' },
             ]}
             onValueChange={(val) => onFilterChange({ ...filters, primaryRole: val })}
             className="h-8 text-xs min-w-[140px]"
@@ -86,17 +84,6 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
             onValueChange={(val) => onFilterChange({ ...filters, search: val })}
             placeholder="Tìm theo Mã hoặc Tên..."
           />
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onExportData}
-            className="h-8 text-xs font-medium gap-1.5 cursor-pointer shadow-2xs border-border"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>Xuất dữ liệu</span>
-          </Button>
 
           <Button
             type="button"

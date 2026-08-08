@@ -26,6 +26,7 @@ export interface EnrolledClass {
 export interface Student {
   id: string
   name: string
+  englishName?: string
   email: string
   phone?: string
   avatar?: string
@@ -68,6 +69,7 @@ export const mockStudents: Student[] = [
   {
     id: "s1",
     name: "Nguyễn An",
+    englishName: "Alex",
     email: "an@email.com",
     phone: "0911111111",
     gender: "Male",
@@ -132,6 +134,7 @@ export const mockStudents: Student[] = [
   {
     id: "s2",
     name: "Trần Bình",
+    englishName: "Bella",
     email: "binh@email.com",
     phone: "0933333333",
     gender: "Female",
@@ -154,6 +157,7 @@ export const mockStudents: Student[] = [
   {
     id: "s3",
     name: "Lê Chi",
+    englishName: "Chloe",
     email: "chi@email.com",
     phone: "0955555555",
     gender: "Female",

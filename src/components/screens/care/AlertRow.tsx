@@ -248,8 +248,8 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
             </div>
             <div className="min-w-0 space-y-0.5">
               <div className="flex items-center gap-1">
-                <span className="font-bold text-foreground text-xs truncate hover:underline hover:text-primary" title={cls.studentName}>
-                  {cls.studentName}
+                <span className="font-bold text-foreground text-xs truncate hover:underline hover:text-primary" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
+                  {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
                 </span>
               </div>
               <div className="text-[10px] text-muted-foreground font-medium">

@@ -207,6 +207,7 @@ export function RenewalScreen() {
       const q = searchQuery.toLowerCase().trim()
       res = res.filter((item) => 
         item.studentName.toLowerCase().includes(q) ||
+        (item.englishName && item.englishName.toLowerCase().includes(q)) ||
         item.studentId.includes(q) ||
         item.classCode.toLowerCase().includes(q) ||
         item.teacherCode.toLowerCase().includes(q) ||

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   BookOpen,
   CheckCircle2,
@@ -26,7 +27,9 @@ import {
   HeartHandshake,
   Info,
   FolderOpen,
+  LayoutDashboard,
 } from 'lucide-react'
+import { ClassesSessionOverviewTab } from './ClassesSessionOverviewTab'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -104,7 +107,7 @@ export function ClassesSessionDetailDialog({
   const [selectedCareStudentId, setSelectedCareStudentId] = useState<string | null>(null)
   const [isCareOnlyFilter, setIsCareOnlyFilter] = useState(false)
   const [isClassDetailOpen, setIsClassDetailOpen] = useState(false)
-  const [leftPanelTab, setLeftPanelTab] = useState<'roster' | 'media'>('roster')
+  const [leftPanelTab, setLeftPanelTab] = useState<'overview' | 'roster' | 'media'>('overview')
 
   // ── Missing comments check for closing warning ──
   const [showWarning, setShowWarning] = useState(false)
@@ -288,19 +291,7 @@ export function ClassesSessionDetailDialog({
   }
 
   // ── English Unit Test Warning Modal state ──
-  const [prevSessionId, setPrevSessionId] = useState(session.id)
-  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
-  const [showUnitTestWarning, setShowUnitTestWarning] = useState(() => {
-    return isOpen && isEnglish && isTestSession
-  })
-
-  if (session.id !== prevSessionId || isOpen !== prevIsOpen) {
-    setPrevSessionId(session.id)
-    setPrevIsOpen(isOpen)
-    if (isOpen && isEnglish && isTestSession) {
-      setShowUnitTestWarning(true)
-    }
-  }
+  const [showUnitTestWarning, setShowUnitTestWarning] = useState(false)
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseAttempt()}>
@@ -356,23 +347,36 @@ export function ClassesSessionDetailDialog({
                   <DropdownMenuItem
                     key={s.id}
                     onClick={() => navigateTo(idx)}
-                    className={`flex flex-col items-start gap-1 p-2 rounded-lg cursor-pointer ${
+                    className={cn(
+                      'flex flex-col items-start gap-1 p-2 rounded-lg cursor-pointer transition-all my-0.5 group',
                       s.id === currentSessionId
-                        ? 'bg-zinc-100 dark:bg-zinc-800 font-medium'
-                        : 'hover:bg-zinc-50 dark:hover:bg-zinc-900'
-                    }`}
+                        ? 'bg-sky-50 dark:bg-sky-950/80 border border-sky-300 dark:border-sky-700 shadow-2xs'
+                        : 'hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 border border-transparent'
+                    )}
                   >
                     <div className="flex items-center justify-between w-full text-xs">
-                      <span className="font-bold text-foreground truncate max-w-[240px]">
+                      <span className={cn(
+                        'truncate me-1.5 transition-all',
+                        s.id === currentSessionId
+                          ? 'text-primary dark:text-sky-400 font-bold'
+                          : 'text-foreground font-normal group-hover:font-semibold'
+                      )}>
                         Buổi {s.sessionNumber}: {s.topic}
                       </span>
-                      <Badge variant="outline" className={`rounded-full text-[9px] font-bold px-1.5 py-0 scale-90 shrink-0 ${
-                        s.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(s.status)
-                      }`}>
-                        {getSessionStatusLabel(s.status)}
-                      </Badge>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {s.id === currentSessionId && (
+                          <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-1.5 py-0 rounded-md border-none shrink-0">
+                            Đang xem
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className={`rounded-full text-[9px] font-bold px-1.5 py-0 scale-90 shrink-0 ${
+                          s.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(s.status)
+                        }`}>
+                          {getSessionStatusLabel(s.status)}
+                        </Badge>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-mono">
+                    <span className="text-[10px] text-muted-foreground font-mono font-normal">
                       {s.date} ({s.startTime}–{s.endTime})
                     </span>
                   </DropdownMenuItem>
@@ -466,8 +470,21 @@ export function ClassesSessionDetailDialog({
               </div>
             )}
 
-            {/* ── LEFT PANEL TABS: HỌC VIÊN & TÀI LIỆU & MEDIA (KIỂU TAB DETAIL LỚP HỌC) ── */}
+            {/* ── LEFT PANEL TABS: TỔNG QUAN, HỌC VIÊN & TÀI LIỆU & MEDIA ── */}
             <div className="shrink-0 flex items-center justify-start gap-1 bg-zinc-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 w-fit">
+              <button
+                type="button"
+                onClick={() => setLeftPanelTab('overview')}
+                className={`h-7 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  leftPanelTab === 'overview'
+                    ? 'bg-white dark:bg-zinc-900 text-foreground font-bold shadow-2xs'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground'
+                }`}
+              >
+                <LayoutDashboard className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span>Tổng quan</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setLeftPanelTab('roster')}
@@ -503,7 +520,17 @@ export function ClassesSessionDetailDialog({
             </div>
 
             {/* Tab Content Container */}
-            {leftPanelTab === 'roster' ? (
+            {leftPanelTab === 'overview' ? (
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-1">
+                <ClassesSessionOverviewTab
+                  session={session}
+                  activeRoster={activeRoster}
+                  getAttendance={getAttendance}
+                  onSwitchTab={(tab) => setLeftPanelTab(tab)}
+                  setIsBulkFeedbackOpen={setIsBulkFeedbackOpen}
+                />
+              </div>
+            ) : leftPanelTab === 'roster' ? (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ClassesSessionAttendanceTab
                   activeRoster={activeRoster}

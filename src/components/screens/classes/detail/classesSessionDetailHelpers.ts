@@ -258,12 +258,20 @@ export function getLessonsForRoadmapSession(session: RoadmapSession) {
     }
   })
 
+  const fallbackComponents = [
+    { name: `Slide bài giảng ${session.topic}`, type: 'slide' as const, url: '#' },
+    { name: `Bài tập rèn luyện tự học Buổi ${session.sessionNumber}`, type: 'homework' as const, url: '#' },
+    { name: `Bài kiểm tra đánh giá năng lực Buổi ${session.sessionNumber}`, type: 'quiz' as const, url: '#' },
+  ]
+
+  const finalComponents = components.length > 0 ? components : fallbackComponents
+
   const primaryLesson = {
     id: session.id,
     lessonNumber: session.sessionNumber,
     title: session.topic,
     description: session.description || '',
-    components
+    components: finalComponents,
   }
 
   // If session.sessionNumber is 3 or 5, return two lessons to show "2 bài trong 1 buổi"
@@ -488,3 +496,52 @@ export function isSessionPast(sessionDate?: string, sessionStartTime?: string, s
   const now = new Date()
   return now > sessionEndDate
 }
+
+export interface SessionSyllabusContent {
+  words?: string[]
+  sentences?: string[]
+  phonics?: string[]
+  grammar?: string[]
+}
+
+export function getSessionSyllabusContent(session: RoadmapSession): SessionSyllabusContent {
+  const num = session.sessionNumber
+  const topic = session.topic || ''
+
+  if (topic.toLowerCase().includes('reading') || topic.toLowerCase().includes('skimming')) {
+    return {
+      words: ['Skimming, Scanning, Keyword, Main idea, Paragraph, Inference'],
+      sentences: ['What is the main topic of the passage?', 'According to paragraph 2, which statement is TRUE?'],
+      grammar: ['Relative clauses with Who/Which/That'],
+    }
+  }
+
+  if (topic.toLowerCase().includes('speaking') || topic.toLowerCase().includes('cue card')) {
+    return {
+      words: ['Fluency, Coherence, Cue card, Monologue, Intonation, Pronunciation'],
+      sentences: ['I would like to talk about a memorable experience...', 'The main reason why I prefer this is...'],
+      phonics: ['Stress patterns in multi-syllable words / Intonation patterns'],
+    }
+  }
+
+  if (num % 3 === 1) {
+    return {
+      words: ['hello, goodbye, sing, stand up, sit down, thank you'],
+      sentences: ['How are you? I\'m fine. Thank you.'],
+      phonics: ['Aa: alligator, ant, apple / Bb: bear, bird, banana'],
+    }
+  } else if (num % 3 === 2) {
+    return {
+      words: ['pencil, eraser, notebook, classroom, teacher, student'],
+      sentences: ['What is this? It\'s a pencil.', 'Where is your notebook?'],
+      grammar: ['Demonstrative pronouns (This / That / These / Those)'],
+    }
+  } else {
+    return {
+      words: ['family, father, mother, brother, sister, grandparents'],
+      sentences: ['Who is he? He is my father.', 'How many people are there in your family?'],
+      phonics: ['Cc: cat, cup, car / Dd: dog, duck, door'],
+    }
+  }
+}
+

@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import type { RosterStudent } from './classesDetailTypes'
 import { getInitials } from './classesSessionDetailHelpers'
+import { getStudentNameParts } from './classesDetailHelpers'
 import { ClassesSemesterEvaluationTable } from './ClassesSemesterEvaluationTable'
 import {
   type SemesterStudentEval,
@@ -240,7 +241,18 @@ export function ClassesSemesterEvaluationDialog({
                             {initials}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-semibold leading-tight">{student.name}</p>
+                            {(() => {
+                              const np = getStudentNameParts(student)
+                              if (np.hasEnglishName) {
+                                return (
+                                  <div className="flex flex-col min-w-0 leading-tight">
+                                    <span className="truncate font-bold text-xs">{np.englishName}</span>
+                                    <span className="truncate text-[11px] text-muted-foreground font-normal">{np.vietnameseName}</span>
+                                  </div>
+                                )
+                              }
+                              return <p className="truncate font-semibold leading-tight">{np.vietnameseName}</p>
+                            })()}
                             <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{student.code}</p>
                           </div>
                         </div>

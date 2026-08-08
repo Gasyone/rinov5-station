@@ -22,6 +22,10 @@ interface StandardRulesProps {
   setWindowType: (wt: string) => void
   customSessionCount: number
   setCustomSessionCount: (cnt: number) => void
+  customSessionNumbersText?: string
+  setCustomSessionNumbersText?: (val: string) => void
+  customDaysText?: string
+  setCustomDaysText?: (val: string) => void
   scope: string
   setScope: (sc: string) => void
 }
@@ -39,15 +43,17 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
   setWindowType,
   customSessionCount,
   setCustomSessionCount,
+  customSessionNumbersText = '1; 5; 10',
+  setCustomSessionNumbersText,
+  customDaysText = '1; 15; 25',
+  setCustomDaysText,
   scope,
   setScope,
 }) => {
   // Local states for dynamic week & weekday selection
   const [selectedWeek, setSelectedWeek] = useState<string>('tuan_1')
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<string>('thu_2')
-  const [customDaysText, setCustomDaysText] = useState<string>('1; 15; 25')
   const [customHolidayText, setCustomHolidayText] = useState<string>('01/06; 20/11')
-  const [customSessionNumbersText, setCustomSessionNumbersText] = useState<string>('1; 5; 10')
 
   const getActivationBadgeInfo = (wType: string, src: string) => {
     if (src === 'periodic_time') {
@@ -261,7 +267,7 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
             <FieldLabel label="Danh sách mốc ngày trong tháng (VD: 1; 15; 25)">
               <Input
                 value={customDaysText}
-                onChange={(e) => setCustomDaysText(e.target.value)}
+                onChange={(e) => setCustomDaysText?.(e.target.value)}
                 placeholder="Nhập mốc ngày, cách nhau bởi dấu ; (VD: 1; 15; 25)"
                 className="h-8 text-xs font-mono font-bold"
               />
@@ -339,7 +345,7 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
             <FieldLabel label="Danh sách mốc số thứ tự buổi học (VD: 1; 5; 10)">
               <Input
                 value={customSessionNumbersText}
-                onChange={(e) => setCustomSessionNumbersText(e.target.value)}
+                onChange={(e) => setCustomSessionNumbersText?.(e.target.value)}
                 placeholder="Nhập mốc số buổi, cách nhau bởi dấu ; (VD: 1; 5; 10; 15)"
                 className="h-8 text-xs font-mono font-bold"
               />
@@ -460,7 +466,7 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
             <FieldLabel label="Danh sách mốc số thứ tự buổi học (VD: 1; 5; 10)">
               <Input
                 value={customSessionNumbersText}
-                onChange={(e) => setCustomSessionNumbersText(e.target.value)}
+                onChange={(e) => setCustomSessionNumbersText?.(e.target.value)}
                 placeholder="Nhập mốc số buổi, cách nhau bởi dấu ; (VD: 1; 5; 10; 15)"
                 className="h-8 text-xs font-mono font-bold"
               />

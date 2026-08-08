@@ -389,7 +389,9 @@ export function StudentCareDetailPage({
 
                 <div className="min-w-0 space-y-1 flex-1">
                   <div className="flex items-center gap-2 flex-wrap leading-tight">
-                    <span className="text-base font-bold text-foreground">{student.studentName}</span>
+                    <span className="text-base font-bold text-foreground">
+                      {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
+                    </span>
                     <Badge className={cn('text-[9px] font-semibold py-0.5 px-2 rounded-full leading-none shadow-none', 
                       student.status === 'Đang học'
                         ? getStatusBadgeClass('dang_hoc')

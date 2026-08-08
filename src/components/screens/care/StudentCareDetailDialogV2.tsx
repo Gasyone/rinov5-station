@@ -464,7 +464,7 @@ export function StudentCareDetailDialogV2({
                 
                 <div className="min-w-0 space-y-1 flex-1">
                   <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2 flex-wrap leading-tight">
-                    <span>{student.studentName}</span>
+                    <span>{student.studentName} {student.englishName ? `(${student.englishName})` : ''}</span>
                     <Badge className={cn('text-[9px] font-semibold py-0.5 px-2 rounded-full shadow-none border-none', getStatusBadgeClass(student.status))}>
                       {student.status}
                     </Badge>

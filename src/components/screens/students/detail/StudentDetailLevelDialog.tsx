@@ -12,13 +12,16 @@ import {
 import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
 
+import { Input } from '@/components/ui/input'
+
 interface StudentDetailLevelDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialLevel: string
   initialSubLevel: string
   initialSchoolClass?: string
-  onSave: (level: string, subLevel: string, schoolClass?: string) => void
+  initialEnglishName?: string
+  onSave: (level: string, subLevel: string, schoolClass?: string, englishName?: string) => void
 }
 
 const LEVEL_OPTIONS = ['IELTS', 'TOEIC', 'Beginner', 'STEM', 'Math', 'Japanese', 'English'].map((l) => ({
@@ -42,11 +45,13 @@ export function StudentDetailLevelDialog({
   initialLevel,
   initialSubLevel,
   initialSchoolClass = 'Lớp 6',
+  initialEnglishName = '',
   onSave,
 }: StudentDetailLevelDialogProps) {
   const [level, setLevel] = useState(initialLevel)
   const [subLevel, setSubLevel] = useState(initialSubLevel)
   const [schoolClass, setSchoolClass] = useState(initialSchoolClass)
+  const [englishName, setEnglishName] = useState(initialEnglishName)
 
   // Sync state when dialog opens or initial values change
   useEffect(() => {
@@ -54,11 +59,12 @@ export function StudentDetailLevelDialog({
       setLevel(initialLevel)
       setSubLevel(initialSubLevel)
       setSchoolClass(initialSchoolClass || 'Lớp 6')
+      setEnglishName(initialEnglishName || '')
     }
-  }, [open, initialLevel, initialSubLevel, initialSchoolClass])
+  }, [open, initialLevel, initialSubLevel, initialSchoolClass, initialEnglishName])
 
   const handleSave = () => {
-    onSave(level, subLevel, schoolClass)
+    onSave(level, subLevel, schoolClass, englishName.trim())
   }
 
   return (
@@ -66,10 +72,19 @@ export function StudentDetailLevelDialog({
       <DialogContent className="sm:max-w-[420px] bg-background p-5 rounded-xl border shadow-lg">
         <DialogHeader className="pb-3 border-b">
           <DialogTitle className="text-sm font-bold flex items-center gap-1.5">
-            <Pencil className="h-4 w-4 text-primary" /> Cập nhật trình độ & Lớp học
+            <Pencil className="h-4 w-4 text-primary" /> Cập nhật thông tin & Lớp học
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Tên Tiếng Anh</label>
+            <Input
+              value={englishName}
+              onChange={(e) => setEnglishName(e.target.value)}
+              placeholder="Nhập tên tiếng Anh (VD: Alex)"
+              className="h-9 text-sm"
+            />
+          </div>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-muted-foreground uppercase">Trình độ (Level)</label>
             <InlineSelect

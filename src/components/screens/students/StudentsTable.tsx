@@ -180,7 +180,10 @@ export function StudentsTable({
                         onClick={() => onView(student.id)}
                       >
                         <div className="relative z-10 max-w-full overflow-hidden pr-20">
-                          <EntityCell name={student.name} supporting={`STU-00${student.id.replace('s', '')}`} />
+                          <EntityCell
+                            name={student.englishName ? `${student.name} (${student.englishName})` : student.name}
+                            supporting={`STU-00${student.id.replace('s', '')}`}
+                          />
 
                           <div
                             className="absolute right-1 top-1/2 -translate-y-1/2 items-center gap-1 hidden group-hover:flex"

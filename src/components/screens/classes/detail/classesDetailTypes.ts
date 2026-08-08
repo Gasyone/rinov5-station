@@ -29,6 +29,7 @@ export interface StudentTag {
 export interface RosterStudent {
   id: string
   name: string
+  englishName?: string
   code: string
   status: 'active' | 'trial' | 'reserve' | 'transferred' | 'new' | 'dropout' | 'session_ended'
   dob: string
@@ -58,6 +59,8 @@ export interface RoadmapSession {
   teacherName: string
   substituteTeacherName?: string
   assistantName?: string
+  substituteAssistantName?: string
+  defaultAssistantName?: string
   coverType?: string
   coverNote?: string
   rescheduleDate?: string

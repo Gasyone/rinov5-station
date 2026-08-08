@@ -111,6 +111,8 @@ const CareConditionFormInner: React.FC<FormInnerProps> = ({ condition, onSave, o
 
   const [windowType, setWindowType] = useState<string>(initialWindowType)
   const [customSessionCount, setCustomSessionCount] = useState<number>(initialCustomCount)
+  const [customSessionNumbersText, setCustomSessionNumbersText] = useState<string>('1; 5; 10')
+  const [customDaysText, setCustomDaysText] = useState<string>('1; 15; 25')
   const [scope, setScope] = useState<string>(
     condition?.triggerRule?.scope || initialFoundMetric.scopeOptions[0]?.value || 'theo_tung_mon'
   )
@@ -252,9 +254,23 @@ const CareConditionFormInner: React.FC<FormInnerProps> = ({ condition, onSave, o
     const windowObj = activeMetric.windowOptions.find((w) => w.value === windowType)
     const scopeObj = activeMetric.scopeOptions.find((sc) => sc.value === scope)
 
-    const windowRangeCode = windowType === 'custom_sessions' ? `${customSessionCount}_buoi_da_xay_ra` : windowType
+    const windowRangeCode =
+      windowType === 'custom_sessions'
+        ? `${customSessionCount}_buoi_da_xay_ra`
+        : windowType === 'custom_session_numbers'
+        ? `custom_session_numbers_${customSessionNumbersText.replace(/\s+/g, '')}`
+        : windowType === 'custom_dates_month'
+        ? `custom_dates_month_${customDaysText.replace(/\s+/g, '')}`
+        : windowType
+
     const windowRangeText =
-      windowType === 'custom_sessions' ? `Trong ${customSessionCount || 8} buổi đã xảy ra ở lớp học` : windowObj?.label || ''
+      windowType === 'custom_sessions'
+        ? `Trong ${customSessionCount || 8} buổi đã xảy ra ở lớp học`
+        : windowType === 'custom_session_numbers'
+        ? `Mốc số buổi: ${customSessionNumbersText || '1; 5; 10'}`
+        : windowType === 'custom_dates_month'
+        ? `Mốc ngày trong tháng: ${customDaysText || '1; 15; 25'}`
+        : windowObj?.label || ''
 
     const structuredRule: StructuredTriggerRule = {
       source: selectedSource,
@@ -365,6 +381,10 @@ const CareConditionFormInner: React.FC<FormInnerProps> = ({ condition, onSave, o
               setWindowType={setWindowType}
               customSessionCount={customSessionCount}
               setCustomSessionCount={setCustomSessionCount}
+              customSessionNumbersText={customSessionNumbersText}
+              setCustomSessionNumbersText={setCustomSessionNumbersText}
+              customDaysText={customDaysText}
+              setCustomDaysText={setCustomDaysText}
               scope={scope}
               setScope={setScope}
             />
@@ -451,10 +471,10 @@ export const CareConditionFormDialog: React.FC<CareConditionFormDialogProps> = (
   const isEditing = !!condition
   const [activeTab, setActiveTab] = useState<'log' | 'config'>('config')
 
-  // Reset tab when modal opens or condition changes: Default to 'log' when viewing existing condition, 'config' when creating new
+  // Reset tab when modal opens or condition changes: Mặc định xem 'config' (Thiết lập quy tắc)
   useEffect(() => {
     if (isOpen) {
-      setActiveTab(condition ? 'log' : 'config')
+      setActiveTab('config')
     }
   }, [isOpen, condition])
 

@@ -161,6 +161,52 @@ function generateMockTags(studentId: string): StudentTag[] {
   return tags
 }
 
+export interface StudentNameParts {
+  englishName: string
+  vietnameseName: string
+  hasEnglishName: boolean
+  formattedName: string
+}
+
+export function getStudentNameParts(student: { name: string; englishName?: string }): StudentNameParts {
+  let eng = student.englishName?.trim()
+  let vn = student.name?.trim() || ''
+
+  // Strip (Trial) or (Học thử) if present
+  vn = vn.replace(/\s*\(Trial\)$/i, '').replace(/\s*\(Học thử\)$/i, '').trim()
+
+  // If student.name is in format "Alex (Nguyễn An)", split it automatically
+  if (vn.includes('(') && vn.includes(')')) {
+    const match = vn.match(/^([^(]+)\(([^)]+)\)$/)
+    if (match) {
+      const part1 = match[1].trim()
+      const part2 = match[2].trim()
+      if (!eng) {
+        eng = part1
+        vn = part2
+      }
+    }
+  }
+
+  // If still no englishName, assign a deterministic English name based on student name / ID
+  if (!eng) {
+    const defaultEngNames = [
+      'Alex', 'Leo', 'Annie', 'Lemon', 'Chloe', 'Daniel', 'Emma', 'Felix',
+      'Grace', 'Harry', 'Iris', 'Jack', 'Kevin', 'Lily', 'Max', 'Nora',
+      'Oscar', 'Peter', 'Rose', 'Sam', 'Tom', 'Victor', 'Zoe'
+    ]
+    const hash = Math.abs(stableHash(vn || 'student'))
+    eng = defaultEngNames[hash % defaultEngNames.length]
+  }
+
+  return {
+    englishName: eng,
+    vietnameseName: vn, // Preserve exact capitalization
+    hasEnglishName: true,
+    formattedName: `${eng} (${vn})`,
+  }
+}
+
 // Generate dynamic mock roster based on class record
 export function generateMockRoster(cls: ClassRecord): RosterStudent[] {
   // Pull students with same level if possible
@@ -176,9 +222,18 @@ export function generateMockRoster(cls: ClassRecord): RosterStudent[] {
     const pName = s.parentName || 'Nguyễn Văn Phụ Huynh'
     const pPhone = s.parentPhone || '0901234567'
     let displayName = s.name
-    if (i === 0) displayName = `Alex (${s.name})`
-    else if (i === 2) displayName = `Annie (${s.name})`
-    else if (i === 3) displayName = `Lemon (${s.name})`
+    let englishName = s.englishName
+
+    if (i === 0) {
+      displayName = 'Nguyễn An'
+      englishName = 'Alex'
+    } else if (i === 2) {
+      displayName = 'Băng Hồng Phúc'
+      englishName = 'Annie'
+    } else if (i === 3) {
+      displayName = 'Nguyễn Hoàng Dũng'
+      englishName = 'Lemon'
+    }
 
     const sessionLabel =
       i === 4 ? 'buoi_1' :
@@ -189,6 +244,7 @@ export function generateMockRoster(cls: ClassRecord): RosterStudent[] {
     roster.push({
       id: `${s.id}-act-${i}`,
       name: displayName,
+      englishName: englishName,
       code: `HV-${s.id.toUpperCase()}-${i}`,
       status: 'active',
       dob: s.dob || '2008-05-12',
@@ -392,34 +448,64 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
     sessionDate.setDate(baseDate.getDate() + i * 2) // mock: 2 days between sessions
     const dateStr = `${sessionDate.getDate().toString().padStart(2, '0')}/${(sessionDate.getMonth() + 1).toString().padStart(2, '0')}/${sessionDate.getFullYear()}`
     
-    // Session 1 to 3 completed. Session 4 is ongoing. Session 5 is upcoming with substitute teacher.
-    // Session 6 and 7 are cancelled so the detail tab mirrors the Figma card variants.
+    // Session 1 to 3 completed. Session 4 is ongoing.
+    // Session 5: Teacher Cover (Cô Mai)
+    // Session 6: Cancelled (Hủy buổi) -> test Hoàn buổi
+    // Session 7: Room Changed (B201) -> test Hủy đổi phòng
+    // Session 8: Rescheduled Date -> test Hủy đổi giờ
+    // Session 9: TA Cover (Thu Hà) -> test Xóa TA cover
     let status: RoadmapSession['status'] = 'upcoming'
     if (sessionNum <= 3) {
       status = 'completed'
     } else if (sessionNum === 4) {
       status = 'ongoing'
-    } else if (sessionNum === 6 || sessionNum === 7) {
+    } else if (sessionNum === 6) {
       status = 'cancelled'
     }
 
     // Substitute teacher mock
     let substituteTeacherName: string | undefined = undefined
+    let coverType: string | undefined = undefined
+    let coverNote: string | undefined = undefined
     if (sessionNum === 5) {
       substituteTeacherName = 'Cô Mai'
+      coverType = 'Đột xuất'
+      coverNote = 'Giáo viên chính xin nghỉ ốm'
+    }
+
+    // Substitute assistant (TA) mock
+    const assistantName = 'Hoàng Anh'
+    let substituteAssistantName: string | undefined = undefined
+    if (sessionNum === 9) {
+      substituteAssistantName = 'Thu Hà'
     }
 
     // Rescheduled date mock for session 8
     let originalDate: string | undefined = undefined
     let rescheduleDate: string | undefined = undefined
+    let rescheduleNote: string | undefined = undefined
     if (sessionNum === 8) {
       originalDate = '13/05/2026'
       rescheduleDate = dateStr
+      rescheduleNote = 'Đổi lịch theo yêu cầu phụ huynh'
     }
 
     // Classroom mock
-    let room = cls.room
-    if (sessionNum === 2) room = 'A102' // mock room change
+    let room = cls.room || 'A101'
+    const defaultRoom = cls.room || 'A101'
+    if (sessionNum === 7) {
+      room = 'B201' // mock room change for Session 7
+    }
+
+    // Cancel detail mock for Session 6
+    let cancelBy: string | undefined = undefined
+    let cancelReason: string | undefined = undefined
+    let cancelDescription: string | undefined = undefined
+    if (sessionNum === 6) {
+      cancelBy = 'GIÁO VIÊN'
+      cancelReason = 'Hủy 1A - Báo trước ngày học'
+      cancelDescription = 'Giáo viên xin nghỉ phép cá nhân'
+    }
 
     // Description (Note): Only completed sessions have pre-filled teacher remarks with @mentions
     let description = ''
@@ -440,12 +526,21 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
       topic: topics[i].topic,
       description,
       room,
-      defaultRoom: cls.room,
+      defaultRoom,
       teacherName: cls.teacher,
       substituteTeacherName,
+      assistantName,
+      substituteAssistantName,
+      defaultAssistantName: assistantName,
+      coverType,
+      coverNote,
       originalDate,
       rescheduleDate,
+      rescheduleNote,
       status,
+      cancelBy,
+      cancelReason,
+      cancelDescription,
       materials: (() => {
         // Only completed sessions have post-class attached photos/materials
         if (status !== 'completed') return []

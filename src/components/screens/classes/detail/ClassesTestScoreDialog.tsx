@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { Clipboard } from 'lucide-react'
 import type { RosterStudent, TestScoreData } from './classesDetailTypes'
 import { getInitials, getAvatarColor } from './classesSessionDetailHelpers'
+import { getStudentNameParts } from './classesDetailHelpers'
 
 interface ClassesTestScoreDialogProps {
   isOpen: boolean
@@ -275,7 +276,18 @@ export function ClassesTestScoreDialog({
                         {getInitials(student.name)}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-xs truncate leading-snug">{student.name}</p>
+                        {(() => {
+                          const np = getStudentNameParts(student)
+                          if (np.hasEnglishName) {
+                            return (
+                              <div className="flex flex-col min-w-0 leading-tight">
+                                <span className="truncate font-bold text-xs">{np.englishName}</span>
+                                <span className="truncate text-[11px] text-muted-foreground font-normal">{np.vietnameseName}</span>
+                              </div>
+                            )
+                          }
+                          return <p className="font-semibold text-xs truncate leading-snug">{np.vietnameseName}</p>
+                        })()}
                         <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{student.code}</p>
                       </div>
                     </div>

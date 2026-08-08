@@ -8,7 +8,8 @@ import {
   User, 
   MapPin, 
   Check,
-  Search
+  Search,
+  RotateCcw
 } from 'lucide-react'
 import {
   Dialog,
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { FieldLabel } from '@/components/shared'
+import { FieldLabel, ConfirmDialog } from '@/components/shared'
 import {
   Select,
   SelectContent,
@@ -61,6 +62,20 @@ export function ClassesSessionActionDialog({
   const [selectedRoom, setSelectedRoom] = useState(
     session ? session.room : ''
   )
+
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean
+    title: string
+    description: string
+    confirmLabel: string
+    onConfirm: () => void
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    confirmLabel: 'Xác nhận',
+    onConfirm: () => {},
+  })
 
   const slideMaterial = session ? (session.materials?.find(
     (m) => m.name.toLowerCase().includes('slide') || m.name.toLowerCase().includes('bài giảng')
@@ -776,11 +791,97 @@ export function ClassesSessionActionDialog({
 
           {/* Footer actions */}
           <DialogFooter className="px-5 py-3 border-t border-muted bg-muted/10 gap-2 sm:gap-2">
+            {type === 'teacher' && session.substituteTeacherName && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setConfirmState({
+                    open: true,
+                    title: 'Xác nhận hoàn dạy thay giáo viên',
+                    description: `Bạn có chắc chắn muốn xóa giáo viên cover và khôi phục giáo viên chính ban đầu cho Buổi ${session.sessionNumber}?`,
+                    confirmLabel: 'Khôi phục GV chính',
+                    onConfirm: () => {
+                      onSave(session.id, {
+                        substituteTeacherName: undefined,
+                        coverType: undefined,
+                        coverNote: undefined,
+                      })
+                      toast.success('Đã xóa giáo viên cover, khôi phục giáo viên chính!')
+                      onClose()
+                    },
+                  })
+                }}
+                className="rounded-lg text-xs border-rose-300 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 font-semibold gap-1 me-auto cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Xóa GV cover</span>
+              </Button>
+            )}
+
+            {type === 'room' && session.defaultRoom && session.room !== session.defaultRoom && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setConfirmState({
+                    open: true,
+                    title: 'Xác nhận hoàn đổi phòng / cơ sở',
+                    description: `Bạn có chắc chắn muốn hủy đổi phòng và khôi phục phòng gốc (${session.defaultRoom}) cho Buổi ${session.sessionNumber}?`,
+                    confirmLabel: 'Khôi phục phòng gốc',
+                    onConfirm: () => {
+                      onSave(session.id, {
+                        room: session.defaultRoom!,
+                      })
+                      toast.success('Đã hủy đổi phòng, khôi phục phòng học gốc!')
+                      onClose()
+                    },
+                  })
+                }}
+                className="rounded-lg text-xs border-rose-300 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 font-semibold gap-1 me-auto cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Hủy đổi phòng</span>
+              </Button>
+            )}
+
+            {type === 'reschedule' && (session.rescheduleDate || session.originalDate) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setConfirmState({
+                    open: true,
+                    title: 'Xác nhận hoàn đổi lịch học',
+                    description: `Bạn có chắc chắn muốn hủy đổi giờ và khôi phục ngày học ban đầu cho Buổi ${session.sessionNumber}?`,
+                    confirmLabel: 'Khôi phục lịch ban đầu',
+                    onConfirm: () => {
+                      onSave(session.id, {
+                        date: session.originalDate || session.date,
+                        rescheduleDate: undefined,
+                        originalDate: undefined,
+                        rescheduleNote: undefined,
+                      })
+                      toast.success('Đã hủy đổi giờ, khôi phục ngày học ban đầu!')
+                      onClose()
+                    },
+                  })
+                }}
+                className="rounded-lg text-xs border-rose-300 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 font-semibold gap-1 me-auto cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Hủy đổi giờ</span>
+              </Button>
+            )}
+
             <Button 
               variant="outline" 
               size="sm" 
               onClick={onClose} 
-              className="rounded-lg text-xs"
+              className="rounded-lg text-xs ml-auto"
             >
               Hủy
             </Button>
@@ -829,7 +930,15 @@ export function ClassesSessionActionDialog({
         </DialogContent>
       </Dialog>
 
-
+      <ConfirmDialog
+        open={confirmState.open}
+        onOpenChange={(open) => setConfirmState((prev) => ({ ...prev, open }))}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        variant="destructive"
+        onConfirm={confirmState.onConfirm}
+      />
     </>
   )
 }

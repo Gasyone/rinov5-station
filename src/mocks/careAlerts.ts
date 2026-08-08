@@ -23,6 +23,7 @@ export interface StudentCareAlert {
   studentId: string       // student_id
   customerCode?: string   // customer_code
   studentName: string     // student_name
+  englishName?: string    // Tên tiếng Anh
   startDate: string       // Ngày bắt đầu học
   subject: 'Toán tư duy' | 'Tiếng Anh' // Môn học
   status: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' // Trạng thái
@@ -113,6 +114,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentId: "s13",
     customerCode: "",
     studentName: "Trần Minh Châu",
+    englishName: "Grace",
     startDate: "17/08/2023",
     subject: "Toán tư duy",
     status: "Chờ chuyển lớp",
@@ -142,6 +144,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentId: "s14",
     customerCode: "10210078",
     studentName: "Nguyễn Phương Vy",
+    englishName: "Victoria",
     startDate: "31/07/2023",
     subject: "Tiếng Anh",
     status: "Đang học",
@@ -170,6 +173,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentId: "s15",
     customerCode: "9986363",
     studentName: "Nguyễn Hà Phương",
+    englishName: "Fiona",
     startDate: "17/08/2023",
     subject: "Tiếng Anh",
     status: "Chờ chuyển lớp",

@@ -42,6 +42,7 @@ import { StudentDetailPackagesBar } from './StudentDetailPackagesBar'
 // Import Helper utilities
 import { getStudentPackages, getStudentNotes, getStudentFamilyMembers } from './studentDetailHelpers'
 import type { StudentNote, StudentGlobalLog, StudentPackage } from './studentDetailTypes'
+import { STUDENT_STATUS_LABELS } from '../studentTypes'
 import { mockClassRecords } from '@/mocks/classRecords'
 
 import { cn } from '@/lib/utils'
@@ -86,7 +87,7 @@ export function StudentDetailDialogV2({
     setIsEditLevelOpen(true)
   }
 
-  const handleSaveLevel = (newLevel: string, newSubLevel: string, newSchoolClass?: string) => {
+  const handleSaveLevel = (newLevel: string, newSubLevel: string, newSchoolClass?: string, newEngName?: string) => {
     if (student) {
       const idx = mockStudents.findIndex((s) => s.id === student.id)
       if (idx !== -1) {
@@ -95,6 +96,7 @@ export function StudentDetailDialogV2({
           level: newLevel,
           subLevel: newSubLevel,
           schoolClass: newSchoolClass || mockStudents[idx].schoolClass,
+          englishName: newEngName !== undefined ? newEngName : mockStudents[idx].englishName,
         }
       }
     }
@@ -115,7 +117,7 @@ export function StudentDetailDialogV2({
     setSideLogs((prev) => [
       {
         id: Math.random().toString(),
-        action: `Đã cập nhật trình độ học viên: ${newLevel} (${newSubLevel})${newSchoolClass ? ` - ${newSchoolClass}` : ''}.`,
+        action: `Đã cập nhật thông tin học viên: Trình độ ${newLevel} (${newSubLevel})${newSchoolClass ? ` - ${newSchoolClass}` : ''}${newEngName ? `, Tên tiếng Anh: "${newEngName}"` : ''}.`,
         operator: 'Giáo vụ Lan',
         timestamp: timestampStr
       },
@@ -124,7 +126,37 @@ export function StudentDetailDialogV2({
 
     setRevision((r) => r + 1)
     setIsEditLevelOpen(false)
-    toast.success('Cập nhật trình độ & lớp thành công!')
+    toast.success('Cập nhật thông tin thành công!')
+  }
+
+  const handleSaveEnglishName = (newEngName: string) => {
+    if (student) {
+      const idx = mockStudents.findIndex((s) => s.id === student.id)
+      if (idx !== -1) {
+        mockStudents[idx] = {
+          ...mockStudents[idx],
+          englishName: newEngName,
+        }
+      }
+    }
+
+    const now = new Date()
+    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
+
+    setSideLogs((prev) => [
+      {
+        id: Math.random().toString(),
+        action: newEngName
+          ? `Đã cập nhật tên tiếng Anh của học viên: "${newEngName}".`
+          : `Đã xóa tên tiếng Anh của học viên.`,
+        operator: 'Giáo vụ Lan',
+        timestamp: timestampStr,
+      },
+      ...prev,
+    ])
+
+    setRevision((r) => r + 1)
+    toast.success('Cập nhật tên tiếng Anh thành công!')
   }
 
   const handleOpenEditSessions = () => {
@@ -396,7 +428,10 @@ export function StudentDetailDialogV2({
             <StudentHeaderInfoCard
               studentAvatar={studentAvatar}
               studentName={student.name}
-              status={student.status === 'active' ? 'Đang học' : student.status}
+              englishName={student.englishName}
+              onSaveEnglishName={handleSaveEnglishName}
+              statusKey={student.status}
+              statusLabel={STUDENT_STATUS_LABELS[student.status] || student.status}
               birthDate={student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : '15/03/2005'}
               gender={student.gender === 'Male' ? 'Nam' : student.gender === 'Female' ? 'Nữ' : 'Khác'}
               address="Số 49 Nguyễn Tuân, Nam Từ Liêm, Hà Nội"
@@ -517,13 +552,14 @@ export function StudentDetailDialogV2({
         </div>
       </DialogContent>
 
-      {/* Dialog: Chỉnh sửa Trình độ */}
+      {/* Dialog: Chỉnh sửa Trình độ & Thông tin */}
       <StudentDetailLevelDialog
         open={isEditLevelOpen}
         onOpenChange={setIsEditLevelOpen}
         initialLevel={activeClass?.level || student?.level || ''}
         initialSubLevel={activeClass?.subLevel || student?.subLevel || ''}
         initialSchoolClass={student?.schoolClass || 'Lớp 6'}
+        initialEnglishName={student?.englishName || ''}
         onSave={handleSaveLevel}
       />
 

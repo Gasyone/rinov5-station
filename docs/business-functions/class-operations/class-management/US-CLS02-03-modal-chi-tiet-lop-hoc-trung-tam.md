@@ -68,6 +68,18 @@ tags: [class, detail-modal, roster, learning-path, logs]
    - *Ràng buộc:* Nút **Đóng** chỉ sáng và cho phép bấm khi sĩ số học viên thực tế của lớp bằng 0 (khi danh sách trống học viên). Nếu lớp đang hoạt động mà giáo vụ xóa học viên cuối cùng, hệ thống tự động chuyển trạng thái lớp sang **Đã kết thúc** (trạng thái lưu trữ: `huy`).
    - *Ánh xạ trạng thái:* Trạng thái "Mở chiêu sinh" tại cơ sở dữ liệu sẽ tự động được hệ thống ánh xạ hiển thị như trạng thái "Chờ khai giảng" trên giao diện để đảm bảo tính đồng bộ với vòng đời chuẩn.
 
+7. **[RULE-CLS-03-07] Hoàn buổi học sau khi hủy (chưa diễn ra):** Đối với ca học bị hủy nhưng chưa diễn ra (`status !== 'completed'`), cho phép người dùng thực hiện thao tác **"Hoàn buổi"** để khôi phục buổi học về trạng thái sắp tới (`upcoming`) và xóa bỏ lý do hủy ca.
+
+8. **[RULE-CLS-03-08] Xóa giáo viên cover (chưa diễn ra):** Đối với ca học chưa diễn ra được phân công giáo viên cover (`substituteTeacherName`), cho phép thao tác **"Xóa GV cover"** để khôi phục lại giáo viên chính ban đầu.
+
+9. **[RULE-CLS-03-09] Xóa trợ giảng cover (chưa diễn ra):** Đối với ca học chưa diễn ra được phân công trợ giảng cover (`substituteAssistantName`), cho phép thao tác **"Xóa TA cover"** để khôi phục lại trợ giảng chính ban đầu.
+
+10. **[RULE-CLS-03-10] Hủy đổi giờ (chưa diễn ra):** Đối với ca học chưa diễn ra đã thay đổi ngày/giờ học (`rescheduleDate` hoặc `originalDate`), cho phép thao tác **"Hủy đổi giờ"** để khôi phục ngày/giờ học ban đầu.
+
+11. **[RULE-CLS-03-11] Hủy đổi phòng (chưa diễn ra):** Đối với ca học chưa diễn ra đã thay đổi phòng học lẻ (`room !== defaultRoom`), cho phép thao tác **"Hủy đổi phòng"** để khôi phục phòng học gốc mặc định của lớp.
+
+    - *Ràng buộc:* Tất cả 5 thao tác hoàn tác trên chỉ khả dụng với các ca học chưa diễn ra. Nghiêm cấm hoàn tác đối với các buổi học đã hoàn thành (`status === 'completed'`).
+
 ### 2.1. Thông số & Định mức (Metrics & Thresholds)
 
 - **[METRIC-CLS-03-01] Sĩ số cảnh báo:**

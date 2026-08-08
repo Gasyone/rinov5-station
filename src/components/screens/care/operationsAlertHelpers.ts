@@ -105,6 +105,7 @@ export function filterAlertData(
       const q = filters.search.toLowerCase().trim()
       const matches =
         item.studentName.toLowerCase().includes(q) ||
+        (item.englishName && item.englishName.toLowerCase().includes(q)) ||
         item.studentId.includes(q) ||
         item.classCode.toLowerCase().includes(q) ||
         item.teacherCode.toLowerCase().includes(q) ||

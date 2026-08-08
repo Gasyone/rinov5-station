@@ -239,6 +239,7 @@ export function filterStudents(
     if (query) {
       const haystack = [
         student.name,
+        student.englishName ?? '',
         student.email,
         student.phone ?? '',
         student.parentName ?? '',

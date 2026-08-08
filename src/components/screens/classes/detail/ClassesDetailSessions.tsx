@@ -290,6 +290,7 @@ export function ClassesDetailSessions({
                 setSessionToDeleteMat({ sessionId, materialName, isSlide })
                 setDeleteConfirmOpen(true)
               }}
+              onUpdateSession={onUpdateSession}
             />
           ))}
         </div>

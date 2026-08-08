@@ -15,6 +15,7 @@ import {
   XCircle,
   AlertCircle,
   HeartHandshake,
+  MessageSquareWarning,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { ClassRecord } from '@/mocks/classRecords'
@@ -151,8 +152,11 @@ export function ClassesSessionDetailSidebar({
 
                 <div className="leading-tight">
                   <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Phòng học</p>
-                  <span className="font-semibold text-foreground flex items-center gap-1">
-                    {session.room}
+                  <span className="font-semibold text-foreground flex items-center gap-1 flex-wrap">
+                    <span>{session.room}</span>
+                    {session.defaultRoom && session.room !== session.defaultRoom && (
+                      <span className="text-[9.5px] text-amber-600 font-normal">(gốc: {session.defaultRoom})</span>
+                    )}
                     <button
                       onClick={() => toast.info('Tính năng báo cáo sự cố phòng học đang được phát triển!')}
                       className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-rose-50 text-rose-500 cursor-pointer border-none p-0 shrink-0"
@@ -244,9 +248,22 @@ export function ClassesSessionDetailSidebar({
 
           {/* ── KHUNG CHƯƠNG TRÌNH ── */}
           <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs p-3.5 space-y-2.5">
-            <h3 className="font-bold text-zinc-500 text-xs uppercase tracking-wide truncate" title={`KHUNG CHƯƠNG TRÌNH: ${syllabusTitle}`}>
-              KHUNG CHƯƠNG TRÌNH: {syllabusTitle}
-            </h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-bold text-zinc-500 text-xs uppercase tracking-wide truncate" title={`KCT: ${syllabusTitle}`}>
+                KCT: {syllabusTitle}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  toast.info('Tính năng góp ý giáo trình đang được phát triển!')
+                }}
+                className="text-[11px] text-muted-foreground hover:text-amber-500 font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 shrink-0"
+                title="Góp ý giáo trình"
+              >
+                <MessageSquareWarning className="h-3.5 w-3.5" />
+                <span>Góp ý</span>
+              </button>
+            </div>
             <div>
               <ClassesSessionSyllabusTab session={session} sessions={sessions} />
             </div>

@@ -10,20 +10,26 @@ import {
   ChevronUp,
   History,
   Eye,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { AppAvatar } from './AppAvatar'
+import { StatusBadge } from './StatusBadge'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Input } from '@/components/ui/input'
 import type { ParentMemberInfo } from './StudentParentInfoCards'
 
 export interface StudentHeaderInfoCardProps {
   onToggleVersion?: () => void
   studentAvatar?: string
   studentName: string
+  englishName?: string
+  onSaveEnglishName?: (newEnglishName: string) => void
   status?: string
+  statusKey?: string
+  statusLabel?: string
   birthDate?: string
   gender?: string
   address?: string
@@ -39,7 +45,11 @@ export interface StudentHeaderInfoCardProps {
 export function StudentHeaderInfoCard({
   studentAvatar,
   studentName,
+  englishName = '',
+  onSaveEnglishName,
   status = 'Đang học',
+  statusKey,
+  statusLabel,
   birthDate = '15/03/2005',
   gender = 'Nam',
   address = 'Số 49 Nguyễn Tuân, Nam Từ Liêm, Hà Nội',
@@ -50,6 +60,24 @@ export function StudentHeaderInfoCard({
   parents,
   className,
 }: StudentHeaderInfoCardProps) {
+  // English Name state
+  const [currentEnglishName, setCurrentEnglishName] = useState(englishName)
+  const [tempEnglishName, setTempEnglishName] = useState(englishName)
+  const [isEditingEnglishName, setIsEditingEnglishName] = useState(false)
+
+  useEffect(() => {
+    setCurrentEnglishName(englishName)
+    setTempEnglishName(englishName)
+  }, [englishName])
+
+  const handleEnglishNameChange = (val: string) => {
+    setTempEnglishName(val)
+    setCurrentEnglishName(val)
+    if (onSaveEnglishName) {
+      onSaveEnglishName(val)
+    }
+  }
+
   // Student Note States
   const [noteText, setNoteText] = useState(initialNote)
   const [isEditingNote, setIsEditingNote] = useState(false)
@@ -132,12 +160,66 @@ export function StudentHeaderInfoCard({
         </div>
 
         <div className="min-w-0 flex-1 space-y-1.5">
-          {/* Top Row: Student Name + Status Badge */}
+          {/* Top Row: Student Name + English Name + Status Badge */}
           <div className="flex items-center gap-2 flex-wrap leading-tight">
             <span className="text-base font-extrabold text-foreground tracking-tight">{studentName}</span>
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300/60 text-[10px] font-bold py-0.5 px-2 rounded-full shadow-none">
-              {status}
-            </Badge>
+
+            {/* English Name Inline Editor Popover */}
+            <Popover open={isEditingEnglishName} onOpenChange={setIsEditingEnglishName}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md transition-colors cursor-pointer border border-transparent select-none",
+                    currentEnglishName
+                      ? "bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/30"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground border-dashed border-border"
+                  )}
+                  title="Bấm để chỉnh sửa tên tiếng Anh"
+                >
+                  <span>{currentEnglishName ? `(${currentEnglishName})` : '+ Thêm tên TA'}</span>
+                  <Pencil className="h-3 w-3 opacity-70 hover:opacity-100" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3 space-y-2.5" align="start">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">Chỉnh sửa Tên Tiếng Anh</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingEnglishName(false)}
+                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors cursor-pointer"
+                    title="Đóng"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    value={tempEnglishName}
+                    onChange={(e) => handleEnglishNameChange(e.target.value)}
+                    placeholder="Nhập tên tiếng Anh (VD: Alex)"
+                    className="h-8 text-xs pr-7"
+                    autoFocus
+                  />
+                  {tempEnglishName ? (
+                    <button
+                      type="button"
+                      onClick={() => handleEnglishNameChange('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted transition-colors cursor-pointer"
+                      title="Xóa tên tiếng Anh"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <StatusBadge
+              status={statusKey || status}
+              label={statusLabel || (status.includes('_') ? undefined : status)}
+              className="text-[10px] font-bold py-0.5 px-2.5 shadow-none"
+            />
           </div>
 
           {/* Row 1: NS, Giới tính, ĐC + Toggle Icon Button Mở rộng Mã */}

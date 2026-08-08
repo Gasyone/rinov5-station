@@ -188,6 +188,7 @@ export function ClassesDetailSessionsV2({
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)
                 }}
+                onUpdateSession={onUpdateSession}
               />
             ))}
           </div>
@@ -227,6 +228,7 @@ export function ClassesDetailSessionsV2({
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)
                 }}
+                onUpdateSession={onUpdateSession}
               />
             ))}
           </div>
@@ -266,6 +268,7 @@ export function ClassesDetailSessionsV2({
                   setSessionToDeleteMat({ sessionId: id, materialName: name, isSlide })
                   setDeleteConfirmOpen(true)
                 }}
+                onUpdateSession={onUpdateSession}
               />
             ))}
           </div>

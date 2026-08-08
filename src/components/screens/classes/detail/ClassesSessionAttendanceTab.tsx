@@ -5,8 +5,7 @@ import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/Lea
 import { ClassesSessionAttendanceRow } from './ClassesSessionAttendanceRow'
 import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
 import type { AttendanceStatus } from './classesSessionDetailHelpers'
-
-
+import { getStudentNameParts } from './classesDetailHelpers'
 
 interface ClassesSessionAttendanceTabProps {
   activeRoster: RosterStudent[]
@@ -178,10 +177,13 @@ export function ClassesSessionAttendanceTab({
                     else if (att === 'absent') attLabel = 'Vắng'
                     else if (att === 'excused') attLabel = 'Phép'
 
+                    const np = getStudentNameParts(student)
+                    const displayNameStr = np.hasEnglishName ? `${np.englishName} (${np.vietnameseName})` : np.vietnameseName
+
                     return (
                       <tr key={student.id} className="text-amber-950 dark:text-amber-100 font-medium">
-                        <td className="py-2.5 pr-4 text-left text-zinc-900 dark:text-zinc-100">
-                          {student.name}, {ageStr}
+                        <td className="py-2.5 pr-4 text-left text-zinc-900 dark:text-zinc-100 font-semibold">
+                          {displayNameStr}, <span className="font-normal text-xs text-muted-foreground">{ageStr}</span>
                         </td>
                         <td className="py-2.5 px-4 text-center text-[#92400e] dark:text-amber-400 font-mono">
                           {attLabel}

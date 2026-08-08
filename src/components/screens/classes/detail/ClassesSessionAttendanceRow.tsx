@@ -27,6 +27,7 @@ import {
   AttendanceStatus,
   stableHash,
 } from './classesSessionDetailHelpers'
+import { getStudentNameParts } from './classesDetailHelpers'
 
 interface ClassesSessionAttendanceRowProps {
   student: RosterStudent
@@ -73,6 +74,7 @@ export function ClassesSessionAttendanceRow({
 }: ClassesSessionAttendanceRowProps) {
   const hwLink = deriveHomeworkLink(student.id, sessionId)
   const isCareStudent = student.status === 'trial' || student.status === 'new' || !!student.sessionLabel
+  const nameParts = getStudentNameParts(student)
 
   return (
     <tr
@@ -94,15 +96,22 @@ export function ClassesSessionAttendanceRow({
                 "h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold",
                 getAvatarColor(student.id)
               )}>
-                {getInitials(student.name)}
+                {getInitials(nameParts.hasEnglishName ? nameParts.englishName! : student.name)}
               </div>
               {isCareStudent && (
                 <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-white dark:border-zinc-900 animate-pulse" title="Cần chăm sóc" />
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-foreground leading-tight flex items-center gap-1.5 flex-wrap min-w-0">
-                <span className="truncate">{student.name}</span>
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                {nameParts.hasEnglishName ? (
+                  <div className="flex flex-col min-w-0 leading-tight">
+                    <span className="font-bold text-foreground text-xs truncate">{nameParts.englishName}</span>
+                    <span className="text-[11px] text-muted-foreground font-normal truncate">{nameParts.vietnameseName}</span>
+                  </div>
+                ) : (
+                  <span className="font-normal text-foreground text-xs truncate">{nameParts.vietnameseName}</span>
+                )}
                 {student.sessionLabel && (
                   <StatusBadge
                     status={student.sessionLabel}
@@ -117,7 +126,7 @@ export function ClassesSessionAttendanceRow({
                 {isExcused && (
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
                 )}
-              </p>
+              </div>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                 <span className="text-[10px] text-muted-foreground font-mono">{student.code}</span>
                 {student.level && (

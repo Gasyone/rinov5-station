@@ -174,7 +174,7 @@ export function StudentMonthlyReportLandingDialog({
 
             {/* Teacher Quote Text */}
             <div className="text-xs text-muted-foreground leading-relaxed italic pt-1">
-              "Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{studentName}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng bứt phá từ giáo viên phụ trách <strong className="text-primary font-bold not-italic">{teacherName}</strong>."
+              &quot;Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{studentName}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng bứt phá từ giáo viên phụ trách <strong className="text-primary font-bold not-italic">{teacherName}</strong>.&quot;
             </div>
           </div>
 

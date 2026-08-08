@@ -292,8 +292,8 @@ export function RenewalAlertRow({
             </div>
             <div className="min-w-0 space-y-0.5">
               <div className="flex items-center gap-1">
-                <span className="font-bold text-zinc-900 dark:text-zinc-50 text-sm truncate" title={cls.studentName}>
-                  {cls.studentName}
+                <span className="font-bold text-zinc-900 dark:text-zinc-50 text-sm truncate" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
+                  {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
                 </span>
                 {cls.studentFolderLink && (
                   <a

@@ -176,10 +176,6 @@ export const CareConditionsConfigScreen: React.FC = () => {
     }
   }
 
-  const handleExportData = () => {
-    toast.success(`Đã xuất danh mục ${filteredConditions.length} điều kiện chăm sóc ra file Excel!`)
-  }
-
   return (
     <div className="flex flex-col gap-3 px-4 py-3 lg:px-6 h-[calc(100vh-3.5rem)] overflow-hidden flex-1">
       {/* Toolbar & Filters */}
@@ -189,7 +185,6 @@ export const CareConditionsConfigScreen: React.FC = () => {
         statusTiles={statusTiles}
         totalCount={filteredConditions.length}
         onOpenCreateDialog={handleOpenCreateDialog}
-        onExportData={handleExportData}
       />
 
       {/* Main Table Workspace */}
