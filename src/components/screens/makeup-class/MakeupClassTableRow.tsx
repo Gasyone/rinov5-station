@@ -116,7 +116,7 @@ export function MakeupClassTableRow({
         onClick={() => onRowClick(request.id)}
       >
         <TableCell
-          className="sticky left-0 z-30 w-12 min-w-12 max-w-12 overflow-hidden bg-background text-center group-hover:bg-muted"
+          className="sticky left-0 z-30 w-12 min-w-12 max-w-12 overflow-hidden bg-background text-center group-hover:bg-muted/50"
           onClick={(e) => e.stopPropagation()}
         >
           <Checkbox
@@ -126,7 +126,7 @@ export function MakeupClassTableRow({
         </TableCell>
 
         {/* Học viên (sticky) — Avatar hover = profile card, Name click = detail dialog */}
-        <TableCell className="sticky left-12 z-20 w-80 min-w-80 max-w-80 overflow-hidden bg-background group-hover:bg-muted">
+        <TableCell className="sticky left-12 z-20 w-80 min-w-80 max-w-80 overflow-hidden bg-background group-hover:bg-muted/50">
           <div className="relative z-10 max-w-full overflow-hidden pr-24">
             <div className="flex min-w-0 items-center gap-3">
               {/* Hover on Avatar ONLY for StudentProfileHoverCard */}

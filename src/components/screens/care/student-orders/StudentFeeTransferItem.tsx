@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { Ticket, ExternalLink, ArrowRight } from 'lucide-react'
+import React, { useState } from 'react'
+import { Ticket, ExternalLink, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import type { FeeTransferRecord } from './studentOrdersTypes'
 
@@ -11,126 +11,151 @@ interface StudentFeeTransferItemProps {
 }
 
 export function StudentFeeTransferItem({ transfer: tf, onScrollToOrder }: StudentFeeTransferItemProps) {
+  const [showOldUid, setShowOldUid] = useState(false)
+  const [showNewUid, setShowNewUid] = useState(false)
+
   return (
-    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-2.5 shadow-2xs space-y-2.5 text-left select-none overflow-hidden">
-      {/* Transfer Card Header */}
-      <div className="flex items-center justify-between gap-2 flex-wrap -mx-2.5 -mt-2.5 px-3 py-2 bg-muted/40 dark:bg-zinc-800/40 rounded-t-2xl border-b border-border/20 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shrink-0">
-            🔄 Chuyển phí
-          </span>
-          <span className="text-muted-foreground text-xs font-medium">
-            Ngày chuyển: <strong className="text-foreground">{tf.transferDate}</strong>
-          </span>
+    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left text-xs transition-all overflow-hidden">
+      {/* Transfer Card Header Row */}
+      <div className="flex items-center justify-between text-xs pb-3 border-b border-border/30 flex-wrap gap-2">
+        <div className="text-muted-foreground font-normal">
+          Ngày chuyển: <strong className="font-bold text-foreground">{tf.transferDate}</strong>
         </div>
 
-        <div className="flex items-center gap-3 text-xs flex-wrap">
+        <div>
           <button
             type="button"
             onClick={() => toast.info(`Mã ticket chuyển phí: ${tf.ticketCode}`)}
             className="inline-flex items-center gap-1 font-mono font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
           >
-            <Ticket className="h-3.5 w-3.5 text-zinc-500" />
-            <span>Mã ticket: {tf.ticketCode}</span>
+            <Ticket className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Mã ticket: <span className="underline">{tf.ticketCode}</span></span>
             <ExternalLink className="h-3 w-3" />
           </button>
-          <span className="text-muted-foreground font-normal">
-            Người thực hiện: <strong className="text-foreground font-medium">{tf.executorName}</strong>
-          </span>
+        </div>
+
+        <div className="text-muted-foreground font-normal">
+          Người thực hiện: <strong className="font-bold text-foreground">{tf.executorName}</strong>
         </div>
       </div>
 
-      {/* 2-Column Transfer Flow Layout (GÓI CŨ ➔ GÓI MỚI) */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-3 items-center text-xs">
-        {/* Column 1: GÓI CŨ (GÓI NGUỒN) */}
-        <div className="p-3 rounded-xl bg-muted/20 dark:bg-zinc-800/30 border border-border/50 space-y-1.5 min-w-0">
-          <div className="flex items-center justify-between gap-1 pb-1 border-b border-border/30">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-              Gói Cũ (Gói Nguồn)
-            </span>
-          </div>
+      {/* 2-Column Side-by-Side Content Area (GÓI CŨ & GÓI MỚI in 1 Row) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 relative gap-6 pt-1">
+        {/* Left Column: GÓI CŨ */}
+        <div className="space-y-2 pr-0 md:pr-4">
+          <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
+            GÓI CŨ
+          </h4>
 
-          <p className="font-bold text-foreground text-xs leading-snug">
-            Học viên: <span className="text-foreground">{tf.oldPackage.studentName}</span>{' '}
-            <span className="text-muted-foreground font-mono font-normal">
-              (UID: {tf.oldPackage.uid} - SID: {tf.oldPackage.sid})
-            </span>
-          </p>
+          <div className="space-y-1.5 text-muted-foreground text-xs leading-relaxed">
+            <div className="flex items-center gap-1 flex-wrap">
+              <span>Học viên :</span>
+              <span className="font-semibold text-foreground">{tf.oldPackage.studentName}</span>
+              <button
+                type="button"
+                onClick={() => setShowOldUid(!showOldUid)}
+                className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer inline-flex items-center"
+                title={showOldUid ? 'Thu gọn mã học viên' : 'Xem UID / SID học viên'}
+              >
+                {showOldUid ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+              {showOldUid && (
+                <span className="font-mono text-muted-foreground font-normal">
+                  ( UID: {tf.oldPackage.uid} - SID: {tf.oldPackage.sid} )
+                </span>
+              )}
+            </div>
 
-          <p className="text-muted-foreground leading-snug font-normal">
-            Gói: <strong className="text-foreground font-semibold">{tf.oldPackage.packageName}</strong>
-          </p>
-
-          <div className="text-[11px] text-muted-foreground space-y-0.5 pt-0.5">
-            <p>Lộ trình: <strong className="text-foreground">{tf.oldPackage.pathwayLevel}</strong></p>
             <p>
-              Tổng số buổi: <strong className="text-foreground">{tf.oldPackage.totalSessions}</strong> / Buổi chính: <strong className="text-foreground">{tf.oldPackage.mainSessions}</strong>
+              Gói : <span className="font-medium text-foreground">{tf.oldPackage.packageName}</span>
             </p>
             <p>
-              Tổng đã học: <strong className="text-foreground">{tf.oldPackage.completedTotalSessions}</strong> / Buổi chính đã học: <strong className="text-foreground">{tf.oldPackage.completedMainSessions}</strong>
+              Lộ trình : <span className="font-semibold text-foreground">{tf.oldPackage.pathwayLevel}</span>
             </p>
-          </div>
-
-          <div className="pt-1.5 border-t border-border/30">
-            <span className="inline-block px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/70 text-xs font-semibold">
-              Số buổi được chuyển phí: {tf.oldPackage.transferredSessionsCount} buổi
-            </span>
+            <p>
+              Tổng số buổi : <span className="font-semibold text-foreground">{tf.oldPackage.totalSessions}</span> / Số buổi chính : <span className="font-semibold text-foreground">{tf.oldPackage.mainSessions}</span>
+            </p>
+            <p>
+              Tổng số buổi đã học : <span className="font-semibold text-foreground">{tf.oldPackage.completedTotalSessions}</span> / Số buổi chính đã học : <span className="font-semibold text-foreground">{tf.oldPackage.completedMainSessions}</span>
+            </p>
+            <p className="pt-0.5">
+              Số buổi được chuyển phí : <span className="font-semibold text-foreground">{tf.oldPackage.transferredSessionsCount} buổi</span>
+            </p>
           </div>
         </div>
 
-        {/* Arrow Transfer Indicator Icon */}
-        <div className="flex items-center justify-center my-1 md:my-0">
-          <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center border border-zinc-200 dark:border-zinc-700 shadow-3xs shrink-0">
-            <ArrowRight className="h-3.5 w-3.5" />
+        {/* Center Arrow & Dashed Divider */}
+        <div className="hidden md:flex flex-col items-center absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none">
+          {/* Purple circle with right arrow */}
+          <div className="h-6 w-6 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-xs shrink-0 z-10 mt-1">
+            <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
           </div>
+          {/* Vertical dashed line */}
+          <div className="flex-1 w-px border-r border-dashed border-violet-400/80 dark:border-violet-600/80 mt-1.5" />
         </div>
 
-        {/* Column 2: GÓI MỚI (GÓI NHẬN PHÍ) */}
-        <div className="p-3 rounded-xl bg-muted/20 dark:bg-zinc-800/30 border border-border/50 space-y-1.5 min-w-0">
-          <div className="flex items-center justify-between gap-1 pb-1 border-b border-border/30">
-            <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
-              Gói Mới (Gói Nhận Phí)
-            </span>
-          </div>
+        {/* Right Column: GÓI MỚI */}
+        <div className="space-y-2 pl-0 md:pl-6">
+          <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
+            GÓI MỚI
+          </h4>
 
-          <p className="font-bold text-foreground text-xs leading-snug">
-            Học viên nhận phí:{' '}
-            <span className="text-foreground">{tf.newPackage.recipientStudentName}</span>{' '}
-            <span className="text-muted-foreground font-mono font-normal">
-              (UID: {tf.newPackage.uid} - SID: {tf.newPackage.sid})
-            </span>
-          </p>
+          <div className="space-y-1.5 text-muted-foreground text-xs leading-relaxed">
+            <div className="flex items-center gap-1 flex-wrap">
+              <span>Học viên nhận phí :</span>
+              <span className="font-semibold text-foreground">{tf.newPackage.recipientStudentName}</span>
+              <button
+                type="button"
+                onClick={() => setShowNewUid(!showNewUid)}
+                className="p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer inline-flex items-center"
+                title={showNewUid ? 'Thu gọn mã học viên' : 'Xem UID / SID học viên'}
+              >
+                {showNewUid ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+              {showNewUid && (
+                <span className="font-mono text-muted-foreground font-normal">
+                  ( UID: {tf.newPackage.uid} - SID: {tf.newPackage.sid} )
+                </span>
+              )}
+            </div>
 
-          <p className="text-muted-foreground leading-snug font-normal">
-            Loại chuyển:{' '}
-            <span className="px-2 py-0.5 rounded text-[10.5px] font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/60">
-              {tf.newPackage.transferType}
-            </span>
-          </p>
+            <p>
+              Gói nhận phí : <span className="font-medium text-foreground">{tf.newPackage.targetPackageName}</span>
+            </p>
+            <p>
+              Lộ trình : <span className="font-semibold text-foreground">{tf.newPackage.pathwayLevel || '152'}</span>
+            </p>
+            <p>
+              Loại chuyển : <span className="font-medium text-foreground">{tf.newPackage.transferType}</span>
+            </p>
 
-          <p className="text-muted-foreground leading-snug font-normal pt-0.5">
-            Gói nhận phí:{' '}
-            <strong className="text-foreground font-semibold">
-              {tf.newPackage.targetPackageName}
-            </strong>
-          </p>
+            {tf.newPackage.linkedOrderNo && (
+              <p className="pt-0.5">
+                Đơn hàng thanh toán thêm:{' '}
+                <button
+                  type="button"
+                  onClick={() => onScrollToOrder(tf.newPackage.linkedOrderNo!)}
+                  className="font-mono font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1"
+                >
+                  <span>{tf.newPackage.linkedOrderNo}</span>
+                  <ExternalLink className="h-3 w-3" />
+                </button>
+              </p>
+            )}
 
-          {/* Linked Order Button */}
-          <div className="pt-2 border-t border-border/30">
-            <button
-              type="button"
-              onClick={() => onScrollToOrder(tf.newPackage.linkedOrderNo)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
-            >
-              <span>Đơn hàng thanh toán thêm:</span>
-              <span className="font-mono bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-200/60">
-                {tf.newPackage.linkedOrderNo}
+            {/* SỐ LƯỢNG BUỔI TỐI ĐA SAU QUY ĐỔI : [ 2 BUỔI ] */}
+            <div className="flex items-center gap-2 pt-1.5 flex-wrap">
+              <span className="font-bold text-violet-700 dark:text-violet-400 uppercase text-[11.5px] tracking-tight">
+                SỐ LƯỢNG BUỔI TỐI ĐA SAU QUY ĐỔI :
               </span>
-              <ExternalLink className="h-3 w-3" />
-            </button>
+              <span className="px-2.5 py-0.5 rounded border border-violet-600/80 dark:border-violet-400 text-violet-700 dark:text-violet-300 font-bold font-mono text-xs shadow-2xs bg-violet-50/40 dark:bg-violet-950/20">
+                {tf.newPackage.convertedSessionsLabel || `${tf.oldPackage.transferredSessionsCount} BUỔI`}
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   )
 }
+

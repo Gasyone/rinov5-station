@@ -2,12 +2,8 @@
 
 import { ExpandableSearch, FilterIconButton, ToolbarSelect, BranchSelect } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
-import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { Download, Table2, LayoutGrid } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { CompactExportPopover } from '../CompactExportPopover'
 
 interface RenewalToolbarProps {
   searchQuery: string
@@ -109,40 +105,6 @@ export function RenewalToolbar({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Switch View Buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              size="xs"
-              variant="ghost"
-              className={cn(
-                "h-8 text-xs font-bold flex items-center gap-1.5 cursor-pointer px-2.5 rounded-md transition-colors",
-                viewMode === 'table' 
-                  ? "text-sky-600 hover:text-sky-700 hover:bg-sky-50/50" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-zinc-100"
-              )}
-              onClick={() => onViewModeChange('table')}
-              type="button"
-            >
-              <Table2 className="h-3.5 w-3.5" />
-              Bảng
-            </Button>
-            <Button
-              size="xs"
-              variant="ghost"
-              className={cn(
-                "h-8 text-xs font-bold flex items-center gap-1.5 cursor-pointer px-2.5 rounded-md transition-colors",
-                viewMode === 'dashboard' 
-                  ? "text-sky-600 hover:text-sky-700 hover:bg-sky-50/50" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-zinc-100"
-              )}
-              onClick={() => onViewModeChange('dashboard')}
-              type="button"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Dashboard
-            </Button>
-          </div>
-
           <ExpandableSearch
             value={searchQuery}
             onValueChange={onSearchChange}
@@ -152,29 +114,11 @@ export function RenewalToolbar({
             count={activeFilterCount > 0 ? activeFilterCount : undefined}
             onClick={onOpenFilter}
           />
-          
-          <CompactExportPopover
-            title="Cấu hình xuất dữ liệu Tái phí"
-            fields={exportFields}
-            onConfirm={onConfirmExport}
-            recordCount={alertsCount || 0}
-            trigger={
-              <Button
-                variant="outline"
-                size="xs"
-                className="h-8 text-xs flex items-center gap-1.5 bg-background hover:bg-muted border border-border shadow-none cursor-pointer"
-                title="Xuất danh sách sang Excel"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline font-semibold">Xuất dữ liệu</span>
-              </Button>
-            }
-          />
         </div>
       </div>
 
       {/* Row 2: Care Progress Pill Tabs + Month Filter Radio Buttons */}
-      <div className="flex items-center justify-between gap-4 overflow-x-auto min-w-0 border-t border-border/40 dark:border-zinc-800 pt-2">
+      <div className="flex items-center justify-between gap-4 overflow-x-auto min-w-0 pt-1">
         <div className="min-w-0 flex-1 overflow-x-auto">
           <StatusTiles
             tiles={careProgressTiles}
@@ -183,46 +127,47 @@ export function RenewalToolbar({
           />
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 pl-2 border-l border-border/40 dark:border-zinc-800">
+        <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-border/40 dark:border-zinc-800">
+          <span className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap">Hạn học phí:</span>
           <RadioGroup
             value={selectedMonth}
             onValueChange={onMonthChange}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2.5"
           >
-            <div className="flex items-center gap-1 cursor-pointer">
+            <div className="flex items-center gap-1 cursor-pointer" title="Tất cả học viên">
               <RadioGroupItem value="all" id="month-all" className="cursor-pointer" />
               <Label htmlFor="month-all" className="text-xs cursor-pointer font-medium whitespace-nowrap text-muted-foreground hover:text-foreground">
                 Tất cả
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer">
+            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T1: Hết hạn học phí trong vòng 1 tháng tới (Khẩn cấp)">
               <RadioGroupItem 
                 value="1" 
                 id="month-1" 
                 className="cursor-pointer border-red-500 text-red-600 focus-visible:ring-red-400 data-[state=checked]:border-red-600" 
               />
               <Label htmlFor="month-1" className="text-xs cursor-pointer font-bold whitespace-nowrap text-red-600 dark:text-red-400">
-                Tháng T1
+                Hạn T1 (≤ 1T)
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer">
+            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T2: Hết hạn học phí trong 1 - 2 tháng tới">
               <RadioGroupItem 
                 value="2" 
                 id="month-2" 
                 className="cursor-pointer border-amber-500 text-amber-600 focus-visible:ring-amber-400 data-[state=checked]:border-amber-600" 
               />
               <Label htmlFor="month-2" className="text-xs cursor-pointer font-bold whitespace-nowrap text-amber-600 dark:text-amber-400">
-                Tháng T2
+                Hạn T2 (1-2T)
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer">
+            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T3: Hết hạn học phí trong 2 - 3 tháng tới">
               <RadioGroupItem 
                 value="3" 
                 id="month-3" 
                 className="cursor-pointer border-emerald-500 text-emerald-600 focus-visible:ring-emerald-400 data-[state=checked]:border-emerald-600" 
               />
               <Label htmlFor="month-3" className="text-xs cursor-pointer font-bold whitespace-nowrap text-emerald-600 dark:text-emerald-400">
-                Tháng T3
+                Hạn T3 (2-3T)
               </Label>
             </div>
           </RadioGroup>

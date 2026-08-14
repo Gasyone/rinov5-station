@@ -1,6 +1,6 @@
 import { getTrialClasses, type TrialClassStatus, type TrialClass } from '@/mocks/trialClasses'
 export type { TrialClass }
-import type { CreateTrialClassForm, StatusTileId, TrialClassFilterState } from './trialClassTypes'
+import type { CreateTrialClassForm, StatusTileId, TrialClassFilterState, TrialResultFilterId } from './trialClassTypes'
 import { STATUS_META } from './trialClassConstants'
 
 export function formatTrialDate(dateStr: string): string {
@@ -11,12 +11,87 @@ export function formatTrialDate(dateStr: string): string {
   return `${parts[2]}/${parts[1]}/${parts[0]}${time ? ` ${time}` : ''}`
 }
 
-export function countStatus(trials: TrialClass[], id: StatusTileId): number {
+export function formatDateShort(dateStr: string): string {
+  if (!dateStr) return '—'
+  const [date] = dateStr.split(' ')
+  const parts = date.split('-')
+  if (parts.length !== 3) return '—'
+  return `${parts[2]}/${parts[1]}`
+}
+
+export function formatTimeOnly(dateStr: string): string {
+  if (!dateStr) return '—'
+  const parts = dateStr.split(' ')
+  return parts[1] ?? '—'
+}
+
+const WEEKDAYS_VI = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+
+export function getWeekdayAbbr(dateStr: string): string {
+  if (!dateStr) return ''
+  const [datePart] = dateStr.split(' ')
+  const d = new Date(datePart)
+  if (isNaN(d.getTime())) return ''
+  return WEEKDAYS_VI[d.getDay()] ?? ''
+}
+
+export function getEndTime(startTimeStr: string): string {
+  if (!startTimeStr) return ''
+  const [hStr, mStr] = startTimeStr.split(':')
+  if (!hStr || !mStr) return ''
+  let h = parseInt(hStr, 10)
+  let m = parseInt(mStr, 10) + 90
+  h += Math.floor(m / 60)
+  m = m % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+import type { GenericSessionData } from '@/components/screens/calendar/SessionHoverCard'
+
+export function formatSessionDateTimeRange(dateStr: string): string {
+  if (!dateStr) return '—'
+  const weekday = getWeekdayAbbr(dateStr)
+  const dateShort = formatDateShort(dateStr)
+  const startTime = formatTimeOnly(dateStr)
+  const endTime = getEndTime(startTime)
+  const timeRange = endTime ? `${startTime} - ${endTime}` : startTime
+  return `${weekday} ${dateShort} · ${timeRange}`
+}
+
+export function buildTrialSessionData(trial: TrialClass): GenericSessionData | null {
+  if (!trial.sessions || trial.sessions.length === 0) return null
+  const sess = trial.sessions[0]
+  const dateStr = sess.trialDate || ''
+  const startTime = formatTimeOnly(dateStr)
+  const endTime = getEndTime(startTime)
+  const timeSlot = endTime ? `${startTime} - ${endTime}` : startTime
+
+  return {
+    id: sess.classId,
+    className: sess.className,
+    classCode: sess.classId,
+    title: sess.sessionName,
+    subject: trial.subject,
+    level: trial.program,
+    branch: trial.branch || trial.school,
+    date: sess.trialDate,
+    timeLabel: startTime,
+    endTimeLabel: endTime,
+    timeSlot,
+    scheduleType: 'class',
+  }
+}
+
+export function countStatus(trials: TrialClass[], id: string): number {
   if (id === 'all') return trials.length
+  if (id === 'unassigned') return trials.filter((t) => t.sessions.length === 0).length
+  if (id === 'confirmed') return trials.filter((t) => t.status === 'confirmed' || t.status === 'reschedule').length
+  if (id === 'expired') return trials.filter((t) => (t.status as string) === 'expired' || t.status === 'cancelled').length
   return trials.filter((t) => t.status === id).length
 }
 
 export function getTrialStatusLabel(status: string) {
+  if (status === 'reschedule') return 'Ghép lớp'
   return STATUS_META[status as keyof typeof STATUS_META]?.label ?? status
 }
 
@@ -183,11 +258,21 @@ export function filterTrialClasses(
   activeBranch: string,
   activeStatus: StatusTileId,
   filters: TrialClassFilterState,
-  activeSubject?: string
+  activeSubject?: string,
+  activeResultFilter?: TrialResultFilterId
 ): TrialClass[] {
   return trials.filter((trial) => {
     if (activeBranch !== 'all' && trial.branch !== activeBranch) return false
-    if (activeStatus !== 'all' && trial.status !== activeStatus) return false
+    if (activeStatus !== 'all') {
+      if (activeStatus === 'confirmed' && trial.status !== 'confirmed' && trial.status !== 'reschedule') return false
+      if (activeStatus !== 'confirmed' && trial.status !== activeStatus) return false
+    }
+    if (activeResultFilter && activeResultFilter !== 'all') {
+      if (activeResultFilter === 'unassigned' && trial.sessions.length > 0) return false
+      if (activeResultFilter === 'completed' && trial.status !== 'completed') return false
+      if (activeResultFilter === 'no_show' && trial.status !== 'no_show') return false
+      if (activeResultFilter === 'expired' && (trial.status as string) !== 'expired' && trial.status !== 'cancelled') return false
+    }
     if (activeSubject && activeSubject !== 'all') {
       const ts = trial.subject.toLowerCase()
       if (activeSubject === 'english' && !ts.includes('anh')) return false

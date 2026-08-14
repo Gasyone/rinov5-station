@@ -113,9 +113,6 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
             </span>
           )}
         </div>
-        <div className={cn("mt-0.5 text-[9.5px] text-muted-foreground/90 truncate font-medium", isCancelled && "line-through")} title={session.title}>
-          Bài: {session.title}
-        </div>
         <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">

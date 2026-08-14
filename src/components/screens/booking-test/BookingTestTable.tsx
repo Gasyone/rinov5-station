@@ -29,21 +29,18 @@ interface BookingTestTableProps {
 
 const COLUMN_DEFS: Array<{ label: string; className: string; sticky?: boolean }> = [
   {
-    label: 'Booking Trải nghiệm',
-    className: 'sticky left-12 z-30 w-84 min-w-84 max-w-84 overflow-hidden bg-muted',
+    label: 'Học viên',
+    className: 'sticky left-12 z-30 w-[280px] min-w-[280px] max-w-[280px] overflow-hidden bg-muted',
     sticky: true,
   },
-  { label: 'Học viên', className: 'min-w-72' },
   { label: 'Liên hệ', className: 'min-w-40' },
-  { label: 'Trường', className: 'min-w-52' },
-  { label: 'Giờ test', className: 'min-w-44' },
-  { label: 'Trình độ', className: 'min-w-32' },
-  { label: 'Nhánh trình độ', className: 'min-w-28' },
-  { label: 'Speaking', className: 'min-w-52' },
+  { label: 'Nội dung Trải nghiệm', className: 'min-w-48' },
+  { label: 'Giáo viên & Cơ sở', className: 'min-w-52' },
+  { label: 'Speaking', className: 'min-w-48' },
   { label: 'LWR', className: 'min-w-48' },
   { label: 'Trạng thái', className: 'min-w-44' },
+  { label: 'Trình độ', className: 'min-w-36' },
   { label: 'Kết quả', className: 'min-w-28' },
-  { label: 'Giáo viên', className: 'min-w-36' },
   { label: 'Ghi chú', className: 'min-w-48' },
 ]
 
@@ -65,7 +62,7 @@ export function BookingTestTable({
   return (
     <Table
       containerClassName="min-w-full overflow-visible align-top"
-      className="min-w-[1780px]"
+      className="min-w-[1550px]"
     >
       <TableHeader className="[&_tr]:border-b-0">
         <TableRow className="border-b-0 bg-muted hover:bg-muted">

@@ -37,6 +37,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null)
 
   const [customDraftOrders, setCustomDraftOrders] = useState<DetailedOrder[]>([])
+  const [showOtherChildrenOrders, setShowOtherChildrenOrders] = useState(false)
 
   const initialOrders = useMemo(() => getStudentOrders(studentId, studentName), [studentId, studentName])
   const transfers = useMemo(() => getFeeTransfers(studentId, studentName), [studentId, studentName])
@@ -45,6 +46,11 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const orders = useMemo(() => {
     return [...customDraftOrders, ...initialOrders]
   }, [customDraftOrders, initialOrders])
+
+  const filteredOrders = useMemo(() => {
+    if (showOtherChildrenOrders) return orders
+    return orders.filter((o) => !o.isOtherChild)
+  }, [orders, showOtherChildrenOrders])
 
   const isDraftOrder = useCallback((order: DetailedOrder): boolean => {
     return order.id.includes('DRAFT') || order.orderNo.includes('DRAFT') || order.paymentMethodTag?.includes('Đơn nháp') || false
@@ -65,9 +71,9 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
     [isDraftOrder, isCurrentPackageOrder]
   )
 
-  const draftOrders = useMemo(() => orders.filter(isDraftOrder), [orders, isDraftOrder])
-  const currentOrders = useMemo(() => orders.filter(isCurrentPackageOrder), [orders, isCurrentPackageOrder])
-  const purchasedOrders = useMemo(() => orders.filter(isPurchasedOrder), [orders, isPurchasedOrder])
+  const draftOrders = useMemo(() => filteredOrders.filter(isDraftOrder), [filteredOrders, isDraftOrder])
+  const currentOrders = useMemo(() => filteredOrders.filter(isCurrentPackageOrder), [filteredOrders, isCurrentPackageOrder])
+  const purchasedOrders = useMemo(() => filteredOrders.filter(isPurchasedOrder), [filteredOrders, isPurchasedOrder])
 
   const toggleExpandPayments = useCallback((orderId: string) => {
     setExpandedPayments((prev) => ({
@@ -176,35 +182,43 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   }, [])
 
   return (
-    <div className="space-y-5 text-left select-none">
-      {/* ── SECTION: GÓI HIỆN TẠI + NÚT TẠO ĐƠN TRÊN CÙNG ── */}
+    <div className="space-y-5 text-left">
+      {/* ── SECTION: GÓI HIỆN TẠI + CHECKBOX CON KHÁC + NÚT TẠO ĐƠN TRÊN CÙNG ── */}
       {currentOrders.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between py-0.5 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
-                <span>Gói hiện tại</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[11px] font-mono font-bold">
-                  {currentOrders.length}
-                </span>
-              </div>
-              <span className="text-[11px] font-normal text-muted-foreground italic hidden sm:inline">
-                (Gói học đang áp dụng & sắp tái phí)
+          <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+              <span>Gói hiện tại</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[11px] font-mono font-bold">
+                {currentOrders.length}
               </span>
             </div>
 
-            {/* Button Tạo đơn ở trên cùng, bên phải cùng dòng với Gói hiện tại */}
-            <Button
-              type="button"
-              onClick={() => {
-                setEditingDraftOrder(null)
-                setIsDraftEditorOpen(true)
-              }}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Tạo đơn</span>
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Checkbox mở rộng xem đơn hàng của các con khác */}
+              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-zinc-300 cursor-pointer select-none hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={showOtherChildrenOrders}
+                  onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
+                  className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+                />
+                <span>Xem đơn các con khác</span>
+              </label>
+
+              {/* Button Tạo đơn ở trên cùng */}
+              <Button
+                type="button"
+                onClick={() => {
+                  setEditingDraftOrder(null)
+                  setIsDraftEditorOpen(true)
+                }}
+                className="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white border border-indigo-200/80 dark:border-indigo-800 font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Tạo đơn</span>
+              </Button>
+            </div>
           </div>
           <div className="space-y-3.5">
             {currentOrders.map((order) => (

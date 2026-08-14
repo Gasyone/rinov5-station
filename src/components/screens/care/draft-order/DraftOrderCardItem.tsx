@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { RotateCcw, Trash2, Tag, Info, Minus, Plus, User, Check, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
-import { PRODUCT_CATALOG, type DraftOrderItem } from './draftOrderTypes'
+import { PRODUCT_CATALOG, MOCK_CHILD_PACKAGES, type DraftOrderItem } from './draftOrderTypes'
 import { ComboDetailsDialog } from './ComboDetailsDialog'
 import { VoucherSelectionDialog } from './VoucherSelectionDialog'
 import { MOCK_VOUCHERS, type VoucherItem } from './voucherData'
@@ -197,45 +197,100 @@ export function DraftOrderCardItem({
   const rangePlaceholder = item.priceRangePlaceholder || currentCatalogItem?.priceRangePlaceholder || '6.500.000 (đ) - 14.500.000 (đ)'
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-border/80 rounded-xl p-3.5 space-y-3 shadow-2xs hover:border-border transition-all">
-      {/* ── CARD HEADER: TITLE + ORDER TYPE + CHỌN CON GROUPING ── */}
-      <div className="flex items-center justify-between pb-2 border-b border-border/40 gap-3 flex-wrap">
+    <div className="p-3.5 px-4 space-y-3">
+      {/* ── PRODUCT TITLE HEADER ROW (Lighter highlight background) ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap bg-indigo-50/70 dark:bg-indigo-950/40 p-2 px-3 rounded-lg">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="font-bold text-indigo-600 dark:text-indigo-400 text-xs uppercase tracking-normal">
             {item.categoryName}
           </span>
 
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
               <Checkbox
                 checked={item.isNew}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked) => {
+                  const isChecked = !!checked
                   onUpdate(item.id, {
-                    isNew: !!checked,
-                    isRenewal: !checked,
+                    isNew: isChecked,
+                    isRenewal: !isChecked,
                   })
-                }
+                }}
               />
-              <span>Mua mới</span>
+              <span className={item.isNew ? 'font-semibold text-indigo-700 dark:text-indigo-300' : ''}>
+                Mua mới
+              </span>
             </label>
 
-            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
               <Checkbox
                 checked={item.isRenewal}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked) => {
+                  const isChecked = !!checked
+                  const defaultPkg = (MOCK_CHILD_PACKAGES[item.childAccount] || MOCK_CHILD_PACKAGES['con-1'] || [])[0]
                   onUpdate(item.id, {
-                    isRenewal: !checked,
-                    isNew: !checked,
+                    isRenewal: isChecked,
+                    isNew: !isChecked,
+                    ...(isChecked && defaultPkg
+                      ? {
+                          renewalPackageId: defaultPkg.id,
+                          productCode: defaultPkg.productCode,
+                          program: defaultPkg.program,
+                          teacher: defaultPkg.teacher,
+                          packageType: defaultPkg.packageType,
+                          center: defaultPkg.center || item.center || 'Rino Linh Đàm',
+                          unitPrice: defaultPkg.unitPrice,
+                        }
+                      : {}),
                   })
-                }
+                }}
               />
-              <span className="font-semibold text-indigo-700 dark:text-indigo-300">Gia hạn</span>
+              <span className={item.isRenewal ? 'font-semibold text-indigo-700 dark:text-indigo-300' : ''}>
+                Gia hạn
+              </span>
             </label>
+
+            {item.isRenewal && (
+              <div className="flex items-center gap-1.5 ml-1">
+                <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">
+                  Gói cần gia hạn:
+                </span>
+                <CustomSelect
+                  value={
+                    item.renewalPackageId ||
+                    (MOCK_CHILD_PACKAGES[item.childAccount] || MOCK_CHILD_PACKAGES['con-1'] || [])[0]?.id ||
+                    ''
+                  }
+                  onChange={(pkgId) => {
+                    const pkgs = MOCK_CHILD_PACKAGES[item.childAccount] || MOCK_CHILD_PACKAGES['con-1'] || []
+                    const selectedPkg = pkgs.find((p) => p.id === pkgId)
+                    if (selectedPkg) {
+                      onUpdate(item.id, {
+                        renewalPackageId: selectedPkg.id,
+                        productCode: selectedPkg.productCode,
+                        program: selectedPkg.program,
+                        teacher: selectedPkg.teacher,
+                        packageType: selectedPkg.packageType,
+                        center: selectedPkg.center || item.center || 'Rino Linh Đàm',
+                        unitPrice: selectedPkg.unitPrice,
+                        discount: Math.round(selectedPkg.unitPrice * 0.1),
+                      })
+                    }
+                  }}
+                  className="min-w-[260px] max-w-sm"
+                  placeholder="Chọn gói cần gia hạn..."
+                  options={(MOCK_CHILD_PACKAGES[item.childAccount] || MOCK_CHILD_PACKAGES['con-1'] || []).map((pkg) => ({
+                    value: pkg.id,
+                    label: pkg.packageName,
+                  }))}
+                />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Top Right Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => onReset(item.id)}

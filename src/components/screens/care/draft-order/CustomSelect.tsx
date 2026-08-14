@@ -45,7 +45,7 @@ export function CustomSelect({
   }, [])
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className}`}>
+    <div ref={containerRef} className={`relative w-full ${isOpen ? 'z-40' : 'z-1'} ${className}`}>
       {/* Trigger Button */}
       <button
         type="button"

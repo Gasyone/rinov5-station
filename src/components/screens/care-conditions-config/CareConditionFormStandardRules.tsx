@@ -200,12 +200,12 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
 
   const windowLabel =
     selectedMetricId === 'att_theo_so_buoi'
-      ? 'Mốc thứ tự buổi học kích hoạt'
+      ? 'Mốc buổi học kích hoạt'
       : selectedMetricId === 'att_theo_loai_buoi'
       ? 'Loại buổi học kích hoạt'
       : activeMetric.source === 'periodic_time'
-      ? 'Mốc thời gian / Tần suất rà soát'
-      : 'Chu kỳ đánh giá (Tần suất rà soát)'
+      ? 'Mốc thời gian rà soát'
+      : 'Chu kỳ rà soát'
 
   // Determine if comparison operator & numeric threshold fields should be shown
   const showNumericComparison = !activeMetric.isEventMilestone || (activeMetric.operators && activeMetric.operators.length > 1 && activeMetric.unit !== 'mốc')
@@ -292,10 +292,20 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
         </div>
       )}
 
-      {/* 3. MỐC / CHU KỲ KÍCH HOẠT & PHẠM VI TÍNH TOÁN */}
+      {/* 3. MỐC / CHU KỲ KÍCH HOẠT & CÁC Ô NHẬP TÙY CHỈNH (GOM CÙNG 1 HÀNG NẾU CÓ Ô NHẬP PHỤ) */}
       <div className="space-y-3">
-        <div className={hasScopeOptions && hasWindowOptions ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3'}>
-          {hasWindowOptions && (
+        {hasWindowOptions && (
+          <div
+            className={
+              windowType === 'custom_sessions' ||
+              windowType === 'custom_session_numbers' ||
+              (selectedMetricId === 'periodic_by_date_of_month' && windowType === 'custom_dates_month') ||
+              (selectedMetricId === 'periodic_by_annual_date' && windowType === 'custom_holiday_date')
+                ? 'grid grid-cols-2 gap-3'
+                : 'grid grid-cols-1 gap-3'
+            }
+          >
+            {/* Cột trái: Chu kỳ đánh giá / Mốc kích hoạt */}
             <FieldLabel label={windowLabel}>
               <InlineSelect
                 value={windowType}
@@ -305,88 +315,77 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
                 className="w-full h-8 text-xs font-semibold"
               />
             </FieldLabel>
-          )}
 
-          {hasScopeOptions && (
-            <FieldLabel label="Phạm vi tính toán">
-              <InlineSelect
-                value={scope}
-                options={activeMetric.scopeOptions}
-                onValueChange={(val: string) => setScope(val)}
-                placeholder="Chọn phạm vi..."
-                className="w-full h-8 text-xs font-semibold"
-              />
-            </FieldLabel>
-          )}
-        </div>
-
-        {/* CÁC Ô NHẬP DỮ LIỆU TỦY CHỈNH THEO MỐC ĐÃ CHỌN */}
-
-        {/* a) Ô nhập N buổi học gần nhất */}
-        {windowType === 'custom_sessions' && (
-          <FieldLabel label="Số buổi đã xảy ra ở lớp học (N buổi)">
-            <div className="flex items-center gap-2 w-full">
-              <div className="flex items-center border border-input rounded-md overflow-hidden bg-background focus-within:ring-1 focus-within:ring-ring flex-1 h-8">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCustomSessionCount(Math.max(1, (customSessionCount || 1) - 1))}
-                  className="h-8 w-9 rounded-none border-r border-border hover:bg-muted font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                </Button>
+            {/* Cột phải: Ô nhập phụ tương ứng theo mốc đã chọn (hiển thị cùng 1 hàng) */}
+            {windowType === 'custom_sessions' ? (
+              <FieldLabel label="Số buổi gần nhất (N)">
+                <div className="flex items-center gap-2 w-full">
+                  <div className="flex items-center border border-input rounded-md overflow-hidden bg-background focus-within:ring-1 focus-within:ring-ring flex-1 h-8">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setCustomSessionCount(Math.max(1, (customSessionCount || 1) - 1))}
+                      className="h-8 w-9 rounded-none border-r border-border hover:bg-muted font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={customSessionCount}
+                      onChange={(e) => setCustomSessionCount(Math.max(1, Number(e.target.value)))}
+                      placeholder="8"
+                      className="h-8 border-0 text-center font-mono font-bold text-xs focus-visible:ring-0 focus-visible:ring-offset-0 px-2 rounded-none min-w-0 flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setCustomSessionCount((customSessionCount || 0) + 1)}
+                      className="h-8 w-9 rounded-none border-l border-border hover:bg-muted font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="h-8 px-2.5 flex items-center justify-center border border-input bg-muted/40 rounded-md shrink-0 text-xs font-bold text-muted-foreground min-w-[48px]">
+                    buổi
+                  </div>
+                </div>
+              </FieldLabel>
+            ) : windowType === 'custom_session_numbers' ? (
+              <FieldLabel label="Mốc số thứ tự buổi">
                 <Input
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={customSessionCount}
-                  onChange={(e) => setCustomSessionCount(Math.max(1, Number(e.target.value)))}
-                  placeholder="8"
-                  className="h-8 border-0 text-center font-mono font-bold text-xs focus-visible:ring-0 focus-visible:ring-offset-0 px-2 rounded-none min-w-0 flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  value={customSessionNumbersText}
+                  onChange={(e) => setCustomSessionNumbersText?.(e.target.value)}
+                  placeholder="VD: 1; 5; 10; 15"
+                  className="h-8 text-xs font-mono font-bold"
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCustomSessionCount((customSessionCount || 0) + 1)}
-                  className="h-8 w-9 rounded-none border-l border-border hover:bg-muted font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <div className="h-8 px-2.5 flex items-center justify-center border border-input bg-muted/40 rounded-md shrink-0 text-xs font-bold text-muted-foreground min-w-[48px]">
-                buổi
-              </div>
-            </div>
-          </FieldLabel>
+              </FieldLabel>
+            ) : selectedMetricId === 'periodic_by_date_of_month' && windowType === 'custom_dates_month' ? (
+              <FieldLabel label="Mốc ngày trong tháng">
+                <Input
+                  value={customDaysText}
+                  onChange={(e) => setCustomDaysText?.(e.target.value)}
+                  placeholder="VD: 1; 15; 25"
+                  className="h-8 text-xs font-mono font-bold"
+                />
+              </FieldLabel>
+            ) : selectedMetricId === 'periodic_by_annual_date' && windowType === 'custom_holiday_date' ? (
+              <FieldLabel label="Mốc ngày lễ (DD/MM)">
+                <Input
+                  value={customHolidayText}
+                  onChange={(e) => setCustomHolidayText(e.target.value)}
+                  placeholder="VD: 01/06; 20/11"
+                  className="h-8 text-xs font-mono font-bold"
+                />
+              </FieldLabel>
+            ) : null}
+          </div>
         )}
 
-        {/* b) Ô nhập danh sách mốc số thứ tự buổi học (VD: 1; 5; 10) */}
-        {windowType === 'custom_session_numbers' && (
-          <FieldLabel label="Danh sách mốc số thứ tự buổi học (VD: 1; 5; 10)">
-            <Input
-              value={customSessionNumbersText}
-              onChange={(e) => setCustomSessionNumbersText?.(e.target.value)}
-              placeholder="VD: 1; 5; 10; 15"
-              className="h-8 text-xs font-mono font-bold"
-            />
-          </FieldLabel>
-        )}
-
-        {/* c) Ô nhập danh sách mốc ngày trong tháng (VD: 1; 15; 25) */}
-        {selectedMetricId === 'periodic_by_date_of_month' && windowType === 'custom_dates_month' && (
-          <FieldLabel label="Danh sách mốc ngày trong tháng (VD: 1; 15; 25)">
-            <Input
-              value={customDaysText}
-              onChange={(e) => setCustomDaysText?.(e.target.value)}
-              placeholder="VD: 1; 15; 25"
-              className="h-8 text-xs font-mono font-bold"
-            />
-          </FieldLabel>
-        )}
-
-        {/* d) Chọn Tuần & Thứ trong tháng */}
+        {/* d) Chọn Tuần & Thứ trong tháng (Nếu chọn periodic_by_week_and_day) */}
         {selectedMetricId === 'periodic_by_week_and_day' && (
           <div className="grid grid-cols-2 gap-3">
             <FieldLabel label="Chọn tuần trong tháng">
@@ -423,18 +422,6 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
               />
             </FieldLabel>
           </div>
-        )}
-
-        {/* e) Ô nhập danh sách mốc ngày lễ / sự kiện năm (DD/MM) */}
-        {selectedMetricId === 'periodic_by_annual_date' && windowType === 'custom_holiday_date' && (
-          <FieldLabel label="Danh sách mốc ngày lễ / sự kiện năm (DD/MM)">
-            <Input
-              value={customHolidayText}
-              onChange={(e) => setCustomHolidayText(e.target.value)}
-              placeholder="VD: 01/06; 20/11"
-              className="h-8 text-xs font-mono font-bold"
-            />
-          </FieldLabel>
         )}
 
         {/* 4. BADGE THỜI ĐIỂM KÍCH HOẠT HỆ THỐNG */}

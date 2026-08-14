@@ -279,18 +279,18 @@ export function StudentCareFormCard({
   }, [displayPinnedTopics, isCaredStatus, isRenewalMode])
 
   return (
-    <div ref={careFormRef} className="space-y-2 text-left mb-3 select-none">
+    <div ref={careFormRef} className="space-y-2 text-left mb-3">
       {/* Top Header: Tab Chăm sóc / Tái phí + Các thẻ chăm sóc ngang (Nằm bên ngoài card) */}
       <div className="space-y-1.5">
-        <div className="w-full bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-lg flex items-center gap-1 border border-slate-200/60 dark:border-zinc-700/60 h-9">
+        <div className="w-full bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-zinc-700 h-9">
           <button
             type="button"
             onClick={() => onCareModeChange('regular')}
             className={cn(
-              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
+              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
               !isRenewalMode
-                ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
+                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
             )}
           >
             <span>Chăm sóc</span>
@@ -301,7 +301,7 @@ export function StudentCareFormCard({
               const badgeClass = getStatusBadgeClass(statusKey)
 
               return (
-                <span className={cn('inline-flex items-center justify-center text-[9.5px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
+                <span className={cn('inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
                   {statusLabel} ({regTopics.length})
                 </span>
               )
@@ -312,10 +312,10 @@ export function StudentCareFormCard({
             type="button"
             onClick={() => onCareModeChange('renewal')}
             className={cn(
-              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
+              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
               isRenewalMode
-                ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
+                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
             )}
           >
             <span>Tái phí</span>
@@ -326,7 +326,7 @@ export function StudentCareFormCard({
               const badgeClass = getStatusBadgeClass(statusKey)
 
               return (
-                <span className={cn('inline-flex items-center justify-center text-[9.5px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
+                <span className={cn('inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
                   {statusLabel}
                 </span>
               )
@@ -406,8 +406,8 @@ export function StudentCareFormCard({
         </div>
       </div>
 
-      {/* Main Section Card: Form nhập liệu tương tác */}
-      <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-border/60 shadow-2xs p-3.5 pt-3 space-y-2">
+      {/* Main Section Card: Form nhập liệu tương tác - Phủ toàn bộ màu nền Xanh Sky Light */}
+      <div className="bg-sky-50/40 dark:bg-sky-950/25 rounded-2xl border border-sky-200/80 dark:border-sky-900/60 shadow-2xs p-3.5 pt-3 space-y-2">
         <CallConnectionBanner
           isActive={isCallActive}
           contactName={formatContactDisplayName(selectedContact.name, selectedContact.relationship)}
@@ -420,9 +420,9 @@ export function StudentCareFormCard({
 
         <div className="select-none animate-in fade-in-50 duration-150 grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-start">
           {/* Left Column (~33%): Contact Info & Controls in horizontal rows */}
-          <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-border/40 pb-2 md:pb-0 pr-0 md:pr-3">
-            {/* Box cụm người liên hệ phụ huynh (đóng khung viền, bỏ nhãn chữ Phụ huynh & Số ĐT) */}
-            <div className="p-2 rounded-lg border border-slate-200/80 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 space-y-1.5 w-full">
+          <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-sky-200/60 dark:border-sky-900/50 pb-2 md:pb-0 pr-0 md:pr-3">
+            {/* Box cụm người liên hệ phụ huynh (nền trắng nổi bật trên card xanh nhạt) */}
+            <div className="p-2 rounded-lg border border-sky-200/80 dark:border-sky-900/70 bg-white/90 dark:bg-zinc-900/90 space-y-1.5 w-full shadow-3xs">
               {/* Row 1: Tên Phụ huynh (dạng dropdown trigger) */}
               <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
                 <Popover>
@@ -528,7 +528,7 @@ export function StudentCareFormCard({
                     setCallOutcome('da_gap')
                   }
                 }}
-                className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
+                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
               >
                 <option value="zalo">Zalo</option>
                 <option value="telephone">Gọi điện</option>
@@ -543,7 +543,7 @@ export function StudentCareFormCard({
               <select
                 value={callOutcome}
                 onChange={(e) => setCallOutcome && setCallOutcome(e.target.value)}
-                className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
+                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
               >
                 {chatChannel === 'telephone' ? (
                   <>
@@ -581,7 +581,7 @@ export function StudentCareFormCard({
                   if (!e.target.value) e.target.type = 'text'
                 }}
                 onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                className="h-7 text-[11px] px-2 rounded-md border border-border bg-background text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
+                className="h-7 text-[11px] px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
               />
             </div>
 
@@ -591,7 +591,10 @@ export function StudentCareFormCard({
                   Gia hạn:
                 </span>
                 <select
-                  value={renewalStatus || cstpStatus}
+                  value={
+                    renewalStatus ||
+                    (['can_nhac', 'tiem_nang', 'hen_tai', 'that_bai'].includes(cstpStatus) ? cstpStatus : '')
+                  }
                   onChange={(e) => {
                     const val = e.target.value
                     setRenewalStatus(val)
@@ -599,14 +602,14 @@ export function StudentCareFormCard({
                       onCstpStatusChange(val)
                     }
                   }}
-                  className="h-7 text-xs px-2 rounded-md border border-border bg-background text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
+                  className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
                 >
-                  <option value="" disabled hidden>Chọn phân loại...</option>
-                  <option value="moi">Mới</option>
+                  <option value="" disabled hidden>
+                    Chọn phân loại...
+                  </option>
                   <option value="can_nhac">Cân nhắc</option>
                   <option value="tiem_nang">Tiềm năng</option>
                   <option value="hen_tai">Hẹn tái</option>
-                  <option value="tai_phi">Đã tái phí</option>
                   <option value="that_bai">Thất bại</option>
                 </select>
               </div>
@@ -616,9 +619,10 @@ export function StudentCareFormCard({
           {/* Right Column (~67%): Resizable Textareas & Action Buttons */}
           <div className="md:col-span-8 space-y-2 flex flex-col justify-between h-full">
             <div className="space-y-1.5 w-full">
+              {/* Ô nhập ghi chú: Khung trắng nổi bật (Highlight riêng) trên nền Sky Light của card */}
               <textarea
                 ref={textareaRef}
-                rows={2}
+                rows={3}
                 value={chatText}
                 onChange={(e) => setChatText(e.target.value)}
                 onKeyDown={(e) => {
@@ -632,16 +636,16 @@ export function StudentCareFormCard({
                     ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
                     : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
                 }
-                className="w-full min-h-[46px] max-h-[100px] py-1.5 px-3 text-xs border border-border rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-muted/40 disabled:cursor-not-allowed text-foreground resize-y overflow-y-auto leading-relaxed"
+                className="w-full min-h-[76px] max-h-[160px] py-2 px-3 text-xs rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-muted-foreground/70 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed shadow-xs transition-all"
               />
 
-              {/* Textarea Phụ huynh phản hồi (mở rộng được) */}
+              {/* Textarea Phụ huynh phản hồi: Giữ sắc Emerald xanh lá hài hòa */}
               <textarea
-                rows={2}
+                rows={1}
                 value={parentOpinionText}
                 onChange={(e) => setParentOpinionText(e.target.value)}
                 placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
-                className="w-full min-h-[44px] max-h-[90px] py-1.5 px-3 text-xs rounded-lg border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-emerald-700/50 dark:placeholder:text-emerald-400/50 placeholder:font-normal resize-y overflow-y-auto leading-relaxed"
+                className="w-full min-h-[34px] h-[36px] max-h-[75px] py-1.5 px-3 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/40 focus:bg-white dark:focus:bg-zinc-900 text-emerald-950 dark:text-emerald-100 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 placeholder:text-emerald-700/60 placeholder:font-normal resize-y overflow-y-auto leading-normal shadow-xs transition-all"
               />
             </div>
 

@@ -1,0 +1,64 @@
+{
+  "runId": "student-operations-alert-table-primitives-2026-08-10",
+  "phase": "phase4",
+  "step": "qa-complete",
+  "fileKey": "frct7JUaJQBN2uOSyfMqcL",
+  "targetSection": "6307:25304",
+  "scope": {
+    "included": [
+      "small editable list-table cell components",
+      "all coded states of each list-table cell",
+      "reused Rinoedu library components and icons"
+    ],
+    "excluded": [
+      "full screen assembly",
+      "screenshots or image fills",
+      "new modal, detail page, dashboard, or filter-drawer designs"
+    ]
+  },
+  "entities": {
+    "section": "6307:25304",
+    "components": {
+      "academicStatsCell": "6311:231538",
+      "careTagsCell": "6313:5795",
+      "careLifecycleCell": "6314:5792",
+      "classPlacementCell": "6315:5789",
+      "rowSurface": "6316:5770"
+    }
+  },
+  "audit": {
+    "imageFillCount": 0,
+    "componentSetCount": 5,
+    "componentVariantCount": 18
+  },
+  "completedSteps": [
+    "phase0-code-analysis",
+    "phase0-figma-inventory",
+    "phase0-library-search",
+    "phase3-academic-stats-cell",
+    "phase3-care-tags-cell",
+    "phase3-care-lifecycle-cell",
+    "phase3-class-placement-cell",
+    "phase3-row-surface",
+    "phase4-audit"
+  ],
+  "screenBuild": {
+    "runId": "student-operations-alert-screens-2026-08-10",
+    "targetSection": "6321:24864",
+    "menuCard": "6335:5775",
+    "menuCardPlacedInstance": "6335:5776",
+    "screens": {
+      "listDefault": "6321:24865",
+      "dashboardDefault": "6333:5765",
+      "advancedFilter": "6333:6158",
+      "careJourneyOpen": "6333:6436",
+      "studentCareDetail": "6333:6731"
+    },
+    "audit": {
+      "imageFillCount": 0,
+      "listReusableInstances": 27,
+      "overlayReusableInstances": 27,
+      "screenCount": 5
+    }
+  }
+}

@@ -21,7 +21,7 @@ export function DataTableFrame({
   return (
     <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card', className)}>
       <div
-        className={cn('min-h-0 flex-1 overflow-auto', viewportClassName)}
+        className={cn('min-h-0 flex-1 flex flex-col overflow-auto', viewportClassName)}
       >
         {children}
       </div>

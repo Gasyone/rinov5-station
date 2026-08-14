@@ -212,6 +212,10 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   rut_phi: 'neutral',
   that_bai: 'error',
   dang_cham_soc: 'info',
+  danh_gia_trai_nghiem: 'purple',
+  hen_test_hoc_thu: 'purple',
+  da_test_hoc_thu: 'warning',
+  tiem_nang_cao: 'info',
 
   // Class Session (BF-OPS-02 / FLOW-OPS-01)
   // scheduled, in_progress, completed, cancelled already registered above

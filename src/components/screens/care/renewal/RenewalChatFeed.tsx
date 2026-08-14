@@ -161,15 +161,17 @@ export function RenewalChatFeed({
   }
 
   const classificationOptions: { value: RenewalClassification; label: string; badgeClass: string }[] = [
-    { value: 'moi', label: 'Mới', badgeClass: getStatusBadgeClass('moi') },
     { value: 'can_nhac', label: 'Cân nhắc', badgeClass: getStatusBadgeClass('can_nhac') },
     { value: 'tiem_nang', label: 'Tiềm năng', badgeClass: getStatusBadgeClass('tiem_nang') },
     { value: 'hen_tai', label: 'Hẹn tái', badgeClass: getStatusBadgeClass('hen_tai') },
-    { value: 'tai_phi', label: 'Đã tái phí', badgeClass: getStatusBadgeClass('tai_phi') },
     { value: 'that_bai', label: 'Thất bại', badgeClass: getStatusBadgeClass('that_bai') },
   ]
 
-  const currentClassificationObj = classificationOptions.find((c) => c.value === renewalClassification) || classificationOptions[0]
+  const currentClassificationObj = classificationOptions.find((c) => c.value === renewalClassification) || {
+    value: renewalClassification,
+    label: getRenewalClassificationLabel(renewalClassification),
+    badgeClass: getStatusBadgeClass(renewalClassification),
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-card border border-border rounded-xl shadow-xs overflow-hidden">

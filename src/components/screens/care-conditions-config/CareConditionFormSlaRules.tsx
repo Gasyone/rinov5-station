@@ -28,18 +28,19 @@ export const CareConditionFormSlaRules: React.FC<SlaRulesProps> = ({
 }) => {
   return (
     <div className="space-y-3">
-      <FieldLabel label="Phương thức tính Thời hạn SLA chăm sóc">
+      <FieldLabel label="Phương thức tính Thời hạn SLA">
         <InlineSelect
           value={slaType}
           options={[
-            { value: 'fixed_time', label: 'Cố định từ khi phát sinh (Nhập số giờ/ngày)' },
-            { value: 'before_next_session', label: 'Trước buổi học tiếp theo (Nhập số giờ/ngày)' },
-            { value: 'at_next_session', label: 'Buổi học tiếp theo (Tại giờ học bắt đầu)' },
-            { value: 'after_next_session', label: 'Sau buổi học tiếp theo (Nhập số giờ/ngày)' },
-            { value: 'end_of_month', label: 'Đến ngày cuối cùng của tháng (23:59)' },
-            { value: 'custom_date', label: 'Đến mốc ngày cụ thể trong tháng (VD: Ngày 25)' },
+            { value: 'fixed_time', label: 'Cố định từ lúc phát sinh' },
+            { value: 'before_next_session', label: 'Trước buổi học tiếp theo' },
+            { value: 'at_next_session', label: 'Tại buổi học tiếp theo' },
+            { value: 'after_next_session', label: 'Sau buổi học tiếp theo' },
+            { value: 'end_of_month', label: 'Cuối tháng (23:59)' },
+            { value: 'custom_date', label: 'Mốc ngày trong tháng' },
           ]}
           onValueChange={(val: string) => setSlaType(val)}
+          placeholder="Chọn phương thức SLA..."
           className="w-full h-8 text-xs font-bold text-primary"
         />
       </FieldLabel>

@@ -10,6 +10,9 @@ import {
   Trash2,
   Pencil,
   Share2,
+  Clock,
+  Hourglass,
+  Lock,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/format'
@@ -57,7 +60,7 @@ export function StudentOrderCardItem({
     <div
       id={`order-card-${order.orderNo || order.id}`}
       className={cn(
-        'bg-card dark:bg-zinc-900 border rounded-2xl p-2.5 shadow-2xs space-y-2 select-none text-left transition-all group overflow-hidden',
+        'bg-card dark:bg-zinc-900 border rounded-2xl p-2.5 shadow-2xs space-y-2 text-left transition-all group overflow-hidden',
         isDraft
           ? 'border-amber-200/80 dark:border-amber-900/60 bg-amber-50/15 dark:bg-amber-950/10'
           : 'border-border/80'
@@ -143,17 +146,23 @@ export function StudentOrderCardItem({
               <span>{order.orderNo || order.id}</span>
               <ExternalLink className="h-3 w-3" />
             </button>
-            <span className="text-muted-foreground">-</span>
-            <span className="font-bold text-foreground">{formatCurrency(order.finalAmount)}</span>
+            {order.studentName && (
+              <>
+                <span className="text-muted-foreground">-</span>
+                <span className="font-sans font-medium text-slate-700 dark:text-zinc-200">
+                  HV: <strong className="font-bold text-foreground">{order.studentName}</strong>
+                </span>
+              </>
+            )}
             <span className="text-muted-foreground">/</span>
             {isDraft ? (
-              <span className="font-medium px-1.5 py-0.2 rounded text-[10.5px] bg-amber-100/80 text-amber-800 dark:bg-amber-900/70 dark:text-amber-300 inline-flex items-center gap-1">
+              <span className="font-medium px-1.5 py-0.2 rounded text-[10.5px] bg-amber-100/80 text-amber-800 dark:bg-amber-900/70 dark:text-amber-300 inline-flex items-center gap-1 font-sans">
                 <FileEdit className="h-3 w-3" /> Đơn hàng nháp
               </span>
             ) : (
               <span
                 className={cn(
-                  'font-medium px-1.5 py-0.5 rounded text-[10.5px]',
+                  'font-medium px-1.5 py-0.5 rounded text-[10.5px] font-sans',
                   isCancelled
                     ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
                     : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
@@ -164,68 +173,94 @@ export function StudentOrderCardItem({
             )}
           </div>
 
-            <div className="text-[11px] text-muted-foreground shrink-0 font-normal">
-              Sale: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
-            </div>
+          <div className="text-[11px] text-muted-foreground shrink-0 font-normal font-sans">
+            Sale: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
           </div>
         </div>
+      </div>
 
       {/* Products List Breakdown */}
-      <div className="space-y-1.5">
-        {order.detailedItems?.map((item, idx) => (
-          <div
-            key={idx}
-            className="p-2 rounded-xl bg-muted/20 dark:bg-zinc-800/30 border border-border/40 space-y-1.5 text-xs"
-          >
-            {/* Product Item Line 1: Check Icon + Title + Student Tag */}
-            <div className="flex items-[flex-start] justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 min-w-0 font-semibold text-foreground">
-                <span className="font-bold text-foreground text-xs leading-snug">
-                  {idx + 1}. {item.productName}
+      <div className="space-y-2.5 py-1">
+        {order.detailedItems?.map((item, idx) => {
+          const hasGift =
+            Boolean(item.giftText && item.giftText !== '--' && !item.giftText.toLowerCase().includes('không có quà')) ||
+            Boolean(item.bonusText && item.bonusText !== '--' && !item.bonusText.toLowerCase().includes('không có quà'))
+
+          const giftDisplay =
+            item.giftText && item.giftText !== '--' && !item.giftText.toLowerCase().includes('không có quà')
+              ? item.giftText.startsWith('Tặng')
+                ? item.giftText
+                : `Tặng ${item.giftText}`
+              : item.bonusText && item.bonusText !== '--' && !item.bonusText.toLowerCase().includes('không có quà')
+                ? item.bonusText
+                : null
+
+          return (
+            <div
+              key={idx}
+              className="text-xs flex items-start justify-between gap-3 flex-wrap"
+            >
+              {/* Left Column: Number + (Title & Subtitle directly aligned) */}
+              <div className="flex items-start gap-1.5 flex-1 min-w-0">
+                <span className="font-semibold text-[13px] text-foreground leading-snug shrink-0">
+                  {idx + 1}.
                 </span>
-                <span className="text-muted-foreground font-normal shrink-0">
-                  ( SL: {item.quantity} )
-                </span>
+
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  {/* Line 1: Title + OrderType Badge */}
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    <span className="font-semibold text-[13px] text-foreground leading-snug">
+                      {item.productName}
+                    </span>
+                    {item.orderType && item.orderType !== '--' && (
+                      <span className="px-1.5 py-0.2 text-[10.5px] font-medium rounded-md border border-border/50 bg-muted/40 text-muted-foreground shrink-0">
+                        {item.orderType}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Subtitle Line: Duration + Expiry Date + Optional Gift (Aligned directly with product name) */}
+                  <div className="flex items-center gap-2.5 text-[11.5px] text-muted-foreground flex-wrap">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                      <span>{item.durationText && item.durationText !== '--' ? item.durationText : '48 buổi'}</span>
+                    </div>
+
+                    <span className="text-border/70">•</span>
+
+                    <div className="flex items-center gap-1 font-mono text-[11px]">
+                      <Hourglass className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                      <span>{item.expiryDate || '--'}</span>
+                    </div>
+
+                    {hasGift && giftDisplay && (
+                      <>
+                        <span className="text-border/70">•</span>
+                        <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                          <Gift className="h-3 w-3 shrink-0" />
+                          <span className="font-medium">Quà tặng: {giftDisplay}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {item.studentName && (
-                <div className="text-[11px] text-muted-foreground shrink-0 font-normal">
-                  Học viên: <span className="font-medium text-foreground">{item.studentName}</span>
-                </div>
-              )}
+              {/* Right Column: SL + TT */}
+              <div className="flex items-center gap-3 text-xs shrink-0 font-mono pt-0.5">
+                <span className="text-muted-foreground font-sans text-xs">
+                  SL: <span className="font-normal text-foreground">{item.quantity}</span>
+                </span>
+                <span className="text-muted-foreground font-sans text-xs">
+                  TT:{' '}
+                  <span className="font-normal text-foreground font-mono">
+                    {formatCurrency(item.subtotal || item.unitPrice * item.quantity)}
+                  </span>
+                </span>
+              </div>
             </div>
-
-            {/* Product Item Line 2: Attributes Badges */}
-            <div className="flex items-center gap-3 text-[11px] flex-wrap pt-0.5">
-              {item.orderType && item.orderType !== '--' && (
-                <div className="text-muted-foreground font-normal">
-                  Loại đơn: <strong className="font-medium text-foreground">{item.orderType}</strong>
-                </div>
-              )}
-
-              {item.durationText && item.durationText !== '--' && (
-                <div className="text-muted-foreground font-normal">
-                  Thời lượng: <strong className="font-medium text-foreground">{item.durationText}</strong>
-                </div>
-              )}
-
-              {item.bonusText && item.bonusText !== '--' && (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background border border-border/60 text-muted-foreground">
-                  <Gift className="h-3 w-3 text-emerald-600" />
-                  <span>{item.bonusText}</span>
-                </div>
-              )}
-
-              {/* Quà tặng đính kèm */}
-              {item.giftText && item.giftText !== '--' ? (
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 font-semibold">
-                  <Gift className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                  <span>{item.giftText}</span>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* LỊCH SỬ THANH TOÁN (Collapsible Payments Section - Only for Paid/Purchased Orders) */}
@@ -236,9 +271,9 @@ export function StudentOrderCardItem({
             <button
               type="button"
               onClick={() => onToggleExpandPayments(order.id)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-sky-600 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-sky-600 transition-colors cursor-pointer"
             >
-              <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
                 LỊCH SỬ THANH TOÁN
               </span>
               <span className="text-[10px] text-muted-foreground font-normal">
@@ -249,7 +284,17 @@ export function StudentOrderCardItem({
 
             <div className="flex items-center gap-2.5 text-xs shrink-0 flex-wrap">
               <span className="text-muted-foreground font-normal">
-                Tổng tiền đã thanh toán: <strong className="font-mono font-extrabold text-foreground">{formatCurrency(order.totalPaidAmount ?? 0)}</strong>
+                Tổng tiền đã thanh toán:{' '}
+                <span
+                  className={cn(
+                    'font-mono font-bold',
+                    (order.totalPaidAmount ?? 0) >= order.finalAmount && order.finalAmount > 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-orange-600 dark:text-orange-500'
+                  )}
+                >
+                  {formatCurrency(order.totalPaidAmount ?? 0)} / {formatCurrency(order.finalAmount)}
+                </span>
               </span>
 
               {/* + Thanh toán thêm Button (Chỉ dành cho đơn đã thanh toán 1 phần nhưng chưa hết) */}
@@ -260,7 +305,7 @@ export function StudentOrderCardItem({
                     e.stopPropagation()
                     onViewDetail(order)
                   }}
-                  className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
+                  className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
                   title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
                 >
                   <span>+ Thanh toán thêm</span>
@@ -269,93 +314,151 @@ export function StudentOrderCardItem({
             </div>
           </div>
 
-          {/* Collapsible Payment Transactions Content */}
+          {/* Collapsible Payment Transactions Content (Flat, no borders/backgrounds) */}
           {isPaymentsExpanded && (
             <div className="space-y-2 pt-1">
               {order.payments && order.payments.length > 0 ? (
-                order.payments.map((pm) => (
-                  <div
-                    key={pm.id}
-                    className="p-2.5 rounded-xl bg-muted/20 dark:bg-zinc-800/20 border border-border/30 text-xs font-mono space-y-1.5"
-                  >
-                    <div className="flex items-center justify-between gap-2.5 flex-wrap">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={cn(
-                            'text-[10px] font-semibold px-2 py-0.5 rounded-md border shrink-0',
-                            pm.status === 'completed'
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200/60'
-                              : pm.status === 'pending'
-                                ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border-sky-200/60'
-                                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200'
-                          )}
-                        >
-                          {pm.status === 'completed'
-                            ? 'Thành công'
-                            : pm.status === 'pending'
-                              ? 'Chờ xử lý'
-                              : 'Hủy'}
-                        </span>
-                        <span className="text-muted-foreground text-[11px] shrink-0">
-                          {pm.timestamp}
-                        </span>
-                        <span className="font-bold text-foreground truncate">
-                          {pm.code} - {formatCurrency(pm.amount)} / {pm.method}
-                        </span>
-                      </div>
+                order.payments.map((pm) => {
+                  const isDeposit = pm.paymentType === 'deposit' || pm.paymentTypeLabel === 'Cọc'
+                  const isFinal = pm.paymentType === 'final' || pm.paymentTypeLabel === 'Hoàn tất'
 
-                      {pm.saleBy && (
-                        <span className="text-[11px] text-muted-foreground shrink-0 font-sans">
-                          Sale: <strong className="font-medium text-foreground">{pm.saleBy}</strong>
-                        </span>
-                      )}
-                    </div>
+                  if (isDeposit || isFinal) {
+                    return (
+                      <div
+                        key={pm.id}
+                        className="py-1 text-xs font-mono flex items-start gap-3 justify-between flex-wrap"
+                      >
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <span
+                            className={cn(
+                              'w-15 text-center py-0.5 text-[11px] font-medium rounded-md text-white shadow-2xs shrink-0 mt-0.5',
+                              isDeposit ? 'bg-emerald-700 dark:bg-emerald-800' : 'bg-purple-800 dark:bg-purple-900'
+                            )}
+                          >
+                            {isDeposit ? 'Cọc' : 'Hoàn tất'}
+                          </span>
 
-                    {/* Single Product Note & Session Conversion */}
-                    {pm.note && (
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/20 flex-wrap">
-                        <span>{pm.note}</span>
-                        <div className="flex items-center gap-3">
-                          {pm.convertedSessions !== undefined && (
-                            <span>Quy đổi: <strong className="text-foreground">{pm.convertedSessions} (buổi)</strong></span>
+                          <div className="space-y-0.5 min-w-0 flex-1 text-left">
+                            <div className="flex items-center gap-1 font-semibold text-foreground truncate">
+                              <span>
+                                {pm.code} - {formatCurrency(pm.amount)} / {pm.method} / {pm.statusLabel || 'T5-Đã nhận bank'}
+                              </span>
+                              {pm.isLocked && (
+                                <Lock className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              )}
+                            </div>
+
+                            <div className="text-[11.5px] font-medium">
+                              {isDeposit && pm.depositAmount && (
+                                <span className="text-emerald-700 dark:text-emerald-400">
+                                  Tiền cọc : {formatCurrency(pm.depositAmount)}
+                                </span>
+                              )}
+                              {isFinal && pm.finalPaymentAmount && (
+                                <span className="text-purple-700 dark:text-purple-400">
+                                  Tiền hoàn tất : {formatCurrency(pm.finalPaymentAmount)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right text-[11px] shrink-0 font-sans space-y-0.5">
+                          {pm.saleBy && (
+                            <div className="text-muted-foreground">
+                              Sale: <span className="font-medium text-foreground">{pm.saleBy}</span>
+                            </div>
                           )}
-                          {pm.convertedAmount !== undefined && (
-                            <span>Tiền quy đổi: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{formatCurrency(pm.convertedAmount)}</strong></span>
-                          )}
+                          <div className="font-mono text-muted-foreground text-[10.5px]">{pm.timestamp}</div>
                         </div>
                       </div>
-                    )}
+                    )
+                  }
 
-                    {/* Multi-Package Allocation Breakdown Tree */}
-                    {pm.allocations && pm.allocations.length > 0 && (
-                      <div className="space-y-1.5 pt-1.5 border-t border-border/30 text-[11px] font-sans">
-                        {pm.allocations.map((alloc, aIdx) => (
-                          <div key={aIdx} className="space-y-1">
-                            <div className="flex items-center justify-between font-bold text-foreground">
-                              <span>{alloc.groupName}</span>
-                              <span className="font-mono text-muted-foreground font-normal">
-                                Tiền quy đổi: {formatCurrency(alloc.groupConvertedAmount ?? 0)}
-                              </span>
-                            </div>
-                            {alloc.subItems?.map((sub, sIdx) => (
-                              <div key={sIdx} className="flex items-center justify-between text-muted-foreground pl-3 text-[10.5px]">
-                                <span>• {sub.name}</span>
-                                <div className="flex items-center gap-3 font-mono">
-                                  {sub.convertedSessions !== undefined && (
-                                    <span>Quy đổi: <strong className="text-foreground font-semibold">{sub.convertedSessions} (buổi)</strong></span>
-                                  )}
-                                  {sub.convertedAmount !== undefined && (
-                                    <span>Tiền quy đổi: <strong className="text-foreground font-bold">{formatCurrency(sub.convertedAmount)}</strong></span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
+                  return (
+                    <div
+                      key={pm.id}
+                      className="py-1 text-xs font-mono space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2.5 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={cn(
+                              'text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0',
+                              pm.status === 'completed'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200/60'
+                                : pm.status === 'pending'
+                                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border-sky-200/60'
+                                  : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200'
+                            )}
+                          >
+                            {pm.status === 'completed'
+                              ? 'Thành công'
+                              : pm.status === 'pending'
+                                ? 'Chờ xử lý'
+                                : 'Hủy'}
+                          </span>
+                          <span className="text-muted-foreground text-[11px] shrink-0">
+                            {pm.timestamp}
+                          </span>
+                          <span className="font-semibold text-foreground truncate">
+                            {pm.code} - {formatCurrency(pm.amount)} / {pm.method}
+                          </span>
+                        </div>
+
+                        {pm.saleBy && (
+                          <span className="text-[11px] text-muted-foreground shrink-0 font-sans">
+                            Sale: <span className="font-medium text-foreground">{pm.saleBy}</span>
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))
+
+                      {/* Single Product Note & Session Conversion */}
+                      {pm.note && (
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap">
+                          <span>{pm.note}</span>
+                          <div className="flex items-center gap-3">
+                            {pm.convertedSessions !== undefined && (
+                              <span>Quy đổi: <span className="text-foreground font-medium">{pm.convertedSessions} (buổi)</span></span>
+                            )}
+                            {pm.convertedAmount !== undefined && (
+                              <span>Tiền quy đổi: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(pm.convertedAmount)}</span></span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Multi-Package Allocation Breakdown Tree */}
+                      {pm.allocations && pm.allocations.length > 0 && (
+                        <div className="space-y-1.5 pt-1 text-[11px] font-sans">
+                          {pm.allocations.map((alloc, aIdx) => (
+                            <div key={aIdx} className="space-y-1">
+                              <div className="flex items-center justify-between font-semibold text-foreground">
+                                <span>{alloc.groupName}</span>
+                                <span className="font-mono text-muted-foreground font-normal">
+                                  Tiền quy đổi: {formatCurrency(alloc.groupConvertedAmount ?? 0)}
+                                </span>
+                              </div>
+                              {alloc.subItems?.map((sub, sIdx) => (
+                                <div key={sIdx} className="flex items-center justify-between text-muted-foreground pl-3 text-[10.5px]">
+                                  <span>• {sub.name}</span>
+                                  <div className="flex items-center gap-3 font-mono">
+                                    {sub.convertedSessions !== undefined && (
+                                      <span>Quy đổi: <span className="text-foreground font-medium">{sub.convertedSessions} (buổi)</span></span>
+                                    )}
+                                    {sub.convertedAmount !== undefined && (
+                                      <span>Tiền quy đổi: <span className="text-foreground font-semibold">{formatCurrency(sub.convertedAmount)}</span></span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
               ) : (
                 <p className="text-[11.5px] italic text-muted-foreground/80 py-1">
                   Hiện tại chưa có giao dịch thanh toán nào đã/đang được xử lý

@@ -52,14 +52,14 @@ export function MakeupClassTable({
     <Table containerClassName="min-w-full overflow-visible align-top" className="min-w-[1400px]">
       <TableHeader className="[&_tr]:border-b-0">
         <TableRow className="border-b-0 bg-muted/50 hover:bg-muted/50">
-          <TableHead className="sticky left-0 z-40 w-12 min-w-12 max-w-12 overflow-hidden bg-background text-center">
+          <TableHead className="sticky left-0 z-40 w-12 min-w-12 max-w-12 overflow-hidden bg-muted/50 text-center">
             <Checkbox
               checked={isPageSelected}
               onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
             />
           </TableHead>
           {COLUMN_DEFS.map((col) => (
-            <TableHead key={col.label} className={col.className}>
+            <TableHead key={col.label} className={col.className.replace('bg-background', 'bg-muted/50')}>
               {col.label}
             </TableHead>
           ))}

@@ -2,10 +2,8 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ContactCell, PersonnelHoverCard, CareTagHoverCard } from '@/components/shared'
 import {
-  ExternalLink,
   ArrowLeftRight,
   Calendar,
   MapPin,
@@ -15,76 +13,16 @@ import { type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getUnassignedStaffStatus, parseAttendanceRate, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getUnassignedStaffStatus, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
 import { OperationsAlertHistoryPopover } from './OperationsAlertHistoryPopover'
 import { RenewalHistoryPopover } from './renewal/RenewalHistoryPopover'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareItemsDialog } from './StudentCareItemsDialog'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
 
 
 // Mock class records
 import { mockClassRecords } from '@/mocks/classRecords'
-
-function AcademicStatsCell({ cls }: { cls: StudentCareAlert }) {
-  const ratio = cls.attendanceRatio || '0/0';
-  const ccPct = parseAttendanceRate(ratio);
-  
-  // Điểm gần nhất và điểm trung bình
-  const last = cls.lastTestScore;
-  const prior = cls.priorTestScore;
-  const avg = (last + prior) / 2;
-  
-  let pctChange = 0;
-  if (prior > 0) {
-    pctChange = ((last - prior) / prior) * 100;
-  } else if (last > 0) {
-    pctChange = 100;
-  }
-
-  const changeText = pctChange > 0 
-    ? `↑${pctChange.toFixed(0)}%` 
-    : pctChange < 0 
-    ? `↓${Math.abs(pctChange).toFixed(0)}%` 
-    : '0%';
-    
-  const changeColor = pctChange > 0 
-    ? 'text-emerald-600 dark:text-emerald-400 font-bold' 
-    : pctChange < 0 
-    ? 'text-rose-600 dark:text-rose-400 font-bold' 
-    : 'text-muted-foreground';
-
-  // BTVN: Số làm / Tổng
-  const [, total] = ratio.split('/').map(Number);
-  const displayTotal = (total && total > 0) ? total : 5;
-  const done = Math.round((cls.homeworkCompletion / 100) * displayTotal);
-
-
-
-  return (
-    <div className="flex items-center py-0.5 select-none min-h-[44px]">
-      <div className="flex flex-col gap-0.5 text-left text-[10px] leading-tight font-medium text-zinc-700 dark:text-zinc-300">
-        <div className="flex items-center gap-1">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0 text-[10px]">CC:</span>
-          <span className="font-medium text-zinc-600 dark:text-zinc-400 text-[10px]">{ratio}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal text-[9.5px]">({ccPct}%)</span>
-        </div>
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0 text-[10px]">Điểm:</span>
-          <span className="font-medium text-zinc-600 dark:text-zinc-400 text-[10px]">{last}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal text-[9.5px]">/</span>
-          <span className="font-normal text-zinc-500 text-[9.5px]">{avg.toFixed(1)}</span>
-          <span className={cn("text-[9px]", changeColor)}>({changeText})</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0 text-[10px]">BTVN:</span>
-          <span className="font-medium text-zinc-600 dark:text-zinc-400 text-[10px]">{done}/{displayTotal}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal text-[9.5px]">({cls.homeworkCompletion}%)</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export interface AlertRowProps {
   cls: StudentCareAlert
@@ -108,9 +46,7 @@ function getCareTagFullLabel(tag: CareTag): string {
   return `${tag.label}: ${tag.displayLabel || tag.description}`
 }
 
-export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh, onViewDetail, onOpenRoadmapModal }: AlertRowProps) {
-  const { user } = useAuthStore()
-  const currentRole = user?.role || 'csm'
+export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex, onRefresh, onViewDetail, onOpenRoadmapModal }: AlertRowProps) {
   const showTagsInColumn = true
 
   // Family contacts
@@ -241,10 +177,10 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
             </div>
           </div>
 
-          {/* Icon Lộ trình Chăm sóc - Thường ẩn, hiện khi hover row (group-hover), kích thước h-5 w-5 */}
+          {/* Icon Mốc Chăm sóc - Thường ẩn, hiện khi hover row (group-hover), kích thước h-5 w-5 */}
           <button
             type="button"
-            title="Xem Lộ trình chăm sóc & Hành trình Học tập 6 Tháng"
+            title="Xem Mốc chăm sóc & Hành trình Học tập 6 Tháng"
             className="opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-full transition-opacity cursor-pointer shrink-0"
             onClick={(e) => {
               e.stopPropagation()
@@ -468,11 +404,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
         })()}
       </td>
 
-      {/* Thống kê học tập */}
-      <td className="py-1.5 px-2 min-w-[135px]">
-        <AcademicStatsCell cls={cls} />
-      </td>
-
       {/* Nội dung chăm sóc (Hiển thị hàng ngang flex-wrap, tối đa 2 dòng) */}
       <td className="py-1.5 px-2 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
@@ -533,6 +464,95 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
         })()}
       </td>
 
+      {/* Lịch sử chăm sóc (Hiển thị log số lần liên hệ theo thời điểm & Lịch hẹn dưới dạng Popover bong bóng) */}
+      <td className="py-1.5 px-2 min-w-[220px]" onClick={(e) => e.stopPropagation()}>
+        {(() => {
+          const isCompleted = isCared(cls)
+          const inProgress = isInProgress(cls)
+          const isUncared = !isCompleted && !inProgress
+
+          const allLogs = getHistoryLogsForStudent(cls.studentId)
+          const logs = isUncared ? [] : allLogs
+          const latestLog = logs[0]
+          const rescheduleInfo = getRescheduleInfo(cls)
+          const attemptCount = logs.length
+
+          const cellContent = (
+            <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px]">
+              {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span
+                  className={cn(
+                    'text-[10px] font-bold transition-colors',
+                    isUncared
+                      ? 'text-zinc-500 dark:text-zinc-400 select-none'
+                      : inProgress
+                      ? 'text-sky-700 dark:text-sky-400 cursor-pointer hover:underline'
+                      : 'text-emerald-700 dark:text-emerald-400 cursor-pointer hover:underline'
+                  )}
+                  title={isUncared ? undefined : 'Click để xem Popover chi tiết Lịch sử chăm sóc'}
+                >
+                  {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
+                </span>
+
+                {/* Lịch hẹn gọi lại (Cùng hàng với nút Chăm sóc, không viền) */}
+                {rescheduleInfo.isRescheduled && (
+                  <span
+                    className="text-[10px] font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
+                    title="Lịch hẹn gọi lại"
+                  >
+                    <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
+                    <span>Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Hàng 2 & 3: Nội dung chăm sóc (Dòng 2) và Ý kiến phụ huynh (Dòng 3) */}
+              {isUncared ? (
+                <div className="text-[10px] italic text-amber-600 dark:text-amber-400 font-medium">
+                  Cần liên hệ trao đổi với phụ huynh ngay
+                </div>
+              ) : (
+                latestLog && (
+                  <>
+                    {/* Dòng 2: Nội dung chăm sóc */}
+                    <div
+                      className="text-[10px] text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
+                      title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
+                    >
+                      <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
+                    </div>
+
+                    {/* Dòng 3: Ý kiến phản hồi của phụ huynh (Chỉ hiển thị khi Đã hoàn thành) */}
+                    {isCompleted && (
+                      <div
+                        className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium truncate cursor-pointer hover:underline transition-colors"
+                        title={`Phụ huynh phản hồi: ${latestLog.note}`}
+                      >
+                        Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở, sẽ cho con ôn tập thêm trong tối nay'}&rdquo;
+                      </div>
+                    )}
+                  </>
+                )
+              )}
+            </div>
+          )
+
+          // Chưa chăm sóc thì KHÔNG bật Popover, chỉ có Đang xử lý & Hoàn thành mới có dữ liệu Popover
+          if (isUncared) {
+            return cellContent
+          }
+
+          return (
+            <OperationsAlertCareHistoryModal
+              cls={cls}
+              onRefresh={onRefresh}
+              trigger={cellContent}
+            />
+          )
+        })()}
+      </td>
+
       {/* Trạng thái */}
       <td className="py-1.5 px-2 min-w-[140px] whitespace-nowrap">
         {(() => {
@@ -546,8 +566,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               ? { label: 'Đang xử lý', badgeClass: getStatusBadgeClass('in_progress') }
               : { label: 'Chưa chăm sóc', badgeClass: getStatusBadgeClass('info') }
 
-          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng], Hẹn gọi lại [Tím])
-          const rescheduleInfo = getRescheduleInfo(cls)
+          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng])
           const isOverdueAlert = isOverdue(cls)
           const isDueTodayAlert = isToday(cls)
           const slaDeadline = cls.expectedEndDate || '23/09/2026'
@@ -577,14 +596,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                   <span className="text-muted-foreground font-normal">Hạn: {slaDeadline}</span>
                 )}
               </div>
-
-              {/* Dòng 3: Nhãn hẹn gọi lại (Nếu có hẹn gọi lại, hiển thị đầy đủ không bị ẩn bớt dòng Hạn ở trên) */}
-              {rescheduleInfo.isRescheduled && !isCompleted && (
-                <div className="flex items-center gap-1 text-[10px] font-semibold text-violet-700 bg-violet-50 dark:bg-violet-950/40 dark:text-violet-300 px-1.5 py-0.5 rounded border border-violet-200 dark:border-violet-900 w-fit">
-                  <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
-                  <span>Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
-                </div>
-              )}
             </div>
           )
         })()}

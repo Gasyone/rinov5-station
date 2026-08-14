@@ -12,7 +12,7 @@ import { FilterGroupSheetPanel, createFilterGroup } from '@/components/filters'
 import type { StatusTile } from '@/components/shared'
 import { RenewalDashboardView } from './RenewalDashboardView'
 import { toast } from 'sonner'
-import { stableHash, getRenewalClassification } from './renewalHelpers'
+import { stableHash, getRenewalClassification, getStudentOrderInfo } from './renewalHelpers'
 
 // Helper functions for tag extraction
 function getStudentActiveTags(item: StudentCareAlert) {
@@ -74,9 +74,12 @@ export function RenewalScreen() {
 
   // Advanced filters state (Sets for multi-select checkboxes)
   const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
-  const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set())
+  const [selectedRenewalStatuses, setSelectedRenewalStatuses] = useState<Set<string>>(new Set())
+  const [selectedFeeDueMonths, setSelectedFeeDueMonths] = useState<Set<string>>(new Set())
   const [selectedCalls, setSelectedCalls] = useState<Set<string>>(new Set())
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
+  const [selectedSubjectsFilter, setSelectedSubjectsFilter] = useState<Set<string>>(new Set())
+  const [selectedOrderStatuses, setSelectedOrderStatuses] = useState<Set<string>>(new Set())
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set())
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
@@ -148,7 +151,7 @@ export function RenewalScreen() {
     let res = baseAlerts
 
     // Exclude 'that_bai' from base tab pool unless explicitly selected in advanced filters
-    const includesThatBai = selectedCalls.has('that_bai') || selectedCalls.has('Thất bại')
+    const includesThatBai = selectedCalls.has('that_bai') || selectedCalls.has('Thất bại') || selectedRenewalStatuses.has('that_bai')
     if (!includesThatBai) {
       res = res.filter(item => !isThatBai(item))
     }
@@ -163,21 +166,58 @@ export function RenewalScreen() {
       })
     }
 
-    // Filter by status
-    if (selectedStatuses.size > 0) {
-      res = res.filter((item) => selectedStatuses.has(item.status))
+    // Filter by renewal status (Trạng thái tái phí)
+    if (selectedRenewalStatuses.size > 0) {
+      res = res.filter((item) => {
+        const classification = getRenewalClassification(item)
+        return selectedRenewalStatuses.has(classification)
+      })
     }
 
-    // Filter by careAlert
-    if (selectedAlerts.size > 0) {
-      res = res.filter((item) => item.careAlert && selectedAlerts.has(item.careAlert))
+    // Filter by fee due month (Hạn T1, T2, T3)
+    if (selectedFeeDueMonths.size > 0) {
+      res = res.filter((item) => {
+        if (!item.expectedEndDate) return false
+        const parts = item.expectedEndDate.split('/')
+        if (parts.length < 3) return false
+        const month = parseInt(parts[1], 10)
+        return Array.from(selectedFeeDueMonths).some((val) => {
+          if (val === '1') return month === 1 || month === 12 || month <= 2
+          if (val === '2') return month >= 3 && month <= 6
+          if (val === '3') return month >= 7 && month <= 9
+          return true
+        })
+      })
     }
 
-    // Filter by callConfirmation & renewal status (including Thất bại)
+    // Filter by call confirmation & interaction
     if (selectedCalls.size > 0) {
       res = res.filter((item) => {
         if (item.callConfirmation && selectedCalls.has(item.callConfirmation)) return true
         if ((selectedCalls.has('that_bai') || selectedCalls.has('Thất bại')) && isThatBai(item)) return true
+        return false
+      })
+    }
+
+    // Filter by status (Trạng thái lớp)
+    if (selectedStatuses.size > 0) {
+      res = res.filter((item) => selectedStatuses.has(item.status))
+    }
+
+    // Filter by subject / level
+    if (selectedSubjectsFilter.size > 0) {
+      res = res.filter((item) => 
+        selectedSubjectsFilter.has(item.subject) || selectedSubjectsFilter.has(item.level)
+      )
+    }
+
+    // Filter by order status
+    if (selectedOrderStatuses.size > 0) {
+      res = res.filter((item) => {
+        const order = getStudentOrderInfo(item)
+        if (selectedOrderStatuses.has('has_draft') && order.orderCode) return true
+        if (selectedOrderStatuses.has('no_order') && !order.orderCode) return true
+        if (selectedOrderStatuses.has('paid') && order.paymentTerm && (order.paymentTerm.includes('100%') || order.paymentTerm.includes('cọc'))) return true
         return false
       })
     }
@@ -258,9 +298,12 @@ export function RenewalScreen() {
     return res.filter(hasActiveTags)
   }, [
     selectedBranches,
-    selectedStatuses,
-    selectedAlerts,
+    selectedRenewalStatuses,
+    selectedFeeDueMonths,
     selectedCalls,
+    selectedStatuses,
+    selectedSubjectsFilter,
+    selectedOrderStatuses,
     selectedClasses,
     searchQuery,
     selectedToolbarBranch,
@@ -312,7 +355,15 @@ export function RenewalScreen() {
         }
         return Infinity
       }
-      return parseDate(a.expectedEndDate) - parseDate(b.expectedEndDate)
+
+      const timeA = parseDate(a.expectedEndDate)
+      const timeB = parseDate(b.expectedEndDate)
+
+      if (timeA !== timeB) {
+        return timeA - timeB
+      }
+
+      return a.remainingSessions - b.remainingSessions
     })
   }, [baseFiltered, careProgressTab])
 
@@ -353,57 +404,113 @@ export function RenewalScreen() {
   const activeFilterCount = useMemo(() => {
     return [
       selectedBranches.size > 0,
-      selectedStatuses.size > 0,
-      selectedAlerts.size > 0,
+      selectedRenewalStatuses.size > 0,
+      selectedFeeDueMonths.size > 0,
       selectedCalls.size > 0,
+      selectedStatuses.size > 0,
+      selectedSubjectsFilter.size > 0,
+      selectedOrderStatuses.size > 0,
       selectedClasses.size > 0,
     ].filter(Boolean).length
-  }, [selectedBranches, selectedStatuses, selectedAlerts, selectedCalls, selectedClasses])
+  }, [
+    selectedBranches,
+    selectedRenewalStatuses,
+    selectedFeeDueMonths,
+    selectedCalls,
+    selectedStatuses,
+    selectedSubjectsFilter,
+    selectedOrderStatuses,
+    selectedClasses,
+  ])
 
-  // Advanced Filters Sheet configuration sections
+  // Advanced Filters Sheet configuration sections (strictly tailored for Tuition Fee Renewal)
   const filterGroups = useMemo(() => {
     return [
       createFilterGroup({
         id: 'branches',
-        title: 'Trường',
+        title: 'Cơ sở / Trường học',
         options: branchOptions,
         selectedValues: selectedBranches,
         defaultOpen: true,
       }),
       createFilterGroup({
-        id: 'statuses',
-        title: 'Trạng thái học',
+        id: 'renewalStatuses',
+        title: 'Trạng thái tái phí',
         options: [
-          { value: 'Đang học', label: 'Đang học' },
-          { value: 'Chờ chuyển lớp', label: 'Chờ chuyển lớp' },
-          { value: 'Hết buổi', label: 'Hết buổi' },
+          { value: 'moi', label: 'Mới' },
+          { value: 'can_nhac', label: 'Cân nhắc' },
+          { value: 'tiem_nang', label: 'Tiềm năng' },
+          { value: 'hen_tai', label: 'Hẹn tái' },
+          { value: 'tai_phi', label: 'Đã tái phí' },
+          { value: 'chong_phi', label: 'Chồng phí' },
+          { value: 'rut_phi', label: 'Rút phí' },
+          { value: 'that_bai', label: 'Thất bại' },
         ],
-        selectedValues: selectedStatuses,
+        selectedValues: selectedRenewalStatuses,
         defaultOpen: true,
       }),
       createFilterGroup({
-        id: 'careAlerts',
-        title: 'Cảnh báo CS',
+        id: 'feeDueMonths',
+        title: 'Hạn học phí',
         options: [
-          { value: 'C90B', label: 'Cảnh báo C90B' },
-          { value: 'Học lực yếu', label: 'Học lực yếu' },
-          { value: 'Chuyên cần thấp', label: 'Chuyên cần thấp' },
+          { value: '1', label: 'Hạn T1 (≤ 1 tháng - Khẩn cấp)' },
+          { value: '2', label: 'Hạn T2 (1 - 2 tháng)' },
+          { value: '3', label: 'Hạn T3 (2 - 3 tháng)' },
         ],
-        selectedValues: selectedAlerts,
+        selectedValues: selectedFeeDueMonths,
         defaultOpen: true,
       }),
       createFilterGroup({
         id: 'callConfirmations',
-        title: 'Trạng thái CS & Tái phí',
+        title: 'Trạng thái liên hệ & CSKH',
         options: [
-          { value: 'Đã gọi', label: 'Đã gọi' },
+          { value: 'Chưa gọi', label: 'Chưa liên hệ' },
+          { value: 'Đã gọi', label: 'Đã gọi điện' },
           { value: 'KNM', label: 'Không nghe máy (KNM)' },
           { value: 'Đã nhắn Zalo', label: 'Đã nhắn Zalo' },
-          { value: 'Chưa gọi', label: 'Chưa gọi / Liên hệ' },
-          { value: 'that_bai', label: 'Thất bại' },
+          { value: 'Đã nhắn Facebook', label: 'Đã nhắn Facebook' },
+          { value: 'Đã gặp trực tiếp', label: 'Đã gặp trực tiếp' },
         ],
         selectedValues: selectedCalls,
         defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'statuses',
+        title: 'Trạng thái lớp & Học tập',
+        options: [
+          { value: 'Đang học', label: 'Đang học' },
+          { value: 'Chờ chuyển lớp', label: 'Chờ ghép lớp / Chuyển lớp' },
+          { value: 'Bảo lưu', label: 'Bảo lưu' },
+          { value: 'Hết buổi', label: 'Hết phí / Hết buổi' },
+        ],
+        selectedValues: selectedStatuses,
+        defaultOpen: false,
+      }),
+      createFilterGroup({
+        id: 'subjects',
+        title: 'Môn học & Trình độ',
+        options: [
+          { value: 'Tiếng Anh', label: 'Môn Tiếng Anh' },
+          { value: 'Toán tư duy', label: 'Môn Toán tư duy' },
+          { value: 'Level 0', label: 'Level 0 (Kindy)' },
+          { value: 'Level 1', label: 'Level 1 (Starters)' },
+          { value: 'Level 2', label: 'Level 2 (Movers)' },
+          { value: 'Level 4', label: 'Level 4 (Flyers)' },
+          { value: 'Level 5', label: 'Level 5 (Tutor)' },
+        ],
+        selectedValues: selectedSubjectsFilter,
+        defaultOpen: false,
+      }),
+      createFilterGroup({
+        id: 'orderStatus',
+        title: 'Trạng thái Đơn hàng',
+        options: [
+          { value: 'has_draft', label: 'Đã có đơn nháp (OD-DRAFT)' },
+          { value: 'no_order', label: 'Chưa có đơn hàng' },
+          { value: 'paid', label: 'Đã thanh toán / Đặt cọc' },
+        ],
+        selectedValues: selectedOrderStatuses,
+        defaultOpen: false,
       }),
       createFilterGroup({
         id: 'classes',
@@ -415,7 +522,18 @@ export function RenewalScreen() {
         scrollable: true,
       }),
     ]
-  }, [branchOptions, selectedBranches, selectedStatuses, selectedAlerts, selectedCalls, classList, selectedClasses])
+  }, [
+    branchOptions,
+    selectedBranches,
+    selectedRenewalStatuses,
+    selectedFeeDueMonths,
+    selectedCalls,
+    selectedStatuses,
+    selectedSubjectsFilter,
+    selectedOrderStatuses,
+    classList,
+    selectedClasses,
+  ])
 
   const handleFilterToggle = (groupId: string, value: string) => {
     const updateSet = (prev: Set<string>) => {
@@ -429,9 +547,12 @@ export function RenewalScreen() {
     }
     
     if (groupId === 'branches') setSelectedBranches(updateSet)
-    else if (groupId === 'statuses') setSelectedStatuses(updateSet)
-    else if (groupId === 'careAlerts') setSelectedAlerts(updateSet)
+    else if (groupId === 'renewalStatuses') setSelectedRenewalStatuses(updateSet)
+    else if (groupId === 'feeDueMonths') setSelectedFeeDueMonths(updateSet)
     else if (groupId === 'callConfirmations') setSelectedCalls(updateSet)
+    else if (groupId === 'statuses') setSelectedStatuses(updateSet)
+    else if (groupId === 'subjects') setSelectedSubjectsFilter(updateSet)
+    else if (groupId === 'orderStatus') setSelectedOrderStatuses(updateSet)
     else if (groupId === 'classes') setSelectedClasses(updateSet)
     
     resetPagination()
@@ -439,18 +560,24 @@ export function RenewalScreen() {
 
   const handleClearAllFilters = () => {
     setSelectedBranches(new Set())
-    setSelectedStatuses(new Set())
-    setSelectedAlerts(new Set())
+    setSelectedRenewalStatuses(new Set())
+    setSelectedFeeDueMonths(new Set())
     setSelectedCalls(new Set())
+    setSelectedStatuses(new Set())
+    setSelectedSubjectsFilter(new Set())
+    setSelectedOrderStatuses(new Set())
     setSelectedClasses(new Set())
     resetPagination()
   }
 
   const handleClearSection = (groupId: string) => {
     if (groupId === 'branches') setSelectedBranches(new Set())
-    else if (groupId === 'statuses') setSelectedStatuses(new Set())
-    else if (groupId === 'careAlerts') setSelectedAlerts(new Set())
+    else if (groupId === 'renewalStatuses') setSelectedRenewalStatuses(new Set())
+    else if (groupId === 'feeDueMonths') setSelectedFeeDueMonths(new Set())
     else if (groupId === 'callConfirmations') setSelectedCalls(new Set())
+    else if (groupId === 'statuses') setSelectedStatuses(new Set())
+    else if (groupId === 'subjects') setSelectedSubjectsFilter(new Set())
+    else if (groupId === 'orderStatus') setSelectedOrderStatuses(new Set())
     else if (groupId === 'classes') setSelectedClasses(new Set())
     resetPagination()
   }

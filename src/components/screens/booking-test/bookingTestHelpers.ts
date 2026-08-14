@@ -107,6 +107,34 @@ export function getWeekdayLabel(dateTimeStr: string): string {
   return weekdayLabels[day]
 }
 
+export function formatTestTimeWithDay(dateTimeStr: string): string {
+  if (!dateTimeStr) return ''
+  const parts = dateTimeStr.trim().split(' ')
+  const datePart = parts[0] || ''
+  const timePart = parts[1] || ''
+
+  if (!datePart) return dateTimeStr
+
+  const [y, m, d] = datePart.split('-').map(Number)
+  if (!y || !m || !d) return dateTimeStr
+
+  const date = new Date(y, m - 1, d)
+  if (Number.isNaN(date.getTime())) return dateTimeStr
+
+  const weekdayLabels = [
+    'Chủ Nhật',
+    'Thứ 2',
+    'Thứ 3',
+    'Thứ 4',
+    'Thứ 5',
+    'Thứ 6',
+    'Thứ 7',
+  ]
+  const dayLabel = weekdayLabels[date.getDay()]
+
+  return `${dayLabel}, ${timePart} ${datePart}`.trim()
+}
+
 export function maskPhone(phone?: string) {
   if (!phone) return '-'
   const trimmed = phone.trim()

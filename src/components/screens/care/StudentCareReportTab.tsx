@@ -519,7 +519,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                 {/* Row 1: Program Selector (Header bar with soft background tint) */}
                 <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-3 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-3">
                   <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground font-medium shrink-0">Lớp:</span>
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium shrink-0">Lớp:</span>
                     {visiblePackages.map((pItem) => {
                       const isSelected = pItem.id === selectedPackageId
                       const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
@@ -583,8 +583,8 @@ Phát huy tinh thần chủ động sáng tạo.`,
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 pt-1 text-left">
                   {/* Group 1: Cơ sở & CS phụ trách (Đổi CS ở ngay sau tên CS, có PersonnelHoverCard) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">Cơ sở & CS phụ trách</span>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground flex-wrap">
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Cơ sở & CS phụ trách</span>
+                    <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
                       <span>{currentBranchName}</span>
                       <span className="text-border/60 font-normal">•</span>
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -598,7 +598,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                             avatar: currentCSObj.avatar,
                           }}
                         >
-                          <span className="inline-flex items-center gap-1 text-foreground font-semibold hover:underline cursor-pointer">
+                          <span className="inline-flex items-center gap-1 text-foreground font-normal hover:underline cursor-pointer">
                             <AppAvatar
                               src={currentCSObj.avatar}
                               name={currentCSObj.name}
@@ -674,8 +674,8 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 2: KCT & Trình độ */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">KCT & Trình độ</span>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground flex-wrap">
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">KCT & Trình độ</span>
+                    <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
                       <SyllabusProfileHoverCard cls={classRecordForHover}>
                         <span className="hover:underline cursor-pointer">
                           {pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán Tư Duy STEM Rino'}
@@ -690,37 +690,37 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 3: Gói học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">Gói học</span>
-                    <span className="text-xs font-semibold text-foreground block">{pkg.packageName}</span>
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Gói học</span>
+                    <span className="text-xs font-normal text-foreground block">{pkg.packageName}</span>
                   </div>
 
                   {/* Group 4: Lịch học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">Lịch học</span>
-                    <span className="text-xs font-semibold text-foreground block">
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Lịch học</span>
+                    <span className="text-xs font-normal text-foreground block">
                       {pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
                     </span>
                   </div>
 
                   {/* Group 5: Ngày bắt đầu - Hạn học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">Ngày bắt đầu - Hạn học</span>
-                    <span className="text-xs font-semibold text-foreground block">
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Ngày bắt đầu - Hạn học</span>
+                    <span className="text-xs font-normal text-foreground block">
                       {pkg.startDate ? (pkg.startDate.includes('-') ? pkg.startDate.split('-').reverse().join('/') : pkg.startDate) : '01/05/2026'} - {pkg.endDate || '25/10/2026'}
                     </span>
                   </div>
 
                   {/* Group 6: Giáo viên (GV) (Lịch sử đổi GV dạng icon cam + (3) ở ngay sau tên GV) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">Giáo viên (GV)</span>
+                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Giáo viên (GV)</span>
                     {staffInfo && (
-                      <div className="flex items-center gap-1 text-xs flex-wrap font-semibold text-foreground">
+                      <div className="flex items-center gap-1 text-xs flex-wrap font-normal text-foreground">
                         {staffInfo.teachers.map((teacher, idx) => {
                           const cleanedTeacherName = teacher.name.replace(/^GV\.?\s*/i, '')
                           return (
                             <React.Fragment key={teacher.id}>
                               <PersonnelHoverCard person={{ ...teacher, name: cleanedTeacherName }}>
-                                <span className="text-foreground font-semibold hover:underline cursor-pointer text-xs">{cleanedTeacherName}</span>
+                                <span className="text-foreground font-normal hover:underline cursor-pointer text-xs">{cleanedTeacherName}</span>
                               </PersonnelHoverCard>
                               {idx < staffInfo.teachers.length - 1 && <span>,</span>}
                             </React.Fragment>

@@ -402,4 +402,65 @@ export function getAlertRowMetrics(cls: StudentCareAlert): AlertRowMetrics {
   }
 }
 
+export interface StudentOrderInfo {
+  orderCode?: string
+  packageName: string
+  packageAmount?: string
+  paymentTerm?: string
+}
+
+export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
+  const classification = getRenewalClassification(item)
+  const hash = stableHash(item.studentId)
+
+  // 1. Học viên Mới -> Chưa có đơn hàng nháp -> Hiển thị nút "+ Tạo đơn nháp"
+  if (classification === 'moi') {
+    return {
+      orderCode: undefined,
+      packageName: 'Chưa chọn gói',
+      packageAmount: undefined,
+      paymentTerm: undefined,
+    }
+  }
+
+  // 2. Học viên Cân nhắc / Tiềm năng / Hẹn tái -> Đa số hiển thị nút "+ Tạo đơn nháp" hoặc đơn nháp đang giữ chỗ/chưa cọc
+  if (classification === 'can_nhac' || classification === 'tiem_nang' || classification === 'hen_tai') {
+    if (hash % 2 === 0) {
+      return {
+        orderCode: undefined,
+        packageName: item.subject === 'Toán tư duy' ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
+        packageAmount: undefined,
+        paymentTerm: undefined,
+      }
+    }
+    const draftOrders: StudentOrderInfo[] = [
+      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói SuperKids 12T', packageAmount: '18.000.000đ', paymentTerm: 'Chưa cọc' },
+      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói Movers Bán Trú 1N', packageAmount: '28.000.000đ', paymentTerm: 'Giữ chỗ 24h' },
+      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói Starters 6T', packageAmount: '14.000.000đ', paymentTerm: 'Hẹn nộp 100%' },
+      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói IELTS Junior 1N', packageAmount: '35.000.000đ', paymentTerm: 'Cọc 2 triệu' },
+    ]
+    return draftOrders[hash % draftOrders.length]
+  }
+
+  // 3. Học viên Đã tái phí / Chồng phí -> Đã có đơn hàng kích hoạt / đóng phí thành công
+  if (classification === 'tai_phi' || classification === 'chong_phi') {
+    const successOrders: StudentOrderInfo[] = [
+      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói SuperKids 12T', packageAmount: '18.000.000đ', paymentTerm: 'Thanh toán 100%' },
+      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Kindy Mẫu giáo 12T', packageAmount: '20.000.000đ', paymentTerm: 'Thanh toán 100%' },
+      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Flyers Intensive 6T', packageAmount: '22.000.000đ', paymentTerm: 'Đã cọc 5 triệu' },
+      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Kindy Mẫu giáo 1N', packageAmount: '18.000.000đ', paymentTerm: 'Trả góp 3 kỳ' },
+    ]
+    return successOrders[hash % successOrders.length]
+  }
+
+  // 4. Các trạng thái khác (Thất bại, Rút phí...)
+  return {
+    orderCode: undefined,
+    packageName: 'Không có đơn',
+    packageAmount: undefined,
+    paymentTerm: undefined,
+  }
+}
+
+
 

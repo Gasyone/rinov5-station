@@ -1,17 +1,22 @@
 'use client'
 
-import { Phone, FileText, Check, X, ArrowRightLeft } from 'lucide-react'
-import { useCallStore } from '@/stores/useCallStore'
+import { FileText, Check, X, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { StatusBadge, ContactCell, PersonnelCell } from '@/components/shared'
+import { StatusBadge, ContactCell, PersonnelCell, StudentProfileHoverCard, type StudentProfileItem } from '@/components/shared'
+import { SessionHoverCard, type GenericSessionData } from '@/components/screens/calendar/SessionHoverCard'
+import { ClassCodeHoverCell } from '@/components/screens/care/ClassCodeHoverCell'
 import type { TrialClass } from '@/mocks/trialClasses'
 import {
   getInitials,
   getTrialFamilyMembers,
   getTrialStatusLabel,
+  formatSessionDateTimeRange,
+  formatTimeOnly,
+  getEndTime,
+  buildTrialSessionData,
 } from './trialClassHelpers'
 
 
@@ -28,20 +33,6 @@ interface TrialClassTableRowProps {
   onReject?: (id: string) => void
 }
 
-function formatTrialDateShort(dateStr: string): string {
-  if (!dateStr) return '—'
-  const [date] = dateStr.split(' ')
-  const parts = date.split('-')
-  if (parts.length !== 3) return '—'
-  return `${parts[2]}/${parts[1]}`
-}
-
-function formatTrialTime(dateStr: string): string {
-  if (!dateStr) return '—'
-  const parts = dateStr.split(' ')
-  return parts[1] ?? '—'
-}
-
 export function TrialClassTableRow({
   trial,
   isSelected,
@@ -51,9 +42,17 @@ export function TrialClassTableRow({
   onApprove,
   onReject,
 }: TrialClassTableRowProps) {
-  const startCall = useCallStore((s) => s.startCall)
   const familyMembers = getTrialFamilyMembers(trial)
   const primaryFamilyMember = familyMembers.find((member: import('@/mocks/trialClasses').TrialClassFamilyMember) => member.isPrimary) ?? familyMembers[0]
+  const sessionData = buildTrialSessionData(trial)
+
+  const studentProfile: StudentProfileItem = {
+    id: trial.customerId,
+    name: trial.studentName,
+    branch: trial.branch || trial.school,
+    parentName: primaryFamilyMember.name || trial.familyName,
+    parentPhone: primaryFamilyMember.phone || trial.familyPhone,
+  }
 
   return (
     <TableRow
@@ -61,7 +60,7 @@ export function TrialClassTableRow({
       onClick={() => onRowClick(trial.id)}
     >
       <TableCell
-        className="sticky left-0 z-30 w-12 min-w-12 max-w-12 overflow-hidden bg-background text-center group-hover:bg-muted"
+        className="sticky left-0 z-30 w-12 min-w-12 max-w-12 overflow-hidden bg-background text-center group-hover:bg-muted/50"
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
@@ -70,17 +69,31 @@ export function TrialClassTableRow({
         />
       </TableCell>
 
-      <TableCell className="sticky left-12 z-20 w-84 min-w-84 max-w-84 overflow-hidden bg-background group-hover:bg-muted">
+      <TableCell className="sticky left-12 z-20 w-80 min-w-80 max-w-80 overflow-hidden bg-background group-hover:bg-muted/50">
         <div className="relative z-10 max-w-full overflow-hidden pr-24">
-          <div className="min-w-0 space-y-1.5">
-            <p className="truncate font-semibold" title={trial.program}>
-              {trial.program}
-            </p>
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="font-mono text-xs text-muted-foreground">{trial.id}</span>
-              <Badge variant="secondary" className="h-4 rounded px-1 text-[10px] uppercase">
-                {trial.subject}
-              </Badge>
+          <div className="flex min-w-0 items-center gap-3">
+            <div onClick={(event) => event.stopPropagation()}>
+              <StudentProfileHoverCard student={studentProfile} align="start" side="right">
+                <div className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md bg-muted text-sm font-bold text-foreground transition-colors hover:bg-primary/10 hover:text-primary">
+                  {getInitials(trial.studentName)}
+                </div>
+              </StudentProfileHoverCard>
+            </div>
+
+            <div className="min-w-0">
+              <p
+                className="truncate font-semibold cursor-pointer hover:text-primary hover:underline text-foreground"
+                title={trial.studentName}
+                onClick={() => onRowClick(trial.id)}
+              >
+                {trial.studentName}
+              </p>
+              <div className="flex min-w-0 items-center gap-1.5 mt-0.5">
+                <span className="font-mono text-xs text-muted-foreground">{trial.id}</span>
+                <Badge variant="secondary" className="h-4 rounded px-1 text-[10px] uppercase shrink-0">
+                  {trial.subject}
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -125,35 +138,6 @@ export function TrialClassTableRow({
                 <ArrowRightLeft className="h-4 w-4 text-primary" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              title="Gọi điện"
-              aria-label={`Gọi ${trial.studentName}`}
-              onClick={() => {
-                startCall({
-                  studentId: trial.customerId,
-                  studentName: trial.studentName,
-                  parentPhone: trial.familyPhone,
-                  parentName: trial.familyName,
-                })
-              }}
-              className="bg-transparent shadow-none hover:bg-muted"
-            >
-              <Phone className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          </div>
-        </div>
-      </TableCell>
-
-      <TableCell>
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-bold text-foreground">
-            {getInitials(trial.studentName)}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{trial.studentName}</p>
-            <p className="font-mono text-xs text-muted-foreground">{trial.customerId}</p>
           </div>
         </div>
       </TableCell>
@@ -173,13 +157,23 @@ export function TrialClassTableRow({
         <span className="font-medium text-xs text-muted-foreground">{trial.attempt}</span>
       </TableCell>
 
-
-
       <TableCell>
         {trial.sessions.length > 0 ? (
           <div className="space-y-0.5">
-            <p className="font-medium text-sm truncate" title={trial.sessions[0].className}>{trial.sessions[0].className}</p>
-            <p className="font-mono text-[10px] text-muted-foreground">{trial.sessions[0].classId}</p>
+            <p className="truncate text-sm font-medium" title={trial.sessions[0].className}>
+              {trial.sessions[0].className}
+            </p>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
+              <ClassCodeHoverCell
+                classCode={trial.sessions[0].classId}
+                subject={trial.subject}
+                level={trial.program}
+                teacherCode={trial.owner}
+                schedule={formatSessionDateTimeRange(trial.sessions[0].trialDate)}
+              />
+              <span>·</span>
+              <span className="truncate">{trial.program}</span>
+            </div>
           </div>
         ) : (
           <span className="text-muted-foreground text-xs italic">Chưa ghép</span>
@@ -187,37 +181,33 @@ export function TrialClassTableRow({
       </TableCell>
 
       <TableCell>
-        {trial.sessions.length > 0 ? (
+        {sessionData && trial.sessions.length > 0 ? (
           <div className="space-y-0.5">
-            <p className="font-medium text-sm">{trial.sessions[0].sessionName}</p>
-            <p className="font-mono text-[10px] text-muted-foreground">{trial.sessions[0].sessionId}</p>
+            <p className="truncate text-sm font-medium">{trial.sessions[0].sessionName}</p>
+            <div onClick={(e) => e.stopPropagation()}>
+              <SessionHoverCard session={sessionData} side="bottom">
+                <p className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors">
+                  {formatSessionDateTimeRange(trial.sessions[0].trialDate)}
+                </p>
+              </SessionHoverCard>
+            </div>
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs italic">—</span>
-        )}
-      </TableCell>
-
-      <TableCell>
-        {trial.sessions.length > 0 ? (
-          <span className="font-medium text-sm">{formatTrialTime(trial.sessions[0].trialDate)} {formatTrialDateShort(trial.sessions[0].trialDate)}</span>
-        ) : (
-          <span className="text-muted-foreground text-xs italic">—</span>
+          <span className="text-muted-foreground text-xs italic">Chưa xếp lịch</span>
         )}
       </TableCell>
 
       <TableCell onClick={(event) => event.stopPropagation()}>
         {trial.status === 'completed' ? (
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1.5 px-2.5 text-xs text-primary border-primary/20 hover:bg-primary/5"
+          <a
+            href={`/app/trial_class/feedback/${trial.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer"
           >
-            <a href={`/app/trial_class/feedback/${trial.id}`} target="_blank" rel="noopener noreferrer">
-              <FileText className="h-3.5 w-3.5" />
-              Xem nhận xét
-            </a>
-          </Button>
+            <FileText className="h-3.5 w-3.5" />
+            <span>Xem nhận xét</span>
+          </a>
         ) : trial.sessions.length > 0 ? (
           <span className="text-muted-foreground text-xs italic">Chờ nhận xét</span>
         ) : (
@@ -226,19 +216,34 @@ export function TrialClassTableRow({
       </TableCell>
 
       <TableCell>
-        {trial.sessions.length > 0 ? (
-          <PersonnelCell
-            items={[{ name: trial.owner }]}
-            size="sm"
-            mode="single"
-          />
+        {trial.owner && trial.owner !== '—' ? (
+          <div className="space-y-0.5">
+            <PersonnelCell
+              items={[{ name: trial.owner }]}
+              size="sm"
+              mode="single"
+            />
+            <p className="truncate text-xs text-muted-foreground" title={trial.branch || trial.school}>
+              {trial.branch || trial.school}
+            </p>
+          </div>
         ) : (
           <span className="text-muted-foreground text-xs italic">—</span>
         )}
       </TableCell>
 
       <TableCell>
-        <StatusBadge status={trial.status} label={getTrialStatusLabel(trial.status)} />
+        <div className="flex flex-col items-start gap-0.5">
+          <StatusBadge
+            status={trial.status === 'reschedule' ? 'confirmed' : trial.status}
+            label={getTrialStatusLabel(trial.status)}
+          />
+          {trial.status === 'reschedule' && (
+            <span className="text-[11px] font-semibold text-red-600 dark:text-red-400">
+              Cần đổi lịch
+            </span>
+          )}
+        </div>
       </TableCell>
     </TableRow>
   )

@@ -189,9 +189,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
       defaultThreshold: 1,
       operators: [{ value: 'milestone', label: 'Tự động kích hoạt khi điểm danh buổi thứ N' }],
       windowOptions: [
-        { value: 'custom_session_numbers', label: 'Mốc số buổi cụ thể (VD: 1; 5; 10)' },
-        { value: 'buoi_1', label: 'Buổi 1 (Buổi học đầu tiên)' },
-        { value: 'buoi_cuoi', label: 'Buổi cuối cùng (Bế giảng)' },
+        { value: 'custom_session_numbers', label: 'Tùy chọn mốc số buổi' },
+        { value: 'buoi_1', label: 'Buổi 1 (Đầu tiên)' },
+        { value: 'buoi_cuoi', label: 'Buổi cuối (Bế giảng)' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -231,9 +231,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -253,9 +253,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -275,9 +275,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -297,9 +297,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -318,9 +318,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'eq', label: '= (Bằng chính xác)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -383,9 +383,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -405,9 +405,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -427,9 +427,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
         { value: 'lte', label: '≤ (Nhỏ hơn hoặc bằng)' },
       ],
       windowOptions: [
-        { value: 'custom_sessions', label: 'Số buổi đã xảy ra ở lớp học (Nhập N)' },
+        { value: 'custom_sessions', label: 'Theo N buổi học gần nhất' },
         { value: 'toan_khoa', label: 'Trong toàn khóa học' },
-        { value: '30_ngay', label: 'Trong 30 ngày gần nhất' },
+        { value: '30_ngay', label: 'Trong 30 ngày gần đây' },
       ],
       scopeOptions: [
         { value: 'theo_tung_mon', label: 'Tính riêng theo môn / lớp' },
@@ -531,9 +531,9 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
       defaultThreshold: 1,
       operators: [{ value: 'milestone', label: 'Định kỳ theo mốc lịch' }],
       windowOptions: [
-        { value: 'custom_dates_month', label: 'Tự nhập danh sách ngày (VD: 1; 15; 25)' },
-        { value: 'ngay_1', label: 'Ngày 1 hằng tháng (Đầu tháng)' },
-        { value: 'ngay_cuoi_thang', label: 'Ngày cuối cùng của tháng' },
+        { value: 'custom_dates_month', label: 'Tùy chọn danh sách ngày' },
+        { value: 'ngay_1', label: 'Ngày 1 (Đầu tháng)' },
+        { value: 'ngay_cuoi_thang', label: 'Ngày cuối tháng' },
       ],
       scopeOptions: [
         { value: 'toan_trung_tam', label: 'Toàn trung tâm / Toàn hệ thống' },
@@ -567,10 +567,10 @@ export const METRIC_CATALOG: Record<string, MetricDefinition[]> = {
       defaultThreshold: 1,
       operators: [{ value: 'milestone', label: 'Định kỳ theo mốc lịch' }],
       windowOptions: [
-        { value: 'le_01_06', label: 'Quốc tế Thiếu nhi (01/06)' },
-        { value: 'le_20_11', label: 'Ngày Nhà giáo Việt Nam (20/11)' },
-        { value: 'le_noel', label: 'Giáng sinh (25/12)' },
-        { value: 'custom_holiday_date', label: 'Chọn / Nhập mốc ngày lễ tùy chọn' },
+        { value: 'le_01_06', label: 'Quốc tế Thiếu nhi 01/06' },
+        { value: 'le_20_11', label: 'Nhà giáo VN 20/11' },
+        { value: 'le_noel', label: 'Giáng sinh 25/12' },
+        { value: 'custom_holiday_date', label: 'Tùy chọn mốc ngày lễ' },
       ],
       scopeOptions: [
         { value: 'toan_trung_tam', label: 'Toàn trung tâm / Toàn hệ thống' },

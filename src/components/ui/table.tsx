@@ -14,7 +14,7 @@ function Table({
   return (
     <div
       data-slot="table-container"
-      className={cn("relative w-full overflow-x-auto", containerClassName)}
+      className={cn("relative w-full overflow-x-auto min-h-full flex flex-col justify-between", containerClassName)}
     >
       <table
         data-slot="table"

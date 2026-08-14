@@ -70,7 +70,10 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const customHeaderTitle = useUIStore((s) => s.customHeaderTitle)
   const router = useRouter()
 
-  const defaultMenuLabel = currentMenuId ? screens[currentMenuId]?.label : null
+  const navMenuItem = currentMenuId
+    ? navigationGroups.flatMap((g) => g.items).find((item) => item.id === currentMenuId)
+    : null
+  const defaultMenuLabel = currentMenuId ? (screens[currentMenuId]?.label || navMenuItem?.label) : null
   const menuLabel = customHeaderTitle || defaultMenuLabel
   const currentGroup = currentMenuId
     ? navigationGroups.find((g) => g.items.some((item) => item.id === currentMenuId))

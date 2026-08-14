@@ -9,6 +9,7 @@ export interface StudentCareWorkItem {
   studentCode?: string
   className: string
   productName?: string
+  expectedEndDate?: string
   conditions?: string[]
   status?: string
 }

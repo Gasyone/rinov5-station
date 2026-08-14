@@ -10,9 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import {
   WORK_TAB_OPTIONS,
-  WORK_STAFF_LAYOUT_OPTIONS,
   type WorkRegistrationTab,
-  type WorkRegistrationStaffLayout,
 } from './workRegistrationTypes'
 
 interface WorkRegistrationToolbarProps {
@@ -27,8 +25,6 @@ interface WorkRegistrationToolbarProps {
   onSubjectChange: (subject: string) => void
   onSearchChange: (search: string) => void
   onOpenWarnings: () => void
-  staffLayout: WorkRegistrationStaffLayout
-  onStaffLayoutChange: (layout: WorkRegistrationStaffLayout) => void
 }
 
 export function WorkRegistrationToolbar({
@@ -43,8 +39,6 @@ export function WorkRegistrationToolbar({
   onSubjectChange,
   onSearchChange,
   onOpenWarnings,
-  staffLayout,
-  onStaffLayoutChange,
 }: WorkRegistrationToolbarProps) {
   const showSearch = activeTab !== 'mine'
 
@@ -57,13 +51,6 @@ export function WorkRegistrationToolbar({
             options={WORK_TAB_OPTIONS}
             onValueChange={onTabChange}
           />
-          {activeTab === 'staff' ? (
-            <SegmentedControl
-              value={staffLayout}
-              options={WORK_STAFF_LAYOUT_OPTIONS}
-              onValueChange={onStaffLayoutChange}
-            />
-          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {activeTab === 'staff' ? (

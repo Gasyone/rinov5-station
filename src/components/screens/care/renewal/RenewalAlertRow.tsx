@@ -10,6 +10,8 @@ import {
   ArrowLeftRight,
   Phone,
   RefreshCw,
+  Calendar,
+  Plus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -17,11 +19,12 @@ import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getOfficialStatus, getOfficialStatusLabel, parseAttendanceRate } from './renewalHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getOfficialStatus, getOfficialStatusLabel, parseAttendanceRate, getStudentOrderInfo } from './renewalHelpers'
 import { RenewalHistoryPopover } from './RenewalHistoryPopover'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { mockClassRecords } from '@/mocks/classRecords'
-import { getAcademicIssues } from '../operationsAlertHelpers'
+import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
+import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
 
 
 // --- Academic Stats Cell (same pattern as operations care) ---
@@ -308,16 +311,6 @@ export function RenewalAlertRow({
                   </a>
                 )}
               </div>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="font-mono bg-muted dark:bg-zinc-800 px-1 py-px rounded shrink-0">
-                  {cls.studentId}
-                </span>
-                {cls.customerCode && (
-                  <span className="font-mono bg-muted dark:bg-zinc-800 px-1 py-px rounded shrink-0">
-                    {cls.customerCode}
-                  </span>
-                )}
-              </div>
               <div className="text-[10px] text-muted-foreground font-medium mt-0.5">
                 {cls.subject} - {cls.level}
               </div>
@@ -410,7 +403,7 @@ export function RenewalAlertRow({
                   <span className="text-[8px] px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
                     CS
                   </span>
-                  <span className="font-semibold text-foreground text-[10px] hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
+                  <span className="text-foreground text-[10px] hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
                 </div>
               </div>
             </PersonnelHoverCard>
@@ -440,7 +433,7 @@ export function RenewalAlertRow({
                     <span className="text-[8px] px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
                       GV
                     </span>
-                    <span className="font-semibold text-foreground text-[10px] hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
+                    <span className="text-foreground text-[10px] hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
                   </div>
                 </div>
               </PersonnelHoverCard>
@@ -469,7 +462,7 @@ export function RenewalAlertRow({
                   "truncate shrink-0",
                   cls.status === 'Chờ chuyển lớp'
                     ? "text-xs text-muted-foreground font-normal"
-                    : "font-semibold text-zinc-600 dark:text-zinc-400 text-xs"
+                    : "text-zinc-600 dark:text-zinc-400 text-xs"
                 )} title={className}>
                   {isWaitAssignment || studentInfo?.status === 'reserve' || cls.status === 'Hết buổi'
                     ? 'Chưa có lớp'
@@ -559,7 +552,7 @@ export function RenewalAlertRow({
           return (
             <div className="flex flex-col gap-0.5 min-w-[155px]">
               <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap">
-                <span className="font-semibold text-zinc-600 dark:text-zinc-400 text-xs truncate shrink-0">{cls.level}</span>
+                <span className="text-zinc-600 dark:text-zinc-400 text-xs truncate shrink-0">{cls.level}</span>
                 {hasPackageHistory && (
                   <RenewalHistoryPopover
                     type="package_history"
@@ -582,59 +575,99 @@ export function RenewalAlertRow({
                 )}
               </div>
               <span className="text-[10px] text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Đã học {cls.totalSessions - cls.remainingSessions}/{cls.totalSessions}b</span>
             </div>
           )
         })()}
       </td>
 
-      {/* Thống kê học tập */}
-      <td className="py-3 px-3">
-        <AcademicStatsCell cls={cls} />
-      </td>
-
-      {/* Lịch sử chăm sóc / Nội dung tái phí gần nhất */}
-      <td className="py-3 px-3">
+      {/* Lịch sử chăm sóc */}
+      <td className="py-3 px-3 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
-          const studentLogs = getHistoryLogsForStudent(cls.studentId);
-          const latestLog = studentLogs.find(l => l.tag === 'CSTP');
-          return (
-            <div className="flex flex-col gap-0.5 max-w-[240px] text-left">
-              <div className="flex items-center gap-1.5 flex-wrap leading-none">
-                <span className="font-semibold text-foreground text-[10px]">
-                  {latestLog ? latestLog.staff.split(' ')[0] : cls.csStaff}
+          const isCompleted = isCared(cls)
+          const inProgress = isInProgress(cls)
+          const isUncared = !isCompleted && !inProgress
+
+          const allLogs = getHistoryLogsForStudent(cls.studentId)
+          const logs = isUncared ? [] : allLogs
+          const latestLog = logs[0]
+          const rescheduleInfo = getRescheduleInfo(cls)
+          const attemptCount = logs.length
+
+          const cellContent = (
+            <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
+              {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span
+                  className={cn(
+                    'text-[10px] font-bold transition-colors',
+                    isUncared
+                      ? 'text-zinc-500 dark:text-zinc-400 select-none'
+                      : inProgress
+                      ? 'text-sky-700 dark:text-sky-400 group-hover/care:underline'
+                      : 'text-emerald-700 dark:text-emerald-400 group-hover/care:underline'
+                  )}
+                  title={isUncared ? undefined : 'Click hoặc rê chuột để xem Popover chi tiết Lịch sử chăm sóc'}
+                >
+                  {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
                 </span>
-                {(() => {
-                  const channel = (latestLog ? latestLog.channel : 'zalo') as string;
-                  const channelLabel = channel === 'telephone' 
-                    ? 'Call' 
-                    : channel === 'direct' 
-                    ? 'Trực tiếp' 
-                    : channel === 'facebook' 
-                    ? 'Facebook' 
-                    : 'Zalo';
-                  return (
-                    <span className="font-bold text-[8px] px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-750 dark:text-emerald-350 rounded uppercase select-none shrink-0">
-                      {channelLabel}
-                    </span>
-                  );
-                })()}
-                {latestLog && (
-                  <span className="text-[9px] text-zinc-505 dark:text-zinc-400 font-mono">
-                    {latestLog.date}
+
+                {/* Lịch hẹn gọi lại */}
+                {rescheduleInfo.isRescheduled && (
+                  <span
+                    className="text-[10px] font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
+                    title="Lịch hẹn gọi lại"
+                  >
+                    <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
+                    <span>Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground leading-normal mt-1 animate-in fade-in duration-300 line-clamp-1 whitespace-normal break-words" title={latestLog ? latestLog.note : cls.interactionNotes}>
-                {latestLog ? latestLog.note : (cls.interactionNotes || <span className="italic text-zinc-400 dark:text-zinc-500">Chưa tương tác...</span>)}
-              </p>
+
+              {/* Hàng 2 & 3: Nội dung chăm sóc & Phụ huynh phản hồi */}
+              {isUncared ? (
+                <div className="text-[10px] italic text-amber-600 dark:text-amber-400 font-medium">
+                  Cần liên hệ trao đổi với phụ huynh ngay
+                </div>
+              ) : (
+                latestLog && (
+                  <>
+                    <div
+                      className="text-[10px] text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                      title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
+                    >
+                      <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
+                    </div>
+                    {isCompleted && (
+                      <div
+                        className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium truncate group-hover/care:underline transition-colors"
+                        title={`Phụ huynh phản hồi: ${latestLog.note}`}
+                      >
+                        Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở'}&rdquo;
+                      </div>
+                    )}
+                  </>
+                )
+              )}
             </div>
-          );
+          )
+
+          if (isUncared) {
+            return cellContent
+          }
+
+          return (
+            <OperationsAlertCareHistoryModal
+              cls={cls}
+              onRefresh={onRefresh}
+              trigger={cellContent}
+              defaultTab="renewal"
+            />
+          )
         })()}
       </td>
 
-      {/* Phân loại tái phí */}
-      <td className="py-3 px-3">
+      {/* Trạng thái tái phí */}
+      <td className="py-3 px-3 min-w-[140px]">
         {(() => {
           const classification = getRenewalClassification(cls)
           const label = getRenewalClassificationLabel(classification)
@@ -655,6 +688,65 @@ export function RenewalAlertRow({
         })()}
       </td>
 
+      {/* Đơn hàng */}
+      <td className="py-3 px-3 min-w-[240px]" onClick={(e) => e.stopPropagation()}>
+        {(() => {
+          const order = getStudentOrderInfo(cls)
+          return (
+            <div className="flex flex-col gap-0.5 max-w-[240px] text-left">
+              {order.orderCode ? (
+                <>
+                  {/* Dòng 1: Gói học & Số tiền (Điều hướng chuẩn tới Landing Page Báo Giá /quote/${order.orderCode}) */}
+                  <div className="flex items-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 truncate">
+                    <a
+                      href={`/quote/${order.orderCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline flex items-center gap-1 text-emerald-800 dark:text-emerald-300 truncate"
+                      title={`Mở Landing Page Báo Giá & Chi tiết Đơn hàng (${order.orderCode})`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink className="h-3 w-3 text-emerald-600 shrink-0" />
+                      <span className="truncate">{order.packageName}</span>
+                      {order.packageAmount && (
+                        <span className="font-mono text-[11px] font-normal text-muted-foreground shrink-0">
+                          ({order.packageAmount})
+                        </span>
+                      )}
+                    </a>
+                  </div>
+
+                  {/* Dòng 2: Mã đơn nháp • Lần thanh toán (Ví dụ: Cọc 50%) */}
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground flex-wrap">
+                    <a
+                      href={`/quote/${order.orderCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-foreground hover:text-primary hover:underline cursor-pointer"
+                      title="Xem Landing Page Báo giá & Chi tiết Đơn hàng nháp"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {order.orderCode}
+                    </a>
+                    {order.paymentTerm && (
+                      <>
+                        <span>•</span>
+                        <span className="text-amber-700 dark:text-amber-400">
+                          {order.paymentTerm}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <span className="text-[11px] italic text-muted-foreground">
+                  Chưa có đơn hàng
+                </span>
+              )}
+            </div>
+          )
+        })()}
+      </td>
     </tr>
   )
 }

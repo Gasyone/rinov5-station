@@ -15,12 +15,10 @@ import { WorkRegistrationStaffTable } from './WorkRegistrationStaffTable'
 import type {
   EmployeeWeekSummary,
   WorkRegistrationStatusFilter,
-  WorkRegistrationStaffLayout,
 } from './workRegistrationTypes'
 import { cn } from '@/lib/utils'
 
 interface WorkRegistrationStaffPanelProps {
-  layout: WorkRegistrationStaffLayout
   statusTiles: StatusTile<WorkRegistrationStatusFilter>[]
   statusFilter: WorkRegistrationStatusFilter
   filteredSummaries: EmployeeWeekSummary[]
@@ -50,7 +48,6 @@ interface WorkRegistrationStaffPanelProps {
 }
 
 export function WorkRegistrationStaffPanel({
-  layout,
   statusTiles,
   statusFilter,
   filteredSummaries,
@@ -78,8 +75,6 @@ export function WorkRegistrationStaffPanel({
   onClear,
   onSubmit,
 }: WorkRegistrationStaffPanelProps) {
-  const showCalendar = layout !== 'list'
-
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <StatusTiles tiles={statusTiles} activeId={statusFilter} onSelect={onStatusChange} />
@@ -100,11 +95,8 @@ export function WorkRegistrationStaffPanel({
         </div>
       ) : null}
 
-      <div className={cn(
-        "grid min-h-0 flex-1 gap-3",
-        layout === 'split' ? "xl:grid-cols-[minmax(460px,520px)_minmax(0,1fr)]" : "grid-cols-1"
-      )}>
-        <div className={cn('h-full min-h-0', layout === 'split' && delegateEmployeeId ? 'hidden xl:block' : 'block')}>
+      <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(460px,520px)_minmax(0,1fr)]">
+        <div className={cn('h-full min-h-0', delegateEmployeeId ? 'hidden xl:block' : 'block')}>
           <WorkRegistrationStaffTable
             summaries={filteredSummaries}
             page={page}
@@ -116,35 +108,33 @@ export function WorkRegistrationStaffPanel({
           />
         </div>
 
-        {showCalendar ? (
-          <DataTableFrame
-            className={cn(layout === 'split' && !delegateEmployeeId && 'hidden xl:flex')}
-            footer={delegateEmployeeId ? (
-              <WorkRegistrationActionBar
-                totalMinutes={totalMinutes}
-                priorityMinutes={priorityMinutes}
-                subjectLabel={activeEmployeeName}
-                canMutate={canMutate}
-                primaryLabel={primaryActionLabel}
-                helperText={actionHelperText}
-                onClear={onClear}
-                onSubmit={onSubmit}
-              />
-            ) : null}
-          >
-            <WorkRegistrationGrid
-              days={weekDays}
-              records={records}
-              employees={employees}
-              todayKey={todayKey}
-              editableEmployeeId={delegateEmployeeId}
-              readonlyWeek={readonlyWeek}
-              priorityRules={priorityRules}
-              onSetSlot={onSetSlot}
-              onOpenSlotDetail={onOpenSlotDetail}
+        <DataTableFrame
+          className={cn(!delegateEmployeeId && 'hidden xl:flex')}
+          footer={delegateEmployeeId ? (
+            <WorkRegistrationActionBar
+              totalMinutes={totalMinutes}
+              priorityMinutes={priorityMinutes}
+              subjectLabel={activeEmployeeName}
+              canMutate={canMutate}
+              primaryLabel={primaryActionLabel}
+              helperText={actionHelperText}
+              onClear={onClear}
+              onSubmit={onSubmit}
             />
-          </DataTableFrame>
-        ) : null}
+          ) : null}
+        >
+          <WorkRegistrationGrid
+            days={weekDays}
+            records={records}
+            employees={employees}
+            todayKey={todayKey}
+            editableEmployeeId={delegateEmployeeId}
+            readonlyWeek={readonlyWeek}
+            priorityRules={priorityRules}
+            onSetSlot={onSetSlot}
+            onOpenSlotDetail={onOpenSlotDetail}
+          />
+        </DataTableFrame>
       </div>
     </div>
   )

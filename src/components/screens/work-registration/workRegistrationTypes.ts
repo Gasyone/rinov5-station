@@ -5,7 +5,6 @@ import type {
 
 export type WorkRegistrationTab = 'mine' | 'staff' | 'center'
 export type WorkRegistrationViewMode = 'week' | 'month'
-export type WorkRegistrationStaffLayout = 'split' | 'list'
 export type WorkRegistrationStatusFilter =
   | 'all'
   | 'not_registered'
@@ -60,10 +59,6 @@ export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string
   { value: 'center', label: 'Trường' },
 ]
 
-export const WORK_STAFF_LAYOUT_OPTIONS: Array<{ value: WorkRegistrationStaffLayout; label: string }> = [
-  { value: 'split', label: 'Cả hai' },
-  { value: 'list', label: 'Danh sách' },
-]
 
 export const WORK_VIEW_OPTIONS: Array<{ value: WorkRegistrationViewMode; label: string }> = [
   { value: 'week', label: 'Tuần' },

@@ -19,6 +19,12 @@ export interface OrderPaymentTransaction {
   method: string
   timestamp: string
   status: 'completed' | 'pending' | 'cancelled'
+  statusLabel?: string
+  paymentType?: 'deposit' | 'final' | 'full'
+  paymentTypeLabel?: string
+  depositAmount?: number
+  finalPaymentAmount?: number
+  isLocked?: boolean
   saleBy?: string
   note?: string
   convertedSessions?: number
@@ -36,6 +42,7 @@ export interface DetailedOrderItem {
   studentName?: string
   orderType?: string // e.g. "Mua mới", "Gia hạn", "--"
   durationText?: string // e.g. "90 buổi", "12 tháng"
+  expiryDate?: string // e.g. "25/07/2026", "--"
   bonusText?: string // e.g. "Tặng thêm 6 buổi"
   giftText?: string // e.g. "1 x [IELTS] Khóa 5.0"
 }
@@ -50,6 +57,7 @@ export interface DetailedOrder extends Order {
   sourceOrderNo?: string
   sourcePackageName?: string
   linkedDraftOrderNo?: string
+  isOtherChild?: boolean
 }
 
 export interface FeeTransferRecord {
@@ -73,9 +81,12 @@ export interface FeeTransferRecord {
     recipientStudentName: string
     uid: string
     sid: string
-    transferType: string // e.g. "Chuyển phí - Thanh toán thêm"
+    packageName?: string
+    pathwayLevel?: string
+    transferType: string // e.g. "Chuyển phí - Ngang tiền" | "Chuyển phí - Thanh toán thêm"
     targetPackageName: string
-    linkedOrderNo: string // e.g. "OD794023"
+    convertedSessionsLabel?: string // e.g. "2 BUỔI"
+    linkedOrderNo?: string // e.g. "OD794023"
   }
 }
 
@@ -85,32 +96,35 @@ export interface StudentOrdersTabProps {
 }
 
 export function getFeeTransfers(studentId: string, studentName?: string): FeeTransferRecord[] {
-  const displayStudentName = studentName || 'Minh Anh'
+  const displayStudentName = studentName || 'Phạm Hoàng Bách'
 
   return [
     {
       id: `tf-1-${studentId}`,
-      transferDate: '17-06-2026',
-      ticketCode: 'CP00011223',
-      executorName: 'Nguyễn Như Ngọc',
+      transferDate: '10-08-2026',
+      ticketCode: 'CP00013581',
+      executorName: 'Lê Thị Trà Giang 1',
       oldPackage: {
         studentName: displayStudentName,
-        uid: '2054696',
-        sid: '170653',
-        packageName: 'Tiếng Anh Cambridge-Việt Nam-1:4',
-        pathwayLevel: '24',
-        totalSessions: 192,
-        mainSessions: 192,
-        completedTotalSessions: 134,
-        completedMainSessions: 134,
-        transferredSessionsCount: 58,
+        uid: '1792543',
+        sid: '161666',
+        packageName: 'Tiếng Anh School Master-Việt Nam-1:1',
+        pathwayLevel: '151',
+        totalSessions: 48,
+        mainSessions: 48,
+        completedTotalSessions: 43,
+        completedMainSessions: 43,
+        transferredSessionsCount: 5,
       },
       newPackage: {
         recipientStudentName: displayStudentName,
-        uid: '2054696',
-        sid: '170653',
-        transferType: 'Chuyển phí - Thanh toán thêm',
-        targetPackageName: '1. [TUTOR][THCS] Skill Builder 2.0_1:7_72 buổi ( SL: 1 )',
+        uid: '1792543',
+        sid: '161666',
+        packageName: 'Tiếng Anh School Master-Việt Nam-1:1',
+        pathwayLevel: '152',
+        transferType: 'Chuyển phí - Ngang tiền',
+        targetPackageName: '1. [Gia sư][THCS] Tiếng Anh School Master 1:1 (1 buổi)',
+        convertedSessionsLabel: '2 BUỔI',
         linkedOrderNo: 'OD794023',
       },
     },
@@ -121,6 +135,144 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
   const displayStudentName = studentName || 'Hà Phương'
 
   return [
+    {
+      id: `ord-deposit-${studentId}-DH715978`,
+      orderNo: 'DH715978',
+      studentId: `sibling-1-${studentId}`,
+      studentName: 'Trần Hoàng An Chi',
+      isOtherChild: true,
+      totalAmount: 14000000,
+      discountAmount: 0,
+      finalAmount: 14000000,
+      paymentMethod: 'bank_transfer',
+      paymentMethodTag: 'Đơn có cọc / Đã hoàn thành phí',
+      paymentStatus: 'paid',
+      status: 'completed',
+      branch: 'RinoEdu Nguyễn Tuân',
+      saleBy: 'Phạm Thị Thu Uyên 1',
+      saleRep: 'Phạm Thị Thu Uyên 1',
+      saleDate: '06-01-2025',
+      createdAt: '2025-01-06T09:15:00Z',
+      totalPaidAmount: 14000000,
+      detailedItems: [
+        {
+          productId: 'p-715978',
+          productName: '[Station] Toán tư duy ( 48 buổi )',
+          quantity: 1,
+          unitPrice: 14000000,
+          subtotal: 14000000,
+          isPaidConfirmed: true,
+          studentName: 'Trần Hoàng An Chi',
+          orderType: 'Mua mới',
+          durationText: '48 buổi',
+          expiryDate: '06/01/2026',
+          bonusText: '--',
+          giftText: '--',
+        },
+      ],
+      payments: [
+        {
+          id: 'pay-715978-dep',
+          code: 'DH715978',
+          amount: 1000000,
+          method: 'BANK',
+          statusLabel: 'T5-Đã nhận bank',
+          timestamp: '06-01-2025',
+          status: 'completed',
+          saleBy: 'Phạm Thị Thu Uyên 1',
+          paymentType: 'deposit',
+          paymentTypeLabel: 'Cọc',
+          depositAmount: 1000000,
+          isLocked: true,
+        },
+        {
+          id: 'pay-718437-fin',
+          code: 'DH718437',
+          amount: 13000000,
+          method: 'BANK',
+          statusLabel: 'T5-Đã nhận bank',
+          timestamp: '10-01-2025',
+          status: 'completed',
+          saleBy: 'Phạm Thị Thu Uyên 1',
+          paymentType: 'final',
+          paymentTypeLabel: 'Hoàn tất',
+          finalPaymentAmount: 13000000,
+        },
+      ],
+      items: [
+        { productId: 'p-715978', productName: '[Station] Toán tư duy ( 48 buổi )', quantity: 1, unitPrice: 14000000, subtotal: 14000000 },
+      ],
+    },
+
+    {
+      id: `ord-deposit-${studentId}-DH715977`,
+      orderNo: 'DH715977',
+      studentId: `sibling-2-${studentId}`,
+      studentName: 'Trần Hoàng An Nguyên',
+      isOtherChild: true,
+      totalAmount: 14000000,
+      discountAmount: 0,
+      finalAmount: 14000000,
+      paymentMethod: 'bank_transfer',
+      paymentMethodTag: 'Đơn có cọc / Đã hoàn thành phí',
+      paymentStatus: 'paid',
+      status: 'completed',
+      branch: 'RinoEdu Nguyễn Tuân',
+      saleBy: 'Phạm Thị Thu Uyên 1',
+      saleRep: 'Phạm Thị Thu Uyên 1',
+      saleDate: '06-01-2025',
+      createdAt: '2025-01-06T09:30:00Z',
+      totalPaidAmount: 14000000,
+      detailedItems: [
+        {
+          productId: 'p-715977',
+          productName: '[Station] Toán tư duy ( 48 buổi )',
+          quantity: 1,
+          unitPrice: 14000000,
+          subtotal: 14000000,
+          isPaidConfirmed: true,
+          studentName: 'Trần Hoàng An Nguyên',
+          orderType: 'Mua mới',
+          durationText: '48 buổi',
+          expiryDate: '06/01/2026',
+          bonusText: '--',
+          giftText: '--',
+        },
+      ],
+      payments: [
+        {
+          id: 'pay-715977-dep',
+          code: 'DH715977',
+          amount: 1000000,
+          method: 'BANK',
+          statusLabel: 'T5-Đã nhận bank',
+          timestamp: '06-01-2025',
+          status: 'completed',
+          saleBy: 'Phạm Thị Thu Uyên 1',
+          paymentType: 'deposit',
+          paymentTypeLabel: 'Cọc',
+          depositAmount: 1000000,
+          isLocked: true,
+        },
+        {
+          id: 'pay-718438-fin',
+          code: 'DH718438',
+          amount: 13000000,
+          method: 'BANK',
+          statusLabel: 'T5-Đã nhận bank',
+          timestamp: '10-01-2025',
+          status: 'completed',
+          saleBy: 'Phạm Thị Thu Uyên 1',
+          paymentType: 'final',
+          paymentTypeLabel: 'Hoàn tất',
+          finalPaymentAmount: 13000000,
+        },
+      ],
+      items: [
+        { productId: 'p-715977', productName: '[Station] Toán tư duy ( 48 buổi )', quantity: 1, unitPrice: 14000000, subtotal: 14000000 },
+      ],
+    },
+
     {
       id: `ord-legacy-${studentId}-OD800436`,
       orderNo: 'OD800436',
@@ -150,6 +302,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: displayStudentName,
           orderType: 'Gia Hạn',
           durationText: '40 buổi',
+          expiryDate: '25/07/2026',
           bonusText: '--',
           giftText: '1 x [IELTS] Khóa 5.0',
         },
@@ -202,6 +355,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: displayStudentName,
           orderType: 'Gia Hạn',
           durationText: '1 tháng',
+          expiryDate: '05/03/2026',
           bonusText: '--',
           giftText: '--',
         },
@@ -215,6 +369,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: displayStudentName,
           orderType: 'Gia Hạn',
           durationText: '36 buổi',
+          expiryDate: '05/08/2026',
           bonusText: '--',
           giftText: '1 x [IELTS] Khóa 4.0',
         },
@@ -265,6 +420,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: displayStudentName,
           orderType: 'Mua mới',
           durationText: '144 buổi',
+          expiryDate: '14/11/2026',
           bonusText: '--',
           giftText: '--',
         },
@@ -278,6 +434,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: displayStudentName,
           orderType: 'Mua mới',
           durationText: '12 buổi',
+          expiryDate: '14/02/2026',
           bonusText: '--',
           giftText: '--',
         },
@@ -373,6 +530,7 @@ export function getStudentOrders(studentId: string, studentName?: string): Detai
           studentName: 'Minh Anh',
           orderType: 'Gia Hạn',
           durationText: '72 buổi',
+          expiryDate: '17/12/2026',
           bonusText: '--',
           giftText: '--',
         },

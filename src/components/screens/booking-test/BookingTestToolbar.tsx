@@ -10,6 +10,7 @@ import {
 } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import type { BookingSubject, BookingTest } from '@/mocks/bookingTests'
+import { BookingTestConditionFilters, type ConditionFilterItem } from './BookingTestConditionFilters'
 import { STATUS_CONFIG } from './bookingTestConstants'
 import { countStatus, getSubjectLabel } from './bookingTestHelpers'
 import type { StatusTileId } from './bookingTestTypes'
@@ -47,20 +48,47 @@ export function BookingTestToolbar({
   onOpenFilters,
   onCreateBooking,
 }: BookingTestToolbarProps) {
-  const tiles: StatusTile<StatusTileId>[] = [
+  const mainStatusIds: StatusTileId[] = [
+    'booked_assessment',
+    'completed',
+    'failed',
+    'cancelled',
+  ]
+
+  const conditionStatusIds: StatusTileId[] = [
+    'unassigned_teacher',
+    'checkin',
+    ...(activeSubject === 'math' ? [] : ['interviewed' as StatusTileId]),
+    'tested',
+  ]
+
+  const mainTiles: StatusTile<StatusTileId>[] = [
     {
       id: 'all',
       label: 'Tất cả',
       count: countStatus(baseForStatus, 'all'),
       semantic: 'neutral',
     },
-    ...STATUS_CONFIG.map((status) => ({
-      id: status.id as StatusTileId,
-      label: status.label,
-      count: countStatus(baseForStatus, status.id),
-      status: status.status,
-    })),
+    ...mainStatusIds.map((id) => {
+      const config = STATUS_CONFIG.find((s) => s.id === id)!
+      return {
+        id,
+        label: config.label,
+        count: countStatus(baseForStatus, id),
+        status: config.status,
+      }
+    }),
   ]
+
+  const conditionItems: ConditionFilterItem[] = conditionStatusIds.map((id) => {
+    const config = STATUS_CONFIG.find((s) => s.id === id)!
+    return {
+      id,
+      label: config.label,
+      count: countStatus(baseForStatus, id),
+      status: config.status,
+    }
+  })
 
   return (
     <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-3 lg:px-3">
@@ -103,11 +131,20 @@ export function BookingTestToolbar({
         </div>
       </div>
 
-      <StatusTiles
-        tiles={tiles}
-        activeId={activeStatus}
-        onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+        <StatusTiles
+          tiles={mainTiles}
+          activeId={activeStatus}
+          onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
+          noOverflowCollapse
+        />
+
+        <BookingTestConditionFilters
+          items={conditionItems}
+          activeId={activeStatus}
+          onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
+        />
+      </div>
     </div>
   )
 }

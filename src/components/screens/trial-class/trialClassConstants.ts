@@ -2,13 +2,25 @@ import type { StatusConfigItem } from './trialClassTypes'
 
 export const STATUS_CONFIG: StatusConfigItem[] = [
   { id: 'pending_approval', label: 'Chờ xác nhận', status: 'pending_approval' },
+  { id: 'confirmed', label: 'Ghép lớp', status: 'confirmed' },
   { id: 'rejected', label: 'Từ chối ghép', status: 'rejected' },
-  { id: 'reschedule', label: 'Cần đổi lịch', status: 'reschedule' },
-  { id: 'confirmed', label: 'Đã ghép lớp', status: 'confirmed' },
-  { id: 'no_show', label: 'Không đến', status: 'no_show' },
   { id: 'completed', label: 'Hoàn thành', status: 'completed' },
   { id: 'cancelled', label: 'Đã hủy', status: 'cancelled' },
 ]
+
+export const TRIAL_LIFECYCLE_CONFIG: StatusConfigItem[] = [
+  { id: 'pending_approval', label: 'Chờ xác nhận', status: 'pending_approval' },
+  { id: 'confirmed', label: 'Ghép lớp', status: 'confirmed' },
+  { id: 'rejected', label: 'Từ chối ghép', status: 'rejected' },
+  { id: 'completed', label: 'Hoàn thành', status: 'completed' },
+]
+
+export const TRIAL_RESULT_FILTERS = [
+  { id: 'unassigned', label: 'Chưa ghép lớp' },
+  { id: 'completed', label: 'Đã học' },
+  { id: 'no_show', label: 'Không đến' },
+  { id: 'expired', label: 'Hết hạn' },
+] as const
 
 export const STATUS_META = Object.fromEntries(
   STATUS_CONFIG.map((status) => [status.id, status])

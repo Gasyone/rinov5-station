@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import {
   Sparkles,
@@ -61,140 +61,88 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
   const quoteNo = quoteId.toUpperCase()
 
   // Dynamic Quote Details matching Order Form structure
-  const [orderDetails] = useState(() => {
-    const defaultMock = {
-      quoteNo: quoteNo,
-      createdDate: '08/08/2026',
-      validUntil: '15/08/2026',
-      customer: {
-        parentName: 'Nguyễn Thị Mai',
-        role: 'Phụ huynh học viên',
-        phone: '0903279888',
-        email: 'nguyenthimai@gmail.com',
-        address: 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+  const [orderDetails, setOrderDetails] = useState(() => ({
+    quoteNo: quoteNo,
+    createdDate: '08/08/2026',
+    validUntil: '15/08/2026',
+    customer: {
+      parentName: 'Nguyễn Thị Mai',
+      role: 'Phụ huynh học viên',
+      phone: '0903279888',
+      email: 'nguyenthimai@gmail.com',
+      address: 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+    },
+    delivery: {
+      recipientName: 'Đặng Thiên An - 0903279888',
+      address: 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+    },
+    branch: {
+      centerName: 'RinoEdu Nguyễn Tuân',
+      csmName: 'Trần Nguyễn CSM',
+      csmPhone: '0903.279.888',
+    },
+    childGroups: [
+      {
+        childId: 'HV-8849',
+        childName: 'Đặng Thiên An',
+        studentCode: 'HV-8849',
+        accountPhone: '0903279888',
+        branch: 'RinoEdu Nguyễn Tuân',
+        items: [
+          {
+            id: 'item-1',
+            productName: '[IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi',
+            orderType: 'Gia hạn gói học',
+            durationText: '40 buổi học (Gia sư 1:1)',
+            giftText: 'Tặng 1 x [IELTS] Khóa 5.0 nâng cao',
+            unitPrice: 8400000,
+            quantity: 1,
+          },
+        ],
       },
-      delivery: {
-        recipientName: 'Đặng Thiên An - 0903279888',
-        address: 'Số 42 Nguyễn Tuân, Phường Thanh Xuân Trung, Quận Thanh Xuân, Hà Nội',
+      {
+        childId: 'HV-8850',
+        childName: 'Đặng Quốc Bảo (Con thứ 2)',
+        studentCode: 'HV-8850',
+        accountPhone: '0982345678',
+        branch: 'RinoEdu Nguyễn Tuân',
+        items: [
+          {
+            id: 'item-2',
+            productName: '[Station] Global Digi 288 buổi (2 station + 2 Digi/ Tuần)',
+            orderType: 'Mua mới',
+            unitPrice: 45564000,
+            quantity: 1,
+            variants: [
+              {
+                name: '[Station] Tiếng Anh OMO_1:10_288 buổi',
+                durationText: '288 buổi',
+                teacherText: '--',
+              },
+              {
+                name: '[DIGI] Tiếng Anh Digital_288 buổi',
+                durationText: '288 buổi',
+                teacherText: '--',
+              },
+            ],
+            giftText: 'Tặng 1 Bảng vẽ điện tử Canva & 1 Bộ Giáo trình Digital',
+          },
+        ],
       },
-      branch: {
-        centerName: 'RinoEdu Nguyễn Tuân',
-        csmName: 'Trần Nguyễn CSM',
-        csmPhone: '0903.279.888',
-      },
-      childGroups: [
-        {
-          childId: 'HV-8849',
-          childName: 'Đặng Thiên An',
-          studentCode: 'HV-8849',
-          accountPhone: '0903279888',
-          branch: 'RinoEdu Nguyễn Tuân',
-          items: [
-            {
-              id: 'item-1',
-              productName: '[IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi',
-              orderType: 'Gia hạn gói học',
-              durationText: '40 buổi học (Gia sư 1:1)',
-              giftText: 'Tặng 1 x [IELTS] Khóa 5.0 nâng cao',
-              unitPrice: 8400000,
-              quantity: 1,
-            },
-          ],
-        },
-        {
-          childId: 'HV-8850',
-          childName: 'Đặng Quốc Bảo (Con thứ 2)',
-          studentCode: 'HV-8850',
-          accountPhone: '0982345678',
-          branch: 'RinoEdu Nguyễn Tuân',
-          items: [
-            {
-              id: 'item-2',
-              productName: '[Station] Global Digi 288 buổi (2 station + 2 Digi/ Tuần)',
-              orderType: 'Mua mới',
-              unitPrice: 45564000,
-              quantity: 1,
-              variants: [
-                {
-                  name: '[Station] Tiếng Anh OMO_1:10_288 buổi',
-                  durationText: '288 buổi',
-                  teacherText: '--',
-                },
-                {
-                  name: '[DIGI] Tiếng Anh Digital_288 buổi',
-                  durationText: '288 buổi',
-                  teacherText: '--',
-                },
-              ],
-              giftText: 'Tặng 1 Bảng vẽ điện tử Canva & 1 Bộ Giáo trình Digital',
-            },
-          ],
-        },
-      ] as QuoteChildGroup[],
-      subtotal: 53964000,
-      discount: 0,
-      finalAmount: 53964000,
-      bankInfo: {
-        bankName: 'MBBank (Ngân hàng Quân Đội)',
-        accountNumber: '090327988899',
-        accountName: 'CTCP GIAO DUC RINOEDU',
-        transferContent: `${quoteNo} DANG THIEN AN`,
-      },
-    }
+    ] as QuoteChildGroup[],
+    subtotal: 53964000,
+    discount: 0,
+    finalAmount: 53964000,
+    bankInfo: {
+      bankName: 'MBBank (Ngân hàng Quân Đội)',
+      accountNumber: '090327988899',
+      accountName: 'CTCP GIAO DUC RINOEDU',
+      transferContent: `${quoteNo} DANG THIEN AN`,
+    },
+  }))
 
-    if (typeof window !== 'undefined') {
-      const saved =
-        localStorage.getItem(`quote_data_${quoteId}`) ||
-        localStorage.getItem(`quote_data_${quoteNo}`) ||
-        localStorage.getItem('latest_quote_data')
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          return {
-            ...defaultMock,
-            quoteNo: parsed.quoteNo || quoteNo,
-            createdDate: parsed.createdDate || defaultMock.createdDate,
-            validUntil: parsed.validUntil || defaultMock.validUntil,
-            customer: parsed.customer || defaultMock.customer,
-            delivery: parsed.delivery || defaultMock.delivery,
-            branch: parsed.branch || defaultMock.branch,
-            childGroups: parsed.childGroups && parsed.childGroups.length > 0 ? parsed.childGroups : defaultMock.childGroups,
-            subtotal: parsed.subtotalAmount ?? defaultMock.subtotal,
-            discount: parsed.totalDiscount ?? defaultMock.discount,
-            finalAmount: parsed.finalAmount ?? defaultMock.finalAmount,
-            bankInfo: {
-              ...defaultMock.bankInfo,
-              transferContent: `${parsed.quoteNo || quoteNo} DANG THIEN AN`,
-            },
-          }
-        } catch (e) {
-          console.error('Error parsing stored quote details:', e)
-        }
-      }
-    }
-
-    return defaultMock
-  })
-
-  const [totalPaidAmount, setTotalPaidAmount] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved =
-        localStorage.getItem(`quote_data_${quoteId}`) ||
-        localStorage.getItem('latest_quote_data')
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          if (parsed.totalPaidAmount !== undefined) return parsed.totalPaidAmount
-        } catch (e) {
-          console.error(e)
-        }
-      }
-    }
-    return 0
-  })
-
+  const [totalPaidAmount, setTotalPaidAmount] = useState<number>(0)
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false)
-
   const [paymentHistory, setPaymentHistory] = useState<
     Array<{
       id: string
@@ -206,24 +154,49 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
       convertedSessions: number
       convertedAmount: number
     }>
-  >(() => {
+  >([])
+
+  // Client-Side Hydration Effect: Load stored quote data cleanly after mount
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved =
         localStorage.getItem(`quote_data_${quoteId}`) ||
+        localStorage.getItem(`quote_data_${quoteNo}`) ||
         localStorage.getItem('latest_quote_data')
+
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
+          setOrderDetails((prev) => ({
+            ...prev,
+            quoteNo: parsed.quoteNo || quoteNo,
+            createdDate: parsed.createdDate || prev.createdDate,
+            validUntil: parsed.validUntil || prev.validUntil,
+            customer: parsed.customer || prev.customer,
+            delivery: parsed.delivery || prev.delivery,
+            branch: parsed.branch || prev.branch,
+            childGroups: parsed.childGroups && parsed.childGroups.length > 0 ? parsed.childGroups : prev.childGroups,
+            subtotal: parsed.subtotalAmount ?? prev.subtotal,
+            discount: parsed.totalDiscount ?? prev.discount,
+            finalAmount: parsed.finalAmount ?? prev.finalAmount,
+            bankInfo: {
+              ...prev.bankInfo,
+              transferContent: `${parsed.quoteNo || quoteNo} DANG THIEN AN`,
+            },
+          }))
+
+          if (parsed.totalPaidAmount !== undefined) {
+            setTotalPaidAmount(parsed.totalPaidAmount)
+          }
           if (parsed.paymentHistory && parsed.paymentHistory.length > 0) {
-            return parsed.paymentHistory
+            setPaymentHistory(parsed.paymentHistory)
           }
         } catch (e) {
-          console.error(e)
+          console.error('Error parsing stored quote details:', e)
         }
       }
     }
-    return []
-  })
+  }, [quoteId, quoteNo])
 
   const handleCopy = (text: string, type: 'account' | 'content') => {
     navigator.clipboard.writeText(text)
@@ -309,10 +282,10 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
             </p>
           </div>
 
-          <div className="text-xs text-slate-500 dark:text-zinc-400 text-right">
-            <span>Ngày lập: <strong className="text-slate-700 dark:text-zinc-300 font-medium">{orderDetails.createdDate}</strong></span>
+          <div className="text-xs text-slate-500 dark:text-zinc-400 text-right" suppressHydrationWarning>
+            <span>Ngày lập: <strong className="text-slate-700 dark:text-zinc-300 font-medium" suppressHydrationWarning>{orderDetails.createdDate}</strong></span>
             <span className="mx-1.5">•</span>
-            <span>Hiệu lực đến: <strong className="text-slate-700 dark:text-zinc-300 font-medium">{orderDetails.validUntil}</strong></span>
+            <span>Hiệu lực đến: <strong className="text-slate-700 dark:text-zinc-300 font-medium" suppressHydrationWarning>{orderDetails.validUntil}</strong></span>
           </div>
         </div>
 

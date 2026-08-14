@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { AlertTriangle, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { CareTagHoverCard } from '@/components/shared'
 import { formatFullStaffName } from './operationsAlertHelpers'
 import { AudioPlayButton } from './AudioPlayButton'
 
@@ -55,18 +54,18 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
 
   return (
     <div className="relative group pt-1">
-      {/* Left Timeline Node Icon */}
-      <div className="absolute -left-[17px] top-2 flex items-center justify-center z-10">
+      {/* Left Timeline Node Icon - Perfectly centered on vertical line */}
+      <div className="absolute -left-[18.5px] top-3.5 -translate-x-1/2 flex items-center justify-center z-10">
         {item.status === 'completed' ? (
-          <div className="h-4 w-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold">
-            <Check className="h-2.5 w-2.5" />
+          <div className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
+            <Check className="h-3 w-3" />
           </div>
         ) : item.status === 'overdue' ? (
-          <div className="h-4 w-4 rounded-full bg-rose-500 text-white flex items-center justify-center text-[9px] font-bold animate-pulse">
+          <div className="h-5 w-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-bold animate-pulse shadow-2xs">
             !
           </div>
         ) : (
-          <div className="h-4 w-4 rounded-full bg-muted border border-border text-muted-foreground flex items-center justify-center text-[9px] font-semibold">
+          <div className="h-5 w-5 rounded-full bg-background border border-border text-muted-foreground flex items-center justify-center text-[10px] font-semibold shadow-2xs">
             {index + 1}
           </div>
         )}
@@ -75,19 +74,30 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
       {/* Main Milestone Container */}
       <div
         className={cn(
-          'rounded-xl border p-3 space-y-1 transition-colors bg-card text-left shadow-none',
+          'rounded-xl border p-3 space-y-1.5 transition-colors bg-card text-left shadow-none',
           item.status === 'completed' && 'border-border/60 hover:border-emerald-300 dark:hover:border-emerald-800',
           item.status === 'overdue' && 'border-rose-200 dark:border-rose-900/60 bg-rose-50/10 dark:bg-rose-950/10',
-          item.status === 'future' && 'border-border/50 bg-muted/10 opacity-75'
+          item.status === 'future' && 'border-border/50 bg-muted/10'
         )}
       >
-        {/* Row 1: Title & Minimal Status Text */}
-        <div className="flex items-center justify-between gap-1.5 flex-wrap">
-          <h4 className="font-bold text-foreground text-xs truncate">
-            {item.title}
-          </h4>
+        {/* Row 1: Unified Title + Description & Date (at end) + Status Badge */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
+            <h4 className="font-normal text-zinc-900 dark:text-zinc-100 text-xs shrink-0">
+              {item.title}
+            </h4>
+            <span className="text-[11px] text-muted-foreground font-normal truncate">
+              • {item.subtext}
+            </span>
+          </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {item.date && (
+              <span className="text-[10.5px] font-mono font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+                Hạn: {item.date}
+              </span>
+            )}
+
             {item.status === 'completed' && (
               <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                 ✓ Hoàn thành
@@ -109,14 +119,9 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
           </div>
         </div>
 
-        {/* Row 2: Date & Subtext (Single unified stream) */}
-        <p className="text-[11px] text-muted-foreground font-normal leading-snug">
-          <span className="font-medium text-foreground/80">{item.date}</span> • {item.subtext}
-        </p>
-
-        {/* Row 3: Un-cared state placeholder */}
+        {/* Row 3: Phụ trách (Bên dưới là phụ trách) */}
         {(!item.historyLogs || item.historyLogs.length === 0) && (
-          <div className="pt-1 flex items-center justify-between flex-wrap gap-1 text-[11px] text-muted-foreground">
+          <div className="pt-0.5 flex items-center justify-between flex-wrap gap-1 text-[11px] text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <span
                 className={cn(
@@ -179,19 +184,6 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <CareTagHoverCard
-                        code={isTeacher ? 'HT-01' : 'CC-01'}
-                        label={
-                          isTeacher
-                            ? 'HT-01 : Điểm kiểm tra dưới chuẩn'
-                            : 'CC-01 : Nghỉ 2 buổi liên tiếp'
-                        }
-                        description={
-                          isTeacher
-                            ? 'Điểm kiểm tra định kỳ thấp hơn mức chuẩn 6.0'
-                            : 'Học viên nghỉ học 2 buổi liên tiếp không xin phép'
-                        }
-                      />
                       <button
                         type="button"
                         onClick={(e) => {

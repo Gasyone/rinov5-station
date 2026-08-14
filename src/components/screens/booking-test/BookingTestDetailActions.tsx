@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, XCircle, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/shared'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { BookingTest } from '@/mocks/bookingTests'
 import {
   applyBookingCheckIn,
@@ -14,12 +12,14 @@ import {
 
 interface BookingTestDetailActionsProps {
   booking: BookingTest
+  onOpenChange: (open: boolean) => void
   onUpdateBooking: (bookingId: string, updater: (booking: BookingTest) => BookingTest) => void
   onOpenAssessment: (bookingId: string) => void
 }
 
 export function BookingTestDetailActions({
   booking,
+  onOpenChange,
   onUpdateBooking,
   onOpenAssessment,
 }: BookingTestDetailActionsProps) {
@@ -30,59 +30,71 @@ export function BookingTestDetailActions({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Chỉ hiện nút check-in khi chưa check-in */}
-        {canCheckIn && (
-          <Button
-            variant="outline"
-            className={getStatusBadgeClass('checkin')}
-            onClick={() =>
-              onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
-            }
-          >
-            <UserCheck className="h-4 w-4" />
-            Check-in học viên
-          </Button>
-        )}
-
-        {canCancel && (
-          <Button
-            variant="destructive"
-            onClick={() => setConfirmCancelOpen(true)}
-          >
-            <XCircle className="h-4 w-4" />
-            Hủy lịch
-          </Button>
-        )}
-
-        {isAssessing && (
-          <>
+      <div className="flex w-full items-center justify-between gap-2">
+        {/* Left side: Quiet text action */}
+        <div>
+          {canCancel && (
             <Button
-              variant="outline"
+              variant="ghost"
+              className="text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => setConfirmCancelOpen(true)}
+            >
+              Hủy lịch test
+            </Button>
+          )}
+          {!canCancel && isAssessing && (
+            <Button
+              variant="ghost"
+              className="text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() =>
                 onUpdateBooking(booking.id, (current) => ({ ...current, status: 'failed' }))
               }
             >
-              <XCircle className="h-4 w-4" />
               Không đạt
             </Button>
+          )}
+        </div>
+
+        {/* Right side: Close & Primary Action */}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Đóng
+          </Button>
+
+          {canCheckIn && (
             <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() =>
+                onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
+              }
+            >
+              Check-in học viên
+            </Button>
+          )}
+
+          {isAssessing && booking.subject === 'english' && booking.teacher?.trim() && (
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => onOpenAssessment(booking.id)}
+            >
+              Mở đánh giá
+            </Button>
+          )}
+
+          {isAssessing && (!booking.teacher?.trim() || booking.subject !== 'english') && (
+            <Button
+              size="sm"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() =>
                 onUpdateBooking(booking.id, (current) => ({ ...current, status: 'completed' }))
               }
             >
-              <CheckCircle className="h-4 w-4" />
               Hoàn tất
             </Button>
-          </>
-        )}
-        {booking.subject === 'english' && booking.teacher?.trim() && isAssessing && (
-          <Button
-            onClick={() => onOpenAssessment(booking.id)}
-          >
-            Mở đánh giá
-          </Button>
-        )}
+          )}
+        </div>
       </div>
 
       <ConfirmDialog

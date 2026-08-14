@@ -10,7 +10,6 @@ import { FilterGroupSheetPanel } from '@/components/filters'
 import {
   getBookingTests,
   type BookingStatus,
-  type BookingSubject,
   type BookingTest,
 } from '@/mocks/bookingTests'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -21,10 +20,12 @@ import type {
   FilterState,
   StatusTileId,
 } from './bookingTestTypes'
+import { toast } from 'sonner'
 import { BookingTestToolbar } from './BookingTestToolbar'
 import { BookingTestTable } from './BookingTestTable'
 import { BookingTestDetailDialog } from './BookingTestDetailDialog'
 import { BookingTestAssessmentDialog } from './BookingTestAssessmentDialog'
+import { BookingTestCreateDialog } from './BookingTestCreateDialog'
 import { useBookingTestData } from './useBookingTestData'
 import { useBookingTestActions } from './useBookingTestActions'
 
@@ -48,6 +49,7 @@ export function BookingTestScreen() {
     sales: [],
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
@@ -62,6 +64,7 @@ export function BookingTestScreen() {
 
   const {
     schoolOptions,
+    teacherOptions,
     studentOptions,
     baseForStatus,
     filteredBookings,
@@ -131,6 +134,7 @@ export function BookingTestScreen() {
         onStatusChange={(status) => { setActiveStatus(status); setPage(1) }}
         onSearchChange={(value) => { setSearchTerm(value); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
+        onCreateBooking={() => setIsCreateOpen(true)}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
@@ -211,6 +215,18 @@ export function BookingTestScreen() {
         onOpenChange={(open) => { if (!open) setAssessmentBookingId('') }}
         onDraftChange={setAssessmentDraft}
         onSave={actions.saveAssessment}
+      />
+
+      <BookingTestCreateDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        schoolOptions={schoolOptions}
+        teacherOptions={teacherOptions}
+        activeSubject={activeSubject}
+        onSubmit={(newBooking) => {
+          setBookings((prev) => [newBooking, ...prev])
+          toast.success(`Đã tạo lịch test thành công cho ${newBooking.childName}`)
+        }}
       />
     </div>
   )

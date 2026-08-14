@@ -37,6 +37,46 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý Lớp học',
     description: 'Quản lý danh sách lớp học, phân công giảng dạy và tiến độ đào tạo',
   },
+  booking_test: {
+    label: 'Kiểm tra/Trải nghiệm',
+    description: 'Quản lý danh sách học viên đăng ký test đầu vào và lớp học trải nghiệm',
+  },
+  trial_class: {
+    label: 'Lớp học thử',
+    description: 'Danh sách và lịch sắp xếp học viên tham gia lớp học thử',
+  },
+  event_management_new: {
+    label: 'Quản lý sự kiện',
+    description: 'Quản lý các sự kiện workshop, hội thảo và hoạt động trải nghiệm',
+  },
+  crm_leads: {
+    label: 'Quản lý Lead',
+    description: 'Tiếp nhận, phân bổ và theo dõi trạng thái tương tác với Phụ huynh (người đăng ký/thanh toán) và thông tin con (học viên tiềm năng)',
+  },
+  sales_pipeline: {
+    label: 'Cơ hội Bán hàng (Pipeline)',
+    description: 'Bảng điều khiển luồng tư vấn Phụ huynh, theo dõi tiến độ test/học thử của con và dự báo doanh số chốt hợp đồng',
+  },
+  orders: {
+    label: 'Đơn hàng & Thu phí',
+    description: 'Quản lý đơn đăng ký học, trạng thái thanh toán và phát hành biên nhận/hóa đơn',
+  },
+  payment_receipts: {
+    label: 'Quản lý Phiếu thu',
+    description: 'Quản lý danh sách các phiếu thu tiền học phí, cọc giữ chỗ, thanh toán đơn hàng và biên nhận',
+  },
+  products: {
+    label: 'Gói Sản phẩm & Học phí',
+    description: 'Danh mục các khóa học, gói học phí, combo và chương trình đào tạo thương mại',
+  },
+  promotions: {
+    label: 'Khuyến mãi & Ưu đãi',
+    description: 'Cấu hình chính sách chiết khấu, mã giảm giá/voucher và quản lý suất học bổng',
+  },
+  design_system: {
+    label: 'Design System',
+    description: 'Thư viện thành phần giao diện và hướng dẫn quy chuẩn thiết kế',
+  },
   students: {
     label: 'Xếp lớp học viên',
     description: 'Danh sách học viên chờ xếp lớp, gói học và lịch sử phân lớp',

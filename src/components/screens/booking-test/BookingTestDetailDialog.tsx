@@ -1,16 +1,16 @@
 'use client'
 
-import { CheckCircle, Copy, FileText, Phone, Users, Link as LinkIcon, ExternalLink } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { CalendarDays, Clock, ExternalLink, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { FieldLabel, InfoField, Panel, StatusBadge } from '@/components/shared'
+import { AppAvatar, StatusBadge, StudentHeaderInfoCard } from '@/components/shared'
 import {
   PROGRAM_LEVELS,
   SUB_LEVELS,
@@ -19,17 +19,18 @@ import {
 import { InlineSelect } from '@/components/controls'
 import {
   canSelectPlacementLevel,
-  formatDateTime,
+  formatTestTimeWithDay,
   getStatusLabel,
   getSubjectLabel,
   isBookingCheckedIn,
-  maskPhone,
 } from './bookingTestHelpers'
 import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
 import { BookingTestDetailActions } from './BookingTestDetailActions'
 import { BookingTestDetailSidePanel } from './BookingTestDetailSidePanel'
-import { BookingTestResponsiblePanel } from './BookingTestResponsiblePanel'
+import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDialog'
 import { getBookingResultHref, hasBookingAssessmentResult } from './bookingTestAssessmentStorage'
+import { getActiveEmployeesBySchool, resolveBookingBranch } from './bookingTestStaffHelpers'
+import { cn } from '@/lib/utils'
 
 interface BookingTestDetailDialogProps {
   booking: BookingTest | null
@@ -46,247 +47,317 @@ interface BookingTestDetailDialogProps {
   onViewStudentDetail?: (studentId: string) => void
 }
 
+/** Field item with non-uppercase, sentence-case label */
+function DetailField({
+  label,
+  value,
+  supporting,
+  className,
+}: {
+  label: string
+  value: React.ReactNode
+  supporting?: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('min-w-0', className)}>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="mt-0.5 truncate text-sm font-semibold text-foreground">{value}</div>
+      {supporting ? <div className="mt-0.5 truncate text-xs text-muted-foreground">{supporting}</div> : null}
+    </div>
+  )
+}
+
+/** Section card container with rounded gray border and white background */
+function DetailCard({
+  title,
+  icon,
+  actions,
+  children,
+  className,
+}: {
+  title: string
+  icon?: React.ReactNode
+  actions?: React.ReactNode
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('rounded-xl border border-border/80 bg-background p-4 shadow-2xs', className)}>
+      <div className="mb-3 flex items-center justify-between gap-3 shrink-0">
+        <h3 className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          {icon}
+          {title}
+        </h3>
+        {actions ? <div>{actions}</div> : null}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export function BookingTestDetailDialog({
   booking,
   bookings = [],
-  detailNote,
-  copiedKey,
   onOpenChange,
   onUpdateBooking,
   onOpenAssessment,
-  onCall,
-  onCopy,
-  onDetailNoteChange,
-  onAddNote,
-  onViewStudentDetail,
 }: BookingTestDetailDialogProps) {
+  const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const canEditPlacementLevel = Boolean(booking && canSelectPlacementLevel(booking))
 
-  const handleOpenChange = (open: boolean) => {
-    onOpenChange(open)
-  }
+  const branchName = booking ? resolveBookingBranch(booking.school) : ''
+  const branchEmployees = useMemo(
+    () => (booking ? getActiveEmployeesBySchool(booking.school) : []),
+    [booking]
+  )
+  const creatorName = booking?.createdBy || booking?.ops || 'Sale Nguyễn Tuân'
 
-  if (!booking) {
-    return (
-      <Dialog open={false} onOpenChange={handleOpenChange}>
-        <DialogContent />
-      </Dialog>
-    )
-  }
+  if (!booking) return null
 
-  const handleStudentClick = () => {
-    if (onViewStudentDetail) {
-      onViewStudentDetail(booking.id || 's1')
-    }
-  }
+  const familyMembers = (booking.familyMembers && booking.familyMembers.length > 0)
+    ? booking.familyMembers.map((m) => ({
+        name: m.name,
+        relationship: m.isPrimary ? 'Phụ huynh' : 'Người thân',
+        isPrimary: m.isPrimary ?? false,
+        phone: m.phone,
+      }))
+    : [{
+        name: booking.familyName,
+        relationship: 'Phụ huynh',
+        isPrimary: true,
+        phone: booking.phone,
+      }]
+
+  const hasResult = hasBookingAssessmentResult(booking)
+  const resultHref = booking.resultLink?.startsWith('/app/')
+    ? booking.resultLink
+    : getBookingResultHref(booking.id)
 
   return (
-    <Dialog open onOpenChange={handleOpenChange}>
-      <DialogContent className="grid h-[82vh] max-h-[760px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-5xl">
-        <DialogHeader className="shrink-0 px-6 pb-4 pt-6">
-          <div className="flex items-start justify-between gap-4">
-            <div
-              className={`flex items-start gap-3 min-w-0 flex-1 ${onViewStudentDetail ? 'cursor-pointer group' : ''}`}
-              onClick={handleStudentClick}
-              title={onViewStudentDetail ? 'Bấm để xem chi tiết học viên' : undefined}
-            >
-              {booking.avatar ? (
-                <img
-                  src={booking.avatar}
-                  alt={booking.childName}
-                  className="h-11 w-11 shrink-0 rounded-xl object-cover shadow-sm border border-border group-hover:border-primary transition-all"
-                />
-              ) : (
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20 group-hover:bg-primary/20 transition-all">
-                  {booking.childName?.charAt(0) || '?'}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <DialogTitle className="flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
-                  {booking.childName}
-                  <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
-                  <Badge variant="outline" className="rounded-md font-mono">
+    <>
+      <Dialog open={Boolean(booking)} onOpenChange={onOpenChange}>
+        <DialogContent className="grid max-h-[88vh] w-full grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-4xl border-none shadow-xl bg-slate-100 dark:bg-slate-900">
+          {/* Header */}
+          <DialogHeader className="shrink-0 px-6 pb-0 pt-5">
+            <div className="flex flex-col gap-3">
+              {/* Title & Status */}
+              <div className="flex items-center justify-between gap-4 pr-6">
+                <DialogTitle className="text-xs font-normal text-muted-foreground">
+                  Chi tiết Phiếu kiểm tra/Trải nghiệm
+                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-[11px] font-normal text-muted-foreground">
                     {booking.id}
                   </Badge>
                 </DialogTitle>
-                <DialogDescription className="mt-1">
-                  {booking.program} - {formatDateTime(booking.testTime)}
-                </DialogDescription>
+                <div className="shrink-0">
+                  <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
+                </div>
               </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-2 self-center">
-              <BookingTestDetailActions
-                booking={booking}
-                onUpdateBooking={onUpdateBooking}
-                onOpenAssessment={onOpenAssessment}
+
+              {/* Student Header Info Card */}
+              <StudentHeaderInfoCard
+                studentName={booking.childName}
+                status="Trải nghiệm"
+                address={booking.school}
+                parents={familyMembers}
+                initialNote={booking.msg || (booking.notes && booking.notes[0]?.text)}
               />
             </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        <div className="flex min-h-0 flex-col gap-6 overflow-hidden px-6 pb-6">
-          <section className="grid gap-x-8 gap-y-4 border-y border-border py-4 sm:grid-cols-2 lg:grid-cols-5">
-            <InfoField label="Học viên" value={booking.childName} supporting={booking.id} />
-            <InfoField label="Chương trình" value={booking.program} />
-            <InfoField
-              label="Lịch hẹn"
-              value={
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="text-primary">{formatDateTime(booking.testTime)}</span>
-                  {isBookingCheckedIn(booking) && (
-                    <StatusBadge
-                      status="checkin"
-                      label="Đã đến"
-                      withDot
-                      className="rounded-md px-2 py-0.5 text-[11px]"
+          {/* Body */}
+          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-6 py-2">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-5">
+              {/* CỘT TRÁI (60%): Buổi trải nghiệm & Kết quả đánh giá */}
+              <div className="flex flex-col gap-4 min-w-0 md:col-span-3">
+                {/* 1. Buổi kiểm tra / Trải nghiệm */}
+                <DetailCard
+                  title="Buổi kiểm tra / Trải nghiệm"
+                  icon={<CalendarDays className="h-4 w-4 text-primary" />}
+                >
+                  <div className="space-y-3">
+                    <DetailField
+                      label="Cơ sở / Trường"
+                      value={booking.school}
                     />
-                  )}
-                </span>
-              }
-            />
-            <InfoField label="Trường" value={booking.school} supporting={booking.room || 'Sảnh tư vấn'} />
-            <InfoField label="Môn học" value={getSubjectLabel(booking.subject)} />
-          </section>
 
-          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_320px]">
-            <main className="min-h-0 space-y-6 overflow-y-auto pr-2">
-              <Panel title="Gia đình" icon={<Users className="h-4 w-4" />}>
-                <div className="space-y-2">
-                  {(booking.familyMembers.length
-                    ? booking.familyMembers
-                    : [{ name: booking.familyName, phone: booking.phone }]
-                  ).map((member) => (
-                    <div
-                      key={member.phone}
-                      className="flex items-center justify-between gap-3 rounded-md p-2 transition-colors hover:bg-muted/50"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">{member.name}</p>
-                        <p className="font-mono text-xs text-muted-foreground">
-                          {maskPhone(member.phone)}
-                        </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <DetailField label="Chương trình" value={booking.program} />
+                      <DetailField label="Môn học" value={getSubjectLabel(booking.subject)} />
+                    </div>
+
+                    <DetailField
+                      label="Thời gian trải nghiệm"
+                      value={formatTestTimeWithDay(booking.testTime)}
+                      supporting={isBookingCheckedIn(booking) ? 'Đã check-in' : undefined}
+                    />
+                  </div>
+                </DetailCard>
+
+                {/* 2. Kết quả đánh giá trình độ */}
+                <DetailCard
+                  title="Kết quả đánh giá trình độ"
+                  icon={<FileText className="h-4 w-4 text-primary" />}
+                >
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">Trình độ</p>
+                        <InlineSelect
+                          value={booking.testResult?.level ?? ''}
+                          disabled={!canEditPlacementLevel}
+                          ariaLabel={`Trình độ đầu vào của ${booking.childName}`}
+                          options={[
+                            { value: '', label: 'Chưa đặt' },
+                            ...PROGRAM_LEVELS.map((level) => ({ value: level, label: level })),
+                          ]}
+                          onValueChange={(value) =>
+                            onUpdateBooking(booking.id, (current) => ({
+                              ...current,
+                              testResult: { ...current.testResult, level: value },
+                            }))
+                          }
+                          className="h-8 border-solid text-xs shadow-xs"
+                        />
                       </div>
-                      <div className="flex shrink-0 gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label={`Gọi ${member.name}`}
-                          onClick={() => onCall(member.phone)}
-                        >
-                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label={`Sao chép số điện thoại của ${member.name}`}
-                          onClick={() => void onCopy(member.phone, `detail-${member.phone}`)}
-                        >
-                          {copiedKey === `detail-${member.phone}` ? (
-                            <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                          ) : (
-                            <Copy className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">Nhánh trình độ</p>
+                        <InlineSelect
+                          value={booking.testResult?.subLevel ?? ''}
+                          disabled={!canEditPlacementLevel}
+                          ariaLabel={`Nhánh trình độ đầu vào của ${booking.childName}`}
+                          options={[
+                            { value: '', label: '-' },
+                            ...SUB_LEVELS.map((subLevel) => ({ value: subLevel, label: subLevel })),
+                          ]}
+                          onValueChange={(value) =>
+                            onUpdateBooking(booking.id, (current) => ({
+                              ...current,
+                              testResult: { ...current.testResult, subLevel: value },
+                            }))
+                          }
+                          className="h-8 border-solid text-xs shadow-xs"
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </Panel>
 
-              <Panel title="Kết quả đánh giá" icon={<FileText className="h-4 w-4" />}>
-                <div className="space-y-4">
-                  <div className="grid max-w-md gap-3 sm:grid-cols-2">
-                    <FieldLabel label="Trình độ">
-                      <InlineSelect
-                        value={booking.testResult?.level ?? ''}
-                        disabled={!canEditPlacementLevel}
-                        ariaLabel={`Trình độ đầu vào của ${booking.childName}`}
-                        options={[
-                          { value: '', label: 'Chưa đặt' },
-                          ...PROGRAM_LEVELS.map((level) => ({ value: level, label: level })),
-                        ]}
-                        onValueChange={(value) =>
-                          onUpdateBooking(booking.id, (current) => ({
-                            ...current,
-                            testResult: { ...current.testResult, level: value },
-                          }))
-                        }
-                        className="h-9 border-solid text-sm shadow-xs"
-                      />
-                    </FieldLabel>
-                    <FieldLabel label="Nhánh trình độ">
-                      <InlineSelect
-                        value={booking.testResult?.subLevel ?? ''}
-                        disabled={!canEditPlacementLevel}
-                        ariaLabel={`Nhánh trình độ đầu vào của ${booking.childName}`}
-                        options={[
-                          { value: '', label: '-' },
-                          ...SUB_LEVELS.map((subLevel) => ({ value: subLevel, label: subLevel })),
-                        ]}
-                        onValueChange={(value) =>
-                          onUpdateBooking(booking.id, (current) => ({
-                            ...current,
-                            testResult: { ...current.testResult, subLevel: value },
-                          }))
-                        }
-                        className="h-9 border-solid text-sm shadow-xs"
-                      />
-                    </FieldLabel>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {booking.subject === 'english' && <SpeakingScore result={booking.testResult} />}
-                    <LwrScore result={booking.testResult} />
-                  </div>
-                </div>
-              </Panel>
+                    <div className="grid gap-3 sm:grid-cols-2 pt-1 border-t border-border/50">
+                      {booking.subject === 'english' && <SpeakingScore result={booking.testResult} />}
+                      <LwrScore result={booking.testResult} />
+                    </div>
 
-              <BookingTestResponsiblePanel
-                booking={booking}
-                bookings={bookings}
-                onUpdateBooking={onUpdateBooking}
-              />
-
-              {(booking.resultLink || hasBookingAssessmentResult(booking)) && (
-                <Panel title="Kết quả" icon={<LinkIcon className="h-4 w-4" />}>
-                  <div className="space-y-2 flex flex-col items-start">
-                    {booking.resultLink && (
-                      <Button asChild variant="link" className="h-auto p-0 justify-start">
-                        <a href={booking.resultLink} target="_blank" rel="noreferrer">
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Kết quả từ iPad
-                        </a>
-                      </Button>
-                    )}
-                    {Boolean(
-                      booking.teacher?.trim() && (
-                        booking.isInterviewed ||
-                        booking.status === 'completed' ||
-                        (booking.testResult?.speaking && booking.testResult.speaking !== '-') ||
-                        (booking.testResult?.lwr && booking.testResult.lwr !== '-')
-                      )
-                    ) && (
-                      <Button asChild variant="link" className="h-auto p-0 justify-start">
-                        <a href={getBookingResultHref(booking.id)} target="_blank" rel="noreferrer">
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Kết quả đánh giá
-                        </a>
-                      </Button>
+                    {(booking.resultLink || hasResult) && (
+                      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border/50">
+                        {booking.resultLink && (
+                          <a
+                            href={booking.resultLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Xem kết quả từ iPad
+                          </a>
+                        )}
+                        {hasResult && (
+                          <a
+                            href={resultHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Xem trang đánh giá chi tiết
+                          </a>
+                        )}
+                      </div>
                     )}
                   </div>
-                </Panel>
-              )}
-            </main>
+                </DetailCard>
+              </div>
 
-            <BookingTestDetailSidePanel
+              {/* CỘT PHẢI (40%): Thời hạn & Phụ trách, Lịch sử & Ghi chú */}
+              <div className="flex flex-col gap-4 min-w-0 md:col-span-2">
+                {/* 1. Thời hạn & Phụ trách */}
+                <DetailCard title="Thời hạn & Phụ trách" icon={<Clock className="h-4 w-4 text-primary" />}>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3 border-b border-border/60 pb-3">
+                      <DetailField label="Ngày tạo phiếu" value="2026-08-05 09:30" />
+                      <DetailField label="Phân loại" value={booking.eventType === 'demo' ? 'Học trải nghiệm' : 'Test đầu vào'} />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <AppAvatar name={creatorName} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-muted-foreground">Nguồn tạo (Sale)</p>
+                        <p className="truncate text-sm font-semibold text-foreground">{creatorName}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <AppAvatar name={booking.teacher || 'Chưa gán'} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-muted-foreground">Người phụ trách (GV)</p>
+                          <p className="truncate text-sm font-semibold text-foreground">{booking.teacher || 'Chưa gán giáo viên'}</p>
+                          <p className="truncate text-xs text-muted-foreground">{booking.school}</p>
+                        </div>
+                      </div>
+                      {booking.subject !== 'math' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs font-medium text-primary border-primary/30 hover:bg-primary/10 shrink-0"
+                          onClick={() => setTeacherPickerOpen(true)}
+                        >
+                          {booking.teacher ? 'Đổi GV' : 'Gán GV'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </DetailCard>
+
+                {/* 2. Lịch sử thao tác */}
+                <DetailCard title="Lịch sử thao tác" icon={<Clock className="h-4 w-4 text-primary" />}>
+                  <BookingTestDetailSidePanel booking={booking} />
+                </DetailCard>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons Footer — Uniform flat gray background without border line */}
+          <div className="flex shrink-0 items-center justify-between px-6 pb-4 pt-1">
+            <BookingTestDetailActions
               booking={booking}
-              detailNote={detailNote}
-              onDetailNoteChange={onDetailNoteChange}
-              onAddNote={onAddNote}
+              onOpenChange={onOpenChange}
+              onUpdateBooking={onUpdateBooking}
+              onOpenAssessment={onOpenAssessment}
             />
           </div>
-        </div>
+        </DialogContent>
+      </Dialog>
 
-      </DialogContent>
-    </Dialog>
+      {/* Employee Picker Dialog for assigning teacher */}
+      {booking && (
+        <BookingTestEmployeePickerDialog
+          open={teacherPickerOpen}
+          employees={branchEmployees}
+          branchName={branchName}
+          selectedName={booking.teacher}
+          bookings={bookings}
+          bookingTime={booking.testTime}
+          currentBookingId={booking.id}
+          onOpenChange={setTeacherPickerOpen}
+          onSelect={(employee) => {
+            onUpdateBooking(booking.id, (current) => ({
+              ...current,
+              teacher: employee.name,
+              tester: employee.name,
+            }))
+            setTeacherPickerOpen(false)
+          }}
+        />
+      )}
+    </>
   )
 }

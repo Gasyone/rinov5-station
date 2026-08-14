@@ -32,6 +32,8 @@ interface PersonnelCellProps {
   size?: 'xs' | 'sm' | 'md'
   /** Chế độ hiển thị: auto (1 người hiển thị chi tiết, nhiều người hiển thị stack), single, stack */
   mode?: 'auto' | 'single' | 'stack'
+  /** Hiển thị dòng chức danh bên dưới tên */
+  showRole?: boolean
   className?: string
 }
 
@@ -47,6 +49,7 @@ export function PersonnelCell({
   maxVisible = 3,
   size = 'sm',
   mode = 'auto',
+  showRole = true,
   className,
 }: PersonnelCellProps) {
   const sizeClasses = {
@@ -104,7 +107,7 @@ export function PersonnelCell({
               </span>
             )}
           </p>
-          {person.role && (
+          {showRole && person.role && (
             <p className="text-[10px] text-muted-foreground truncate">{person.role}</p>
           )}
         </div>

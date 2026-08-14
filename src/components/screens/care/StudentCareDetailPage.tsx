@@ -66,6 +66,7 @@ export function StudentCareDetailPage({
   const [leftTab, setLeftTab] = useState<'learning' | 'orders'>(initialTab)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeftTab(initialTab)
   }, [initialTab, studentId])
 
@@ -317,7 +318,7 @@ export function StudentCareDetailPage({
           <main className="flex min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1.5 scrollbar-thin">
             
             {/* Unified Personal Information Cluster Card */}
-            <div className="shrink-0 bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-3.5 shadow-sm space-y-2 select-none text-left mb-3">
+            <div className="shrink-0 bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-3.5 shadow-sm space-y-2 text-left mb-3">
               {/* Top Row: Back Button, Avatar (Dịch lên trên), Name, Status, NS, ĐC, Phụ huynh */}
               <div className="flex items-start gap-3">
                 <Button
@@ -380,13 +381,14 @@ export function StudentCareDetailPage({
                         </div>
                       </div>
 
-                      <div className="text-[9.5px] text-primary font-bold text-center border-t border-border/40 pt-2 cursor-pointer hover:underline select-none">
+                      <div className="text-[9.5px] text-primary font-bold text-center border-t border-border/40 pt-2 cursor-pointer hover:underline">
                         Nhấp vào avatar để xem chi tiết đầy đủ
                       </div>
                     </div>
                   </HoverCardContent>
                 </HoverCard>
 
+                {/* Right side info next to avatar */}
                 <div className="min-w-0 space-y-1 flex-1">
                   <div className="flex items-center gap-2 flex-wrap leading-tight">
                     <span className="text-base font-bold text-foreground">
@@ -414,7 +416,7 @@ export function StudentCareDetailPage({
                 </div>
               </div>
 
-              {/* Student Note Row: Full Width underneath Avatar, sát cạnh trái, luôn 2 dòng text */}
+              {/* Student Note Row: Full Width underneath Avatar */}
               <StudentCareHeaderClusterNote
                 studentNote={studentNote}
                 setStudentNote={setStudentNote}
@@ -427,38 +429,38 @@ export function StudentCareDetailPage({
 
             <div className="w-full pt-2.5 flex flex-col">
               {/* Left Column Navigation Tabs */}
-              <div className="w-full bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-lg flex items-center gap-1 mb-2.5 border border-slate-200/60 dark:border-zinc-700/60 shrink-0 h-9">
+              <div className="w-full bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg flex items-center gap-1 mb-2.5 border border-slate-200 dark:border-zinc-700 shrink-0 h-9">
                 <button
                   type="button"
                   onClick={() => setLeftTab('learning')}
                   className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
+                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
                     leftTab === 'learning'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
+                      ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                      : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
                   )}
                 >
-                  <GraduationCap className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'learning' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
+                  <GraduationCap className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'learning' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-zinc-400')} />
                   <span>Học tập</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setLeftTab('orders')}
                   className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
+                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
                     leftTab === 'orders'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
+                      ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                      : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
                   )}
                 >
-                  <Receipt className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'orders' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
+                  <Receipt className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'orders' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-zinc-400')} />
                   <span>Đơn hàng</span>
                   <span
                     className={cn(
-                      'inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                      'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
                       leftTab === 'orders'
-                        ? 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200'
-                        : 'bg-slate-200/80 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300'
+                        ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300'
+                        : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300'
                     )}
                   >
                     {getStudentOrders(student.studentId, student.studentName).length}
@@ -521,7 +523,8 @@ export function StudentCareDetailPage({
                 studentId: student.studentId,
                 studentName: student.studentName,
                 className: student.classCode,
-                productName: student.attendanceRatio,
+                productName: `${student.subject} - ${student.level}`,
+                expectedEndDate: student.expectedEndDate || '25/10/2026',
               }
             : null
         }

@@ -13,6 +13,7 @@ export * from "./leaveReserve"
 export * from "./tickets"
 export * from "./lmsRoadmaps"
 export * from "./systemConfig"
+export * from "./crmLeads"
 
 
 export type { User as AuthUser } from "./users"

@@ -712,7 +712,8 @@ export function OperationsAlertScreen() {
                 studentId: roadmapModalStudent.studentId,
                 studentName: roadmapModalStudent.studentName,
                 className: roadmapModalStudent.classCode,
-                productName: roadmapModalStudent.attendanceRatio,
+                productName: `${roadmapModalStudent.subject} - ${roadmapModalStudent.level}`,
+                expectedEndDate: roadmapModalStudent.expectedEndDate || '25/10/2026',
               }
             : null
         }

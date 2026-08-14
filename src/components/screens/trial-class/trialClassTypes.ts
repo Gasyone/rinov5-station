@@ -3,6 +3,8 @@ import type { TrialClassStatus } from '@/mocks/trialClasses'
 /** Tile Id includes real statuses */
 export type StatusTileId = 'all' | TrialClassStatus
 
+export type TrialResultFilterId = 'all' | 'unassigned' | 'completed' | 'no_show' | 'expired'
+
 export interface TrialSessionSelection {
   classId: string
   className: string

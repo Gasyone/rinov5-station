@@ -5,6 +5,7 @@ import {
   Home,
   Ticket,
   Settings,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -47,6 +48,18 @@ export const navigationGroups: NavigationGroup[] = [
     hiddenInSidebar: true,
     items: [
       { id: 'design_system', label: 'Design System', href: '/app/design_system', hiddenInSidebar: true },
+    ],
+  },
+  {
+    id: 'group_crm_commercial',
+    label: 'CRM & Thương mại',
+    icon: TrendingUp,
+    items: [
+      { id: 'crm_leads', label: 'Quản lý Lead', href: '/app/crm_leads' },
+      { id: 'orders', label: 'Đơn hàng & Thu phí', href: '/app/orders' },
+      { id: 'payment_receipts', label: 'Quản lý Phiếu thu', href: '/app/payment_receipts' },
+      { id: 'products', label: 'Gói Sản phẩm & Học phí', href: '/app/products' },
+      { id: 'promotions', label: 'Khuyến mãi & Ưu đãi', href: '/app/promotions' },
     ],
   },
   {

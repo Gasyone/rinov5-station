@@ -40,7 +40,7 @@ export function OrdersToolbar({
   }))
 
   return (
-    <div className="flex shrink-0 items-center justify-between gap-4 bg-background px-3 py-3 lg:px-3">
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-2.5 py-1">
       <div className="flex-1 overflow-x-auto min-w-0">
         <StatusTiles
           tiles={tiles}
@@ -53,17 +53,17 @@ export function OrdersToolbar({
         <BranchSelect
           value={activeBranch}
           branches={branches}
-          allLabel="All branches"
-          ariaLabel="Branch"
+          allLabel="Tất cả cơ sở"
+          ariaLabel="Cơ sở"
           onValueChange={onBranchChange}
-          className="h-9 min-w-40 text-sm"
+          className="h-8 min-w-36 text-xs"
         />
         <ExpandableSearch
           value={searchTerm}
           onValueChange={onSearchChange}
-          label="Search orders"
-          placeholder="Search order #, student..."
-          inputClassName="sm:w-72"
+          label="Tìm kiếm đơn hàng"
+          placeholder="Tìm mã đơn, tên học viên..."
+          inputClassName="sm:w-64"
         />
         <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
       </div>

@@ -146,7 +146,7 @@ function CleanChildSelect({
   const selectedChild = RICH_CHILD_OPTIONS.find((c) => c.value === value)
 
   return (
-    <div ref={containerRef} className="relative min-w-[200px]">
+    <div ref={containerRef} className={`relative min-w-[200px] ${isOpen ? 'z-50' : 'z-10'}`}>
       {/* Trigger Button: Displays ONLY Child Name */}
       <button
         type="button"
@@ -222,16 +222,16 @@ export function ChildGroupCard({
   const selectedChild = RICH_CHILD_OPTIONS.find((c) => c.value === group.childAccount)
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-border/80 rounded-xl p-3.5 space-y-3.5 shadow-2xs">
-      {/* ── CHILD GROUP HEADER BANNER (Clean, minimal, soft) ── */}
-      <div className="flex items-center justify-between pb-2.5 border-b border-border/50 gap-3 flex-wrap bg-zinc-50/70 dark:bg-zinc-900/60 -mx-3.5 -mt-3.5 p-3 rounded-t-xl">
+    <div className="bg-white dark:bg-zinc-900 border border-border/80 rounded-xl shadow-2xs overflow-visible">
+      {/* ── CHILD GROUP HEADER BANNER (Highlighted background fill with bottom line) ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap bg-indigo-100/80 dark:bg-indigo-950/80 p-3 px-3.5 border-b border-indigo-200/60 dark:border-indigo-900/60 rounded-t-xl">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="h-6.5 w-6.5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-medium text-xs shrink-0 border border-indigo-100 dark:border-indigo-900">
+          <div className="h-6.5 w-6.5 rounded-full bg-white dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-medium text-xs shrink-0 border border-indigo-200/80 dark:border-indigo-800 shadow-2xs">
             <User className="h-3.5 w-3.5" />
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-xs font-semibold text-indigo-950 dark:text-indigo-200">
               Sản phẩm dành cho con:
             </span>
 
@@ -247,11 +247,11 @@ export function ChildGroupCard({
               <ChildProfileHoverCard child={selectedChild} onOpenProfile={onOpenChildProfile}>
                 <span
                   onClick={() => onOpenChildProfile?.(selectedChild.studentId)}
-                  className="text-xs text-muted-foreground font-normal ml-1 flex items-center gap-1.5 flex-wrap cursor-pointer hover:text-indigo-600 transition-colors"
+                  className="text-xs text-indigo-900/80 dark:text-indigo-200/80 font-normal ml-1 flex items-center gap-1.5 flex-wrap cursor-pointer hover:text-indigo-700 dark:hover:text-indigo-100 transition-colors"
                 >
-                  <span>( Tài khoản: <strong className="font-semibold text-foreground">{selectedChild.account}</strong></span>
+                  <span>( Tài khoản: <strong className="font-semibold text-indigo-950 dark:text-indigo-100">{selectedChild.account}</strong></span>
                   <span>•</span>
-                  <span>Đơn tạo gần nhất: <strong className="font-semibold text-foreground">{selectedChild.lastOrderDate}</strong> )</span>
+                  <span>Đơn tạo gần nhất: <strong className="font-semibold text-indigo-950 dark:text-indigo-100">{selectedChild.lastOrderDate}</strong> )</span>
                 </span>
               </ChildProfileHoverCard>
             )}
@@ -267,9 +267,9 @@ export function ChildGroupCard({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="bg-white dark:bg-zinc-900 border border-border text-foreground hover:bg-indigo-50/60 hover:text-indigo-600 hover:border-indigo-200 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300 font-medium text-xs px-3 h-8 rounded-md shadow-2xs transition-colors cursor-pointer"
+                className="bg-white dark:bg-zinc-900 border border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-100 hover:bg-white/90 font-medium text-xs px-3 h-8 rounded-md shadow-2xs transition-colors cursor-pointer"
               >
-                <Plus className="h-3.5 w-3.5 mr-1 text-indigo-500" />
+                <Plus className="h-3.5 w-3.5 mr-1 text-indigo-600 dark:text-indigo-400" />
                 <span>Thêm sản phẩm</span>
               </Button>
             </DropdownMenuTrigger>
@@ -311,8 +311,8 @@ export function ChildGroupCard({
         </div>
       </div>
 
-      {/* ── GROUP PRODUCTS LIST ── */}
-      <div className="space-y-3">
+      {/* ── GROUP PRODUCTS LIST (DIVIDER LINES BETWEEN PRODUCTS) ── */}
+      <div className="divide-y divide-border/60">
         {group.items.length > 0 ? (
           group.items.map((item) => (
             <DraftOrderCardItem
@@ -324,7 +324,7 @@ export function ChildGroupCard({
             />
           ))
         ) : (
-          <div className="p-4 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-lg text-center bg-zinc-50/50 dark:bg-zinc-950/20">
+          <div className="p-6 text-center bg-zinc-50/40 dark:bg-zinc-950/20">
             <p className="text-xs text-muted-foreground italic">
               Chưa có sản phẩm nào cho {group.childName || 'con'}. Bấm nút <strong>+ THÊM SẢN PHẨM</strong> ở trên để thêm.
             </p>

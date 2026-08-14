@@ -172,8 +172,11 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
 
   if (isVertical) {
     return (
-      <div className="space-y-4 text-xs text-left select-none p-1">
-        <div className="space-y-3.5 relative pl-6 border-l-2 border-zinc-200 dark:border-zinc-800 ml-5 py-1">
+      <div className="text-xs text-left select-none p-1">
+        <div className="relative pl-8 space-y-3 py-1">
+          {/* Vertical timeline line - aligned at left-[13.5px] */}
+          <div className="absolute left-[13.5px] top-4 bottom-4 w-0.5 bg-zinc-200 dark:bg-zinc-800" />
+
           {roadmapMilestones.map((item, idx) => {
             if (roleFilter === 'csm' && item.roleOwner !== 'CS PHỤ TRÁCH') return null
             if (roleFilter === 'teacher' && item.roleOwner !== 'GV PHỤ TRÁCH') return null
@@ -208,7 +211,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
               </div>
 
               <span className="font-mono text-[9.5px] font-bold text-muted-foreground mt-1.5">{m.code}</span>
-              <span className="text-[11px] font-bold text-foreground line-clamp-1 mt-0.5" title={m.title}>
+              <span className="text-[11px] font-normal text-foreground line-clamp-1 mt-0.5" title={m.title}>
                 {m.title.split('(')[0]}
               </span>
               <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{m.date}</span>

@@ -83,7 +83,7 @@ export function OperationsAlertToolbar({
 
   return (
     <div className="flex flex-col gap-0 bg-background px-1.5 py-1.5 lg:px-1.5">
-      {/* Row 1: Branch, Subject, Search + Filter */}
+      {/* Row 1: Branch, Subject, CSDB Filter, Search + Filter */}
       <div className="flex items-center justify-between flex-wrap gap-2 pb-1.5">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Branch Selector */}
@@ -109,6 +109,21 @@ export function OperationsAlertToolbar({
             ]}
             onValueChange={onSubjectChange}
             className="h-8 text-xs min-w-[140px]"
+          />
+
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+
+          {/* CSDB filter droplist (Cùng hàng với môn học, ở phía sau Tất cả môn học) */}
+          <ToolbarSelect
+            value={csdbFilter}
+            options={[
+              { value: 'all', label: 'Tất cả CSĐB', selectedLabel: 'Tất cả CSĐB' },
+              { value: 'weakAcademic', label: `Học lực (${csdbCounts?.weakAcademic ?? 0})` },
+              { value: 'homework', label: `BTVN (${csdbCounts?.homework ?? 0})` },
+              { value: 'lowAttendance', label: `Chuyên cần (${csdbCounts?.lowAttendance ?? 0})` },
+            ]}
+            onValueChange={onCsdbFilterChange}
+            className="h-8 text-xs font-bold min-w-[155px]"
           />
         </div>
 
@@ -177,7 +192,7 @@ export function OperationsAlertToolbar({
         </div>
       </div>
 
-      {/* Row 2: Care Status Pills (Left) + Due Date Filter Chips & CSDB Selection (Right) */}
+      {/* Row 2: Care Status Pills (Left) + Due Date Filter Chips (Right) */}
       <div className="flex items-center justify-between flex-wrap gap-3 border-t border-border/40 dark:border-zinc-800 pt-2 pb-1">
         {/* Left: Trạng thái chăm sóc (Hiển thị đầy đủ tất cả nhãn, không thu gọn) */}
         <div className="min-w-0 flex-1">
@@ -189,7 +204,7 @@ export function OperationsAlertToolbar({
           />
         </div>
 
-        {/* Right side: Hạn chăm sóc (Chips Bar) + CSDB Droplist */}
+        {/* Right side: Hạn chăm sóc (Chips Bar) */}
         <div className="flex items-center gap-3 select-none shrink-0 pb-0.5">
           {/* Hạn chăm sóc (Chips Bar) */}
           <div className="flex items-center gap-1 bg-muted/50 dark:bg-muted/30 p-0.5 rounded-md border border-border/50">
@@ -257,19 +272,6 @@ export function OperationsAlertToolbar({
               </span>
             </button>
           </div>
-
-          {/* CSDB filter droplist */}
-          <ToolbarSelect
-            value={csdbFilter}
-            options={[
-              { value: 'all', label: 'Tất cả CSĐB', selectedLabel: 'Tất cả CSĐB' },
-              { value: 'weakAcademic', label: `Học lực (${csdbCounts?.weakAcademic ?? 0})` },
-              { value: 'homework', label: `BTVN (${csdbCounts?.homework ?? 0})` },
-              { value: 'lowAttendance', label: `Chuyên cần (${csdbCounts?.lowAttendance ?? 0})` },
-            ]}
-            onValueChange={onCsdbFilterChange}
-            className="h-8 text-xs font-bold min-w-[155px]"
-          />
         </div>
       </div>
     </div>

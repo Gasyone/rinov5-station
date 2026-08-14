@@ -138,9 +138,9 @@ export function MakeupClassDetailDialog({
   return (
     <>
       <Dialog open={Boolean(request)} onOpenChange={onOpenChange}>
-        <DialogContent className="grid h-[88vh] max-h-[800px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-4xl">
+        <DialogContent className="grid h-[88vh] max-h-[800px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-4xl border-none shadow-xl bg-slate-100 dark:bg-slate-900">
           {/* Header — Uniform flat gray background without border line */}
-          <DialogHeader className="shrink-0 bg-muted/40 px-6 pb-2 pt-5">
+          <DialogHeader className="shrink-0 px-6 pb-0 pt-5">
             <div className="flex flex-col gap-3">
               {/* Row 1: Title (left) & Status Badge (right) */}
               <div className="flex items-center justify-between gap-4 pr-6">
@@ -172,8 +172,8 @@ export function MakeupClassDetailDialog({
             </div>
           </DialogHeader>
 
-          {/* Body area with uniform flat gray background (bg-muted/40) */}
-          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto bg-muted/40 p-6 pt-2">
+          {/* Body area with uniform flat gray background */}
+          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-6 py-2">
             {/* Grid layout: Left column 60% (col-span-3), Right info column 40% (col-span-2) */}
             <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-5">
               {/* CỘT TRÁI (60%): Buổi bù (Lớp ghép) trước, Buổi nghỉ (Lớp gốc) sau */}
@@ -430,7 +430,7 @@ export function MakeupClassDetailDialog({
           </div>
 
           {/* Action Buttons Footer — Uniform flat gray background without border line */}
-          <div className="flex shrink-0 items-center justify-between bg-muted/40 px-6 py-4">
+          <div className="flex shrink-0 items-center justify-between px-6 pb-4 pt-1">
             {/* Left side: Destructive Cancel button */}
             <div>
               {(request.status === 'cho_duyet' || request.status === 'da_xep_lich') && (

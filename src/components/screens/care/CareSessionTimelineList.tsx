@@ -352,18 +352,14 @@ export function CareSessionTimelineList({
       <div
         key={session.id}
         className={cn(
-          'p-1.5 sm:p-2 rounded-xl border transition-all text-xs space-y-1',
-          isUpcoming
-            ? 'bg-muted/10 border-border/40'
-            : isTest
-            ? 'bg-violet-500/5 dark:bg-violet-950/10 border-violet-200/50 dark:border-violet-900/40'
-            : 'bg-card border-border/40 hover:border-border/70'
+          'p-1.5 sm:p-2 rounded-xl border transition-all text-xs space-y-1 bg-card border-border/40 hover:border-border/70',
+          isUpcoming && 'bg-muted/10 border-border/40'
         )}
       >
         {/* Row 1: Title on left | Rating 5★ + Lịch học (Thứ, ngày, giờ) on right */}
         <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <h4 className="font-semibold text-foreground text-xs truncate leading-snug">
+            <h4 className="font-normal text-foreground text-xs truncate leading-snug">
               {session.topic}
             </h4>
             {isTest && (
@@ -387,12 +383,7 @@ export function CareSessionTimelineList({
 
             {/* Lịch học thứ, ngày (giờ) ở phía sau Rating 5 sao */}
             <div className="flex items-center gap-1.5 shrink-0 text-[11px]">
-              <span className={cn(
-                'font-normal text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 shadow-3xs',
-                isTest
-                  ? 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
-                  : 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800'
-              )}>
+              <span className="font-normal text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 shadow-3xs bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
                 {dayOfWeek}
               </span>
               <span className="text-muted-foreground text-xs font-normal shrink-0">
@@ -488,7 +479,7 @@ export function CareSessionTimelineList({
             <div className="relative">
               <p
                 className={cn(
-                  'text-[11px] text-slate-900 dark:text-zinc-100 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
+                  'text-[11px] text-muted-foreground font-normal leading-relaxed whitespace-pre-line cursor-pointer',
                   !isExpanded && 'line-clamp-3 pr-20'
                 )}
                 onClick={() => toggleExpand(session.id)}
@@ -543,10 +534,10 @@ export function CareSessionTimelineList({
               <div className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50">
                 <div className="flex items-center gap-2 min-w-0 pr-3">
                   <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0 animate-pulse" />
-                  <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 shrink-0 uppercase tracking-wide">
+                  <span className="text-xs font-normal text-sky-600 dark:text-sky-400 shrink-0">
                     Buổi tiếp theo:
                   </span>
-                  <span className="font-semibold text-foreground truncate text-xs">
+                  <span className="font-normal text-foreground truncate text-xs">
                     {nextSession.topic}
                   </span>
                 </div>

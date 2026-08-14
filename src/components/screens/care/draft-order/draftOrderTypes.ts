@@ -18,6 +18,107 @@ export interface DraftOrderItem {
   activationDate?: string
   isCustomPrice?: boolean
   priceRangePlaceholder?: string
+  renewalPackageId?: string
+}
+
+export interface ExistingPackageOption {
+  id: string
+  childAccount: string
+  packageName: string
+  program: string
+  teacher: string
+  packageType: string
+  center?: string
+  productCode: string
+  unitPrice: number
+  expiryDate: string
+  remainingText: string
+}
+
+export const MOCK_CHILD_PACKAGES: Record<string, ExistingPackageOption[]> = {
+  'con-1': [
+    {
+      id: 'PKG-101',
+      childAccount: 'con-1',
+      packageName: '[Station] Cambridge Standard_1:10_48 buổi (Hạn 30/08/2026 - Còn 4 buổi)',
+      program: 'Chương trình Station',
+      teacher: 'Việt Nam',
+      packageType: '1:10 - 48 buổi',
+      center: 'Rino Linh Đàm',
+      productCode: '[Station] Cambridge Standard_1:10_48 buổi',
+      unitPrice: 14500000,
+      expiryDate: '30/08/2026',
+      remainingText: 'Còn 4 buổi',
+    },
+    {
+      id: 'PKG-102',
+      childAccount: 'con-1',
+      packageName: '[DUO] Tiếng anh ( 50 tháng ) (Hạn 15/12/2026 - Còn 8 tháng)',
+      program: '[TIỂU HỌC] Tiếng Anh',
+      teacher: 'GV Khóa học',
+      packageType: '50 tháng',
+      productCode: '[DUO] Tiếng anh ( 50 tháng )',
+      unitPrice: 15000000,
+      expiryDate: '15/12/2026',
+      remainingText: 'Còn 8 tháng',
+    },
+  ],
+  'con-2': [
+    {
+      id: 'PKG-201',
+      childAccount: 'con-2',
+      packageName: '[Station] Tiếng Anh OMO_1:10_48 buổi (Hạn 15/07/2026 - Đã hết hạn)',
+      program: 'Chương trình Station',
+      teacher: 'Việt Nam',
+      packageType: '1:10 - 48 buổi',
+      center: 'Rino An Khánh',
+      productCode: '[Station] Tiếng Anh OMO_1:10_48 buổi',
+      unitPrice: 12000000,
+      expiryDate: '15/07/2026',
+      remainingText: 'Hết hạn',
+    },
+    {
+      id: 'PKG-202',
+      childAccount: 'con-2',
+      packageName: '[DUO] Gia hạn Toán 2 ( 1 năm ) (Hạn 20/10/2026 - Còn 3 tháng)',
+      program: '[THCS] Toán học',
+      teacher: 'GV Khóa học',
+      packageType: '1 năm',
+      productCode: '[DUO] Gia hạn Toán 2 ( 1 năm )',
+      unitPrice: 750000,
+      expiryDate: '20/10/2026',
+      remainingText: 'Còn 3 tháng',
+    },
+  ],
+  'con-3': [
+    {
+      id: 'PKG-301',
+      childAccount: 'con-3',
+      packageName: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_48 buổi (Hạn 05/09/2026 - Còn 6 buổi)',
+      program: '[THCS] Tiếng Anh IELTS',
+      teacher: '1:1 - Phil',
+      packageType: '48 buổi',
+      productCode: '[TUTOR][THCS] Skill Booster 2.0 Phil_1:1_48 buổi',
+      unitPrice: 15400000,
+      expiryDate: '05/09/2026',
+      remainingText: 'Còn 6 buổi',
+    },
+  ],
+  'con-4': [
+    {
+      id: 'PKG-401',
+      childAccount: 'con-4',
+      packageName: '[Station] Tiếng anh tiểu học_1:10_48 buổi (Hạn 20/05/2026 - Đã hết hạn)',
+      program: 'Chương trình Station',
+      teacher: 'Việt Nam',
+      packageType: '1:10 - 48 buổi',
+      center: 'Rino Linh Đàm',
+      productCode: '[Station] Tiếng anh tiểu học_1:10_48 buổi',
+      unitPrice: 6500000,
+      expiryDate: '20/05/2026',
+      remainingText: 'Hết hạn',
+    },
+  ],
 }
 
 export interface ChildGroup {

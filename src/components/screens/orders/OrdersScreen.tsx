@@ -123,7 +123,7 @@ export function OrdersScreen() {
     )
     setCancelTarget(null)
     setDetail(null)
-    toast.success(`Cancelled ${cancelTarget.orderNo}`)
+    toast.success(`Đã hủy đơn hàng ${cancelTarget.orderNo}`)
   }
 
   const metrics = useMemo(
@@ -137,46 +137,52 @@ export function OrdersScreen() {
   )
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
-      <OrdersToolbar
-        orders={orders}
-        branches={branches}
-        activeBranch={activeBranch}
-        activeStatus={activeStatus}
-        searchTerm={searchTerm}
-        activeFilterCount={activeFilterCount}
-        onBranchChange={(b) => {
-          setActiveBranch(b)
-          setPage(1)
-        }}
-        onStatusChange={(s) => {
-          setActiveStatus(s)
-          setPage(1)
-        }}
-        onSearchChange={(v) => {
-          setSearchTerm(v)
-          setPage(1)
-        }}
-        onOpenFilters={() => setIsFilterOpen(true)}
-      />
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] gap-2 pl-3 pt-2 lg:pl-4 pr-0 pb-0 overflow-hidden bg-background">
+      <div className="pr-3 lg:pr-4 shrink-0 flex flex-col gap-2">
+        {/* Thanh công cụ tìm kiếm và lọc */}
+        <OrdersToolbar
+          orders={orders}
+          branches={branches}
+          activeBranch={activeBranch}
+          activeStatus={activeStatus}
+          searchTerm={searchTerm}
+          activeFilterCount={activeFilterCount}
+          onBranchChange={(b) => {
+            setActiveBranch(b)
+            setPage(1)
+          }}
+          onStatusChange={(s) => {
+            setActiveStatus(s)
+            setPage(1)
+          }}
+          onSearchChange={(v) => {
+            setSearchTerm(v)
+            setPage(1)
+          }}
+          onOpenFilters={() => setIsFilterOpen(true)}
+        />
 
-      <div className="grid shrink-0 gap-3 px-3 pb-3 sm:grid-cols-2 lg:grid-cols-4 lg:px-3">
-        <MetricTile label="Filtered orders" value={metrics.total} icon={ReceiptText} />
-        <MetricTile
-          label="Paid revenue"
-          value={metrics.revenue.toLocaleString('vi-VN')}
-          icon={Banknote}
-        />
-        <MetricTile
-          label="Outstanding"
-          value={metrics.outstanding.toLocaleString('vi-VN')}
-          icon={Wallet}
-        />
-        <MetricTile label="Completed" value={metrics.completed} icon={CheckCircle} />
+        {/* Thẻ Metric Thu hẹp (Smartcards tinh gọn, bỏ badding/margin) */}
+        <div className="grid shrink-0 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricTile label="Tổng số đơn" value={metrics.total.toString()} icon={ReceiptText} />
+          <MetricTile
+            label="Doanh thu đã thu"
+            value={`${metrics.revenue.toLocaleString('vi-VN')} đ`}
+            icon={Banknote}
+          />
+          <MetricTile
+            label="Học phí còn nợ"
+            value={`${metrics.outstanding.toLocaleString('vi-VN')} đ`}
+            icon={Wallet}
+          />
+          <MetricTile label="Đơn hoàn tất" value={metrics.completed.toString()} icon={CheckCircle} />
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+      {/* Bảng Dữ Liệu Đơn Hàng tràn sát mép dưới và mép phải */}
+      <div className="min-h-0 flex-1 overflow-hidden pr-0 pb-0 w-full">
         <DataTableFrame
+          className="rounded-t-lg rounded-b-none border-b-0 border-r-0 h-full"
           footer={
             <DataTablePagination
               page={currentPage}
@@ -198,8 +204,8 @@ export function OrdersScreen() {
 
       <FilterGroupSheetPanel
         open={isFilterOpen}
-        title="Order filters"
-        description="Filter by branch, payment method, and payment status."
+        title="Bộ lọc đơn hàng"
+        description="Lọc theo cơ sở, phương thức thanh toán và trạng thái thanh toán."
         groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
@@ -229,9 +235,9 @@ export function OrdersScreen() {
           if (!open) setCancelTarget(null)
         }}
         variant="destructive"
-        title={`Cancel ${cancelTarget?.orderNo ?? 'order'}?`}
-        description="The order moves to Cancelled status. This change is local to the demo data set."
-        confirmLabel="Cancel order"
+        title={`Hủy đơn hàng ${cancelTarget?.orderNo ?? ''}?`}
+        description="Đơn hàng sẽ chuyển sang trạng thái Đã hủy."
+        confirmLabel="Hủy đơn hàng"
         onConfirm={handleConfirmCancel}
       />
     </div>

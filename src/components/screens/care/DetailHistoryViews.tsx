@@ -300,18 +300,13 @@ export function DetailHistoryViews({
                 )}>
                   {item.status === 'processing' ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
                 </div>
-                <div className="space-y-0.5 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className={cn("font-bold", item.status === 'processing' ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400")}>
-                      {item.status === 'processing' ? 'Đang chuyển lớp' : 'Hoàn thành ghép lớp'}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground">{item.date}</span>
-                  </div>
-                  <p className="text-foreground leading-normal text-[11px]">{item.desc}</p>
+                <div className="space-y-1 flex-1">
+                  <p className="text-foreground leading-snug text-[11px] font-medium">{item.desc}</p>
                   <p className="text-muted-foreground text-[10px] italic">{item.reason}</p>
-                  <span className="text-[9px] text-muted-foreground/80 mt-1 font-medium block">
-                    Người thực hiện: {item.staff}
-                  </span>
+                  <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 font-medium">
+                    <span>Người thực hiện: {item.staff}</span>
+                    <span className="text-muted-foreground">{item.date}</span>
+                  </div>
                 </div>
               </div>
             ));
@@ -387,18 +382,15 @@ export function DetailHistoryViews({
                 <div className="h-5.5 w-5.5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/20 dark:border-emerald-900">
                   <CheckCircle2 className="h-3 w-3" />
                 </div>
-                <div className="space-y-0.5 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                      Đã chuyển đổi gói
-                    </span>
-                    <span className="text-[9px] text-muted-foreground">{item.date}</span>
+                <div className="space-y-1 flex-1">
+                  <p className="text-foreground leading-snug text-[11px] font-medium">{item.desc}</p>
+                  <p className="text-muted-foreground text-[10px] italic">
+                    {item.reason.startsWith('Lý do:') ? item.reason : `Lý do: ${item.reason}`}
+                  </p>
+                  <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 font-medium">
+                    <span>Người thực hiện: {item.staff}</span>
+                    <span className="text-muted-foreground">{item.date}</span>
                   </div>
-                  <p className="text-foreground leading-normal text-[11px]">{item.desc}</p>
-                  <p className="text-muted-foreground text-[10px] italic">{item.reason}</p>
-                  <span className="text-[9px] text-muted-foreground/80 mt-1 font-medium block">
-                    Người thực hiện: {item.staff}
-                  </span>
                 </div>
               </div>
             ));
@@ -536,25 +528,13 @@ export function DetailHeaderView({
             </span>
           </p>
         </>
-      ) : type === 'class_history' ? (
-        <>
-          <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-violet-500 shrink-0" />
-            <h4 className="text-xs font-bold text-foreground">
-              Lịch sử ghép lớp & Chuyển lớp
-            </h4>
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed font-medium bg-muted/40 p-2 rounded border border-border/40 text-left">
-            Học viên: <span className="text-foreground font-semibold">{studentName}</span> ({studentId}) &bull; {subject}
-          </p>
-        </>
       ) : (
         <>
           <h4 className="text-xs font-bold flex items-center gap-2 text-foreground">
             {type === 'sessions' && <Calendar className="h-4 w-4 text-blue-500" />}
             {type === 'sessions' ? curriculumName : dialogTitle}
           </h4>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[10px] text-muted-foreground mt-1 text-left">
             {type === 'sessions' ? (
               <>
                 Môn học: <span className="font-semibold text-foreground">{subject}</span> &bull; Trình độ: <span className="font-semibold text-foreground">{level || '—'}</span>

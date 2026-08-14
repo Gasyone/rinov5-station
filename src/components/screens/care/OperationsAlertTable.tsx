@@ -70,8 +70,8 @@ export function OperationsAlertTable({
               <th className="py-1.5 px-2 min-w-[135px]">Phụ trách</th>
               <th className="py-1.5 px-2 min-w-[165px]">Lớp học</th>
               <th className="py-1.5 px-2 min-w-[140px]">Gói sản phẩm</th>
-              <th className="py-1.5 px-2 text-left min-w-[135px]">Thống kê học tập</th>
               <th className="py-1.5 px-2 text-left min-w-[260px]">Nội dung chăm sóc</th>
+              <th className="py-1.5 px-2 text-left min-w-[220px]">Lịch sử chăm sóc</th>
               <th className="py-1.5 px-2 text-left min-w-[140px]">Trạng thái</th>
             </tr>
           </thead>

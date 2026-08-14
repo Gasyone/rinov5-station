@@ -4,7 +4,16 @@ import { useMemo, useState } from 'react'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupSheetPanel } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
-import { DEFAULT_WORK_PRIORITY_RULES, getMockWorkRegistrations, getWorkRegistrationEmployees, getWorkWeekDays, getWorkWeekStart, isPriorityWorkSlot, toWorkDateKey, type WorkRegistrationRecord } from '@/mocks/workRegistrations'
+import {
+  DEFAULT_WORK_PRIORITY_RULES,
+  getMockWorkRegistrations,
+  getWorkRegistrationEmployees,
+  getWorkWeekDays,
+  getWorkWeekStart,
+  isPriorityWorkSlot,
+  toWorkDateKey,
+  type WorkRegistrationRecord,
+} from '@/mocks/workRegistrations'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { clearWorkRegistrationWeek, submitWorkRegistration, upsertWorkSlot } from './workRegistrationActions'
 import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
@@ -23,7 +32,7 @@ import {
   resolveWeekActionState,
   sumRegistrationMinutes,
 } from './workRegistrationHelpers'
-import type { SlotDetailTarget, WorkRegistrationStatusFilter, WorkRegistrationTab, WorkRegistrationStaffLayout } from './workRegistrationTypes'
+import type { SlotDetailTarget, WorkRegistrationStatusFilter, WorkRegistrationTab } from './workRegistrationTypes'
 import { buildFilterGroups, buildStatusTiles, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
 
 export function WorkRegistrationScreen() {
@@ -49,7 +58,6 @@ export function WorkRegistrationScreen() {
   const [staffPageSize, setStaffPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [centerPage, setCenterPage] = useState(1)
   const [centerPageSize, setCenterPageSize] = useState(DEFAULT_PAGE_SIZE)
-  const [staffLayout, setStaffLayout] = useState<WorkRegistrationStaffLayout>('split')
 
   const todayKey = toWorkDateKey(new Date())
   const currentWeekStart = useMemo(() => getWorkWeekStart(new Date()), [])
@@ -164,8 +172,6 @@ export function WorkRegistrationScreen() {
         }}
         onSearchChange={setSearch}
         onOpenWarnings={() => setWarningsOpen(true)}
-        staffLayout={staffLayout}
-        onStaffLayoutChange={setStaffLayout}
       />
 
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
@@ -192,7 +198,6 @@ export function WorkRegistrationScreen() {
 
         {activeTab === 'staff' ? (
           <WorkRegistrationStaffPanel
-            layout={staffLayout}
             statusTiles={statusTiles}
             statusFilter={statusFilter}
             filteredSummaries={filteredSummaries}
@@ -219,9 +224,6 @@ export function WorkRegistrationScreen() {
             onPageSizeChange={setStaffPageSize}
             onSetDelegateEmployee={(id) => {
               setDelegateEmployeeId(id)
-              if (id && staffLayout === 'list') {
-                setStaffLayout('split')
-              }
             }}
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
@@ -231,7 +233,15 @@ export function WorkRegistrationScreen() {
         ) : null}
 
         {activeTab === 'center' ? (
-          <WorkRegistrationCenterOverview summaries={centerSummaries} page={centerPage} pageSize={centerPageSize} onPageChange={setCenterPage} onPageSizeChange={setCenterPageSize} onOpenBranch={(branch) => setBranchDetail({ branch })} onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })} />
+          <WorkRegistrationCenterOverview
+            summaries={centerSummaries}
+            page={centerPage}
+            pageSize={centerPageSize}
+            onPageChange={setCenterPage}
+            onPageSizeChange={setCenterPageSize}
+            onOpenBranch={(branch) => setBranchDetail({ branch })}
+            onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
+          />
         ) : null}
       </div>
 

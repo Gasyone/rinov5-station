@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
+  CheckCircle2,
   Clock,
   ExternalLink,
   FileText,
@@ -16,21 +17,17 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { InlineSelect } from '@/components/controls'
 import { StatusBadge, ContactCell, PersonnelCell, LocationCell } from '@/components/shared'
-import {
-  PROGRAM_LEVELS,
-  SUB_LEVELS,
-  type BookingTest,
-} from '@/mocks/bookingTests'
+import { type BookingTest } from '@/mocks/bookingTests'
 import {
   resolveBookingBranch,
   getActiveEmployeesBySchool,
 } from './bookingTestStaffHelpers'
 import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDialog'
+import { BookingTestLevelPopover } from './BookingTestLevelPopover'
 import {
   applyBookingCheckIn,
-  canSelectPlacementLevel,
+  formatTestTimeWithDay,
   getStatusLabel,
   getSubjectLabel,
   isBookingCheckedIn,
@@ -95,17 +92,28 @@ export function BookingTestTableRow({
           onCheckedChange={(checked) => onToggle(booking.id, Boolean(checked))}
         />
       </TableCell>
-      <TableCell className={cn("sticky left-12 z-20 w-84 min-w-84 max-w-84 overflow-hidden transition-colors", rowHighlightClass)}>
-        <div className="relative z-10 max-w-full overflow-hidden pr-24">
-          <div className="min-w-0 space-y-1">
-            <p className="truncate font-semibold" title={booking.program}>
-              {booking.program}
-            </p>
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="font-mono text-xs text-muted-foreground">{booking.id}</span>
-              <Badge variant="outline" className="rounded-md text-[10px] font-bold">
-                {getSubjectLabel(booking.subject)}
-              </Badge>
+      <TableCell className={cn("sticky left-12 z-20 w-[280px] min-w-[280px] max-w-[280px] overflow-hidden transition-colors", rowHighlightClass)}>
+        <div className="relative z-10 max-w-full overflow-hidden pr-16">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-bold text-foreground">
+              {booking.childName.charAt(0)}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="truncate font-semibold text-foreground" title={booking.childName}>
+                  {booking.childName}
+                </p>
+                {isCheckedIn && (
+                  <span title="Đã đến" className="inline-flex shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 fill-emerald-100" />
+                  </span>
+                )}
+              </div>
+              <div className="flex min-w-0 items-center gap-2 mt-0.5">
+                <Badge variant="outline" className="rounded-md text-[10px] font-bold">
+                  {getSubjectLabel(booking.subject)}
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -164,31 +172,10 @@ export function BookingTestTableRow({
           </div>
         </div>
       </TableCell>
-      <TableCell className="min-w-72">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-bold text-foreground">
-            {booking.childName.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="truncate font-semibold">{booking.childName}</p>
-              {isCheckedIn && (
-                <StatusBadge
-                  status="checkin"
-                  label="Đã đến"
-                  className="px-1.5 py-0.5 text-[10px]"
-                />
-              )}
-            </div>
-            <p className="font-mono text-xs text-muted-foreground">{booking.id}</p>
-          </div>
-        </div>
-      </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <ContactCell
           name={booking.familyName}
           phone={booking.phone}
-          studentId={booking.id}
           studentName={booking.childName}
           masked={true}
           additionalContacts={
@@ -199,48 +186,26 @@ export function BookingTestTableRow({
         />
       </TableCell>
       <TableCell>
-        <LocationCell branch={booking.school} room={booking.room || 'Sảnh tư vấn'} />
+        <div className="min-w-0 space-y-0.5">
+          <p className="truncate text-xs font-normal text-foreground" title={booking.program}>
+            {booking.program}
+          </p>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
+            <span>{formatTestTimeWithDay(booking.testTime)}</span>
+          </div>
+        </div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1.5 font-semibold">
-          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          {booking.testTime.split(' ')[1] || '-'}
+        <div className="space-y-1">
+          <PersonnelCell
+            items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
+            size="sm"
+            mode="single"
+            showRole={false}
+          />
+          <LocationCell branch={booking.school} />
         </div>
-        <p className="text-xs text-muted-foreground">{booking.testTime.split(' ')[0] || '-'}</p>
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
-        <InlineSelect
-          value={booking.testResult?.level ?? ''}
-          disabled={!canSelectPlacementLevel(booking)}
-          ariaLabel={`Trình độ đầu vào của ${booking.childName}`}
-          options={[
-            { value: '', label: 'Chưa đặt' },
-            ...PROGRAM_LEVELS.map((level) => ({ value: level, label: level })),
-          ]}
-          onValueChange={(value) =>
-            onUpdateBooking(booking.id, (current) => ({
-              ...current,
-              testResult: { ...current.testResult, level: value },
-            }))
-          }
-        />
-      </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
-        <InlineSelect
-          value={booking.testResult?.subLevel ?? ''}
-          disabled={!canSelectPlacementLevel(booking)}
-          ariaLabel={`Nhánh trình độ đầu vào của ${booking.childName}`}
-          options={[
-            { value: '', label: '-' },
-            ...SUB_LEVELS.map((subLevel) => ({ value: subLevel, label: subLevel })),
-          ]}
-          onValueChange={(value) =>
-            onUpdateBooking(booking.id, (current) => ({
-              ...current,
-              testResult: { ...current.testResult, subLevel: value },
-            }))
-          }
-        />
       </TableCell>
       <TableCell>
         {booking.subject === 'english' ? (
@@ -256,30 +221,27 @@ export function BookingTestTableRow({
         <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
+        <BookingTestLevelPopover
+          booking={booking}
+          onUpdateBooking={onUpdateBooking}
+        />
+      </TableCell>
+      <TableCell onClick={(event) => event.stopPropagation()}>
         {hasResult ? (
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            title="Mở trang kết quả"
-            aria-label={`Mở trang kết quả của ${booking.childName}`}
-            className="h-8 gap-1.5 px-2"
+          <Link
+            href={resultHref}
+            target="_blank"
+            rel="noreferrer"
+            title="Mở trang kết quả nhận xét"
+            aria-label={`Mở trang kết quả nhận xét của ${booking.childName}`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
-            <Link href={resultHref} target="_blank" rel="noreferrer">
-              <ExternalLink className="h-3.5 w-3.5" />
-              Mở
-            </Link>
-          </Button>
+            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+            Nhận xét
+          </Link>
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
-      </TableCell>
-      <TableCell>
-        <PersonnelCell
-          items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
-          size="sm"
-          mode="single"
-        />
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <div className="flex max-w-44 items-center gap-2">

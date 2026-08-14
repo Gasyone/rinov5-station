@@ -43,7 +43,7 @@ tags: [enrollment, booking-test, list, modal]
     *   **Điểm trắc nghiệm (LWR):** Ngay sau khi học sinh nộp bài thi trên thiết bị (iPad), điểm số bài thi sẽ tự động đồng bộ và hiển thị trực tiếp tại cột **LWR** trên bảng danh sách.
     *   **Điểm phỏng vấn (Speaking):** Điểm số đánh giá Nói của Giáo viên (ví dụ: `GV: 5/8`) và kết quả phân tích của trí tuệ nhân tạo (AI) (ví dụ: `AI: 6/8`) tự động cập nhật hiển thị tại cột **Speaking** ngay sau khi Giáo viên hoàn tất chấm bài trên phiếu đánh giá.
     *   **Liên kết kết quả:** Cột **Kết quả** tự động hiển thị nút liên kết mở trang báo cáo kết quả chi tiết ở tab trình duyệt mới ngay khi ghi nhận điểm số của bất kỳ phần thi nào.
-10. **[RULE-LIST-10] Chỉnh sửa trình độ trực tiếp tại chỗ:** Hộp chọn Trình độ (Level) và Nhánh trình độ (Sublevel) trên bảng danh sách cho phép thay đổi trực tiếp mà không cần mở hộp thoại chi tiết. Tính năng này chỉ được mở khóa khi học sinh đã làm bài kiểm tra, phỏng vấn xong hoặc trạng thái lịch hẹn đã kết thúc.
+10. **[RULE-LIST-10] Chỉnh sửa trình độ qua bảng nổi (popover):** Trình độ (Level) và Nhánh trình độ (Sublevel) được gộp chung hiển thị trên cùng một cột xếp trên/dưới. Di chuột hiển thị biểu tượng cây bút để kích hoạt bảng nổi (popover) cập nhật trình độ mà không cần mở hộp thoại chi tiết. Tính năng này chỉ được mở khóa khi học sinh đã làm bài kiểm tra, phỏng vấn xong hoặc trạng thái lịch hẹn đã kết thúc.
 
 ### 2.1. Thông số & Định mức (Metrics & Thresholds)
 
@@ -85,18 +85,16 @@ tags: [enrollment, booking-test, list, modal]
 | Cột | Loại hiển thị | Nội dung dữ liệu | Ghi chú & Quy tắc |
 | :--- | :--- | :--- | :--- |
 | **Ô chọn** | Hộp đánh dấu | Hộp chọn đầu dòng và trên thanh tiêu đề | Hộp chọn đầu dòng dùng để chọn bản ghi; hộp chọn trên tiêu đề dùng để chọn/bỏ chọn toàn bộ dòng đang hiển thị. Cố định bên trái. |
-| **Booking Trải nghiệm** | Văn bản hai dòng | Dòng 1: Chương trình học (in đậm)<br>Dòng 2: Mã ca test + Nhãn môn học | Cố định bên trái. Cung cấp các nút thao tác nhanh khi di chuột (§3.4). |
-| **Học viên** | Khung thông tin | Ảnh đại diện tròn (hoặc chữ cái đầu), Tên học viên (in đậm), Mã lịch hẹn, Nhãn "Đã đến" màu xanh viền bên cạnh nếu đã check-in. | |
+| **Học viên** | Khung thông tin hai dòng | Dòng 1: Ảnh đại diện + Tên học viên (in đậm) + Dấu tích xanh nếu đã đến cơ sở<br>Dòng 2: Nhãn môn học | Cố định bên trái. Cung cấp các nút thao tác nhanh khi di chuột (§3.4). Không hiển thị mã học viên. |
 | **Điện thoại** | Khung thông tin | Tên gia đình phụ huynh (in hoa màu mờ), Số điện thoại che phần giữa, Nút sao chép. | Nếu gia đình có trên 1 thành viên, hiển thị thêm biểu tượng nút mở bảng nổi liên hệ gia đình (§3.5). |
 | **Cơ sở** | Văn bản hai dòng | Dòng 1: Chi nhánh tổ chức (in đậm)<br>Dòng 2: Phòng thi cụ thể | Cắt ngắn bớt văn bản nếu tên chi nhánh quá dài. |
-| **Giờ test** | Văn bản hai dòng | Dòng 1: Biểu tượng đồng hồ + Giờ thi<br>Dòng 2: Ngày thi | Hiển thị rõ ràng khung giờ hẹn kiểm tra của học viên. |
-| **Trình độ** | Hộp chọn tại chỗ | Trình độ xếp lớp được gán hoặc "Chưa đặt" | Cho phép thay đổi trực tiếp. Chỉ mở khóa chỉnh sửa khi đã hoàn thành làm bài/phỏng vấn hoặc trạng thái kết thúc. |
-| **Nhánh trình độ** | Hộp chọn tại chỗ | Nhánh trình độ xếp lớp được gán hoặc "-" | Hoạt động tương tự hộp chọn Trình độ. |
+| **Nội dung Trải nghiệm** | Văn bản hai dòng | Dòng 1: Tên Khung chương trình (in đậm)<br>Dòng 2: Biểu tượng đồng hồ + Ngày, giờ booking | Hiển thị rõ ràng chương trình học và thời gian hẹn kiểm tra của học viên. |
+| **Giáo viên** | Nhóm ảnh đại diện tròn | Tối đa 3 ảnh tròn viết tắt tên xếp chồng của nhóm nhân sự phụ trách | Di chuột hiển thị tên đầy đủ. Xếp trước cột Trình độ. |
+| **Trình độ** | Văn bản hai dòng + Nút chỉnh sửa | Dòng 1: Trình độ xếp lớp được gán hoặc "Chưa đặt"<br>Dòng 2: Nhánh trình độ hoặc "-" | Hiển thị xếp trên/dưới. Rê chuột xuất hiện biểu tượng cây bút để mở bảng nổi (popover) cập nhật trình độ và nhánh trình độ. |
 | **Speaking** | Nhãn điểm | Điểm Nói do GV chấm và AI chấm (ví dụ: `GV: 5/8 AI: 6/8`) | Chỉ hiển thị khi môn học là Tiếng Anh. Trống hiển thị "-". |
 | **LWR** | Văn bản | Điểm trắc nghiệm Nghe-Đọc-Viết (ví dụ: `27/40`) | Lấy tự động từ dữ liệu bài thi trên máy tính bảng. Trống hiển thị "-". |
 | **Trạng thái** | Nhãn trạng thái màu | Nhãn màu thể hiện trạng thái chính của ca hẹn | Ánh xạ màu theo quy chuẩn chung của hệ thống. |
 | **Kết quả** | Nút liên kết | Nút "Mở" mở liên kết kết quả bài thi ở trang mới | Chỉ hiển thị khi đã có kết quả bài thi/phỏng vấn. |
-| **Nhân sự** | Nhóm ảnh đại diện tròn | Tối đa 3 ảnh tròn viết tắt tên xếp chồng của nhóm nhân sự phụ trách | Di chuột hiển thị tên đầy đủ. Nếu nhiều hơn 3 hiển thị nhãn số lượng dư dạng "+N". |
 | **Ghi chú** | Văn bản kèm biểu tượng | Biểu tượng tin nhắn + Nội dung ghi chú mới nhất | Nội dung ghi chú viết nghiêng và tự động cắt ngắn nếu quá dài. |
 
 ### 3.4. Thao tác nhanh khi di chuột vào dòng
