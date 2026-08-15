@@ -1,11 +1,14 @@
 import { ChevronLeft, ChevronRight, Rows3, Grid } from 'lucide-react'
 import { BranchSelect, SubjectSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl, SYSTEM_BRANCHES } from '@/components/controls'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import type { ViewMode, WeekLayoutMode } from './calendarClassScheduleTypes'
 import { VIEW_MODES, getMonday } from './calendarClassScheduleHelpers'
 
 interface CalendarClassScheduleToolbarProps {
+  isMySchedule?: boolean
+  onIsMyScheduleChange?: (val: boolean) => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
   weekLayoutMode: WeekLayoutMode
@@ -26,6 +29,8 @@ interface CalendarClassScheduleToolbarProps {
 }
 
 export function CalendarClassScheduleToolbar({
+  isMySchedule = false,
+  onIsMyScheduleChange,
   viewMode,
   onViewModeChange,
   weekLayoutMode,
@@ -46,8 +51,25 @@ export function CalendarClassScheduleToolbar({
 }: CalendarClassScheduleToolbarProps) {
   return (
     <div className="flex shrink-0 flex-col gap-2 border-b border-border/40 bg-card px-3 py-2.5 md:flex-row md:items-center md:justify-between lg:px-4">
-      {/* Left side: Branch select & Subject select placed at far left */}
+      {/* Left side: Switch "Lịch của tôi" & Branch select & Subject select placed at far left */}
       <div className="flex flex-wrap items-center gap-2">
+        {onIsMyScheduleChange && (
+          <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-2 py-1">
+            <Switch
+              id="toggle-my-schedule-cs"
+              checked={isMySchedule}
+              onCheckedChange={onIsMyScheduleChange}
+              size="sm"
+            />
+            <label
+              htmlFor="toggle-my-schedule-cs"
+              className="text-xs font-medium cursor-pointer select-none text-foreground whitespace-nowrap"
+            >
+              Lịch của tôi
+            </label>
+          </div>
+        )}
+
         <BranchSelect
           value={activeBranch}
           branches={SYSTEM_BRANCHES}

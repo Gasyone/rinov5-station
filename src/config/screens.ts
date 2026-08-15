@@ -20,10 +20,6 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Lịch học',
     description: 'Thời khóa biểu tổng quan các lớp học tại chi nhánh',
   },
-  calendar_class_schedule_v2: {
-    label: 'Lịch học V2',
-    description: 'Trung tâm điều hành thời khóa biểu, ma trận phòng học, tải trọng giáo viên và phân công trợ giảng toàn trung tâm',
-  },
   calendar_event_schedule: {
     label: 'Lịch sự kiện',
     description: 'Quản lý lịch kiểm tra trải nghiệm đầu vào và sự kiện workshop',

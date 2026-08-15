@@ -36,10 +36,6 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { CalendarClassScheduleScreen } = await import('@/components/screens/CalendarClassScheduleScreen')
     return { default: CalendarClassScheduleScreen }
   }),
-  calendar_class_schedule_v2: safeLazy(async () => {
-    const { CalendarClassScheduleV2Screen } = await import('@/components/screens/calendar-class-v2/CalendarClassScheduleV2Screen')
-    return { default: CalendarClassScheduleV2Screen }
-  }),
   calendar_event_schedule: safeLazy(async () => {
     const { CalendarEventScheduleScreen } = await import('@/components/screens/CalendarEventScheduleScreen')
     return { default: CalendarEventScheduleScreen }

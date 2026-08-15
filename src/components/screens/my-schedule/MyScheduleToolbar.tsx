@@ -7,6 +7,7 @@ import {
   SegmentedControl,
 } from '@/components/controls'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import type { ScheduleLayoutType } from './myScheduleTypes'
 
@@ -16,6 +17,8 @@ const VIEW_MODES = [
 ]
 
 interface MyScheduleToolbarProps {
+  isMySchedule?: boolean
+  onIsMyScheduleChange?: (val: boolean) => void
   viewMode: 'day' | 'week'
   layoutType: ScheduleLayoutType
   titleDate: string
@@ -33,6 +36,8 @@ interface MyScheduleToolbarProps {
 }
 
 export function MyScheduleToolbar({
+  isMySchedule,
+  onIsMyScheduleChange,
   viewMode,
   layoutType,
   titleDate,
@@ -51,6 +56,22 @@ export function MyScheduleToolbar({
   return (
     <div className="flex flex-col gap-2 px-3 py-3 md:flex-row md:items-center md:justify-between lg:px-3">
       <div className="flex flex-wrap items-center gap-2">
+        {onIsMyScheduleChange && (
+          <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-2 py-1">
+            <Switch
+              id="toggle-my-schedule-ms"
+              checked={isMySchedule}
+              onCheckedChange={onIsMyScheduleChange}
+              size="sm"
+            />
+            <label
+              htmlFor="toggle-my-schedule-ms"
+              className="text-xs font-medium cursor-pointer select-none text-foreground whitespace-nowrap"
+            >
+              Lịch của tôi
+            </label>
+          </div>
+        )}
         <BranchSelect
           value={activeBranch}
           branches={branches}

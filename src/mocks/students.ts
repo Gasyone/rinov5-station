@@ -67,6 +67,50 @@ export interface Student {
 
 export const mockStudents: Student[] = [
   {
+    id: "s-baohan",
+    name: "Lê Nguyễn Bảo Hân",
+    englishName: "Hannah",
+    email: "baohan.le@email.com",
+    phone: "0987654321",
+    gender: "Female",
+    dob: "2012-08-14",
+    status: "active",
+    enrolledClass: "Toán Tư Duy 1:6",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "Toán 1:6",
+    subLevel: "A",
+    learningPath: "Toán tư duy tiểu học nâng cao",
+    curriculum: "Toán logic & phản xạ tư duy",
+    parentName: "Nguyễn Thu Trang",
+    parentPhone: "0912345678",
+    enrollmentDate: "2024-08-14",
+    packageName: "[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)",
+    remainingSessions: 12,
+    totalSessions: 96,
+    enrolledClasses: [
+      {
+        classCode: "LD_TOAN_00032",
+        className: "Toán Tư Duy 1:6 (96 buổi)",
+        type: "tutor",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 3", date: "18/08", startTime: "17:30", endTime: "19:30" },
+          { dayOfWeek: "Thứ 6", date: "21/08", startTime: "17:30", endTime: "19:30" }
+        ],
+        teacherName: "GV_HuiLT20",
+        status: "active",
+        progress: "84 / 96 buổi",
+        branch: "RinoEdu Nguyễn Tuân",
+        room: "B202",
+        level: "Toán 1:6",
+        subLevel: "A",
+        programName: "Chương trình Toán tư duy 1:6 chuẩn quốc tế",
+        pathCode: "PATH-MATH-16",
+        startDate: "2024-08-14",
+        endDate: "2027-08-14"
+      }
+    ]
+  },
+  {
     id: "s1",
     name: "Nguyễn An",
     englishName: "Alex",

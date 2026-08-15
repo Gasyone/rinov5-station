@@ -13,10 +13,16 @@ import {
   Clock,
   Hourglass,
   Lock,
+  ArrowRightLeft,
+  Info,
+  Ticket,
+  ArrowRight,
+  BookOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { DetailedOrder } from './studentOrdersTypes'
 
 interface StudentOrderCardItemProps {
@@ -28,6 +34,8 @@ interface StudentOrderCardItemProps {
   onToggleExpandPayments: (orderId: string) => void
   onViewDetail: (order: DetailedOrder) => void
   onCreateDraftFromPackage: (order: DetailedOrder) => void
+  onCreateCompletionOrder?: (order: DetailedOrder) => void
+  onAddPayment?: (order: DetailedOrder) => void
   onDeleteDraft?: (orderId: string) => void
   onScrollToOrder: (orderNo: string) => void
 }
@@ -41,6 +49,8 @@ export function StudentOrderCardItem({
   onToggleExpandPayments,
   onViewDetail,
   onCreateDraftFromPackage,
+  onCreateCompletionOrder,
+  onAddPayment,
   onDeleteDraft,
   onScrollToOrder,
 }: StudentOrderCardItemProps) {
@@ -136,16 +146,26 @@ export function StudentOrderCardItem({
 
         {/* Line 2: Order Summary Row */}
         <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-          <div className="flex items-center gap-1.5 flex-wrap font-mono">
+          {/* Left Side: Order Code Link + Amount + Student Name + Status Tag + Fee Transfer Summary */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               onClick={() => onViewDetail(order)}
-              className="font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
+              className="font-mono text-sm font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
               title={isDraft ? 'Chỉnh sửa đơn hàng nháp' : 'Nhấp xem chi tiết đơn hàng'}
             >
-              <span>{order.orderNo || order.id}</span>
-              <ExternalLink className="h-3 w-3" />
+              {order.orderNo || order.id}
             </button>
+            {isDraft && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-sans font-medium border border-amber-200/60">
+                Nháp
+              </span>
+            )}
+
+            <span className="text-muted-foreground">-</span>
+            <span className="font-semibold text-foreground font-mono">
+              {formatCurrency(order.totalAmount || order.finalAmount || 0)}
+            </span>
             {order.studentName && (
               <>
                 <span className="text-muted-foreground">-</span>
@@ -171,10 +191,133 @@ export function StudentOrderCardItem({
                 {order.paymentMethodTag || 'Đã nhận bank'}
               </span>
             )}
+            {order.feeTransferSummary && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-medium px-2 py-0.5 rounded-md text-[10.5px] font-sans inline-flex items-center gap-1 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/80 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 cursor-pointer shadow-2xs transition-all"
+                  >
+                    <ArrowRightLeft className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                    <span>Nhận chuyển phí: <strong>{order.feeTransferSummary.ticketCode}</strong></span>
+                    <Info className="h-2.5 w-2.5 opacity-70" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[520px] max-w-[95vw] p-4 text-xs space-y-3 text-left shadow-xl border-purple-200 dark:border-purple-800 z-50 rounded-2xl"
+                  align="start"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Popover Header */}
+                  <div className="flex items-center justify-between text-xs pb-2 border-b border-border/30 flex-wrap gap-2">
+                    <div className="text-muted-foreground font-normal">
+                      Ngày chuyển: <strong className="font-bold text-foreground">{order.feeTransferSummary.transferDate}</strong>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => toast.info(`Mã ticket chuyển phí: ${order.feeTransferSummary?.ticketCode}`)}
+                        className="inline-flex items-center gap-1 font-mono font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
+                      >
+                        <Ticket className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Mã ticket: <span className="underline">{order.feeTransferSummary.ticketCode}</span></span>
+                        <ExternalLink className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <div className="text-muted-foreground font-normal">
+                      Người thực hiện: <strong className="font-bold text-foreground">{order.feeTransferSummary.executorName}</strong>
+                    </div>
+                  </div>
+
+                  {/* 2-Column Side-by-Side Content Area (GÓI CŨ & GÓI MỚI in 1 Row) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 relative gap-5 pt-1">
+                    {/* Left Column: GÓI CŨ */}
+                    <div className="space-y-1.5 pr-0 sm:pr-2">
+                      <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
+                        GÓI CŨ
+                      </h4>
+                      <div className="space-y-1 text-muted-foreground text-xs leading-relaxed">
+                        <p>
+                          Gói : <span className="font-medium text-foreground">{order.feeTransferSummary.oldPackageName}</span>
+                        </p>
+                        <p>
+                          Lộ trình : <span className="font-semibold text-foreground">{order.feeTransferSummary.oldPathwayLevel || '150'}</span>
+                        </p>
+                        <p>
+                          Tổng số buổi : <span className="font-semibold text-foreground">{order.feeTransferSummary.oldTotalSessions ?? 48}</span> / Số buổi chính : <span className="font-semibold text-foreground">{order.feeTransferSummary.oldMainSessions ?? 48}</span>
+                        </p>
+                        <p>
+                          Tổng số buổi đã học : <span className="font-semibold text-foreground">{order.feeTransferSummary.oldCompletedTotalSessions ?? 40}</span> / Số buổi chính đã học : <span className="font-semibold text-foreground">{order.feeTransferSummary.oldCompletedMainSessions ?? 40}</span>
+                        </p>
+                        <p className="pt-0.5">
+                          Số buổi được chuyển phí : <span className="font-semibold text-foreground">{order.feeTransferSummary.transferredSessionsCount} buổi</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Center Arrow & Dashed Divider */}
+                    <div className="hidden sm:flex flex-col items-center absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none">
+                      <div className="h-5.5 w-5.5 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-xs shrink-0 z-10 mt-1">
+                        <ArrowRight className="h-3 w-3 stroke-[2.5]" />
+                      </div>
+                      <div className="flex-1 w-px border-r border-dashed border-violet-400/80 dark:border-violet-600/80 mt-1" />
+                    </div>
+
+                    {/* Right Column: GÓI MỚI */}
+                    <div className="space-y-1.5 pl-0 sm:pl-3">
+                      <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
+                        GÓI MỚI
+                      </h4>
+                      <div className="space-y-1 text-muted-foreground text-xs leading-relaxed">
+                        {order.feeTransferSummary.newProgramName && (
+                          <p>
+                            Gói : <span className="font-semibold text-foreground">{order.feeTransferSummary.newProgramName}</span>
+                          </p>
+                        )}
+                        <p>
+                          Lộ trình : <span className="font-semibold text-foreground">{order.feeTransferSummary.newPathwayLevel || '130'}</span>
+                        </p>
+                        <p>
+                          Loại chuyển : <span className="font-medium text-foreground">{order.feeTransferSummary.transferType}</span>
+                        </p>
+                        <p>
+                          Gói nhận phí : <span className="font-medium text-foreground">{order.feeTransferSummary.newPackageName}</span>
+                        </p>
+                        {order.feeTransferSummary.linkedOrderNo && (
+                          <p className="flex items-center gap-1 flex-wrap">
+                            <span>Đơn hàng thanh toán thêm:</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onScrollToOrder(order.feeTransferSummary!.linkedOrderNo!)
+                              }}
+                              className="inline-flex items-center gap-0.5 font-mono font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
+                            >
+                              <span>{order.feeTransferSummary.linkedOrderNo}</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
+                          </p>
+                        )}
+                        <div className="pt-1.5 flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-[10px] uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                            SỐ LƯỢNG BUỔI TỐI ĐA SAU QUY ĐỔI :
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold font-mono text-xs shadow-2xs">
+                            {order.feeTransferSummary.convertedSessionsLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
 
           <div className="text-[11px] text-muted-foreground shrink-0 font-normal font-sans">
-            Sale: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
+            Người lên đơn: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
           </div>
         </div>
       </div>
@@ -200,11 +343,12 @@ export function StudentOrderCardItem({
               key={idx}
               className="text-xs flex items-start justify-between gap-3 flex-wrap"
             >
-              {/* Left Column: Number + (Title & Subtitle directly aligned) */}
+              {/* Left Column: Number + Book Icon + (Title & Subtitle directly aligned) */}
               <div className="flex items-start gap-1.5 flex-1 min-w-0">
                 <span className="font-semibold text-[13px] text-foreground leading-snug shrink-0">
                   {idx + 1}.
                 </span>
+                <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
 
                 <div className="space-y-0.5 min-w-0 flex-1">
                   {/* Line 1: Title + OrderType Badge */}
@@ -303,7 +447,11 @@ export function StudentOrderCardItem({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onViewDetail(order)
+                    if (onAddPayment) {
+                      onAddPayment(order)
+                    } else {
+                      onViewDetail(order)
+                    }
                   }}
                   className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
                   title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
@@ -360,13 +508,33 @@ export function StudentOrderCardItem({
                                 </span>
                               )}
                             </div>
+
+                            {/* Button Tạo đơn hoàn tất if deposit and remaining amount > 0 */}
+                            {isDeposit && (order.totalPaidAmount ?? 0) < order.finalAmount && (
+                              <div className="pt-2 text-left">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (onCreateCompletionOrder) {
+                                      onCreateCompletionOrder(order)
+                                    } else {
+                                      toast.success(`Đã mở giao diện tạo đơn hoàn tất từ đơn cọc ${order.orderNo}`)
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                  <span>Tạo đơn hoàn tất</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         <div className="text-right text-[11px] shrink-0 font-sans space-y-0.5">
                           {pm.saleBy && (
                             <div className="text-muted-foreground">
-                              Sale: <span className="font-medium text-foreground">{pm.saleBy}</span>
+                              Người lên đơn: <span className="font-medium text-foreground">{pm.saleBy}</span>
                             </div>
                           )}
                           <div className="font-mono text-muted-foreground text-[10.5px]">{pm.timestamp}</div>
@@ -385,18 +553,21 @@ export function StudentOrderCardItem({
                           <span
                             className={cn(
                               'text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0',
-                              pm.status === 'completed'
-                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200/60'
-                                : pm.status === 'pending'
-                                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border-sky-200/60'
-                                  : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200'
+                              pm.statusLabel === 'Chờ xử lý'
+                                ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white border-blue-600 shadow-2xs font-semibold'
+                                : pm.status === 'completed' || pm.statusLabel === 'Thành công'
+                                  ? 'bg-emerald-600 text-white dark:bg-emerald-700 dark:text-white border-emerald-600 shadow-2xs font-semibold'
+                                  : pm.status === 'pending' || pm.statusLabel === 'Chờ thanh toán'
+                                    ? 'bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200/70'
+                                    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200'
                             )}
                           >
-                            {pm.status === 'completed'
-                              ? 'Thành công'
-                              : pm.status === 'pending'
-                                ? 'Chờ xử lý'
-                                : 'Hủy'}
+                            {pm.statusLabel ||
+                              (pm.status === 'completed'
+                                ? 'Thành công'
+                                : pm.status === 'pending'
+                                  ? 'Chờ thanh toán'
+                                  : 'Hủy')}
                           </span>
                           <span className="text-muted-foreground text-[11px] shrink-0">
                             {pm.timestamp}
@@ -408,23 +579,63 @@ export function StudentOrderCardItem({
 
                         {pm.saleBy && (
                           <span className="text-[11px] text-muted-foreground shrink-0 font-sans">
-                            Sale: <span className="font-medium text-foreground">{pm.saleBy}</span>
+                            Người lên đơn: <span className="font-medium text-foreground">{pm.saleBy}</span>
                           </span>
                         )}
                       </div>
 
                       {/* Single Product Note & Session Conversion */}
                       {pm.note && (
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap">
-                          <span>{pm.note}</span>
-                          <div className="flex items-center gap-3">
-                            {pm.convertedSessions !== undefined && (
-                              <span>Quy đổi: <span className="text-foreground font-medium">{pm.convertedSessions} (buổi)</span></span>
-                            )}
-                            {pm.convertedAmount !== undefined && (
-                              <span>Tiền quy đổi: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(pm.convertedAmount)}</span></span>
-                            )}
+                        <div className="space-y-1 pt-0.5">
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground flex-wrap">
+                            <span>{pm.note}</span>
+                            <div className="flex items-center gap-3">
+                              {pm.convertedSessions !== undefined && (
+                                <span>Quy đổi: <span className="text-foreground font-medium">{pm.convertedSessions} (buổi)</span></span>
+                              )}
+                              {pm.convertedAmount !== undefined && (
+                                <span>Tiền quy đổi: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(pm.convertedAmount)}</span></span>
+                              )}
+                            </div>
                           </div>
+
+                          {pm.remainingConversion && (
+                            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[11px] font-medium pt-0.5">
+                              <span className="font-semibold">Quy đổi còn lại</span>
+                              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                {pm.remainingConversion.sessions !== undefined && (
+                                  <span>{pm.remainingConversion.sessions} buổi</span>
+                                )}
+                                {pm.remainingConversion.amount !== undefined && (
+                                  <>
+                                    <span className="text-purple-400 dark:text-purple-600 font-sans">•</span>
+                                    <span>{formatCurrency(pm.remainingConversion.amount)}</span>
+                                  </>
+                                )}
+                                {pm.remainingConversion.missingAmount !== undefined && (
+                                  <>
+                                    <span className="text-purple-400 dark:text-purple-600 font-sans">•</span>
+                                    <span className="font-semibold">Còn thiếu: {formatCurrency(pm.remainingConversion.missingAmount)}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {pm.showCompletePaymentLink && (
+                            <div className="pt-0.5 text-left">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onViewDetail(order)
+                                }}
+                                className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold text-[11.5px] hover:underline cursor-pointer inline-flex items-center gap-1 transition-all"
+                              >
+                                <span>+ Thanh toán thêm để hoàn tất quy đổi</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -452,6 +663,46 @@ export function StudentOrderCardItem({
                                   </div>
                                 </div>
                               ))}
+
+                              {/* Remaining Conversion Summary Row */}
+                              {alloc.remainingConversion && (
+                                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[11px] font-medium pt-1 pl-1">
+                                  <span className="font-semibold">Quy đổi còn lại</span>
+                                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                    {alloc.remainingConversion.sessions !== undefined && (
+                                      <span>{alloc.remainingConversion.sessions} buổi</span>
+                                    )}
+                                    {alloc.remainingConversion.amount !== undefined && (
+                                      <>
+                                        <span className="text-purple-400 dark:text-purple-600 font-sans">•</span>
+                                        <span>{formatCurrency(alloc.remainingConversion.amount)}</span>
+                                      </>
+                                    )}
+                                    {alloc.remainingConversion.missingAmount !== undefined && (
+                                      <>
+                                        <span className="text-purple-400 dark:text-purple-600 font-sans">•</span>
+                                        <span className="font-semibold">Còn thiếu: {formatCurrency(alloc.remainingConversion.missingAmount)}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Complete Payment Button/Link */}
+                              {alloc.showCompletePaymentLink && (
+                                <div className="pt-0.5 text-left pl-1">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      onViewDetail(order)
+                                    }}
+                                    className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold text-[11.5px] hover:underline cursor-pointer inline-flex items-center gap-1 transition-all"
+                                  >
+                                    <span>+ Thanh toán thêm để hoàn tất quy đổi</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -468,6 +719,29 @@ export function StudentOrderCardItem({
           )}
         </div>
       )}
+
+      {/* Bottom Button if payments section is collapsed */}
+      {(order.canCreateCompletionOrder ||
+        (order.paymentMethodTag?.includes('Đơn có cọc') && (order.totalPaidAmount ?? 0) < order.finalAmount)) &&
+        !isPaymentsExpanded &&
+        !isDraft && (
+          <div className="pt-1.5 text-left border-t border-border/30">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onCreateCompletionOrder) {
+                  onCreateCompletionOrder(order)
+                } else {
+                  toast.success(`Đã mở giao diện tạo đơn hoàn tất từ đơn cọc ${order.orderNo}`)
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <span>Tạo đơn hoàn tất</span>
+            </button>
+          </div>
+        )}
     </div>
   )
 }

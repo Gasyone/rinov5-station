@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type Order } from '@/mocks/orders'
 import { OrderDetailDialog } from '@/components/screens/orders/OrderDetailDialog'
+import { DepositOrderModal } from './deposit-order/DepositOrderModal'
 import { DraftOrderEditorDialog } from './DraftOrderEditorDialog'
 import { ConfirmDialog } from '@/components/shared'
 import { toast } from 'sonner'
@@ -31,6 +32,11 @@ export { getStudentOrders, getFeeTransfers }
 export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [, setIsDetailOpen] = useState(false)
+  const [depositModal, setDepositModal] = useState<{
+    open: boolean
+    mode: 'deposit' | 'completion'
+    order?: DetailedOrder | null
+  }>({ open: false, mode: 'deposit', order: null })
   const [expandedPayments, setExpandedPayments] = useState<Record<string, boolean>>({})
   const [isDraftEditorOpen, setIsDraftEditorOpen] = useState(false)
   const [editingDraftOrder, setEditingDraftOrder] = useState<DetailedOrder | null>(null)
@@ -74,6 +80,49 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const draftOrders = useMemo(() => filteredOrders.filter(isDraftOrder), [filteredOrders, isDraftOrder])
   const currentOrders = useMemo(() => filteredOrders.filter(isCurrentPackageOrder), [filteredOrders, isCurrentPackageOrder])
   const purchasedOrders = useMemo(() => filteredOrders.filter(isPurchasedOrder), [filteredOrders, isPurchasedOrder])
+
+  // Merge purchased orders and fee transfers into unified historical timeline items
+  const historyTimelineItems = useMemo(() => {
+    type TimelineItem =
+      | { type: 'order'; order: DetailedOrder; timestamp: number }
+      | { type: 'transfer'; transfer: FeeTransferRecord; timestamp: number }
+
+    const items: TimelineItem[] = []
+
+    const parseDateToMs = (dateStr?: string): number => {
+      if (!dateStr) return 0
+      if (dateStr.includes('-')) {
+        const parts = dateStr.split('T')[0].split('-')
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            return new Date(dateStr).getTime()
+          } else {
+            return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime()
+          }
+        }
+      }
+      return new Date(dateStr).getTime() || 0
+    }
+
+    purchasedOrders.forEach((o) => {
+      items.push({
+        type: 'order',
+        order: o,
+        timestamp: parseDateToMs(o.saleDate || o.createdAt),
+      })
+    })
+
+    transfers.forEach((t) => {
+      items.push({
+        type: 'transfer',
+        transfer: t,
+        timestamp: parseDateToMs(t.transferDate),
+      })
+    })
+
+    items.sort((a, b) => b.timestamp - a.timestamp)
+    return items
+  }, [purchasedOrders, transfers])
 
   const toggleExpandPayments = useCallback((orderId: string) => {
     setExpandedPayments((prev) => ({
@@ -168,6 +217,17 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
     })
   }, [])
 
+  const handleCreateCompletionOrder = useCallback(
+    (sourceOrder: DetailedOrder) => {
+      setDepositModal({
+        open: true,
+        mode: 'completion',
+        order: sourceOrder,
+      })
+    },
+    []
+  )
+
   const scrollToOrder = useCallback((orderNo: string) => {
     const el = document.getElementById(`order-card-${orderNo}`)
     if (el) {
@@ -232,6 +292,8 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
                 onToggleExpandPayments={toggleExpandPayments}
                 onViewDetail={handleViewDetail}
                 onCreateDraftFromPackage={handleCreateDraftFromPackage}
+                onCreateCompletionOrder={handleCreateCompletionOrder}
+                onAddPayment={handleViewDetail}
                 onScrollToOrder={scrollToOrder}
               />
             ))}
@@ -239,61 +301,48 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
         </div>
       )}
 
-      {/* ── SECTION 3: GÓI ĐÃ MUA ── */}
-      {purchasedOrders.length > 0 && (
+      {/* ── SECTION 3: GÓI ĐÃ MUA & LỊCH SỬ CHUYỂN ĐỔI (CHÈN TRỰC TIẾP) ── */}
+      {historyTimelineItems.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between py-0.5 text-xs">
+          <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
             <div className="flex items-center gap-1.5 font-bold text-sky-800 dark:text-sky-300">
-              <span>Gói đã mua</span>
+              <span>Gói đã mua & Lịch sử chuyển đổi</span>
               <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[11px] font-mono font-bold">
-                {purchasedOrders.length}
+                {historyTimelineItems.length}
               </span>
             </div>
             <span className="text-[11px] font-normal text-muted-foreground italic">
-              (Lịch sử các gói đã mua & hoàn thành)
+              ({purchasedOrders.length} gói đã mua &bull; {transfers.length} phiếu chuyển phí)
             </span>
           </div>
           <div className="space-y-3.5">
-            {purchasedOrders.map((order) => (
-              <StudentOrderCardItem
-                key={order.id}
-                order={order}
-                isDraft={false}
-                isCurrent={false}
-                isPaymentsExpanded={expandedPayments[order.id] ?? false}
-                draftOrders={draftOrders}
-                onToggleExpandPayments={toggleExpandPayments}
-                onViewDetail={handleViewDetail}
-                onCreateDraftFromPackage={handleCreateDraftFromPackage}
-                onScrollToOrder={scrollToOrder}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── SECTION 4: LỊCH SỬ CHUYỂN PHÍ ── */}
-      {transfers.length > 0 && (
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between py-0.5 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-muted-foreground">
-              <span>Lịch sử chuyển phí</span>
-              <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[11px] font-mono font-bold text-foreground">
-                {transfers.length}
-              </span>
-            </div>
-            <span className="text-[11px] font-normal text-muted-foreground italic">
-              (Giao dịch chuyển số buổi giữa các gói)
-            </span>
-          </div>
-          <div className="space-y-3.5">
-            {transfers.map((tf) => (
-              <StudentFeeTransferItem
-                key={tf.id}
-                transfer={tf}
-                onScrollToOrder={scrollToOrder}
-              />
-            ))}
+            {historyTimelineItems.map((item) => {
+              if (item.type === 'order') {
+                return (
+                  <StudentOrderCardItem
+                    key={item.order.id}
+                    order={item.order}
+                    isDraft={false}
+                    isCurrent={false}
+                    isPaymentsExpanded={expandedPayments[item.order.id] ?? false}
+                    draftOrders={draftOrders}
+                    onToggleExpandPayments={toggleExpandPayments}
+                    onViewDetail={handleViewDetail}
+                    onCreateDraftFromPackage={handleCreateDraftFromPackage}
+                    onCreateCompletionOrder={handleCreateCompletionOrder}
+                    onAddPayment={handleViewDetail}
+                    onScrollToOrder={scrollToOrder}
+                  />
+                )
+              }
+              return (
+                <StudentFeeTransferItem
+                  key={item.transfer.id}
+                  transfer={item.transfer}
+                  onScrollToOrder={scrollToOrder}
+                />
+              )
+            })}
           </div>
         </div>
       )}
@@ -308,6 +357,18 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
           }}
         />
       )}
+
+      {/* Deposit & Completion Order Modal Dialog */}
+      <DepositOrderModal
+        open={depositModal.open}
+        onOpenChange={(open) => setDepositModal((prev) => ({ ...prev, open }))}
+        initialMode={depositModal.mode}
+        order={depositModal.order}
+        orderNo={depositModal.order?.orderNo || 'DH653961'}
+        studentName={depositModal.order?.studentName || studentName}
+        studentPhone="0963355809"
+        existingDepositAmount={depositModal.order?.totalPaidAmount || 6000000}
+      />
 
       {/* Draft Order Editor Modal Dialog */}
       <DraftOrderEditorDialog

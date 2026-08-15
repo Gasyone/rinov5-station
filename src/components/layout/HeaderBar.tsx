@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   Sun,
+  MessageSquarePlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore, type DemoRole } from '@/stores/useAuthStore'
@@ -39,6 +40,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { HeaderBrand } from './HeaderBrand'
 import { NotificationDropdown } from './NotificationDropdown'
+import { FeedbackPopover } from './FeedbackPopover'
 
 const UI_LOCALE_OPTIONS = [
   { code: 'vi', label: 'Tiếng Việt', shortLabel: 'VI' },
@@ -161,6 +163,9 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
             />
           </div>
         </div>
+
+        {/* Feedback Popover Button */}
+        <FeedbackPopover />
 
         {/* Settings: language + theme */}
         <DropdownMenu>

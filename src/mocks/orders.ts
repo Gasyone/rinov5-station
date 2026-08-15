@@ -9,6 +9,33 @@ export interface PaymentRecord {
   note?: string
 }
 
+export interface OrderItem {
+  productId: string
+  productName: string
+  quantity: number
+  unitPrice: number
+  subtotal: number
+  discount?: number
+  studentName?: string
+  programName?: string
+  teacherType?: string
+  packageType?: string
+  categoryName?: string
+  isRenewal?: boolean
+  isCompleted?: boolean
+  voucherCode?: string
+  voucherDiscount?: number
+}
+
+export interface OrderReceiptItem {
+  id: string
+  code: string
+  amount: number
+  method: string
+  timestamp: string
+  status: string
+}
+
 export interface Order {
   id: string
   orderNo: string
@@ -29,19 +56,209 @@ export interface Order {
   saleBy: string
   createdAt: string
   notes?: string
-}
-
-export interface OrderItem {
-  productId: string
-  productName: string
-  quantity: number
-  unitPrice: number
-  subtotal: number
+  customerName?: string
+  customerPhone?: string
+  shippingAddress?: string
+  paymentMethodTag?: string
+  receiptNumber?: string
+  receiptTime?: string
+  receiptAmount?: number
+  receiptMethod?: string
+  receiptStatus?: string
+  paymentOption?: string
+  receipts?: OrderReceiptItem[]
+  hasDepositStudyNow?: boolean
+  hasDepositPre?: boolean
 }
 
 const makeOrderId = (i: number) => `ORD-${String(2026000 + i).padStart(7, "0")}`
 
 export const mockOrders: Order[] = [
+  {
+    id: "o-od803291",
+    orderNo: "OD803291",
+    studentId: "s-phamnguyenkhoi",
+    studentName: "Phạm nguyên khôi",
+    customerName: "0983055652",
+    customerPhone: "0983055652",
+    shippingAddress: "Bắc Giang, Xã Nghĩa Hưng, Huyện Lạng Giang, Bắc Giang",
+    paymentMethodTag: "T4-Thanh toán 1 phần",
+    paymentOption: "NHIỀU LẦN",
+    hasDepositStudyNow: true,
+    hasDepositPre: false,
+    items: [
+      {
+        productId: "p-cambridge-30",
+        productName: "[Gia sư] Tiếng anh 1:4 _ 30 buổi _ GV VN",
+        categoryName: "Sản phẩm gia sư",
+        programName: "Tiếng Anh Cambridge",
+        teacherType: "Việt Nam",
+        packageType: "1:4 - 30 buổi",
+        isRenewal: true,
+        isCompleted: false,
+        quantity: 1,
+        unitPrice: 2990000,
+        discount: 0,
+        subtotal: 2990000,
+        studentName: "Phạm nguyên khôi",
+      },
+    ],
+    totalAmount: 2990000,
+    discountAmount: 0,
+    finalAmount: 2990000,
+    paidAmount: 100000,
+    remainingAmount: 2890000,
+    receipts: [
+      {
+        id: "rc-803291-1",
+        code: "TNX00000273948",
+        amount: 100000,
+        method: "BANK",
+        timestamp: "15:37:57 - 14/08/2026",
+        status: "THÀNH CÔNG",
+      },
+    ],
+    paymentMethod: "bank_transfer",
+    paymentStatus: "partial",
+    status: "pending",
+    branch: "RinoEdu Bắc Giang",
+    saleBy: "Nguyễn Văn Sale",
+    createdAt: "2026-08-14T15:37:57Z",
+  },
+  {
+    id: "o-od772048",
+    orderNo: "OD772048",
+    studentId: "s-buihuean",
+    studentName: "Bùi Huệ Ân",
+    customerName: "Nguyễn Thị Du",
+    customerPhone: "0865981348",
+    shippingAddress: "Ấp Đầu Lòng, Thị trấn Lai Uyên, Huyện Bàu Bàng, Bình Dương",
+    paymentMethodTag: "T5-Thành công",
+    paymentOption: "NHIỀU LẦN",
+    hasDepositStudyNow: true,
+    hasDepositPre: false,
+    items: [
+      {
+        productId: "p-einstein-48",
+        productName: "[Gia sư][TH] Toán Tư Duy 1:6 Einstein (48 buổi...)",
+        categoryName: "Sản phẩm gia sư",
+        programName: "Chương trình Toán tư duy Tutor",
+        teacherType: "Việt Nam",
+        packageType: "1:6 - 48 buổi",
+        isRenewal: false,
+        isCompleted: true,
+        quantity: 1,
+        unitPrice: 5800000,
+        discount: 0,
+        subtotal: 5800000,
+        studentName: "Bùi Huệ Ân",
+      },
+    ],
+    totalAmount: 5800000,
+    discountAmount: 0,
+    finalAmount: 5800000,
+    paidAmount: 5800000,
+    paidCount: 2,
+    remainingAmount: 0,
+    receipts: [
+      {
+        id: "rc-772048-1",
+        code: "TNX00000234942",
+        amount: 2900000,
+        method: "COD",
+        timestamp: "21:15:11 - 08/01/2026",
+        status: "THÀNH CÔNG",
+      },
+      {
+        id: "rc-772048-2",
+        code: "TNX00000234935",
+        amount: 2900000,
+        method: "COD",
+        timestamp: "20:21:53 - 08/01/2026",
+        status: "HỦY",
+      },
+      {
+        id: "rc-772048-3",
+        code: "TNX00000234934",
+        amount: 2900000,
+        method: "COD",
+        timestamp: "20:21:53 - 08/01/2026",
+        status: "HỦY",
+      },
+      {
+        id: "rc-772048-4",
+        code: "TNX00000231062",
+        amount: 2900000,
+        method: "BANK",
+        timestamp: "09:41:20 - 10/12/2025",
+        status: "THÀNH CÔNG",
+      },
+    ],
+    paymentMethod: "bank_transfer",
+    paymentStatus: "paid",
+    status: "completed",
+    branch: "RinoEdu Bình Dương",
+    saleBy: "Trần Thị Sale",
+    createdAt: "2026-01-08T21:15:11Z",
+  },
+  {
+    id: "o-od781205",
+    orderNo: "OD781205",
+    studentId: "s-tuongvy",
+    studentName: "Nhữ Thị Tường Vy",
+    customerName: "Nhữ Đình Sơn",
+    customerPhone: "0982700818",
+    shippingAddress: "thôn An Đồng, xã Thượng Hồng, Phường Đa Phúc, Quận Dương Kinh, Hải Phòng",
+    paymentMethodTag: "T5-Đã nhận COD",
+    paymentOption: "MỘT LẦN",
+    items: [
+      {
+        productId: "p-booster-48",
+        productName: "[IE_TUTOR][THCS] Skill booster_1:6_48 buổi",
+        categoryName: "Sản phẩm gia sư",
+        programName: "Tiếng Anh IELTS",
+        teacherType: "Việt Nam",
+        packageType: "1:6 - 48 buổi",
+        isRenewal: true,
+        isCompleted: true,
+        quantity: 1,
+        unitPrice: 5550000,
+        discount: 200000,
+        subtotal: 5350000,
+        studentName: "Nhữ Thị Tường Vy",
+        voucherCode: "IELGH24091",
+        voucherDiscount: 200000,
+      },
+    ],
+    totalAmount: 5550000,
+    discountAmount: 200000,
+    finalAmount: 5350000,
+    paidAmount: 5350000,
+    paidCount: 1,
+    remainingAmount: 0,
+    paymentHistory: [
+      {
+        id: "p-rc-1",
+        sequenceNo: 1,
+        amount: 5350000,
+        paymentType: "Phiếu thu",
+        paymentMethod: "COD",
+        paidAt: "19:50:40 - 17/03/2026",
+        note: "Trạng thái thanh toán: THÀNH CÔNG",
+      },
+    ],
+    receiptNumber: "TNX00000244278",
+    receiptTime: "19:50:40 - 17/03/2026",
+    receiptAmount: 5350000,
+    receiptMethod: "COD",
+    receiptStatus: "THÀNH CÔNG",
+    paymentMethod: "cash",
+    paymentStatus: "paid",
+    status: "completed",
+    branch: "RinoEdu Hải Phòng",
+    saleBy: "Vũ Thị Thảo Huyền 3",
+    createdAt: "2026-03-17T19:50:40Z",
+  },
   {
     id: "o1",
     orderNo: makeOrderId(1),

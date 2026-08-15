@@ -34,11 +34,9 @@ export const navigationGroups: NavigationGroup[] = [
     icon: CalendarDays,
     items: [
       { id: 'my_schedule', label: 'Lịch của tôi', href: '/app/my_schedule' },
-      { id: 'calendar_class_schedule_v2', label: 'Lịch học V2', href: '/app/calendar_class_schedule_v2' },
       { id: 'calendar_class_schedule', label: 'Lịch học', href: '/app/calendar_class_schedule' },
       { id: 'calendar_event_schedule', label: 'Lịch sự kiện', href: '/app/calendar_event_schedule' },
       { id: 'event_management_new', label: 'Quản lý sự kiện', href: '/app/event_management_new' },
-      { id: 'work_registration', label: 'Đăng ký lịch', href: '/app/work_registration' },
     ],
   },
   {
@@ -110,6 +108,7 @@ export const navigationGroups: NavigationGroup[] = [
     icon: Settings,
     items: [
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
+      { id: 'work_registration', label: 'Đăng ký lịch', href: '/app/work_registration' },
     ],
   },
 ]

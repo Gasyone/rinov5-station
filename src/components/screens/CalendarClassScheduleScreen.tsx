@@ -12,6 +12,7 @@ import { CalendarClassScheduleListTable } from './calendar/CalendarClassSchedule
 import { CalendarClassScheduleWeekView } from './calendar/CalendarClassScheduleWeekView'
 import { CalendarClassScheduleDayView } from './calendar/CalendarClassScheduleDayView'
 import { CalendarClassScheduleFooter } from './calendar/CalendarClassScheduleFooter'
+import { MyScheduleScreen } from './MyScheduleScreen'
 import type { ViewMode, WeekLayoutMode, FilterState } from './calendar/calendarClassScheduleTypes'
 import {
   filterSessions,
@@ -23,6 +24,7 @@ import {
 
 export function CalendarClassScheduleScreen() {
   const [mounted, setMounted] = useState(false)
+  const [isMySchedule, setIsMySchedule] = useState(false)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
@@ -273,9 +275,20 @@ export function CalendarClassScheduleScreen() {
     return <ModuleLoadingSkeleton className="h-full" />
   }
 
+  if (isMySchedule) {
+    return (
+      <MyScheduleScreen
+        isMySchedule={isMySchedule}
+        onIsMyScheduleChange={setIsMySchedule}
+      />
+    )
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <CalendarClassScheduleToolbar
+        isMySchedule={isMySchedule}
+        onIsMyScheduleChange={setIsMySchedule}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         weekLayoutMode={weekLayoutMode}

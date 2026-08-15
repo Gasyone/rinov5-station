@@ -61,7 +61,15 @@ const SOURCE_FILTERS = [
 
 const formatLabel = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('vi-VN', opts)
 
-export function MyScheduleScreen() {
+export interface MyScheduleScreenProps {
+  isMySchedule?: boolean
+  onIsMyScheduleChange?: (val: boolean) => void
+}
+
+export function MyScheduleScreen({
+  isMySchedule,
+  onIsMyScheduleChange,
+}: MyScheduleScreenProps = {}) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -340,6 +348,8 @@ export function MyScheduleScreen() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <MyScheduleToolbar
+        isMySchedule={isMySchedule}
+        onIsMyScheduleChange={onIsMyScheduleChange}
         viewMode={viewMode}
         layoutType={layoutType}
         titleDate={titleDate}
