@@ -15,15 +15,19 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { toast } from 'sonner'
 import type { ShiftSection } from '@/mocks/shiftRoster'
 import {
+  addWorkTimeRange,
   clearWorkRegistrationWeek,
+  removeWorkSlots,
   submitWorkRegistration,
   toggleWorkSection,
   upsertWorkSlot,
 } from './workRegistrationActions'
 import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
+import { WorkRegistrationHolidayPanel } from './WorkRegistrationHolidayPanel'
 import { WorkRegistrationMasterRosterPanel } from './WorkRegistrationMasterRosterPanel'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
 import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
@@ -152,6 +156,20 @@ export function WorkRegistrationScreen() {
     )
   }
 
+  const handleAddRange = (dates: string[], startTime: string, endTime: string) => {
+    if (!activeEmployee || !actionState.canMutate) return
+    setRecords((current) =>
+      addWorkTimeRange(current, activeEmployee, toWorkDateKey(weekStart), dates, startTime, endTime)
+    )
+    toast.success(`Đã thêm khung giờ ${startTime} - ${endTime}`)
+  }
+
+  const handleRemoveSlots = (date: string, slotIds: string[]) => {
+    if (!activeEmployee || !actionState.canMutate) return
+    setRecords((current) => removeWorkSlots(current, activeEmployee.id, date, slotIds))
+    toast.info('Đã xóa khung giờ làm việc')
+  }
+
   const submitActiveRegistration = () => {
     if (!actionState.canMutate) return
     setRecords((current) =>
@@ -204,7 +222,9 @@ export function WorkRegistrationScreen() {
             canMutate={actionState.canMutate}
             primaryActionLabel={actionState.primaryActionLabel}
             actionHelperText={actionState.actionHelperText}
-            onSetSlot={handleSetSlot}
+            onAddRange={handleAddRange}
+            onRemoveSlots={handleRemoveSlots}
+            onToggleSection={handleToggleSection}
             onSubmit={submitActiveRegistration}
           />
         ) : null}
@@ -213,13 +233,13 @@ export function WorkRegistrationScreen() {
           <WorkRegistrationMasterRosterPanel
             activeBranch={activeBranch === 'all' ? branches[0] || 'RinoEdu Nguyễn Tuân' : activeBranch}
             searchQuery={search}
+            weekDays={weekDays}
+            records={records}
           />
         ) : null}
 
         {activeTab === 'staff' ? (
           <WorkRegistrationStaffPanel
-            statusTiles={statusTiles}
-            statusFilter={statusFilter}
             filteredSummaries={filteredSummaries}
             delegateEmployeeId={delegateEmployeeId}
             activeEmployeeName={activeEmployee.name}
@@ -236,16 +256,14 @@ export function WorkRegistrationScreen() {
             canMutate={actionState.canMutate}
             primaryActionLabel={actionState.primaryActionLabel}
             actionHelperText={actionState.actionHelperText}
-            onStatusChange={(status) => {
-              setStatusFilter(status)
-              setStaffPage(1)
-            }}
             onPageChange={setStaffPage}
             onPageSizeChange={setStaffPageSize}
             onSetDelegateEmployee={(id) => {
               setDelegateEmployeeId(id)
             }}
             onToggleSection={handleToggleSection}
+            onRemoveSlots={handleRemoveSlots}
+            onAddRange={handleAddRange}
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
             onClear={() => setClearConfirmOpen(true)}
@@ -262,6 +280,13 @@ export function WorkRegistrationScreen() {
             onPageSizeChange={setCenterPageSize}
             onOpenBranch={(branch) => setBranchDetail({ branch })}
             onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
+          />
+        ) : null}
+
+        {activeTab === 'holidays' ? (
+          <WorkRegistrationHolidayPanel
+            activeBranch={activeBranch}
+            branches={branches}
           />
         ) : null}
       </div>

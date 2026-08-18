@@ -261,3 +261,100 @@ export function resolveWeekActionState(
     actionHelperText: 'Tuần mới; lưu để tạo lịch khả dụng',
   }
 }
+
+export function resolveClassSessionHoverData(
+  record: WorkRegistrationRecord,
+  employeeName: string,
+  slotLabel: string,
+  branchName: string = 'RinoEdu Linh Đàm'
+) {
+  const className = record.assignedClass || 'Tiếng Anh Trial Level 2'
+  const classCode = className.includes('SA1')
+    ? 'SA1_TA_T03'
+    : className.includes('IELTS')
+    ? 'IELTS_INT_01'
+    : 'SA1_TA_T03'
+
+  return {
+    id: `session-${record.id}`,
+    title: className,
+    className: className,
+    classCode: classCode,
+    subject: className.includes('Toán')
+      ? 'Toán tư duy'
+      : className.includes('STEM')
+      ? 'STEM Robotics'
+      : 'Tiếng Anh',
+    level: className.includes('Level')
+      ? className.split('Level')[1]?.trim() || 'Level 2'
+      : 'Kindie 1',
+    subtitle: 'Story time: My Family Adventure',
+    lessonSubtitle: 'Story time: My Family Adventure',
+    timeSlot: slotLabel || '15:30 - 17:30',
+    timeLabel: slotLabel?.split('-')[0]?.trim() || '15:30',
+    endTimeLabel: slotLabel?.split('-')[1]?.trim() || '17:30',
+    schoolRoom: 'Phòng 1',
+    roomName: 'Phòng 1',
+    branch: branchName || record.branch || 'RinoEdu Linh Đàm',
+    teacher: employeeName || 'Thu Hà',
+    teacherName: employeeName || 'Thu Hà',
+    assistantTeacher: 'Đức Anh',
+    taName: 'Đức Anh',
+    totalStudents: 16,
+    officialStudents: 14,
+    trialStudents: 2,
+    studentCount: 16,
+    capacity: 18,
+    status: 'happening',
+  }
+}
+
+export interface SlotInterval {
+  start: string
+  end: string
+  slotIds: string[]
+  isLocked: boolean
+}
+
+export function groupConsecutiveSlots(
+  records: WorkRegistrationRecord[],
+  employeeId: string,
+  date: string,
+  section: string
+): SlotInterval[] {
+  const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === section)
+  const employeeSlotIds = new Set(
+    records
+      .filter((r) => r.employeeId === employeeId && r.date === date && r.slotId.startsWith(section) && !r.assignedClass)
+      .map((r) => r.slotId)
+  )
+
+  const intervals: SlotInterval[] = []
+  let currentInterval: { start: string; end: string; slotIds: string[] } | null = null
+
+  for (const slot of sectionSlots) {
+    if (employeeSlotIds.has(slot.id)) {
+      if (!currentInterval) {
+        currentInterval = {
+          start: slot.start,
+          end: slot.end,
+          slotIds: [slot.id],
+        }
+      } else {
+        currentInterval.end = slot.end
+        currentInterval.slotIds.push(slot.id)
+      }
+    } else {
+      if (currentInterval) {
+        intervals.push({ ...currentInterval, isLocked: false })
+        currentInterval = null
+      }
+    }
+  }
+
+  if (currentInterval) {
+    intervals.push({ ...currentInterval, isLocked: false })
+  }
+
+  return intervals
+}

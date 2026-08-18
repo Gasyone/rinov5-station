@@ -81,6 +81,57 @@ export function submitWorkRegistration(
   )
 }
 
+export function addWorkTimeRange(
+  records: WorkRegistrationRecord[],
+  employee: WorkRegistrationEmployee,
+  weekStart: string,
+  dates: string[],
+  startTime: string,
+  endTime: string
+): WorkRegistrationRecord[] {
+  const targetSlots = WORK_TIME_SLOTS.filter(
+    (slot) => slot.start >= startTime && slot.end <= endTime
+  )
+
+  if (targetSlots.length === 0) return records
+
+  const newRecords: WorkRegistrationRecord[] = []
+
+  for (const date of dates) {
+    for (const slot of targetSlots) {
+      const alreadyExists = records.some(
+        (r) => r.employeeId === employee.id && r.date === date && r.slotId === slot.id
+      )
+      if (!alreadyExists) {
+        newRecords.push({
+          id: `wr-local-${employee.id}-${date}-${slot.id}`,
+          employeeId: employee.id,
+          branch: employee.branch,
+          date,
+          weekStart,
+          slotId: slot.id,
+          status: 'draft' as const,
+          updatedAt: new Date().toISOString(),
+        })
+      }
+    }
+  }
+
+  return [...records, ...newRecords]
+}
+
+export function removeWorkSlots(
+  records: WorkRegistrationRecord[],
+  employeeId: string,
+  date: string,
+  slotIds: string[]
+): WorkRegistrationRecord[] {
+  const slotIdSet = new Set(slotIds)
+  return records.filter(
+    (r) => !(r.employeeId === employeeId && r.date === date && slotIdSet.has(r.slotId) && r.status !== 'locked' && !r.assignedClass)
+  )
+}
+
 export function clearWorkRegistrationWeek(
   records: WorkRegistrationRecord[],
   employeeId: string,

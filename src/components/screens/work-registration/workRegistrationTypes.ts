@@ -3,7 +3,7 @@ import type {
   WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 
-export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center'
+export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center' | 'holidays'
 export type WorkRegistrationViewMode = 'week' | 'month'
 export type WorkRegistrationStatusFilter =
   | 'all'
@@ -58,6 +58,7 @@ export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string
   { value: 'roster', label: 'Phân bổ ca trực' },
   { value: 'staff', label: 'Quản lý lịch' },
   { value: 'center', label: 'Trường' },
+  { value: 'holidays', label: 'Lịch nghỉ lễ' },
 ]
 
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Star } from 'lucide-react'
+import { Info, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -14,7 +14,9 @@ import {
 } from '@/mocks/workRegistrations'
 import { getStatusColors } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
+import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
 import { AggregateCell, cellClass } from './WorkRegistrationGridCell'
+import { resolveClassSessionHoverData } from './workRegistrationHelpers'
 import { WORK_STATUS_LABELS } from './workRegistrationTypes'
 
 interface WorkRegistrationGridProps {
@@ -219,9 +221,38 @@ export function WorkRegistrationGrid({
                       )}
                     >
                       {record?.assignedClass ? (
-                        <span className="line-clamp-2 text-[10px] sm:text-xs text-center leading-tight px-0.5">
-                          {record.assignedClass}
-                        </span>
+                        <div className="flex items-center justify-between gap-1 w-full px-0.5">
+                          <ClassSessionHoverCard
+                            session={resolveClassSessionHoverData(
+                              record,
+                              employeeById.get(record.employeeId)?.name || 'Thu Hà',
+                              `${slot.start} - ${slot.end}`,
+                              record.branch || 'RinoEdu Linh Đàm'
+                            )}
+                          >
+                            <span className="line-clamp-2 text-[10px] sm:text-xs text-center leading-tight flex-1 font-semibold hover:underline cursor-pointer">
+                              {record.assignedClass}
+                            </span>
+                          </ClassSessionHoverCard>
+
+                          <ClassSessionHoverCard
+                            session={resolveClassSessionHoverData(
+                              record,
+                              employeeById.get(record.employeeId)?.name || 'Thu Hà',
+                              `${slot.start} - ${slot.end}`,
+                              record.branch || 'RinoEdu Linh Đàm'
+                            )}
+                          >
+                            <span
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
+                              title="Xem thông tin buổi học"
+                            >
+                              <Info className="h-2.5 w-2.5" />
+                            </span>
+                          </ClassSessionHoverCard>
+                        </div>
                       ) : record ? (
                         record.status === 'draft' ? 'Đã chọn' : WORK_STATUS_LABELS[record.status as keyof typeof WORK_STATUS_LABELS]
                       ) : ''}

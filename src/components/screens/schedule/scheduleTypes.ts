@@ -24,6 +24,9 @@ export interface ScheduleTimeGridProps<T extends ScheduleGridItem> {
   overlapLayout?: 'stack' | 'columns'
   rowClassName?: string
   fixedWidthItems?: boolean
+  autoTimeRange?: boolean
+  showCurrentTimeIndicator?: boolean
+  autoScrollToCurrentTime?: boolean
 }
 
 export interface LayoutItem<T> {

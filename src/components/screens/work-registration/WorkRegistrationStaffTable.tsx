@@ -3,7 +3,6 @@
 import { DataTableFrame } from '@/components/data-table'
 import { DataTablePagination } from '@/components/data-table'
 import { EmptyState } from '@/components/shared'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -12,9 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { formatMinutes } from './workRegistrationHelpers'
-import { WORK_STATUS_LABELS, type EmployeeWeekSummary } from './workRegistrationTypes'
+import type { EmployeeWeekSummary } from './workRegistrationTypes'
 
 interface WorkRegistrationStaffTableProps {
   summaries: EmployeeWeekSummary[]
@@ -54,9 +52,8 @@ export function WorkRegistrationStaffTable({
         <Table containerClassName="h-full">
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead>Nhân viên</TableHead>
-              <TableHead>Giờ</TableHead>
-              <TableHead>Trạng thái</TableHead>
+              <TableHead className="py-2.5 px-3">Nhân viên</TableHead>
+              <TableHead className="py-2.5 px-3 text-right">Giờ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,23 +61,30 @@ export function WorkRegistrationStaffTable({
               <TableRow
                 key={summary.employee.id}
                 data-state={selectedEmployeeId === summary.employee.id ? 'selected' : undefined}
-                className="cursor-pointer"
+                className="cursor-pointer hover:bg-muted/40 transition-colors"
                 onClick={() => onViewEmployee(summary.employee.id)}
               >
-                <TableCell>
+                <td className="py-2.5 px-3">
                   <div className="min-w-0">
-                    <p className="truncate font-medium">{summary.employee.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate font-semibold text-xs text-foreground">
+                      {summary.employee.name}
+                    </p>
+                    <p className="truncate text-[11px] text-muted-foreground">
                       {summary.employee.code} · {summary.employee.position}
                     </p>
                   </div>
-                </TableCell>
-                <TableCell>{formatMinutes(summary.totalMinutes)}</TableCell>
-                <TableCell>
-                  <Badge className={getStatusBadgeClass(statusForBadge(summary.status))}>
-                    {WORK_STATUS_LABELS[summary.status]}
-                  </Badge>
-                </TableCell>
+                </td>
+                <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                  {summary.totalMinutes > 0 ? (
+                    <span className="font-semibold text-xs text-primary tabular-nums">
+                      {formatMinutes(summary.totalMinutes)}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground/60 text-[11px] font-normal italic">
+                      Chưa đăng ký
+                    </span>
+                  )}
+                </td>
               </TableRow>
             ))}
           </TableBody>
@@ -94,8 +98,4 @@ export function WorkRegistrationStaffTable({
       )}
     </DataTableFrame>
   )
-}
-
-function statusForBadge(status: EmployeeWeekSummary['status']) {
-  return status === 'not_registered' ? 'draft' : status
 }

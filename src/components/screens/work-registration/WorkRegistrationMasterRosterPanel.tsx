@@ -25,16 +25,26 @@ import {
   type MasterShiftAssignment,
   type ShiftSection,
 } from '@/mocks/shiftRoster'
+import {
+  WORK_TIME_SLOTS,
+  toWorkDateKey,
+  type WorkRegistrationRecord,
+} from '@/mocks/workRegistrations'
+import { checkDateHoliday } from '@/mocks/holidays'
 
 interface WorkRegistrationMasterRosterPanelProps {
   activeBranch: string
   searchQuery?: string
+  weekDays?: Date[]
+  records?: WorkRegistrationRecord[]
   onRosterUpdated?: () => void
 }
 
 export function WorkRegistrationMasterRosterPanel({
   activeBranch,
   searchQuery = '',
+  weekDays = [],
+  records = [],
   onRosterUpdated,
 }: WorkRegistrationMasterRosterPanelProps) {
   // Lấy danh sách phân bổ hiện tại cho chi nhánh
@@ -57,6 +67,31 @@ export function WorkRegistrationMasterRosterPanel({
     )
     if (!found) return []
     return found.assignedEmployeeIds.map(findDutyEmployeeById).filter(Boolean) as DutyEmployee[]
+  }
+
+  // Tạo map dateKey cho từng dayIndex
+  const dayDateKeys = useMemo(() => {
+    const map: Record<number, string> = {}
+    weekDays.forEach((day, idx) => {
+      map[idx] = toWorkDateKey(day)
+    })
+    return map
+  }, [weekDays])
+
+  // Lấy khung giờ đăng ký của nhân viên cho ngày + buổi (chỉ trả về nếu giờ lẻ, full ca → null)
+  const getStaffRegisteredTime = (employeeId: string, dayIndex: number, section: ShiftSection): string | null => {
+    const dateKey = dayDateKeys[dayIndex]
+    if (!dateKey) return null
+    const sectionSlotIds = WORK_TIME_SLOTS.filter((s) => s.section === section).map((s) => s.id)
+    const empSlots = records
+      .filter((r) => r.employeeId === employeeId && r.date === dateKey && sectionSlotIds.includes(r.slotId))
+      .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId)!)
+      .filter(Boolean)
+      .sort((a, b) => a.start.localeCompare(b.start))
+    if (empSlots.length === 0) return null
+    // Full ca → không cần hiển thị giờ
+    if (empSlots.length >= sectionSlotIds.length) return null
+    return `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
   }
 
   const isStaffMatch = (staff: DutyEmployee) => {
@@ -87,11 +122,25 @@ export function WorkRegistrationMasterRosterPanel({
         <div className="flex flex-col flex-1 h-full min-w-[900px] divide-y">
           {/* HEADER: 7 THỨ TRONG TUẦN */}
           <div className="shrink-0 grid grid-cols-7 divide-x bg-muted/40 text-xs font-semibold text-foreground sticky top-0 z-10 border-b">
-            {WEEKDAYS.map((day) => (
-              <div key={day.index} className="px-3 py-2 text-center">
-                <span className="font-bold">{day.label}</span>
-              </div>
-            ))}
+            {WEEKDAYS.map((day, idx) => {
+              const dateObj = weekDays[idx]
+              const dateKey = dateObj ? toWorkDateKey(dateObj) : ''
+              const holiday = dateKey ? checkDateHoliday(dateKey, activeBranch) : undefined
+
+              return (
+                <div key={day.index} className={cn('px-2 py-2 text-center', holiday && 'bg-amber-500/5')}>
+                  <span className="font-bold">{day.label}</span>
+                  {holiday && (
+                    <span
+                      className="block mt-0.5 max-w-full truncate rounded bg-amber-100 dark:bg-amber-950/80 px-1 py-0.2 text-[9px] font-semibold text-amber-800 dark:text-amber-300 border border-amber-300/50"
+                      title={holiday.name}
+                    >
+                      🎉 {holiday.name}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           {/* 3 HÀNG BUỔI: SÁNG, CHIỀU, TỐI */}
@@ -187,6 +236,14 @@ export function WorkRegistrationMasterRosterPanel({
                                 >
                                   {staff.name}
                                 </span>
+                                {(() => {
+                                  const regTime = getStaffRegisteredTime(staff.id, day.index, sec.id)
+                                  return regTime ? (
+                                    <span className="ml-auto shrink-0 text-[9px] font-medium text-muted-foreground">
+                                      {regTime}
+                                    </span>
+                                  ) : null
+                                })()}
                               </div>
                             )
                           })}

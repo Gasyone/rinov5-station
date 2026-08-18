@@ -32,6 +32,13 @@ export function CalendarClassScheduleFooter() {
           <span className="h-3 w-3 rounded-full bg-zinc-300 border border-zinc-400 dark:bg-zinc-700 opacity-50" />
           <span className="line-through font-medium text-zinc-400 dark:text-zinc-500">Buổi học đã hủy</span>
         </div>
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center">
+            <span className="h-2 w-2 rounded-full bg-red-600 ring-2 ring-red-300 dark:ring-red-900 animate-pulse" />
+            <span className="h-[2px] w-3 bg-red-500" />
+          </div>
+          <span className="font-semibold text-red-600 dark:text-red-400">Giờ hiện tại</span>
+        </div>
       </div>
     </div>
   )

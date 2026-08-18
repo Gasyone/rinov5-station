@@ -248,6 +248,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   cancel: 'neutral',
   suspend: 'warning',
 
+  // Holiday types
+  national: 'purple',
+  internal: 'info',
+  center: 'warning',
+
   // Teacher Schedule Status
   trung_lich: 'error',
   trong_lich: 'success',
