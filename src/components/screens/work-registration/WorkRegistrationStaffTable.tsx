@@ -1,8 +1,9 @@
 'use client'
 
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { DataTableFrame } from '@/components/data-table'
-import { DataTablePagination } from '@/components/data-table'
 import { EmptyState } from '@/components/shared'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -17,35 +18,64 @@ import type { EmployeeWeekSummary } from './workRegistrationTypes'
 interface WorkRegistrationStaffTableProps {
   summaries: EmployeeWeekSummary[]
   page: number
-  pageSize: number
+  pageSize?: number
   selectedEmployeeId?: string
   onPageChange: (page: number) => void
-  onPageSizeChange: (size: number) => void
+  onPageSizeChange?: (size: number) => void
   onViewEmployee: (employeeId: string) => void
 }
 
 export function WorkRegistrationStaffTable({
   summaries,
   page,
-  pageSize,
+  pageSize = 50,
   selectedEmployeeId,
   onPageChange,
-  onPageSizeChange,
   onViewEmployee,
 }: WorkRegistrationStaffTableProps) {
-  const currentPage = Math.min(page, Math.max(1, Math.ceil(summaries.length / pageSize)))
-  const paged = summaries.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const total = summaries.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const firstRecord = total === 0 ? 0 : (safePage - 1) * pageSize + 1
+  const lastRecord = Math.min(safePage * pageSize, total)
+  const paged = summaries.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
     <DataTableFrame
       footer={
-        <DataTablePagination
-          page={currentPage}
-          total={summaries.length}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
+        <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground border-t bg-muted/15">
+          <span className="text-[11px] font-medium tabular-nums">
+            {total > 0 ? `${firstRecord}–${lastRecord} / ${total} NV` : '0 nhân viên'}
+          </span>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={safePage <= 1}
+                onClick={() => onPageChange(safePage - 1)}
+                className="h-6 w-6 cursor-pointer"
+                aria-label="Trang trước"
+              >
+                <ChevronLeft className="h-3 w-3" />
+              </Button>
+              <span className="text-[11px] font-medium px-1 tabular-nums">
+                {safePage}/{totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={safePage >= totalPages}
+                onClick={() => onPageChange(safePage + 1)}
+                className="h-6 w-6 cursor-pointer"
+                aria-label="Trang sau"
+              >
+                <ChevronRight className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+        </div>
       }
     >
       {paged.length > 0 ? (
@@ -92,8 +122,8 @@ export function WorkRegistrationStaffTable({
       ) : (
         <EmptyState
           className="h-full"
-          title="Chưa có đăng ký nhân viên"
-          description="Điều chỉnh bộ lọc để xem lịch khả dụng trong tuần."
+          title="Chưa có nhân viên"
+          description="Điều chỉnh bộ lọc cơ sở để xem danh sách nhân sự."
         />
       )}
     </DataTableFrame>

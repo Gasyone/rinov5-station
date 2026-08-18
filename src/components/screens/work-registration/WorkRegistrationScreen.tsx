@@ -66,7 +66,7 @@ export function WorkRegistrationScreen() {
   const [slotDetail, setSlotDetail] = useState<SlotDetailTarget | null>(null)
   const [branchDetail, setBranchDetail] = useState<{ branch: string; date?: string; dayLabel?: string } | null>(null)
   const [staffPage, setStaffPage] = useState(1)
-  const [staffPageSize, setStaffPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [staffPageSize, setStaffPageSize] = useState(50)
   const [centerPage, setCenterPage] = useState(1)
   const [centerPageSize, setCenterPageSize] = useState(DEFAULT_PAGE_SIZE)
 
