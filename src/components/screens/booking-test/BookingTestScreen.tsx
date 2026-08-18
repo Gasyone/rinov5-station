@@ -223,6 +223,7 @@ export function BookingTestScreen() {
         schoolOptions={schoolOptions}
         teacherOptions={teacherOptions}
         activeSubject={activeSubject}
+        bookings={bookings}
         onSubmit={(newBooking) => {
           setBookings((prev) => [newBooking, ...prev])
           toast.success(`Đã tạo lịch test thành công cho ${newBooking.childName}`)

@@ -15,9 +15,16 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { clearWorkRegistrationWeek, submitWorkRegistration, upsertWorkSlot } from './workRegistrationActions'
+import type { ShiftSection } from '@/mocks/shiftRoster'
+import {
+  clearWorkRegistrationWeek,
+  submitWorkRegistration,
+  toggleWorkSection,
+  upsertWorkSlot,
+} from './workRegistrationActions'
 import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
+import { WorkRegistrationMasterRosterPanel } from './WorkRegistrationMasterRosterPanel'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
 import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
 import { WorkRegistrationToolbar } from './WorkRegistrationToolbar'
@@ -138,6 +145,13 @@ export function WorkRegistrationScreen() {
     )
   }
 
+  const handleToggleSection = (date: string, section: ShiftSection) => {
+    if (!activeEmployee || !actionState.canMutate) return
+    setRecords((current) =>
+      toggleWorkSection(current, activeEmployee, toWorkDateKey(weekStart), date, section)
+    )
+  }
+
   const submitActiveRegistration = () => {
     if (!actionState.canMutate) return
     setRecords((current) =>
@@ -191,8 +205,14 @@ export function WorkRegistrationScreen() {
             primaryActionLabel={actionState.primaryActionLabel}
             actionHelperText={actionState.actionHelperText}
             onSetSlot={handleSetSlot}
-            onClear={() => setClearConfirmOpen(true)}
             onSubmit={submitActiveRegistration}
+          />
+        ) : null}
+
+        {activeTab === 'roster' ? (
+          <WorkRegistrationMasterRosterPanel
+            activeBranch={activeBranch === 'all' ? branches[0] || 'RinoEdu Nguyễn Tuân' : activeBranch}
+            searchQuery={search}
           />
         ) : null}
 
@@ -225,6 +245,7 @@ export function WorkRegistrationScreen() {
             onSetDelegateEmployee={(id) => {
               setDelegateEmployeeId(id)
             }}
+            onToggleSection={handleToggleSection}
             onSetSlot={handleSetSlot}
             onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
             onClear={() => setClearConfirmOpen(true)}

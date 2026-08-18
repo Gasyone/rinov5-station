@@ -40,7 +40,7 @@ export function WorkRegistrationToolbar({
   onSearchChange,
   onOpenWarnings,
 }: WorkRegistrationToolbarProps) {
-  const showSearch = activeTab !== 'mine'
+  const showSearch = activeTab === 'staff' || activeTab === 'roster'
 
   return (
     <div className="flex flex-col gap-3 px-3 py-3 lg:px-3">
@@ -53,7 +53,7 @@ export function WorkRegistrationToolbar({
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {activeTab === 'staff' ? (
+          {activeTab === 'staff' || activeTab === 'roster' ? (
             <BranchSelect
               value={activeBranch}
               branches={branches}
@@ -75,21 +75,23 @@ export function WorkRegistrationToolbar({
             <ExpandableSearch
               value={search}
               onValueChange={onSearchChange}
-              label="Tìm lịch nhân viên"
-              placeholder="Tìm nhân viên..."
+              label={activeTab === 'roster' ? 'Tìm người dùng, giáo viên' : 'Tìm lịch nhân viên'}
+              placeholder={activeTab === 'roster' ? 'Tìm nhân sự, giáo viên...' : 'Tìm nhân viên...'}
               inputClassName="sm:w-64"
             />
           ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onOpenWarnings}
-            className="h-8 shrink-0"
-          >
-            <AlertTriangle className="h-4 w-4" />
-            Cảnh báo
-          </Button>
+          {activeTab === 'mine' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onOpenWarnings}
+              className="h-8 shrink-0"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              Cảnh báo
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>

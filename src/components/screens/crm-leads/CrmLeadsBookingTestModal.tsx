@@ -62,39 +62,25 @@ export const PROGRAM_CONFIG: Record<
   },
 }
 
-export const TIME_SLOTS = [
-  '08:30',
-  '09:00',
-  '09:30',
-  '10:00',
-  '10:30',
-  '14:00',
-  '14:30',
-  '15:00',
-  '15:30',
-  '17:30',
-  '18:00',
-  '18:30',
-  '19:00',
-]
-
 export const TIME_GROUPS = [
   {
     title: 'Buổi sáng',
     icon: '☀️',
-    slots: ['08:30', '09:00', '09:30', '10:00', '10:30'],
+    slots: ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'],
   },
   {
     title: 'Buổi chiều',
     icon: '🌤',
-    slots: ['14:00', '14:30', '15:00', '15:30', '17:30'],
+    slots: ['13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'],
   },
   {
     title: 'Buổi tối',
     icon: '🌙',
-    slots: ['18:00', '18:30', '19:00'],
+    slots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'],
   },
 ]
+
+export const TIME_SLOTS = TIME_GROUPS.flatMap((g) => g.slots)
 
 export interface TeacherAvatarItem {
   id: string
@@ -431,7 +417,7 @@ export function CrmLeadsBookingTestModal({
                   <div className="rounded-xl p-2.5 bg-white dark:bg-zinc-950 shadow-2xs flex flex-col justify-between flex-1 min-h-0">
                     <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
                       <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pb-0.5 flex items-center justify-between">
-                        <span>Khung giờ test</span>
+                        <span>Khung giờ test (30 phút/ca)</span>
                         <span className="text-sky-600 font-semibold">{selectedSlot}</span>
                       </div>
 
@@ -447,6 +433,7 @@ export function CrmLeadsBookingTestModal({
                               {group.slots.map((slot) => {
                                 const isSlotSelected = selectedSlot === slot
                                 const slotTeachers = slotTeachersMap.find((s) => s.slot === slot)?.teachers || []
+                                const availableCount = slotTeachers.length
 
                                 return (
                                   <button
@@ -471,13 +458,15 @@ export function CrmLeadsBookingTestModal({
                                     </span>
                                     <span
                                       className={cn(
-                                        'text-[9px] px-1 py-0.2 rounded font-medium',
+                                        'text-[9px] px-1.5 py-0.2 rounded font-medium',
                                         isSlotSelected
                                           ? 'bg-white/20 text-white'
+                                          : availableCount > 0
+                                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold'
                                           : 'bg-muted text-muted-foreground'
                                       )}
                                     >
-                                      {slotTeachers.length} Phụ trách
+                                      {availableCount > 0 ? `${availableCount} rảnh` : 'Hết chỗ'}
                                     </span>
                                   </button>
                                 )
@@ -683,7 +672,7 @@ export function CrmLeadsBookingTestModal({
             </div>
           </div>
 
-          <DialogFooter className="pt-2 border-t mt-1">
+          <DialogFooter className="pt-2 gap-2 mt-1">
             <Button
               type="button"
               variant="outline"

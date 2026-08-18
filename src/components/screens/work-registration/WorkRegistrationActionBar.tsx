@@ -14,7 +14,7 @@ interface WorkRegistrationActionBarProps {
   canMutate: boolean
   primaryLabel: string
   helperText: string
-  onClear: () => void
+  onClear?: () => void
   onSubmit: () => void
 }
 
@@ -46,15 +46,17 @@ export function WorkRegistrationActionBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 md:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!canMutate || totalMinutes === 0}
-          onClick={onClear}
-        >
-          Xóa tuần
-        </Button>
+        {onClear ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!canMutate || totalMinutes === 0}
+            onClick={onClear}
+          >
+            Xóa tuần
+          </Button>
+        ) : null}
         <Button
           type="button"
           size="sm"

@@ -24,7 +24,7 @@ interface WorkRegistrationEditablePanelProps {
   primaryActionLabel: string
   actionHelperText: string
   onSetSlot: (date: string, slotId: string, selected: boolean) => void
-  onClear: () => void
+  onClear?: () => void
   onSubmit: () => void
 }
 
@@ -43,7 +43,6 @@ export function WorkRegistrationEditablePanel({
   primaryActionLabel,
   actionHelperText,
   onSetSlot,
-  onClear,
   onSubmit,
 }: WorkRegistrationEditablePanelProps) {
   return (
@@ -56,7 +55,6 @@ export function WorkRegistrationEditablePanel({
           canMutate={canMutate}
           primaryLabel={primaryActionLabel}
           helperText={actionHelperText}
-          onClear={onClear}
           onSubmit={onSubmit}
         />
       }

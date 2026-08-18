@@ -1,6 +1,7 @@
-import type {
-  WorkRegistrationEmployee,
-  WorkRegistrationRecord,
+import {
+  WORK_TIME_SLOTS,
+  type WorkRegistrationEmployee,
+  type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 
 export function upsertWorkSlot(
@@ -33,6 +34,37 @@ export function upsertWorkSlot(
       updatedAt: new Date().toISOString(),
     },
   ]
+}
+
+export function toggleWorkSection(
+  records: WorkRegistrationRecord[],
+  employee: WorkRegistrationEmployee,
+  weekStart: string,
+  date: string,
+  section: 'morning' | 'afternoon' | 'evening'
+): WorkRegistrationRecord[] {
+  const isCurrentlySelected = records.some(
+    (r) => r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section)
+  )
+
+  if (isCurrentlySelected) {
+    return records.filter(
+      (r) => !(r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section) && r.status !== 'locked')
+    )
+  } else {
+    const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === section)
+    const newRecords: WorkRegistrationRecord[] = sectionSlots.map((slot) => ({
+      id: `wr-local-${employee.id}-${date}-${slot.id}`,
+      employeeId: employee.id,
+      branch: employee.branch,
+      date,
+      weekStart,
+      slotId: slot.id,
+      status: 'draft' as const,
+      updatedAt: new Date().toISOString(),
+    }))
+    return [...records, ...newRecords]
+  }
 }
 
 export function submitWorkRegistration(

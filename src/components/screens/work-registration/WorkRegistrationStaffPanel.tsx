@@ -9,8 +9,9 @@ import {
   type WorkPrioritySlotRule,
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
+import type { ShiftSection } from '@/mocks/shiftRoster'
 import { WorkRegistrationActionBar } from './WorkRegistrationActionBar'
-import { WorkRegistrationGrid } from './WorkRegistrationGrid'
+import { WorkRegistrationStaffSectionGrid } from './WorkRegistrationStaffSectionGrid'
 import { WorkRegistrationStaffTable } from './WorkRegistrationStaffTable'
 import type {
   EmployeeWeekSummary,
@@ -41,7 +42,8 @@ interface WorkRegistrationStaffPanelProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onSetDelegateEmployee: (employeeId?: string) => void
-  onSetSlot: (date: string, slotId: string, selected: boolean) => void
+  onToggleSection?: (date: string, section: ShiftSection) => void
+  onSetSlot?: (date: string, slotId: string, selected: boolean) => void
   onOpenSlotDetail: (date: string, slotId: string) => void
   onClear: () => void
   onSubmit: () => void
@@ -70,6 +72,7 @@ export function WorkRegistrationStaffPanel({
   onPageChange,
   onPageSizeChange,
   onSetDelegateEmployee,
+  onToggleSection,
   onSetSlot,
   onOpenSlotDetail,
   onClear,
@@ -89,13 +92,14 @@ export function WorkRegistrationStaffPanel({
             size="icon-sm"
             aria-label="Thoát đăng ký thay"
             onClick={() => onSetDelegateEmployee(undefined)}
+            className="cursor-pointer"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
       ) : null}
 
-      <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(460px,520px)_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(420px,460px)_minmax(0,1fr)]">
         <div className={cn('h-full min-h-0', delegateEmployeeId ? 'hidden xl:block' : 'block')}>
           <WorkRegistrationStaffTable
             summaries={filteredSummaries}
@@ -123,7 +127,7 @@ export function WorkRegistrationStaffPanel({
             />
           ) : null}
         >
-          <WorkRegistrationGrid
+          <WorkRegistrationStaffSectionGrid
             days={weekDays}
             records={records}
             employees={employees}
@@ -131,7 +135,7 @@ export function WorkRegistrationStaffPanel({
             editableEmployeeId={delegateEmployeeId}
             readonlyWeek={readonlyWeek}
             priorityRules={priorityRules}
-            onSetSlot={onSetSlot}
+            onToggleSection={onToggleSection}
             onOpenSlotDetail={onOpenSlotDetail}
           />
         </DataTableFrame>
