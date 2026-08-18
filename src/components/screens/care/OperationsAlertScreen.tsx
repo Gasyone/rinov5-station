@@ -45,6 +45,7 @@ export function OperationsAlertScreen() {
   // Advanced filters state (Sets for multi-select checkboxes)
   const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
+  const [selectedCareStatuses, setSelectedCareStatuses] = useState<Set<string>>(new Set())
   const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set())
   const [selectedCalls, setSelectedCalls] = useState<Set<string>>(new Set())
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set())
@@ -178,7 +179,17 @@ export function OperationsAlertScreen() {
       res = res.filter((item) => item.careAlert && selectedAlerts.has(item.careAlert))
     }
 
-    // Filter by callConfirmation
+    // Filter by careStatus (Trạng thái chăm sóc)
+    if (selectedCareStatuses.size > 0) {
+      res = res.filter((item) => {
+        if (selectedCareStatuses.has('pending') && isPending(item)) return true
+        if (selectedCareStatuses.has('in_progress') && isInProgress(item)) return true
+        if (selectedCareStatuses.has('cared') && isCared(item)) return true
+        return false
+      })
+    }
+
+    // Filter by callConfirmation (Kết quả chăm sóc)
     if (selectedCalls.size > 0) {
       res = res.filter((item) => item.callConfirmation && selectedCalls.has(item.callConfirmation))
     }
@@ -374,6 +385,7 @@ export function OperationsAlertScreen() {
   }, [
     selectedBranches,
     selectedStatuses,
+    selectedCareStatuses,
     selectedAlerts,
     selectedCalls,
     selectedClasses,
@@ -422,11 +434,13 @@ export function OperationsAlertScreen() {
   const tabFiltered = useMemo(() => {
     let res = baseFiltered
 
-    // Care status filter
-    if (careStatusFilter === 'pending') res = res.filter(isPending)
-    else if (careStatusFilter === 'in_progress') res = res.filter(isInProgress)
-    else if (careStatusFilter === 'cared') res = res.filter(isCared)
-    else if (careStatusFilter === 'all') res = res.filter((item) => !isCared(item))
+    // Care status filter from toolbar tabs (only applied when advanced filter has not explicitly set care status)
+    if (selectedCareStatuses.size === 0) {
+      if (careStatusFilter === 'pending') res = res.filter(isPending)
+      else if (careStatusFilter === 'in_progress') res = res.filter(isInProgress)
+      else if (careStatusFilter === 'cared') res = res.filter(isCared)
+      else if (careStatusFilter === 'all') res = res.filter((item) => !isCared(item))
+    }
 
     // Due date filter
     if (dueDateFilter === 'overdue') res = res.filter(isOverdue)
@@ -434,7 +448,7 @@ export function OperationsAlertScreen() {
     else if (dueDateFilter === 'rescheduled') res = res.filter(isRescheduled)
 
     return res
-  }, [baseFiltered, careStatusFilter, dueDateFilter])
+  }, [baseFiltered, careStatusFilter, dueDateFilter, selectedCareStatuses])
 
   const csdbCounts = useMemo(() => {
     return {
@@ -491,6 +505,7 @@ export function OperationsAlertScreen() {
     return [
       selectedBranches.size > 0,
       selectedStatuses.size > 0,
+      selectedCareStatuses.size > 0,
       selectedAlerts.size > 0,
       selectedCalls.size > 0,
       selectedClasses.size > 0,
@@ -510,6 +525,7 @@ export function OperationsAlertScreen() {
   }, [
     selectedBranches,
     selectedStatuses,
+    selectedCareStatuses,
     selectedAlerts,
     selectedCalls,
     selectedClasses,
@@ -534,6 +550,7 @@ export function OperationsAlertScreen() {
   const filterState = {
     selectedBranches,
     selectedStatuses,
+    selectedCareStatuses,
     selectedAlerts,
     selectedCareTypes,
     selectedAbsences,
@@ -558,6 +575,7 @@ export function OperationsAlertScreen() {
   const filterActions = {
     setSelectedBranches,
     setSelectedStatuses,
+    setSelectedCareStatuses,
     setSelectedAlerts,
     setSelectedCareTypes,
     setSelectedAbsences,
@@ -610,7 +628,7 @@ export function OperationsAlertScreen() {
         selectedSubject={selectedSubject}
         onSubjectChange={(s) => { setSelectedSubject(s); resetPagination() }}
         careStatusFilter={careStatusFilter}
-        onCareStatusFilterChange={(s) => { setCareStatusFilter(s); resetPagination() }}
+        onCareStatusFilterChange={(s) => { setCareStatusFilter(s); setSelectedCareStatuses(new Set()); resetPagination() }}
         careStatusCounts={careStatusCounts}
         dueDateFilter={dueDateFilter}
         onDueDateFilterChange={(d) => { setDueDateFilter(d); resetPagination() }}
@@ -632,8 +650,10 @@ export function OperationsAlertScreen() {
               setDueDateFilter('overdue')
             } else if (filterType === 'pending') {
               setCareStatusFilter('pending')
+              setSelectedCareStatuses(new Set())
             } else if (filterType === 'cared') {
               setCareStatusFilter('cared')
+              setSelectedCareStatuses(new Set())
             } else if (filterType === 'academic') {
               setSelectedCareTypes(new Set(['ĐB', 'TB']))
             } else if (filterType === 'attendance') {
@@ -641,6 +661,7 @@ export function OperationsAlertScreen() {
             } else {
               setDueDateFilter('all')
               setCareStatusFilter('all')
+              setSelectedCareStatuses(new Set())
               setSelectedCareTypes(new Set())
             }
             resetPagination()

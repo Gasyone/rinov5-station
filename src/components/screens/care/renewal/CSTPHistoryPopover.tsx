@@ -60,7 +60,7 @@ export function CSTPHistoryPopover({
   const alertRecord = mockCareAlerts.find(a => a.studentId === studentId || a.studentName === studentName);
   
   const [open, setOpen] = useState(false);
-  const [newLogChannel, setNewLogChannel] = useState<'telephone' | 'zalo' | 'direct' | 'facebook'>('zalo');
+  const [newLogChannel, setNewLogChannel] = useState<'telephone' | 'zalo' | 'direct'>('zalo');
   const [newLogNotes, setNewLogNotes] = useState('');
   const [callStatusMarking, setCallStatusMarking] = useState<string | null>(null);
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
@@ -71,15 +71,13 @@ export function CSTPHistoryPopover({
     }
 
     if (newLogNotes.trim()) {
-      let channelLabel: 'Đã nhắn Zalo' | 'KNM' | 'Đã gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Chưa gọi' = 'Đã nhắn Zalo';
+      let channelLabel: 'Đã nhắn Zalo' | 'KNM' | 'Đã gọi' | 'Đã gặp trực tiếp' | 'Chưa gọi' = 'Đã nhắn Zalo';
       if (newLogChannel === 'telephone') {
         channelLabel = (callStatusMarking === 'knm' || callStatusMarking === 'may_ban' || callStatusMarking === 'sdt_sai') 
           ? 'KNM' 
           : 'Đã gọi';
       } else if (newLogChannel === 'direct') {
         channelLabel = 'Đã gặp trực tiếp';
-      } else if (newLogChannel === 'facebook') {
-        channelLabel = 'Đã nhắn Facebook';
       }
 
       const fullNote = `[${tagLabel}] ${newLogNotes}`;
@@ -145,15 +143,13 @@ export function CSTPHistoryPopover({
     setWarningMessage(null);
 
     if (newLogNotes.trim()) {
-      let channelLabel: 'Đã nhắn Zalo' | 'KNM' | 'Đã gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Chưa gọi' = 'Đã nhắn Zalo';
+      let channelLabel: 'Đã nhắn Zalo' | 'KNM' | 'Đã gọi' | 'Đã gặp trực tiếp' | 'Chưa gọi' = 'Đã nhắn Zalo';
       if (newLogChannel === 'telephone') {
         channelLabel = (callStatusMarking === 'knm' || callStatusMarking === 'may_ban' || callStatusMarking === 'sdt_sai') 
           ? 'KNM' 
           : 'Đã gọi';
       } else if (newLogChannel === 'direct') {
         channelLabel = 'Đã gặp trực tiếp';
-      } else if (newLogChannel === 'facebook') {
-        channelLabel = 'Đã nhắn Facebook';
       }
 
       const fullNote = `[${tagLabel}] ${newLogNotes}`;
@@ -217,24 +213,6 @@ export function CSTPHistoryPopover({
                 <div className="flex items-center gap-3 shrink-0 select-none">
                   <div className="flex items-center gap-1">
                     <Checkbox
-                      id={`popover-chong-phi-${studentId}`}
-                      checked={currentClassification === 'chong_phi'}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleToggleCompletion('chong_phi');
-                        }
-                      }}
-                      className="h-3.5 w-3.5 rounded shadow-none border-zinc-400 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 cursor-pointer"
-                    />
-                    <label
-                      htmlFor={`popover-chong-phi-${studentId}`}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-foreground cursor-pointer select-none leading-none"
-                    >
-                      Chồng phí
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Checkbox
                       id={`popover-tai-phi-${studentId}`}
                       checked={currentClassification === 'tai_phi'}
                       onCheckedChange={(checked) => {
@@ -266,7 +244,6 @@ export function CSTPHistoryPopover({
                   <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); setCallStatusMarking(null); }}>Zalo</Button>
                   <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
                   <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); setCallStatusMarking(null); }}>Trực tiếp</Button>
-                  <Button size="xs" type="button" variant={newLogChannel === 'facebook' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('facebook'); setCallStatusMarking(null); }}>Facebook</Button>
                 </div>
 
                 {newLogChannel === 'telephone' && (
@@ -479,8 +456,6 @@ export function CSTPHistoryPopover({
                                         ? 'Call' 
                                         : channel === 'direct' 
                                         ? 'Trực tiếp' 
-                                        : channel === 'facebook' 
-                                        ? 'Facebook' 
                                         : 'Zalo';
                                       return (
                                         <span className={cn(

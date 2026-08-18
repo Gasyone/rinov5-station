@@ -4,6 +4,7 @@ import { ExpandableSearch, FilterIconButton, ToolbarSelect, BranchSelect } from 
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
+import { STUDENT_STATUS_CONFIG } from '@/components/screens/students/studentTypes'
 
 interface RenewalToolbarProps {
   searchQuery: string
@@ -49,11 +50,11 @@ export function RenewalToolbar({
   careProgressTiles,
   selectedMonth,
   onMonthChange,
-  alertsCount,
-  exportFields,
-  onConfirmExport,
-  viewMode,
-  onViewModeChange,
+  alertsCount: _alertsCount,
+  exportFields: _exportFields,
+  onConfirmExport: _onConfirmExport,
+  viewMode: _viewMode,
+  onViewModeChange: _onViewModeChange,
 }: RenewalToolbarProps) {
   return (
     <div className="flex flex-col gap-0 bg-background px-3 py-3 lg:px-3">
@@ -92,12 +93,10 @@ export function RenewalToolbar({
             value={selectedStudentStatus}
             options={[
               { value: 'all', label: 'Chọn Trạng thái học viên', selectedLabel: 'Chọn Trạng thái HV' },
-              { value: 'Chưa gọi', label: 'Chưa liên hệ' },
-              { value: 'Đã gọi', label: 'Đã gọi điện' },
-              { value: 'KNM', label: 'Không nghe máy' },
-              { value: 'Đã nhắn Zalo', label: 'Đã nhắn Zalo' },
-              { value: 'Đã nhắn Facebook', label: 'Đã nhắn Facebook' },
-              { value: 'Đã gặp trực tiếp', label: 'Đã gặp trực tiếp' }
+              ...STUDENT_STATUS_CONFIG.map((s) => ({
+                value: s.id,
+                label: s.label,
+              })),
             ]}
             onValueChange={onStudentStatusChange}
             className="h-8 text-xs min-w-[180px]"

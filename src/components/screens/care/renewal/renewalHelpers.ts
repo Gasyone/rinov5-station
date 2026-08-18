@@ -218,25 +218,21 @@ export type RenewalClassification =
   | 'tiem_nang'
   | 'hen_tai'
   | 'tai_phi'
-  | 'chong_phi'
-  | 'rut_phi'
   | 'that_bai'
+  | 'chua_den_han'
   | 'dang_cham_soc'
 
-export function getOfficialStatus(classification: RenewalClassification): 'dang_cham_soc' | 'tai_phi' | 'chong_phi' | 'rut_phi' | 'that_bai' {
+export function getOfficialStatus(classification: RenewalClassification): 'dang_cham_soc' | 'tai_phi' | 'that_bai' {
   switch (classification) {
     case 'moi':
     case 'can_nhac':
     case 'tiem_nang':
     case 'hen_tai':
     case 'dang_cham_soc':
+    case 'chua_den_han':
       return 'dang_cham_soc'
     case 'tai_phi':
       return 'tai_phi'
-    case 'chong_phi':
-      return 'chong_phi'
-    case 'rut_phi':
-      return 'rut_phi'
     case 'that_bai':
       return 'that_bai'
   }
@@ -248,10 +244,6 @@ export function getOfficialStatusLabel(status: string): string {
       return 'Đang chăm sóc'
     case 'tai_phi':
       return 'Đã tái phí'
-    case 'chong_phi':
-      return 'Chồng Phí'
-    case 'rut_phi':
-      return 'Rút phí'
     case 'that_bai':
       return 'Thất bại'
     default:
@@ -263,12 +255,16 @@ export function getRenewalClassification(item: StudentCareAlert): RenewalClassif
   const custom = (item as StudentCareAlert & { renewalClassification?: RenewalClassification }).renewalClassification
   if (custom) return custom
 
+  if (item.activeCSTP === false) {
+    return 'chua_den_han'
+  }
+
   const hash = stableHash(item.studentId)
   
-  if (item.interactionNotes?.includes('chồng') || item.interactionNotes?.includes('thành công')) {
+  if (item.interactionNotes?.includes('thành công') || item.interactionNotes?.includes('đóng phí')) {
     return 'tai_phi'
   }
-  if (item.interactionNotes?.includes('rút phí') || item.interactionNotes?.includes('thất bại')) {
+  if (item.interactionNotes?.includes('thất bại')) {
     return 'that_bai'
   }
   if (item.interactionNotes?.includes('hẹn')) {
@@ -310,12 +306,10 @@ export function getRenewalClassificationLabel(classification: RenewalClassificat
       return 'Hẹn tái'
     case 'tai_phi':
       return 'Đã tái phí'
-    case 'chong_phi':
-      return 'Chồng Phí'
-    case 'rut_phi':
-      return 'Rút phí'
     case 'that_bai':
       return 'Thất bại'
+    case 'chua_den_han':
+      return 'Chưa đến hạn'
     case 'dang_cham_soc':
       return 'Chăm sóc'
   }
@@ -442,8 +436,8 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     return draftOrders[hash % draftOrders.length]
   }
 
-  // 3. Học viên Đã tái phí / Chồng phí -> Đã có đơn hàng kích hoạt / đóng phí thành công
-  if (classification === 'tai_phi' || classification === 'chong_phi') {
+  // 3. Học viên Đã tái phí -> Đã có đơn hàng kích hoạt / đóng phí thành công
+  if (classification === 'tai_phi') {
     const successOrders: StudentOrderInfo[] = [
       { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói SuperKids 12T', packageAmount: '18.000.000đ', paymentTerm: 'Thanh toán 100%' },
       { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Kindy Mẫu giáo 12T', packageAmount: '20.000.000đ', paymentTerm: 'Thanh toán 100%' },
@@ -453,7 +447,7 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     return successOrders[hash % successOrders.length]
   }
 
-  // 4. Các trạng thái khác (Thất bại, Rút phí...)
+  // 4. Các trạng thái khác (Thất bại...)
   return {
     orderCode: undefined,
     packageName: 'Không có đơn',

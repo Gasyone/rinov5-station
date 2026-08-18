@@ -105,6 +105,7 @@ interface OrderDetailItem {
   studentName?: string
   voucherCode?: string
   voucherDiscount?: number
+  bonusText?: string
 }
 
   const detailedItems = (order as any).detailedItems
@@ -126,6 +127,7 @@ interface OrderDetailItem {
           studentName: di.studentName || order.studentName,
           voucherCode: 'IELGH24091',
           voucherDiscount: 0,
+          bonusText: di.bonusText,
         }))
       : order.items && order.items.length > 0
         ? order.items.map((it: any) => ({
@@ -144,6 +146,7 @@ interface OrderDetailItem {
             studentName: it.studentName || order.studentName,
             voucherCode: it.voucherCode || 'IELGH24091',
             voucherDiscount: it.voucherDiscount || discountAmount,
+            bonusText: it.bonusText,
           }))
         : [
             {
@@ -162,8 +165,16 @@ interface OrderDetailItem {
               studentName: order.studentName || 'Nhữ Thị Tường Vy',
               voucherCode: 'IELGH24091',
               voucherDiscount: discountAmount,
+              bonusText: undefined,
             },
           ]
+
+  const canConvertProduct =
+    (order as any).canConvertProduct ??
+    (!(order as any).isExpired &&
+      (order as any).remainingSessions !== 0 &&
+      !(order as any).paymentMethodTag?.toLowerCase().includes('hết buổi') &&
+      !items.some((it: any) => it.isExpired || it.remainingSessions === 0))
 
   return (
     <>
@@ -263,17 +274,19 @@ interface OrderDetailItem {
               {/* LEFT COLUMN: SẢN PHẨM MUA (Col 8) */}
               <div className="lg:col-span-8 space-y-3">
                 {/* Header Row */}
-                <div className="flex items-center justify-between gap-2 flex-wrap pb-0.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap pb-0.5 min-h-[30px]">
                   <h3 className="font-bold text-sm text-foreground">Sản phẩm mua</h3>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setIsConversionOpen(true)}
-                    className="bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs h-7.5 px-3 rounded-lg gap-1.5 shadow-xs cursor-pointer"
-                  >
-                    <ArrowRightLeft className="h-3.5 w-3.5" />
-                    <span>CHUYỂN ĐỔI SẢN PHẨM</span>
-                  </Button>
+                  {canConvertProduct && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setIsConversionOpen(true)}
+                      className="bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs h-7.5 px-3 rounded-lg gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <ArrowRightLeft className="h-3.5 w-3.5" />
+                      <span>CHUYỂN ĐỔI SẢN PHẨM</span>
+                    </Button>
+                  )}
                 </div>
 
                 {/* Product Items Breakdown Boxes with Top Child Header Banner */}
@@ -433,22 +446,33 @@ interface OrderDetailItem {
                         </div>
                       </div>
 
-                      {/* Item Row 4: Applied Voucher */}
+                      {/* Item Row 4: Applied Voucher / Bonus Policy */}
                       <div className="pt-2 flex items-center justify-between gap-2 flex-wrap border-t text-xs">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-muted-foreground text-[11px]">
-                            KHUYẾN MẠI ÁP DỤNG:
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 font-mono font-semibold text-[11px]">
-                            {item.voucherCode || 'IELGH24091'}
-                          </span>
-                          <span className="text-muted-foreground text-[11px]">
-                            Giảm giá sản phẩm:{' '}
-                            <strong className="font-mono text-foreground">
-                              {formatCurrency(item.voucherDiscount || 200000)}
-                            </strong>
-                          </span>
-                        </div>
+                        {item.bonusText ? (
+                          <div className="flex items-center gap-4 flex-wrap text-xs">
+                            <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                              CHÍNH SÁCH ƯU ĐÃI
+                            </span>
+                            <span className="text-foreground font-medium text-xs">
+                              {item.bonusText}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-muted-foreground text-[11px]">
+                              KHUYẾN MẠI ÁP DỤNG:
+                            </span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 font-mono font-semibold text-[11px]">
+                              {item.voucherCode || 'IELGH24091'}
+                            </span>
+                            <span className="text-muted-foreground text-[11px]">
+                              Giảm giá sản phẩm:{' '}
+                              <strong className="font-mono text-foreground">
+                                {formatCurrency(item.voucherDiscount || 200000)}
+                              </strong>
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -540,7 +564,31 @@ interface OrderDetailItem {
                     </div>
                   )}
 
-                  {/* Multiple Transaction Receipts List (Lịch sử các phiếu thu) */}
+                  {/* Nút Thanh toán thêm & Hủy phần còn lại (Đặt ở TRÊN lịch sử phiếu thu) */}
+                  {remainingAmount > 0 && (
+                    <div className="pt-2.5 pb-1 space-y-2">
+                      <Button
+                        type="button"
+                        onClick={() => setIsAddPaymentOpen(true)}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
+                      >
+                        <span>THANH TOÁN THÊM</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          toast.info(
+                            `Đã xác nhận yêu cầu hủy phần công nợ còn lại (${formatCurrency(remainingAmount)}) cho đơn ${order.orderNo}!`
+                          )
+                        }}
+                        className="w-full bg-rose-900 hover:bg-rose-950 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
+                      >
+                        <span>HỦY PHẦN CÒN LẠI</span>
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Multiple Transaction Receipts List (Lịch sử các phiếu thu - Gộp 2 dòng) */}
                   <div className="space-y-2 pt-1">
                     {((order as any).receipts && (order as any).receipts.length > 0
                       ? (order as any).receipts
@@ -562,7 +610,7 @@ interface OrderDetailItem {
                         <div
                           key={rc.id || rc.code}
                           className={cn(
-                            'p-2.5 rounded-r-lg border-l-2 space-y-1 text-[11px] transition-all',
+                            'p-2.5 rounded-r-lg border-l-2 space-y-1.5 text-[11px] transition-all',
                             isSuccess
                               ? 'border-l-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20'
                               : isCancelled
@@ -570,8 +618,9 @@ interface OrderDetailItem {
                                 : 'border-l-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
                           )}
                         >
-                          <div className="flex items-center justify-between text-muted-foreground">
-                            <div className="flex items-center gap-1">
+                          {/* Dòng 1: Thời gian + (Phiếu thu) và Mã phiếu thu: Số tiền (VNĐ) */}
+                          <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-1.5 min-w-0">
                               <span
                                 className={cn(
                                   'h-2 w-2 rounded-full shrink-0 inline-block',
@@ -582,65 +631,43 @@ interface OrderDetailItem {
                                       : 'bg-amber-500'
                                 )}
                               />
-                              <span className="font-mono text-[10.5px]">
+                              <span className="font-mono text-[10.5px] text-muted-foreground">
                                 {rc.timestamp} (Phiếu thu)
                               </span>
                             </div>
-                            <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                            <div className="flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-xs">
+                              <span>
+                                {rc.code}: {formatCurrency(rc.amount)} (VNĐ)
+                              </span>
+                              <Receipt className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            </div>
                           </div>
 
-                          <div className="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-xs">
-                            {rc.code}: {formatCurrency(rc.amount)} (VNĐ)
-                          </div>
-
-                          <div className="text-muted-foreground">
-                            Phương thức thanh toán:{' '}
-                            <strong className="text-foreground font-semibold">{rc.method}</strong>
-                          </div>
-
-                          <div className="text-muted-foreground">
-                            Trạng thái thanh toán:{' '}
-                            <span
-                              className={cn(
-                                'font-bold uppercase',
-                                isSuccess
-                                  ? 'text-emerald-600 dark:text-emerald-400'
-                                  : isCancelled
-                                    ? 'text-rose-600 dark:text-rose-400'
-                                    : 'text-amber-600 dark:text-amber-400'
-                              )}
-                            >
-                              {rc.status}
+                          {/* Dòng 2: Phương thức thanh toán + Trạng thái thanh toán */}
+                          <div className="flex items-center justify-between gap-2 text-muted-foreground text-[10.5px] pt-1 border-t border-border/40">
+                            <span>
+                              Phương thức: <strong className="text-foreground font-semibold">{rc.method}</strong>
+                            </span>
+                            <span>
+                              Trạng thái:{' '}
+                              <span
+                                className={cn(
+                                  'font-bold uppercase',
+                                  isSuccess
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : isCancelled
+                                      ? 'text-rose-600 dark:text-rose-400'
+                                      : 'text-amber-600 dark:text-amber-400'
+                                )}
+                              >
+                                {rc.status}
+                              </span>
                             </span>
                           </div>
                         </div>
                       )
                     })}
                   </div>
-
-                  {/* Nút Thanh toán thêm & Hủy phần còn lại (chuẩn theo mẫu đơn thanh toán 1 phần) */}
-                  {remainingAmount > 0 && (
-                    <div className="pt-3 space-y-2">
-                      <Button
-                        type="button"
-                        onClick={() => setIsAddPaymentOpen(true)}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
-                      >
-                        <span>THANH TOÁN THÊM</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          toast.info(
-                            `Đã xác nhận yêu cầu hủy phần công nợ còn lại (${formatCurrency(remainingAmount)}) cho đơn ${order.orderNo}!`
-                          )
-                        }}
-                        className="w-full bg-rose-900 hover:bg-rose-950 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
-                      >
-                        <span>HỦY PHẦN CÒN LẠI</span>
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

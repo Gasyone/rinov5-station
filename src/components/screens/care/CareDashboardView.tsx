@@ -119,7 +119,6 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
     let call = 0
     let zalo = 0
     let direct = 0
-    let facebook = 0
 
     alerts.forEach(item => {
       item.interactionLogs.forEach(log => {
@@ -127,23 +126,20 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
         if (text.includes('gọi')) call++
         else if (text.includes('Zalo')) zalo++
         else if (text.includes('gặp')) direct++
-        else if (text.includes('Facebook')) facebook++
       })
     })
 
-    const totalLogs = call + zalo + direct + facebook
+    const totalLogs = call + zalo + direct
     if (totalLogs === 0) return [
       { name: 'Cuộc gọi', count: 0, pct: 0, color: 'bg-sky-500' },
       { name: 'Zalo', count: 0, pct: 0, color: 'bg-indigo-500' },
       { name: 'Trực tiếp', count: 0, pct: 0, color: 'bg-emerald-500' },
-      { name: 'Facebook', count: 0, pct: 0, color: 'bg-purple-500' }
     ]
 
     return [
       { name: 'Cuộc gọi điện thoại', count: call, pct: Math.round((call / totalLogs) * 100), color: 'bg-sky-500' },
       { name: 'Nhắn tin Zalo', count: zalo, pct: Math.round((zalo / totalLogs) * 100), color: 'bg-indigo-500' },
       { name: 'Trao đổi Trực tiếp', count: direct, pct: Math.round((direct / totalLogs) * 100), color: 'bg-emerald-500' },
-      { name: 'Nhắn qua Facebook', count: facebook, pct: Math.round((facebook / totalLogs) * 100), color: 'bg-purple-500' }
     ]
   }, [alerts])
 

@@ -96,7 +96,7 @@ export function RenewalHistoryPopover({
   const alertRecord = mockCareAlerts.find(a => a.studentId === studentId || a.studentName === studentName);
   const avgTestScore = alertRecord ? ((alertRecord.lastTestScore + alertRecord.priorTestScore) / 2).toFixed(1) : '7.0';
 
-  const [newLogChannel, setNewLogChannel] = useState<'telephone' | 'zalo' | 'direct' | 'facebook'>('telephone');
+  const [newLogChannel, setNewLogChannel] = useState<'telephone' | 'zalo' | 'direct'>('telephone');
   const [newLogNotes, setNewLogNotes] = useState('');
   const [confirmCompleteTag, setConfirmCompleteTag] = useState<string | null>(null);
 
@@ -323,7 +323,9 @@ export function RenewalHistoryPopover({
                       <option value="tai_phi">Đã tái phí</option>
                       <option value="chong_phi">Chồng Phí</option>
                       <option value="rut_phi">Rút phí</option>
-                      <option value="that_bai">Thất bại</option>
+                      {alertRecord && getRenewalClassification(alertRecord) === 'that_bai' && (
+                        <option value="that_bai" disabled>Thất bại (Hệ thống tự động)</option>
+                      )}
                     </select>
                   </div>
                 )}
@@ -380,7 +382,6 @@ export function RenewalHistoryPopover({
                       <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
                       <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); }}>Zalo</Button>
                       <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); }}>Trực tiếp</Button>
-                      <Button size="xs" type="button" variant={newLogChannel === 'facebook' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('facebook'); }}>Facebook</Button>
                     </div>
                     
                     <div className="flex gap-1.5 items-end">
@@ -399,7 +400,7 @@ export function RenewalHistoryPopover({
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!newLogNotes.trim()) { toast.error("Vui lòng nhập nội dung!"); return; }
-                            const channelLabel = newLogChannel === 'telephone' ? 'Đã gọi' : newLogChannel === 'zalo' ? 'Đã nhắn Zalo' : newLogChannel === 'direct' ? 'Đã gặp trực tiếp' : 'Đã nhắn Facebook';
+                            const channelLabel = newLogChannel === 'telephone' ? 'Đã gọi' : newLogChannel === 'zalo' ? 'Đã nhắn Zalo' : 'Đã gặp trực tiếp';
                             const fullNote = `[${tag.label}] ${newLogNotes}`;
                             updateCareAlertInteraction(alertRecord?.id || studentId, { staffName: 'CS Staff', callConfirmation: channelLabel, notes: fullNote });
                             setNewLogNotes('');
@@ -490,8 +491,6 @@ export function RenewalHistoryPopover({
                                     ? 'Call' 
                                     : channel === 'direct' 
                                     ? 'Trực tiếp' 
-                                    : channel === 'facebook' 
-                                    ? 'Facebook' 
                                     : 'Zalo';
                                   return (
                                     <span className={cn(

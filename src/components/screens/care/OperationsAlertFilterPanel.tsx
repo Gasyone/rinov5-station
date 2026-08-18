@@ -9,6 +9,7 @@ import { getDynamicMonthFilterOptions } from './operationsAlertHelpers'
 export interface FilterState {
   selectedBranches: Set<string>
   selectedStatuses: Set<string>
+  selectedCareStatuses: Set<string>
   selectedAlerts: Set<string>
   selectedCareTypes: Set<string>
   selectedAbsences: Set<string>
@@ -33,6 +34,7 @@ export interface FilterState {
 export interface FilterActions {
   setSelectedBranches: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedStatuses: React.Dispatch<React.SetStateAction<Set<string>>>
+  setSelectedCareStatuses: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedAlerts: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedCareTypes: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedAbsences: React.Dispatch<React.SetStateAction<Set<string>>>
@@ -90,10 +92,11 @@ export function OperationsAlertFilterPanel({
     
     if (groupId === 'branches') actions.setSelectedBranches(updateSet)
     else if (groupId === 'statuses') actions.setSelectedStatuses(updateSet)
+    else if (groupId === 'careStatuses') actions.setSelectedCareStatuses(updateSet)
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(updateSet)
     else if (groupId === 'careTypes') actions.setSelectedCareTypes(updateSet)
     else if (groupId === 'trends') actions.setSelectedTrends(updateSet)
-    else if (groupId === 'callConfirmations') actions.setSelectedCalls(updateSet)
+    else if (groupId === 'callConfirmations' || groupId === 'careResults') actions.setSelectedCalls(updateSet)
     else if (groupId === 'classes') actions.setSelectedClasses(updateSet)
     
     actions.resetPagination()
@@ -102,6 +105,7 @@ export function OperationsAlertFilterPanel({
   const handleClearAllFilters = () => {
     actions.setSelectedBranches(new Set())
     actions.setSelectedStatuses(new Set())
+    actions.setSelectedCareStatuses(new Set())
     actions.setSelectedAlerts(new Set())
     actions.setSelectedCareTypes(new Set())
     actions.setAttendanceMin('')
@@ -131,6 +135,7 @@ export function OperationsAlertFilterPanel({
       actions.setFromDate('')
       actions.setToDate('')
     } else if (groupId === 'statuses') actions.setSelectedStatuses(new Set())
+    else if (groupId === 'careStatuses') actions.setSelectedCareStatuses(new Set())
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(new Set())
     else if (groupId === 'careTypes') actions.setSelectedCareTypes(new Set())
     else if (groupId === 'attendance') {
@@ -149,7 +154,7 @@ export function OperationsAlertFilterPanel({
       actions.setSessionMin('')
       actions.setSessionMax('')
     } else if (groupId === 'trends') actions.setSelectedTrends(new Set())
-    else if (groupId === 'callConfirmations') actions.setSelectedCalls(new Set())
+    else if (groupId === 'callConfirmations' || groupId === 'careResults') actions.setSelectedCalls(new Set())
     else if (groupId === 'classes') actions.setSelectedClasses(new Set())
     actions.resetPagination()
   }
@@ -260,6 +265,17 @@ export function OperationsAlertFilterPanel({
           { value: 'Chờ chuyển lớp', label: 'Chờ chuyển lớp' },
         ],
         selectedValues: state.selectedStatuses,
+        defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'careStatuses',
+        title: 'Trạng thái chăm sóc',
+        options: [
+          { value: 'pending', label: 'Chưa chăm sóc' },
+          { value: 'in_progress', label: 'Đang xử lý' },
+          { value: 'cared', label: 'Đã chăm sóc' },
+        ],
+        selectedValues: state.selectedCareStatuses,
         defaultOpen: true,
       }),
       createFilterGroup({
@@ -614,12 +630,14 @@ export function OperationsAlertFilterPanel({
       }),
       createFilterGroup({
         id: 'callConfirmations',
-        title: 'Trạng thái CS',
+        title: 'Kết quả chăm sóc',
         options: [
+          { value: 'Chưa gọi', label: 'Chưa gọi / Liên hệ' },
           { value: 'Đã gọi', label: 'Đã gọi' },
           { value: 'KNM', label: 'Không nghe máy (KNM)' },
           { value: 'Đã nhắn Zalo', label: 'Đã nhắn Zalo' },
-          { value: 'Chưa gọi', label: 'Chưa gọi / Liên hệ' },
+          { value: 'Đã gặp trực tiếp', label: 'Đã gặp trực tiếp' },
+          { value: 'Đã tương tác', label: 'Đã tương tác' },
         ],
         selectedValues: state.selectedCalls,
         defaultOpen: true,
@@ -638,6 +656,7 @@ export function OperationsAlertFilterPanel({
     branchOptions,
     state.selectedBranches,
     state.selectedStatuses,
+    state.selectedCareStatuses,
     state.selectedAlerts,
     state.selectedCareTypes,
     state.attendanceMin,

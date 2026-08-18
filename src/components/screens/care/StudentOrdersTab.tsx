@@ -288,6 +288,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
                 isDraft={false}
                 isCurrent={true}
                 isPaymentsExpanded={expandedPayments[order.id] ?? false}
+                showOtherChildren={showOtherChildrenOrders}
                 draftOrders={draftOrders}
                 onToggleExpandPayments={toggleExpandPayments}
                 onViewDetail={handleViewDetail}
@@ -325,6 +326,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
                     isDraft={false}
                     isCurrent={false}
                     isPaymentsExpanded={expandedPayments[item.order.id] ?? false}
+                    showOtherChildren={showOtherChildrenOrders}
                     draftOrders={draftOrders}
                     onToggleExpandPayments={toggleExpandPayments}
                     onViewDetail={handleViewDetail}

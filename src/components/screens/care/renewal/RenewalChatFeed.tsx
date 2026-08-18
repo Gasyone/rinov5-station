@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useCallStore } from '@/stores/useCallStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import {
   type StudentCareAlert,
-  type CareInteractionLog,
   type FamilyContact,
+  mockCareAlerts,
 } from '@/mocks/careAlerts'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import {
@@ -21,7 +21,6 @@ import {
   ChevronDown,
   Filter,
   AlertTriangle,
-  History,
   Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -41,7 +40,6 @@ import {
   getHistoryLogsForStudent,
   type RenewalClassification,
   type HistoryLog,
-  stableHash,
 } from './renewalHelpers'
 
 interface RenewalChatFeedProps {
@@ -148,9 +146,14 @@ export function RenewalChatFeed({
       semantic: renewalClassification === 'tai_phi' ? 'success' : renewalClassification === 'that_bai' ? 'error' : 'warning',
     }
 
-    // Update mock student object
-    student.interactionNotes = interactionNote
-    ;(student as StudentCareAlert & { renewalClassification?: RenewalClassification }).renewalClassification = renewalClassification
+    // Update mock record without mutating props directly
+    const targetAlert = mockCareAlerts.find(
+      (a) => a.studentId === student.studentId || a.id === student.id
+    )
+    if (targetAlert) {
+      targetAlert.interactionNotes = interactionNote
+      ;(targetAlert as StudentCareAlert & { renewalClassification?: RenewalClassification }).renewalClassification = renewalClassification
+    }
 
     setLocalLogs((prev) => [newLog, ...prev])
     setInteractionNote('')
@@ -164,7 +167,6 @@ export function RenewalChatFeed({
     { value: 'can_nhac', label: 'Cân nhắc', badgeClass: getStatusBadgeClass('can_nhac') },
     { value: 'tiem_nang', label: 'Tiềm năng', badgeClass: getStatusBadgeClass('tiem_nang') },
     { value: 'hen_tai', label: 'Hẹn tái', badgeClass: getStatusBadgeClass('hen_tai') },
-    { value: 'that_bai', label: 'Thất bại', badgeClass: getStatusBadgeClass('that_bai') },
   ]
 
   const currentClassificationObj = classificationOptions.find((c) => c.value === renewalClassification) || {

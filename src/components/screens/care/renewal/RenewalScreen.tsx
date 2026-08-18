@@ -65,7 +65,6 @@ export function RenewalScreen() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const careViewMode = 'total'
   const [selectedToolbarBranch, setSelectedToolbarBranch] = useState('all')
   const [selectedSubject, setSelectedSubject] = useState('all')
@@ -88,8 +87,8 @@ export function RenewalScreen() {
   const [pageSizeSingle, setPageSizeSingle] = useState(20)
 
   const [selectedMonth, setSelectedMonth] = useState('all')
-  const [customStartDate, setCustomStartDate] = useState('')
-  const [customEndDate, setCustomEndDate] = useState('')
+  const customStartDate = ''
+  const customEndDate = ''
   const [viewMode, setViewMode] = useState<'table' | 'dashboard'>('table')
 
   const exportFields = [
@@ -190,10 +189,11 @@ export function RenewalScreen() {
       })
     }
 
-    // Filter by call confirmation & interaction
+    // Filter by call confirmation & interaction (Kết quả chăm sóc)
     if (selectedCalls.size > 0) {
       res = res.filter((item) => {
         if (item.callConfirmation && selectedCalls.has(item.callConfirmation)) return true
+        if (item.interactionLogs && item.interactionLogs.some((l) => l.callConfirmation && selectedCalls.has(l.callConfirmation))) return true
         if ((selectedCalls.has('that_bai') || selectedCalls.has('Thất bại')) && isThatBai(item)) return true
         return false
       })
@@ -255,9 +255,20 @@ export function RenewalScreen() {
       )
     }
 
-    // Filter by tuition renewal care status (callConfirmation)
+    // Filter by student status (Trạng thái học viên chuẩn từ app/students)
     if (selectedStudentStatus !== 'all') {
-      res = res.filter((item) => item.callConfirmation === selectedStudentStatus)
+      res = res.filter((item) => {
+        const student = mockStudents.find(
+          (s) => s.id === item.studentId || s.name === item.studentName
+        )
+        if (student) {
+          return student.status === selectedStudentStatus
+        }
+        if (selectedStudentStatus === 'active' && item.status === 'Đang học') return true
+        if (selectedStudentStatus === 'pending_transfer' && item.status === 'Chờ chuyển lớp') return true
+        if (selectedStudentStatus === 'session_ended' && item.status === 'Hết buổi') return true
+        return false
+      })
     }
 
     // Filter by expected expiration month (with Dec/Jan transition support) or custom range
@@ -442,9 +453,8 @@ export function RenewalScreen() {
           { value: 'tiem_nang', label: 'Tiềm năng' },
           { value: 'hen_tai', label: 'Hẹn tái' },
           { value: 'tai_phi', label: 'Đã tái phí' },
-          { value: 'chong_phi', label: 'Chồng phí' },
-          { value: 'rut_phi', label: 'Rút phí' },
           { value: 'that_bai', label: 'Thất bại' },
+          { value: 'chua_den_han', label: 'Chưa đến hạn' },
         ],
         selectedValues: selectedRenewalStatuses,
         defaultOpen: true,
@@ -462,14 +472,14 @@ export function RenewalScreen() {
       }),
       createFilterGroup({
         id: 'callConfirmations',
-        title: 'Trạng thái liên hệ & CSKH',
+        title: 'Kết quả chăm sóc',
         options: [
           { value: 'Chưa gọi', label: 'Chưa liên hệ' },
           { value: 'Đã gọi', label: 'Đã gọi điện' },
           { value: 'KNM', label: 'Không nghe máy (KNM)' },
           { value: 'Đã nhắn Zalo', label: 'Đã nhắn Zalo' },
-          { value: 'Đã nhắn Facebook', label: 'Đã nhắn Facebook' },
           { value: 'Đã gặp trực tiếp', label: 'Đã gặp trực tiếp' },
+          { value: 'Đã tương tác', label: 'Đã tương tác' },
         ],
         selectedValues: selectedCalls,
         defaultOpen: true,
@@ -588,7 +598,6 @@ export function RenewalScreen() {
         studentId={activeDetailStudentId}
         onBack={() => {
           setActiveDetailStudentId(null)
-          setIsDetailOpen(false)
         }}
         alerts={mockCareAlerts}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
@@ -652,7 +661,6 @@ export function RenewalScreen() {
             onRefresh={() => setRefreshTrigger(prev => prev + 1)}
             onViewDetail={(id) => {
               setActiveDetailStudentId(id)
-              setIsDetailOpen(true)
             }}
           />
         </div>

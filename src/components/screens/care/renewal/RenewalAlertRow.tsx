@@ -8,10 +8,8 @@ import {
   ExternalLink,
   Share2,
   ArrowLeftRight,
-  Phone,
   RefreshCw,
   Calendar,
-  Plus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -19,71 +17,12 @@ import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getOfficialStatus, getOfficialStatusLabel, parseAttendanceRate, getStudentOrderInfo } from './renewalHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo } from './renewalHelpers'
 import { RenewalHistoryPopover } from './RenewalHistoryPopover'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { mockClassRecords } from '@/mocks/classRecords'
 import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
-
-
-// --- Academic Stats Cell (same pattern as operations care) ---
-function AcademicStatsCell({ cls }: { cls: StudentCareAlert }) {
-  const ratio = cls.attendanceRatio || '0/0';
-  const ccPct = parseAttendanceRate(ratio);
-
-  const last = cls.lastTestScore;
-  const prior = cls.priorTestScore;
-  const avg = (last + prior) / 2;
-
-  let pctChange = 0;
-  if (prior > 0) {
-    pctChange = ((last - prior) / prior) * 100;
-  } else if (last > 0) {
-    pctChange = 100;
-  }
-
-  const changeText = pctChange > 0
-    ? `↑${pctChange.toFixed(0)}%`
-    : pctChange < 0
-    ? `↓${Math.abs(pctChange).toFixed(0)}%`
-    : '0%';
-
-  const changeColor = pctChange > 0
-    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-    : pctChange < 0
-    ? 'text-rose-600 dark:text-rose-400 font-bold'
-    : 'text-muted-foreground';
-
-  const [, total] = ratio.split('/').map(Number);
-  const displayTotal = (total && total > 0) ? total : 5;
-  const done = Math.round((cls.homeworkCompletion / 100) * displayTotal);
-
-  return (
-    <div className="flex items-center py-0.5 select-none min-h-[48px]">
-      <div className="flex flex-col gap-0.5 text-left text-[11px] leading-tight font-medium text-zinc-700 dark:text-zinc-300">
-        <div className="flex items-center gap-1">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0">CC:</span>
-          <span className="font-bold text-foreground">{ratio}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal">({ccPct}%)</span>
-        </div>
-        <div className="flex items-center gap-1 flex-wrap">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0">Điểm:</span>
-          <span className="font-bold text-foreground">{last}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal">/</span>
-          <span className="font-semibold text-zinc-600 dark:text-zinc-400">{avg.toFixed(1)}</span>
-          <span className={cn("text-[10px]", changeColor)}>({changeText})</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal shrink-0">BTVN:</span>
-          <span className="font-bold text-foreground">{done}/{displayTotal}</span>
-          <span className="text-zinc-400 dark:text-zinc-500 font-normal">({cls.homeworkCompletion}%)</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 
 export interface RenewalAlertRowProps {
   cls: StudentCareAlert
@@ -99,8 +38,8 @@ export function RenewalAlertRow({
   cls,
   isSelected,
   onSelectChange,
-  viewMode = 'service',
-  onOpenCallModal,
+  viewMode: _viewMode = 'service',
+  onOpenCallModal: _onOpenCallModal,
   onRefresh,
   onViewDetail,
 }: RenewalAlertRowProps) {

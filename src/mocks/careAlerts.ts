@@ -9,7 +9,7 @@ export interface CareInteractionLog {
   id: string
   date: string
   staffName: string
-  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Đã tương tác'
+  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã tương tác'
   notes: string
   staffAvatar?: string
   parentOpinion?: string
@@ -48,7 +48,7 @@ export interface StudentCareAlert {
   csStaff: string         // Tên CS
   confirmC90B?: 'ĐÃ CSDB' | 'ĐANG XỬ LÝ' | 'CHƯA XÁC NHẬN' // Xác nhận C90B
   firstTwoSessionsNotes?: string // Nội dung trao đổi 2 buổi học đầu tiên
-  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã nhắn Facebook' | 'Đã tương tác' // Xác nhận cuộc gọi
+  callConfirmation: 'Đã gọi' | 'KNM' | 'Đã nhắn Zalo' | 'Chưa gọi' | 'Đã gặp trực tiếp' | 'Đã tương tác' // Xác nhận cuộc gọi
   interactionNotes?: string // Nội dung trao đổi
   interactionLogs: CareInteractionLog[]
   substituteTeacher?: string // GV dạy thay (optional)
@@ -166,6 +166,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-1",
     csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
+    activeCSTP: false,
     completedCareTags: ['ĐK1'],
     studentNote: 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
     interactionLogs: []
@@ -196,6 +197,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-2",
     csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
+    activeCSTP: false,
     studentNote: '',
     interactionLogs: []
   },
@@ -303,6 +305,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-5",
     csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Chưa gọi",
+    activeCSTP: false,
     interactionLogs: []
   },
   {

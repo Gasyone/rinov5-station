@@ -25,6 +25,7 @@ export interface OrderItem {
   isCompleted?: boolean
   voucherCode?: string
   voucherDiscount?: number
+  bonusText?: string
 }
 
 export interface OrderReceiptItem {
@@ -69,11 +70,77 @@ export interface Order {
   receipts?: OrderReceiptItem[]
   hasDepositStudyNow?: boolean
   hasDepositPre?: boolean
+  canConvertProduct?: boolean
+  remainingSessions?: number
+  isExpired?: boolean
 }
 
 const makeOrderId = (i: number) => `ORD-${String(2026000 + i).padStart(7, "0")}`
 
 export const mockOrders: Order[] = [
+  {
+    id: "o-od790741",
+    orderNo: "OD790741",
+    studentId: "s-phamnguyenkhoi",
+    studentName: "Phạm nguyên khôi",
+    customerName: "0983055652",
+    customerPhone: "0983055652",
+    shippingAddress: "Bắc Giang, Xã Nghĩa Hưng, Huyện Lạng Giang, Bắc Giang",
+    paymentMethodTag: "T5-Thành công",
+    paymentOption: "NHIỀU LẦN",
+    hasDepositStudyNow: true,
+    hasDepositPre: false,
+    canConvertProduct: false, // Sản phẩm hết buổi -> Không còn nhãn chuyển đổi sản phẩm
+    remainingSessions: 0,
+    isExpired: true,
+    items: [
+      {
+        productId: "p-cambridge-96",
+        productName: "[Gia sư] Tiếng anh 1:4 _ 96 buổi _ GV VN",
+        categoryName: "Sản phẩm gia sư",
+        programName: "Tiếng Anh Cambridge",
+        teacherType: "Việt Nam",
+        packageType: "1:4 - 90 buổi",
+        isRenewal: false,
+        isCompleted: true,
+        quantity: 1,
+        unitPrice: 7980000,
+        discount: 0,
+        subtotal: 7980000,
+        studentName: "Phạm nguyên khôi",
+      },
+    ],
+    totalAmount: 7980000,
+    discountAmount: 0,
+    finalAmount: 7980000,
+    paidAmount: 7980000,
+    paidCount: 2,
+    remainingAmount: 0,
+    receipts: [
+      {
+        id: "rc-790741-1",
+        code: "TNX00000271527",
+        amount: 2980000,
+        method: "COD",
+        timestamp: "09:56:57 - 03/08/2026",
+        status: "THÀNH CÔNG",
+      },
+      {
+        id: "rc-790741-2",
+        code: "TNX00000256886",
+        amount: 5000000,
+        method: "BANK",
+        timestamp: "11:54:32 - 30/05/2026",
+        status: "THÀNH CÔNG",
+      },
+    ],
+    paymentMethod: "bank_transfer",
+    paymentStatus: "paid",
+    status: "completed",
+    branch: "RinoEdu Bắc Giang",
+    saleBy: "Nguyễn Văn Sale",
+    createdAt: "2026-08-03T09:56:57Z",
+  },
   {
     id: "o-od803291",
     orderNo: "OD803291",

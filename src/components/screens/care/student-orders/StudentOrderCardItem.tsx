@@ -7,7 +7,6 @@ import {
   Gift,
   ChevronUp,
   ChevronDown,
-  Trash2,
   Pencil,
   Share2,
   Clock,
@@ -30,10 +29,11 @@ interface StudentOrderCardItemProps {
   isDraft: boolean
   isCurrent: boolean
   isPaymentsExpanded: boolean
+  showOtherChildren?: boolean
   draftOrders?: DetailedOrder[]
   onToggleExpandPayments: (orderId: string) => void
   onViewDetail: (order: DetailedOrder) => void
-  onCreateDraftFromPackage: (order: DetailedOrder) => void
+  onCreateDraftFromPackage?: (order: DetailedOrder) => void
   onCreateCompletionOrder?: (order: DetailedOrder) => void
   onAddPayment?: (order: DetailedOrder) => void
   onDeleteDraft?: (orderId: string) => void
@@ -43,28 +43,23 @@ interface StudentOrderCardItemProps {
 export function StudentOrderCardItem({
   order,
   isDraft,
-  isCurrent,
   isPaymentsExpanded,
-  draftOrders,
+  showOtherChildren,
   onToggleExpandPayments,
   onViewDetail,
-  onCreateDraftFromPackage,
   onCreateCompletionOrder,
   onAddPayment,
-  onDeleteDraft,
   onScrollToOrder,
 }: StudentOrderCardItemProps) {
   const isCancelled = order.status === 'cancelled'
-
-  const existingDraft =
-    isCurrent && draftOrders && draftOrders.length > 0
-      ? draftOrders.find(
-          (d) =>
-            d.sourceOrderNo === order.orderNo ||
-            d.sourceOrderNo === order.id ||
-            (order.linkedDraftOrderNo && (d.id === order.linkedDraftOrderNo || d.orderNo === order.linkedDraftOrderNo))
-        )
-      : null
+  const isDepositOrder =
+    order.orderNo?.startsWith('DH') ||
+    Boolean(order.canCreateCompletionOrder) ||
+    order.paymentMethodTag?.toLowerCase().includes('đơn có cọc') ||
+    order.paymentMethodTag?.toLowerCase().includes('cọc') ||
+    Boolean(order.hasDepositPre) ||
+    Boolean(order.hasDepositStudyNow) ||
+    order.payments?.some((p) => p.paymentType === 'deposit' || p.paymentTypeLabel === 'Cọc')
 
   return (
     <div
@@ -144,9 +139,24 @@ export function StudentOrderCardItem({
           </div>
         )}
 
+        {/* Parent Order Notice (if this is a completion order linked to deposit) */}
+        {order.sourceOrderNo && !isDraft && (
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground pb-0.5 font-sans">
+            <span>Đơn hoàn tất từ đơn cọc:</span>
+            <button
+              type="button"
+              onClick={() => onScrollToOrder(order.sourceOrderNo!)}
+              className="font-mono font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-0.5"
+            >
+              <span>{order.sourceOrderNo}</span>
+              <ExternalLink className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+
         {/* Line 2: Order Summary Row */}
         <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-          {/* Left Side: Order Code Link + Amount + Student Name + Status Tag + Fee Transfer Summary */}
+          {/* Left Side: Order Code Link + (Student Name when viewing other children) + Status Tag + Fee Transfer Summary */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
@@ -162,18 +172,16 @@ export function StudentOrderCardItem({
               </span>
             )}
 
-            <span className="text-muted-foreground">-</span>
-            <span className="font-semibold text-foreground font-mono">
-              {formatCurrency(order.totalAmount || order.finalAmount || 0)}
-            </span>
-            {order.studentName && (
+            {/* Hiển thị thêm tên con sau Mã đơn hàng khi tích xem đơn con khác */}
+            {showOtherChildren && order.studentName && (
               <>
                 <span className="text-muted-foreground">-</span>
-                <span className="font-sans font-medium text-slate-700 dark:text-zinc-200">
-                  HV: <strong className="font-bold text-foreground">{order.studentName}</strong>
+                <span className="font-semibold text-foreground font-sans">
+                  {order.studentName}
                 </span>
               </>
             )}
+
             <span className="text-muted-foreground">/</span>
             {isDraft ? (
               <span className="font-medium px-1.5 py-0.2 rounded text-[10.5px] bg-amber-100/80 text-amber-800 dark:bg-amber-900/70 dark:text-amber-300 inline-flex items-center gap-1 font-sans">
@@ -182,13 +190,13 @@ export function StudentOrderCardItem({
             ) : (
               <span
                 className={cn(
-                  'font-medium px-1.5 py-0.5 rounded text-[10.5px] font-sans',
+                  'font-medium text-[11px] font-sans',
                   isCancelled
-                    ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    ? 'text-zinc-500'
+                    : 'text-foreground'
                 )}
               >
-                {order.paymentMethodTag || 'Đã nhận bank'}
+                {order.paymentMethodTag || 'T5-Đã nhận bank'}
               </span>
             )}
             {order.feeTransferSummary && (
@@ -205,12 +213,12 @@ export function StudentOrderCardItem({
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-[520px] max-w-[95vw] p-4 text-xs space-y-3 text-left shadow-xl border-purple-200 dark:border-purple-800 z-50 rounded-2xl"
+                  className="w-[720px] sm:w-[760px] md:w-[820px] max-w-[95vw] p-5 text-xs space-y-3.5 text-left shadow-2xl border-purple-200 dark:border-purple-800 z-50 rounded-2xl"
                   align="start"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Popover Header */}
-                  <div className="flex items-center justify-between text-xs pb-2 border-b border-border/30 flex-wrap gap-2">
+                  <div className="flex items-center justify-between text-xs pb-2.5 border-b border-border/30 flex-wrap gap-3">
                     <div className="text-muted-foreground font-normal">
                       Ngày chuyển: <strong className="font-bold text-foreground">{order.feeTransferSummary.transferDate}</strong>
                     </div>
@@ -231,13 +239,13 @@ export function StudentOrderCardItem({
                   </div>
 
                   {/* 2-Column Side-by-Side Content Area (GÓI CŨ & GÓI MỚI in 1 Row) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 relative gap-5 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 relative gap-8 pt-1">
                     {/* Left Column: GÓI CŨ */}
-                    <div className="space-y-1.5 pr-0 sm:pr-2">
+                    <div className="space-y-2 pr-0 sm:pr-3">
                       <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
                         GÓI CŨ
                       </h4>
-                      <div className="space-y-1 text-muted-foreground text-xs leading-relaxed">
+                      <div className="space-y-1.5 text-muted-foreground text-xs leading-relaxed">
                         <p>
                           Gói : <span className="font-medium text-foreground">{order.feeTransferSummary.oldPackageName}</span>
                         </p>
@@ -258,18 +266,18 @@ export function StudentOrderCardItem({
 
                     {/* Center Arrow & Dashed Divider */}
                     <div className="hidden sm:flex flex-col items-center absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none">
-                      <div className="h-5.5 w-5.5 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-xs shrink-0 z-10 mt-1">
-                        <ArrowRight className="h-3 w-3 stroke-[2.5]" />
+                      <div className="h-6 w-6 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-xs shrink-0 z-10 mt-1">
+                        <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
                       </div>
                       <div className="flex-1 w-px border-r border-dashed border-violet-400/80 dark:border-violet-600/80 mt-1" />
                     </div>
 
                     {/* Right Column: GÓI MỚI */}
-                    <div className="space-y-1.5 pl-0 sm:pl-3">
+                    <div className="space-y-2 pl-0 sm:pl-3">
                       <h4 className="font-bold text-xs tracking-wider text-muted-foreground uppercase">
                         GÓI MỚI
                       </h4>
-                      <div className="space-y-1 text-muted-foreground text-xs leading-relaxed">
+                      <div className="space-y-1.5 text-muted-foreground text-xs leading-relaxed">
                         {order.feeTransferSummary.newProgramName && (
                           <p>
                             Gói : <span className="font-semibold text-foreground">{order.feeTransferSummary.newProgramName}</span>
@@ -285,7 +293,7 @@ export function StudentOrderCardItem({
                           Gói nhận phí : <span className="font-medium text-foreground">{order.feeTransferSummary.newPackageName}</span>
                         </p>
                         {order.feeTransferSummary.linkedOrderNo && (
-                          <p className="flex items-center gap-1 flex-wrap">
+                          <p className="flex items-center gap-1.5 flex-wrap">
                             <span>Đơn hàng thanh toán thêm:</span>
                             <button
                               type="button"
@@ -300,11 +308,11 @@ export function StudentOrderCardItem({
                             </button>
                           </p>
                         )}
-                        <div className="pt-1.5 flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-[10px] uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                        <div className="pt-2 flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-[10.5px] uppercase tracking-wider text-purple-700 dark:text-purple-300">
                             SỐ LƯỢNG BUỔI TỐI ĐA SAU QUY ĐỔI :
                           </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold font-mono text-xs shadow-2xs">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-md border border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold font-mono text-xs shadow-2xs">
                             {order.feeTransferSummary.convertedSessionsLabel}
                           </span>
                         </div>
@@ -317,90 +325,66 @@ export function StudentOrderCardItem({
           </div>
 
           <div className="text-[11px] text-muted-foreground shrink-0 font-normal font-sans">
-            Người lên đơn: <span className="text-foreground font-medium">{order.saleRep} ({order.saleDate})</span>
+            Người lên đơn: <span className="text-foreground font-medium">{order.saleRep || order.saleBy || 'Lê Phương Thảo'} {order.saleDate ? `(${order.saleDate})` : ''}</span>
           </div>
         </div>
       </div>
 
       {/* Products List Breakdown */}
-      <div className="space-y-2.5 py-1">
+      <div className="space-y-2 py-1">
         {order.detailedItems?.map((item, idx) => {
-          const hasGift =
-            Boolean(item.giftText && item.giftText !== '--' && !item.giftText.toLowerCase().includes('không có quà')) ||
-            Boolean(item.bonusText && item.bonusText !== '--' && !item.bonusText.toLowerCase().includes('không có quà'))
-
-          const giftDisplay =
-            item.giftText && item.giftText !== '--' && !item.giftText.toLowerCase().includes('không có quà')
-              ? item.giftText.startsWith('Tặng')
-                ? item.giftText
-                : `Tặng ${item.giftText}`
-              : item.bonusText && item.bonusText !== '--' && !item.bonusText.toLowerCase().includes('không có quà')
-                ? item.bonusText
-                : null
-
           return (
             <div
               key={idx}
-              className="text-xs flex items-start justify-between gap-3 flex-wrap"
+              className="space-y-0.5 text-xs"
             >
-              {/* Left Column: Number + Book Icon + (Title & Subtitle directly aligned) */}
-              <div className="flex items-start gap-1.5 flex-1 min-w-0">
-                <span className="font-semibold text-[13px] text-foreground leading-snug shrink-0">
-                  {idx + 1}.
-                </span>
-                <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-
-                <div className="space-y-0.5 min-w-0 flex-1">
-                  {/* Line 1: Title + OrderType Badge */}
-                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                    <span className="font-semibold text-[13px] text-foreground leading-snug">
-                      {item.productName}
+              {/* Product Info Line */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                {/* Left: Book Icon + Product Name + Order Type Tag */}
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="font-normal text-[13px] text-foreground leading-snug truncate">
+                    {item.productName}
+                  </span>
+                  {item.orderType && item.orderType !== '--' && (
+                    <span className="text-[10.5px] font-medium px-1.5 py-0.2 rounded-md bg-muted text-muted-foreground border border-border/40 shrink-0 font-sans">
+                      {item.orderType}
                     </span>
-                    {item.orderType && item.orderType !== '--' && (
-                      <span className="px-1.5 py-0.2 text-[10.5px] font-medium rounded-md border border-border/50 bg-muted/40 text-muted-foreground shrink-0">
-                        {item.orderType}
-                      </span>
-                    )}
-                  </div>
+                  )}
+                </div>
 
-                  {/* Subtitle Line: Duration + Expiry Date + Optional Gift (Aligned directly with product name) */}
-                  <div className="flex items-center gap-2.5 text-[11.5px] text-muted-foreground flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-                      <span>{item.durationText && item.durationText !== '--' ? item.durationText : '48 buổi'}</span>
-                    </div>
-
-                    <span className="text-border/70">•</span>
-
-                    <div className="flex items-center gap-1 font-mono text-[11px]">
-                      <Hourglass className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-                      <span>{item.expiryDate || '--'}</span>
-                    </div>
-
-                    {hasGift && giftDisplay && (
-                      <>
-                        <span className="text-border/70">•</span>
-                        <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                          <Gift className="h-3 w-3 shrink-0" />
-                          <span className="font-medium">Quà tặng: {giftDisplay}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                {/* Right: SL: 1 | TT: xxx đ sát cạnh phải */}
+                <div className="flex items-center gap-3 text-xs shrink-0 font-sans ml-auto">
+                  <span className="text-muted-foreground">
+                    SL: <strong className="font-bold font-mono text-foreground">{item.quantity}</strong>
+                  </span>
+                  <span className="text-muted-foreground">
+                    TT: <strong className="font-bold font-mono text-foreground">{formatCurrency(item.subtotal || item.unitPrice * item.quantity)}</strong>
+                  </span>
                 </div>
               </div>
 
-              {/* Right Column: SL + TT */}
-              <div className="flex items-center gap-3 text-xs shrink-0 font-mono pt-0.5">
-                <span className="text-muted-foreground font-sans text-xs">
-                  SL: <span className="font-normal text-foreground">{item.quantity}</span>
-                </span>
-                <span className="text-muted-foreground font-sans text-xs">
-                  TT:{' '}
-                  <span className="font-normal text-foreground font-mono">
-                    {formatCurrency(item.subtotal || item.unitPrice * item.quantity)}
-                  </span>
-                </span>
+              {/* Sub-line: Duration (Clock), Bonus Extra Sessions (Hourglass), Gift (Gift icon - only when exists) */}
+              <div className="flex items-center gap-4 text-[11px] text-muted-foreground pl-6 flex-wrap">
+                {/* Duration / Sessions */}
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                  <span>{item.durationText && item.durationText !== '--' ? item.durationText : '48 buổi'}</span>
+                </div>
+
+                {/* Bonus Extra Sessions (Hourglass) */}
+                <div className="flex items-center gap-1">
+                  <Hourglass className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                  <span>{item.bonusText && item.bonusText !== '--' ? item.bonusText : '--'}</span>
+                </div>
+
+                {/* Gift (Gift icon) - Only display when gift is present */}
+                {item.giftText && item.giftText !== '--' && item.giftText.trim() !== '' && (
+                  <div className="flex items-center gap-1">
+                    <Gift className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                    <span>{item.giftText}</span>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -437,28 +421,32 @@ export function StudentOrderCardItem({
                       : 'text-orange-600 dark:text-orange-500'
                   )}
                 >
-                  {formatCurrency(order.totalPaidAmount ?? 0)} / {formatCurrency(order.finalAmount)}
+                  {formatCurrency(order.totalPaidAmount ?? 0)}
+                  <span className="text-muted-foreground font-sans font-normal"> / </span>
+                  {formatCurrency(order.finalAmount)}
                 </span>
               </span>
 
-              {/* + Thanh toán thêm Button (Chỉ dành cho đơn đã thanh toán 1 phần nhưng chưa hết) */}
-              {(order.totalPaidAmount ?? 0) > 0 && (order.totalPaidAmount ?? 0) < order.finalAmount && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (onAddPayment) {
-                      onAddPayment(order)
-                    } else {
-                      onViewDetail(order)
-                    }
-                  }}
-                  className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
-                  title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
-                >
-                  <span>+ Thanh toán thêm</span>
-                </button>
-              )}
+              {/* + Thanh toán thêm Button (Chỉ dành cho đơn thông thường đã thanh toán 1 phần nhưng chưa hết, KHÔNG DÀNH CHO ĐƠN CỌC) */}
+              {(order.totalPaidAmount ?? 0) > 0 &&
+                (order.totalPaidAmount ?? 0) < order.finalAmount &&
+                !isDepositOrder && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (onAddPayment) {
+                        onAddPayment(order)
+                      } else {
+                        onViewDetail(order)
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
+                    title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
+                  >
+                    <span>+ Thanh toán thêm</span>
+                  </button>
+                )}
             </div>
           </div>
 
@@ -474,7 +462,7 @@ export function StudentOrderCardItem({
                     return (
                       <div
                         key={pm.id}
-                        className="py-1 text-xs font-mono flex items-start gap-3 justify-between flex-wrap"
+                        className="py-1 text-xs flex items-start gap-3 justify-between flex-wrap"
                       >
                         <div className="flex items-start gap-2.5 min-w-0 flex-1">
                           <span
@@ -489,7 +477,7 @@ export function StudentOrderCardItem({
                           <div className="space-y-0.5 min-w-0 flex-1 text-left">
                             <div className="flex items-center gap-1 font-semibold text-foreground truncate">
                               <span>
-                                {pm.code} - {formatCurrency(pm.amount)} / {pm.method} / {pm.statusLabel || 'T5-Đã nhận bank'}
+                                <span className="font-mono">{pm.code}</span> - <span className="font-mono">{formatCurrency(pm.amount)}</span> / <span className="font-sans font-medium">{pm.method}</span> / <span className="font-sans font-medium">{pm.statusLabel || 'T5-Đã nhận bank'}</span>
                               </span>
                               {pm.isLocked && (
                                 <Lock className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -499,12 +487,12 @@ export function StudentOrderCardItem({
                             <div className="text-[11.5px] font-medium">
                               {isDeposit && pm.depositAmount && (
                                 <span className="text-emerald-700 dark:text-emerald-400">
-                                  Tiền cọc : {formatCurrency(pm.depositAmount)}
+                                  Tiền cọc : <span className="font-mono">{formatCurrency(pm.depositAmount)}</span>
                                 </span>
                               )}
                               {isFinal && pm.finalPaymentAmount && (
                                 <span className="text-purple-700 dark:text-purple-400">
-                                  Tiền hoàn tất : {formatCurrency(pm.finalPaymentAmount)}
+                                  Tiền hoàn tất : <span className="font-mono">{formatCurrency(pm.finalPaymentAmount)}</span>
                                 </span>
                               )}
                             </div>
@@ -546,7 +534,7 @@ export function StudentOrderCardItem({
                   return (
                     <div
                       key={pm.id}
-                      className="py-1 text-xs font-mono space-y-1"
+                      className="py-1 text-xs space-y-1.5"
                     >
                       <div className="flex items-center justify-between gap-2.5 flex-wrap">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -569,11 +557,11 @@ export function StudentOrderCardItem({
                                   ? 'Chờ thanh toán'
                                   : 'Hủy')}
                           </span>
-                          <span className="text-muted-foreground text-[11px] shrink-0">
+                          <span className="font-mono text-muted-foreground text-[11px] shrink-0">
                             {pm.timestamp}
                           </span>
                           <span className="font-semibold text-foreground truncate">
-                            {pm.code} - {formatCurrency(pm.amount)} / {pm.method}
+                            <span className="font-mono">{pm.code}</span> - <span className="font-mono">{formatCurrency(pm.amount)}</span> / <span className="font-sans font-medium">{pm.method}</span>
                           </span>
                         </div>
 
@@ -587,14 +575,16 @@ export function StudentOrderCardItem({
                       {/* Single Product Note & Session Conversion */}
                       {pm.note && (
                         <div className="space-y-1 pt-0.5">
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground flex-wrap">
-                            <span>{pm.note}</span>
-                            <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-between text-xs flex-wrap gap-2">
+                            <span className="font-sans font-normal text-[12.5px] text-foreground leading-snug">
+                              {pm.note}
+                            </span>
+                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                               {pm.convertedSessions !== undefined && (
-                                <span>Quy đổi: <span className="text-foreground font-medium">{pm.convertedSessions} (buổi)</span></span>
+                                <span>Quy đổi: <span className="text-foreground font-medium font-mono">{pm.convertedSessions} (buổi)</span></span>
                               )}
                               {pm.convertedAmount !== undefined && (
-                                <span>Tiền quy đổi: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(pm.convertedAmount)}</span></span>
+                                <span>Tiền quy đổi: <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">{formatCurrency(pm.convertedAmount)}</span></span>
                               )}
                             </div>
                           </div>
@@ -621,21 +611,6 @@ export function StudentOrderCardItem({
                               </div>
                             </div>
                           )}
-
-                          {pm.showCompletePaymentLink && (
-                            <div className="pt-0.5 text-left">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onViewDetail(order)
-                                }}
-                                className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold text-[11.5px] hover:underline cursor-pointer inline-flex items-center gap-1 transition-all"
-                              >
-                                <span>+ Thanh toán thêm để hoàn tất quy đổi</span>
-                              </button>
-                            </div>
-                          )}
                         </div>
                       )}
 
@@ -644,15 +619,15 @@ export function StudentOrderCardItem({
                         <div className="space-y-1.5 pt-1 text-[11px] font-sans">
                           {pm.allocations.map((alloc, aIdx) => (
                             <div key={aIdx} className="space-y-1">
-                              <div className="flex items-center justify-between font-semibold text-foreground">
-                                <span>{alloc.groupName}</span>
-                                <span className="font-mono text-muted-foreground font-normal">
+                              <div className="flex items-center justify-between font-normal text-xs text-foreground">
+                                <span className="font-sans text-[12.5px] text-foreground leading-snug">{alloc.groupName}</span>
+                                <span className="font-mono text-muted-foreground font-normal text-[11px]">
                                   Tiền quy đổi: {formatCurrency(alloc.groupConvertedAmount ?? 0)}
                                 </span>
                               </div>
                               {alloc.subItems?.map((sub, sIdx) => (
                                 <div key={sIdx} className="flex items-center justify-between text-muted-foreground pl-3 text-[10.5px]">
-                                  <span>• {sub.name}</span>
+                                  <span className="font-sans text-foreground/90">• {sub.name}</span>
                                   <div className="flex items-center gap-3 font-mono">
                                     {sub.convertedSessions !== undefined && (
                                       <span>Quy đổi: <span className="text-foreground font-medium">{sub.convertedSessions} (buổi)</span></span>
@@ -685,22 +660,6 @@ export function StudentOrderCardItem({
                                       </>
                                     )}
                                   </div>
-                                </div>
-                              )}
-
-                              {/* Complete Payment Button/Link */}
-                              {alloc.showCompletePaymentLink && (
-                                <div className="pt-0.5 text-left pl-1">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      onViewDetail(order)
-                                    }}
-                                    className="text-purple-700 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-semibold text-[11.5px] hover:underline cursor-pointer inline-flex items-center gap-1 transition-all"
-                                  >
-                                    <span>+ Thanh toán thêm để hoàn tất quy đổi</span>
-                                  </button>
                                 </div>
                               )}
                             </div>

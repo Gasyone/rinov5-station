@@ -371,7 +371,7 @@ export function DepositOrderModal({
         {/* ── 2. MODAL BODY (SCROLLABLE 2-COLUMN LAYOUT) ── */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 text-xs">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* LEFT COLUMN (Col 8 / ~70%): Product Table + Deposit Settings + Notes */}
+            {/* LEFT COLUMN (Col 8 / ~70%): Product Table + Deposit Settings */}
             <div className="lg:col-span-8 space-y-4">
               {/* Product Line Items */}
               <DepositProductTable
@@ -396,16 +396,25 @@ export function DepositOrderModal({
                 remainingSessions={remainingSessions}
                 studentName={studentName}
               />
+            </div>
 
-              {/* Payment Method Select & Notes */}
-              <div className="rounded-xl border bg-card p-4 space-y-3 shadow-2xs">
+            {/* RIGHT COLUMN (Col 4 / ~30%): Customer Delivery Info Panel + Payment Method & Notes */}
+            <div className="lg:col-span-4 space-y-4">
+              {/* Customer Delivery Info Panel (2 modes: View & Edit) */}
+              <DepositCustomerPanel
+                customer={customer}
+                onUpdateCustomer={handleUpdateCustomer}
+              />
+
+              {/* Payment Method Select & Notes (Chuyển sang dưới Thông tin người nhận) */}
+              <div className="rounded-xl border bg-card p-4 space-y-3.5 shadow-2xs text-left">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <Label className="text-xs font-normal text-muted-foreground flex items-center gap-1">
                     <span>Hình thức thanh toán</span>
                     <span className="text-rose-500">*</span>
                   </Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="w-full text-xs h-8.5 font-medium">
+                    <SelectTrigger className="w-full text-xs h-9 font-normal bg-white dark:bg-zinc-900">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -427,51 +436,29 @@ export function DepositOrderModal({
 
                 {/* Ghi chú đơn hàng */}
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">
+                  <Label className="text-xs font-normal text-muted-foreground">
                     Ghi chú đơn hàng
                   </Label>
                   <Textarea
                     value={orderNote}
                     onChange={(e) => setOrderNote(e.target.value)}
                     placeholder="Ghi chú về thanh toán, thỏa thuận cọc với phụ huynh..."
-                    className="text-xs min-h-[56px] resize-none"
+                    className="text-xs min-h-[60px] resize-none bg-white dark:bg-zinc-900 italic placeholder:italic text-muted-foreground/90 placeholder:text-muted-foreground/50 leading-relaxed"
                   />
                 </div>
 
                 {/* Note cho vận hành xếp lớp */}
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground">
+                  <Label className="text-xs font-normal text-muted-foreground">
                     Note cho vận hành xếp lớp
                   </Label>
                   <Textarea
                     value={classPlacementNote}
                     onChange={(e) => setClassPlacementNote(e.target.value)}
                     placeholder="Ghi chú về lịch học thử, trình độ học viên, khung giờ mong muốn..."
-                    className="text-xs min-h-[56px] resize-none"
+                    className="text-xs min-h-[60px] resize-none bg-white dark:bg-zinc-900 italic placeholder:italic text-muted-foreground/90 placeholder:text-muted-foreground/50 leading-relaxed"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN (Col 4 / ~30%): Customer Delivery Info Panel */}
-            <div className="lg:col-span-4 space-y-4">
-              <DepositCustomerPanel
-                customer={customer}
-                onUpdateCustomer={handleUpdateCustomer}
-              />
-
-              {/* Bottom Quick Contact Overview Card */}
-              <div className="rounded-xl border bg-muted/30 p-3.5 space-y-2 text-xs">
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Thông tin người nhận
-                </span>
-                <p className="text-xs font-semibold text-foreground">
-                  Số điện thoại: {customer.recipientName} -{' '}
-                  <span className="font-mono font-normal">{customer.phone}</span>
-                </p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Địa chỉ: {customer.detailAddress}, {customer.ward}, {customer.district}, {customer.province}
-                </p>
               </div>
             </div>
           </div>

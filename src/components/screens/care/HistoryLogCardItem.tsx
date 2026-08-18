@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
 import { CareTagHoverCard, PersonnelHoverCard } from '@/components/shared'
 import { formatFullStaffName } from './operationsAlertHelpers'
+import { cn } from '@/lib/utils'
 import type { CareInteractionLog } from '@/mocks/careAlerts'
 
 interface HistoryLogCardItemProps {
@@ -16,6 +17,8 @@ interface HistoryLogCardItemProps {
   staffName?: string
   date?: string
   channel?: string
+  subject?: string
+  showSubjectBadge?: boolean
 }
 
 function getStaffPerson(name: string, isGV: boolean) {
@@ -44,6 +47,8 @@ export function HistoryLogCardItem({
   staffName,
   date,
   channel,
+  subject,
+  showSubjectBadge = false,
 }: HistoryLogCardItemProps) {
   const [showMissedCalls, setShowMissedCalls] = useState(false)
 
@@ -54,6 +59,30 @@ export function HistoryLogCardItem({
     effectiveStaffName.toLowerCase().includes('hoàng thị mai') ||
     effectiveStaffName.toLowerCase().includes('nguyễn huy hoàng') ||
     effectiveStaffName.toLowerCase().includes('gv')
+
+  // Resolve subject badge abbreviation (TA, TO, CH)
+  const subjectBadge = useMemo(() => {
+    const raw = ((subject || '') + ' ' + (log.notes || '') + ' ' + (topic || '')).toLowerCase()
+    if (raw.includes('toán') || raw.includes('math') || raw.includes('[to]')) {
+      return {
+        code: 'TO',
+        label: 'Toán tư duy',
+        className: 'bg-amber-100/90 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+      }
+    }
+    if (raw.includes('tiếng anh') || raw.includes('english') || raw.includes('ielts') || raw.includes('toeic') || raw.includes('starters') || raw.includes('movers') || raw.includes('flyers') || raw.includes('speaking') || raw.includes('[ta]')) {
+      return {
+        code: 'TA',
+        label: 'Tiếng Anh',
+        className: 'bg-indigo-100/90 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800'
+      }
+    }
+    return {
+      code: 'CH',
+      label: 'Dịch vụ chung',
+      className: 'bg-zinc-100/90 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
+    }
+  }, [subject, log.notes, topic])
 
   // Resolve contact channel
   let effectiveChannel = channel || ''
@@ -95,7 +124,7 @@ export function HistoryLogCardItem({
 
   return (
     <div className="space-y-1 text-xs text-left">
-      {/* Header Row: CS/GV badge + Staff Name + Channel: Recipient + Date (left) & Care Tag Pill (right) */}
+      {/* Header Row: CS/GV badge + Subject (TA/TO/CH if enabled) + Staff Name + Channel: Recipient + Date (left) & Care Tag Pill (right) */}
       <div className="flex items-center justify-between gap-2 flex-wrap py-0.5 px-0.5 select-none">
         <div className="flex items-center gap-1.5 flex-wrap min-w-0">
           <span
@@ -107,6 +136,19 @@ export function HistoryLogCardItem({
           >
             {isGV ? 'GV' : 'CS'}
           </span>
+
+          {/* Subject abbreviation badge: TA / TO / CH (Only shown when showSubjectBadge is true) */}
+          {showSubjectBadge && (
+            <span
+              className={cn(
+                'text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider shrink-0 select-none',
+                subjectBadge.className
+              )}
+              title={`Môn học: ${subjectBadge.label}`}
+            >
+              {subjectBadge.code}
+            </span>
+          )}
           
           <PersonnelHoverCard person={getStaffPerson(effectiveStaffName, isGV)}>
             <span className="font-bold text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">

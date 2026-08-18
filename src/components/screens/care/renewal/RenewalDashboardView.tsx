@@ -23,10 +23,10 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
   const metrics = useMemo(() => {
     const total = alerts.length
     
-    // Successful renewal classification: tai_phi, chong_phi
+    // Successful renewal classification: tai_phi
     const success = alerts.filter(item => {
       const cls = getRenewalClassification(item)
-      return cls === 'tai_phi' || cls === 'chong_phi'
+      return cls === 'tai_phi'
     }).length
 
     // Active pipeline: can_nhac, tiem_nang, hen_tai
@@ -51,8 +51,6 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
     let tiemNang = 0
     let henTai = 0
     let daTai = 0
-    let chongPhi = 0
-    let rutPhi = 0
     let thatBai = 0
 
     alerts.forEach(item => {
@@ -62,16 +60,14 @@ export function RenewalDashboardView({ alerts }: RenewalDashboardViewProps) {
       else if (cls === 'tiem_nang') tiemNang++
       else if (cls === 'hen_tai') henTai++
       else if (cls === 'tai_phi') daTai++
-      else if (cls === 'chong_phi') chongPhi++
-      else if (cls === 'rut_phi') rutPhi++
       else if (cls === 'that_bai') thatBai++
     })
 
     const data = [
-      { name: 'Đã tái phí', count: daTai + chongPhi, color: 'bg-emerald-500' },
+      { name: 'Đã tái phí', count: daTai, color: 'bg-emerald-500' },
       { name: 'Đang cân nhắc / Hẹn tái', count: canNhac + tiemNang + henTai, color: 'bg-sky-500' },
       { name: 'Mới', count: chuaLienHe, color: 'bg-zinc-400' },
-      { name: 'Thất bại / Rút phí', count: thatBai + rutPhi, color: 'bg-rose-500' }
+      { name: 'Thất bại', count: thatBai, color: 'bg-rose-500' }
     ]
 
     return data.map(item => ({

@@ -84,6 +84,7 @@ export function StudentCareTimeline({
 }: StudentCareTimelineProps) {
   const [activeTab, setActiveTab] = useState<'history' | 'roadmap'>('history')
   const [staffRoleFilter, setStaffRoleFilter] = useState<string>('all')
+  const [showAllSubjects, setShowAllSubjects] = useState<boolean>(false)
   const [showMissedCalls, setShowMissedCalls] = useState(false)
   const [showHistoryItem1MissedCalls, setShowHistoryItem1MissedCalls] = useState(false)
   const [expandedLogMissedCalls, setExpandedLogMissedCalls] = useState<Record<string, boolean>>({})
@@ -230,17 +231,31 @@ export function StudentCareTimeline({
       <div 
         className="-mx-3.5 -mt-3.5 py-1.5 px-3.5 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-1 select-none shrink-0 flex-wrap rounded-t-2xl"
       >
-        <div className="flex items-center gap-1.5 text-xs">
-          <span className="font-bold text-muted-foreground uppercase text-[9.5px]">LỌC:</span>
-          <select
-            value={staffRoleFilter}
-            onChange={(e) => setStaffRoleFilter(e.target.value)}
-            className="h-6 text-[11px] bg-white dark:bg-zinc-900 border border-border/80 rounded-md px-2 focus:outline-none focus:ring-1 focus:ring-primary font-medium text-foreground cursor-pointer shadow-3xs"
-          >
-            <option value="all">Tất cả phụ trách</option>
-            <option value="cskh">CS phụ trách</option>
-            <option value="gv">GV phụ trách</option>
-          </select>
+        <div className="flex items-center gap-3 text-xs flex-wrap">
+          {/* Lọc Vai trò phụ trách */}
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-muted-foreground uppercase text-[9.5px]">LỌC:</span>
+            <select
+              value={staffRoleFilter}
+              onChange={(e) => setStaffRoleFilter(e.target.value)}
+              className="h-6 text-[11px] bg-white dark:bg-zinc-900 border border-border/80 rounded-md px-1.5 focus:outline-none focus:ring-1 focus:ring-primary font-medium text-foreground cursor-pointer shadow-3xs"
+            >
+              <option value="all">Tất cả</option>
+              <option value="cskh">CS</option>
+              <option value="gv">GV</option>
+            </select>
+          </div>
+
+          {/* Checkbox Tất cả môn học (Đưa ra sau Lọc Tất cả, mặc định unchecked không hiện TO/TA) */}
+          <label className="flex items-center gap-1.5 cursor-pointer select-none text-[11px] font-medium text-foreground hover:text-primary transition-colors">
+            <input
+              type="checkbox"
+              checked={showAllSubjects}
+              onChange={(e) => setShowAllSubjects(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-border/80 text-primary focus:ring-primary accent-primary cursor-pointer"
+            />
+            <span>Tất cả môn</span>
+          </label>
         </div>
 
         <div className="flex items-center gap-1">
@@ -280,7 +295,7 @@ export function StudentCareTimeline({
         {activeTab === 'history' ? (
           <>
             <div className="space-y-3 pt-0.5">
-              {(staffRoleFilter === 'all' || staffRoleFilter === 'gv') && (
+              {(staffRoleFilter === 'all' || staffRoleFilter === 'gv') && (showAllSubjects || student?.subject !== 'Toán tư duy') && (
                 <HistoryLogCardItem
                   log={{
                     id: 'gv-log-01',
@@ -305,6 +320,8 @@ export function StudentCareTimeline({
                   staffRole="GV"
                   staffName="Hoàng Thị Mai"
                   date="2026-07-05"
+                  subject="Tiếng Anh"
+                  showSubjectBadge={showAllSubjects}
                 />
               )}
 
@@ -318,6 +335,25 @@ export function StudentCareTimeline({
                   log.staffName?.toLowerCase().includes('hoàng thị mai') ||
                   log.staffName?.toLowerCase().includes('gv')
 
+                // Determine subject code for this log
+                const raw = ((student?.subject || '') + ' ' + (log.notes || '') + ' ' + topic).toLowerCase()
+                let itemSubject = 'TA'
+                if (raw.includes('toán') || raw.includes('math') || raw.includes('[to]')) {
+                  itemSubject = 'TO'
+                } else if (raw.includes('tiếng anh') || raw.includes('english') || raw.includes('ielts') || raw.includes('toeic') || raw.includes('[ta]')) {
+                  itemSubject = 'TA'
+                } else if (raw.includes('chung') || raw.includes('dịch vụ') || raw.includes('phí') || raw.includes('xe bus')) {
+                  itemSubject = 'CH'
+                } else {
+                  itemSubject = student?.subject === 'Toán tư duy' ? 'TO' : 'TA'
+                }
+
+                // If not showing all subjects, only show matching student's current subject or general
+                const currentStudentSubjectCode = student?.subject === 'Toán tư duy' ? 'TO' : 'TA'
+                if (!showAllSubjects && itemSubject !== currentStudentSubjectCode && itemSubject !== 'CH') {
+                  return null
+                }
+
                 return (
                   <div key={itemKey}>
                     <HistoryLogCardItem
@@ -328,6 +364,8 @@ export function StudentCareTimeline({
                       staffRole={isGV ? 'GV' : 'CS'}
                       staffName={log.staffName}
                       date={log.date}
+                      subject={itemSubject === 'TO' ? 'Toán tư duy' : itemSubject === 'TA' ? 'Tiếng Anh' : 'Chung'}
+                      showSubjectBadge={showAllSubjects}
                     />
                   </div>
                 )

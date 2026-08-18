@@ -593,7 +593,7 @@ export function StudentCareFormCard({
                 <select
                   value={
                     renewalStatus ||
-                    (['can_nhac', 'tiem_nang', 'hen_tai', 'that_bai'].includes(cstpStatus) ? cstpStatus : '')
+                    (['can_nhac', 'tiem_nang', 'hen_tai'].includes(cstpStatus) ? cstpStatus : '')
                   }
                   onChange={(e) => {
                     const val = e.target.value
@@ -610,7 +610,11 @@ export function StudentCareFormCard({
                   <option value="can_nhac">Cân nhắc</option>
                   <option value="tiem_nang">Tiềm năng</option>
                   <option value="hen_tai">Hẹn tái</option>
-                  <option value="that_bai">Thất bại</option>
+                  {(renewalStatus === 'that_bai' || cstpStatus === 'that_bai') && (
+                    <option value="that_bai" disabled>
+                      Thất bại (Hệ thống tự động)
+                    </option>
+                  )}
                 </select>
               </div>
             )}
