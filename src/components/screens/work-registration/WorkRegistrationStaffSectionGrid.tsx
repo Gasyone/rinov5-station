@@ -187,32 +187,28 @@ export function WorkRegistrationStaffSectionGrid({
                       }
                     }}
                     className={cn(
-                      'flex flex-col justify-between rounded-lg border p-2 h-full min-h-[96px] overflow-hidden transition-all group',
+                      'flex flex-col justify-between rounded-lg border p-2.5 h-full min-h-[96px] overflow-hidden transition-all group',
                       sectionRecords.length > 0 ? 'cursor-pointer hover:shadow-2xs hover:border-primary/40' : '',
-                      isEnough
-                        ? 'bg-background'
-                        : registeredEmployees.length > 0
-                        ? 'bg-amber-50/20 dark:bg-amber-950/10 border-amber-200/50'
-                        : 'bg-muted/10 border-border/60'
+                      registeredEmployees.length > 0
+                        ? 'bg-card border-border/80'
+                        : 'bg-muted/10 border-border/50'
                     )}
                   >
                     <div className="space-y-1 flex-1 min-h-0 flex flex-col">
-                      <div className="shrink-0 flex items-center justify-between text-[10px]">
+                      <div className="shrink-0 flex items-center justify-between text-[11px]">
                         <span
                           className={cn(
-                            'font-bold px-1.5 py-0.2 rounded',
-                            registeredEmployees.length >= 2
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                              : registeredEmployees.length === 1
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : 'bg-muted text-muted-foreground'
+                            'text-[11px]',
+                            registeredEmployees.length > 0
+                              ? 'text-amber-600 dark:text-amber-500 font-medium'
+                              : 'text-muted-foreground/70 font-normal'
                           )}
                         >
                           {registeredEmployees.length > 0
                             ? `${registeredEmployees.length} NV đăng ký`
                             : 'Trống'}
                         </span>
-                        {isPriority && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
+                        {isPriority && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
                       </div>
 
                       {/* Danh sách nhân sự đăng ký trong ca */}

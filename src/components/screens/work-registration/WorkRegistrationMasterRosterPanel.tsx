@@ -128,26 +128,28 @@ export function WorkRegistrationMasterRosterPanel({
                           ? 'border-primary ring-2 ring-primary/30 bg-primary/5 shadow-xs'
                           : hasSearch && !hasMatchingStaff
                           ? 'opacity-35 hover:opacity-100'
-                          : isEnough
-                          ? 'bg-background'
-                          : 'bg-amber-50/30 dark:bg-amber-950/10 border-amber-200/60'
+                          : assignedStaff.length > 0
+                          ? 'bg-card border-border/80'
+                          : 'bg-muted/10 border-border/50'
                       )}
                     >
                       <div className="space-y-1.5 flex-1 min-h-0 flex flex-col">
-                        <div className="shrink-0 flex items-center justify-between text-[10px]">
+                        <div className="shrink-0 flex items-center justify-between text-[11px]">
                           <span
                             className={cn(
-                              'font-bold px-1.5 py-0.2 rounded',
+                              'text-[11px]',
                               hasMatchingStaff
-                                ? 'bg-primary text-primary-foreground'
-                                : isEnough
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                ? 'text-primary font-bold'
+                                : assignedStaff.length > 0
+                                ? 'text-amber-600 dark:text-amber-500 font-medium'
+                                : 'text-muted-foreground/70 font-normal'
                             )}
                           >
                             {hasMatchingStaff
                               ? `Khớp tìm kiếm`
-                              : `${assignedStaff.length} người trực`}
+                              : assignedStaff.length > 0
+                              ? `${assignedStaff.length} người trực`
+                              : 'Trống'}
                           </span>
                           <span className="text-muted-foreground group-hover:text-primary transition-colors text-[11px] font-semibold">
                             + Sửa
