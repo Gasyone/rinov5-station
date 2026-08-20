@@ -18,6 +18,16 @@ import { cn } from '@/lib/utils'
 import { BookingTestDetailDialog } from './booking-test/BookingTestDetailDialog'
 import { mockBookingTests } from '@/mocks/bookingTests'
 import { EventCard, getAssociatedBookingTest } from './calendar/EventCard'
+import {
+  computeEventScheduleSlots,
+  formatMinutesToTime,
+  getMonday,
+  getSessionPeriod,
+  getWeekDays,
+  toDateKey,
+} from './calendar/calendarEventScheduleHelpers'
+import { CalendarEventWeekTimeline } from './calendar/CalendarEventWeekTimeline'
+import { CalendarEventDayTimeline } from './calendar/CalendarEventDayTimeline'
 
 const PERIOD_OPTIONS = [
   { value: 'morning', label: 'Sáng' },
@@ -25,44 +35,25 @@ const PERIOD_OPTIONS = [
   { value: 'evening', label: 'Tối' },
 ]
 
-const getSessionPeriod = (timeLabel: string): 'morning' | 'afternoon' | 'evening' => {
-  if (!timeLabel) return 'morning'
-  const hour = parseInt(timeLabel.split(':')[0], 10)
-  if (isNaN(hour)) return 'morning'
-  if (hour < 12) return 'morning'
-  if (hour < 18) return 'afternoon'
-  return 'evening'
-}
-
 const VIEW_MODES = [
   { value: 'day', label: 'Ngày' },
   { value: 'week', label: 'Tuần' },
 ]
-
-const toDateKey = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-
-const getMonday = (input: Date) => {
-  const date = new Date(input)
-  const day = date.getDay()
-  date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
-  date.setHours(0, 0, 0, 0)
-  return date
-}
-
-const getWeekDays = (from: Date) =>
-  Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(from)
-    date.setDate(date.getDate() + index)
-    date.setHours(0, 0, 0, 0)
-    return date
-  })
 
 export function CalendarEventScheduleScreen() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+  }, [])
+
+  // Real-time clock for current time line (refreshes every 30s)
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date())
+    }, 30000)
+    return () => clearInterval(timer)
   }, [])
 
   const allSessions = useMemo(() => {
@@ -107,7 +98,7 @@ export function CalendarEventScheduleScreen() {
       if (periodFilters.length > 0 && !periodFilters.includes(getSessionPeriod(session.timeLabel))) return false
       if (statusFilters.length > 0 && !statusFilters.includes(session.status)) return false
       if (subjectFilters.length > 0 && !subjectFilters.includes(session.subject as string)) return false
-      
+
       const booking = getAssociatedBookingTest(session)
       if (booking) {
         if (programFilters.length > 0 && !programFilters.includes(booking.program)) return false
@@ -129,9 +120,15 @@ export function CalendarEventScheduleScreen() {
     })
   }, [activeBranch, allSessions, periodFilters, search, statusFilters, subjectFilters, programFilters, saleFilters, teacherFilters, bookingStatusFilters])
 
+  // Compute dynamic timeline slots (trims empty hours before earliest and after latest events)
+  const timelineSlots = useMemo(() => {
+    const visibleDays = viewMode === 'day' ? [selectedDate] : weekDays
+    return computeEventScheduleSlots(filtered, visibleDays, today, now)
+  }, [filtered, viewMode, selectedDate, weekDays, today, now])
+
   const statuses = useMemo(() => [...new Map(allSessions.map((session) => [session.status, session.statusLabel])).entries()], [allSessions])
   const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject).filter(Boolean))], [allSessions])
-  
+
   const activeFilterCount =
     periodFilters.length +
     statusFilters.length +
@@ -247,7 +244,12 @@ export function CalendarEventScheduleScreen() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-col gap-2 px-3 py-3 md:flex-row md:items-center md:justify-between lg:px-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedDate(viewMode === 'day' ? new Date() : getMonday(new Date()))}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedDate(viewMode === 'day' ? new Date() : getMonday(new Date()))}
+          >
             Hôm nay
           </Button>
           <div className="flex items-center gap-0.5">
@@ -322,55 +324,35 @@ export function CalendarEventScheduleScreen() {
       </div>
 
       {viewMode === 'day' ? (
-        <DayTimelineView sessions={filtered} date={selectedDate} onSelectEvent={handleSelectEvent} activeBranch={activeBranch} />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <WeekHeader days={[selectedDate]} today={today} hasSpacer sessions={filtered} now={now} />
+          <CalendarEventDayTimeline
+            date={selectedDate}
+            today={today}
+            now={now}
+            sessions={filtered}
+            timelineSlots={timelineSlots}
+            activeBranch={activeBranch}
+            onSelectEvent={handleSelectEvent}
+          />
+        </div>
       ) : (
         displayFormat === 'timeline' ? (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <WeekHeader days={weekDays} today={today} hasSpacer sessions={filtered} />
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              {TIMELINE_SLOTS.map((slot) => {
-                return (
-                  <div key={slot} className="flex min-h-[56px] border-b border-border/30">
-                    {/* Hour label */}
-                    <div className="flex w-16 shrink-0 items-start justify-end pr-3 pt-2 border-r border-border/40">
-                      <span className="text-[11px] font-medium text-muted-foreground">
-                        {slot}
-                      </span>
-                    </div>
-                    {/* 7 Columns for this hour */}
-                    <div className="grid flex-1 grid-cols-7">
-                      {weekDays.map((day, index) => {
-                        const dayHourSessions = filtered.filter(
-                          (s) => s.date === toDateKey(day) && get30MinSlot(s.timeLabel) === slot
-                        )
-                        return (
-                          <div
-                            key={day.toISOString()}
-                            className={cn(
-                              'p-1.5 flex flex-col gap-1.5 min-w-0 h-full justify-start',
-                              index < 6 && 'border-r border-border/30'
-                            )}
-                          >
-                            {dayHourSessions.map((session) => (
-                              <EventCard
-                                key={session.id}
-                                session={session}
-                                onClick={() => handleSelectEvent(session)}
-                                activeBranch={activeBranch}
-                              />
-                            ))}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <WeekHeader days={weekDays} today={today} hasSpacer sessions={filtered} now={now} />
+            <CalendarEventWeekTimeline
+              days={weekDays}
+              today={today}
+              now={now}
+              sessions={filtered}
+              timelineSlots={timelineSlots}
+              activeBranch={activeBranch}
+              onSelectEvent={handleSelectEvent}
+            />
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <WeekHeader days={weekDays} today={today} hasSpacer={false} sessions={filtered} />
+            <WeekHeader days={weekDays} today={today} hasSpacer={false} sessions={filtered} now={now} />
             <div className="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto">
               {weekDays.map((day, index) => (
                 <div key={day.toISOString()} className={cn('min-w-0', index < 6 && 'border-r border-border/40')}>
@@ -432,11 +414,9 @@ export function CalendarEventScheduleScreen() {
         }}
       />
 
-
-      
       {bookingTestOpen && selectedEvent?.type === 'placement_test' && (
         <BookingTestDetailDialog
-          booking={getAssociatedBookingTest(selectedEvent) || mockBookingTests[0]} // Mock data for demo
+          booking={getAssociatedBookingTest(selectedEvent) || mockBookingTests[0]}
           detailNote=""
           copiedKey=""
           onOpenChange={setBookingTestOpen}
@@ -475,7 +455,19 @@ export function CalendarEventScheduleScreen() {
   )
 }
 
-function WeekHeader({ days, today, hasSpacer = false, sessions }: { days: Date[]; today: Date; hasSpacer?: boolean; sessions: EventSession[] }) {
+function WeekHeader({
+  days,
+  today,
+  hasSpacer = false,
+  sessions,
+  now,
+}: {
+  days: Date[]
+  today: Date
+  hasSpacer?: boolean
+  sessions: EventSession[]
+  now: Date
+}) {
   return (
     <div className="flex bg-muted/30 border-b border-border/40">
       {/* Spacer for hour column */}
@@ -483,11 +475,20 @@ function WeekHeader({ days, today, hasSpacer = false, sessions }: { days: Date[]
       {/* Columns */}
       <div className={cn("grid flex-1", days.length === 1 ? "grid-cols-1" : "grid-cols-7")}>
         {days.map((day) => {
-          const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear()
+          const isToday =
+            day.getDate() === today.getDate() &&
+            day.getMonth() === today.getMonth() &&
+            day.getFullYear() === today.getFullYear()
           const daySessions = sessions.filter((s) => s.date === toDateKey(day))
           const count = daySessions.length
           return (
-            <div key={day.toISOString()} className="flex flex-col items-center justify-center py-2.5">
+            <div
+              key={day.toISOString()}
+              className={cn(
+                "flex flex-col items-center justify-center py-2.5 transition-colors",
+                isToday && "bg-primary/5"
+              )}
+            >
               <div className="flex items-center gap-1.5">
                 <span className={cn('text-[10px] font-semibold uppercase tracking-wider', isToday ? 'text-primary' : 'text-muted-foreground')}>
                   {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
@@ -496,9 +497,17 @@ function WeekHeader({ days, today, hasSpacer = false, sessions }: { days: Date[]
                   {day.getDate()}
                 </span>
               </div>
-              <span className="text-[9.5px] mt-1 text-muted-foreground font-semibold">
-                {count} sự kiện
-              </span>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-[9.5px] text-muted-foreground font-semibold">
+                  {count} sự kiện
+                </span>
+                {isToday && (
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-1.5 py-0.2 text-[8px] font-bold text-red-600 dark:text-red-400">
+                    <span className="h-1 w-1 rounded-full bg-red-500 animate-pulse" />
+                    {formatMinutesToTime(now.getHours() * 60 + now.getMinutes())}
+                  </span>
+                )}
+              </div>
             </div>
           )
         })}
@@ -537,88 +546,6 @@ function EventColumn({
       {daySessions.map((session) => (
         <EventCard key={session.id} session={session} onClick={() => onSelectEvent(session)} activeBranch={activeBranch} />
       ))}
-    </div>
-  )
-}
-
-const TIMELINE_SLOTS = Array.from({ length: 29 }, (_, i) => {
-  const hour = 8 + Math.floor(i / 2)
-  const minute = (i % 2) * 30
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-})
-
-const get30MinSlot = (timeLabel: string): string => {
-  if (!timeLabel) return '08:00'
-  const [hStr, mStr] = timeLabel.split(':')
-  const hour = parseInt(hStr, 10)
-  const minute = parseInt(mStr, 10)
-  if (isNaN(hour) || isNaN(minute)) return '08:00'
-  const slotMinute = minute < 30 ? 0 : 30
-  return `${String(hour).padStart(2, '0')}:${String(slotMinute).padStart(2, '0')}`
-}
-
-function DayTimelineView({
-  sessions,
-  date,
-  onSelectEvent,
-  activeBranch = 'all',
-}: {
-  sessions: EventSession[]
-  date: Date
-  onSelectEvent: (session: EventSession) => void
-  activeBranch?: string
-}) {
-  const daySessions = sessions
-    .filter((session) => session.date === toDateKey(date))
-    .sort((a, b) => a.timeLabel.localeCompare(b.timeLabel))
-
-  if (daySessions.length === 0) {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <WeekHeader days={[date]} today={new Date()} hasSpacer sessions={sessions} />
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <EmptyState
-            className="py-10"
-            title="Chưa có lịch test"
-            icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <WeekHeader days={[date]} today={new Date()} hasSpacer sessions={sessions} />
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="relative">
-          {TIMELINE_SLOTS.map((slot) => {
-            const slotSessions = daySessions.filter((s) => get30MinSlot(s.timeLabel) === slot)
-            return (
-              <div key={slot} className="flex min-h-[56px] border-b border-border/30">
-                {/* Hour label */}
-                <div className="flex w-16 shrink-0 items-start justify-end pr-3 pt-2 border-r border-border/40">
-                  <span className="text-[11px] font-medium text-muted-foreground">
-                    {slot}
-                  </span>
-                </div>
-                {/* Day column (1 column) */}
-                <div className="flex-1 p-1.5 flex flex-row flex-wrap gap-1.5 min-w-0 h-full justify-start items-start">
-                  {slotSessions.map((session) => (
-                    <div key={session.id} className="w-80 shrink-0">
-                      <EventCard
-                        session={session}
-                        onClick={() => onSelectEvent(session)}
-                        activeBranch={activeBranch}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
     </div>
   )
 }
