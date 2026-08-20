@@ -142,7 +142,7 @@ export function CalendarClassScheduleToolbar({
           inputClassName="sm:w-64"
         />
 
-        <FilterIconButton count={activeFilterCount} label="Lọc lịch lớp học" onClick={onOpenFilter} />
+        <FilterIconButton count={activeFilterCount} label="Lọc lịch học trung tâm" onClick={onOpenFilter} />
       </div>
     </div>
   )

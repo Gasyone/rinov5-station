@@ -175,35 +175,99 @@ const recordTemplates: Array<{
   note?: string
   assignedClass?: string
 }> = [
-  // Nhiều nhân viên đăng ký trùng khung giờ sáng Thứ 2 (dayOffset: 0)
-  { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-0800', 3), status: 'registered', assignedClass: 'IELTS Intensive' },
-  { employeeId: 'e2', dayOffset: 0, slotIds: slotRange('morning-0800', 3), status: 'registered' },
-  { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('morning-0800', 2), status: 'registered', assignedClass: 'TOEIC 500+' },
-  { employeeId: 'e4', dayOffset: 0, slotIds: slotRange('morning-0800', 4), status: 'registered' },
-  { employeeId: 'e5', dayOffset: 0, slotIds: ['morning-0800', 'morning-0830'], status: 'registered' },
-  { employeeId: 'e6', dayOffset: 0, slotIds: ['morning-0830', 'morning-0900'], status: 'registered', assignedClass: 'Giao tiếp nâng cao' },
+  // Smart City & Nguyễn Tuân & Linh Đàm records
+  // Thứ 2 (dayOffset: 0)
+  { employeeId: 'e4', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Cả ca sáng
+  { employeeId: 'e5', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Cả ca sáng
+  { employeeId: 't6', dayOffset: 0, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e5', dayOffset: 0, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'e4', dayOffset: 0, slotIds: slotRange('evening-1800', 8), status: 'registered' }, // Cả ca tối
+  { employeeId: 't6', dayOffset: 0, slotIds: slotRange('evening-1800', 8), status: 'registered' }, // Cả ca tối
+  { employeeId: 'tg_sc1', dayOffset: 0, slotIds: slotRange('evening-1800', 7), status: 'registered' }, // Cả ca Digi
+  { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered', assignedClass: 'IELTS Intensive' },
+  { employeeId: 'e2', dayOffset: 0, slotIds: slotRange('morning-0800', 3), status: 'registered' }, // Giờ lẻ
+  { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('morning-0800', 2), status: 'registered', assignedClass: 'TOEIC 500+' }, // Giờ lẻ
+  { employeeId: 'e6', dayOffset: 0, slotIds: ['morning-0830', 'morning-0900'], status: 'registered', assignedClass: 'Giao tiếp nâng cao' }, // Giờ lẻ
   { employeeId: 'e7', dayOffset: 0, slotIds: slotRange('morning-0800', 1), status: 'registered' },
-  
-  // Nhiều nhân viên đăng ký trùng khung giờ chiều Thứ 4 (dayOffset: 2)
+  { employeeId: 't1', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Cả ca sáng
+  { employeeId: 't3', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't2', dayOffset: 0, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'tg_nt1', dayOffset: 0, slotIds: slotRange('evening-1800', 8), status: 'registered' }, // Cả ca tối
+  { employeeId: 'tg_nt2', dayOffset: 0, slotIds: slotRange('evening-1800', 7), status: 'registered' }, // Cả ca Digi
+  { employeeId: 't4', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't5', dayOffset: 0, slotIds: slotRange('afternoon-1330', 9), status: 'registered' },
+  { employeeId: 'tg_ld1', dayOffset: 0, slotIds: slotRange('evening-1800', 7), status: 'registered' },
+
+  // Thứ 3 (dayOffset: 1)
+  { employeeId: 't6', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e4', dayOffset: 1, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e5', dayOffset: 1, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'e4', dayOffset: 1, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 1, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc2', dayOffset: 1, slotIds: slotRange('evening-1800', 7), status: 'registered' },
+  { employeeId: 'e2', dayOffset: 1, slotIds: slotRange('afternoon-1500', 3), status: 'registered', assignedClass: 'TOEIC 600+' },
+  { employeeId: 'e8', dayOffset: 1, slotIds: slotRange('morning-0930', 3), status: 'registered', assignedClass: 'IELTS Advanced' },
+  { employeeId: 't2', dayOffset: 1, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't3', dayOffset: 1, slotIds: slotRange('afternoon-1330', 9), status: 'registered' },
+
+  // Thứ 4 (dayOffset: 2)
+  { employeeId: 'e4', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 2, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 't6', dayOffset: 2, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e4', dayOffset: 2, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 2, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc1', dayOffset: 2, slotIds: slotRange('evening-1800', 7), status: 'registered' },
   { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('afternoon-1330', 3), status: 'registered', assignedClass: 'Kids Level 1' },
   { employeeId: 'e8', dayOffset: 2, slotIds: slotRange('afternoon-1330', 3), status: 'registered' },
   { employeeId: 'e9', dayOffset: 2, slotIds: slotRange('afternoon-1330', 3), status: 'registered', assignedClass: 'IELTS Basic' },
-
-  { employeeId: 'e2', dayOffset: 1, slotIds: slotRange('afternoon-1500', 3), status: 'registered', assignedClass: 'TOEIC 600+' },
-  { employeeId: 'e2', dayOffset: 3, slotIds: slotRange('evening-1800', 3), status: 'registered' },
-  { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('evening-1800', 3), status: 'registered', assignedClass: 'IELTS 01' },
   { employeeId: 'e3', dayOffset: 2, slotIds: slotRange('evening-1930', 3), status: 'registered', assignedClass: 'IELTS 02' },
-  { employeeId: 'e3', dayOffset: 4, slotIds: slotRange('morning-0930', 3), status: 'registered' },
-  { employeeId: 'e4', dayOffset: 1, slotIds: slotRange('morning-0800', 3), status: 'registered' },
-  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('afternoon-1500', 3), status: 'registered', assignedClass: 'Giao tiếp Cơ bản' },
-  { employeeId: 'e5', dayOffset: 0, slotIds: slotRange('afternoon-1330', 3), status: 'registered', assignedClass: 'Kids Level 2' },
-  { employeeId: 'e5', dayOffset: 4, slotIds: slotRange('afternoon-1500', 3), status: 'registered' },
   { employeeId: 'e6', dayOffset: 2, slotIds: slotRange('morning-0800', 3), status: 'registered', assignedClass: 'Ngữ pháp cơ bản' },
+  { employeeId: 't1', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'tg_nt1', dayOffset: 2, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+
+  // Thứ 5 (dayOffset: 3)
+  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 3, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 3, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'e4', dayOffset: 3, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 3, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc2', dayOffset: 3, slotIds: slotRange('evening-1800', 7), status: 'registered' },
+  { employeeId: 'e2', dayOffset: 3, slotIds: slotRange('evening-1800', 3), status: 'registered' },
+
+  // Thứ 6 (dayOffset: 4)
+  { employeeId: 't6', dayOffset: 4, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 4, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e4', dayOffset: 4, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e5', dayOffset: 4, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'e5', dayOffset: 4, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 4, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc1', dayOffset: 4, slotIds: slotRange('evening-1800', 7), status: 'registered' },
+  { employeeId: 'e3', dayOffset: 4, slotIds: slotRange('morning-0930', 3), status: 'registered' },
+
+  // Thứ 7 & CN (dayOffset: 5 & 6)
+  { employeeId: 'e4', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 5, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 5, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e5', dayOffset: 5, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 'e4', dayOffset: 5, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 5, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc1', dayOffset: 5, slotIds: slotRange('evening-1800', 7), status: 'registered' },
+  { employeeId: 'tg_sc2', dayOffset: 5, slotIds: slotRange('evening-1800', 7), status: 'registered' },
   { employeeId: 'e7', dayOffset: 5, slotIds: slotRange('morning-0930', 3), status: 'registered' },
-  { employeeId: 'e8', dayOffset: 1, slotIds: slotRange('morning-0930', 3), status: 'registered', assignedClass: 'IELTS Advanced' },
-  { employeeId: 'e9', dayOffset: 2, slotIds: slotRange('evening-1800', 3), status: 'registered' },
-  { employeeId: 'e10', dayOffset: 0, slotIds: slotRange('evening-1930', 3), status: 'registered', assignedClass: 'TOEIC 700+' },
   { employeeId: 'e10', dayOffset: 5, slotIds: slotRange('evening-1800', 3), status: 'registered' },
+
+  { employeeId: 'e4', dayOffset: 6, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e5', dayOffset: 6, slotIds: slotRange('morning-0800', 8), status: 'registered' },
+  { employeeId: 'e4', dayOffset: 6, slotIds: slotRange('afternoon-1330', 8), status: 'registered' }, // 13:30 - 17:00
+  { employeeId: 'e5', dayOffset: 6, slotIds: slotRange('afternoon-1330', 9), status: 'registered' }, // Cả ca chiều
+  { employeeId: 't6', dayOffset: 6, slotIds: slotRange('afternoon-1330', 8), status: 'registered' },
+  { employeeId: 'e4', dayOffset: 6, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 't6', dayOffset: 6, slotIds: slotRange('evening-1800', 8), status: 'registered' },
+  { employeeId: 'tg_sc2', dayOffset: 6, slotIds: slotRange('evening-1800', 7), status: 'registered' },
 ]
 
 function slotRange(startSlotId: string, count: number): string[] {

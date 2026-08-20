@@ -7,6 +7,7 @@ import { getMockClassSessions, type ClassSession } from '@/mocks/calendarSchedul
 import { ModuleLoadingSkeleton } from '@/components/shared'
 import { toast } from 'sonner'
 import { SessionDetailDialog } from './calendar/SessionDetailDialog'
+import { DigiSessionDetailDialog } from './calendar/DigiSessionDetailDialog'
 import { CalendarClassScheduleToolbar } from './calendar/CalendarClassScheduleToolbar'
 import { CalendarClassScheduleListTable } from './calendar/CalendarClassScheduleListTable'
 import { CalendarClassScheduleWeekView } from './calendar/CalendarClassScheduleWeekView'
@@ -31,18 +32,20 @@ export function CalendarClassScheduleScreen() {
   }, [])
 
   const allSessions = useMemo(() => {
-    return getMockClassSessions().map((session, idx) => {
-      const updatedSession = { ...session }
-      if (idx % 5 === 0) {
-        updatedSession.type = 'workshop' as const
-        updatedSession.typeLabel = 'Workshop'
-      }
-      if (idx % 7 === 0) {
-        updatedSession.status = 'rescheduled' as const
-        updatedSession.statusLabel = 'Đổi ngày'
-      }
-      return updatedSession
-    })
+    return getMockClassSessions()
+      .filter((session) => session.type !== 'digi_session')
+      .map((session, idx) => {
+        const updatedSession = { ...session }
+        if (idx % 5 === 0) {
+          updatedSession.type = 'workshop' as const
+          updatedSession.typeLabel = 'Workshop'
+        }
+        if (idx % 7 === 0) {
+          updatedSession.status = 'rescheduled' as const
+          updatedSession.statusLabel = 'Đổi ngày'
+        }
+        return updatedSession
+      })
   }, [])
 
   const [viewMode, setViewMode] = useState<ViewMode>('week')
@@ -260,10 +263,15 @@ export function CalendarClassScheduleScreen() {
 
   const [selectedSession, setSelectedSession] = useState<ClassSession | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [isDigiDetailOpen, setIsDigiDetailOpen] = useState(false)
 
   const handleSelectSession = (session: ClassSession) => {
     setSelectedSession(session)
-    setDetailOpen(true)
+    if (session.type === 'digi_session') {
+      setIsDigiDetailOpen(true)
+    } else {
+      setDetailOpen(true)
+    }
   }
 
   const handleQuickAttendance = () => {
@@ -338,7 +346,7 @@ export function CalendarClassScheduleScreen() {
 
       <FilterGroupSheetPanel
         open={isFilterOpen}
-        title="Bộ lọc lịch lớp học"
+        title="Bộ lọc lịch học trung tâm"
         description="Lọc buổi học theo chi nhánh, trình độ, môn học và khoảng thời gian."
         groups={filterGroups}
         onOpenChange={setIsFilterOpen}
@@ -376,6 +384,12 @@ export function CalendarClassScheduleScreen() {
         open={detailOpen}
         onOpenChange={setDetailOpen}
         onQuickAttendance={handleQuickAttendance}
+      />
+
+      <DigiSessionDetailDialog
+        session={selectedSession}
+        open={isDigiDetailOpen}
+        onOpenChange={setIsDigiDetailOpen}
       />
     </div>
   )

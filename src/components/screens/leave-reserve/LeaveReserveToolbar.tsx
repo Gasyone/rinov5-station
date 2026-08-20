@@ -1,6 +1,14 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Plus, ChevronDown, CalendarOff, PauseCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { BranchSelect, ExpandableSearch, FilterIconButton, SubjectSelect } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import { getLeaveReserveRequests } from '@/mocks/leaveReserve'
@@ -17,6 +25,7 @@ interface LeaveReserveToolbarProps {
   onSubjectChange: (subject: string) => void
   activeFilterCount: number
   onOpenFilters: () => void
+  onCreateClick: (type?: 'off' | 'reservation') => void
 }
 
 export function LeaveReserveToolbar({
@@ -30,6 +39,7 @@ export function LeaveReserveToolbar({
   onSubjectChange,
   activeFilterCount,
   onOpenFilters,
+  onCreateClick,
 }: LeaveReserveToolbarProps) {
 
   const allRequests = useMemo(() => getLeaveReserveRequests({}), [])
@@ -91,6 +101,38 @@ export function LeaveReserveToolbar({
             inputClassName="sm:w-64"
           />
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-9 gap-1 font-semibold shadow-2xs shrink-0 cursor-pointer">
+                <Plus className="h-4 w-4" />
+                <span>Tạo đơn</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-1">
+              <DropdownMenuItem
+                onClick={() => onCreateClick('off')}
+                className="cursor-pointer py-2 px-2.5 focus:bg-accent"
+              >
+                <CalendarOff className="mr-2.5 h-4 w-4 text-amber-500 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-semibold text-xs text-foreground">Tạo đơn nghỉ phép</span>
+                  <span className="text-[10px] text-muted-foreground">Vắng buổi / nghỉ ngắn hạn</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onCreateClick('reservation')}
+                className="cursor-pointer py-2 px-2.5 focus:bg-accent"
+              >
+                <PauseCircle className="mr-2.5 h-4 w-4 text-sky-500 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-semibold text-xs text-foreground">Tạo đơn bảo lưu</span>
+                  <span className="text-[10px] text-muted-foreground">Tạm dừng học tập dài hạn</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

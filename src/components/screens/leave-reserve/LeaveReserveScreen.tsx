@@ -31,9 +31,15 @@ export function LeaveReserveScreen() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [createOpen, setCreateOpen] = useState(false)
+  const [createType, setCreateType] = useState<'off' | 'reservation'>('off')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [selectedDetailRequest, setSelectedDetailRequest] = useState<LeaveReserveRequest | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+  const handleOpenCreate = (type?: 'off' | 'reservation') => {
+    setCreateType(type || 'off')
+    setCreateOpen(true)
+  }
 
   // Force re-fetch mock data when state updates locally
   const [updateTrigger, setUpdateTrigger] = useState(0)
@@ -216,6 +222,7 @@ export function LeaveReserveScreen() {
         onSubjectChange={(s) => { setActiveSubject(s); setPage(1); setSelectedIds(new Set()) }}
         activeFilterCount={activeFilterCount}
         onOpenFilters={() => setIsFilterOpen(true)}
+        onCreateClick={handleOpenCreate}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
@@ -274,6 +281,7 @@ export function LeaveReserveScreen() {
       <LeaveReserveCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        initialType={createType}
         onSubmit={handleCreateRequest}
       />
 

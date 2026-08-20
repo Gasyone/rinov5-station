@@ -17,11 +17,11 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Bảng ma trận gán lớp vào phòng học và phát hiện xung đột thời gian',
   },
   calendar_class_schedule: {
-    label: 'Lịch học',
+    label: 'Lịch học trung tâm',
     description: 'Thời khóa biểu tổng quan các lớp học tại chi nhánh',
   },
   calendar_event_schedule: {
-    label: 'Lịch sự kiện',
+    label: 'Lịch test',
     description: 'Quản lý lịch kiểm tra trải nghiệm đầu vào và sự kiện workshop',
   },
   work_registration: {
@@ -84,6 +84,10 @@ export const screens: Record<string, ScreenConfig> = {
   makeup_class: {
     label: 'Học bù học viên',
     description: 'Quản lý lịch đăng ký học bù, sắp xếp ca học bù và duyệt yêu cầu học bù của học viên',
+  },
+  digi_schedule: {
+    label: 'Lịch học digi',
+    description: 'Quản lý danh sách đăng ký ca tự học Digi, điều phối phòng học, thiết bị và tiếp đón học viên tại cơ sở',
   },
 
   student_operations_alert: {

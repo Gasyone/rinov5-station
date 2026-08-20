@@ -1,12 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
-import { BookOpen, Check, Info, Plus, Star, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { BookOpen, Info, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { DUTY_SECTIONS, WEEKDAYS, type ShiftSection } from '@/mocks/shiftRoster'
+import { WEEKDAYS, type ShiftSection } from '@/mocks/shiftRoster'
 import {
-  isPriorityWorkSlot,
   toWorkDateKey,
   type WorkPrioritySlotRule,
   type WorkRegistrationEmployee,
@@ -19,6 +17,7 @@ import {
   groupConsecutiveSlots,
   resolveClassSessionHoverData,
 } from './workRegistrationHelpers'
+import { WORK_REGISTRATION_GRID_SECTIONS } from './workRegistrationTypes'
 
 interface WorkRegistrationStaffSectionGridProps {
   days: Date[]
@@ -27,7 +26,7 @@ interface WorkRegistrationStaffSectionGridProps {
   todayKey: string
   editableEmployeeId?: string
   readonlyWeek?: boolean
-  priorityRules: WorkPrioritySlotRule[]
+  priorityRules?: WorkPrioritySlotRule[]
   onToggleSection?: (date: string, section: ShiftSection) => void
   onRemoveSlots?: (date: string, slotIds: string[]) => void
   onOpenSlotDetail?: (date: string, slotId: string) => void
@@ -40,8 +39,6 @@ export function WorkRegistrationStaffSectionGrid({
   todayKey,
   editableEmployeeId,
   readonlyWeek,
-  priorityRules,
-  onToggleSection,
   onRemoveSlots,
   onOpenSlotDetail,
 }: WorkRegistrationStaffSectionGridProps) {
@@ -52,7 +49,7 @@ export function WorkRegistrationStaffSectionGrid({
 
   // Map ngày với index 0..6
   const dayDateKeys = useMemo(
-    () => days.map((day) => ({ dateKey: toWorkDateKey(day), day })),
+    () => days.map((day) => toWorkDateKey(day)),
     [days]
   )
 
@@ -98,7 +95,7 @@ export function WorkRegistrationStaffSectionGrid({
         </div>
 
         {/* 3 HÀNG BUỔI: SÁNG, CHIỀU, TỐI */}
-        {DUTY_SECTIONS.map((sec) => (
+        {WORK_REGISTRATION_GRID_SECTIONS.map((sec) => (
           <div key={sec.id} className="flex-1 min-h-0 flex flex-col">
             {/* TIÊU ĐỀ CA CÓ PHỦ NỀN ĐẸP (RIBBON HEADER) */}
             <div className="shrink-0 flex items-center justify-between px-3.5 py-1.5 bg-muted/60 dark:bg-muted/30 border-y border-border/70 text-xs font-bold text-foreground">
@@ -115,7 +112,7 @@ export function WorkRegistrationStaffSectionGrid({
 
             {/* 7 CỘT THỨ (PHÂN CÁCH BẰNG ĐƯỜNG KẺ DỌC divide-x) */}
             <div className="flex-1 min-h-0 grid grid-cols-7 divide-x divide-border/60">
-              {dayDateKeys.map(({ dateKey, day }, dayIdx) => {
+              {dayDateKeys.map((dateKey) => {
                 
                 // Lấy tất cả các records thuộc ngày và ca này
                 const sectionRecords = records.filter(
@@ -127,10 +124,6 @@ export function WorkRegistrationStaffSectionGrid({
                 const registeredEmployees = registeredEmpIds
                   .map((id) => employeeById.get(id))
                   .filter(Boolean) as WorkRegistrationEmployee[]
-
-                // Kiểm tra xem có phải giờ vàng không
-                const isPriority = isPriorityWorkSlot(dateKey, `${sec.id}-0800`, priorityRules) ||
-                  isPriorityWorkSlot(dateKey, `${sec.id}-1800`, priorityRules)
 
                 // -------------------------------------------------------------
                 // TRƯỜNG HỢP 1: ĐANG XEM / ĐĂNG KÝ CHO 1 NHÂN VIÊN (LỊCH CỦA TÔI / ĐĂNG KÝ THAY)
@@ -150,13 +143,6 @@ export function WorkRegistrationStaffSectionGrid({
                         hasContent ? 'bg-card' : 'bg-muted/5 hover:bg-muted/15'
                       )}
                     >
-                      {/* ICON GIỜ VÀNG (GÓC PHẢI) */}
-                      {isPriority && (
-                        <div className="absolute top-1.5 right-1.5" title="Khung giờ vàng">
-                          <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                        </div>
-                      )}
-
                       <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
                         {/* Lớp học giảng dạy phân công */}
                         {assignedClassRecord && (
@@ -235,12 +221,6 @@ export function WorkRegistrationStaffSectionGrid({
                       sectionRecords.length > 0 ? 'cursor-pointer hover:bg-muted/20' : 'bg-muted/5'
                     )}
                   >
-                    {isPriority && (
-                      <div className="absolute top-1.5 right-1.5" title="Khung giờ vàng">
-                        <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-                      </div>
-                    )}
-
                     <div className="space-y-1 flex-1 min-h-0 flex flex-col">
                       <div className="shrink-0 flex items-center justify-between text-[11px]">
                         <span

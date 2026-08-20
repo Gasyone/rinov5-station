@@ -3,6 +3,7 @@ import {
   type WorkRegistrationEmployee,
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
+import type { ShiftSection } from '@/mocks/shiftRoster'
 
 export function upsertWorkSlot(
   records: WorkRegistrationRecord[],
@@ -41,7 +42,7 @@ export function toggleWorkSection(
   employee: WorkRegistrationEmployee,
   weekStart: string,
   date: string,
-  section: 'morning' | 'afternoon' | 'evening'
+  section: ShiftSection
 ): WorkRegistrationRecord[] {
   const isCurrentlySelected = records.some(
     (r) => r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section)

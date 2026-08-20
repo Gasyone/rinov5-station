@@ -22,6 +22,18 @@ export const getSessionPeriod = (timeLabel: string): 'morning' | 'afternoon' | '
   return 'evening'
 }
 
+/**
+ * Chỉ hiển thị giờ bắt đầu phía trước cho mọi khung giờ.
+ * Ví dụ: '08:00 - 09:30' -> '08:00', '18:00 - 21:00' -> '18:00'
+ */
+export function formatShiftLabel(shift: string): string {
+  const parts = shift.split(' - ')
+  if (parts.length === 2) {
+    return parts[0]
+  }
+  return shift
+}
+
 export const formatLabel = (date: Date, opts: Intl.DateTimeFormatOptions) => date.toLocaleDateString('vi-VN', opts)
 
 export const toDateKey = (date: Date) =>

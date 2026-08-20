@@ -149,6 +149,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   class_session: 'info',
   supplementary: 'success',
   workshop: 'purple',
+  digi_session: 'purple',
   planned: 'neutral',
   placement_test: 'warning',
   event: 'info',
@@ -258,6 +259,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   trong_lich: 'success',
   goi_lop: 'warning',
   busy: 'error',
+  ca_ca: 'success',
+  full_shift: 'success',
 
   // Session Feedback
   feedback_pending: 'warning',

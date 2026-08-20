@@ -44,7 +44,7 @@ import {
   sumRegistrationMinutes,
 } from './workRegistrationHelpers'
 import type { SlotDetailTarget, WorkRegistrationStatusFilter, WorkRegistrationTab } from './workRegistrationTypes'
-import { buildFilterGroups, buildStatusTiles, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
+import { buildFilterGroups, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
 
 export function WorkRegistrationScreen() {
   const userRole = useAuthStore((state) => state.user?.role)
@@ -100,7 +100,6 @@ export function WorkRegistrationScreen() {
       }),
     [activeBranch, employeeSummaries, jobTitles, search, statusFilter, subjectFilter]
   )
-  const statusTiles = useMemo(() => buildStatusTiles(employeeSummaries), [employeeSummaries])
   const filterGroups = useMemo(
     () => buildFilterGroups(employeeSummaries, jobTitles, statusFilter, subjectFilter),
     [employeeSummaries, jobTitles, statusFilter, subjectFilter]
@@ -156,12 +155,26 @@ export function WorkRegistrationScreen() {
     )
   }
 
-  const handleAddRange = (dates: string[], startTime: string, endTime: string) => {
+  const handleAddRange = (
+    dates: string[],
+    startTime: string,
+    endTime: string,
+    multipleRanges?: Array<{ startTime: string; endTime: string }>
+  ) => {
     if (!activeEmployee || !actionState.canMutate) return
-    setRecords((current) =>
-      addWorkTimeRange(current, activeEmployee, toWorkDateKey(weekStart), dates, startTime, endTime)
-    )
-    toast.success(`Đã thêm khung giờ ${startTime} - ${endTime}`)
+    if (multipleRanges && multipleRanges.length > 0) {
+      let updated = records
+      for (const r of multipleRanges) {
+        updated = addWorkTimeRange(updated, activeEmployee, toWorkDateKey(weekStart), dates, r.startTime, r.endTime)
+      }
+      setRecords(updated)
+      toast.success(`Đã thêm ${multipleRanges.length} ca làm việc cho ${dates.length} ngày`)
+    } else {
+      setRecords((current) =>
+        addWorkTimeRange(current, activeEmployee, toWorkDateKey(weekStart), dates, startTime, endTime)
+      )
+      toast.success(`Đã thêm khung giờ ${startTime} - ${endTime}`)
+    }
   }
 
   const handleRemoveSlots = (date: string, slotIds: string[]) => {
@@ -216,7 +229,6 @@ export function WorkRegistrationScreen() {
             activeEmployeeName={activeEmployee.name}
             todayKey={todayKey}
             totalMinutes={sumRegistrationMinutes(activeEmployeeRecords)}
-            priorityMinutes={priorityMinutes}
             readonlyWeek={actionState.readonlyWeek}
             priorityRules={priorityRules}
             canMutate={actionState.canMutate}

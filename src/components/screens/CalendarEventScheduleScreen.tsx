@@ -313,11 +313,11 @@ export function CalendarEventScheduleScreen() {
           <ExpandableSearch
             value={search}
             onValueChange={setSearch}
-            label="Tìm lịch trải nghiệm"
-            placeholder="Tìm lịch trải nghiệm..."
+            label="Tìm lịch test"
+            placeholder="Tìm lịch test..."
             inputClassName="sm:w-72"
           />
-          <FilterIconButton count={activeFilterCount} label="Lọc lịch trải nghiệm" onClick={() => setIsFilterOpen(true)} />
+          <FilterIconButton count={activeFilterCount} label="Lọc lịch test" onClick={() => setIsFilterOpen(true)} />
         </div>
       </div>
 
@@ -386,8 +386,8 @@ export function CalendarEventScheduleScreen() {
 
       <FilterGroupSheetPanel
         open={isFilterOpen}
-        title="Bộ lọc lịch trải nghiệm"
-        description="Lọc lịch trải nghiệm theo môn học, khoảng thời gian và trạng thái."
+        title="Bộ lọc lịch test"
+        description="Lọc lịch test theo môn học, khoảng thời gian và trạng thái."
         groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
@@ -526,7 +526,7 @@ function EventColumn({
     return (
       <EmptyState
         className="py-10"
-        title="Chưa có sự kiện"
+        title="Chưa có lịch test"
         icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
       />
     )
@@ -579,7 +579,7 @@ function DayTimelineView({
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           <EmptyState
             className="py-10"
-            title="Chưa có sự kiện"
+            title="Chưa có lịch test"
             icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
           />
         </div>

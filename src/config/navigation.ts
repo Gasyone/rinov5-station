@@ -34,8 +34,9 @@ export const navigationGroups: NavigationGroup[] = [
     icon: CalendarDays,
     items: [
       { id: 'my_schedule', label: 'Lịch của tôi', href: '/app/my_schedule' },
-      { id: 'calendar_class_schedule', label: 'Lịch học', href: '/app/calendar_class_schedule' },
-      { id: 'calendar_event_schedule', label: 'Lịch sự kiện', href: '/app/calendar_event_schedule' },
+      { id: 'calendar_class_schedule', label: 'Lịch học trung tâm', href: '/app/calendar_class_schedule' },
+      { id: 'digi_schedule', label: 'Lịch học digi', href: '/app/digi_schedule' },
+      { id: 'calendar_event_schedule', label: 'Lịch test', href: '/app/calendar_event_schedule' },
       { id: 'event_management_new', label: 'Quản lý sự kiện', href: '/app/event_management_new' },
     ],
   },

@@ -3,13 +3,13 @@ import { mockBookingTests, type BookingTest } from './bookingTests'
 import { getMockClassSessions } from './calendarSchedule'
 import { getMockWorkRegistrations, toWorkDateKey } from './workRegistrations'
 
-export type ShiftSection = 'morning' | 'afternoon' | 'evening'
+export type ShiftSection = 'morning' | 'afternoon' | 'evening' | 'evening_digi'
 
 export interface DutyEmployee {
   id: string
   name: string
   shortName: string
-  role: 'Giáo viên' | 'CS' | 'Khác'
+  role: 'Giáo viên' | 'Trợ giảng' | 'CS' | 'Khác'
   colorClass: string
   branch: string
 }
@@ -36,7 +36,14 @@ export interface SlotCapacitySummary {
   staff: SlotStaffAvailability[]
 }
 
-export const DUTY_SECTIONS: Array<{ id: ShiftSection; label: string; icon: string; slots: string[] }> = [
+export const DUTY_SECTIONS: Array<{
+  id: ShiftSection
+  label: string
+  icon: string
+  slots: string[]
+  badge?: string
+  description?: string
+}> = [
   {
     id: 'morning',
     label: 'Buổi sáng',
@@ -55,6 +62,14 @@ export const DUTY_SECTIONS: Array<{ id: ShiftSection; label: string; icon: strin
     icon: '🌙',
     slots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'],
   },
+  {
+    id: 'evening_digi',
+    label: 'Buổi tối - Ca trực lớp Digital / Digi Station (18:00 - 21:00)',
+    icon: '💻',
+    badge: 'Phòng Digital',
+    slots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00'],
+    description: 'Giáo viên & Trợ giảng phụ trách lớp tự học Digital / Digi Station',
+  },
 ]
 
 export const WEEKDAYS = [
@@ -68,11 +83,13 @@ export const WEEKDAYS = [
 ]
 
 export const ALL_DUTY_EMPLOYEES: DutyEmployee[] = [
-  // --- RinoEdu Smart City (11 nhân sự) ---
+  // --- RinoEdu Smart City ---
   { id: 'e1', name: 'Nguyễn Văn Quản Lý', shortName: 'QL', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 'e4', name: 'Hoàng Thị Giáo Viên', shortName: 'HG', role: 'Giáo viên', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 'e5', name: 'Lê Thị Chăm Sóc', shortName: 'LC', role: 'CS', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 't6', name: 'Coenrad Redman', shortName: 'CR', role: 'Giáo viên', colorClass: 'bg-purple-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'tg_sc1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'tg_sc2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Smart City' },
   { id: 'e9', name: 'Bùi Văn Support', shortName: 'BS', role: 'Khác', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 'sc1', name: 'Trần Bảo Ngọc', shortName: 'BN', role: 'Giáo viên', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 'sc2', name: 'Vũ Đình Trọng', shortName: 'VT', role: 'Giáo viên', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Smart City' },
@@ -81,10 +98,12 @@ export const ALL_DUTY_EMPLOYEES: DutyEmployee[] = [
   { id: 'sc5', name: 'Lê Thu Trang', shortName: 'TT', role: 'Giáo viên', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Smart City' },
   { id: 'sc6', name: 'Nguyễn Hải Đăng', shortName: 'HĐ', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Smart City' },
 
-  // --- RinoEdu Nguyễn Tuân (11 nhân sự) ---
+  // --- RinoEdu Nguyễn Tuân ---
   { id: 't1', name: 'Sarah J.', shortName: 'SJ', role: 'Giáo viên', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 't2', name: 'Robert L.', shortName: 'RL', role: 'Giáo viên', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 't3', name: 'Emily W.', shortName: 'EW', role: 'Giáo viên', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'tg_nt1', name: 'Lê Hồng Nhung', shortName: 'HN', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'tg_nt2', name: 'Phạm Thùy Linh', shortName: 'TL', role: 'Trợ giảng', colorClass: 'bg-indigo-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 'e3', name: 'Phạm Văn Giảng Dạy', shortName: 'PG', role: 'Giáo viên', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 'e2', name: 'Trần Thị Sale', shortName: 'TS', role: 'CS', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 'e6', name: 'Đặng Văn Bắc', shortName: 'ĐB', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
@@ -94,9 +113,12 @@ export const ALL_DUTY_EMPLOYEES: DutyEmployee[] = [
   { id: 'nt3', name: 'Bùi Thu Phương', shortName: 'TP', role: 'CS', colorClass: 'bg-pink-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
   { id: 'nt4', name: 'Đỗ Anh Tuấn', shortName: 'AT', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
 
-  // --- RinoEdu Linh Đàm (11 nhân sự) ---
+  // --- RinoEdu Linh Đàm ---
   { id: 't4', name: 'Thu Hà', shortName: 'TH', role: 'Giáo viên', colorClass: 'bg-emerald-700 text-white', branch: 'RinoEdu Linh Đàm' },
   { id: 't5', name: 'Mỹ Linh', shortName: 'ML', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld3', name: 'Vũ Mai Hương', shortName: 'MH', role: 'Trợ giảng', colorClass: 'bg-teal-700 text-white', branch: 'RinoEdu Linh Đàm' },
   { id: 'e10', name: 'Đỗ Thị Part-time', shortName: 'ĐP', role: 'Khác', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Linh Đàm' },
   { id: 'e7', name: 'Vũ Văn Reception', shortName: 'VR', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Linh Đàm' },
   { id: 'e12', name: 'Nguyễn Hoàng Sale', shortName: 'HS', role: 'CS', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Linh Đàm' },
@@ -114,88 +136,109 @@ const initialMasterRoster: MasterShiftAssignment[] = [
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t1', 't3', 'e3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t2', 'e2', 't3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t1', 't2', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t2', 't3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t1', 'e2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t3', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e3', 'e2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t1', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t3', 'e3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t1', 't2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t2', 'e2', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t1', 't2', 'e3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t3', 'e2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t1', 't2'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3', 'e3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t1', 't3', 'e2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t2', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1', 'tg_nt2'] },
 
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t1', 't3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t2', 'e3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t1', 't2', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
   // --- RinoEdu Linh Đàm ---
   { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t5', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t4', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_ld2'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t4', 't5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t5', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t4', 't5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_ld3'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1', 'tg_ld2'] },
 
   { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t4', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_ld2'] },
 
   // --- RinoEdu Smart City ---
   { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['e4', 't6'] },
   { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e5', 't6'] },
   { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['e4', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['e4', 't6'] },
   { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['e4', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['e4', 't6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t6', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1', 'tg_sc2'] },
 
   { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 ]
 
 // In-Memory Master Store

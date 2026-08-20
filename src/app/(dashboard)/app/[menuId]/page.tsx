@@ -118,6 +118,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { MakeupClassScreen } = await import('@/components/screens/makeup-class/MakeupClassScreen')
     return { default: MakeupClassScreen }
   }),
+  digi_schedule: safeLazy(async () => {
+    const { DigiScheduleScreen } = await import('@/components/screens/digi-schedule/DigiScheduleScreen')
+    return { default: DigiScheduleScreen }
+  }),
   student_operations_alert: safeLazy(async () => {
     const { OperationsAlertScreen } = await import('@/components/screens/care/OperationsAlertScreen')
     return { default: OperationsAlertScreen }

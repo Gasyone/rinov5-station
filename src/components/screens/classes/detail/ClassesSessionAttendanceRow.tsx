@@ -253,13 +253,6 @@ export function ClassesSessionAttendanceRow({
                   <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                   <span>Vắng</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onAttendanceChange(student.id, 'excused')}
-                  className="flex items-center gap-2 text-[11px] font-semibold text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/20 focus:text-rose-700 dark:focus:text-rose-400 cursor-pointer"
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                  <span>Vắng (Có phép)</span>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

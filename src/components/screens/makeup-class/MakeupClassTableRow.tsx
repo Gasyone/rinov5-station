@@ -220,7 +220,7 @@ export function MakeupClassTableRow({
         {/* Lớp gốc */}
         <TableCell>
           <div className="space-y-0.5">
-            <p className="truncate text-sm font-medium" title={request.originalClassName}>
+            <p className="truncate text-sm font-normal text-foreground" title={request.originalClassName}>
               {request.originalClassName}
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
@@ -240,7 +240,7 @@ export function MakeupClassTableRow({
         {/* Buổi nghỉ — Hover ONLY on time line below, name is plain text */}
         <TableCell>
           <div className="space-y-0.5">
-            <p className="truncate text-sm font-medium">{request.originalSessionName}</p>
+            <p className="truncate text-sm font-normal text-foreground">{request.originalSessionName}</p>
             <div onClick={(e) => e.stopPropagation()}>
               <SessionHoverCard session={originalSession} side="bottom">
                 <p className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors">
@@ -255,7 +255,7 @@ export function MakeupClassTableRow({
         <TableCell>
           {request.makeupClassName && request.makeupClassId ? (
             <div className="space-y-0.5">
-              <p className="truncate text-sm font-medium" title={request.makeupClassName}>
+              <p className="truncate text-sm font-normal text-foreground" title={request.makeupClassName}>
                 {request.makeupClassName}
               </p>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground" onClick={(e) => e.stopPropagation()}>
@@ -279,7 +279,7 @@ export function MakeupClassTableRow({
         <TableCell>
           {makeupSession ? (
             <div className="space-y-0.5">
-              <p className="truncate text-sm font-medium">{request.makeupSessionName}</p>
+              <p className="truncate text-sm font-normal text-foreground">{request.makeupSessionName}</p>
               <div onClick={(e) => e.stopPropagation()}>
                 <SessionHoverCard session={makeupSession} side="bottom">
                   <p className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors">

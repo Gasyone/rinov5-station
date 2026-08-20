@@ -226,11 +226,12 @@ export function ClassSessionHoverCard({
                 <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <span>
                   Sĩ số:{' '}
-                  <strong className="text-foreground font-bold">
-                    {session.attendedStudents !== undefined
-                      ? `${session.attendedStudents}/${session.totalStudents}`
-                      : session.totalStudents}{' '}
-                    học viên
+                  <strong className={cn("font-bold", session.type === 'digi_session' && session.capacity && session.totalStudents >= session.capacity ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
+                    {session.type === 'digi_session'
+                      ? `${session.totalStudents}/${session.capacity || 10} chỗ`
+                      : session.attendedStudents !== undefined
+                      ? `${session.attendedStudents}/${session.totalStudents} học viên`
+                      : `${session.totalStudents} học viên`}
                   </strong>
                   {session.trialStudents && session.trialStudents > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400 font-medium inline-flex items-center gap-0.5 ml-1">
@@ -241,11 +242,16 @@ export function ClassSessionHoverCard({
                 </span>
               </div>
 
-              {session.attendedStudents !== undefined && (
+              {session.type === 'digi_session' && session.capacity && session.totalStudents >= session.capacity ? (
+                <span className="font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                  Hết chỗ
+                </span>
+              ) : session.attendedStudents !== undefined ? (
                 <span className="font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                   Đã điểm danh
                 </span>
-              )}
+              ) : null}
             </div>
           )}
         </div>

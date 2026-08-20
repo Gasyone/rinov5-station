@@ -4,7 +4,7 @@ import { EmptyState } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { ClassSession } from './calendarClassScheduleTypes'
 import { SessionCard } from './SessionCardV2'
-import { getSessionPeriod, toDateKey } from './calendarClassScheduleHelpers'
+import { getSessionPeriod, toDateKey, formatShiftLabel } from './calendarClassScheduleHelpers'
 import { formatMinute, parseScheduleTime } from '@/components/screens/schedule/ScheduleTimeGrid'
 
 interface CalendarClassScheduleDayViewProps {
@@ -177,7 +177,7 @@ export function CalendarClassScheduleDayView({
                   <div className="flex items-center gap-2.5">
                     <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
                       <Clock className="size-4 text-primary" />
-                      <span>{shift}</span>
+                      <span>{formatShiftLabel(shift)}</span>
                     </div>
 
                     <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-bold", periodBadgeClass)}>

@@ -4,7 +4,7 @@ export interface ClassSession {
   id: string; classCode: string; className: string; subject: string; teacher: string;
   branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
-  statusLabel: string; type: 'class_session' | 'supplementary' | 'workshop' | 'planned';
+  statusLabel: string; type: 'class_session' | 'supplementary' | 'workshop' | 'planned' | 'digi_session';
   typeLabel: string; title: string; lessonSubtitle: string;
   totalStudents: number; officialStudents: number; trialStudents: number;
   attendedStudents?: number; isRecurring?: boolean;
@@ -16,6 +16,8 @@ export interface ClassSession {
   ratingAverage?: number;
   ratingCount?: number;
   homeworkSubmitted?: number;
+  digiBookingIds?: string[];
+  roomCapacity?: number;
 }
 
 export interface EventSession {
@@ -160,7 +162,70 @@ export function getMockClassSessions(): ClassSession[] {
     }).filter(Boolean) as ClassSession[]
   })
 
-  return generated.sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
+  // Add mock Digi sessions for today & upcoming days
+  const todayStr = toDateKey(today)
+  const digiSessions: ClassSession[] = [
+    {
+      id: 'DIGI-SES-TODAY',
+      classCode: 'DIGI_LAB_01',
+      className: 'Ca tự học Digi',
+      subject: 'Tự học số',
+      teacher: 'Trợ giảng phụ trách',
+      branch: 'RinoEdu Linh Đàm',
+      schoolRoom: 'Phòng Digi',
+      level: 'Digi Self-Paced',
+      date: todayStr,
+      dateDisplay: `${PAD(today.getDate())}/${PAD(today.getMonth() + 1)}/${today.getFullYear()}`,
+      dateBucket: 'today',
+      timeLabel: '18:00',
+      endTimeLabel: '21:00',
+      status: 'confirmed',
+      statusLabel: 'Đang diễn ra',
+      type: 'digi_session',
+      typeLabel: 'Ca tự học Digi',
+      title: 'Ca tự học Digi tại trạm',
+      lessonSubtitle: 'Phòng Digi • 6 học viên (10 máy)',
+      totalStudents: 6,
+      officialStudents: 6,
+      trialStudents: 0,
+      attendedStudents: 4,
+      isRecurring: false,
+      roomCapacity: 10,
+      assistantTeacher: 'Nguyễn Thu Hà',
+      digiBookingIds: ['DG-2608-001', 'DG-2608-002', 'DG-2608-003', 'DG-2608-004', 'DG-2608-005', 'DG-2608-006'],
+    },
+    {
+      id: 'DIGI-SES-TOMORROW',
+      classCode: 'DIGI_LAB_02',
+      className: 'Ca tự học Digi',
+      subject: 'Tự học số',
+      teacher: 'Trợ giảng phụ trách',
+      assistantTeacher: 'Trần Minh Châu',
+      branch: 'RinoEdu Linh Đàm',
+      schoolRoom: 'Phòng Digi',
+      level: 'Digi Self-Paced',
+      date: toDateKey(addDays(today, 1)),
+      dateDisplay: `${PAD(addDays(today, 1).getDate())}/${PAD(addDays(today, 1).getMonth() + 1)}/${addDays(today, 1).getFullYear()}`,
+      dateBucket: 'upcoming',
+      timeLabel: '18:00',
+      endTimeLabel: '21:00',
+      status: 'pending',
+      statusLabel: 'Đã lên lịch',
+      type: 'digi_session',
+      typeLabel: 'Ca tự học Digi',
+      title: 'Ca tự học Digi tại trạm',
+      lessonSubtitle: 'Phòng Digi • 4 học viên (10 máy)',
+      totalStudents: 4,
+      officialStudents: 4,
+      trialStudents: 0,
+      attendedStudents: 0,
+      isRecurring: false,
+      roomCapacity: 10,
+      digiBookingIds: ['DG-2608-003', 'DG-2608-004', 'DG-2608-005', 'DG-2608-006'],
+    },
+  ]
+
+  return [...generated, ...digiSessions].sort((a, b) => `${a.date}T${a.timeLabel}`.localeCompare(`${b.date}T${b.timeLabel}`))
 }
 
 export function getMockEventSessions(): EventSession[] {

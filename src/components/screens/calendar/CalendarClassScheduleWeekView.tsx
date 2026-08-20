@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import type { ClassSession, WeekLayoutMode } from './calendarClassScheduleTypes'
 import { SessionCard } from './SessionCardV2'
 import { SessionHoverCard } from './SessionHoverCard'
-import { getSessionPeriod, toDateKey } from './calendarClassScheduleHelpers'
+import { getSessionPeriod, toDateKey, formatShiftLabel } from './calendarClassScheduleHelpers'
 import { formatMinute, parseScheduleTime as parseTime } from '@/components/screens/schedule/ScheduleTimeGrid'
 
 interface CalendarClassScheduleWeekViewProps {
@@ -166,7 +166,7 @@ export function CalendarClassScheduleWeekView({
                   {isMorningOpen && morningShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
                       <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{shift}</span>
+                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =
@@ -244,7 +244,7 @@ export function CalendarClassScheduleWeekView({
                   {isAfternoonOpen && afternoonShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
                       <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{shift}</span>
+                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =
@@ -322,7 +322,7 @@ export function CalendarClassScheduleWeekView({
                   {isEveningOpen && eveningShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
                       <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{shift}</span>
+                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =

@@ -148,10 +148,10 @@ export function ClassesSessionDetailDialog({
   }, [session.status, session.description, session.coverNote])
 
   const [commentText, setCommentText] = useState(initialComment)
-  const [prevInitialComment, setPrevInitialComment] = useState(initialComment)
+  const [prevSessionId, setPrevSessionId] = useState(session.id)
 
-  if (prevInitialComment !== initialComment) {
-    setPrevInitialComment(initialComment)
+  if (prevSessionId !== session.id) {
+    setPrevSessionId(session.id)
     setCommentText(initialComment)
   }
 

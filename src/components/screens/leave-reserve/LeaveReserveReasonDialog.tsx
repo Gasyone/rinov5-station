@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { LeaveReserveRequest } from '@/mocks/leaveReserve'
 
@@ -73,6 +73,9 @@ export function LeaveReserveReasonDialog({
               {titleText}
             </h2>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {mode === 'cancel' ? 'Nhập lý do hủy duyệt đơn' : 'Nhập lý do từ chối đơn'}
+          </DialogDescription>
         </div>
         
         <hr className="border-zinc-200/80 dark:border-zinc-800/80 -mx-6 my-2" />

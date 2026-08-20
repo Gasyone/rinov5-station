@@ -7,7 +7,6 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import type { ShiftSection } from '@/mocks/shiftRoster'
-import { WorkRegistrationActionBar } from './WorkRegistrationActionBar'
 import { WorkRegistrationStaffSectionGrid } from './WorkRegistrationStaffSectionGrid'
 import { WorkRegistrationTimeRangePicker } from './WorkRegistrationTimeRangePicker'
 
@@ -16,16 +15,21 @@ interface WorkRegistrationEditablePanelProps {
   records: WorkRegistrationRecord[]
   employees: WorkRegistrationEmployee[]
   activeEmployeeId: string
-  activeEmployeeName: string
+  activeEmployeeName?: string
   todayKey: string
   totalMinutes: number
-  priorityMinutes: number
+  priorityMinutes?: number
   readonlyWeek: boolean
-  priorityRules: WorkPrioritySlotRule[]
+  priorityRules?: WorkPrioritySlotRule[]
   canMutate: boolean
   primaryActionLabel: string
-  actionHelperText: string
-  onAddRange: (dates: string[], startTime: string, endTime: string) => void
+  actionHelperText?: string
+  onAddRange: (
+    dates: string[],
+    startTime: string,
+    endTime: string,
+    multipleRanges?: Array<{ startTime: string; endTime: string }>
+  ) => void
   onRemoveSlots: (date: string, slotIds: string[]) => void
   onToggleSection?: (date: string, section: ShiftSection) => void
   onClear?: () => void
@@ -37,15 +41,12 @@ export function WorkRegistrationEditablePanel({
   records,
   employees,
   activeEmployeeId,
-  activeEmployeeName,
   todayKey,
   totalMinutes,
-  priorityMinutes,
   readonlyWeek,
-  priorityRules,
+  priorityRules = [],
   canMutate,
   primaryActionLabel,
-  actionHelperText,
   onAddRange,
   onRemoveSlots,
   onToggleSection,
@@ -53,28 +54,21 @@ export function WorkRegistrationEditablePanel({
 }: WorkRegistrationEditablePanelProps) {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {/* THANH THÊM KHUNG GIỜ LÀM VIỆC THEO NGÀY */}
-      <WorkRegistrationTimeRangePicker
-        days={weekDays}
-        disabled={readonlyWeek || !canMutate}
-        onAddRange={onAddRange}
-      />
+      {/* THANH THÊM KHUNG GIỜ LÀM VIỆC THEO NGÀY + THỐNG KÊ & CẬP NHẬT */}
+      <div className="rounded-xl border border-border/80 bg-card p-3 shadow-2xs">
+        <WorkRegistrationTimeRangePicker
+          days={weekDays}
+          disabled={readonlyWeek || !canMutate}
+          totalMinutes={totalMinutes}
+          canMutate={canMutate}
+          primaryActionLabel={primaryActionLabel}
+          onSubmit={onSubmit}
+          onAddRange={onAddRange}
+        />
+      </div>
 
       {/* MA TRẬN CA LÀM VIỆC */}
-      <DataTableFrame
-        className="flex-1 min-h-0"
-        footer={
-          <WorkRegistrationActionBar
-            totalMinutes={totalMinutes}
-            priorityMinutes={priorityMinutes}
-            subjectLabel={activeEmployeeName}
-            canMutate={canMutate}
-            primaryLabel={primaryActionLabel}
-            helperText={actionHelperText}
-            onSubmit={onSubmit}
-          />
-        }
-      >
+      <DataTableFrame className="flex-1 min-h-0">
         <WorkRegistrationStaffSectionGrid
           days={weekDays}
           records={records}
