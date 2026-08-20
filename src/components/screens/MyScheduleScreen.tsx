@@ -76,7 +76,7 @@ export function MyScheduleScreen({
     setMounted(true)
   }, [])
 
-  const allClass = useMemo(() => getMockClassSessions(), [])
+  const allClass = useMemo(() => getMockClassSessions().filter((session) => session.type !== 'digi_session'), [])
   const allEvent = useMemo(() => getMockEventSessions().filter((session) => session.type === 'placement_test'), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [layoutType, setLayoutType] = useState<ScheduleLayoutType>('matrix')

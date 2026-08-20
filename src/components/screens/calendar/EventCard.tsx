@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { EventSession } from '@/mocks/calendarSchedule'
 import { mockBookingTests } from '@/mocks/bookingTests'
@@ -96,6 +96,10 @@ export function EventCard({
     : 'Trạng thái: chưa xác định'
   const statusColors = getStatusColors(booking ? resolveStatusSemantic(booking.status) : 'neutral')
 
+  const badgeLabel = (session.type === 'placement_test' || session.typeLabel === 'Trải nghiệm' || session.typeLabel === 'Lịch Trải nghiệm')
+    ? 'TN'
+    : session.typeLabel
+
   return (
     <SessionHoverCard session={session}>
       <div
@@ -107,34 +111,27 @@ export function EventCard({
           bgClass
         )}
       >
-        {/* Row 1: Time (Start Time Only) and Badge */}
+        {/* Row 1: Student Name & Badge (TN) */}
         <div className="mb-1 flex items-center justify-between gap-1.5 min-w-0">
-          <div className={cn("flex items-center gap-1 text-[10px] font-bold text-primary shrink-0", isCancelled && "text-muted-foreground")}>
-            <Clock className="h-3 w-3 shrink-0" />
-            <span>{session.timeLabel}</span>
-          </div>
-          {session.typeLabel && (
+          <h4 className={cn('text-[11px] font-bold leading-tight truncate min-w-0 flex-1', isCancelled && 'line-through text-muted-foreground')} title={studentName}>
+            {studentName}
+          </h4>
+          {badgeLabel && (
             <span className={cn(
-              "hidden min-[160px]:inline-flex items-center rounded px-1.5 py-0.5 text-[8px] font-bold border shrink-0 bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800 max-w-[80px] truncate"
+              "inline-flex items-center rounded px-1.5 py-0.5 text-[8px] font-bold border shrink-0 bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800"
             )}>
-              {session.typeLabel}
+              {badgeLabel}
             </span>
           )}
         </div>
 
-        {/* Row 2: Student Name - Teacher Name */}
-        <div className="flex items-center gap-1.5 min-w-0 w-full mt-0.5">
-          <h4 className={cn('text-[10px] font-bold leading-tight truncate shrink-0 max-w-[55%]', isCancelled && 'line-through text-muted-foreground')}>
-            {studentName}
-          </h4>
-          <span className="text-muted-foreground text-[10px] shrink-0">-</span>
-          <div className="flex items-center text-[9px] text-foreground font-medium min-w-0 flex-1">
-            <span className="truncate">{teacherName}</span>
-          </div>
+        {/* Row 2: Teacher Name */}
+        <div className="flex items-center text-[9.5px] text-muted-foreground font-medium min-w-0 truncate">
+          <span className="truncate">{teacherName}</span>
         </div>
 
         {/* Row 3: Subject - Level */}
-        <div className="mt-0.5 text-[9px] text-muted-foreground font-medium truncate">
+        <div className="mt-0.5 text-[9px] text-muted-foreground font-medium truncate" title={subjectAndLevel}>
           {subjectAndLevel}
         </div>
 

@@ -27,8 +27,6 @@ interface MyScheduleCardProps {
   activeBranch?: string
 }
 
-const lineClamp2 = 'overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]'
-
 export function MyScheduleCard({
   slot,
   compact,
@@ -142,10 +140,11 @@ export function MyScheduleCard({
           <div className="mb-1 flex items-start justify-between gap-1.5 w-full min-w-0">
             <h4
               className={cn(
-                'font-bold leading-tight flex-1 min-w-0',
-                compact ? `text-[10.5px] ${lineClamp2}` : 'truncate text-[13px]',
+                'font-bold leading-tight flex-1 min-w-0 truncate',
+                compact ? 'text-[10.5px]' : 'text-[13px]',
                 isCancelled && 'line-through text-muted-foreground'
               )}
+              title={slot.title}
             >
               {slot.title}
             </h4>

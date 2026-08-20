@@ -274,15 +274,6 @@ export function WorkRegistrationAssignStaffDialog({
                         {isSelected && <Check className="h-3.5 w-3.5" />}
                       </div>
 
-                      <div
-                        className={cn(
-                          'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white',
-                          staff.colorClass || 'bg-primary'
-                        )}
-                      >
-                        {staff.shortName}
-                      </div>
-
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-normal text-foreground truncate">{staff.name}</p>
                         <div className="mt-0.5 flex items-center">
@@ -354,19 +345,9 @@ export function WorkRegistrationAssignStaffDialog({
               <div className="flex flex-col h-full min-h-0 space-y-3">
                 {/* THÔNG TIN NHÂN SỰ HEADER */}
                 <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-border/50 shrink-0">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-2xs',
-                        focusedStaff.colorClass || 'bg-primary'
-                      )}
-                    >
-                      {focusedStaff.shortName}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-normal text-foreground truncate">{focusedStaff.name}</h4>
-                      <p className="text-[11px] text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs font-semibold text-foreground truncate">{focusedStaff.name}</h4>
+                    <p className="text-[11px] text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
                   </div>
 
                   <div className="text-right shrink-0">

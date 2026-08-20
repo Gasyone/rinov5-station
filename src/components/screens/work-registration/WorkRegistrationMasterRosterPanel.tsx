@@ -68,27 +68,26 @@ export function WorkRegistrationMasterRosterPanel({
     return map
   }, [weekDays])
 
-  // Lấy thông tin đăng ký của nhân viên cho ngày + buổi (trả về "Cả ca" nếu full hoặc mặc định, hoặc giờ lẻ e.g. "13:30 - 17:00")
+  // Lấy thông tin đăng ký của nhân viên cho ngày + buổi (trả về "Full ca" nếu full hoặc mặc định, hoặc giờ lẻ e.g. "13:30 - 17:00")
   const getStaffRegisteredTime = (employeeId: string, dayIndex: number, section: ShiftSection): string => {
     const dateKey = dayDateKeys[dayIndex]
-    const dutySec = DUTY_SECTIONS.find((s) => s.id === section)
-    const prefix = section === 'evening_digi' ? 'evening' : section
-    const sectionSlotIds = dutySec?.slots.map((t) => `${prefix}-${t.replace(':', '')}`) || []
+    const secId = section === 'evening_digi' ? 'evening' : section
+    const sectionAllSlots = WORK_TIME_SLOTS.filter((s) => s.section === secId)
 
-    if (dateKey && sectionSlotIds.length > 0 && records && records.length > 0) {
+    if (dateKey && sectionAllSlots.length > 0 && records && records.length > 0) {
       const empSlots = records
-        .filter((r) => r.employeeId === employeeId && r.date === dateKey && sectionSlotIds.includes(r.slotId))
+        .filter((r) => r.employeeId === employeeId && r.date === dateKey && r.slotId.startsWith(secId))
         .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId)!)
         .filter(Boolean)
         .sort((a, b) => a.start.localeCompare(b.start))
 
       if (empSlots.length > 0) {
-        if (empSlots.length >= sectionSlotIds.length) return 'Cả ca'
+        if (empSlots.length >= sectionAllSlots.length) return 'Full ca'
         return `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
       }
     }
 
-    return 'Cả ca'
+    return 'Full ca'
   }
 
   const isStaffMatch = (staff: DutyEmployee) => {
@@ -150,9 +149,11 @@ export function WorkRegistrationMasterRosterPanel({
                 <div
                   className={cn(
                     'shrink-0 flex items-center justify-between px-3.5 py-1.5 border-y text-xs font-bold transition-colors',
-                    isDigi
-                      ? 'bg-purple-500/10 dark:bg-purple-950/40 border-purple-500/20 text-purple-900 dark:text-purple-200'
-                      : 'bg-muted/60 dark:bg-muted/30 border-border/70 text-foreground'
+                    sec.id === 'morning'
+                      ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/20 text-amber-900 dark:text-amber-200'
+                      : sec.id === 'afternoon'
+                      ? 'bg-sky-500/10 dark:bg-sky-950/40 border-sky-500/20 text-sky-900 dark:text-sky-200'
+                      : 'bg-purple-500/10 dark:bg-purple-950/40 border-purple-500/20 text-purple-900 dark:text-purple-200'
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -160,7 +161,16 @@ export function WorkRegistrationMasterRosterPanel({
                     <span className="uppercase tracking-wider font-bold text-[11px]">
                       {sec.label}
                     </span>
-                    <span className="text-[11px] font-normal text-muted-foreground">
+                    <span
+                      className={cn(
+                        'text-[11px] font-normal',
+                        sec.id === 'morning'
+                          ? 'text-amber-700/80 dark:text-amber-400/80'
+                          : sec.id === 'afternoon'
+                          ? 'text-sky-700/80 dark:text-sky-400/80'
+                          : 'text-purple-700/80 dark:text-purple-400/80'
+                      )}
+                    >
                       ({sec.slots[0]} - {sec.slots[sec.slots.length - 1]})
                     </span>
                     {isDigi && (
@@ -254,14 +264,6 @@ export function WorkRegistrationMasterRosterPanel({
                                       : 'bg-muted/40 text-foreground'
                                   )}
                                 >
-                                  <div
-                                    className={cn(
-                                      'flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white',
-                                      isMatched ? 'bg-white text-primary' : (staff.colorClass || 'bg-primary')
-                                    )}
-                                  >
-                                    {staff.shortName}
-                                  </div>
                                   <span
                                     className={cn(
                                       'truncate text-[11px] font-medium',
@@ -278,7 +280,7 @@ export function WorkRegistrationMasterRosterPanel({
                                           'ml-auto shrink-0 text-[9px] font-semibold',
                                           isMatched
                                             ? 'text-primary-foreground/90'
-                                            : regTime === 'Cả ca'
+                                            : regTime === 'Full ca' || regTime === 'Full' || regTime === 'Cả ca'
                                             ? getStatusColors('success').text
                                             : 'text-muted-foreground'
                                         )}

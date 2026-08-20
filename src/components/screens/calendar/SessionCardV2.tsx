@@ -141,7 +141,7 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
           {session.type !== 'digi_session' && (
             <>
               <span className="text-muted-foreground text-[8px] shrink-0">•</span>
-              <span className="inline-flex items-center rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/50 px-1 py-0.5 text-[8.5px] font-bold shrink-0" title={session.schoolRoom}>
+              <span className="text-amber-700 dark:text-amber-400 text-[8.5px] font-bold shrink-0" title={session.schoolRoom}>
                 {session.schoolRoom}
               </span>
             </>

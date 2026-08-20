@@ -8,7 +8,8 @@ export interface WorkRegistrationGridSection {
   id: ShiftSection
   label: string
   icon: string
-  slots: string[]
+  start: string
+  end: string
 }
 
 export const WORK_REGISTRATION_GRID_SECTIONS: WorkRegistrationGridSection[] = [
@@ -16,19 +17,22 @@ export const WORK_REGISTRATION_GRID_SECTIONS: WorkRegistrationGridSection[] = [
     id: 'morning',
     label: 'Buổi sáng',
     icon: '☀️',
-    slots: ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'],
+    start: '08:00',
+    end: '12:00',
   },
   {
     id: 'afternoon',
     label: 'Buổi chiều',
     icon: '🌤',
-    slots: ['13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'],
+    start: '13:00',
+    end: '17:30',
   },
   {
     id: 'evening',
     label: 'Buổi tối',
     icon: '🌙',
-    slots: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'],
+    start: '17:30',
+    end: '22:00',
   },
 ]
 
@@ -84,8 +88,8 @@ export const WORK_STATUS_LABELS: Record<WorkRegistrationStatusFilter, string> = 
 
 export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string }> = [
   { value: 'mine', label: 'Đăng ký' },
-  { value: 'staff', label: 'Quản lý lịch học' },
-  { value: 'roster', label: 'Quản lý lịch trực' },
+  { value: 'staff', label: 'Lịch làm việc' },
+  { value: 'roster', label: 'Lịch trực test' },
   { value: 'center', label: 'Trường' },
   { value: 'holidays', label: 'Lịch nghỉ lễ' },
 ]

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { WEEKDAYS, type ShiftSection } from '@/mocks/shiftRoster'
 import {
   toWorkDateKey,
+  WORK_TIME_SLOTS,
   type WorkPrioritySlotRule,
   type WorkRegistrationEmployee,
   type WorkRegistrationRecord,
@@ -13,7 +14,6 @@ import {
 import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
 import { checkDateHoliday } from '@/mocks/holidays'
 import {
-  getInitials,
   groupConsecutiveSlots,
   resolveClassSessionHoverData,
 } from './workRegistrationHelpers'
@@ -98,14 +98,32 @@ export function WorkRegistrationStaffSectionGrid({
         {WORK_REGISTRATION_GRID_SECTIONS.map((sec) => (
           <div key={sec.id} className="flex-1 min-h-0 flex flex-col">
             {/* TIÊU ĐỀ CA CÓ PHỦ NỀN ĐẸP (RIBBON HEADER) */}
-            <div className="shrink-0 flex items-center justify-between px-3.5 py-1.5 bg-muted/60 dark:bg-muted/30 border-y border-border/70 text-xs font-bold text-foreground">
+            <div
+              className={cn(
+                'shrink-0 flex items-center justify-between px-3.5 py-1.5 border-y text-xs font-bold transition-colors',
+                sec.id === 'morning'
+                  ? 'bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/20 text-amber-900 dark:text-amber-200'
+                  : sec.id === 'afternoon'
+                  ? 'bg-sky-500/10 dark:bg-sky-950/40 border-sky-500/20 text-sky-900 dark:text-sky-200'
+                  : 'bg-purple-500/10 dark:bg-purple-950/40 border-purple-500/20 text-purple-900 dark:text-purple-200'
+              )}
+            >
               <div className="flex items-center gap-2">
                 <span>{sec.icon}</span>
-                <span className="uppercase tracking-wider font-bold text-[11px] text-foreground/90">
+                <span className="uppercase tracking-wider font-bold text-[11px]">
                   {sec.label}
                 </span>
-                <span className="text-[11px] font-normal text-muted-foreground">
-                  ({sec.slots[0]} - {sec.slots[sec.slots.length - 1]})
+                <span
+                  className={cn(
+                    'text-[11px] font-normal',
+                    sec.id === 'morning'
+                      ? 'text-amber-700/80 dark:text-amber-400/80'
+                      : sec.id === 'afternoon'
+                      ? 'text-sky-700/80 dark:text-sky-400/80'
+                      : 'text-purple-700/80 dark:text-purple-400/80'
+                  )}
+                >
+                  ({sec.start} - {sec.end})
                 </span>
               </div>
             </div>
@@ -150,7 +168,7 @@ export function WorkRegistrationStaffSectionGrid({
                             session={resolveClassSessionHoverData(
                               assignedClassRecord,
                               employeeById.get(assignedClassRecord.employeeId)?.name || 'Thu Hà',
-                              `${sec.slots[0]} - ${sec.slots[sec.slots.length - 1]}`,
+                              `${sec.start} - ${sec.end}`,
                               assignedClassRecord.branch || 'RinoEdu Linh Đàm'
                             )}
                           >
@@ -176,7 +194,14 @@ export function WorkRegistrationStaffSectionGrid({
                         {intervals.map((interval) => (
                           <div
                             key={`${interval.start}-${interval.end}`}
-                            className="flex items-center justify-between gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs text-primary shadow-2xs font-semibold hover:bg-primary/15 transition-colors"
+                            className={cn(
+                              'flex items-center justify-between gap-1 rounded-md border px-2 py-1 text-xs shadow-2xs font-semibold transition-colors',
+                              sec.id === 'morning'
+                                ? 'border-amber-300/80 bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-700/60 hover:bg-amber-100 dark:hover:bg-amber-900/60'
+                                : sec.id === 'afternoon'
+                                ? 'border-sky-300/80 bg-sky-50 text-sky-900 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-700/60 hover:bg-sky-100 dark:hover:bg-sky-900/60'
+                                : 'border-purple-300/80 bg-purple-50 text-purple-900 dark:bg-purple-950/60 dark:text-purple-200 dark:border-purple-700/60 hover:bg-purple-100 dark:hover:bg-purple-900/60'
+                            )}
                           >
                             <span className="text-xs font-semibold">{interval.start} - {interval.end}</span>
                             {!readonlyWeek && (
@@ -186,7 +211,14 @@ export function WorkRegistrationStaffSectionGrid({
                                   e.stopPropagation()
                                   onRemoveSlots?.(dateKey, interval.slotIds)
                                 }}
-                                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-primary/70 hover:bg-destructive/15 hover:text-destructive transition-colors cursor-pointer"
+                                className={cn(
+                                  'flex h-4 w-4 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer',
+                                  sec.id === 'morning'
+                                    ? 'text-amber-700/70 hover:bg-amber-200 hover:text-destructive'
+                                    : sec.id === 'afternoon'
+                                    ? 'text-sky-700/70 hover:bg-sky-200 hover:text-destructive'
+                                    : 'text-purple-700/70 hover:bg-purple-200 hover:text-destructive'
+                                )}
                                 title="Xóa khung giờ này"
                               >
                                 <X className="h-3 w-3" />
@@ -208,6 +240,8 @@ export function WorkRegistrationStaffSectionGrid({
                 // -------------------------------------------------------------
                 // TRƯỜNG HỢP 2: XEM TỔNG QUAN TOÀN BỘ CƠ SỞ (AGGREGATE OVERVIEW)
                 // -------------------------------------------------------------
+                const sectionAllSlots = WORK_TIME_SLOTS.filter((s) => s.section === sec.id)
+
                 return (
                   <div
                     key={dateKey}
@@ -240,34 +274,35 @@ export function WorkRegistrationStaffSectionGrid({
                       {/* Danh sách nhân sự đăng ký trong ca */}
                       <div className="space-y-1.5 pt-0.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
                         {registeredEmployees.slice(0, 4).map((emp) => {
-                          // Tính khung giờ đăng ký của nhân viên cho ngày + ca này
-                          const empSectionSlots = sectionRecords
-                            .filter((r) => r.employeeId === emp.id)
-                            .map((r) => {
-                              const slot = sec.slots.find((s) => `${sec.id}-${s.replace(':', '')}` === r.slotId)
-                              return slot || null
-                            })
-                            .filter(Boolean)
-                            .sort() as string[]
-                          // Full ca → không hiển thị giờ, chỉ giờ lẻ mới hiển thị
-                          const isFullSection = empSectionSlots.length >= sec.slots.length
-                          const timeLabel = empSectionSlots.length > 0 && !isFullSection
-                            ? `${empSectionSlots[0]} - ${empSectionSlots[empSectionSlots.length - 1]}`
+                          const empSectionRecords = sectionRecords.filter((r) => r.employeeId === emp.id)
+                          const empSlotIdSet = new Set(empSectionRecords.map((r) => r.slotId))
+                          const empSlots = sectionAllSlots.filter((s) => empSlotIdSet.has(s.id))
+
+                          // Full ca → hiển thị "Full ca", giờ lẻ hiển thị khoảng thời gian
+                          const isFullSection = empSlots.length > 0 && empSlots.length >= sectionAllSlots.length
+                          const timeLabel = isFullSection
+                            ? 'Full ca'
+                            : empSlots.length > 0
+                            ? `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
                             : null
 
                           return (
                             <div
                               key={emp.id}
-                              className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2 py-1 text-xs"
+                              className="flex items-center justify-between gap-1.5 rounded-md bg-muted/40 px-2 py-1 text-xs hover:bg-muted/60 transition-colors"
                             >
-                              <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/80 text-[7px] font-bold text-white">
-                                {getInitials(emp.name)}
-                              </div>
                               <span className="truncate text-[11px] font-medium text-foreground">
                                 {emp.name}
                               </span>
                               {timeLabel && (
-                                <span className="ml-auto shrink-0 text-[9px] font-medium text-muted-foreground tabular-nums">
+                                <span
+                                  className={cn(
+                                    'ml-auto shrink-0 text-[9.5px] tabular-nums px-1.5 py-0.2 rounded font-semibold',
+                                    isFullSection
+                                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 font-bold border border-emerald-300/40'
+                                      : 'text-muted-foreground bg-muted/70'
+                                  )}
+                                >
                                   {timeLabel}
                                 </span>
                               )}

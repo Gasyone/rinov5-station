@@ -32,7 +32,9 @@ export function buildUnifiedSlots(
   eventSessions: EventSession[]
 ): UnifiedSlot[] {
   return [
-    ...classSessions.map((session) => ({
+    ...classSessions
+      .filter((session) => session.type !== 'digi_session')
+      .map((session) => ({
       id: session.id,
       scheduleType: 'class' as const,
       title: session.title,
