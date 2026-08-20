@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatMinutes } from './workRegistrationHelpers'
+import { formatMinutesShort, getEmployeeRoleLabel } from './workRegistrationHelpers'
 import type { EmployeeWeekSummary } from './workRegistrationTypes'
 
 interface WorkRegistrationStaffTableProps {
@@ -99,18 +99,18 @@ export function WorkRegistrationStaffTable({
                       {summary.employee.name}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {summary.employee.code} · {summary.employee.position}
+                      {summary.employee.code} · {getEmployeeRoleLabel(summary.employee.id, summary.employee.position, summary.employee.department)}
                     </p>
                   </div>
                 </td>
                 <td className="py-2.5 px-3 text-right whitespace-nowrap">
                   {summary.totalMinutes > 0 ? (
                     <span className="font-semibold text-xs text-primary tabular-nums">
-                      {formatMinutes(summary.totalMinutes)}
+                      {formatMinutesShort(summary.totalMinutes)}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground/60 text-[11px] font-normal italic">
-                      Chưa đăng ký
+                    <span className="text-muted-foreground/60 text-xs font-normal tabular-nums">
+                      0:00
                     </span>
                   )}
                 </td>

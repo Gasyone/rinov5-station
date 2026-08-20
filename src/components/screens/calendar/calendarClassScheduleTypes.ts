@@ -1,6 +1,6 @@
 import type { ClassSession } from '@/mocks/calendarSchedule'
 
-export type ViewMode = 'day' | 'week' | 'list'
+export type ViewMode = 'day' | 'week'
 export type WeekLayoutMode = 'shifts' | 'timeline'
 
 export interface FilterState {

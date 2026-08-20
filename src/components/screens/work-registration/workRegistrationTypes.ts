@@ -84,8 +84,8 @@ export const WORK_STATUS_LABELS: Record<WorkRegistrationStatusFilter, string> = 
 
 export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string }> = [
   { value: 'mine', label: 'Đăng ký' },
-  { value: 'roster', label: 'Quản lý lịch trực' },
   { value: 'staff', label: 'Quản lý lịch học' },
+  { value: 'roster', label: 'Quản lý lịch trực' },
   { value: 'center', label: 'Trường' },
   { value: 'holidays', label: 'Lịch nghỉ lễ' },
 ]

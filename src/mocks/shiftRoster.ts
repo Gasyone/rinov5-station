@@ -1,7 +1,6 @@
-import { mockEmployees, type Employee } from './employees'
 import { mockBookingTests, type BookingTest } from './bookingTests'
 import { getMockClassSessions } from './calendarSchedule'
-import { getMockWorkRegistrations, toWorkDateKey } from './workRegistrations'
+import { getMockWorkRegistrations } from './workRegistrations'
 
 export type ShiftSection = 'morning' | 'afternoon' | 'evening' | 'evening_digi'
 
@@ -133,111 +132,111 @@ export const ALL_DUTY_EMPLOYEES: DutyEmployee[] = [
 // Master Shift Template Cố định ban đầu cho các chi nhánh
 const initialMasterRoster: MasterShiftAssignment[] = [
   // --- RinoEdu Nguyễn Tuân ---
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t1', 't3', 'e3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t2', 'e2', 't3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t1', 't2', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t1', 't3', 'e3', 'nt1', 'nt3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t2', 'e2', 't3', 'nt2'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t1', 't2', 'e3', 'nt4'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t2', 't3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t1', 'e2'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t3', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t2', 't3', 'nt4', 'e6'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t1', 'e2', 'nt1'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t3', 'e3', 'nt1', 'nt2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e3', 'e2'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t1', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3', 'nt3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e3', 'e2', 'nt4', 'e8'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t1', 't3', 'nt2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t3', 'e3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t1', 't2'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t2', 'e2', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t3', 'e3', 'nt1'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t1', 't2', 'nt3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t2', 'e2', 't3', 'nt4'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t1', 't2', 'e3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t3', 'e2'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t1', 't2'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t1', 't2', 'e3', 'nt2'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t3', 'e2', 'nt1', 'nt4'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t1', 't2', 'nt3'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3', 'e3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t1', 't3', 'e2'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t2', 'e3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t1', 't2', 't3', 'e3', 'nt1'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t1', 't3', 'e2', 'nt2'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t2', 'e3', 'nt4'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_nt1', 'tg_nt2'] },
 
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t1', 't3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t2', 'e3'] },
-  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t1', 't2', 't3'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t1', 't3', 'nt3', 'nt4'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t2', 'e3', 'nt1'] },
+  { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t1', 't2', 't3', 'nt2'] },
   { branch: 'RinoEdu Nguyễn Tuân', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_nt2'] },
 
   // --- RinoEdu Linh Đàm ---
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'ld1', 'ld3'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10', 'ld2', 'ld4'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['t5', 'e10', 'ld5', 'ld6'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t5', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t4', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t5', 'e10', 'ld2', 'ld5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['t4', 't5', 'ld1', 'ld3'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['t4', 'e10', 'ld6', 'e12'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_ld2'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t4', 't5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'ld4', 'ld6'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10', 'ld2', 'ld3'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['t4', 't5', 'ld1', 'ld5'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t5', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t4', 't5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['t5', 'e10', 'ld1', 'ld3'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10', 'ld5', 'ld6'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['t4', 't5', 'ld2', 'ld4'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_ld3'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'e10', 'ld2'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['t4', 't5', 'ld4', 'ld6'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['t5', 'e10', 'ld1', 'ld3'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t5', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'ld1', 'ld5', 'e7'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['t4', 'e10', 'ld2', 'ld6'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t5', 'e10', 'ld3', 'ld4'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_ld1', 'tg_ld2'] },
 
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t4', 't5'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10'] },
-  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t4', 'e10'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['t4', 't5', 'ld3', 'ld6'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t5', 'e10', 'ld1', 'ld5'] },
+  { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['t4', 'e10', 'ld2', 'ld4'] },
   { branch: 'RinoEdu Linh Đàm', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_ld2'] },
 
   // --- RinoEdu Smart City ---
-  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'morning', assignedEmployeeIds: ['e1', 'e4', 'e5', 'sc1', 'sc3', 'e9'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5', 'sc4', 'tg_sc2'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'evening', assignedEmployeeIds: ['e4', 't6', 'sc5', 'sc6'] },
   { branch: 'RinoEdu Smart City', dayIndex: 0, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'morning', assignedEmployeeIds: ['t6', 'e5', 'sc2', 'sc4'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5', 'sc1', 'sc6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'evening', assignedEmployeeIds: ['e4', 't6', 'sc5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 1, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['e4', 't6'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e5', 't6'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['e4', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'morning', assignedEmployeeIds: ['e1', 'e4', 't6', 'sc3', 'sc4'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'afternoon', assignedEmployeeIds: ['e5', 't6', 'sc5', 'tg_sc1'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'evening', assignedEmployeeIds: ['e4', 'e5', 'sc2'] },
   { branch: 'RinoEdu Smart City', dayIndex: 2, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'morning', assignedEmployeeIds: ['e4', 'e5', 'sc1', 'tg_sc1'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5', 'sc3', 'sc6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'evening', assignedEmployeeIds: ['e4', 't6', 'e9', 'sc5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 3, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['e4', 't6'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['e4', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'morning', assignedEmployeeIds: ['t6', 'e5', 'sc4', 'sc5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'afternoon', assignedEmployeeIds: ['e4', 't6', 'tg_sc2', 'sc1'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'evening', assignedEmployeeIds: ['e4', 'e5', 'sc6', 'sc2'] },
   { branch: 'RinoEdu Smart City', dayIndex: 4, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['e4', 't6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t6', 'e5'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'morning', assignedEmployeeIds: ['e1', 'e4', 't6', 'e5', 'sc2'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'afternoon', assignedEmployeeIds: ['e4', 'e5', 'sc3', 'sc4'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'evening', assignedEmployeeIds: ['t6', 'e5', 'sc1', 'sc5'] },
   { branch: 'RinoEdu Smart City', dayIndex: 5, section: 'evening_digi', assignedEmployeeIds: ['tg_sc1', 'tg_sc2'] },
 
-  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['e4', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5'] },
-  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['e4', 't6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'morning', assignedEmployeeIds: ['e4', 'e5', 'sc1', 'sc3'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'afternoon', assignedEmployeeIds: ['t6', 'e5', 'sc2', 'sc6'] },
+  { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'evening', assignedEmployeeIds: ['e4', 't6', 'sc4', 'e9'] },
   { branch: 'RinoEdu Smart City', dayIndex: 6, section: 'evening_digi', assignedEmployeeIds: ['tg_sc2'] },
 ]
 
@@ -410,7 +409,7 @@ export function checkStaffConflict(
         conflictDetail: `Đang dạy lớp ${matchingClass.className} (${matchingClass.timeLabel}-${matchingClass.endTimeLabel})`,
       }
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 

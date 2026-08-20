@@ -7,12 +7,32 @@ import {
   type WorkPrioritySlotRule,
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
+import { ALL_DUTY_EMPLOYEES } from '@/mocks/shiftRoster'
 import type {
   BranchWeekSummary,
   EmployeeWeekSummary,
   WorkRegistrationActionState,
   WorkRegistrationStatusFilter,
 } from './workRegistrationTypes'
+
+export function getEmployeeRoleLabel(employeeId: string, position?: string, department?: string): string {
+  const dutyEmp = ALL_DUTY_EMPLOYEES.find((e) => e.id === employeeId)
+  if (dutyEmp) {
+    if (dutyEmp.role === 'Khác') {
+      if (position?.toLowerCase().includes('manager') || department === 'Management') return 'Quản lý'
+      if (position?.toLowerCase().includes('it') || department === 'IT') return 'IT Support'
+      if (position?.toLowerCase().includes('accounting') || department === 'Finance') return 'Kế toán'
+      if (position?.toLowerCase().includes('reception') || department === 'Admin') return 'Lễ tân'
+      return 'Khác'
+    }
+    return dutyEmp.role
+  }
+  if (position?.toLowerCase().includes('manager') || department === 'Management') return 'Quản lý'
+  if (position?.toLowerCase().includes('teacher')) return 'Giáo viên'
+  if (position?.toLowerCase().includes('assistant')) return 'Trợ giảng'
+  if (position?.toLowerCase().includes('csm') || position?.toLowerCase().includes('cs') || position?.toLowerCase().includes('sale')) return 'CS'
+  return position || 'Nhân viên'
+}
 
 export const formatWorkWeekRange = (weekStart: Date) => {
   const days = getWorkWeekDays(weekStart)

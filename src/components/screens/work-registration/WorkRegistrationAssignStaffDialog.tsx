@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ExpandableSearch } from '@/components/controls'
 import { cn } from '@/lib/utils'
-import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
+import { getStatusColors } from '@/lib/statusColors'
 import {
   DUTY_SECTIONS,
   WEEKDAYS,
@@ -101,10 +101,10 @@ export function WorkRegistrationAssignStaffDialog({
     return allStaff.find((s) => s.id === focusedStaffId) || filteredStaff[0] || allStaff[0]
   }, [allStaff, filteredStaff, focusedStaffId])
 
-  // Lấy danh sách các ca trong tuần của nhân sự được focus (chỉ lấy các ca Sáng, Chiều, Tối)
+  // Lấy danh sách các ca trong tuần của nhân sự được focus
   const getStaffWeeklyShifts = (employeeId: string) => {
     return masterRoster
-      .filter((item) => item.branch === branchName && item.section !== 'evening_digi' && item.assignedEmployeeIds.includes(employeeId))
+      .filter((item) => item.branch === branchName && item.assignedEmployeeIds.includes(employeeId))
       .map((item) => {
         const day = WEEKDAYS.find((w) => w.index === item.dayIndex)
         const sec = DUTY_SECTIONS.find((s) => s.id === item.section)
@@ -144,11 +144,11 @@ export function WorkRegistrationAssignStaffDialog({
       .sort((a, b) => a.start.localeCompare(b.start))
 
     if (empSlots.length === 0) {
-      return { isFull: true, isPartial: false, timeRange: 'Cả ca' }
+      return { isFull: false, isPartial: false, timeRange: null }
     }
 
     const isFull = empSlots.length >= expectedSlotIds.length
-    const timeRange = isFull ? 'Cả ca' : `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
+    const timeRange = isFull ? null : `${empSlots[0].start} - ${empSlots[empSlots.length - 1].end}`
 
     return { isFull, isPartial: !isFull, timeRange }
   }
@@ -285,18 +285,18 @@ export function WorkRegistrationAssignStaffDialog({
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className="text-xs font-bold text-foreground truncate">{staff.name}</p>
+                        <p className="text-xs font-bold text-foreground truncate">{staff.name}</p>
+                        <div className="mt-0.5 flex items-center">
                           <span
                             className={cn(
-                              'inline-block text-[9px] px-1.5 py-0.2 rounded font-semibold',
+                              'text-[10.5px] font-normal leading-tight',
                               staff.role === 'Trợ giảng'
-                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300/40'
+                                ? 'text-purple-600 dark:text-purple-400'
                                 : staff.role === 'CS'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                ? 'text-emerald-600 dark:text-emerald-400'
                                 : staff.role === 'Khác'
-                                ? 'bg-slate-200 text-slate-700'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                                ? 'text-muted-foreground'
+                                : 'text-blue-600 dark:text-blue-400'
                             )}
                           >
                             {staff.role}
@@ -305,37 +305,31 @@ export function WorkRegistrationAssignStaffDialog({
                       </div>
                     </div>
 
-                    {/* PHẢI: BADGE CẢ CA / GIỜ LẺ + SỐ CA TRONG TUẦN & NÚT CHI TIẾT */}
+                    {/* PHẢI: GIỜ ĐĂNG KÝ (NẾU KHÔNG CẢ CA) Ở TRÊN + SỐ CA TRONG TUẦN & NÚT CHI TIẾT */}
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      {regInfo.isFull ? (
+                      <div className="flex flex-col items-end gap-0.5">
+                        {regInfo.isPartial && regInfo.timeRange ? (
+                          <span
+                            className="inline-flex items-center rounded px-1.5 py-0.2 text-[9px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 tabular-nums"
+                            title={`Giờ đăng ký: ${regInfo.timeRange}`}
+                          >
+                            {regInfo.timeRange}
+                          </span>
+                        ) : null}
+
                         <span
                           className={cn(
-                            'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold border',
-                            getStatusBadgeClass('ca_ca')
+                            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                            weeklyShifts.length > 0
+                              ? 'bg-muted text-foreground'
+                              : 'bg-muted/40 text-muted-foreground/60'
                           )}
+                          title={`Đã phân bổ ${weeklyShifts.length} ca trực trong tuần`}
                         >
-                          Cả ca
+                          {weeklyShifts.length} ca/tuần
                         </span>
-                      ) : regInfo.isPartial && regInfo.timeRange ? (
-                        <span
-                          className="inline-flex items-center rounded px-1.5 py-0.5 text-[9.5px] font-medium bg-muted text-muted-foreground border border-border/50 tabular-nums"
-                          title={`Đã đăng ký: ${regInfo.timeRange}`}
-                        >
-                          {regInfo.timeRange}
-                        </span>
-                      ) : null}
+                      </div>
 
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
-                          weeklyShifts.length > 0
-                            ? 'bg-muted text-foreground'
-                            : 'bg-muted/40 text-muted-foreground/60'
-                        )}
-                        title={`Đã phân bổ ${weeklyShifts.length} ca trực trong tuần`}
-                      >
-                        {weeklyShifts.length} ca/tuần
-                      </span>
                       <ChevronRight
                         className={cn(
                           'h-4 w-4 transition-colors',
@@ -386,9 +380,9 @@ export function WorkRegistrationAssignStaffDialog({
 
                 {/* MA TRẬN / TIMELINE 7 NGÀY TRỰC TRONG TUẦN */}
                 <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                  <div className="py-1 text-xs font-bold text-foreground flex items-center justify-between shrink-0">
+                  <div className="py-1 text-xs font-normal text-foreground flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Lịch các ngày trong tuần</span>
                     </div>
                     <span className="text-[10px] font-normal text-muted-foreground">
@@ -413,7 +407,7 @@ export function WorkRegistrationAssignStaffDialog({
                           <div className="flex items-center justify-between mb-1">
                             <span
                               className={cn(
-                                'text-[11px] font-bold',
+                                'text-[11px] font-semibold',
                                 isTargetDay ? 'text-primary' : 'text-foreground'
                               )}
                             >

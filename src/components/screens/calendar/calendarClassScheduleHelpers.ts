@@ -4,7 +4,6 @@ import type { FilterState, ViewMode } from './calendarClassScheduleTypes'
 export const VIEW_MODES: { value: ViewMode; label: string }[] = [
   { value: 'day', label: 'Ngày' },
   { value: 'week', label: 'Tuần' },
-  { value: 'list', label: 'Danh sách' },
 ]
 
 export const PERIOD_OPTIONS = [

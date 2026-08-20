@@ -85,23 +85,19 @@ export function CalendarClassScheduleToolbar({
           className="h-8 min-w-36"
         />
 
-        {viewMode !== 'list' && (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onSelectedDateChange(viewMode === 'day' ? new Date() : getMonday(new Date()))}
-            >
-              Hôm nay
-            </Button>
-            <div className="flex items-center gap-0.5">
-              <IconActionButton icon={ChevronLeft} label="Trước" onClick={() => onNavigate(-1)} className="size-7" />
-              <IconActionButton icon={ChevronRight} label="Sau" onClick={() => onNavigate(1)} className="size-7" />
-            </div>
-            <h2 className="text-sm font-semibold">{calendarTitle}</h2>
-          </>
-        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onSelectedDateChange(viewMode === 'day' ? new Date() : getMonday(new Date()))}
+        >
+          Hôm nay
+        </Button>
+        <div className="flex items-center gap-0.5">
+          <IconActionButton icon={ChevronLeft} label="Trước" onClick={() => onNavigate(-1)} className="size-7" />
+          <IconActionButton icon={ChevronRight} label="Sau" onClick={() => onNavigate(1)} className="size-7" />
+        </div>
+        <h2 className="text-sm font-semibold">{calendarTitle}</h2>
       </div>
 
       {/* Right side: View modes, search, filter */}

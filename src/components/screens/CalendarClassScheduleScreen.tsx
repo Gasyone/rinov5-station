@@ -9,7 +9,6 @@ import { toast } from 'sonner'
 import { SessionDetailDialog } from './calendar/SessionDetailDialog'
 import { DigiSessionDetailDialog } from './calendar/DigiSessionDetailDialog'
 import { CalendarClassScheduleToolbar } from './calendar/CalendarClassScheduleToolbar'
-import { CalendarClassScheduleListTable } from './calendar/CalendarClassScheduleListTable'
 import { CalendarClassScheduleWeekView } from './calendar/CalendarClassScheduleWeekView'
 import { CalendarClassScheduleDayView } from './calendar/CalendarClassScheduleDayView'
 import { CalendarClassScheduleFooter } from './calendar/CalendarClassScheduleFooter'
@@ -326,7 +325,7 @@ export function CalendarClassScheduleScreen() {
           />
           <CalendarClassScheduleFooter />
         </>
-      ) : viewMode === 'week' ? (
+      ) : (
         <>
           <CalendarClassScheduleWeekView
             weekDays={weekDays}
@@ -337,11 +336,6 @@ export function CalendarClassScheduleScreen() {
           />
           <CalendarClassScheduleFooter />
         </>
-      ) : (
-        <CalendarClassScheduleListTable
-          sessions={filtered}
-          onSelectSession={handleSelectSession}
-        />
       )}
 
       <FilterGroupSheetPanel
