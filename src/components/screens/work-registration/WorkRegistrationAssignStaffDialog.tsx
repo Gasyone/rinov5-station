@@ -6,6 +6,7 @@ import {
   Calendar,
   User,
   ChevronRight,
+  Search,
 } from 'lucide-react'
 import {
   Dialog,
@@ -15,7 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ExpandableSearch } from '@/components/controls'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { getStatusColors } from '@/lib/statusColors'
 import {
@@ -181,8 +182,8 @@ export function WorkRegistrationAssignStaffDialog({
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="w-[95vw] sm:max-w-3xl lg:max-w-4xl max-h-[88vh] flex flex-col gap-0 p-0 overflow-hidden">
-        {/* HEADER: TIÊU ĐỀ + TABS LỌC VAI TRÒ & SEARCH TRÊN CÙNG HEADER */}
-        <DialogHeader className="p-3 pb-2 border-b shrink-0 space-y-2">
+        {/* HEADER: TIÊU ĐỀ */}
+        <DialogHeader className="px-4 py-3 border-b shrink-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <DialogTitle className="text-sm font-bold text-foreground">
@@ -195,48 +196,46 @@ export function WorkRegistrationAssignStaffDialog({
               )}
             </div>
           </div>
-
-          {/* HÀNG BỘ LỌC VAI TRÒ (TRÁI) & SEARCH DẠNG ICON + ĐẾM CHỌN (PHẢI) */}
-          <div className="flex items-center justify-between gap-2 pt-0.5">
-            {/* TABS LỌC VAI TRÒ */}
-            <div className="flex items-center gap-1 flex-wrap">
-              {(['all', 'Trợ giảng', 'Giáo viên', 'CS', 'Khác'] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRoleFilter(r)}
-                  className={cn(
-                    'px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all cursor-pointer',
-                    roleFilter === r
-                      ? 'bg-primary text-primary-foreground shadow-2xs'
-                      : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {r === 'all' ? 'Tất cả' : r}
-                </button>
-              ))}
-            </div>
-
-            {/* SEARCH DẠNG ICON EXPANDABLE & SỐ LƯỢNG ĐÃ CHỌN */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] font-medium text-muted-foreground hidden sm:inline-block">
-                Đã chọn: <strong className="text-primary font-bold">{selectedIds.length}</strong>
-              </span>
-              <ExpandableSearch
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                label="Tìm nhân sự"
-                placeholder="Tìm theo tên..."
-                inputClassName="sm:w-44"
-              />
-            </div>
-          </div>
         </DialogHeader>
 
         {/* BODY: 2 PANELS (TRÁI: DANH SÁCH NHÂN SỰ, PHẢI: LỊCH TRỰC CHI TIẾT) */}
         <div className="grid grid-cols-2 flex-1 min-h-0 overflow-hidden divide-x divide-border">
-          {/* PANEL TRÁI: DANH SÁCH NHÂN SỰ ĐỂ PHÂN BỔ */}
-          <div className="p-3 flex flex-col min-h-0 overflow-hidden">
+          {/* PANEL TRÁI: TOOLBAR + DANH SÁCH NHÂN SỰ */}
+          <div className="p-3 flex flex-col min-h-0 overflow-hidden space-y-2.5">
+            {/* HÀNG BỘ LỌC VAI TRÒ & SEARCH GỌN GÀNG TRONG PANEL TRÁI */}
+            <div className="flex items-center justify-between gap-1.5 shrink-0">
+              {/* TABS LỌC VAI TRÒ */}
+              <div className="flex items-center gap-1 flex-wrap">
+                {(['all', 'Trợ giảng', 'Giáo viên', 'CS', 'Khác'] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRoleFilter(r)}
+                    className={cn(
+                      'px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all cursor-pointer',
+                      roleFilter === r
+                        ? 'bg-primary text-primary-foreground shadow-2xs'
+                        : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {r === 'all' ? 'Tất cả' : r}
+                  </button>
+                ))}
+              </div>
+
+              {/* SEARCH INPUT NHỎ GỌN TRỰC TIẾP TRONG PANEL TRÁI */}
+              <div className="relative flex items-center shrink-0">
+                <Search className="h-3.5 w-3.5 absolute left-2 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Tìm theo tên..."
+                  className="h-7 w-28 sm:w-32 text-xs pl-7 pr-2 bg-background border-border/80"
+                />
+              </div>
+            </div>
+
+            {/* DANH SÁCH NHÂN SỰ */}
             <div className="space-y-1 flex-1 min-h-0 overflow-y-auto pr-1">
               {filteredStaff.map((staff) => {
                 const isSelected = selectedIds.includes(staff.id)
@@ -251,7 +250,7 @@ export function WorkRegistrationAssignStaffDialog({
                     className={cn(
                       'flex items-center justify-between rounded-lg px-2.5 py-2 cursor-pointer transition-all',
                       isFocused
-                        ? 'bg-primary/10 text-foreground font-medium'
+                        ? 'bg-primary/10 text-foreground'
                         : isSelected
                         ? 'bg-primary/5 text-foreground hover:bg-primary/10'
                         : 'hover:bg-muted/50 text-foreground'
@@ -285,7 +284,7 @@ export function WorkRegistrationAssignStaffDialog({
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-foreground truncate">{staff.name}</p>
+                        <p className="text-xs font-normal text-foreground truncate">{staff.name}</p>
                         <div className="mt-0.5 flex items-center">
                           <span
                             className={cn(
@@ -319,10 +318,10 @@ export function WorkRegistrationAssignStaffDialog({
 
                         <span
                           className={cn(
-                            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                            'text-[11px] font-normal tabular-nums',
                             weeklyShifts.length > 0
-                              ? 'bg-muted text-foreground'
-                              : 'bg-muted/40 text-muted-foreground/60'
+                              ? 'text-muted-foreground'
+                              : 'text-muted-foreground/50'
                           )}
                           title={`Đã phân bổ ${weeklyShifts.length} ca trực trong tuần`}
                         >
@@ -365,14 +364,14 @@ export function WorkRegistrationAssignStaffDialog({
                       {focusedStaff.shortName}
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-foreground truncate">{focusedStaff.name}</h4>
+                      <h4 className="text-xs font-normal text-foreground truncate">{focusedStaff.name}</h4>
                       <p className="text-[11px] text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
                     <span className="text-[10px] text-muted-foreground block">Lịch trực tuần</span>
-                    <span className="text-xs font-bold text-primary tabular-nums">
+                    <span className="text-xs font-medium text-primary tabular-nums">
                       {focusedWeeklyShifts.length} ca
                     </span>
                   </div>
@@ -407,7 +406,7 @@ export function WorkRegistrationAssignStaffDialog({
                           <div className="flex items-center justify-between mb-1">
                             <span
                               className={cn(
-                                'text-[11px] font-semibold',
+                                'text-[11px] font-medium',
                                 isTargetDay ? 'text-primary' : 'text-foreground'
                               )}
                             >
@@ -420,7 +419,7 @@ export function WorkRegistrationAssignStaffDialog({
                             </span>
 
                             {dayShifts.length > 0 ? (
-                              <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">
+                              <span className="text-[10px] font-normal text-muted-foreground tabular-nums">
                                 {dayShifts.length} ca
                               </span>
                             ) : (

@@ -12,7 +12,6 @@ import { CareDashboardView } from './CareDashboardView'
 import { CareJourneyModal } from './CareJourneyModal'
 import { toast } from 'sonner'
 import {
-  parseAttendanceRate,
   getStudentActiveTags,
   hasActiveTags,
   isOverdue,
@@ -52,10 +51,6 @@ export function OperationsAlertScreen() {
   const [selectedCareTypes, setSelectedCareTypes] = useState<Set<string>>(new Set())
   
   // Custom numeric comparison indicators
-  const [attendanceMin, setAttendanceMin] = useState('')
-  const [attendanceMax, setAttendanceMax] = useState('')
-  const [homeworkMin, setHomeworkMin] = useState('')
-  const [homeworkMax, setHomeworkMax] = useState('')
   const [scoreMin, setScoreMin] = useState('')
   const [scoreMax, setScoreMax] = useState('')
   const [sessionMin, setSessionMin] = useState('')
@@ -71,7 +66,6 @@ export function OperationsAlertScreen() {
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
   
-  const [selectedTrends, setSelectedTrends] = useState<Set<string>>(new Set())
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   // Pagination states
@@ -214,16 +208,6 @@ export function OperationsAlertScreen() {
       })
     }
 
-    // Filter by attendance range (min/max input)
-    if (attendanceMin !== '' || attendanceMax !== '') {
-      res = res.filter((item) => {
-        const rate = parseAttendanceRate(item.attendanceRatio)
-        const minVal = attendanceMin !== '' ? parseFloat(attendanceMin) : 0
-        const maxVal = attendanceMax !== '' ? parseFloat(attendanceMax) : 100
-        return rate >= minVal && rate <= maxVal
-      })
-    }
-
     // Filter by consecutive absences
     if (selectedAbsences.size > 0) {
       res = res.filter((item) => {
@@ -233,16 +217,6 @@ export function OperationsAlertScreen() {
         if (selectedAbsences.has('3') && count === 3) return true
         if (selectedAbsences.has('4+') && count >= 4) return true
         return false
-      })
-    }
-
-    // Filter by homework range (min/max input)
-    if (homeworkMin !== '' || homeworkMax !== '') {
-      res = res.filter((item) => {
-        const hw = item.homeworkCompletion
-        const minVal = homeworkMin !== '' ? parseFloat(homeworkMin) : 0
-        const maxVal = homeworkMax !== '' ? parseFloat(homeworkMax) : 100
-        return hw >= minVal && hw <= maxVal
       })
     }
 
@@ -287,19 +261,6 @@ export function OperationsAlertScreen() {
         const minVal = sessionMin !== '' ? parseInt(sessionMin, 10) : 0
         const maxVal = sessionMax !== '' ? parseInt(sessionMax, 10) : 9999
         return rem >= minVal && rem <= maxVal
-      })
-    }
-
-    // Filter by academic trend
-    if (selectedTrends.size > 0) {
-      res = res.filter((item) => {
-        const isDecline = item.lastTestScore < item.priorTestScore
-        const isImprove = item.lastTestScore > item.priorTestScore
-        const isStable = item.lastTestScore === item.priorTestScore
-        if (selectedTrends.has('decline') && isDecline) return true
-        if (selectedTrends.has('improve') && isImprove) return true
-        if (selectedTrends.has('stable') && isStable) return true
-        return false
       })
     }
 
@@ -390,10 +351,6 @@ export function OperationsAlertScreen() {
     selectedCalls,
     selectedClasses,
     selectedCareTypes,
-    attendanceMin,
-    attendanceMax,
-    homeworkMin,
-    homeworkMax,
     scoreMin,
     scoreMax,
     sessionMin,
@@ -401,7 +358,6 @@ export function OperationsAlertScreen() {
     selectedAbsences,
     selectedHomeworks,
     selectedLowScores,
-    selectedTrends,
     selectedMonths,
     fromDate,
     toDate,
@@ -510,14 +466,11 @@ export function OperationsAlertScreen() {
       selectedCalls.size > 0,
       selectedClasses.size > 0,
       selectedCareTypes.size > 0,
-      attendanceMin !== '' || attendanceMax !== '',
-      homeworkMin !== '' || homeworkMax !== '',
       scoreMin !== '' || scoreMax !== '',
       sessionMin !== '' || sessionMax !== '',
       selectedAbsences.size > 0,
       selectedHomeworks.size > 0,
       selectedLowScores.size > 0,
-      selectedTrends.size > 0,
       selectedMonths.size > 0,
       fromDate !== '',
       toDate !== '',
@@ -530,10 +483,6 @@ export function OperationsAlertScreen() {
     selectedCalls,
     selectedClasses,
     selectedCareTypes,
-    attendanceMin,
-    attendanceMax,
-    homeworkMin,
-    homeworkMax,
     scoreMin,
     scoreMax,
     sessionMin,
@@ -541,7 +490,6 @@ export function OperationsAlertScreen() {
     selectedAbsences,
     selectedHomeworks,
     selectedLowScores,
-    selectedTrends,
     selectedMonths,
     fromDate,
     toDate,
@@ -556,13 +504,8 @@ export function OperationsAlertScreen() {
     selectedAbsences,
     selectedHomeworks,
     selectedLowScores,
-    selectedTrends,
     selectedCalls,
     selectedClasses,
-    attendanceMin,
-    attendanceMax,
-    homeworkMin,
-    homeworkMax,
     scoreMin,
     scoreMax,
     sessionMin,
@@ -581,13 +524,8 @@ export function OperationsAlertScreen() {
     setSelectedAbsences,
     setSelectedHomeworks,
     setSelectedLowScores,
-    setSelectedTrends,
     setSelectedCalls,
     setSelectedClasses,
-    setAttendanceMin,
-    setAttendanceMax,
-    setHomeworkMin,
-    setHomeworkMax,
     setScoreMin,
     setScoreMax,
     setSessionMin,

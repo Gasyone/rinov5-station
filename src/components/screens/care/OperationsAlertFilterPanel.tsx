@@ -15,13 +15,8 @@ export interface FilterState {
   selectedAbsences: Set<string>
   selectedHomeworks: Set<string>
   selectedLowScores: Set<string>
-  selectedTrends: Set<string>
   selectedCalls: Set<string>
   selectedClasses: Set<string>
-  attendanceMin: string
-  attendanceMax: string
-  homeworkMin: string
-  homeworkMax: string
   scoreMin: string
   scoreMax: string
   sessionMin: string
@@ -40,13 +35,8 @@ export interface FilterActions {
   setSelectedAbsences: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedHomeworks: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedLowScores: React.Dispatch<React.SetStateAction<Set<string>>>
-  setSelectedTrends: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedCalls: React.Dispatch<React.SetStateAction<Set<string>>>
   setSelectedClasses: React.Dispatch<React.SetStateAction<Set<string>>>
-  setAttendanceMin: (v: string) => void
-  setAttendanceMax: (v: string) => void
-  setHomeworkMin: (v: string) => void
-  setHomeworkMax: (v: string) => void
   setScoreMin: (v: string) => void
   setScoreMax: (v: string) => void
   setSessionMin: (v: string) => void
@@ -95,7 +85,6 @@ export function OperationsAlertFilterPanel({
     else if (groupId === 'careStatuses') actions.setSelectedCareStatuses(updateSet)
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(updateSet)
     else if (groupId === 'careTypes') actions.setSelectedCareTypes(updateSet)
-    else if (groupId === 'trends') actions.setSelectedTrends(updateSet)
     else if (groupId === 'callConfirmations' || groupId === 'careResults') actions.setSelectedCalls(updateSet)
     else if (groupId === 'classes') actions.setSelectedClasses(updateSet)
     
@@ -108,10 +97,6 @@ export function OperationsAlertFilterPanel({
     actions.setSelectedCareStatuses(new Set())
     actions.setSelectedAlerts(new Set())
     actions.setSelectedCareTypes(new Set())
-    actions.setAttendanceMin('')
-    actions.setAttendanceMax('')
-    actions.setHomeworkMin('')
-    actions.setHomeworkMax('')
     actions.setScoreMin('')
     actions.setScoreMax('')
     actions.setSessionMin('')
@@ -119,7 +104,6 @@ export function OperationsAlertFilterPanel({
     actions.setSelectedAbsences(new Set())
     actions.setSelectedHomeworks(new Set())
     actions.setSelectedLowScores(new Set())
-    actions.setSelectedTrends(new Set())
     actions.setSelectedCalls(new Set())
     actions.setSelectedClasses(new Set())
     actions.setSelectedMonths(new Set())
@@ -139,12 +123,8 @@ export function OperationsAlertFilterPanel({
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(new Set())
     else if (groupId === 'careTypes') actions.setSelectedCareTypes(new Set())
     else if (groupId === 'attendance') {
-      actions.setAttendanceMin('')
-      actions.setAttendanceMax('')
       actions.setSelectedAbsences(new Set())
     } else if (groupId === 'homework') {
-      actions.setHomeworkMin('')
-      actions.setHomeworkMax('')
       actions.setSelectedHomeworks(new Set())
     } else if (groupId === 'scores') {
       actions.setScoreMin('')
@@ -153,9 +133,11 @@ export function OperationsAlertFilterPanel({
     } else if (groupId === 'sessions') {
       actions.setSessionMin('')
       actions.setSessionMax('')
-    } else if (groupId === 'trends') actions.setSelectedTrends(new Set())
-    else if (groupId === 'callConfirmations' || groupId === 'careResults') actions.setSelectedCalls(new Set())
-    else if (groupId === 'classes') actions.setSelectedClasses(new Set())
+    } else if (groupId === 'callConfirmations' || groupId === 'careResults') {
+      actions.setSelectedCalls(new Set())
+    } else if (groupId === 'classes') {
+      actions.setSelectedClasses(new Set())
+    }
     actions.resetPagination()
   }
 
@@ -202,7 +184,7 @@ export function OperationsAlertFilterPanel({
               </div>
             </div>
 
-            {/* Lọc theo khoảng thời gian (1 Dòng duy nhất) */}
+            {/* Lọc theo khoảng thời gian */}
             <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
                 Khoảng thời gian tác nghiệp (Từ ngày - Đến ngày)
@@ -306,81 +288,44 @@ export function OperationsAlertFilterPanel({
       }),
       createFilterGroup({
         id: 'attendance',
-        title: 'Chuyên cần',
+        title: 'Chuyên cần (Số buổi nghỉ)',
         options: [],
         defaultOpen: false,
         customContent: (
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                Khoảng chuyên cần
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    placeholder="Từ %"
-                    value={state.attendanceMin}
-                    onChange={(e) => {
-                      actions.setAttendanceMin(e.target.value)
+          <div className="space-y-2.5">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              Mức độ nghỉ học liên tiếp
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: '1', label: 'Nghỉ 1 buổi' },
+                { value: '2', label: 'Nghỉ 2 buổi liên tiếp' },
+                { value: '3', label: 'Nghỉ 3 buổi liên tiếp' },
+                { value: '4+', label: 'Nghỉ >= 4 buổi' }
+              ].map((opt) => (
+                <label key={opt.value} className="flex cursor-pointer items-center gap-2 rounded-md hover:bg-accent/50 p-1 text-xs select-none">
+                  <Checkbox
+                    checked={state.selectedAbsences.has(opt.value)}
+                    onCheckedChange={(checked) => {
+                      actions.setSelectedAbsences((prev) => {
+                        const next = new Set(prev)
+                        if (checked) next.add(opt.value)
+                        else next.delete(opt.value)
+                        return next
+                      })
                       actions.resetPagination()
                     }}
-                    className="w-full h-8 px-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   />
-                </div>
-                <span className="text-muted-foreground text-xs font-medium">đến</span>
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    placeholder="Đến %"
-                    value={state.attendanceMax}
-                    onChange={(e) => {
-                      actions.setAttendanceMax(e.target.value)
-                      actions.resetPagination()
-                    }}
-                    className="w-full h-8 px-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  />
-                </div>
-              </div>
+                  <span className="font-medium">{opt.label}</span>
+                </label>
+              ))}
             </div>
 
-            <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                Buổi nghỉ liên tiếp
-              </span>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                {[
-                  { value: '1', label: 'Nghỉ 1 buổi' },
-                  { value: '2', label: 'Nghỉ 2 buổi liên tiếp' },
-                  { value: '3', label: 'Nghỉ 3 buổi liên tiếp' },
-                  { value: '4+', label: 'Nghỉ >= 4 buổi' }
-                ].map((opt) => (
-                  <label key={opt.value} className="flex cursor-pointer items-center gap-2 rounded-md hover:bg-accent/50 p-1 text-xs select-none">
-                    <Checkbox
-                      checked={state.selectedAbsences.has(opt.value)}
-                      onCheckedChange={(checked) => {
-                        actions.setSelectedAbsences((prev) => {
-                          const next = new Set(prev)
-                          if (checked) next.add(opt.value)
-                          else next.delete(opt.value)
-                          return next
-                        })
-                        actions.resetPagination()
-                      }}
-                    />
-                    <span className="font-medium">{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {(state.attendanceMin !== '' || state.attendanceMax !== '' || state.selectedAbsences.size > 0) && (
+            {state.selectedAbsences.size > 0 && (
               <Button
                 variant="link"
                 className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
-                  actions.setAttendanceMin('')
-                  actions.setAttendanceMax('')
                   actions.setSelectedAbsences(new Set())
                   actions.resetPagination()
                 }}
@@ -393,81 +338,44 @@ export function OperationsAlertFilterPanel({
       }),
       createFilterGroup({
         id: 'homework',
-        title: 'Bài tập về nhà',
+        title: 'Bài tập về nhà (Số buổi thiếu)',
         options: [],
         defaultOpen: false,
         customContent: (
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                Khoảng BTVN
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    placeholder="Từ %"
-                    value={state.homeworkMin}
-                    onChange={(e) => {
-                      actions.setHomeworkMin(e.target.value)
+          <div className="space-y-2.5">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              Mức độ thiếu BTVN liên tiếp
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: '1', label: 'Thiếu 1 buổi' },
+                { value: '2', label: 'Thiếu 2 buổi liên tiếp' },
+                { value: '3', label: 'Thiếu 3 buổi liên tiếp' },
+                { value: '4+', label: 'Thiếu >= 4 buổi' }
+              ].map((opt) => (
+                <label key={opt.value} className="flex cursor-pointer items-center gap-2 rounded-md hover:bg-accent/50 p-1 text-xs select-none">
+                  <Checkbox
+                    checked={state.selectedHomeworks.has(opt.value)}
+                    onCheckedChange={(checked) => {
+                      actions.setSelectedHomeworks((prev) => {
+                        const next = new Set(prev)
+                        if (checked) next.add(opt.value)
+                        else next.delete(opt.value)
+                        return next
+                      })
                       actions.resetPagination()
                     }}
-                    className="w-full h-8 px-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   />
-                </div>
-                <span className="text-muted-foreground text-xs font-medium">đến</span>
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    placeholder="Đến %"
-                    value={state.homeworkMax}
-                    onChange={(e) => {
-                      actions.setHomeworkMax(e.target.value)
-                      actions.resetPagination()
-                    }}
-                    className="w-full h-8 px-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  />
-                </div>
-              </div>
+                  <span className="font-medium">{opt.label}</span>
+                </label>
+              ))}
             </div>
 
-            <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                Thiếu bài liên tiếp
-              </span>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                {[
-                  { value: '1', label: 'Thiếu 1 buổi' },
-                  { value: '2', label: 'Thiếu 2 buổi liên tiếp' },
-                  { value: '3', label: 'Thiếu 3 buổi liên tiếp' },
-                  { value: '4+', label: 'Thiếu >= 4 buổi' }
-                ].map((opt) => (
-                  <label key={opt.value} className="flex cursor-pointer items-center gap-2 rounded-md hover:bg-accent/50 p-1 text-xs select-none">
-                    <Checkbox
-                      checked={state.selectedHomeworks.has(opt.value)}
-                      onCheckedChange={(checked) => {
-                        actions.setSelectedHomeworks((prev) => {
-                          const next = new Set(prev)
-                          if (checked) next.add(opt.value)
-                          else next.delete(opt.value)
-                          return next
-                        })
-                        actions.resetPagination()
-                      }}
-                    />
-                    <span className="font-medium">{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {(state.homeworkMin !== '' || state.homeworkMax !== '' || state.selectedHomeworks.size > 0) && (
+            {state.selectedHomeworks.size > 0 && (
               <Button
                 variant="link"
                 className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
-                  actions.setHomeworkMin('')
-                  actions.setHomeworkMax('')
                   actions.setSelectedHomeworks(new Set())
                   actions.resetPagination()
                 }}
@@ -618,17 +526,6 @@ export function OperationsAlertFilterPanel({
         ),
       }),
       createFilterGroup({
-        id: 'trends',
-        title: 'Xu hướng học tập',
-        options: [
-          { value: 'decline', label: 'Xu hướng giảm (Cần cải thiện)' },
-          { value: 'improve', label: 'Xu hướng tăng (Tiến bộ)' },
-          { value: 'stable', label: 'Ổn định (Không đổi)' },
-        ],
-        selectedValues: state.selectedTrends,
-        defaultOpen: false,
-      }),
-      createFilterGroup({
         id: 'callConfirmations',
         title: 'Kết quả chăm sóc',
         options: [
@@ -659,10 +556,6 @@ export function OperationsAlertFilterPanel({
     state.selectedCareStatuses,
     state.selectedAlerts,
     state.selectedCareTypes,
-    state.attendanceMin,
-    state.attendanceMax,
-    state.homeworkMin,
-    state.homeworkMax,
     state.scoreMin,
     state.scoreMax,
     state.sessionMin,
@@ -670,7 +563,6 @@ export function OperationsAlertFilterPanel({
     state.selectedAbsences,
     state.selectedHomeworks,
     state.selectedLowScores,
-    state.selectedTrends,
     state.selectedCalls,
     classList,
     state.selectedClasses,

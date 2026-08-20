@@ -109,7 +109,7 @@ export function CalendarClassScheduleWeekView({
           <table className="w-full min-w-[1200px] border-collapse text-left table-fixed">
             <thead>
               <tr className="bg-muted/40 border-b border-border/40">
-                <th className="p-3 text-xs font-semibold text-muted-foreground w-28 border-r border-border/40 text-center">
+                <th className="p-2 text-xs font-semibold text-muted-foreground w-16 border-r border-border/40 text-center">
                   Ca học
                 </th>
                 {weekDays.map((day) => {
@@ -163,8 +163,8 @@ export function CalendarClassScheduleWeekView({
                   </tr>
                   {isMorningOpen && morningShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
-                      <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
+                      <td className="p-2 border-r border-border/40 align-middle text-center bg-muted/15 text-xs whitespace-nowrap">
+                        <span className="text-[11px] font-normal text-muted-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =
@@ -211,8 +211,8 @@ export function CalendarClassScheduleWeekView({
                   </tr>
                   {isAfternoonOpen && afternoonShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
-                      <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
+                      <td className="p-2 border-r border-border/40 align-middle text-center bg-muted/15 text-xs whitespace-nowrap">
+                        <span className="text-[11px] font-normal text-muted-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =
@@ -259,8 +259,8 @@ export function CalendarClassScheduleWeekView({
                   </tr>
                   {isEveningOpen && eveningShifts.map((shift) => (
                     <tr key={shift} className="border-b border-border/40 last:border-b-0 hover:bg-muted/5">
-                      <td className="p-3 border-r border-border/40 align-middle text-center bg-muted/15 font-bold text-xs text-foreground/80 whitespace-nowrap">
-                        <span className="text-[11px] font-bold text-foreground">{formatShiftLabel(shift)}</span>
+                      <td className="p-2 border-r border-border/40 align-middle text-center bg-muted/15 text-xs whitespace-nowrap">
+                        <span className="text-[11px] font-normal text-muted-foreground">{formatShiftLabel(shift)}</span>
                       </td>
                       {weekDays.map((day) => {
                         const isToday =
@@ -313,7 +313,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isMorningOpen && (
-                  <div className="grid grid-cols-7 gap-2 border border-border/40 rounded-lg p-2 bg-muted/10">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = morningSessionsByDay[idx]
                       const isToday =
@@ -332,7 +332,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 bg-muted/10 border border-dashed border-border/20 rounded-md select-none">
+                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
                               —
                             </div>
                           )}
@@ -360,7 +360,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isAfternoonOpen && (
-                  <div className="grid grid-cols-7 gap-2 border border-border/40 rounded-lg p-2 bg-muted/10">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = afternoonSessionsByDay[idx]
                       const isToday =
@@ -379,7 +379,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 bg-muted/10 border border-dashed border-border/20 rounded-md select-none">
+                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
                               —
                             </div>
                           )}
@@ -407,7 +407,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isEveningOpen && (
-                  <div className="grid grid-cols-7 gap-2 border border-border/40 rounded-lg p-2 bg-muted/10">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = eveningSessionsByDay[idx]
                       const isToday =
@@ -426,7 +426,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 bg-muted/10 border border-dashed border-border/20 rounded-md select-none">
+                            <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
                               —
                             </div>
                           )}
