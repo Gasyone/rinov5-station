@@ -7,6 +7,10 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import type { ShiftSection } from '@/mocks/shiftRoster'
+import {
+  sumDraftMinutes,
+  sumRegisteredMinutes,
+} from './workRegistrationHelpers'
 import { WorkRegistrationStaffSectionGrid } from './WorkRegistrationStaffSectionGrid'
 import { WorkRegistrationTimeRangePicker } from './WorkRegistrationTimeRangePicker'
 
@@ -52,6 +56,9 @@ export function WorkRegistrationEditablePanel({
   onToggleSection,
   onSubmit,
 }: WorkRegistrationEditablePanelProps) {
+  const registeredMinutes = sumRegisteredMinutes(records)
+  const draftMinutes = sumDraftMinutes(records)
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
       {/* THANH THÊM KHUNG GIỜ LÀM VIỆC THEO NGÀY + THỐNG KÊ & CẬP NHẬT */}
@@ -60,6 +67,8 @@ export function WorkRegistrationEditablePanel({
           days={weekDays}
           disabled={readonlyWeek || !canMutate}
           totalMinutes={totalMinutes}
+          registeredMinutes={registeredMinutes}
+          draftMinutes={draftMinutes}
           canMutate={canMutate}
           primaryActionLabel={primaryActionLabel}
           onSubmit={onSubmit}

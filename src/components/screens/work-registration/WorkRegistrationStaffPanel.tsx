@@ -9,6 +9,10 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import type { ShiftSection } from '@/mocks/shiftRoster'
+import {
+  sumDraftMinutes,
+  sumRegisteredMinutes,
+} from './workRegistrationHelpers'
 import { WorkRegistrationStaffSectionGrid } from './WorkRegistrationStaffSectionGrid'
 import { WorkRegistrationTimeRangePicker } from './WorkRegistrationTimeRangePicker'
 import { WorkRegistrationStaffTable } from './WorkRegistrationStaffTable'
@@ -80,6 +84,9 @@ export function WorkRegistrationStaffPanel({
   onClear,
   onSubmit,
 }: WorkRegistrationStaffPanelProps) {
+  const registeredMinutes = sumRegisteredMinutes(records)
+  const draftMinutes = sumDraftMinutes(records)
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       {/* THANH ĐĂNG KÝ THAY KHI CHỌN NHÂN VIÊN (2 DÒNG, CÓ VIỀN VÀ NỀN TRẮNG) */}
@@ -89,6 +96,8 @@ export function WorkRegistrationStaffPanel({
             days={weekDays}
             disabled={readonlyWeek || !canMutate}
             totalMinutes={totalMinutes}
+            registeredMinutes={registeredMinutes}
+            draftMinutes={draftMinutes}
             canMutate={canMutate}
             primaryActionLabel={primaryActionLabel}
             onClear={onClear}

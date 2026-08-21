@@ -6,6 +6,7 @@ import {
   type WorkRegistrationEmployee,
   type WorkPrioritySlotRule,
   type WorkRegistrationRecord,
+  type WorkRegistrationStatus,
 } from '@/mocks/workRegistrations'
 import { ALL_DUTY_EMPLOYEES } from '@/mocks/shiftRoster'
 import type {
@@ -78,6 +79,16 @@ export const getSlot = (slotId: string) =>
 
 export const sumRegistrationMinutes = (records: WorkRegistrationRecord[]) =>
   records.reduce((total, record) => total + (getSlot(record.slotId)?.minutes ?? 0), 0)
+
+export const sumRegisteredMinutes = (records: WorkRegistrationRecord[]) =>
+  records
+    .filter((record) => record.status !== 'draft')
+    .reduce((total, record) => total + (getSlot(record.slotId)?.minutes ?? 0), 0)
+
+export const sumDraftMinutes = (records: WorkRegistrationRecord[]) =>
+  records
+    .filter((record) => record.status === 'draft')
+    .reduce((total, record) => total + (getSlot(record.slotId)?.minutes ?? 0), 0)
 
 export const getRecordsForWeek = (records: WorkRegistrationRecord[], weekStart: Date) => {
   const weekStartKey = toWorkDateKey(weekStart)
@@ -333,6 +344,9 @@ export interface SlotInterval {
   start: string
   end: string
   slotIds: string[]
+  status: WorkRegistrationStatus
+  isDraft: boolean
+  isRegistered: boolean
   isLocked: boolean
 }
 
@@ -343,37 +357,69 @@ export function groupConsecutiveSlots(
   section: string
 ): SlotInterval[] {
   const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === section)
-  const employeeSlotIds = new Set(
-    records
-      .filter((r) => r.employeeId === employeeId && r.date === date && r.slotId.startsWith(section) && !r.assignedClass)
-      .map((r) => r.slotId)
-  )
+  const employeeSlotMap = new Map<string, WorkRegistrationRecord>()
+  for (const r of records) {
+    if (r.employeeId === employeeId && r.date === date && r.slotId.startsWith(section) && !r.assignedClass) {
+      employeeSlotMap.set(r.slotId, r)
+    }
+  }
 
   const intervals: SlotInterval[] = []
-  let currentInterval: { start: string; end: string; slotIds: string[] } | null = null
+  let currentInterval: {
+    start: string
+    end: string
+    slotIds: string[]
+    status: WorkRegistrationStatus
+  } | null = null
 
   for (const slot of sectionSlots) {
-    if (employeeSlotIds.has(slot.id)) {
+    const record = employeeSlotMap.get(slot.id)
+    if (record) {
+      const recordStatus = record.status || 'draft'
       if (!currentInterval) {
         currentInterval = {
           start: slot.start,
           end: slot.end,
           slotIds: [slot.id],
+          status: recordStatus,
         }
-      } else {
+      } else if (currentInterval.status === recordStatus) {
         currentInterval.end = slot.end
         currentInterval.slotIds.push(slot.id)
+      } else {
+        intervals.push({
+          ...currentInterval,
+          isDraft: currentInterval.status === 'draft',
+          isRegistered: currentInterval.status === 'registered',
+          isLocked: currentInterval.status === 'locked',
+        })
+        currentInterval = {
+          start: slot.start,
+          end: slot.end,
+          slotIds: [slot.id],
+          status: recordStatus,
+        }
       }
     } else {
       if (currentInterval) {
-        intervals.push({ ...currentInterval, isLocked: false })
+        intervals.push({
+          ...currentInterval,
+          isDraft: currentInterval.status === 'draft',
+          isRegistered: currentInterval.status === 'registered',
+          isLocked: currentInterval.status === 'locked',
+        })
         currentInterval = null
       }
     }
   }
 
   if (currentInterval) {
-    intervals.push({ ...currentInterval, isLocked: false })
+    intervals.push({
+      ...currentInterval,
+      isDraft: currentInterval.status === 'draft',
+      isRegistered: currentInterval.status === 'registered',
+      isLocked: currentInterval.status === 'locked',
+    })
   }
 
   return intervals

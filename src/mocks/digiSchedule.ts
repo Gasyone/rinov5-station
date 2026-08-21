@@ -113,6 +113,9 @@ export const MOCK_DIGI_STUDENTS: DigiStudentProfile[] = [
       { lessonId: 'LES-MATH-08', lessonName: 'Bài 8: Số học logic & Bảng cửu chương 3', lessonNumber: 8, durationMinutes: 30 },
       { lessonId: 'LES-MATH-09', lessonName: 'Bài 9: Phép nhân nhẩm cơ bản', lessonNumber: 9, durationMinutes: 30 },
       { lessonId: 'LES-MATH-10', lessonName: 'Bài 10: Toán đố thực tế & Trắc nghiệm', lessonNumber: 10, durationMinutes: 30 },
+      { lessonId: 'LES-MATH-11', lessonName: 'Bài 11: Phép chia & Tính nhẩm nhanh', lessonNumber: 11, durationMinutes: 30 },
+      { lessonId: 'LES-MATH-12', lessonName: 'Bài 12: Hình học không gian & Tư duy logic', lessonNumber: 12, durationMinutes: 30 },
+      { lessonId: 'LES-MATH-13', lessonName: 'Bài 13: Bài toán quy luật & Dãy số', lessonNumber: 13, durationMinutes: 30 },
     ],
     packages: [
       {
@@ -123,6 +126,9 @@ export const MOCK_DIGI_STUDENTS: DigiStudentProfile[] = [
           { lessonId: 'LES-MATH-08', lessonName: 'Bài 8: Số học logic & Bảng cửu chương 3', lessonNumber: 8, durationMinutes: 30 },
           { lessonId: 'LES-MATH-09', lessonName: 'Bài 9: Phép nhân nhẩm cơ bản', lessonNumber: 9, durationMinutes: 30 },
           { lessonId: 'LES-MATH-10', lessonName: 'Bài 10: Toán đố thực tế & Trắc nghiệm', lessonNumber: 10, durationMinutes: 30 },
+          { lessonId: 'LES-MATH-11', lessonName: 'Bài 11: Phép chia & Tính nhẩm nhanh', lessonNumber: 11, durationMinutes: 30 },
+          { lessonId: 'LES-MATH-12', lessonName: 'Bài 12: Hình học không gian & Tư duy logic', lessonNumber: 12, durationMinutes: 30 },
+          { lessonId: 'LES-MATH-13', lessonName: 'Bài 13: Bài toán quy luật & Dãy số', lessonNumber: 13, durationMinutes: 30 },
         ],
       },
       {
@@ -132,6 +138,8 @@ export const MOCK_DIGI_STUDENTS: DigiStudentProfile[] = [
         availableLessons: [
           { lessonId: 'LES-STEM-04', lessonName: 'Bài 4: Lập trình Robot né vật cản', lessonNumber: 4, durationMinutes: 30 },
           { lessonId: 'LES-STEM-05', lessonName: 'Bài 5: Đèn LED RGB & Còi chíp thông minh', lessonNumber: 5, durationMinutes: 30 },
+          { lessonId: 'LES-STEM-06', lessonName: 'Bài 6: Điều khiển Robot theo đường kẻ (Line Follower)', lessonNumber: 6, durationMinutes: 30 },
+          { lessonId: 'LES-STEM-07', lessonName: 'Bài 7: Chế tạo cánh tay Robot gắp vật thể', lessonNumber: 7, durationMinutes: 30 },
         ],
       },
     ],

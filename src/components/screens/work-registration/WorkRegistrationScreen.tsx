@@ -185,9 +185,15 @@ export function WorkRegistrationScreen() {
 
   const submitActiveRegistration = () => {
     if (!actionState.canMutate) return
+    const draftCount = activeEmployeeRecords.filter((r) => r.status === 'draft').length
     setRecords((current) =>
       submitWorkRegistration(current, activeEmployee.id, toWorkDateKey(weekStart))
     )
+    if (draftCount > 0) {
+      toast.success(`Đã cập nhật và lưu thành công lịch đăng ký mới cho ${activeEmployee.name}!`)
+    } else {
+      toast.success(`Đã cập nhật lịch làm việc cho ${activeEmployee.name}!`)
+    }
   }
 
   const clearActiveWeek = () => {

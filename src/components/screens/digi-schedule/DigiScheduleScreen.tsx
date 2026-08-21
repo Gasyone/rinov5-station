@@ -191,9 +191,14 @@ export function DigiScheduleScreen() {
         roomName="Phòng tự học Digi"
         date={toDateKey(today)}
         existingBookings={bookings}
-        onConfirm={(newBooking) => {
-          setBookings((prev) => [...prev, newBooking])
-          toast.success(`Đã thêm lịch cho ${newBooking.studentName} thành công!`)
+        onConfirm={(newBookingOrList) => {
+          const list = Array.isArray(newBookingOrList) ? newBookingOrList : [newBookingOrList]
+          setBookings((prev) => [...prev, ...list])
+          if (list.length === 1) {
+            toast.success(`Đã thêm lịch cho ${list[0].studentName} thành công!`)
+          } else {
+            toast.success(`Đã thêm lịch cho ${list.length} học viên thành công!`)
+          }
         }}
       />
     </div>

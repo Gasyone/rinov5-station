@@ -274,18 +274,19 @@ export function WorkRegistrationMasterRosterPanel({
                                   </span>
                                   {(() => {
                                     const regTime = getStaffRegisteredTime(staff.id, day.index, sec.id)
+                                    const isFull = regTime === 'Full ca' || regTime === 'Full' || regTime === 'Cả ca'
                                     return regTime ? (
                                       <span
                                         className={cn(
-                                          'ml-auto shrink-0 text-[9px] font-semibold',
+                                          'ml-auto shrink-0 text-[10px] tabular-nums font-normal',
                                           isMatched
                                             ? 'text-primary-foreground/90'
-                                            : regTime === 'Full ca' || regTime === 'Full' || regTime === 'Cả ca'
-                                            ? getStatusColors('success').text
+                                            : isFull
+                                            ? 'text-emerald-600 dark:text-emerald-400'
                                             : 'text-muted-foreground'
                                         )}
                                       >
-                                        {regTime}
+                                        {isFull ? 'Full ca' : regTime}
                                       </span>
                                     ) : null
                                   })()}

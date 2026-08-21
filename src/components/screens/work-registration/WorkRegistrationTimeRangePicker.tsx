@@ -26,6 +26,8 @@ interface WorkRegistrationTimeRangePickerProps {
   headerPrefix?: React.ReactNode
   headerSuffix?: React.ReactNode
   totalMinutes?: number
+  registeredMinutes?: number
+  draftMinutes?: number
   canMutate?: boolean
   primaryActionLabel?: string
   onClear?: () => void
@@ -46,6 +48,8 @@ export function WorkRegistrationTimeRangePicker({
   headerPrefix,
   headerSuffix,
   totalMinutes,
+  registeredMinutes,
+  draftMinutes = 0,
   canMutate,
   primaryActionLabel,
   onClear,
@@ -109,6 +113,19 @@ export function WorkRegistrationTimeRangePicker({
     }
   }
 
+  const resetSelection = () => {
+    setSelectedDayIndexes([])
+    setMorningEnabled(false)
+    setAfternoonEnabled(false)
+    setEveningEnabled(false)
+    setMorningStart('08:00')
+    setMorningEnd('12:00')
+    setAfternoonStart('13:00')
+    setAfternoonEnd('17:30')
+    setEveningStart('17:30')
+    setEveningEnd('22:00')
+  }
+
   const handleAdd = () => {
     if (selectedDayIndexes.length === 0 || disabled) return
 
@@ -130,6 +147,14 @@ export function WorkRegistrationTimeRangePicker({
     if (ranges.length === 0) return
 
     onAddRange(dates, ranges[0].startTime, ranges[0].endTime, ranges)
+    resetSelection()
+  }
+
+  const handleSubmit = () => {
+    if (onSubmit) {
+      onSubmit()
+      resetSelection()
+    }
   }
 
   const hasAnyShiftSelected = morningEnabled || afternoonEnabled || eveningEnabled
@@ -188,10 +213,24 @@ export function WorkRegistrationTimeRangePicker({
 
           <div className="flex items-center gap-2 ml-auto shrink-0 flex-wrap">
             {typeof totalMinutes === 'number' ? (
-              <Badge variant="outline" className="h-7 gap-1.5 px-2.5 text-xs font-medium border-border/60 bg-muted/30">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Tổng khung giờ: <strong className="font-semibold text-foreground">{formatMinutes(totalMinutes)}</strong></span>
-              </Badge>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge variant="outline" className="h-7 gap-1.5 px-2.5 text-xs font-medium border-border/60 bg-muted/30">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>
+                    Tổng khung giờ: <strong className="font-semibold text-foreground">{formatMinutes(totalMinutes)}</strong>
+                    {typeof registeredMinutes === 'number' && draftMinutes > 0 ? (
+                      <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                        (Đã lưu: {formatMinutes(registeredMinutes)})
+                      </span>
+                    ) : null}
+                  </span>
+                </Badge>
+                {typeof draftMinutes === 'number' && draftMinutes > 0 ? (
+                  <Badge variant="outline" className="h-7 gap-1 px-2 text-[11px] font-semibold border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 animate-in fade-in">
+                    <span>✨ Mới chọn: +{formatMinutes(draftMinutes)}</span>
+                  </Badge>
+                ) : null}
+              </div>
             ) : null}
 
             {headerSuffix}
@@ -514,10 +553,17 @@ export function WorkRegistrationTimeRangePicker({
                 type="button"
                 size="sm"
                 disabled={disabled || (typeof canMutate === 'boolean' && !canMutate) || totalMinutes === 0}
-                onClick={onSubmit}
-                className="h-7.5 px-3.5 text-xs font-semibold cursor-pointer shadow-2xs"
+                onClick={handleSubmit}
+                className={cn(
+                  'h-7.5 px-3.5 text-xs font-semibold cursor-pointer shadow-2xs transition-all',
+                  draftMinutes > 0
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground ring-2 ring-primary/20 animate-pulse-once'
+                    : ''
+                )}
               >
-                {primaryActionLabel || 'Cập nhật đăng ký'}
+                {draftMinutes > 0
+                  ? `Cập nhật đăng ký (+${formatMinutes(draftMinutes)})`
+                  : primaryActionLabel || 'Cập nhật đăng ký'}
               </Button>
             ) : null}
           </div>
