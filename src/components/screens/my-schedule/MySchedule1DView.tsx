@@ -13,6 +13,7 @@ interface MySchedule1DViewProps {
   today: Date
   viewMode: 'day' | 'week'
   activeBranch: string
+  hideBranch?: boolean
   onSlotClick: (slot: UnifiedSlot) => void
 }
 
@@ -38,6 +39,7 @@ export function MySchedule1DView({
   today,
   viewMode,
   activeBranch,
+  hideBranch,
   onSlotClick,
 }: MySchedule1DViewProps) {
   const [isMorningOpen, setIsMorningOpen] = useState(true)
@@ -112,7 +114,7 @@ export function MySchedule1DView({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                   <Sun className="h-4 w-4" />
-                  <span>Ca Sáng ({morningSlots.length} lịch)</span>
+                  <span>Ca Sáng (08:00 - 12:00) ({morningSlots.length} lịch)</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {morningSlots.map((slot) => (
@@ -121,6 +123,7 @@ export function MySchedule1DView({
                       slot={slot}
                       showTime
                       activeBranch={activeBranch}
+                      hideBranch={hideBranch}
                       onClick={() => onSlotClick(slot)}
                     />
                   ))}
@@ -133,7 +136,7 @@ export function MySchedule1DView({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-1 text-xs font-bold text-sky-600 dark:text-sky-400">
                   <Sunset className="h-4 w-4" />
-                  <span>Ca Chiều ({afternoonSlots.length} lịch)</span>
+                  <span>Ca Chiều (12:00 - 18:00) ({afternoonSlots.length} lịch)</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {afternoonSlots.map((slot) => (
@@ -142,6 +145,7 @@ export function MySchedule1DView({
                       slot={slot}
                       showTime
                       activeBranch={activeBranch}
+                      hideBranch={hideBranch}
                       onClick={() => onSlotClick(slot)}
                     />
                   ))}
@@ -154,7 +158,7 @@ export function MySchedule1DView({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 px-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
                   <Moon className="h-4 w-4" />
-                  <span>Ca Tối ({eveningSlots.length} lịch)</span>
+                  <span>Ca Tối (18:00 - 22:00) ({eveningSlots.length} lịch)</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {eveningSlots.map((slot) => (
@@ -163,6 +167,7 @@ export function MySchedule1DView({
                       slot={slot}
                       showTime
                       activeBranch={activeBranch}
+                      hideBranch={hideBranch}
                       onClick={() => onSlotClick(slot)}
                     />
                   ))}
@@ -240,7 +245,7 @@ export function MySchedule1DView({
           >
             <div className="flex items-center gap-2">
               <Sun className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-              <span>Ca Sáng ({morningCount} lịch)</span>
+              <span>Ca Sáng (08:00 - 12:00) ({morningCount} lịch)</span>
             </div>
             <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isMorningOpen && "rotate-90")} />
           </button>
@@ -265,6 +270,7 @@ export function MySchedule1DView({
                     slot={slot}
                     showTime
                     activeBranch={activeBranch}
+                    hideBranch={hideBranch}
                     onClick={() => onSlotClick(slot)}
                   />
                 ))}
@@ -286,7 +292,7 @@ export function MySchedule1DView({
           >
             <div className="flex items-center gap-2">
               <Sunset className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
-              <span>Ca Chiều ({afternoonCount} lịch)</span>
+              <span>Ca Chiều (12:00 - 18:00) ({afternoonCount} lịch)</span>
             </div>
             <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isAfternoonOpen && "rotate-90")} />
           </button>
@@ -311,6 +317,7 @@ export function MySchedule1DView({
                     slot={slot}
                     showTime
                     activeBranch={activeBranch}
+                    hideBranch={hideBranch}
                     onClick={() => onSlotClick(slot)}
                   />
                 ))}
@@ -332,7 +339,7 @@ export function MySchedule1DView({
           >
             <div className="flex items-center gap-2">
               <Moon className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-              <span>Ca Tối ({eveningCount} lịch)</span>
+              <span>Ca Tối (18:00 - 22:00) ({eveningCount} lịch)</span>
             </div>
             <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isEveningOpen && "rotate-90")} />
           </button>
@@ -357,6 +364,7 @@ export function MySchedule1DView({
                     slot={slot}
                     showTime
                     activeBranch={activeBranch}
+                    hideBranch={hideBranch}
                     onClick={() => onSlotClick(slot)}
                   />
                 ))}

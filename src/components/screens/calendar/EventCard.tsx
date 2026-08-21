@@ -1,5 +1,6 @@
 'use client'
 
+import { Clock } from 'lucide-react'
 import { AppAvatar } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { EventSession } from '@/mocks/calendarSchedule'
@@ -36,6 +37,9 @@ interface EventCardProps {
   activeBranch?: string
   isOverlapped?: boolean
   hideTeacher?: boolean
+  hideBranch?: boolean
+  branchesCount?: number
+  showTime?: boolean
 }
 
 export function EventCard({
@@ -44,6 +48,9 @@ export function EventCard({
   activeBranch,
   isOverlapped,
   hideTeacher = false,
+  hideBranch,
+  branchesCount,
+  showTime = false,
   className,
   ...props
 }: EventCardProps & React.HTMLAttributes<HTMLDivElement>) {
@@ -87,6 +94,9 @@ export function EventCard({
   // Clean branch name (remove room)
   const branchName = session.branch || booking?.school || activeBranch || (session.location ? session.location.split(' - ')[0] : 'RinoEdu')
 
+  // Hide branch when 1 branch is selected or only 1 branch exists in total
+  const isSingleBranch = Boolean(hideBranch) || Boolean(activeBranch && activeBranch !== 'all') || (branchesCount !== undefined && branchesCount <= 1)
+
   // 4. Resolve Status (Trạng thái)
   const bookingStatusMap: Record<string, string> = {
     booked_assessment: 'đã đặt lịch test',
@@ -124,6 +134,14 @@ export function EventCard({
           className
         )}
       >
+        {/* Row 0: Thời gian bắt đầu */}
+        {showTime && session.timeLabel && (
+          <div className="mb-1 flex items-center gap-1 text-[10px] font-bold text-primary dark:text-primary/90">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span>{session.timeLabel}{session.endTimeLabel ? ` - ${session.endTimeLabel}` : ''}</span>
+          </div>
+        )}
+
         {/* Row 1: Hv: Tên học viên (trái) & Nhãn "TN" (phải) */}
         <div className="mb-1 flex items-center justify-between gap-1.5 min-w-0">
           <h4
@@ -149,24 +167,38 @@ export function EventCard({
           {subjectAndLevel}
         </div>
 
-        {/* Row 3: Tên Cơ sở (trái) - Tên Giáo viên + Avatar (phải, nếu có) */}
-        <div className="mt-0.5 flex items-center justify-between gap-1.5 min-w-0">
-          <span className="text-[9px] text-muted-foreground font-medium truncate flex-1 min-w-0" title={branchName}>
-            {branchName}
-          </span>
-          {!hideTeacher && teacherName && (
-            <div className="flex items-center gap-1 shrink-0 max-w-[50%] min-w-0" title={`Giáo viên: ${teacherName}`}>
+        {/* Row 3: Khi chọn 1 cơ sở / chỉ 1 cơ sở -> Ẩn cơ sở, chỉ hiện giáo viên bên trái. Khi nhiều cơ sở -> Cơ sở bên trái, giáo viên bên phải */}
+        {isSingleBranch ? (
+          !hideTeacher && teacherName ? (
+            <div className="mt-0.5 flex items-center gap-1 min-w-0" title={`Giáo viên: ${teacherName}`}>
               <AppAvatar name={teacherName} size="xs" className="h-3.5 w-3.5 text-[7px] border-none shrink-0" />
               <span className="text-[9px] text-muted-foreground font-medium truncate">{teacherName}</span>
             </div>
-          )}
-        </div>
+          ) : null
+        ) : (
+          <div className="mt-0.5 flex items-center justify-between gap-1.5 min-w-0">
+            <span className="text-[9px] text-muted-foreground font-medium truncate flex-1 min-w-0" title={branchName}>
+              {branchName}
+            </span>
+            {!hideTeacher && teacherName && (
+              <div className="flex items-center gap-1 shrink-0 max-w-[50%] min-w-0" title={`Giáo viên: ${teacherName}`}>
+                <AppAvatar name={teacherName} size="xs" className="h-3.5 w-3.5 text-[7px] border-none shrink-0" />
+                <span className="text-[9px] text-muted-foreground font-medium truncate">{teacherName}</span>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Row 4: Trạng thái */}
-        <div className="mt-1 text-[8.5px] leading-tight">
-          <span className={cn("font-medium lowercase truncate block", statusColors.text)}>
+        {/* Row 4: Trạng thái (trái) & Thời gian bắt đầu (phải) */}
+        <div className="mt-1 flex items-center justify-between gap-1.5 text-[8.5px] leading-tight min-w-0">
+          <span className={cn("font-medium lowercase truncate flex-1 min-w-0", statusColors.text)}>
             {statusLabel}
           </span>
+          {session.timeLabel && (
+            <span className="font-semibold text-muted-foreground/90 shrink-0 tabular-nums">
+              {session.timeLabel}
+            </span>
+          )}
         </div>
       </div>
     </SessionHoverCard>

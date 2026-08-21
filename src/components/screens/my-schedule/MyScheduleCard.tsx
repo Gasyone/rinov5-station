@@ -24,6 +24,7 @@ interface MyScheduleCardProps {
   showTime?: boolean
   onClick?: () => void
   activeBranch?: string
+  hideBranch?: boolean
 }
 
 export function MyScheduleCard({
@@ -33,9 +34,11 @@ export function MyScheduleCard({
   showTime = true,
   onClick,
   activeBranch = 'all',
+  hideBranch,
 }: MyScheduleCardProps) {
   const isClass = slot.scheduleType === 'class'
   const isCancelled = slot.status === 'cancelled'
+  const shouldHideBranch = hideBranch !== undefined ? hideBranch : (activeBranch !== 'all')
 
   // Calculate duration to adjust layout responsiveness
   const startMin = slot.startMin
@@ -90,6 +93,7 @@ export function MyScheduleCard({
         activeBranch={activeBranch}
         isOverlapped={isOverlapped}
         hideTeacher={true}
+        hideBranch={shouldHideBranch}
       />
     )
   }
@@ -218,7 +222,7 @@ export function MyScheduleCard({
                     <MapPin className="h-2.5 w-2.5 shrink-0" />
                   )}
                   <span className="truncate">{slot.subtitle}</span>
-                  {slot.branch && (
+                  {!shouldHideBranch && slot.branch && (
                     <>
                       <span className="text-muted-foreground/40">•</span>
                       <span className="truncate">{slot.branch}</span>
@@ -276,7 +280,10 @@ export function MyScheduleCard({
                 ) : (
                   <MapPin className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <span className="truncate">{slot.subtitle} {slot.branch ? `• ${slot.branch}` : ''}</span>
+                <span className="truncate">
+                  {slot.subtitle}
+                  {!shouldHideBranch && slot.branch ? ` • ${slot.branch}` : ''}
+                </span>
               </div>
 
               <div className="flex items-center justify-between mt-1">

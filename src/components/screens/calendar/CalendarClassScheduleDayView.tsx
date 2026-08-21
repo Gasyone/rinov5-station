@@ -61,21 +61,21 @@ export function CalendarClassScheduleDayView({
   const periods = useMemo(() => [
     {
       id: 'morning',
-      label: 'Ca Sáng',
+      label: 'Ca Sáng (08:00 - 12:00)',
       sessions: morningSessions,
       colorClass: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200/60 dark:border-amber-900/60',
       dotClass: 'bg-amber-500',
     },
     {
       id: 'afternoon',
-      label: 'Ca Chiều',
+      label: 'Ca Chiều (12:00 - 18:00)',
       sessions: afternoonSessions,
       colorClass: 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200/60 dark:border-sky-900/60',
       dotClass: 'bg-sky-500',
     },
     {
       id: 'evening',
-      label: 'Ca Tối',
+      label: 'Ca Tối (18:00 - 22:00)',
       sessions: eveningSessions,
       colorClass: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-900/60',
       dotClass: 'bg-indigo-500',

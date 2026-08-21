@@ -24,9 +24,10 @@ export function ClassSessionHoverCard({
   side = 'right',
 }: ClassSessionHoverCardProps) {
   const isCancelled = session.status === 'cancelled'
+  const isDigi = session.type === 'digi_session'
 
   // Standardize values for Class Session
-  const title = session.title || session.className || 'Buổi học'
+  const title = isDigi ? 'Ca tự học Digi tại trạm' : session.title || session.className || 'Buổi học'
   const classCode = session.classCode
   const className = session.className || session.subtitle
   const kctName = session.kctName
@@ -130,28 +131,32 @@ export function ClassSessionHoverCard({
             </h4>
           </div>
 
-          {/* 2. Bên dưới: Mã lớp và Tên lớp */}
-          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-            {classCode && (
-              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-foreground border border-border/60">
-                {classCode}
+          {/* 2. Bên dưới: Mã lớp và Tên lớp (Chỉ hiển thị cho lớp học, không áp dụng cho Ca tự học Digi) */}
+          {!isDigi && (
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+              {classCode && (
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-foreground border border-border/60">
+                  {classCode}
+                </span>
+              )}
+              <span className="font-bold text-xs text-foreground leading-tight">
+                {className}
               </span>
-            )}
-            <span className="font-bold text-xs text-foreground leading-tight">
-              {className}
-            </span>
-          </div>
+            </div>
+          )}
 
-          {/* 3. Dòng KCT riêng 1 dòng */}
-          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
-            <span className="text-muted-foreground font-normal">KCT:</span>
-            <span className="font-semibold text-foreground truncate">
-              {kctName || 'Chương trình tiêu chuẩn'}
-            </span>
-          </div>
+          {/* 3. Dòng KCT riêng 1 dòng (Chỉ cho lớp học) */}
+          {!isDigi && (
+            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+              <span className="text-muted-foreground font-normal">KCT:</span>
+              <span className="font-semibold text-foreground truncate">
+                {kctName || 'Chương trình tiêu chuẩn'}
+              </span>
+            </div>
+          )}
 
-          {/* 4. Dòng Tên môn học - Level (2 dữ liệu độc lập) */}
-          {(subject || level) && (
+          {/* 4. Dòng Tên môn học - Level (Chỉ cho lớp học) */}
+          {!isDigi && (subject || level) && (
             <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
               <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="font-medium text-foreground/90">
@@ -176,57 +181,75 @@ export function ClassSessionHoverCard({
             </div>
           )}
 
-          {/* 6. Detailed Staff Section for Class (GV, TG) */}
-          <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-              Đội ngũ giảng dạy & Quản lý:
-            </div>
-
-            {/* Primary Staff / Teacher / Substitute Teacher */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                <span>GV:</span>
+          {/* 6. Staff Section: Đối với Digi chỉ hiển thị Trợ giảng trực ca, không có GV */}
+          {isDigi ? (
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                Trợ giảng trực ca:
               </div>
-              {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
-                <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-2 py-0.5 rounded text-[11px]">
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                  <span>Chưa gán GV</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  {subTeacher ? (
-                    <div className="flex items-center gap-1.5">
-                      {primaryTeacher && (
-                        <span className="line-through text-muted-foreground">{primaryTeacher}</span>
-                      )}
-                      <AppAvatar name={subTeacher} size="xs" isSubstitute />
-                      <span className="font-semibold text-foreground">{subTeacher}</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1">
-                      <AppAvatar name={primaryTeacher} size="xs" />
-                      <span className="font-semibold text-foreground">{primaryTeacher}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Teaching Assistant */}
-            {taTeacher && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
                   <UserCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-                  <span>TG:</span>
+                  <span>Trợ giảng:</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <AppAvatar name={taTeacher} size="xs" />
-                  <span className="font-semibold text-foreground">{taTeacher}</span>
+                <div className="flex items-center gap-1.5">
+                  <AppAvatar name={taTeacher || session.teacher || 'Nguyễn Thu Hà'} size="xs" />
+                  <span className="font-semibold text-foreground">{taTeacher || session.teacher || 'Nguyễn Thu Hà'}</span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                Đội ngũ giảng dạy & Quản lý:
+              </div>
+
+              {/* Primary Staff / Teacher / Substitute Teacher */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                  <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>GV:</span>
+                </div>
+                {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
+                  <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-2 py-0.5 rounded text-[11px]">
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <span>Chưa gán GV</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    {subTeacher ? (
+                      <div className="flex items-center gap-1.5">
+                        {primaryTeacher && (
+                          <span className="line-through text-muted-foreground">{primaryTeacher}</span>
+                        )}
+                        <AppAvatar name={subTeacher} size="xs" isSubstitute />
+                        <span className="font-semibold text-foreground">{subTeacher}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <AppAvatar name={primaryTeacher} size="xs" />
+                        <span className="font-semibold text-foreground">{primaryTeacher}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Teaching Assistant */}
+              {taTeacher && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                    <UserCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+                    <span>TG:</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <AppAvatar name={taTeacher} size="xs" />
+                    <span className="font-semibold text-foreground">{taTeacher}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 7. Students & Attendance */}
           {session.totalStudents !== undefined && (
@@ -235,14 +258,14 @@ export function ClassSessionHoverCard({
                 <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <span>
                   Sĩ số:{' '}
-                  <strong className={cn("font-bold", session.type === 'digi_session' && session.capacity && session.totalStudents >= session.capacity ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
-                    {session.type === 'digi_session'
+                  <strong className={cn("font-bold", isDigi && session.capacity && session.totalStudents >= session.capacity ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
+                    {isDigi
                       ? `${session.totalStudents}/${session.capacity || 10} chỗ`
                       : session.attendedStudents !== undefined
                       ? `${session.attendedStudents}/${session.totalStudents} học viên`
                       : `${session.totalStudents} học viên`}
                   </strong>
-                  {session.trialStudents && session.trialStudents > 0 ? (
+                  {!isDigi && session.trialStudents && session.trialStudents > 0 ? (
                     <span className="text-amber-600 dark:text-amber-400 font-medium inline-flex items-center gap-0.5 ml-1">
                       <UserPlus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 shrink-0 stroke-[2.2]" />
                       ({session.trialStudents} học thử)
@@ -251,7 +274,7 @@ export function ClassSessionHoverCard({
                 </span>
               </div>
 
-              {session.type === 'digi_session' && session.capacity && session.totalStudents >= session.capacity ? (
+              {isDigi && session.capacity && session.totalStudents >= session.capacity ? (
                 <span className="font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
                   Hết chỗ
@@ -264,44 +287,62 @@ export function ClassSessionHoverCard({
             </div>
           )}
 
-          {/* 8. Nội dung bài học (ở dưới sĩ số) */}
-          {session.lessonContent && (
+          {/* 8. Nội dung bài học (ở dưới sĩ số) - Chỉ cho lớp học */}
+          {!isDigi && (session.lessonContent || session.lessonSubtitle || session.note) && (
             <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
-                Nội dung buổi học
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                <span>Nội dung buổi học</span>
+                {session.lessonNumber && (
+                  <span className="font-semibold text-[10px] text-primary/80 lowercase">
+                    (Buổi {session.lessonNumber})
+                  </span>
+                )}
               </div>
               <div className="rounded-md bg-muted/40 p-2.5 text-[11px] text-foreground space-y-1.5 border border-border/40">
-                {typeof session.lessonContent === 'string' ? (
-                  <p className="whitespace-pre-line leading-relaxed">{session.lessonContent}</p>
-                ) : session.lessonContent.rawText ? (
-                  <p className="whitespace-pre-line leading-relaxed">{session.lessonContent.rawText}</p>
+                {session.lessonSubtitle && (
+                  <p className="font-medium text-foreground/90 italic pb-0.5 border-b border-border/30">
+                    {session.lessonSubtitle}
+                  </p>
+                )}
+                {session.lessonContent ? (
+                  typeof session.lessonContent === 'string' ? (
+                    <p className="whitespace-pre-line leading-relaxed">{session.lessonContent}</p>
+                  ) : session.lessonContent.rawText ? (
+                    <p className="whitespace-pre-line leading-relaxed">{session.lessonContent.rawText}</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {session.lessonContent.words && (
+                        <div className="leading-relaxed">
+                          <span className="font-bold text-foreground">• Words: </span>
+                          <span className="text-muted-foreground">{session.lessonContent.words}</span>
+                        </div>
+                      )}
+                      {session.lessonContent.sentences && (
+                        <div className="leading-relaxed">
+                          <span className="font-bold text-foreground">• Sentences: </span>
+                          <span className="text-muted-foreground">{session.lessonContent.sentences}</span>
+                        </div>
+                      )}
+                      {session.lessonContent.phonics && (
+                        <div className="leading-relaxed">
+                          <span className="font-bold text-foreground">• Phonics: </span>
+                          <span className="text-muted-foreground">{session.lessonContent.phonics}</span>
+                        </div>
+                      )}
+                      {session.lessonContent.sections?.map((sec, idx) => (
+                        <div key={idx} className="leading-relaxed">
+                          <span className="font-bold text-foreground">• {sec.label}: </span>
+                          <span className="text-muted-foreground">{sec.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
                 ) : (
-                  <div className="space-y-1.5">
-                    {session.lessonContent.words && (
-                      <div className="leading-relaxed">
-                        <span className="font-bold text-foreground">• Words: </span>
-                        <span className="text-muted-foreground">{session.lessonContent.words}</span>
-                      </div>
-                    )}
-                    {session.lessonContent.sentences && (
-                      <div className="leading-relaxed">
-                        <span className="font-bold text-foreground">• Sentences: </span>
-                        <span className="text-muted-foreground">{session.lessonContent.sentences}</span>
-                      </div>
-                    )}
-                    {session.lessonContent.phonics && (
-                      <div className="leading-relaxed">
-                        <span className="font-bold text-foreground">• Phonics: </span>
-                        <span className="text-muted-foreground">{session.lessonContent.phonics}</span>
-                      </div>
-                    )}
-                    {session.lessonContent.sections?.map((sec, idx) => (
-                      <div key={idx} className="leading-relaxed">
-                        <span className="font-bold text-foreground">• {sec.label}: </span>
-                        <span className="text-muted-foreground">{sec.text}</span>
-                      </div>
-                    ))}
-                  </div>
+                  !session.lessonSubtitle && (
+                    <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+                      {session.note}
+                    </p>
+                  )
                 )}
               </div>
             </div>

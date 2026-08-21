@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, AlertCircle, ChevronDown } from 'lucide-react'
+import { Plus, AlertCircle, ChevronDown, Table2, CalendarRange } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -18,7 +18,7 @@ import { CLASS_STATUS_LABELS, CLASS_CATEGORIES } from '@/mocks/classRecords'
 import { STATUS_SEMANTIC_MAP, countClassesByStatus } from './classesHelpers'
 import type { ClassStatusFilter } from './classesHelpers'
 
-export type ClassViewMode = 'list' | 'grid' | 'stats'
+export type ClassViewMode = 'list' | 'timetable' | 'grid' | 'stats'
 export type ClassProblemFilter = 'all' | 'special_care' | 'low_acs' | 'low_attendance' | 'low_homework' | 'unassigned_teacher'
 
 /** Quick filter chip definitions for toggling visibility */
@@ -65,6 +65,7 @@ export function ClassesToolbar({
   activeBranch,
   activeSubject,
   activeGrade,
+  viewMode = 'list',
   searchTerm,
   branchOptions,
   baseForStatus,
@@ -81,6 +82,7 @@ export function ClassesToolbar({
   onBranchChange,
   onSubjectChange,
   onGradeChange,
+  onViewModeChange,
   onSearchChange,
   onOpenFilters,
   onCreateClass,
@@ -149,7 +151,7 @@ export function ClassesToolbar({
 
   return (
     <div className="flex shrink-0 flex-col gap-3 bg-background px-3 py-3 lg:px-3 border-b">
-      {/* Top Row: SubjectSelect, BranchSelect (left) and search, filter, create buttons (right) */}
+      {/* Top Row: SubjectSelect, BranchSelect, View Switcher (left) and search, filter, create buttons (right) */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <SubjectSelect
@@ -163,6 +165,41 @@ export function ClassesToolbar({
             onValueChange={onBranchChange}
             className="h-9 min-w-40 text-sm"
           />
+
+          {/* 2 kiểu view theo yêu cầu: Danh sách bảng và Ma trận tuần định danh */}
+          {onViewModeChange && (
+            <div className="flex items-center rounded-md border border-border/80 p-0.5 bg-muted/30">
+              <button
+                type="button"
+                onClick={() => onViewModeChange('list')}
+                title="Xem dạng danh sách bảng"
+                className={cn(
+                  'flex items-center justify-center h-8 px-2.5 rounded text-xs font-medium transition-all cursor-pointer gap-1.5',
+                  viewMode === 'list'
+                    ? 'bg-background text-foreground shadow-xs font-bold border border-border/60'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Table2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Danh sách</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onViewModeChange('timetable')}
+                title="Xem ma trận tuần định danh (Lịch tuần chuẩn highlight theo thứ)"
+                className={cn(
+                  'flex items-center justify-center h-8 px-2.5 rounded text-xs font-medium transition-all cursor-pointer gap-1.5',
+                  viewMode === 'timetable'
+                    ? 'bg-background text-foreground shadow-xs font-bold border border-border/60'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <CalendarRange className="h-3.5 w-3.5 text-primary" />
+                <span className="hidden sm:inline">Tuần chuẩn</span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

@@ -1,18 +1,23 @@
 import type { ScheduleGridItem } from '@/components/screens/schedule/ScheduleTimeGrid'
+import type { LessonContent } from '@/mocks/calendarSchedule'
 
 export interface UnifiedSlot extends ScheduleGridItem {
   id: string
   scheduleType: 'class' | 'event'
   title: string
   subtitle: string
+  className?: string
+  kctName?: string
   date: string
   timeLabel: string
   endTimeLabel: string
   branch: string
   personLabel: string
+  teacher?: string
   type: string
   typeLabel: string
   totalStudents?: number
+  officialStudents?: number
   trialStudents?: number
   attendedStudents?: number
   isRecurring?: boolean
@@ -25,6 +30,9 @@ export interface UnifiedSlot extends ScheduleGridItem {
   classCode?: string
   level?: string
   note?: string
+  lessonSubtitle?: string
+  lessonNumber?: number | string
+  lessonContent?: LessonContent | string
   schoolRoom?: string
   subject?: string
 }

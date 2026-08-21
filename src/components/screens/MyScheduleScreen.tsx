@@ -124,9 +124,11 @@ export function MyScheduleScreen({
   ])
 
   const branches = useMemo(
-    () => [...new Set([...allClass.map((session) => session.branch), ...allEvent.map((session) => session.branch)])],
+    () => [...new Set([...allClass.map((session) => session.branch), ...allEvent.map((session) => session.branch)])].filter(Boolean),
     [allClass, allEvent]
   )
+
+  const hideBranch = branches.length <= 1 || activeBranch !== 'all'
 
   const allSubjects = useMemo(() => {
     const subjects = [
@@ -380,6 +382,7 @@ export function MyScheduleScreen({
           today={today}
           viewMode={viewMode}
           activeBranch={activeBranch}
+          hideBranch={hideBranch}
           onSlotClick={handleSlotClick}
         />
       ) : (
@@ -389,6 +392,7 @@ export function MyScheduleScreen({
           today={today}
           viewMode={viewMode}
           activeBranch={activeBranch}
+          hideBranch={hideBranch}
           onSlotClick={handleSlotClick}
         />
       )}

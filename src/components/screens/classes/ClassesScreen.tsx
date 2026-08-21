@@ -27,6 +27,7 @@ import { ClassesTable } from './ClassesTable'
 import { ClassesCreateDialog } from './ClassesCreateDialog'
 import { ClassesDetailDialog } from './detail/ClassesDetailDialog'
 import { ClassesStatsView } from './ClassesStatsView'
+import { ClassesTimetableView } from './ClassesTimetableView'
 import { MyClassesGrid } from '../my-classes/MyClassesGrid'
 
 
@@ -324,7 +325,15 @@ export function ClassesScreen() {
         onCreateClass={() => setIsCreateOpen(true)}
       />
 
-      {viewMode === 'grid' ? (
+      {viewMode === 'timetable' ? (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ClassesTimetableView
+            classes={filteredClasses}
+            onView={(id) => handleOpenDetail(id, { editMode: false })}
+            onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
+          />
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 lg:px-3">
             <MyClassesGrid

@@ -13,7 +13,7 @@ import { CalendarClassScheduleWeekView } from './calendar/CalendarClassScheduleW
 import { CalendarClassScheduleDayView } from './calendar/CalendarClassScheduleDayView'
 import { CalendarClassScheduleFooter } from './calendar/CalendarClassScheduleFooter'
 import { MyScheduleScreen } from './MyScheduleScreen'
-import type { ViewMode, WeekLayoutMode, FilterState } from './calendar/calendarClassScheduleTypes'
+import type { ViewMode, FilterState } from './calendar/calendarClassScheduleTypes'
 import {
   filterSessions,
   formatLabel,
@@ -48,7 +48,6 @@ export function CalendarClassScheduleScreen() {
   }, [])
 
   const [viewMode, setViewMode] = useState<ViewMode>('week')
-  const [weekLayoutMode, setWeekLayoutMode] = useState<WeekLayoutMode>('shifts')
   const [search, setSearch] = useState('')
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
@@ -298,8 +297,6 @@ export function CalendarClassScheduleScreen() {
         onIsMyScheduleChange={setIsMySchedule}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        weekLayoutMode={weekLayoutMode}
-        onWeekLayoutModeChange={setWeekLayoutMode}
         selectedDate={selectedDate}
         onSelectedDateChange={setSelectedDate}
         onNavigate={navigate}
@@ -331,7 +328,6 @@ export function CalendarClassScheduleScreen() {
             weekDays={weekDays}
             today={today}
             filteredSessions={filtered}
-            weekLayoutMode={weekLayoutMode}
             onSelectSession={handleSelectSession}
           />
           <CalendarClassScheduleFooter />

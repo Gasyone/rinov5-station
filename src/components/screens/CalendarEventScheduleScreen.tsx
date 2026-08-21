@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
 
 import {
   BranchSelect,
@@ -119,6 +119,32 @@ export function CalendarEventScheduleScreen() {
       )
     })
   }, [activeBranch, allSessions, periodFilters, search, statusFilters, subjectFilters, programFilters, saleFilters, teacherFilters, bookingStatusFilters])
+
+  const [isMorningOpen, setIsMorningOpen] = useState(true)
+  const [isAfternoonOpen, setIsAfternoonOpen] = useState(true)
+  const [isEveningOpen, setIsEveningOpen] = useState(true)
+
+  const morningSessionsByDay = useMemo(() => {
+    return weekDays.map((day) =>
+      filtered.filter((s) => s.date === toDateKey(day) && getSessionPeriod(s.timeLabel) === 'morning')
+    )
+  }, [weekDays, filtered])
+
+  const afternoonSessionsByDay = useMemo(() => {
+    return weekDays.map((day) =>
+      filtered.filter((s) => s.date === toDateKey(day) && getSessionPeriod(s.timeLabel) === 'afternoon')
+    )
+  }, [weekDays, filtered])
+
+  const eveningSessionsByDay = useMemo(() => {
+    return weekDays.map((day) =>
+      filtered.filter((s) => s.date === toDateKey(day) && getSessionPeriod(s.timeLabel) === 'evening')
+    )
+  }, [weekDays, filtered])
+
+  const totalMorningCount = useMemo(() => morningSessionsByDay.reduce((acc, curr) => acc + curr.length, 0), [morningSessionsByDay])
+  const totalAfternoonCount = useMemo(() => afternoonSessionsByDay.reduce((acc, curr) => acc + curr.length, 0), [afternoonSessionsByDay])
+  const totalEveningCount = useMemo(() => eveningSessionsByDay.reduce((acc, curr) => acc + curr.length, 0), [eveningSessionsByDay])
 
   // Compute dynamic timeline slots (trims empty hours before earliest and after latest events)
   const timelineSlots = useMemo(() => {
@@ -333,6 +359,7 @@ export function CalendarEventScheduleScreen() {
             sessions={filtered}
             timelineSlots={timelineSlots}
             activeBranch={activeBranch}
+            branchesCount={branches.length}
             onSelectEvent={handleSelectEvent}
           />
         </div>
@@ -347,21 +374,185 @@ export function CalendarEventScheduleScreen() {
               sessions={filtered}
               timelineSlots={timelineSlots}
               activeBranch={activeBranch}
+              branchesCount={branches.length}
               onSelectEvent={handleSelectEvent}
             />
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <WeekHeader days={weekDays} today={today} hasSpacer={false} sessions={filtered} now={now} />
-            <div className="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto">
-              {weekDays.map((day, index) => (
-                <div key={day.toISOString()} className={cn('min-w-0', index < 6 && 'border-r border-border/40')}>
-                  <div className="h-full overflow-y-auto p-1.5">
-                    <EventColumn sessions={filtered} date={day} onSelectEvent={handleSelectEvent} activeBranch={activeBranch} />
+            {filtered.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center p-8">
+                <EmptyState
+                  title="Không có lịch test"
+                  description="Không tìm thấy lịch test nào trong tuần được chọn hoặc bộ lọc hiện tại."
+                />
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 p-3 space-y-4">
+                {/* Ca Sáng (Chỉ hiển thị khi có lịch test ca sáng trong tuần) */}
+                {totalMorningCount > 0 && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsMorningOpen(!isMorningOpen)}
+                      className="flex w-full items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0" />
+                        <span>Ca Sáng (08:00 - 12:00) ({totalMorningCount} sự kiện)</span>
+                      </div>
+                      <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isMorningOpen && "rotate-90")} />
+                    </button>
+
+                    {isMorningOpen && (
+                      <div className="grid grid-cols-7 gap-2">
+                        {weekDays.map((day, idx) => {
+                          const daySessions = morningSessionsByDay[idx]
+                          const isToday =
+                            day.getDate() === today.getDate() &&
+                            day.getMonth() === today.getMonth() &&
+                            day.getFullYear() === today.getFullYear()
+                          return (
+                            <div
+                              key={day.toISOString()}
+                              className={cn(
+                                "space-y-2 min-w-0 p-1 rounded-md transition-colors",
+                                isToday && "bg-primary/[0.03]"
+                              )}
+                            >
+                              {daySessions.map((session) => (
+                                <EventCard
+                                  key={session.id}
+                                  session={session}
+                                  onClick={() => handleSelectEvent(session)}
+                                  activeBranch={activeBranch}
+                                  branchesCount={branches.length}
+                                  showTime
+                                />
+                              ))}
+                              {daySessions.length === 0 && (
+                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                  —
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+
+                {/* Ca Chiều (Chỉ hiển thị khi có lịch test ca chiều trong tuần) */}
+                {totalAfternoonCount > 0 && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsAfternoonOpen(!isAfternoonOpen)}
+                      className="flex w-full items-center justify-between rounded-lg bg-sky-500/10 border border-sky-500/20 px-3 py-2 text-xs font-bold text-sky-700 dark:text-sky-400 hover:bg-sky-500/20 transition cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-sky-500 shrink-0" />
+                        <span>Ca Chiều (12:00 - 18:00) ({totalAfternoonCount} sự kiện)</span>
+                      </div>
+                      <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isAfternoonOpen && "rotate-90")} />
+                    </button>
+
+                    {isAfternoonOpen && (
+                      <div className="grid grid-cols-7 gap-2">
+                        {weekDays.map((day, idx) => {
+                          const daySessions = afternoonSessionsByDay[idx]
+                          const isToday =
+                            day.getDate() === today.getDate() &&
+                            day.getMonth() === today.getMonth() &&
+                            day.getFullYear() === today.getFullYear()
+                          return (
+                            <div
+                              key={day.toISOString()}
+                              className={cn(
+                                "space-y-2 min-w-0 p-1 rounded-md transition-colors",
+                                isToday && "bg-primary/[0.03]"
+                              )}
+                            >
+                              {daySessions.map((session) => (
+                                <EventCard
+                                  key={session.id}
+                                  session={session}
+                                  onClick={() => handleSelectEvent(session)}
+                                  activeBranch={activeBranch}
+                                  branchesCount={branches.length}
+                                  showTime
+                                />
+                              ))}
+                              {daySessions.length === 0 && (
+                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                  —
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Ca Tối (Chỉ hiển thị khi có lịch test ca tối trong tuần) */}
+                {totalEveningCount > 0 && (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEveningOpen(!isEveningOpen)}
+                      className="flex w-full items-center justify-between rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-3 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/20 transition cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 shrink-0" />
+                        <span>Ca Tối (18:00 - 22:00) ({totalEveningCount} sự kiện)</span>
+                      </div>
+                      <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isEveningOpen && "rotate-90")} />
+                    </button>
+
+                    {isEveningOpen && (
+                      <div className="grid grid-cols-7 gap-2">
+                        {weekDays.map((day, idx) => {
+                          const daySessions = eveningSessionsByDay[idx]
+                          const isToday =
+                            day.getDate() === today.getDate() &&
+                            day.getMonth() === today.getMonth() &&
+                            day.getFullYear() === today.getFullYear()
+                          return (
+                            <div
+                              key={day.toISOString()}
+                              className={cn(
+                                "space-y-2 min-w-0 p-1 rounded-md transition-colors",
+                                isToday && "bg-primary/[0.03]"
+                              )}
+                            >
+                              {daySessions.map((session) => (
+                                <EventCard
+                                  key={session.id}
+                                  session={session}
+                                  onClick={() => handleSelectEvent(session)}
+                                  activeBranch={activeBranch}
+                                  branchesCount={branches.length}
+                                  showTime
+                                />
+                              ))}
+                              {daySessions.length === 0 && (
+                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                  —
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )
       )}
@@ -512,40 +703,6 @@ function WeekHeader({
           )
         })}
       </div>
-    </div>
-  )
-}
-
-function EventColumn({
-  sessions,
-  date,
-  onSelectEvent,
-  activeBranch = 'all',
-  single,
-}: {
-  sessions: EventSession[]
-  date: Date
-  onSelectEvent: (session: EventSession) => void
-  activeBranch?: string
-  single?: boolean
-}) {
-  const daySessions = sessions.filter((session) => session.date === toDateKey(date))
-
-  if (daySessions.length === 0) {
-    return (
-      <EmptyState
-        className="py-10"
-        title="Chưa có lịch test"
-        icon={<CalendarDays className="h-7 w-7 text-muted-foreground" />}
-      />
-    )
-  }
-
-  return (
-    <div className={single ? 'grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5' : 'space-y-2'}>
-      {daySessions.map((session) => (
-        <EventCard key={session.id} session={session} onClick={() => onSelectEvent(session)} activeBranch={activeBranch} />
-      ))}
     </div>
   )
 }

@@ -12,6 +12,7 @@ interface DigiScheduleWeekViewProps {
   today: Date
   filteredSessions: ClassSession[]
   onSelectSession: (session: ClassSession) => void
+  hideBranch?: boolean
 }
 
 export function DigiScheduleWeekView({
@@ -19,6 +20,7 @@ export function DigiScheduleWeekView({
   today,
   filteredSessions,
   onSelectSession,
+  hideBranch = false,
 }: DigiScheduleWeekViewProps) {
   const timeSlots = DIGI_TIMELINE_SLOTS
   const hasAnySessions = filteredSessions.length > 0
@@ -33,8 +35,8 @@ export function DigiScheduleWeekView({
           />
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left table-fixed">
+        <div className="min-h-0 flex-1 overflow-auto flex flex-col">
+          <table className="w-full h-full min-h-full min-w-[900px] border-collapse text-left table-fixed">
             {/* Colgroup: cột giờ nhỏ gọn, 7 cột ngày đều nhau */}
             <colgroup>
               <col className="w-16" />
@@ -92,7 +94,7 @@ export function DigiScheduleWeekView({
                         </span>
                       </div>
                       <span className="text-[10px] mt-0.5 text-muted-foreground font-semibold block">
-                        {count} ca Digi
+                        {count} ca
                       </span>
                     </th>
                   )
@@ -101,7 +103,7 @@ export function DigiScheduleWeekView({
             </thead>
 
             {/* Body: Các dòng Khung giờ từ 18h - 21h (30p 1 khung) */}
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y divide-border/30 h-full">
               {timeSlots.map((shift) => (
                 <tr key={shift} className="hover:bg-muted/5 transition-colors">
                   {/* Cột hiển thị giờ bên trái — gọn, không nền/viền */}
@@ -138,6 +140,7 @@ export function DigiScheduleWeekView({
                                 key={session.id}
                                 session={session}
                                 onClick={() => onSelectSession(session)}
+                                hideBranch={hideBranch}
                               />
                             ))}
                           </div>

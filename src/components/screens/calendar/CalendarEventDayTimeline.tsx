@@ -19,6 +19,7 @@ interface CalendarEventDayTimelineProps {
   sessions: EventSession[]
   timelineSlots: string[]
   activeBranch: string
+  branchesCount?: number
   onSelectEvent: (session: EventSession) => void
 }
 
@@ -29,6 +30,7 @@ export function CalendarEventDayTimeline({
   sessions,
   timelineSlots,
   activeBranch,
+  branchesCount,
   onSelectEvent,
 }: CalendarEventDayTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -159,6 +161,7 @@ export function CalendarEventDayTimeline({
                       session={session}
                       onClick={() => onSelectEvent(session)}
                       activeBranch={activeBranch}
+                      branchesCount={branchesCount}
                     />
                   </div>
                 ))}

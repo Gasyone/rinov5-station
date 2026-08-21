@@ -1,9 +1,8 @@
-import { ChevronLeft, ChevronRight, Rows3, Grid } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { BranchSelect, SubjectSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl, SYSTEM_BRANCHES } from '@/components/controls'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
-import type { ViewMode, WeekLayoutMode } from './calendarClassScheduleTypes'
+import type { ViewMode } from './calendarClassScheduleTypes'
 import { VIEW_MODES, getMonday } from './calendarClassScheduleHelpers'
 
 interface CalendarClassScheduleToolbarProps {
@@ -11,8 +10,6 @@ interface CalendarClassScheduleToolbarProps {
   onIsMyScheduleChange?: (val: boolean) => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
-  weekLayoutMode: WeekLayoutMode
-  onWeekLayoutModeChange: (mode: WeekLayoutMode) => void
   selectedDate: Date
   onSelectedDateChange: (date: Date) => void
   onNavigate: (dir: number) => void
@@ -33,8 +30,6 @@ export function CalendarClassScheduleToolbar({
   onIsMyScheduleChange,
   viewMode,
   onViewModeChange,
-  weekLayoutMode,
-  onWeekLayoutModeChange,
   selectedDate,
   onSelectedDateChange,
   onNavigate,
@@ -112,23 +107,6 @@ export function CalendarClassScheduleToolbar({
             }
           }}
         />
-
-        {viewMode === 'week' && (
-          <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5 bg-muted/20">
-            <IconActionButton
-              icon={Rows3}
-              label="Xem theo ca"
-              onClick={() => onWeekLayoutModeChange('shifts')}
-              className={cn("size-7", weekLayoutMode === 'shifts' && "bg-background shadow-xs text-foreground")}
-            />
-            <IconActionButton
-              icon={Grid}
-              label="Xem dòng thời gian"
-              onClick={() => onWeekLayoutModeChange('timeline')}
-              className={cn("size-7", weekLayoutMode === 'timeline' && "bg-background shadow-xs text-foreground")}
-            />
-          </div>
-        )}
 
         <ExpandableSearch
           value={search}

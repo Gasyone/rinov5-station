@@ -10,6 +10,7 @@ interface MyScheduleMatrixViewProps {
   today: Date
   viewMode: 'day' | 'week'
   activeBranch: string
+  hideBranch?: boolean
   onSlotClick: (slot: UnifiedSlot) => void
 }
 
@@ -19,6 +20,7 @@ export function MyScheduleMatrixView({
   today,
   viewMode,
   activeBranch,
+  hideBranch,
   onSlotClick,
 }: MyScheduleMatrixViewProps) {
   return (
@@ -33,6 +35,7 @@ export function MyScheduleMatrixView({
           slot={slot}
           compact
           activeBranch={activeBranch}
+          hideBranch={hideBranch}
           isOverlapped={context.isOverlapped}
           showTime={false}
           onClick={() => onSlotClick(slot)}

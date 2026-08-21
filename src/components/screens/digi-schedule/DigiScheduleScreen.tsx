@@ -150,6 +150,7 @@ export function DigiScheduleScreen() {
         today={today}
         filteredSessions={filteredSessions}
         onSelectSession={handleSelectSession}
+        hideBranch={activeBranch !== 'all' || branchFilters.length === 1}
       />
 
       {/* 3. Footer Color Legend */}

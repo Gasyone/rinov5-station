@@ -37,7 +37,15 @@ const getTeacherPersonnel = (name: string) => {
   }
 }
 
-export function SessionCard({ session, onClick }: { session: ClassSession; onClick: () => void }) {
+export function SessionCard({
+  session,
+  onClick,
+  hideBranch = false,
+}: {
+  session: ClassSession
+  onClick: () => void
+  hideBranch?: boolean
+}) {
   // For digi sessions, show the assistantTeacher name instead of the generic teacher label
   const displayTeacher = session.type === 'digi_session' && session.assistantTeacher
     ? session.assistantTeacher
@@ -80,11 +88,17 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
     borderLeftColor = 'bg-zinc-300 dark:bg-zinc-600'
   }
 
+  const showBranchLine = !hideBranch || (session.type !== 'digi_session' && Boolean(session.schoolRoom))
+
   return (
     <SessionHoverCard session={session}>
       <div
         onClick={onClick}
-        className={cn("group relative flex min-h-[76px] flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary/40", bgClass)}
+        className={cn(
+          "group relative flex flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary/40",
+          session.type === 'digi_session' ? "min-h-[58px]" : "min-h-[76px]",
+          bgClass
+        )}
       >
       {borderLeftColor && (
         <span className={cn("absolute left-0 top-0 bottom-0 w-1", borderLeftColor)} />
@@ -146,22 +160,67 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
             )}
           </div>
         </div>
-        <h4 className={cn('text-[11px] font-bold leading-tight block truncate', isCancelled && 'line-through text-muted-foreground')} title={`${session.classCode} - ${session.kctName || session.className}`}>
-          {session.type === 'digi_session' ? session.className : `${session.classCode} - ${session.kctName || session.className}`}
-        </h4>
-        <div className="mt-1 flex items-center gap-x-1 min-w-0 w-full overflow-hidden whitespace-nowrap">
-          <span className="text-[9px] text-muted-foreground font-medium truncate flex-1 min-w-0" title={session.branch}>
-            {session.branch}
-          </span>
-          {session.type !== 'digi_session' && (
-            <>
-              <span className="text-muted-foreground text-[8px] shrink-0">•</span>
-              <span className="text-amber-700 dark:text-amber-400 text-[8.5px] font-bold shrink-0" title={session.schoolRoom}>
+        {/* Dòng 2: Tên bài học (viết ... nếu dài quá, chỉ 1 dòng) */}
+        {session.type !== 'digi_session' ? (
+          <h4
+            className={cn(
+              'text-[11px] font-bold leading-tight block truncate text-foreground',
+              isCancelled && 'line-through text-muted-foreground'
+            )}
+            title={session.title || session.kctName || session.className}
+          >
+            {session.title || session.kctName || session.className}
+          </h4>
+        ) : (
+          <h4
+            className="text-[11px] font-bold leading-tight block truncate text-foreground"
+            title={session.title || 'Ca tự học Digi'}
+          >
+            {session.title || 'Ca tự học Digi'}
+          </h4>
+        )}
+
+        {/* Dòng 3: Mã lớp, môn học - Trình độ ở cạnh phải */}
+        {session.type !== 'digi_session' && (
+          <div className="mt-1 flex items-center justify-between gap-1 text-[9.5px] min-w-0">
+            <span
+              className="truncate flex-1 min-w-0 font-medium text-muted-foreground"
+              title={`${session.classCode || ''}${session.classCode && session.subject ? ', ' : ''}${session.subject || ''}`}
+            >
+              {session.classCode ? `${session.classCode}, ${session.subject}` : session.subject}
+            </span>
+            {session.level && (
+              <span
+                className="font-semibold text-foreground/80 shrink-0 text-[9px]"
+                title={`Trình độ: ${session.level}`}
+              >
+                {session.level}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Dòng 4: Trường - Cạnh phải là Phòng */}
+        {showBranchLine && (
+          <div className="mt-1 flex items-center justify-between gap-1 min-w-0 w-full overflow-hidden whitespace-nowrap text-[9px]">
+            {!hideBranch && (
+              <span
+                className="text-muted-foreground font-medium truncate flex-1 min-w-0"
+                title={session.branch}
+              >
+                {session.branch}
+              </span>
+            )}
+            {session.type !== 'digi_session' && session.schoolRoom && (
+              <span
+                className="text-amber-700 dark:text-amber-400 text-[8.5px] font-bold shrink-0 ml-1"
+                title={session.schoolRoom}
+              >
                 {session.schoolRoom}
               </span>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
         <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
