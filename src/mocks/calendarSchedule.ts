@@ -1,11 +1,22 @@
 import { mockBookingTests } from './bookingTests'
 
+export interface LessonContent {
+  sessionNumber?: number | string
+  words?: string
+  sentences?: string
+  phonics?: string
+  sections?: { label: string; text: string }[]
+  rawText?: string
+}
+
 export interface ClassSession {
-  id: string; classCode: string; className: string; subject: string; teacher: string;
+  id: string; classCode: string; className: string; kctName?: string; subject: string; teacher: string;
   branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
   statusLabel: string; type: 'class_session' | 'supplementary' | 'workshop' | 'planned' | 'digi_session';
   typeLabel: string; title: string; lessonSubtitle: string;
+  lessonNumber?: number | string;
+  lessonContent?: LessonContent;
   totalStudents: number; officialStudents: number; trialStudents: number;
   attendedStudents?: number; isRecurring?: boolean;
   substituteTeacher?: string;
@@ -44,30 +55,115 @@ const addDays = (d: Date, n: number) => { const r = new Date(d); r.setDate(r.get
 const toDateKey = (d: Date) => `${d.getFullYear()}-${PAD(d.getMonth() + 1)}-${PAD(d.getDate())}`
 
 const CLASSES = [
-  { id: 'SA1_TA_001', name: 'Tiếng Anh SA1 Level 2', subject: 'Tiếng Anh', schedule: 'T2,T5', time: '17:45-19:15' },
-  { id: 'AK_TA_012', name: 'Tiếng Anh AK Kindie 1', subject: 'Tiếng Anh', schedule: 'T2,T4', time: '17:30-19:30' },
-  { id: 'SA1_KD_000', name: 'Kindie SA1 Pre-K', subject: 'Tiếng Anh', schedule: 'T3,T6', time: '17:45-19:15' },
-  { id: 'AK_TOAN_017', name: 'Toán tư duy AK Columbus 4', subject: 'Toán tư duy', schedule: 'T3,T7', time: '19:40-21:10' },
-  { id: 'AK_TOAN_016', name: 'Toán tư duy AK Archimedes 7', subject: 'Toán tư duy', schedule: 'T6', time: '19:15-21:15' },
-  { id: 'SA1_TA_T03', name: 'Tiếng Anh Trial Level 2', subject: 'Tiếng Anh', schedule: 'T4', time: '15:30-17:30' },
-  { id: 'SA2_TA_014', name: 'Tiếng Anh SA2 Level 3', subject: 'Tiếng Anh', schedule: 'T3,T6', time: '17:45-19:15' },
-  { id: 'AK_TOAN_021', name: 'Toán tư duy AK Archimedes 5', subject: 'Toán tư duy', schedule: 'T6', time: '19:15-21:15' },
-  { id: 'STEM_ROBO_003', name: 'STEM Robotics S1', subject: 'STEM Robotics', schedule: 'T4', time: '15:30-17:30' },
+  { id: 'SA1_TA_001', name: 'Tiếng Anh SA1 Level 2', kctName: 'Tiếng Anh SA1 Level 2', subject: 'Tiếng Anh', level: 'Level 2', schedule: 'T2,T5', time: '17:45-19:15' },
+  { id: 'AK_TA_012', name: 'Tiếng Anh AK Kindie 1', kctName: 'Tiếng Anh AK Kindie 1', subject: 'Tiếng Anh', level: 'Kindie 1', schedule: 'T2,T4', time: '17:30-19:30' },
+  { id: 'SA1_KD_000', name: 'Kindie SA1 Pre-K', kctName: 'Kindie SA1 Pre-K', subject: 'Tiếng Anh', level: 'Pre-K', schedule: 'T3,T6', time: '17:45-19:15' },
+  { id: 'AK_TOAN_017', name: 'Toán tư duy AK Columbus 4', kctName: 'Toán tư duy AK Columbus 4', subject: 'Toán tư duy', level: 'Columbus 4', schedule: 'T3,T7', time: '19:40-21:10' },
+  { id: 'AK_TOAN_016', name: 'Toán tư duy AK Archimedes 7', kctName: 'Toán tư duy AK Archimedes 7', subject: 'Toán tư duy', level: 'Archimedes 7', schedule: 'T6', time: '19:15-21:15' },
+  { id: 'SA1_TA_T03', name: 'Tiếng Anh Trial Level 2', kctName: 'Tiếng Anh Trial Level 2', subject: 'Tiếng Anh', level: 'Level 2', schedule: 'T4', time: '15:30-17:30' },
+  { id: 'SA2_TA_014', name: 'Tiếng Anh SA2 Level 3', kctName: 'Tiếng Anh SA2 Level 3', subject: 'Tiếng Anh', level: 'Level 3', schedule: 'T3,T6', time: '17:45-19:15' },
+  { id: 'AK_TOAN_021', name: 'Toán tư duy AK Archimedes 5', kctName: 'Toán tư duy AK Archimedes 5', subject: 'Toán tư duy', level: 'Archimedes 5', schedule: 'T6', time: '19:15-21:15' },
+  { id: 'STEM_ROBO_003', name: 'STEM Robotics S1', kctName: 'STEM Robotics S1', subject: 'STEM Robotics', level: 'S1', schedule: 'T4', time: '15:30-17:30' },
 ]
 
-const LESSONS: Record<string, { title: string; subtitle: string }[]> = {
+interface LessonItem {
+  title: string
+  subtitle: string
+  sessionNumber: number
+  content: LessonContent
+}
+
+const LESSONS: Record<string, LessonItem[]> = {
   'Tiếng Anh': [
-    { title: 'Khởi động Station: Màu sắc và hình khối', subtitle: 'Làm quen mẫu câu hỏi đáp' },
-    { title: 'Story time: My Family Adventure', subtitle: 'Đọc tranh theo nhóm' },
-    { title: 'Phonics lab: Nguyên âm ngắn', subtitle: 'Luyện âm ngắn qua trò chơi' },
+    {
+      title: 'Khởi động Station: Màu sắc và hình khối',
+      subtitle: 'Làm quen mẫu câu hỏi đáp',
+      sessionNumber: 1,
+      content: {
+        sessionNumber: 1,
+        words: 'red, blue, yellow, green, circle, square, triangle',
+        sentences: "What color is it? It's blue. What shape is this?",
+        phonics: 'Cc: cat, cup, car / Dd: dog, duck, door',
+      },
+    },
+    {
+      title: 'Story time: My Family Adventure',
+      subtitle: 'Đọc tranh theo nhóm',
+      sessionNumber: 2,
+      content: {
+        sessionNumber: 2,
+        words: 'father, mother, brother, sister, baby, grandfather',
+        sentences: 'This is my family. Who is this? This is my mother.',
+        phonics: 'Ff: father, fish, frog / Mm: mother, monkey, moon',
+      },
+    },
+    {
+      title: 'Phonics lab: Nguyên âm ngắn',
+      subtitle: 'Luyện âm ngắn qua trò chơi',
+      sessionNumber: 4,
+      content: {
+        sessionNumber: 4,
+        words: 'hello, goodbye, sing, stand up, sit down, thank you',
+        sentences: "How are you? I'm fine. Thank you.",
+        phonics: 'Aa: alligator, ant, apple / Bb: bear, bird, banana',
+      },
+    },
   ],
   'Toán tư duy': [
-    { title: 'Level 307 - Bài 2: Trò chơi cờ bàn', subtitle: 'Khám phá luật chơi' },
-    { title: 'C2 - Bài 2: Toto và 100 hạt sỏi', subtitle: 'Ôn đếm theo nhóm' },
+    {
+      title: 'Level 307 - Bài 2: Trò chơi cờ bàn',
+      subtitle: 'Khám phá luật chơi',
+      sessionNumber: 2,
+      content: {
+        sessionNumber: 2,
+        sections: [
+          { label: 'Khái niệm', text: 'Quy luật bàn cờ và ma trận số 4x4' },
+          { label: 'Kỹ năng', text: 'Tư duy chiến thuật và ghi nhớ nước đi' },
+          { label: 'Thực hành', text: 'Thi đấu cờ bàn theo cặp 1v1' },
+        ],
+      },
+    },
+    {
+      title: 'C2 - Bài 2: Toto và 100 hạt sỏi',
+      subtitle: 'Ôn đếm theo nhóm',
+      sessionNumber: 4,
+      content: {
+        sessionNumber: 4,
+        sections: [
+          { label: 'Khái niệm', text: 'Đếm tiến, đếm lùi trong phạm vi 100' },
+          { label: 'Kỹ năng', text: 'Phân nhóm chục và đơn vị với hạt sỏi Toto' },
+          { label: 'Thực hành', text: 'Giải bài toán thêm bớt nhóm 5 và nhóm 10' },
+        ],
+      },
+    },
   ],
   'STEM Robotics': [
-    { title: 'Robot line follower: Cân chỉnh cảm biến', subtitle: 'Lắp ráp và thử đường chạy' },
-    { title: 'STEM Coding: Vòng lặp và điều kiện', subtitle: 'Lập trình nhiệm vụ theo nhóm' },
+    {
+      title: 'Robot line follower: Cân chỉnh cảm biến',
+      subtitle: 'Lắp ráp và thử đường chạy',
+      sessionNumber: 3,
+      content: {
+        sessionNumber: 3,
+        sections: [
+          { label: 'Chủ đề', text: 'Lắp ráp và cân chỉnh cảm biến quang hồng ngoại' },
+          { label: 'Lập trình', text: 'Vòng lặp dò line đen trắng 2 kênh' },
+          { label: 'Thực hành', text: 'Thử nghiệm tốc độ và bo cua góc 90 độ' },
+        ],
+      },
+    },
+    {
+      title: 'STEM Coding: Vòng lặp và điều kiện',
+      subtitle: 'Lập trình nhiệm vụ theo nhóm',
+      sessionNumber: 5,
+      content: {
+        sessionNumber: 5,
+        sections: [
+          { label: 'Chủ đề', text: 'Khối lệnh điều kiện If-Else lồng nhau' },
+          { label: 'Lập trình', text: 'Né vật cản kết hợp phát còi cảnh báo' },
+          { label: 'Thực hành', text: 'Chạy mê cung tự hành theo nhóm' },
+        ],
+      },
+    },
   ],
 }
 
@@ -143,14 +239,17 @@ export function getMockClassSessions(): ClassSession[] {
 
       return {
         id: `CLS-${cls.id}-${toDateKey(d)}`, classCode: cls.id, className: cls.name,
+        kctName: cls.kctName,
         subject: cls.subject, teacher,
         branch: PICK(BRANCHES, seed), schoolRoom: PICK(['Phòng 1', 'Phòng 2', 'Phòng 3'], seed),
-        level: PICK(['Kindie 1', 'Level 2', 'Columbus 4'], seed),
+        level: cls.level,
         date: toDateKey(d), dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
         dateBucket: bucket, timeLabel: `${PAD(sh)}:${PAD(sm)}`, endTimeLabel: `${PAD(eh)}:${PAD(em)}`,
         scheduleLabel: cls.schedule, status: sts as ClassSession['status'], statusLabel: statusLabelMap[sts],
         type, typeLabel: type === 'class_session' ? 'Chính thức' : 'Bổ trợ',
         title: lesson.title, lessonSubtitle: lesson.subtitle,
+        lessonNumber: lesson.sessionNumber,
+        lessonContent: lesson.content,
         totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
         attendedStudents, isRecurring: true, substituteTeacher: subTeacher,
         assistantTeacher, assistantSubstitute,
@@ -169,6 +268,7 @@ export function getMockClassSessions(): ClassSession[] {
       id: 'DIGI-SES-TODAY',
       classCode: 'DIGI_LAB_01',
       className: 'Ca tự học Digi',
+      kctName: 'Digi Self-Paced',
       subject: 'Tự học số',
       teacher: 'Trợ giảng phụ trách',
       branch: 'RinoEdu Linh Đàm',
@@ -185,6 +285,15 @@ export function getMockClassSessions(): ClassSession[] {
       typeLabel: 'Ca tự học Digi',
       title: 'Ca tự học Digi tại trạm',
       lessonSubtitle: 'Phòng Digi • 6 học viên (10 máy)',
+      lessonNumber: 1,
+      lessonContent: {
+        sessionNumber: 1,
+        sections: [
+          { label: 'Nội dung', text: 'Thực hành tương tác số hóa trên trạm Digi' },
+          { label: 'Nhiệm vụ', text: 'Hoàn thành 3 vòng thử thách từ vựng và ngữ pháp' },
+          { label: 'Đánh giá', text: 'Hệ thống chấm điểm AI tự động phản hồi' },
+        ],
+      },
       totalStudents: 6,
       officialStudents: 6,
       trialStudents: 0,
@@ -198,6 +307,7 @@ export function getMockClassSessions(): ClassSession[] {
       id: 'DIGI-SES-TOMORROW',
       classCode: 'DIGI_LAB_02',
       className: 'Ca tự học Digi',
+      kctName: 'Digi Self-Paced',
       subject: 'Tự học số',
       teacher: 'Trợ giảng phụ trách',
       assistantTeacher: 'Trần Minh Châu',
@@ -215,6 +325,15 @@ export function getMockClassSessions(): ClassSession[] {
       typeLabel: 'Ca tự học Digi',
       title: 'Ca tự học Digi tại trạm',
       lessonSubtitle: 'Phòng Digi • 4 học viên (10 máy)',
+      lessonNumber: 2,
+      lessonContent: {
+        sessionNumber: 2,
+        sections: [
+          { label: 'Nội dung', text: 'Thực hành tương tác số hóa trên trạm Digi' },
+          { label: 'Nhiệm vụ', text: 'Luyện tập kỹ năng phát âm và phản xạ' },
+          { label: 'Đánh giá', text: 'Hệ thống chấm điểm AI tự động phản hồi' },
+        ],
+      },
       totalStudents: 4,
       officialStudents: 4,
       trialStudents: 0,

@@ -29,6 +29,7 @@ export function ClassSessionHoverCard({
   const title = session.title || session.className || 'Buổi học'
   const classCode = session.classCode
   const className = session.className || session.subtitle
+  const kctName = session.kctName
   const subject = session.subject
   const level = session.level
   const room = session.schoolRoom || session.roomName || session.location
@@ -67,7 +68,7 @@ export function ClassSessionHoverCard({
         side={side}
         align="start"
         sideOffset={8}
-        className="w-80 p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
+        className="w-[350px] p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
       >
         {/* Top Header Ribbon */}
         <div
@@ -122,28 +123,36 @@ export function ClassSessionHoverCard({
 
         {/* Content Body */}
         <div className="p-3.5 space-y-2.5 text-xs">
-          {/* Main Title & Class Code */}
+          {/* 1. Tên buổi học - Để phẳng, in đậm */}
           <div>
-            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-              {classCode && (
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-foreground border border-border/60">
-                  {classCode}
-                </span>
-              )}
-              <h4 className="font-bold text-sm text-foreground leading-tight">
-                {className || title}
-              </h4>
-            </div>
-            {title && className && title !== className && (
-              <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
-                {title}
-              </p>
-            )}
+            <h4 className="text-sm font-bold text-foreground leading-snug">
+              {title}
+            </h4>
           </div>
 
-          {/* Subject & Level */}
+          {/* 2. Bên dưới: Mã lớp và Tên lớp */}
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            {classCode && (
+              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-foreground border border-border/60">
+                {classCode}
+              </span>
+            )}
+            <span className="font-bold text-xs text-foreground leading-tight">
+              {className}
+            </span>
+          </div>
+
+          {/* 3. Dòng KCT riêng 1 dòng */}
+          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+            <span className="text-muted-foreground font-normal">KCT:</span>
+            <span className="font-semibold text-foreground truncate">
+              {kctName || 'Chương trình tiêu chuẩn'}
+            </span>
+          </div>
+
+          {/* 4. Dòng Tên môn học - Level (2 dữ liệu độc lập) */}
           {(subject || level) && (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
               <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="font-medium text-foreground/90">
                 {subject}
@@ -159,15 +168,15 @@ export function ClassSessionHoverCard({
             </div>
           )}
 
-          {/* Room & Branch Location */}
+          {/* 5. Phòng & Cơ sở */}
           {locationDisplay && (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
               <span className="font-medium text-foreground">{locationDisplay}</span>
             </div>
           )}
 
-          {/* Detailed Staff Section for Class (Right-aligned Staff Info) */}
+          {/* 6. Detailed Staff Section for Class (GV, TG) */}
           <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
             <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
               Đội ngũ giảng dạy & Quản lý:
@@ -219,7 +228,7 @@ export function ClassSessionHoverCard({
             )}
           </div>
 
-          {/* Students & Attendance */}
+          {/* 7. Students & Attendance */}
           {session.totalStudents !== undefined && (
             <div className="flex items-center justify-between border-t border-border/40 pt-2 text-[11px]">
               <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -252,6 +261,49 @@ export function ClassSessionHoverCard({
                   Đã điểm danh
                 </span>
               ) : null}
+            </div>
+          )}
+
+          {/* 8. Nội dung bài học (ở dưới sĩ số) */}
+          {session.lessonContent && (
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+                Nội dung buổi học
+              </div>
+              <div className="rounded-md bg-muted/40 p-2.5 text-[11px] text-foreground space-y-1.5 border border-border/40">
+                {typeof session.lessonContent === 'string' ? (
+                  <p className="whitespace-pre-line leading-relaxed">{session.lessonContent}</p>
+                ) : session.lessonContent.rawText ? (
+                  <p className="whitespace-pre-line leading-relaxed">{session.lessonContent.rawText}</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {session.lessonContent.words && (
+                      <div className="leading-relaxed">
+                        <span className="font-bold text-foreground">• Words: </span>
+                        <span className="text-muted-foreground">{session.lessonContent.words}</span>
+                      </div>
+                    )}
+                    {session.lessonContent.sentences && (
+                      <div className="leading-relaxed">
+                        <span className="font-bold text-foreground">• Sentences: </span>
+                        <span className="text-muted-foreground">{session.lessonContent.sentences}</span>
+                      </div>
+                    )}
+                    {session.lessonContent.phonics && (
+                      <div className="leading-relaxed">
+                        <span className="font-bold text-foreground">• Phonics: </span>
+                        <span className="text-muted-foreground">{session.lessonContent.phonics}</span>
+                      </div>
+                    )}
+                    {session.lessonContent.sections?.map((sec, idx) => (
+                      <div key={idx} className="leading-relaxed">
+                        <span className="font-bold text-foreground">• {sec.label}: </span>
+                        <span className="text-muted-foreground">{sec.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -9,6 +9,7 @@ export interface GenericSessionData {
   title?: string
   className?: string
   classCode?: string
+  kctName?: string
   subject?: string
   level?: string
   teacher?: string
@@ -41,6 +42,15 @@ export interface GenericSessionData {
   isOpeningDay?: boolean
   note?: string
   lessonSubtitle?: string
+  lessonNumber?: number | string
+  lessonContent?: {
+    sessionNumber?: number | string
+    words?: string
+    sentences?: string
+    phonics?: string
+    sections?: { label: string; text: string }[]
+    rawText?: string
+  } | string
   scheduleType?: string
   personLabel?: string
   testLink?: string

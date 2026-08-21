@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeftRight, Clock, Repeat, Users, AlertTriangle } from 'lucide-react'
+import { ArrowLeftRight, Clock, Repeat, Users, AlertTriangle, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PersonnelHoverCard } from '@/components/shared'
 import { SessionHoverCard } from './SessionHoverCard'
@@ -57,6 +57,8 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
     session.totalStudents >= session.roomCapacity
   )
   
+  const hasNewStudents = Boolean(session.trialStudents && session.trialStudents > 0)
+  
   let bgClass = 'bg-card hover:bg-accent/60'
   let borderLeftColor = ''
 
@@ -108,6 +110,19 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
             {session.timeLabel}
           </div>
           <div className="flex items-center gap-1">
+            {hasNewStudents && (
+              <div
+                title={`Có ${session.trialStudents} học viên học thử / mới`}
+                className="flex items-center justify-center p-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 shrink-0"
+              >
+                <UserPlus className="h-3 w-3 text-amber-700 dark:text-amber-400 shrink-0 stroke-[2.8]" />
+              </div>
+            )}
+            {session.isOpeningDay && (
+              <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800 shrink-0">
+                Khai giảng
+              </span>
+            )}
             {isFull && (
               <span
                 title="Ca học đã đầy chỗ"
@@ -131,8 +146,8 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
             )}
           </div>
         </div>
-        <h4 className={cn('text-[11px] font-bold leading-tight block truncate', isCancelled && 'line-through text-muted-foreground')} title={`${session.classCode} - ${session.className}`}>
-          {session.type === 'digi_session' ? session.className : `${session.classCode} - ${session.className}`}
+        <h4 className={cn('text-[11px] font-bold leading-tight block truncate', isCancelled && 'line-through text-muted-foreground')} title={`${session.classCode} - ${session.kctName || session.className}`}>
+          {session.type === 'digi_session' ? session.className : `${session.classCode} - ${session.kctName || session.className}`}
         </h4>
         <div className="mt-1 flex items-center gap-x-1 min-w-0 w-full overflow-hidden whitespace-nowrap">
           <span className="text-[9px] text-muted-foreground font-medium truncate flex-1 min-w-0" title={session.branch}>
@@ -145,11 +160,6 @@ export function SessionCard({ session, onClick }: { session: ClassSession; onCli
                 {session.schoolRoom}
               </span>
             </>
-          )}
-          {session.isOpeningDay && (
-            <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800 shrink-0">
-              Khai giảng
-            </span>
           )}
         </div>
         <div className="mt-2 space-y-0.5 text-[9px] text-muted-foreground">

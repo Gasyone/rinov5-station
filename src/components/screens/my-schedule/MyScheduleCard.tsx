@@ -14,7 +14,6 @@ import { getStatusBadgeClass } from '@/lib/statusColors'
 import { parseScheduleTime } from '@/components/screens/schedule/ScheduleTimeGrid'
 import { MyScheduleHoverCard } from './MyScheduleHoverCard'
 import type { UnifiedSlot } from './myScheduleTypes'
-import { getAssociatedBookingTest } from './myScheduleHelpers'
 import { EventCard } from '@/components/screens/calendar/EventCard'
 import type { EventSession } from '@/mocks/calendarSchedule'
 
@@ -59,9 +58,9 @@ export function MyScheduleCard({
     bgClass = 'bg-card hover:bg-accent/60 border border-border dark:border-zinc-800/60 shadow-xs'
   }
 
-  const booking = slot.type === 'placement_test' ? getAssociatedBookingTest(slot) : null
+  const isPlacementTest = slot.type === 'placement_test' || slot.scheduleType === 'event'
 
-  if (booking) {
+  if (isPlacementTest) {
     const mappedSession: EventSession = {
       id: slot.id,
       title: slot.title,
@@ -74,25 +73,24 @@ export function MyScheduleCard({
       branch: slot.branch,
       organizer: slot.personLabel,
       type: 'placement_test',
-      typeLabel: slot.typeLabel,
+      typeLabel: slot.typeLabel || 'Trải nghiệm',
       status: (slot.status || 'scheduled') as EventSession['status'],
       statusLabel: '',
       participants: 0,
       maxParticipants: 0,
-      location: slot.subtitle || '',
+      location: slot.subtitle || slot.branch || '',
       note: slot.note || '',
       subject: slot.subject,
     }
 
     return (
-      <MyScheduleHoverCard slot={slot}>
-        <EventCard
-          session={mappedSession}
-          onClick={onClick || (() => {})}
-          activeBranch={activeBranch}
-          isOverlapped={isOverlapped}
-        />
-      </MyScheduleHoverCard>
+      <EventCard
+        session={mappedSession}
+        onClick={onClick || (() => {})}
+        activeBranch={activeBranch}
+        isOverlapped={isOverlapped}
+        hideTeacher={true}
+      />
     )
   }
 

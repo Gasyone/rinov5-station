@@ -85,16 +85,17 @@ sequenceDiagram
 
 ### 3.1. Cấu trúc các vùng giao diện & Bảng mô tả chi tiết
 
-Bố cục Thẻ nổi chi tiết Buổi học lớp gồm 6 khối thông tin xếp chồng theo chiều dọc từ trên xuống dưới.
+Bố cục Thẻ nổi chi tiết Buổi học lớp gồm các khối thông tin xếp chồng theo chiều dọc từ trên xuống dưới theo thứ tự ưu tiên thị giác:
 
 | Thành phần giao diện | Loại hiển thị | Dữ liệu & Quy tắc | Diễn giải quy tắc | Co giãn giao diện (Mobile) |
 |---|---|---|---|---|
 | Dải đầu thẻ (Header Strip) kèm Icon Học viên mới | Thanh tiêu đề màu nhạt | Khung giờ (`17:45 - 19:15`) + Icon đồng hồ + Icon `UserPlus` Cam đậm (cạnh phải) + Badge loại hình | Màu nền dải đầu thẻ viền xanh lá nhạt (hoặc xanh dương khi có dạy thay, đỏ khi khai giảng). Icon `UserPlus` màu Cam đậm nét xuất hiện cùng hàng thời gian ở góc phải khi có học sinh học thử. Nhãn `Chính thức` tạm thời ẩn. | Co giãn theo chiều rộng thẻ nổi |
-| Khối Mã lớp & Tên lớp | Tiêu đề đậm | Mã lớp (`SA2_TA_014` / `SA1_KD_000`) + Tên lớp | Mã lớp hiển thị dạng Badge font mono. Tên lớp chữ đậm cỡ lớn. | Tự động xuống dòng nếu tên lớp dài |
-| Khối Môn học & Trình độ | Dòng thông tin chứa Hyperlink | Icon Sách + Môn học (`Tiếng Anh`) + Dấu gạch nối `-` + Tên Trình độ (`Level 2` / `Kindie 1`) | Trình độ hiển thị gạch chân dạng liên kết. | Hiển thị rõ tên môn học và trình độ |
-| Khối Địa điểm | Dòng thông tin kèm biểu tượng | Icon Vị trí + Tên phòng/Cơ sở (`Phòng 2 • RinoEdu Nguyễn Tuân`) | Hiển thị địa điểm phòng học gọn gàng. | Tự động thu gọn text nếu thiếu không gian |
+| Khối Tên buổi học (Nổi bật & In đậm) | Hộp nổi bật (Highlight Box) | Tên buổi học (`Phonics lab: Nguyên âm ngắn`) + Số thứ tự buổi (`Buổi 4`) | Được đưa lên vị trí đầu tiên của nội dung thẻ, đóng khung màu cam nhạt, chữ in đậm kích thước lớn để người dùng nhận diện ngay trọng tâm bài học. | Tự động xuống dòng nếu tiêu đề dài |
+| Khối Mã lớp & Tên lớp | Dòng thông tin cơ bản | Mã lớp (`SA1_TA_001`) dạng huy hiệu font mono + Tên lớp | Nằm ngay bên dưới tên buổi học. | Tự động ngắt dòng khi cần |
+| Khối Khung chương trình (KCT) & Địa điểm | Dòng thông tin kèm biểu tượng | `KCT: [Tên Khung chương trình]` + Icon Vị trí & Phòng học | Hiển thị tên khung chương trình đào tạo thực tế và phòng học của cơ sở. | Hiển thị rõ ràng tên KCT |
 | Khối Đội ngũ giảng dạy & Quản lý | Dòng thông tin nhân sự căn phải | Tiêu đề `ĐỘI NGŨ GIẢNG DẠY & QUẢN LÝ:` + Dòng GV (`GV:` bên trái, `[Avatar] [Tên GV]` căn phải) + Dòng TG (`TG:` bên trái, `[Avatar] [Tên TG]` căn phải) | **Ràng buộc:** Tên GV và TG đều được đưa sang góc bên phải dòng. Gỡ bỏ tất cả nhãn `DẠY THAY` và `TA` trùng lặp. | Hiển thị tên cá nhân giảng dạy căn phải |
-| Khối Sĩ số & Điểm danh | Dòng thông tin sĩ số | Icon Học viên + Text `Sĩ số: [X] học viên` + Icon `UserPlus` Cam đậm `([Y] học thử)` + Badge `Đã điểm danh` | Hiển thị tổng số học sinh và số học sinh học thử kèm icon cam đậm. | Hiển thị rõ ở cuối thẻ |
+| Khối Sĩ số & Điểm danh | Dòng thông tin sĩ số | Icon Học viên + Text `Sĩ số: [X] học viên` + Icon `UserPlus` Cam đậm `([Y] học thử)` + Badge `Đã điểm danh` | Hiển thị tổng số học sinh và số học sinh học thử kèm icon cam đậm. | Hiển thị rõ ràng |
+| Khối Nội dung bài học (Dưới sĩ số) | Khối thông tin chi tiết bài học | `Nội dung buổi học` + Số buổi + Danh sách mục kiến thức (`Words`, `Sentences`, `Phonics`, v.v.) | Đặt ngay bên dưới khối sĩ số, hiển thị chi tiết từ vựng, mẫu câu, phát âm hoặc nội dung cốt lõi của buổi học tương ứng. | Tràn dòng tự nhiên theo chiều dọc |
 | Thanh chân thẻ (Footer Tip) | Thanh hướng dẫn màu xám | Icon Thông tin ở đầu dòng + Text `Nhấp vào thẻ để mở chi tiết & thao tác` | Thanh chỉ dẫn giúp người dùng biết thẻ có thể tương tác nhấp chuột để mở màn hình chi tiết buổi học. | Luôn ghim ở đáy thẻ nổi |
 
 ### 3.2. Ma trận phân quyền (Permission Matrix)
@@ -110,23 +111,27 @@ Bố cục Thẻ nổi chi tiết Buổi học lớp gồm 6 khối thông tin x
 
 ## 4. KHỐI CHỨC NĂNG CHI TIẾT (ACTIONS & EVENTS)
 
-### Action 1.1: Xem thông tin đội ngũ giảng dạy & Học viên mới
+### Action 1.1: Xem thông tin đội ngũ giảng dạy & Nội dung bài học
 * **Luồng kích hoạt:** Khi người dùng di chuột vào thẻ ca học:
-  - Đội ngũ giảng dạy: Tên Giáo viên (`GV:`) và Trợ giảng (`TG:`) hiển thị căn lề bên phải dòng. Nếu có GV dạy thay, tên GV chính được gạch ngang, tên GV dạy thay hiển thị nổi bật mà không kèm badge `DẠY THAY`.
-  - Học viên mới: Nếu ca học có học sinh học thử (`trialStudents > 0`), biểu tượng `UserPlus` màu Cam đậm xuất hiện ở dải đầu thẻ (cùng hàng thời gian, góc phải) và dòng sĩ số.
+  - Tên buổi học được đưa lên trên cùng của thân thẻ nổi, in đậm và làm nổi bật trong khung màu cam.
+  - Mã lớp và Tên lớp hiển thị ngay bên dưới tên buổi học.
+  - Dòng `KCT: [Tên Khung chương trình]` hiển thị bên dưới Mã lớp và Tên lớp.
+  - Đội ngũ giảng dạy: Tên Giáo viên (`GV:`) và Trợ giảng (`TG:`) hiển thị căn lề bên phải dòng.
+  - Sĩ số: Hiển thị số lượng học viên chính thức và học thử.
+  - Nội dung bài học: Khối thông tin chi tiết bài học (Words, Sentences, Phonics hoặc các nội dung chuyên đề) xuất hiện ngay bên dưới dòng Sĩ số.
 * **Tiêu chí nghiệm thu (Acceptance Criteria):**
-  - **AC-1 (Happy Path - Căn phải Đội ngũ giảng dạy & Trợ giảng):**
+  - **AC-1 (Happy Path - Thứ tự hiển thị thông tin thẻ nổi):**
+    - **Giả sử:** Người dùng rà chuột vào ca học bất kỳ trên bảng lịch.
+    - **Khi:** Thẻ nổi mở ra.
+    - **Thì:** Tên buổi học nằm ở hàng đầu tiên (in đậm và nổi bật), theo sau là Mã & Tên lớp, Khung chương trình (KCT), Đội ngũ giảng dạy, Sĩ số và Nội dung bài học ở dưới cùng.
+  - **AC-2 (Happy Path - Căn phải Đội ngũ giảng dạy & Trợ giảng):**
     - **Giả sử:** Ca học có Giáo viên dạy thay và Trợ giảng.
     - **Khi:** Thẻ nổi hiển thị.
     - **Thì:** Tên Giáo viên và Trợ giảng được nằm ở mép bên phải dòng, không xuất hiện các nhãn `DẠY THAY` hay `TA` trùng lặp.
-  - **AC-2 (Happy Path - Icon Học viên mới màu Cam đậm đậm nét):**
-    - **Giả sử:** Ca học có học sinh học thử (`trialStudents > 0`).
-    - **Khi:** Thẻ nổi hiển thị.
-    - **Thì:** Biểu tượng `UserPlus` màu Cam đậm nét (`text-amber-700`, `stroke-[2.8]`) xuất hiện ở góc phải dải đầu thẻ cùng hàng với thời gian (`17:45 - 19:15`).
-  - **AC-3 (Happy Path - Đồng bộ màu Icon thẻ lịch ngoài):**
-    - **Giả sử:** Thẻ ca học hiển thị trên bảng lịch ngoài màn hình.
-    - **Khi:** Lớp học có học sinh mới / học thử.
-    - **Thì:** Biểu tượng `UserPlus` ngoài thẻ đổi sang màu Cam đậm (`bg-amber-100 text-amber-700 border-amber-300`).
+  - **AC-3 (Happy Path - Hiển thị Nội dung bài học bên dưới sĩ số):**
+    - **Giả sử:** Ca học có dữ liệu nội dung bài học.
+    - **Khi:** Người dùng quan sát bên dưới dòng Sĩ số.
+    - **Thì:** Khối Nội dung buổi học hiển thị rõ số buổi cùng các mục chi tiết như Words, Sentences, Phonics.
 
 ---
 
@@ -137,3 +142,4 @@ Bố cục Thẻ nổi chi tiết Buổi học lớp gồm 6 khối thông tin x
 * **5.3. Ca học không có Trợ giảng (TG):** Dòng `TG:` tự động ẩn, chỉ hiển thị thông tin Giáo viên.
 * **5.4. Lớp học chưa đến giờ điểm danh:** Khối sĩ số chỉ hiển thị số lượng học sinh đăng ký, ẩn badge `Đã điểm danh`.
 * **5.5. Ca học không có học sinh học thử:** Biểu tượng `UserPlus` màu cam đậm tự động ẩn.
+* **5.6. Buổi học chưa có nội dung chi tiết bài học:** Khối nội dung bài học tự động ẩn và giữ kích thước thẻ nổi gọn gàng.
