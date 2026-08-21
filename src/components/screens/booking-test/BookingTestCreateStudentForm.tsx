@@ -2,20 +2,16 @@
 
 import React from 'react'
 import { FieldLabel } from '@/components/shared'
+
 import { InlineSelect } from '@/components/controls'
 import { PROGRAM_CONFIG } from './bookingTestCreateTypes'
-
-interface ContactPerson {
-  id: string
-  name: string
-  phone: string
-  children: Array<{ id: string; name: string; dob?: string }>
-}
+import { ContactSearchableSelect, type ContactPerson } from './ContactSearchableSelect'
 
 interface BookingTestCreateStudentFormProps {
   contactId: string
   onContactChange: (id: string) => void
-  contactSelectOptions: Array<{ value: string; label: string }>
+  contactsList?: ContactPerson[]
+  contactSelectOptions?: Array<{ value: string; label: string }>
   selectedContactObj?: ContactPerson
   childId: string
   onChildChange: (id: string) => void
@@ -37,12 +33,14 @@ interface BookingTestCreateStudentFormProps {
   levelOptions: Array<{ value: string; label: string }>
   notes: string
   onNotesChange: (val: string) => void
+  className?: string
 }
 
 export function BookingTestCreateStudentForm({
   contactId,
   onContactChange,
-  contactSelectOptions,
+  contactsList = [],
+  contactSelectOptions = [],
   selectedContactObj,
   childId,
   onChildChange,
@@ -64,21 +62,21 @@ export function BookingTestCreateStudentForm({
   levelOptions,
   notes,
   onNotesChange,
+  className,
 }: BookingTestCreateStudentFormProps) {
   return (
-    <div className="w-full md:w-[35%] shrink-0 space-y-2.5 bg-white dark:bg-zinc-950 rounded-xl p-3.5 shadow-2xs flex flex-col justify-between">
-      <div className="space-y-2.5">
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5">
+    <div className={className || "w-full md:w-[35%] shrink-0 space-y-3 bg-card border rounded-xl p-4 shadow-2xs flex flex-col justify-between"}>
+      <div className="space-y-3">
+        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5 border-b">
           Đối tượng & Chương trình
         </div>
 
-        {/* Chọn Contact / Phụ huynh */}
+        {/* Chọn Contact / Phụ huynh (Searchable + Tạo mới ở đầu) */}
         <FieldLabel label="Contact / Phụ huynh" required>
-          <InlineSelect
+          <ContactSearchableSelect
             value={contactId}
             onValueChange={onContactChange}
-            options={contactSelectOptions}
-            ariaLabel="Chọn phụ huynh"
+            contacts={contactsList}
           />
         </FieldLabel>
 
@@ -93,6 +91,7 @@ export function BookingTestCreateStudentForm({
             />
           </FieldLabel>
         )}
+
 
         {/* Nếu thêm con mới dưới Contact hiện tại */}
         {contactId !== 'custom' && childId === 'custom_child' && (

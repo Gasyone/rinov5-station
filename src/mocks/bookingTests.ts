@@ -743,3 +743,9 @@ export function getBookingTests(filters?: {
     return true
   })
 }
+
+export function addBookingTest(newBooking: BookingTest): BookingTest {
+  mockBookingTests.unshift(newBooking)
+  return newBooking
+}
+

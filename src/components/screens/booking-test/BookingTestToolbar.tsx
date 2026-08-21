@@ -1,6 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { Plus } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import {
   BranchSelect,
@@ -122,14 +124,24 @@ export function BookingTestToolbar({
             inputClassName="sm:w-64"
           />
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
-          {!isTeacherRole && onCreateBooking ? (
-            <Button size="sm" onClick={onCreateBooking}>
-              <Plus className="h-4 w-4" />
-              Tạo lịch test
-            </Button>
-          ) : null}
+          {!isTeacherRole && (
+            onCreateBooking ? (
+              <Button size="sm" onClick={onCreateBooking}>
+                <Plus className="h-4 w-4" />
+                Tạo lịch test
+              </Button>
+            ) : (
+              <Button asChild size="sm">
+                <Link href="/app/booking_test/create">
+                  <Plus className="h-4 w-4" />
+                  Tạo lịch test
+                </Link>
+              </Button>
+            )
+          )}
         </div>
       </div>
+
 
       <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
         <StatusTiles

@@ -33,8 +33,11 @@ export function SidebarNav({
     }))
     .filter((group) => group.items.length > 0)
 
+  const baseActiveMenu = activeMenu.split('/')[0]
+  const isItemActive = (itemId: string) => activeMenu === itemId || baseActiveMenu === itemId
+
   const activeGroup = visibleNavigationGroups.find((group) =>
-    group.items.some((item) => item.id === activeMenu)
+    group.items.some((item) => isItemActive(item.id))
   )
 
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
@@ -46,6 +49,7 @@ export function SidebarNav({
     activeGroup && !expandedGroups.includes(activeGroup.id)
       ? [...expandedGroups, activeGroup.id]
       : expandedGroups
+
 
   const handleGroupClick = useCallback(
     (group: NavigationGroup) => {
@@ -81,7 +85,7 @@ export function SidebarNav({
   const renderNavContent = (open: boolean) => (
     <div className="custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-2 overflow-y-auto py-4">
       {visibleNavigationGroups.map((group) => {
-        const isGroupActive = group.items.some((item) => item.id === activeMenu)
+        const isGroupActive = group.items.some((item) => isItemActive(item.id))
         const groupExpanded = expandedGroupIds.includes(group.id)
         const singleMenuGroup = isSingleMenuGroup(group)
 
@@ -134,7 +138,7 @@ export function SidebarNav({
                     variant="ghost"
                     className={cn(
                       'block w-full truncate rounded-lg px-4 py-2 text-left text-sm transition-all',
-                      activeMenu === item.id
+                      isItemActive(item.id)
                         ? 'bg-accent text-accent-foreground'
                         : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                     )}
@@ -146,6 +150,7 @@ export function SidebarNav({
                 ))}
               </div>
             ) : null}
+
           </div>
         )
       })}
