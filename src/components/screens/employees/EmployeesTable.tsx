@@ -97,7 +97,7 @@ export function EmployeesTable({
             </TableCell>
             <TableCell className="text-sm">{employee.branch}</TableCell>
             <TableCell>
-              <Badge variant="outline" className="rounded-md text-[10px]">
+              <Badge variant="outline" className="rounded-md text-xs">
                 {employee.contractType}
               </Badge>
             </TableCell>

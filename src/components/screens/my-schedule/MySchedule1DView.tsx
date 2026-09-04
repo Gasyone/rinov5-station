@@ -214,7 +214,7 @@ export function MySchedule1DView({
               <div className="flex items-center gap-1.5">
                 <span
                   className={cn(
-                    'text-[11px] font-semibold uppercase tracking-wider',
+                    'text-xs font-semibold uppercase tracking-wider',
                     isToday ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
@@ -222,7 +222,7 @@ export function MySchedule1DView({
                 </span>
                 <span
                   className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
+                    'flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold',
                     isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
                   )}
                 >
@@ -275,7 +275,7 @@ export function MySchedule1DView({
                   />
                 ))}
                 {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-[10px] text-muted-foreground/30 italic select-none">
+                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
                     —
                   </div>
                 )}
@@ -322,7 +322,7 @@ export function MySchedule1DView({
                   />
                 ))}
                 {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-[10px] text-muted-foreground/30 italic select-none">
+                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
                     —
                   </div>
                 )}
@@ -369,7 +369,7 @@ export function MySchedule1DView({
                   />
                 ))}
                 {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-[10px] text-muted-foreground/30 italic select-none">
+                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
                     —
                   </div>
                 )}

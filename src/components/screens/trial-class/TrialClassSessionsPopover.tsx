@@ -46,7 +46,7 @@ export function TrialClassSessionsPopover({ sessions }: TrialClassSessionsPopove
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-xs font-medium">{formatTrialDate(session.trialDate)}</p>
-                <p className="font-mono text-[10px] text-muted-foreground">{session.sessionId}</p>
+                <p className="font-mono text-xs text-muted-foreground">{session.sessionId}</p>
               </div>
             </div>
           ))}

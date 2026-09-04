@@ -208,7 +208,7 @@ export function RecordCareDialog({ cls, onRefresh, trigger, onSuccess, excludeTa
                         className="text-xs bg-muted/40 font-semibold h-9 border border-input disabled:opacity-85 text-foreground text-center"
                       />
                     </FieldLabel>
-                    <div className="flex flex-col justify-end pb-1.5 text-[10px] text-muted-foreground font-medium leading-tight">
+                    <div className="flex flex-col justify-end pb-1.5 text-xs text-muted-foreground font-medium leading-tight">
                       Thời gian phản hồi cam kết của hệ thống.
                     </div>
                   </div>

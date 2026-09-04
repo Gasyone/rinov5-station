@@ -153,7 +153,7 @@ export function ClassesStatsTrendChart({
                   x={paddingLeft - 8}
                   y={y + 4}
                   textAnchor="end"
-                  className="fill-muted-foreground font-mono text-[9px]"
+                  className="fill-muted-foreground font-mono text-xs"
                 >
                   {studentsVal}
                 </text>
@@ -162,7 +162,7 @@ export function ClassesStatsTrendChart({
                   x={svgWidth - paddingRight + 8}
                   y={y + 4}
                   textAnchor="start"
-                  className="fill-muted-foreground font-mono text-[9px]"
+                  className="fill-muted-foreground font-mono text-xs"
                 >
                   {avgVal}
                 </text>
@@ -177,7 +177,7 @@ export function ClassesStatsTrendChart({
               x={p.x}
               y={svgHeight - 8}
               textAnchor="middle"
-              className="fill-muted-foreground text-[10px] font-medium"
+              className="fill-muted-foreground text-xs font-medium"
             >
               {p.data.label}
             </text>

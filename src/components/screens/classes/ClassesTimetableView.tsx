@@ -87,7 +87,7 @@ export function ClassesTimetableView({
                     <h3 className="font-bold text-xs text-foreground uppercase tracking-wide">
                       {WEEKDAY_SHORT_LABELS[day]}
                     </h3>
-                    <div className="mt-0.5 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+                    <div className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
                       <span>{daySlotsCount} lớp</span>
                       {dayAvailableSlots > 0 && (
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -144,7 +144,7 @@ export function ClassesTimetableView({
                             />
                           ))}
                           {daySlots.length === 0 && (
-                            <div className="text-[11px] text-muted-foreground/30 text-center py-2 select-none font-mono">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none font-mono">
                               —
                             </div>
                           )}
@@ -197,7 +197,7 @@ export function ClassesTimetableView({
                             />
                           ))}
                           {daySlots.length === 0 && (
-                            <div className="text-[11px] text-muted-foreground/30 text-center py-2 select-none font-mono">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none font-mono">
                               —
                             </div>
                           )}
@@ -250,7 +250,7 @@ export function ClassesTimetableView({
                             />
                           ))}
                           {daySlots.length === 0 && (
-                            <div className="text-[11px] text-muted-foreground/30 text-center py-2 select-none font-mono">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none font-mono">
                               —
                             </div>
                           )}

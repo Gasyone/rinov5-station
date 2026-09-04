@@ -36,11 +36,11 @@ export function SyllabusProfileHoverCard({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Khung Chương Trình
               </span>
               {cls.code && (
-                <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-4">
+                <Badge variant="outline" className="text-xs font-mono px-1 py-0 h-4">
                   {cls.code}
                 </Badge>
               )}
@@ -76,7 +76,7 @@ export function SyllabusProfileHoverCard({
             <Compass className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1 flex justify-between items-start gap-2">
               <span className="text-muted-foreground shrink-0">Lộ trình:</span>
-              <span className="font-medium text-foreground text-right text-[11px] leading-tight">
+              <span className="font-medium text-foreground text-right text-xs leading-tight">
                 {cls.learningPath || 'Chưa gán'}
               </span>
             </div>
@@ -87,7 +87,7 @@ export function SyllabusProfileHoverCard({
             <GraduationCap className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
             <div className="min-w-0 flex-1 flex justify-between items-center gap-2">
               <span className="text-muted-foreground">Trình độ:</span>
-              <Badge variant="secondary" className="text-[10px] font-semibold">
+              <Badge variant="secondary" className="text-xs font-semibold">
                 {cls.level || '—'}
               </Badge>
             </div>

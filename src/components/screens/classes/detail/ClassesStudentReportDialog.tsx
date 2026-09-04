@@ -241,7 +241,7 @@ function AttendanceIcon({ status }: { status: SessionHistory['attendance'] }) {
 
 function AttendanceLabel({ status }: { status: SessionHistory['attendance'] }) {
   const map = { present: 'Có mặt', absent: 'Vắng', late: 'Muộn', excused: 'Có phép' }
-  return <span className="text-[10px] text-muted-foreground">{map[status]}</span>
+  return <span className="text-xs text-muted-foreground">{map[status]}</span>
 }
 
 function FileTypeIcon({ type }: { type: Attachment['type'] }) {
@@ -305,12 +305,12 @@ export function ClassesStudentReportDialog({ open, onOpenChange, student }: Clas
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-lg font-bold leading-tight">{student.name}</DialogTitle>
               <div className="flex items-center gap-2.5 mt-1 flex-wrap">
-                <span className="text-[11px] text-muted-foreground font-mono font-medium">{student.code}</span>
-                <Badge variant="outline" className="text-[10px] px-2 py-0 border-primary/30 text-primary font-bold">{data.level}</Badge>
+                <span className="text-xs text-muted-foreground font-mono font-medium">{student.code}</span>
+                <Badge variant="outline" className="text-xs px-2 py-0 border-primary/30 text-primary font-bold">{data.level}</Badge>
                 <div className="flex items-center gap-1">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   <span className="text-xs font-bold">{data.avgRating}</span>
-                  <span className="text-[11px] text-muted-foreground">({data.reviewCount} lượt đánh giá)</span>
+                  <span className="text-xs text-muted-foreground">({data.reviewCount} lượt đánh giá)</span>
                 </div>
               </div>
             </div>
@@ -331,7 +331,7 @@ export function ClassesStudentReportDialog({ open, onOpenChange, student }: Clas
               options={TAB_OPTIONS}
               onValueChange={setActiveTab}
               className="bg-transparent p-0 gap-1.5"
-              itemClassName="h-8 px-3.5 text-[11px] font-semibold border border-transparent [&.bg-background]:border-primary [&.bg-background]:bg-primary [&.bg-background]:text-primary-foreground shadow-none"
+              itemClassName="h-8 px-3.5 text-xs font-semibold border border-transparent [&.bg-background]:border-primary [&.bg-background]:bg-primary [&.bg-background]:text-primary-foreground shadow-none"
             />
           </div>
         </DialogHeader>
@@ -360,9 +360,9 @@ function HeaderStat({ label, value, sub, color }: { label: string; value: string
   }
   return (
     <div className="text-left">
-      <p className="text-[10px] text-muted-foreground font-medium">{label}</p>
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
       <p className={cn("text-sm font-extrabold leading-tight", c[color])}>{value}</p>
-      {sub && <p className="text-[9px] text-muted-foreground font-mono leading-none mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-muted-foreground font-mono leading-none mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -395,9 +395,9 @@ function JourneyTab({ featured, groups }: { featured: FeaturedMemory[]; groups: 
 
               {/* Text Content */}
               <div className="relative z-10 text-white">
-                <span className="text-[9px] font-bold tracking-wider uppercase opacity-80">{mem.timeText}</span>
+                <span className="text-xs font-bold tracking-wider uppercase opacity-80">{mem.timeText}</span>
                 <h4 className="text-xs font-extrabold leading-snug mt-0.5">{mem.title}</h4>
-                <p className="text-[10px] opacity-90 leading-tight mt-1 line-clamp-2">{mem.description}</p>
+                <p className="text-xs opacity-90 leading-tight mt-1 line-clamp-2">{mem.description}</p>
               </div>
             </div>
           ))}
@@ -440,14 +440,14 @@ function JourneyTab({ featured, groups }: { featured: FeaturedMemory[]; groups: 
                   </div>
 
                   {/* Time indicator */}
-                  <div className="absolute top-2.5 left-2.5 text-[9px] font-mono text-white/80 z-10">
+                  <div className="absolute top-2.5 left-2.5 text-xs font-mono text-white/80 z-10">
                     {photo.timeText}
                   </div>
 
                   {/* Photo details */}
                   <div className="relative z-10 text-white min-w-0">
-                    <p className="text-[11px] font-extrabold leading-snug truncate">{photo.title}</p>
-                    <span className="text-[9px] text-white/70 block mt-0.5">Hoạt động lớp học</span>
+                    <p className="text-xs font-extrabold leading-snug truncate">{photo.title}</p>
+                    <span className="text-xs text-white/70 block mt-0.5">Hoạt động lớp học</span>
                   </div>
                 </div>
               ))}
@@ -464,7 +464,7 @@ function JourneyTab({ featured, groups }: { featured: FeaturedMemory[]; groups: 
 function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
   return (
     <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm flex flex-col">
-      <table className="w-full text-[11px] border-collapse">
+      <table className="w-full text-xs border-collapse">
         <thead className="bg-zinc-50 dark:bg-zinc-800/40 border-b border-zinc-200 dark:border-zinc-800">
           <tr>
             <th className="py-2.5 px-3 text-left font-bold text-zinc-500 dark:text-zinc-400 w-[40px]">#</th>
@@ -491,13 +491,13 @@ function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
               <td className="py-2.5 px-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   {s.type === 'test' && (
-                    <Badge className="text-[9px] px-1 py-0 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border border-amber-200/50 font-bold shrink-0">
+                    <Badge className="text-xs px-1 py-0 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border border-amber-200/50 font-bold shrink-0">
                       KIỂM TRA
                     </Badge>
                   )}
                   <span className="font-semibold text-foreground">{s.topic}</span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5 font-medium">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 font-medium">
                   <span>{getDayOfWeek(s.date)}, {s.date}</span>
                 </div>
               </td>
@@ -513,15 +513,15 @@ function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
               {/* Homework Status */}
               <td className="py-2.5 px-3 text-center">
                 {s.homework === 'submitted' ? (
-                  <Badge variant="outline" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/60 font-semibold gap-0.5 px-1 py-0">
+                  <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/60 font-semibold gap-0.5 px-1 py-0">
                     <Check className="h-2.5 w-2.5 shrink-0" /> Đã nộp
                   </Badge>
                 ) : s.homework === 'late' ? (
-                  <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/60 font-semibold gap-0.5 px-1 py-0">
+                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/60 font-semibold gap-0.5 px-1 py-0">
                     Nộp muộn
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[9px] bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/60 font-semibold gap-0.5 px-1 py-0">
+                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/60 font-semibold gap-0.5 px-1 py-0">
                     Chưa nộp
                   </Badge>
                 )}
@@ -533,14 +533,14 @@ function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
                   <div className="flex items-center gap-1">
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
                     <span className="font-bold text-foreground">{s.rating}</span>
-                    <span className="text-[10px] text-muted-foreground">/5</span>
+                    <span className="text-xs text-muted-foreground">/5</span>
                   </div>
                   {s.comment ? (
-                    <p className="text-[10px] text-muted-foreground leading-snug italic font-medium">
+                    <p className="text-xs text-muted-foreground leading-snug italic font-medium">
                       &ldquo;{s.comment}&rdquo;
                     </p>
                   ) : (
-                    <p className="text-[10px] text-zinc-300 dark:text-zinc-600 italic">
+                    <p className="text-xs text-zinc-300 dark:text-zinc-600 italic">
                       Chưa có nhận xét
                     </p>
                   )}
@@ -552,7 +552,7 @@ function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
                 <div className="flex flex-col items-center gap-1">
                   {s.score !== null ? (
                     <Badge className={cn(
-                      "font-mono font-extrabold text-[10px] px-1.5 py-0",
+                      "font-mono font-extrabold text-xs px-1.5 py-0",
                       s.score >= 7.0 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200" :
                       s.score >= 5.5 ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200" :
                       "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400 border border-red-200"
@@ -566,7 +566,7 @@ function HistoryTab({ sessions }: { sessions: SessionHistory[] }) {
                     <Button
                       variant="link"
                       size="sm"
-                      className="h-auto p-0 text-[9px] font-bold text-primary flex items-center gap-0.5 hover:underline"
+                      className="h-auto p-0 text-xs font-bold text-primary flex items-center gap-0.5 hover:underline"
                       onClick={() => toast.info(`Đang mở báo cáo chi tiết bài kiểm tra: ${s.topic}`)}
                     >
                       Chi tiết <ExternalLink className="h-2 w-2" />
@@ -590,15 +590,15 @@ function CommentsTab({ comments }: { comments: TeacherComment[] }) {
       {comments.map((c) => (
         <div key={c.id} className="flex gap-3 px-4 py-3 bg-transparent border-none hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors rounded-xl">
           <div className="shrink-0 mt-0.5">
-            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
+            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
               {getInitials(c.author)}
             </div>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-foreground">{c.author}</span>
-              <span className="text-[10px] text-muted-foreground font-mono">{c.date}</span>
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 capitalize">
+              <span className="text-xs text-muted-foreground font-mono">{c.date}</span>
+              <Badge variant="outline" className="text-xs px-1.5 py-0 capitalize">
                 {c.type === 'general' ? 'Tổng quan' : c.type === 'test' ? 'Kiểm tra' : 'Buổi học'}
               </Badge>
             </div>
@@ -624,18 +624,18 @@ function AttachmentsTab({ attachments }: { attachments: Attachment[] }) {
             <div className="flex items-center gap-2">
               <p className="text-xs font-semibold text-foreground truncate">{a.name}</p>
               {a.score !== undefined && (
-                <Badge className="font-mono font-extrabold text-[9px] px-1 py-0 bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
+                <Badge className="font-mono font-extrabold text-xs px-1 py-0 bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
                   {a.score} Điểm
                 </Badge>
               )}
             </div>
-            <span className="text-[10px] text-muted-foreground">{a.date} · {a.size}</span>
+            <span className="text-xs text-muted-foreground">{a.date} · {a.size}</span>
           </div>
           {a.type === 'link' ? (
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text.5 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 shrink-0 gap-1 rounded-lg"
+              className="h-8 px-2 text.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 shrink-0 gap-1 rounded-lg"
               onClick={() => toast.info(`Đang chuyển hướng tới cổng làm bài trực tuyến...`)}
             >
               <ExternalLink className="h-3.5 w-3.5" /> Xem bài làm

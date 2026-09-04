@@ -117,13 +117,13 @@ export function CallScriptPanel({
         
         {/* Toggle Mode header */}
         <div className="p-3.5 space-y-2">
-          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
             Chế độ kịch bản
           </span>
           <div className="flex gap-1">
             <button
               onClick={() => toggleEmergencyMode(false)}
-              className={`flex-1 text-[10px] font-bold py-1.5 px-2 rounded-lg transition-all ${
+              className={`flex-1 text-xs font-bold py-1.5 px-2 rounded-lg transition-all ${
                 !isEmergencyMode
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'bg-background text-zinc-650 hover:bg-zinc-100 dark:hover:bg-zinc-900 border border-zinc-150 dark:border-zinc-800'
@@ -133,7 +133,7 @@ export function CallScriptPanel({
             </button>
             <button
               onClick={() => toggleEmergencyMode(true)}
-              className={`flex-1 text-[10px] font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all ${
+              className={`flex-1 text-xs font-bold py-1.5 px-2 rounded-lg flex items-center justify-center gap-1 transition-all ${
                 isEmergencyMode
                   ? 'bg-red-600 text-white shadow-xs animate-pulse'
                   : 'bg-background text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 border border-red-100 dark:border-red-950/20'
@@ -148,7 +148,7 @@ export function CallScriptPanel({
 
         {/* List of Scripts */}
         <div className="flex-1 overflow-y-auto px-2 pb-3.5 space-y-1.5 scrollbar-none">
-          <span className="px-2 text-[8px] font-bold text-zinc-400 uppercase tracking-widest block mb-1">
+          <span className="px-2 text-xs font-bold text-zinc-400 uppercase tracking-widest block mb-1">
             Danh sách ({filteredScripts.length})
           </span>
           
@@ -158,7 +158,7 @@ export function CallScriptPanel({
               <button
                 key={script.id}
                 onClick={() => handleScriptSelect(script)}
-                className={`w-full text-left p-2.5 rounded-xl text-[10px] font-medium leading-normal transition-all flex flex-col gap-1 ${
+                className={`w-full text-left p-2.5 rounded-xl text-xs font-medium leading-normal transition-all flex flex-col gap-1 ${
                   isSelected
                     ? isEmergencyMode
                       ? 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 font-semibold shadow-xs'
@@ -168,7 +168,7 @@ export function CallScriptPanel({
               >
                 <span className="truncate w-full">{script.title}</span>
                 {isSelected && (
-                  <span className="text-[8px] opacity-75 font-normal line-clamp-1">
+                  <span className="text-xs opacity-75 font-normal line-clamp-1">
                     {script.menuId.replace('_v2', '')}
                   </span>
                 )}
@@ -189,10 +189,10 @@ export function CallScriptPanel({
             <BookOpen className="h-4 w-4 text-indigo-500" />
           )}
           <div className="min-w-0">
-            <h4 className="text-[11px] font-bold text-foreground truncate">
+            <h4 className="text-xs font-bold text-foreground truncate">
               {selectedScript.title}
             </h4>
-            <p className="text-[8px] text-muted-foreground truncate font-medium">
+            <p className="text-xs text-muted-foreground truncate font-medium">
               {selectedScript.description}
             </p>
           </div>
@@ -210,7 +210,7 @@ export function CallScriptPanel({
                   setSelectedResponse(null)
                   setIsOtherResponseOpen(false)
                 }}
-                className={`text-[9px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                className={`text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
                   isActive
                     ? isEmergencyMode
                       ? 'bg-red-600 text-white shadow-xs'
@@ -229,7 +229,7 @@ export function CallScriptPanel({
           
           {/* Lời thoại đề xuất - Phân đoạn theo Mục tiêu */}
           <div className="space-y-2">
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Lời thoại đề xuất (Theo phân đoạn)
             </span>
             
@@ -244,7 +244,7 @@ export function CallScriptPanel({
                   >
                     {/* Segment Header */}
                     <div className="px-3.5 py-1.5 bg-zinc-100/30 dark:bg-zinc-900/30 flex items-center justify-between">
-                      <span className="text-[9px] font-bold text-indigo-650 dark:text-indigo-400">
+                      <span className="text-xs font-bold text-indigo-650 dark:text-indigo-400">
                         {seg.goalTitle}
                       </span>
                       <button
@@ -261,7 +261,7 @@ export function CallScriptPanel({
                       </button>
                     </div>
                     {/* Dialogue Text */}
-                    <p className="px-4 pb-3 pt-1 text-[11px] leading-relaxed text-zinc-800 dark:text-zinc-200 font-medium select-text">
+                    <p className="px-4 pb-3 pt-1 text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 font-medium select-text">
                       {processedText}
                     </p>
                   </div>
@@ -272,7 +272,7 @@ export function CallScriptPanel({
 
           {/* Phản hồi nhanh của Phụ huynh */}
           <div className="space-y-2 pt-2">
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Ghi nhận phản hồi của Phụ huynh
             </span>
             
@@ -284,7 +284,7 @@ export function CallScriptPanel({
                     key={resp.id}
                     type="button"
                     onClick={() => handleResponseClick(resp)}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all border border-transparent ${
+                    className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all border border-transparent ${
                       isSelected
                         ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 shadow-xs scale-98'
                         : 'bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-foreground'
@@ -299,7 +299,7 @@ export function CallScriptPanel({
               <button
                 type="button"
                 onClick={() => setIsOtherResponseOpen(!isOtherResponseOpen)}
-                className={`text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all border border-transparent ${
+                className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all border border-transparent ${
                   isOtherResponseOpen
                     ? 'bg-indigo-50 dark:bg-indigo-950/25 text-indigo-650 dark:text-indigo-400 shadow-xs'
                     : 'bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-foreground'
@@ -317,7 +317,7 @@ export function CallScriptPanel({
                   value={otherResponseText}
                   onChange={(e) => setOtherResponseText(e.target.value)}
                   placeholder="Nhập phản hồi tự do khác..."
-                  className="flex-1 text-[11px] border border-transparent rounded-xl px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
+                  className="flex-1 text-xs border border-transparent rounded-xl px-3 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary shadow-xs"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault()
@@ -328,7 +328,7 @@ export function CallScriptPanel({
                 />
                 <Button
                   size="sm"
-                  className="h-8 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-1 rounded-xl"
+                  className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-1 rounded-xl"
                   onClick={handleSendOtherResponse}
                 >
                   Gửi
@@ -343,11 +343,11 @@ export function CallScriptPanel({
             <div className="rounded-2xl bg-amber-50/35 dark:bg-amber-950/10 p-3.5 space-y-1.5 animate-fade-in shadow-xs">
               <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
                 <AlertCircle className="h-4 w-4 shrink-0" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-bold uppercase tracking-wider">
                   Gợi ý xử lý tình huống
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-semibold">
+              <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-semibold">
                 {processTemplate(selectedResponse.objectionHandling)}
               </p>
             </div>
@@ -357,7 +357,7 @@ export function CallScriptPanel({
         {/* Footer Instructions */}
         <div className="p-2.5 bg-zinc-50/30 dark:bg-zinc-900/10 shrink-0 text-center flex items-center justify-center gap-1">
           <HelpCircle className="h-3.5 w-3.5 text-zinc-400" />
-          <span className="text-[8px] text-zinc-500 dark:text-zinc-400 font-semibold">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
             Bên Trái: Kịch bản phân đoạn | Bên Phải: Thao tác điều khiển cuộc gọi
           </span>
         </div>

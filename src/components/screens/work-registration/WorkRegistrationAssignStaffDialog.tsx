@@ -190,7 +190,7 @@ export function WorkRegistrationAssignStaffDialog({
                 Phân bổ người trực: {dayLabel} - {sectionLabel}
               </DialogTitle>
               {isDigi && (
-                <span className="rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.2 text-[9px] font-bold uppercase border border-purple-200 dark:border-purple-800">
+                <span className="rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.2 text-xs font-bold uppercase border border-purple-200 dark:border-purple-800">
                   Phòng Digi
                 </span>
               )}
@@ -212,7 +212,7 @@ export function WorkRegistrationAssignStaffDialog({
                     type="button"
                     onClick={() => setRoleFilter(r)}
                     className={cn(
-                      'px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all cursor-pointer',
+                      'px-2 py-0.5 rounded-md text-xs font-semibold transition-all cursor-pointer',
                       roleFilter === r
                         ? 'bg-primary text-primary-foreground shadow-2xs'
                         : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
@@ -300,7 +300,7 @@ export function WorkRegistrationAssignStaffDialog({
                       <div className="flex flex-col items-end gap-0.5">
                         {regInfo.isPartial && regInfo.timeRange ? (
                           <span
-                            className="inline-flex items-center rounded px-1.5 py-0.2 text-[9px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 tabular-nums"
+                            className="inline-flex items-center rounded px-1.5 py-0.2 text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 tabular-nums"
                             title={`Giờ đăng ký: ${regInfo.timeRange}`}
                           >
                             {regInfo.timeRange}
@@ -309,7 +309,7 @@ export function WorkRegistrationAssignStaffDialog({
 
                         <span
                           className={cn(
-                            'text-[11px] font-normal tabular-nums',
+                            'text-xs font-normal tabular-nums',
                             weeklyShifts.length > 0
                               ? 'text-muted-foreground'
                               : 'text-muted-foreground/50'
@@ -347,11 +347,11 @@ export function WorkRegistrationAssignStaffDialog({
                 <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-border/50 shrink-0">
                   <div className="min-w-0 flex-1">
                     <h4 className="text-xs font-semibold text-foreground truncate">{focusedStaff.name}</h4>
-                    <p className="text-[11px] text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
+                    <p className="text-xs text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] text-muted-foreground block">Lịch trực tuần</span>
+                    <span className="text-xs text-muted-foreground block">Lịch trực tuần</span>
                     <span className="text-xs font-medium text-primary tabular-nums">
                       {focusedWeeklyShifts.length} ca
                     </span>
@@ -365,7 +365,7 @@ export function WorkRegistrationAssignStaffDialog({
                       <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Lịch các ngày trong tuần</span>
                     </div>
-                    <span className="text-[10px] font-normal text-muted-foreground">
+                    <span className="text-xs font-normal text-muted-foreground">
                       {WEEKDAYS[0]?.short} - {WEEKDAYS[6]?.short}
                     </span>
                   </div>
@@ -387,24 +387,24 @@ export function WorkRegistrationAssignStaffDialog({
                           <div className="flex items-center justify-between mb-1">
                             <span
                               className={cn(
-                                'text-[11px] font-medium',
+                                'text-xs font-medium',
                                 isTargetDay ? 'text-primary' : 'text-foreground'
                               )}
                             >
                               {day.label}
                               {isTargetDay && (
-                                <span className="ml-1 text-[10px] font-normal text-primary">
+                                <span className="ml-1 text-xs font-normal text-primary">
                                   (Ngày đang chọn)
                                 </span>
                               )}
                             </span>
 
                             {dayShifts.length > 0 ? (
-                              <span className="text-[10px] font-normal text-muted-foreground tabular-nums">
+                              <span className="text-xs font-normal text-muted-foreground tabular-nums">
                                 {dayShifts.length} ca
                               </span>
                             ) : (
-                              <span className="text-[10px] text-muted-foreground/60 italic">
+                              <span className="text-xs text-muted-foreground/60 italic">
                                 Trống
                               </span>
                             )}
@@ -420,7 +420,7 @@ export function WorkRegistrationAssignStaffDialog({
                                 <div
                                   key={idx}
                                   className={cn(
-                                    'flex items-center justify-between rounded px-2 py-1 text-[11px]',
+                                    'flex items-center justify-between rounded px-2 py-1 text-xs',
                                     isCurrentSection
                                       ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
                                       : 'bg-muted/70 text-foreground'
@@ -432,7 +432,7 @@ export function WorkRegistrationAssignStaffDialog({
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     {isCurrentSection && (
-                                      <span className="text-[9px] uppercase font-bold opacity-90">
+                                      <span className="text-xs uppercase font-bold opacity-90">
                                         Ca đang chọn
                                       </span>
                                     )}
@@ -455,13 +455,13 @@ export function WorkRegistrationAssignStaffDialog({
 
                             {/* NẾU ĐANG PHÂN BỔ VÀO CA NÀY */}
                             {isEditingSlotHere && isFocusedAssignedCurrent && !dayShifts.some((s) => s.sectionId === section) && (
-                              <div className="flex items-center justify-between rounded px-2 py-1 text-[11px] bg-primary/20 border border-primary/40 text-primary font-semibold">
+                              <div className="flex items-center justify-between rounded px-2 py-1 text-xs bg-primary/20 border border-primary/40 text-primary font-semibold">
                                 <div className="flex items-center gap-1.5">
                                   <span>{isDigi ? '💻' : '⏱'}</span>
                                   <span>{sectionLabel}</span>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                  <span className="text-[9px] uppercase font-bold">
+                                  <span className="text-xs uppercase font-bold">
                                     + Vừa gán
                                   </span>
                                   <span className="text-[9.5px] font-semibold text-primary tabular-nums">
@@ -472,7 +472,7 @@ export function WorkRegistrationAssignStaffDialog({
                             )}
 
                             {dayShifts.length === 0 && (!isEditingSlotHere || !isFocusedAssignedCurrent) && (
-                              <p className="text-[10px] text-muted-foreground/60 italic pl-1">
+                              <p className="text-xs text-muted-foreground/60 italic pl-1">
                                 Không có ca trực
                               </p>
                             )}
@@ -494,7 +494,7 @@ export function WorkRegistrationAssignStaffDialog({
 
         {/* FOOTER */}
         <DialogFooter className="p-2.5 px-3 border-t bg-muted/20 flex flex-row items-center justify-between gap-2 shrink-0">
-          <span className="text-[11px] text-muted-foreground truncate">
+          <span className="text-xs text-muted-foreground truncate">
             Đã chọn: <strong className="text-primary font-bold">{selectedIds.length}</strong> người trực
           </span>
 

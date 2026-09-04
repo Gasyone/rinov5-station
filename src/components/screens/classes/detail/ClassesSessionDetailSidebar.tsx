@@ -84,27 +84,27 @@ export function ClassesSessionDetailSidebar({
       {/* ── SMART CARDS THỐNG KÊ (NẰM TRÊN KHUNG THÔNG TIN BUỔI HỌC - 5 CARDS ON 1 ROW, NO ICONS) ── */}
       <div className="shrink-0 grid grid-cols-5 gap-1.5">
         <div className="flex flex-col items-center justify-center rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-800 p-1.5 text-center shadow-2xs">
-          <p className="text-[9px] text-muted-foreground font-medium leading-none">Sĩ số</p>
+          <p className="text-xs text-muted-foreground font-medium leading-none">Sĩ số</p>
           <p className="text-xs font-bold font-mono text-foreground leading-tight mt-1">{activeRosterCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
           <p className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-1">{presentCount}/{activeRosterCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-[9px] text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
+          <p className="text-xs text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
           <p className="text-xs font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-1">{excusedCount}·{absentCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
+          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
           <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-1">{lateCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-900/50 dark:bg-violet-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-[9px] text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
+          <p className="text-xs text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
           <p className="text-xs font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-1">{sessionTrialCount}</p>
         </div>
       </div>
@@ -120,18 +120,18 @@ export function ClassesSessionDetailSidebar({
                 <div className="flex items-start gap-2.5">
                   <Calendar className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Lịch học</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Lịch học</p>
                     <span className="font-semibold text-foreground font-mono block">
                       {session.date}
                     </span>
-                    <span className="text-[11px] font-medium text-muted-foreground">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {dayOfWeek}
                     </span>
                   </div>
                 </div>
 
                 <div className="leading-tight">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Giờ học</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Giờ học</p>
                   <span className="font-semibold text-foreground font-mono block">
                     {session.startTime}–{session.endTime}
                   </span>
@@ -143,7 +143,7 @@ export function ClassesSessionDetailSidebar({
                 <div className="flex items-start gap-2.5">
                   <Building2 className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                   <div className="leading-tight min-w-0">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Cơ sở</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Cơ sở</p>
                     <span className="font-semibold text-foreground truncate block">
                       {cls.branch || 'RinoEdu Linh Đàm'}
                     </span>
@@ -151,7 +151,7 @@ export function ClassesSessionDetailSidebar({
                 </div>
 
                 <div className="leading-tight">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Phòng học</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Phòng học</p>
                   <span className="font-semibold text-foreground flex items-center gap-1 flex-wrap">
                     <span>{session.room}</span>
                     {session.defaultRoom && session.room !== session.defaultRoom && (
@@ -173,7 +173,7 @@ export function ClassesSessionDetailSidebar({
                 <div className="flex items-start gap-2.5">
                   <BookOpen className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                   <div className="leading-tight min-w-0">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Tên lớp</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Tên lớp</p>
                     <span className="font-semibold text-foreground truncate block" title={cls.name}>
                       {cls.name || 'Lớp học'}
                     </span>
@@ -181,7 +181,7 @@ export function ClassesSessionDetailSidebar({
                 </div>
 
                 <div className="leading-tight">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Mã lớp</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Mã lớp</p>
                   {isOpenedFromClassScreen ? (
                     <span className="font-semibold text-foreground font-mono">{cls.code}</span>
                   ) : (
@@ -201,7 +201,7 @@ export function ClassesSessionDetailSidebar({
                 <div className="flex items-start gap-2.5">
                   <User className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                   <div className="leading-tight min-w-0">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Giáo viên</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Giáo viên</p>
                     {session.substituteTeacherName ? (
                       <span className="inline-flex items-center gap-0.5 font-semibold text-xs truncate max-w-full">
                         <span className="line-through text-muted-foreground/50">{cleanTeacherName(session.teacherName)}</span>
@@ -215,7 +215,7 @@ export function ClassesSessionDetailSidebar({
                 </div>
 
                 <div className="leading-tight min-w-0">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Trợ giảng</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Trợ giảng</p>
                   <span className="font-semibold text-foreground truncate block">
                     {assistantInfo ? cleanTeacherName(assistantInfo) : '—'}
                   </span>
@@ -227,7 +227,7 @@ export function ClassesSessionDetailSidebar({
                 <div className="flex items-start gap-2.5">
                   <Users className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Quy mô</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Quy mô</p>
                     <span className="font-semibold text-foreground">
                       {cls.classRatio || '1:10'}
                     </span>
@@ -235,7 +235,7 @@ export function ClassesSessionDetailSidebar({
                 </div>
 
                 <div className="leading-tight">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Trình độ</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ</p>
                   <span className="font-semibold text-foreground">
                     {cls.level || 'TOEIC'}
                   </span>
@@ -257,7 +257,7 @@ export function ClassesSessionDetailSidebar({
                 onClick={() => {
                   toast.info('Tính năng góp ý giáo trình đang được phát triển!')
                 }}
-                className="text-[11px] text-muted-foreground hover:text-amber-500 font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 shrink-0"
+                className="text-xs text-muted-foreground hover:text-amber-500 font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 shrink-0"
                 title="Góp ý giáo trình"
               >
                 <MessageSquareWarning className="h-3.5 w-3.5" />

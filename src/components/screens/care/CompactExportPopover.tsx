@@ -114,7 +114,7 @@ export function CompactExportPopover({
         {/* Date Filters Row */}
         <div className="grid grid-cols-2 gap-3 border-b border-border/40 pb-2.5 mb-2">
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
               Chọn tháng dữ liệu
             </label>
             <select
@@ -137,7 +137,7 @@ export function CompactExportPopover({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
               Khoảng thời gian
             </label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -196,7 +196,7 @@ export function CompactExportPopover({
                   <Button
                     size="xs"
                     variant="ghost"
-                    className="h-6 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="h-6 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                     onClick={() => {
                       setStartDate('');
                       setEndDate('');
@@ -207,7 +207,7 @@ export function CompactExportPopover({
 
                   <Button
                     size="xs"
-                    className="h-6 text-[10px] bg-sky-600 hover:bg-sky-700 text-white font-bold cursor-pointer"
+                    className="h-6 text-xs bg-sky-600 hover:bg-sky-700 text-white font-bold cursor-pointer"
                     onClick={() => {
                       setCalendarOpen(false);
                     }}
@@ -221,7 +221,7 @@ export function CompactExportPopover({
         </div>
 
         {/* Action controls row (Select/Clear on Left, Stats count on Right) */}
-        <div className="flex items-center justify-between text-[10px] mb-2">
+        <div className="flex items-center justify-between text-xs mb-2">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -264,7 +264,7 @@ export function CompactExportPopover({
                 />
                 <label
                   htmlFor={`popfield-${field.id}`}
-                  className="text-[11px] text-foreground/90 font-medium leading-none cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
+                  className="text-xs text-foreground/90 font-medium leading-none cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
                   onClick={(e) => e.preventDefault()}
                 >
                   {field.label}
@@ -280,7 +280,7 @@ export function CompactExportPopover({
             size="xs"
             variant="ghost"
             type="button"
-            className="h-6 px-2 text-[10px] text-muted-foreground cursor-pointer"
+            className="h-6 px-2 text-xs text-muted-foreground cursor-pointer"
             onClick={() => setIsOpen(false)}
           >
             Hủy
@@ -289,7 +289,7 @@ export function CompactExportPopover({
             size="xs"
             type="button"
             disabled={selectedFields.size === 0}
-            className="h-6 px-2.5 text-[10px] font-bold bg-sky-600 hover:bg-sky-700 text-white flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-6 px-2.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleConfirm}
           >
             <Download className="h-3 w-3" />

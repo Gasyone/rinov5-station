@@ -307,7 +307,7 @@ export function StudentDetailPackages({
                       <BookOpen className="h-4 w-4 text-primary/70 shrink-0" />
                       <span className="truncate font-semibold text-foreground text-xs" title={pkg.packageName}>{pkg.packageName}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-mono pl-6">{pkg.id}</span>
+                    <span className="text-xs text-muted-foreground font-mono pl-6">{pkg.id}</span>
                   </div>
                   {/* Action Buttons visible on hover */}
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
@@ -345,7 +345,7 @@ export function StudentDetailPackages({
               </TableCell>
               <TableCell className="text-xs font-semibold text-foreground">
                 {pkg.totalSessions - pkg.remainingSessions} / {pkg.totalSessions} buổi
-                <div className="text-[10px] text-muted-foreground font-normal">
+                <div className="text-xs text-muted-foreground font-normal">
                   Còn lại: {pkg.remainingSessions} buổi
                 </div>
               </TableCell>
@@ -355,15 +355,15 @@ export function StudentDetailPackages({
               <TableCell className="py-3.5">
                 {pkg.linkedClassCode ? (
                   <div className="flex flex-col gap-0.5">
-                    <Badge variant="secondary" className="font-semibold text-[10px] w-fit bg-primary/10 text-primary border-transparent">
+                    <Badge variant="secondary" className="font-semibold text-xs w-fit bg-primary/10 text-primary border-transparent">
                       {pkg.linkedClassName}
                     </Badge>
-                    <span className="text-[9px] font-mono text-muted-foreground font-semibold flex items-center gap-1">
+                    <span className="text-xs font-mono text-muted-foreground font-semibold flex items-center gap-1">
                       <LinkIcon className="h-2.5 w-2.5 shrink-0" /> {pkg.linkedClassCode}
                     </span>
                   </div>
                 ) : (
-                  <Badge variant="outline" className="text-[9px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/20 border-amber-200">
+                  <Badge variant="outline" className="text-xs font-semibold text-amber-600 bg-amber-50 dark:bg-amber-950/20 border-amber-200">
                     Chưa gắn lớp / Chờ xếp
                   </Badge>
                 )}
@@ -371,10 +371,10 @@ export function StudentDetailPackages({
               <TableCell className="py-3.5 text-xs text-muted-foreground">
                 {pkg.startSessionDate ? (
                   <div className="flex flex-col gap-0.5">
-                    <span className="font-semibold text-foreground text-[10px]">
+                    <span className="font-semibold text-foreground text-xs">
                       {pkg.startSessionDate.split(' (')[0]}
                     </span>
-                    <span className="text-[9px] text-muted-foreground truncate max-w-[120px]" title={pkg.startSessionDate.split(' (')[1]?.replace(')', '')}>
+                    <span className="text-xs text-muted-foreground truncate max-w-[120px]" title={pkg.startSessionDate.split(' (')[1]?.replace(')', '')}>
                       {pkg.startSessionDate.split(' (')[1]?.replace(')', '') || ''}
                     </span>
                   </div>

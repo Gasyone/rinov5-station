@@ -58,7 +58,7 @@ export function SessionCardRemark({ session, onUpdateSession }: SessionCardRemar
             <Pencil className="h-3.5 w-3.5" />
             <span>Ghi chú buổi học</span>
           </span>
-          <span className="text-[10px] text-muted-foreground font-normal">Hỗ trợ tag @tên học viên</span>
+          <span className="text-xs text-muted-foreground font-normal">Hỗ trợ tag @tên học viên</span>
         </div>
         <Textarea
           value={remarkInput}
@@ -98,7 +98,7 @@ export function SessionCardRemark({ session, onUpdateSession }: SessionCardRemar
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground/70 hover:text-primary transition-colors group/add-remark cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/70 hover:text-primary transition-colors group/add-remark cursor-pointer"
         >
           <Pencil className="h-3 w-3 text-muted-foreground/50 group-hover/add-remark:text-primary" />
           <span>+ Thêm ghi chú nhận xét buổi học</span>

@@ -20,7 +20,7 @@ export function AttendanceStatusBadge({
 }) {
   if (status === 'absent') {
     return (
-      <span className="inline-flex items-center rounded-md bg-rose-50 dark:bg-rose-950/20 px-2.5 py-0.5 text-[10px] font-normal text-rose-600 border border-rose-200/50 select-none">
+      <span className="inline-flex items-center rounded-md bg-rose-50 dark:bg-rose-950/20 px-2.5 py-0.5 text-xs font-normal text-rose-600 border border-rose-200/50 select-none">
         Vắng
       </span>
     )
@@ -28,14 +28,14 @@ export function AttendanceStatusBadge({
   if (status === 'excused') {
     return (
       <div className="flex flex-col items-center gap-0.5">
-        <span className="inline-flex items-center rounded-md bg-rose-50 dark:bg-rose-950/20 px-2.5 py-0.5 text-[10px] font-normal text-rose-600 border border-rose-200/50 select-none">
+        <span className="inline-flex items-center rounded-md bg-rose-50 dark:bg-rose-950/20 px-2.5 py-0.5 text-xs font-normal text-rose-600 border border-rose-200/50 select-none">
           Vắng
         </span>
         {onOpenLeave && (
           <button
             type="button"
             onClick={onOpenLeave}
-            className="text-[9px] font-normal text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
+            className="text-xs font-normal text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
           >
             <span>Nghỉ phép</span>
             <ExternalLink className="h-2.5 w-2.5 shrink-0" />
@@ -46,13 +46,13 @@ export function AttendanceStatusBadge({
   }
   if (status === 'late') {
     return (
-      <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/20 px-2.5 py-0.5 text-[10px] font-normal text-amber-600 border border-amber-200/50 select-none">
+      <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/20 px-2.5 py-0.5 text-xs font-normal text-amber-600 border border-amber-200/50 select-none">
         Đến muộn
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-0.5 text-[10px] font-normal text-emerald-600 border border-emerald-200/50 select-none">
+    <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-0.5 text-xs font-normal text-emerald-600 border border-emerald-200/50 select-none">
       ✓ Đã đến
     </span>
   )
@@ -109,7 +109,7 @@ export function ClassTables({ regularSessions, testSessions, isEnglish, onOpenLe
           Lịch sử buổi học
         </h3>
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-[11px] border-collapse bg-transparent table-fixed">
+          <table className="w-full text-xs border-collapse bg-transparent table-fixed">
             <thead>
               <tr className="border-b border-border/85 text-muted-foreground">
                 <th className="py-2.5 px-3 text-left font-bold w-[40px]">#</th>
@@ -126,7 +126,7 @@ export function ClassTables({ regularSessions, testSessions, isEnglish, onOpenLe
 
                   <td className="py-2.5 px-3 w-[280px]">
                     <span className="font-normal text-foreground">{s.topic}</span>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                    <div className="text-xs text-muted-foreground mt-0.5 font-medium">
                       {getDayOfWeek(s.date)}, {s.date}
                     </div>
                   </td>
@@ -154,14 +154,14 @@ export function ClassTables({ regularSessions, testSessions, isEnglish, onOpenLe
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
                         <span className="font-normal text-foreground">{s.rating}</span>
-                        <span className="text-[10px] text-muted-foreground">/5</span>
+                        <span className="text-xs text-muted-foreground">/5</span>
                       </div>
                       {s.comment ? (
-                        <p className="text-[10px] text-muted-foreground leading-snug italic font-normal">
+                        <p className="text-xs text-muted-foreground leading-snug italic font-normal">
                           &ldquo;{s.comment}&rdquo;
                         </p>
                       ) : (
-                        <p className="text-[10px] text-zinc-400 dark:text-zinc-655 italic">
+                        <p className="text-xs text-zinc-400 dark:text-zinc-655 italic">
                           Chưa có nhận xét
                         </p>
                       )}

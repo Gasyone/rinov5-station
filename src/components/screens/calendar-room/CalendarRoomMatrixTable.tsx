@@ -53,7 +53,7 @@ export function CalendarRoomMatrixTable({
               : safeWeekDays.map((date, idx) => (
                   <th key={date.toISOString()} className="p-3 text-center min-w-[150px]">
                     <div>{DAY_NAMES[idx] || `Thứ ${idx + 2}`}</div>
-                    <div className="text-[10px] text-muted-foreground/80 font-normal">
+                    <div className="text-xs text-muted-foreground/80 font-normal">
                       {formatLabel(date, { day: '2-digit', month: '2-digit' })}
                     </div>
                   </th>
@@ -71,11 +71,11 @@ export function CalendarRoomMatrixTable({
                   <span>Sức chứa: {room.capacity} chỗ</span>
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0">
                     {room.typeLabel}
                   </Badge>
                 </div>
-                <div className="text-[11px] text-muted-foreground/80 mt-1 line-clamp-1">
+                <div className="text-xs text-muted-foreground/80 mt-1 line-clamp-1">
                   {room.facilities.join(' • ')}
                 </div>
               </td>
@@ -109,14 +109,14 @@ export function CalendarRoomMatrixTable({
                           {matchedSessions.map((s) => (
                             <div
                               key={s.id}
-                              className="text-[11px] mt-1 p-1 bg-background/80 rounded border cursor-pointer hover:underline"
+                              className="text-xs mt-1 p-1 bg-background/80 rounded border cursor-pointer hover:underline"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 onSessionClick(s)
                               }}
                             >
                               <div className="font-semibold">{s.className}</div>
-                              <div className="text-[10px] text-muted-foreground">GV: {s.teacherName}</div>
+                              <div className="text-xs text-muted-foreground">GV: {s.teacherName}</div>
                             </div>
                           ))}
                         </div>
@@ -132,10 +132,10 @@ export function CalendarRoomMatrixTable({
                               </span>
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               GV: {matchedSessions[0].teacherName}
                             </div>
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1.5 pt-1 border-t border-emerald-500/20">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground mt-1.5 pt-1 border-t border-emerald-500/20">
                               <span>Mã: {matchedSessions[0].classCode}</span>
                               <span>{matchedSessions[0].studentCount}/{room.capacity} HV</span>
                             </div>
@@ -144,7 +144,7 @@ export function CalendarRoomMatrixTable({
                       ) : (
                         <div className="h-full min-h-[70px] flex flex-col items-center justify-center text-muted-foreground/60 hover:text-foreground text-xs gap-1 group">
                           <PlusCircle className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-                          <span className="text-[11px]">Phòng trống</span>
+                          <span className="text-xs">Phòng trống</span>
                         </div>
                       )}
                     </td>
@@ -186,7 +186,7 @@ export function CalendarRoomMatrixTable({
                                 }}
                               >
                                 <div className="font-bold truncate">{s.className}</div>
-                                <div className="text-[10px] text-muted-foreground mt-0.5">
+                                <div className="text-xs text-muted-foreground mt-0.5">
                                   {s.timeSlot} • GV: {s.teacherName}
                                 </div>
                               </div>
@@ -196,7 +196,7 @@ export function CalendarRoomMatrixTable({
                       ) : (
                         <div className="h-full min-h-[70px] flex flex-col items-center justify-center text-muted-foreground/60 hover:text-foreground text-xs gap-1 group">
                           <PlusCircle className="h-4 w-4 opacity-40 group-hover:opacity-100 transition-opacity" />
-                          <span className="text-[11px]">Trống</span>
+                          <span className="text-xs">Trống</span>
                         </div>
                       )}
                     </td>

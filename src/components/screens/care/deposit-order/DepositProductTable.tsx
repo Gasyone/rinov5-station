@@ -374,7 +374,7 @@ export function DepositProductTable({
                   <Tag className="h-3.5 w-3.5 text-sky-500" />
                   <span>Chọn khuyến mại</span>
                 </Button>
-                <span className="text-muted-foreground text-[11px] italic">
+                <span className="text-muted-foreground text-xs italic">
                   Chưa chọn khuyến mại
                 </span>
               </div>

@@ -264,7 +264,7 @@ export function StudentsTable({
                   <TableCell className="align-top py-2.5">
                     <div className="flex flex-col">
                       <div className="font-semibold text-foreground text-xs">{cls.programName || 'Chương trình học'}</div>
-                      <div className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                      <div className="text-xs text-muted-foreground font-medium whitespace-nowrap">
                         Đã học: <span className="font-semibold text-foreground">{cls.progress}</span>
                       </div>
                     </div>
@@ -273,7 +273,7 @@ export function StudentsTable({
                   {/* 6. Trình độ (per-class row) */}
                   <TableCell className="align-top py-2.5">
                     <div className="font-semibold text-foreground text-xs">{cls.level || '-'}</div>
-                    <div className="text-[9px] text-muted-foreground">{cls.subLevel || '-'}</div>
+                    <div className="text-xs text-muted-foreground">{cls.subLevel || '-'}</div>
                   </TableCell>
 
                   {/* 7. Lớp học (Chuyển lên trước GV phụ trách) */}
@@ -284,7 +284,7 @@ export function StudentsTable({
                       <>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-semibold text-foreground text-xs">{cls.className}</span>
-                          <Badge variant="outline" className={`font-semibold px-1 py-0 rounded text-[8px] uppercase shrink-0 ${getStatusBadgeClass(cls.type)}`}>
+                          <Badge variant="outline" className={`font-semibold px-1 py-0 rounded text-xs uppercase shrink-0 ${getStatusBadgeClass(cls.type)}`}>
                             {cls.type === 'offline' || cls.type === 'station' ? 'Station' : 'Online Tutor'}
                           </Badge>
                         </div>
@@ -366,7 +366,7 @@ export function StudentsTable({
                                 </Tooltip>
                                 <PopoverContent className="w-64 p-0" align="start">
                                   <div className="px-3 py-2 border-b bg-muted/30">
-                                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase">
+                                    <h4 className="text-xs font-bold text-muted-foreground uppercase">
                                       Danh sách giáo viên ({allTeachers.length})
                                     </h4>
                                   </div>
@@ -420,7 +420,7 @@ export function StudentsTable({
                           }}
                           side="right"
                         >
-                          <span className="text-[10px] text-muted-foreground hover:text-primary hover:underline cursor-pointer font-medium inline-flex items-center gap-0.5 whitespace-nowrap">
+                          <span className="text-xs text-muted-foreground hover:text-primary hover:underline cursor-pointer font-medium inline-flex items-center gap-0.5 whitespace-nowrap">
                             Buổi ghép: <span className="font-semibold text-sky-600 dark:text-sky-400 font-mono">{cls.nextLessonDate && cls.nextLessonDate !== '-' ? (cls.nextLessonDate.includes('(') ? cls.nextLessonDate.replace(/Thứ\s+[^\s,]+,\s*/gi, '') : `${cls.nextLessonDate} (18:00 - 20:00)`) : '04/06 (18:00 - 20:00)'}</span>
                           </span>
                         </ClassSessionHoverCard>
@@ -437,7 +437,7 @@ export function StudentsTable({
                         <div className="text-xs font-semibold text-foreground line-clamp-1 max-w-[160px]" title={cls.branch}>
                           {cls.branch || '-'}
                         </div>
-                        <div className="text-[10px] text-muted-foreground font-medium">
+                        <div className="text-xs text-muted-foreground font-medium">
                           Phòng: {cls.room || '-'}
                         </div>
                       </>

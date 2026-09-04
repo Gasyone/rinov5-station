@@ -338,7 +338,7 @@ export function SystemConfigScreen() {
                                 alt={logo.name} 
                                 className="h-8 w-8 object-contain rounded bg-muted/20" 
                               />
-                              <span className="text-[10px] truncate max-w-full font-medium text-muted-foreground">
+                              <span className="text-xs truncate max-w-full font-medium text-muted-foreground">
                                 {logo.name}
                               </span>
                             </button>
@@ -492,21 +492,21 @@ export function SystemConfigScreen() {
 
                   {/* Simulated Buttons & Accents */}
                   <div className="space-y-3">
-                    <p className="text-[10px] text-muted-foreground leading-normal">
+                    <p className="text-xs text-muted-foreground leading-normal">
                       Màu nhấn chủ đạo (Primary color) sẽ được áp dụng cho các thành phần hành động, tiêu điểm và đường viền active trong toàn trang web.
                     </p>
                     
                     <div className="flex items-center gap-2">
                       <button 
                         type="button"
-                        className="text-[10px] font-semibold px-3 py-1.5 rounded-md text-white transition-all shadow-xs flex-1 text-center cursor-default"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md text-white transition-all shadow-xs flex-1 text-center cursor-default"
                         style={{ backgroundColor: brandPrimaryColor }}
                       >
                         Nút chính
                       </button>
                       <button 
                         type="button"
-                        className="text-[10px] font-semibold px-3 py-1.5 rounded-md border border-border bg-card text-foreground flex-1 text-center cursor-default hover:bg-muted/20"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-md border border-border bg-card text-foreground flex-1 text-center cursor-default hover:bg-muted/20"
                       >
                         Nút phụ
                       </button>
@@ -520,7 +520,7 @@ export function SystemConfigScreen() {
                       >
                         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: brandPrimaryColor }} />
                       </span>
-                      <span className="text-[10px] font-medium" style={{ color: brandPrimaryColor }}>
+                      <span className="text-xs font-medium" style={{ color: brandPrimaryColor }}>
                         Trạng thái Hoạt động
                       </span>
                     </div>

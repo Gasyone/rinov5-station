@@ -370,6 +370,11 @@ export function nextTrialId(trials: TrialClass[]): string {
   return `TR-${year}${month}-${String(maxNum + 1).padStart(3, '0')}`
 }
 
+export function addTrialClass(newTrial: TrialClass): TrialClass {
+  MOCK_TRIAL_CLASSES.unshift(newTrial)
+  return newTrial
+}
+
 export function getMockSessionsForClass(classId: string) {
   const sessions: Record<string, Array<{ id: string; name: string; date: string; time: string; attendees: number; capacity: number }>> = {
     'CLS-001': [

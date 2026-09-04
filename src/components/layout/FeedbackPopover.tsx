@@ -153,7 +153,7 @@ export function FeedbackPopover() {
       >
         <div className="flex items-center justify-between pb-2 border-b border-border/60">
           <span className="font-bold text-sm text-foreground">Yêu cầu điều chỉnh</span>
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
             <Clock className="h-3 w-3" />
             <span>{currentTime || 'Đang lấy giờ...'}</span>
           </div>
@@ -164,7 +164,7 @@ export function FeedbackPopover() {
           <div className="rounded-lg border border-border/70 bg-muted/40 p-2 text-xs space-y-1.5">
             <div className="flex items-center justify-between gap-2">
               <span className="text-muted-foreground font-medium">Màn hình:</span>
-              <span className="font-semibold text-foreground bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[11px] truncate max-w-[220px]">
+              <span className="font-semibold text-foreground bg-primary/10 text-primary px-1.5 py-0.5 rounded text-xs truncate max-w-[220px]">
                 {screenName}
               </span>
             </div>
@@ -175,7 +175,7 @@ export function FeedbackPopover() {
                 Đường dẫn:
               </span>
               <div className="flex items-center gap-1 min-w-0 flex-1 justify-end">
-                <span className="truncate text-muted-foreground font-mono text-[10px] max-w-[200px]">
+                <span className="truncate text-muted-foreground font-mono text-xs max-w-[200px]">
                   {currentUrl}
                 </span>
                 <Button

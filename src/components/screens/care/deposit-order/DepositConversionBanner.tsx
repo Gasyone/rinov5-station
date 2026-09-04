@@ -67,7 +67,7 @@ export function DepositConversionBanner({
         {/* Deposit & Remaining Amounts */}
         <div className="flex items-center gap-4 text-xs font-medium">
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-muted-foreground uppercase text-[11px]">
+            <span className="font-bold text-muted-foreground uppercase text-xs">
               TIỀN CỌC:
             </span>
             <div className="flex items-center gap-1">
@@ -84,7 +84,7 @@ export function DepositConversionBanner({
 
           {mode === 'completion' && (
             <div className="flex items-center gap-1.5 pl-3 border-l">
-              <span className="font-bold text-rose-600 dark:text-rose-400 uppercase text-[11px]">
+              <span className="font-bold text-rose-600 dark:text-rose-400 uppercase text-xs">
                 CẦN THANH TOÁN TIẾP:
               </span>
               <span className="font-mono font-bold text-rose-600 dark:text-rose-400 text-sm">

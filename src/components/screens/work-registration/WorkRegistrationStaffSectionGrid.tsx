@@ -60,7 +60,7 @@ export function WorkRegistrationStaffSectionGrid({
         {editableEmployeeId && (
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-3.5 py-1.5 bg-muted/20 border-b text-xs sticky top-0 z-20 backdrop-blur-xs">
             <div className="flex items-center gap-4 flex-wrap">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Phân định lịch:</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phân định lịch:</span>
               <div className="flex items-center gap-1.5">
                 <span className="inline-block w-2.5 h-2.5 rounded-xs border border-amber-400/80 bg-amber-100 dark:bg-amber-950/80" />
                 <span className="text-xs text-foreground font-medium">Lịch hiện tại (Đã đăng ký)</span>
@@ -99,12 +99,12 @@ export function WorkRegistrationStaffSectionGrid({
                     {day.label}
                   </span>
                 </div>
-                <span className={cn('block text-[10px] font-medium', isToday ? 'text-primary font-semibold' : 'text-muted-foreground')}>
+                <span className={cn('block text-xs font-medium', isToday ? 'text-primary font-semibold' : 'text-muted-foreground')}>
                   {formattedDate}
                 </span>
                 {holiday && (
                   <span
-                    className="inline-block mt-0.5 max-w-full truncate rounded bg-amber-100 dark:bg-amber-950/80 px-1 py-0.2 text-[9px] font-semibold text-amber-800 dark:text-amber-300 border border-amber-300/50"
+                    className="inline-block mt-0.5 max-w-full truncate rounded bg-amber-100 dark:bg-amber-950/80 px-1 py-0.2 text-xs font-semibold text-amber-800 dark:text-amber-300 border border-amber-300/50"
                     title={holiday.name}
                   >
                     🎉 {holiday.name}
@@ -131,12 +131,12 @@ export function WorkRegistrationStaffSectionGrid({
             >
               <div className="flex items-center gap-2">
                 <span>{sec.icon}</span>
-                <span className="uppercase tracking-wider font-bold text-[11px]">
+                <span className="uppercase tracking-wider font-bold text-xs">
                   {sec.label}
                 </span>
                 <span
                   className={cn(
-                    'text-[11px] font-normal',
+                    'text-xs font-normal',
                     sec.id === 'morning'
                       ? 'text-amber-700/80 dark:text-amber-400/80'
                       : sec.id === 'afternoon'
@@ -211,10 +211,10 @@ export function WorkRegistrationStaffSectionGrid({
                             )}
                           </div>
                           <div className="mt-auto pt-1 flex items-center justify-between gap-1">
-                            <span className="text-[11px] font-semibold text-emerald-800/90 dark:text-emerald-300">
+                            <span className="text-xs font-semibold text-emerald-800/90 dark:text-emerald-300">
                               {sec.start} - {sec.end}
                             </span>
-                            <span className="text-[9px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-900/80 px-1.5 py-0.5 rounded border border-emerald-300/60 shrink-0">
+                            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-900/80 px-1.5 py-0.5 rounded border border-emerald-300/60 shrink-0">
                               Chờ lưu
                             </span>
                           </div>
@@ -261,7 +261,7 @@ export function WorkRegistrationStaffSectionGrid({
                           )}
                         </div>
                         <div className="mt-auto pt-1 flex items-center justify-between gap-1">
-                          <span className="text-[11px] font-semibold opacity-85">
+                          <span className="text-xs font-semibold opacity-85">
                             {sec.start} - {sec.end}
                           </span>
                           <span className="text-[8.5px] font-medium text-muted-foreground/90 bg-background/80 px-1.5 py-0.5 rounded border border-border/50 shrink-0">
@@ -296,7 +296,7 @@ export function WorkRegistrationStaffSectionGrid({
                               onClick={(e) => e.stopPropagation()}
                               className="flex flex-col gap-0.5 rounded-md border border-amber-300/90 bg-amber-50/90 dark:bg-amber-950/50 dark:border-amber-700/60 p-1.5 text-amber-950 dark:text-amber-200 cursor-pointer shadow-2xs hover:bg-amber-100 hover:border-amber-400 dark:hover:bg-amber-900/60 transition-all group/class"
                             >
-                              <div className="flex items-center justify-between gap-1 text-[9px] text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">
+                              <div className="flex items-center justify-between gap-1 text-xs text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">
                                 <span className="flex items-center gap-1">
                                   <BookOpen className="h-2.5 w-2.5" />
                                   Lớp giảng dạy
@@ -322,7 +322,7 @@ export function WorkRegistrationStaffSectionGrid({
                                   <span className="text-xs truncate font-semibold">
                                     {interval.start} - {interval.end}
                                   </span>
-                                  <span className="text-[9px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/80 px-1 py-0.2 rounded border border-emerald-300/60 shrink-0">
+                                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/80 px-1 py-0.2 rounded border border-emerald-300/60 shrink-0">
                                     Chờ lưu
                                   </span>
                                 </div>
@@ -388,7 +388,7 @@ export function WorkRegistrationStaffSectionGrid({
                         })}
 
                         {!hasContent && (
-                          <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground/35 select-none font-medium">
+                          <div className="h-full flex items-center justify-center text-xs text-muted-foreground/35 select-none font-medium">
                             —
                           </div>
                         )}
@@ -416,10 +416,10 @@ export function WorkRegistrationStaffSectionGrid({
                     )}
                   >
                     <div className="space-y-1 flex-1 min-h-0 flex flex-col">
-                      <div className="shrink-0 flex items-center justify-between text-[11px]">
+                      <div className="shrink-0 flex items-center justify-between text-xs">
                         <span
                           className={cn(
-                            'text-[11px]',
+                            'text-xs',
                             registeredEmployees.length > 0
                               ? 'text-amber-600 dark:text-amber-500 font-medium'
                               : 'text-muted-foreground/50 font-normal'
@@ -451,13 +451,13 @@ export function WorkRegistrationStaffSectionGrid({
                               key={emp.id}
                               className="flex items-center justify-between gap-1.5 rounded bg-muted/40 px-1.5 py-1 text-xs hover:bg-muted/60 transition-colors"
                             >
-                              <span className="truncate text-[11px] font-medium text-foreground">
+                              <span className="truncate text-xs font-medium text-foreground">
                                 {emp.name}
                               </span>
                               {timeLabel && (
                                 <span
                                   className={cn(
-                                    'ml-auto shrink-0 text-[10px] tabular-nums font-normal',
+                                    'ml-auto shrink-0 text-xs tabular-nums font-normal',
                                     isFullSection
                                       ? 'text-emerald-600 dark:text-emerald-400'
                                       : 'text-muted-foreground'
@@ -471,7 +471,7 @@ export function WorkRegistrationStaffSectionGrid({
                         })}
 
                         {registeredEmployees.length === 0 && (
-                          <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground/35 select-none font-medium">
+                          <div className="h-full flex items-center justify-center text-xs text-muted-foreground/35 select-none font-medium">
                             —
                           </div>
                         )}

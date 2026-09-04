@@ -192,20 +192,20 @@ export function StudentDetailPackageInfoTab({
 
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Trình độ</div>
+            <div className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ</div>
             <span className="font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md inline-block">
               {activeClass?.level || student.level || 'IELTS (5.0–5.5)'}
             </span>
           </div>
           <div>
-            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Trình độ phụ</div>
+            <div className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ phụ</div>
             <strong className="text-foreground font-semibold">
               {activeClass?.subLevel || student.subLevel || 'IELTS (A1)'}
             </strong>
           </div>
           {isMathSubject && (
             <div>
-              <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Lớp</div>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Lớp</div>
               <strong className="text-foreground font-semibold">
                 {student.schoolClass || 'Lớp 6'}
               </strong>
@@ -236,11 +236,11 @@ export function StudentDetailPackageInfoTab({
           {/* Thời gian (Tách cột) */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Ngày bắt đầu</div>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Ngày bắt đầu</div>
               <strong className="text-foreground font-semibold font-mono">{startAndEndDates.start}</strong>
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Ngày kết thúc</div>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Ngày kết thúc</div>
               <strong className="text-foreground font-semibold font-mono">{startAndEndDates.end}</strong>
             </div>
           </div>
@@ -262,7 +262,7 @@ export function StudentDetailPackageInfoTab({
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
+              <div className="flex justify-between text-xs text-muted-foreground font-medium">
                 <span>Đã hoàn thành {progressPercent}%</span>
                 <span>Còn lại {sessionsSummary.remaining} buổi</span>
               </div>
@@ -306,14 +306,14 @@ export function StudentDetailPackageInfoTab({
 
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Cơ sở</div>
+            <div className="text-xs text-muted-foreground font-medium mb-0.5">Cơ sở</div>
             <strong className="text-foreground font-bold">
               {currentBranch}
             </strong>
           </div>
 
           <div>
-            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Phụ trách</div>
+            <div className="text-xs text-muted-foreground font-medium mb-0.5">Phụ trách</div>
             <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
               <AppAvatar
                 name={selectedCsm}

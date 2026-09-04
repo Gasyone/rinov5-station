@@ -118,7 +118,7 @@ export function LeaveReserveToolbar({
                 <CalendarOff className="mr-2.5 h-4 w-4 text-amber-500 shrink-0" />
                 <div className="flex flex-col">
                   <span className="font-semibold text-xs text-foreground">Tạo đơn nghỉ phép</span>
-                  <span className="text-[10px] text-muted-foreground">Vắng buổi / nghỉ ngắn hạn</span>
+                  <span className="text-xs text-muted-foreground">Vắng buổi / nghỉ ngắn hạn</span>
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -128,7 +128,7 @@ export function LeaveReserveToolbar({
                 <PauseCircle className="mr-2.5 h-4 w-4 text-sky-500 shrink-0" />
                 <div className="flex flex-col">
                   <span className="font-semibold text-xs text-foreground">Tạo đơn bảo lưu</span>
-                  <span className="text-[10px] text-muted-foreground">Tạm dừng học tập dài hạn</span>
+                  <span className="text-xs text-muted-foreground">Tạm dừng học tập dài hạn</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -200,7 +200,7 @@ export function WorkRegistrationTimeRangePicker({
                 disabled={disabled}
                 onClick={handleToggleAll}
                 className={cn(
-                  'h-7 px-2 rounded-md text-[11px] font-medium transition-all cursor-pointer select-none ml-0.5',
+                  'h-7 px-2 rounded-md text-xs font-medium transition-all cursor-pointer select-none ml-0.5',
                   allSelected
                     ? 'bg-primary/20 text-primary border border-primary/40'
                     : 'bg-transparent text-muted-foreground hover:bg-muted/50'
@@ -219,14 +219,14 @@ export function WorkRegistrationTimeRangePicker({
                   <span>
                     Tổng khung giờ: <strong className="font-semibold text-foreground">{formatMinutes(totalMinutes)}</strong>
                     {typeof registeredMinutes === 'number' && draftMinutes > 0 ? (
-                      <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                      <span className="text-xs font-normal text-muted-foreground ml-1">
                         (Đã lưu: {formatMinutes(registeredMinutes)})
                       </span>
                     ) : null}
                   </span>
                 </Badge>
                 {typeof draftMinutes === 'number' && draftMinutes > 0 ? (
-                  <Badge variant="outline" className="h-7 gap-1 px-2 text-[11px] font-semibold border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 animate-in fade-in">
+                  <Badge variant="outline" className="h-7 gap-1 px-2 text-xs font-semibold border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 animate-in fade-in">
                     <span>✨ Mới chọn: +{formatMinutes(draftMinutes)}</span>
                   </Badge>
                 ) : null}
@@ -277,7 +277,7 @@ export function WorkRegistrationTimeRangePicker({
               >
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     morningEnabled
                       ? 'text-amber-800/80 dark:text-amber-300/80 font-medium'
                       : 'text-muted-foreground'
@@ -305,7 +305,7 @@ export function WorkRegistrationTimeRangePicker({
 
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     morningEnabled
                       ? 'text-amber-800/80 dark:text-amber-300/80 font-medium'
                       : 'text-muted-foreground'
@@ -370,7 +370,7 @@ export function WorkRegistrationTimeRangePicker({
               >
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     afternoonEnabled
                       ? 'text-sky-800/80 dark:text-sky-300/80 font-medium'
                       : 'text-muted-foreground'
@@ -398,7 +398,7 @@ export function WorkRegistrationTimeRangePicker({
 
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     afternoonEnabled
                       ? 'text-sky-800/80 dark:text-sky-300/80 font-medium'
                       : 'text-muted-foreground'
@@ -463,7 +463,7 @@ export function WorkRegistrationTimeRangePicker({
               >
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     eveningEnabled
                       ? 'text-purple-800/80 dark:text-purple-300/80 font-medium'
                       : 'text-muted-foreground'
@@ -491,7 +491,7 @@ export function WorkRegistrationTimeRangePicker({
 
                 <span
                   className={cn(
-                    'text-[11px]',
+                    'text-xs',
                     eveningEnabled
                       ? 'text-purple-800/80 dark:text-purple-300/80 font-medium'
                       : 'text-muted-foreground'

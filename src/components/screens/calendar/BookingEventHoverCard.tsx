@@ -147,7 +147,7 @@ export function BookingEventHoverCard({
 
           {/* Type Badge */}
           <div className="flex items-center gap-1">
-            <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+            <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
               {session.typeLabel || 'Trải nghiệm'}
             </span>
           </div>
@@ -162,13 +162,13 @@ export function BookingEventHoverCard({
                 {studentName}
               </h4>
               {testStatusText && (
-                <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded border', testStatusColors.badge)}>
+                <span className={cn('text-xs font-semibold px-1.5 py-0.5 rounded border', testStatusColors.badge)}>
                   {testStatusText}
                 </span>
               )}
             </div>
             {parentInfo && (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {parentInfo}
               </p>
             )}
@@ -216,8 +216,8 @@ export function BookingEventHoverCard({
           )}
 
           {/* Staff Section: PHỤ TRÁCH */}
-          <div className="border-t border-border/40 pt-2 space-y-1 text-[11px]">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+          <div className="border-t border-border/40 pt-2 space-y-1 text-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
               PHỤ TRÁCH:
             </div>
             <div className="flex items-center justify-between">
@@ -233,7 +233,7 @@ export function BookingEventHoverCard({
           </div>
 
           {/* Result & Assessment Level Section */}
-          <div className="border-t border-border/40 pt-2 space-y-1.5 text-[11px]">
+          <div className="border-t border-border/40 pt-2 space-y-1.5 text-xs">
             {/* Result Link */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 font-semibold text-muted-foreground">
@@ -274,7 +274,7 @@ export function BookingEventHoverCard({
         </div>
 
         {/* Footer Hint */}
-        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-[10px] text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-xs text-muted-foreground flex items-center gap-1.5">
           <Info className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           <span>Nhấp vào thẻ để mở chi tiết & thao tác</span>
         </div>

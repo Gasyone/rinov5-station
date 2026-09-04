@@ -2,8 +2,9 @@
 
 import React from 'react'
 import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { StudentCareWorkItem } from './careJourneyHelpers'
-import { CareJourneyMilestoneCard, RoadmapMilestoneItem } from './CareJourneyMilestoneCard'
+import { CareJourneyMilestoneCard, RoadmapMilestoneItem, getMilestoneTagAbbrev } from './CareJourneyMilestoneCard'
 
 interface CareJourneyStepperProps {
   workItem: StudentCareWorkItem
@@ -147,7 +148,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
 
   if (isMini) {
     return (
-      <div className="flex items-center gap-1 text-[10px]">
+      <div className="flex items-center gap-1 text-xs">
         {roadmapMilestones.map((m, idx) => {
           const isCompleted = m.status === 'completed'
           const isOverdue = m.status === 'overdue'
@@ -210,11 +211,13 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
                 {isCompleted ? <Check className="h-4 w-4" /> : idx + 1}
               </div>
 
-              <span className="font-mono text-[9.5px] font-bold text-muted-foreground mt-1.5">{m.code}</span>
-              <span className="text-[11px] font-normal text-foreground line-clamp-1 mt-0.5" title={m.title}>
+              <span className={cn('font-mono text-xs font-bold px-1.5 py-0.2 rounded border mt-1.5', getMilestoneTagAbbrev(m.code).badgeClass)}>
+                {getMilestoneTagAbbrev(m.code).label}
+              </span>
+              <span className="text-xs font-normal text-foreground line-clamp-1 mt-0.5" title={m.title}>
                 {m.title.split('(')[0]}
               </span>
-              <span className="text-[10px] text-muted-foreground font-mono mt-0.5">{m.date}</span>
+              <span className="text-xs text-muted-foreground font-mono mt-0.5">{m.date}</span>
             </div>
           )
         })}

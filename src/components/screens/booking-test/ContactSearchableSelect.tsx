@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
-import { Check, ChevronDown, Plus, Search, User, UserPlus, X } from 'lucide-react'
+import { useState, useMemo, useRef } from 'react'
+import { Check, ChevronDown, Search, UserPlus, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
@@ -17,6 +17,7 @@ interface ContactSearchableSelectProps {
   value: string
   onValueChange: (id: string) => void
   contacts: ContactPerson[]
+  onAddNewContact?: () => void
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -26,6 +27,7 @@ export function ContactSearchableSelect({
   value,
   onValueChange,
   contacts,
+  onAddNewContact,
   placeholder = 'Tìm kiếm tên hoặc SĐT phụ huynh...',
   disabled = false,
   className,
@@ -36,28 +38,22 @@ export function ContactSearchableSelect({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const selectedContact = useMemo(() => {
-    if (value === 'custom') {
-      return { id: 'custom', name: '+ Thêm Contact / Phụ huynh mới', phone: '', children: [] }
-    }
     return contacts.find((c) => c.id === value) || null
   }, [value, contacts])
 
   const displayLabel = useMemo(() => {
-    if (value === 'custom') {
-      return '+ Thêm Contact / Phụ huynh mới'
-    }
     if (selectedContact) {
       return `${selectedContact.name} - ${selectedContact.phone}`
     }
     return ''
-  }, [value, selectedContact])
+  }, [selectedContact])
 
   // Sync input text when selected contact changes and user is not actively typing
-  useEffect(() => {
-    if (!isTyping) {
-      setSearchTerm(displayLabel)
-    }
-  }, [displayLabel, isTyping])
+  const [prevDisplay, setPrevDisplay] = useState(displayLabel)
+  if (!isTyping && prevDisplay !== displayLabel) {
+    setPrevDisplay(displayLabel)
+    setSearchTerm(displayLabel)
+  }
 
   // Filter contacts by search term (case-insensitive & accent-friendly)
   const filteredContacts = useMemo(() => {
@@ -76,12 +72,8 @@ export function ContactSearchableSelect({
   const handleSelect = (id: string) => {
     onValueChange(id)
     setIsTyping(false)
-    if (id === 'custom') {
-      setSearchTerm('+ Thêm Contact / Phụ huynh mới')
-    } else {
-      const found = contacts.find((c) => c.id === id)
-      setSearchTerm(found ? `${found.name} - ${found.phone}` : '')
-    }
+    const found = contacts.find((c) => c.id === id)
+    setSearchTerm(found ? `${found.name} - ${found.phone}` : '')
     setOpen(false)
   }
 
@@ -125,10 +117,7 @@ export function ContactSearchableSelect({
                 setSearchTerm(e.target.value)
                 if (!open) setOpen(true)
               }}
-              className={cn(
-                'h-9 bg-background pr-14 text-sm font-medium transition-colors cursor-pointer',
-                value === 'custom' && 'text-primary font-semibold border-primary/50 bg-primary/5'
-              )}
+              className="h-9 bg-background pr-14 text-sm font-medium transition-colors cursor-pointer"
             />
 
             <div className="absolute right-2 flex items-center gap-1 text-muted-foreground">
@@ -151,49 +140,47 @@ export function ContactSearchableSelect({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] min-w-[320px] p-1.5 z-50 bg-background border rounded-xl shadow-xl space-y-1"
+        className="w-[380px] sm:w-[420px] max-w-[95vw] p-2 z-50 bg-background border rounded-xl shadow-xl space-y-1.5"
         align="start"
+        sideOffset={6}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* OPTION 1 (LUÔN Ở ĐẦU TIÊN): TẠO MỚI CONTACT / PHỤ HUYNH */}
+        {/* OPTION 1 (LUÔN Ở ĐẦU TIÊN): MỞ MODAL TẠO MỚI CONTACT / PHỤ HUYNH */}
         <div
           onMouseDown={(e) => {
             e.preventDefault()
-            handleSelect('custom')
+            setOpen(false)
+            if (onAddNewContact) {
+              onAddNewContact()
+            }
           }}
-          className={cn(
-            'flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors text-xs font-semibold border border-dashed',
-            value === 'custom'
-              ? 'bg-primary/10 text-primary border-primary ring-1 ring-primary/30'
-              : 'bg-primary/5 text-primary border-primary/40 hover:bg-primary/10'
-          )}
+          className="flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors text-xs font-semibold border border-dashed bg-primary/5 text-primary border-primary/40 hover:bg-primary/10"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0 shadow-2xs">
               <UserPlus className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0">
               <p className="truncate font-bold text-xs">+ Thêm Contact / Phụ huynh mới</p>
-              <p className="truncate text-[10px] text-muted-foreground font-normal">
-                Tự nhập họ tên & số điện thoại phụ huynh mới
+              <p className="truncate text-[10.5px] text-muted-foreground font-normal">
+                Mở hộp thoại tạo mới khách hàng & học viên
               </p>
             </div>
           </div>
-          {value === 'custom' && <Check className="h-4 w-4 text-primary shrink-0 ml-1.5" />}
         </div>
 
         <div className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/50 flex items-center justify-between">
-          <span>Danh sách phụ huynh</span>
-          <span className="text-[10px] font-normal text-muted-foreground">
+          <span>Danh sách phụ huynh & học viên</span>
+          <span className="text-[10.5px] font-normal text-muted-foreground">
             {filteredContacts.length} kết quả
           </span>
         </div>
 
         {/* DANH SÁCH CONTACT SEARCHABLE */}
-        <div className="max-h-[240px] overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
+        <div className="max-h-[300px] overflow-y-auto space-y-1 custom-scrollbar pr-0.5">
           {filteredContacts.length === 0 ? (
-            <div className="py-4 text-center text-xs text-muted-foreground">
-              Không tìm thấy phụ huynh nào khớp với &quot;{searchTerm}&quot;
+            <div className="py-6 text-center text-xs text-muted-foreground">
+              Không tìm thấy phụ huynh hoặc học viên nào khớp với &quot;{searchTerm}&quot;
             </div>
           ) : (
             filteredContacts.map((contact) => {
@@ -208,16 +195,16 @@ export function ContactSearchableSelect({
                     handleSelect(contact.id)
                   }}
                   className={cn(
-                    'flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors text-xs',
+                    'flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors text-xs',
                     isSelected
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'hover:bg-muted/60 text-foreground'
+                      ? 'bg-primary/10 text-primary font-medium ring-1 ring-primary/20'
+                      : 'hover:bg-muted/70 text-foreground'
                   )}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div
                       className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold shrink-0',
+                        'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold shrink-0',
                         isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                       )}
                     >
@@ -228,20 +215,23 @@ export function ContactSearchableSelect({
                         <span className="font-semibold text-xs text-foreground truncate">
                           {contact.name}
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           ({contact.phone})
                         </span>
                       </div>
                       {childrenNames && (
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          Con: <span className="font-medium text-foreground/80">{childrenNames}</span>
-                        </p>
+                        <div className="text-[10.5px] text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                          <span>Con:</span>
+                          <span className="font-medium text-foreground/90 bg-muted px-1.5 py-0.2 rounded text-xs">
+                            {childrenNames}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
 
                   {isSelected && (
-                    <Check className="h-3.5 w-3.5 text-primary shrink-0 ml-1.5" />
+                    <Check className="h-4 w-4 text-primary shrink-0 ml-1.5" />
                   )}
                 </div>
               )

@@ -49,7 +49,7 @@ export function TimelineGroupHoverCard({
             <Clock className="h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>{minStartTime} - {maxEndTime}</span>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-200/80 dark:bg-indigo-900/80 border border-indigo-300 dark:border-indigo-700 px-2 py-0.5 text-[10px] font-bold text-indigo-900 dark:text-indigo-200">
+          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-200/80 dark:bg-indigo-900/80 border border-indigo-300 dark:border-indigo-700 px-2 py-0.5 text-xs font-bold text-indigo-900 dark:text-indigo-200">
             <Layers className="h-3 w-3" />
             {sessions.length} lớp học • {totalStudents} HS
           </span>
@@ -75,20 +75,20 @@ export function TimelineGroupHoverCard({
                   {/* Title and Sĩ số */}
                   <div className="flex items-start justify-between gap-1.5">
                     <div>
-                      <h5 className="text-[11px] font-bold text-foreground group-hover/item:text-primary transition-colors leading-tight">
+                      <h5 className="text-xs font-bold text-foreground group-hover/item:text-primary transition-colors leading-tight">
                         {session.className || `${session.subject} (${session.level})`}
                       </h5>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {session.subject} • Level {session.level}
                       </span>
                     </div>
-                    <span className="inline-flex items-center rounded px-1.5 py-0.2 text-[9px] font-bold bg-muted text-foreground/80 border border-border shrink-0">
+                    <span className="inline-flex items-center rounded px-1.5 py-0.2 text-xs font-bold bg-muted text-foreground/80 border border-border shrink-0">
                       {session.totalStudents} HS
                     </span>
                   </div>
 
                   {/* Info row: Giờ riêng của từng lớp & Phòng học */}
-                  <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground pt-0.5 border-t border-border/30">
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-0.5 border-t border-border/30">
                     <div className="flex items-center gap-1 font-semibold text-primary/90 dark:text-primary">
                       <Clock className="h-3 w-3 shrink-0" />
                       <span>{session.timeLabel} - {session.endTimeLabel}</span>
@@ -100,12 +100,12 @@ export function TimelineGroupHoverCard({
                   </div>
 
                   {/* Teacher info */}
-                  <div className="flex items-center gap-1.5 text-[10px]">
+                  <div className="flex items-center gap-1.5 text-xs">
                     {hasSub ? (
                       <div className="flex items-center gap-1 text-sky-700 dark:text-sky-400 font-semibold bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/60 rounded px-1.5 py-0.2">
                         <ArrowLeftRight className="h-2.5 w-2.5 text-sky-600" />
                         <span>GV: {session.substituteTeacher}</span>
-                        <span className="text-[9px] font-normal text-muted-foreground">(thay {session.teacher})</span>
+                        <span className="text-xs font-normal text-muted-foreground">(thay {session.teacher})</span>
                       </div>
                     ) : (
                       <span className="text-foreground/80 font-medium">

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { mockClassRecords, CLASS_STATUS_LABELS } from '@/mocks/classRecords'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { Calendar, MapPin, Users, History, BookOpen, UserPlus } from 'lucide-react'
+import { Calendar, MapPin, Users, History, BookOpen, UserPlus, ExternalLink } from 'lucide-react'
 import { ClassesDetailDialog } from '../classes/detail/ClassesDetailDialog'
 import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { SyllabusProfileHoverCard } from '../classes/SyllabusProfileHoverCard'
@@ -20,6 +20,7 @@ interface ClassCodeHoverCellProps {
   level: string
   teacherCode: string
   schedule: string
+  openInNewTab?: boolean
 }
 
 function getClassDetail(
@@ -69,7 +70,14 @@ function getClassDetail(
   }
 }
 
-export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, schedule }: ClassCodeHoverCellProps) {
+export function ClassCodeHoverCell({
+  classCode,
+  subject,
+  level,
+  teacherCode,
+  schedule,
+  openInNewTab = false,
+}: ClassCodeHoverCellProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   const classDetail = useMemo(() => {
@@ -80,6 +88,15 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
     return (classDetail.teacher || '').split(/[,/&]+/).map((t) => t.trim()).filter(Boolean)
   }, [classDetail.teacher])
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (openInNewTab) {
+      window.open('/app/classes', '_blank')
+    } else {
+      setIsDetailOpen(true)
+    }
+  }
+
   return (
     <>
       <HoverCard openDelay={100} closeDelay={150}>
@@ -87,14 +104,12 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
           <span
             role="button"
             tabIndex={0}
-            className="font-mono text-[10px] font-normal text-sky-600 dark:text-sky-400 hover:underline cursor-pointer transition-colors inline-flex items-center text-left"
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsDetailOpen(true)
-            }}
-            title="Nhấp để xem hồ sơ chi tiết lớp học"
+            className="font-mono text-xs font-normal text-sky-600 dark:text-sky-400 hover:underline cursor-pointer transition-colors inline-flex items-center gap-0.5 text-left"
+            onClick={handleClick}
+            title={openInNewTab ? "Xem hồ sơ chi tiết lớp học (Mở tab mới)" : "Nhấp để xem hồ sơ chi tiết lớp học"}
           >
-            {classCode}
+            <span>{classCode}</span>
+            {openInNewTab && <ExternalLink className="h-2.5 w-2.5 opacity-60 ml-0.5" />}
           </span>
         </HoverCardTrigger>
         <HoverCardContent 
@@ -115,10 +130,10 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
                 />
               </div>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded-md text-[9px] font-mono font-semibold uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded-md text-xs font-mono font-semibold uppercase tracking-wider">
                   {classDetail.code}
                 </span>
-                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-semibold">
+                <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded-md text-xs font-semibold">
                   {classDetail.level}
                 </span>
               </div>
@@ -161,10 +176,10 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
                         <div key={idx} className="flex items-center justify-between gap-2 border-b border-border/20 last:border-b-0 pb-1 last:pb-0">
                           {/* Bên trái: Thứ + Thời gian ở dưới */}
                           <div className="flex flex-col gap-0.5 text-xs">
-                            <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary w-fit">
+                            <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary w-fit">
                               {slot.dayOfWeek}
                             </span>
-                            <span className="font-mono font-semibold text-foreground text-[11px]">
+                            <span className="font-mono font-semibold text-foreground text-xs">
                               {slot.startTime}–{slot.endTime}
                             </span>
                           </div>
@@ -211,7 +226,7 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
                       trigger={
                         <button
                           type="button"
-                          className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 text-left bg-transparent border-0 p-0"
+                          className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 text-left bg-transparent border-0 p-0"
                           title="Bấm để xem lịch sử phân công giáo viên"
                         >
                           <History className="h-3 w-3 shrink-0 text-sky-600 dark:text-sky-400" />
@@ -236,7 +251,7 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
                 </div>
                 {classDetail.room && (
                   <div className="flex items-center justify-between gap-2 pl-5">
-                    <span className="text-muted-foreground text-[11px]">Phòng học:</span>
+                    <span className="text-muted-foreground text-xs">Phòng học:</span>
                     <span className="font-medium text-foreground text-xs">
                       Phòng {classDetail.room}
                     </span>
@@ -255,7 +270,7 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
                   <span className="font-bold text-foreground text-xs leading-none">
                     {classDetail.enrolledStudents}/{classDetail.maxStudents}
                   </span>
-                  <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
                     +{classDetail.trialStudents || 2} mới, Trial
                   </span>
                 </div>
@@ -264,14 +279,14 @@ export function ClassCodeHoverCell({ classCode, subject, level, teacherCode, sch
 
             <button
               type="button"
-              className="w-full pt-2 border-t border-border/30 text-[10px] text-muted-foreground italic text-center hover:text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
+              className="w-full pt-2 border-t border-border/30 text-xs text-muted-foreground italic text-center hover:text-primary hover:underline cursor-pointer bg-transparent border-none p-0 flex items-center justify-center gap-1"
               onClick={(e) => {
                 e.preventDefault()
-                e.stopPropagation()
-                setIsDetailOpen(true)
+                handleClick(e)
               }}
             >
-              Nhấp để đi tới chi tiết lớp học
+              <span>Nhấp để đi tới chi tiết lớp học {openInNewTab ? '(Mở tab mới)' : ''}</span>
+              {openInNewTab && <ExternalLink className="h-2.5 w-2.5 inline opacity-70" />}
             </button>
           </div>
         </HoverCardContent>

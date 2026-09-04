@@ -1,27 +1,28 @@
 'use client'
 
 import React from 'react'
+import { Plus } from 'lucide-react'
 import { FieldLabel } from '@/components/shared'
-
+import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
 import { PROGRAM_CONFIG } from './bookingTestCreateTypes'
 import { ContactSearchableSelect, type ContactPerson } from './ContactSearchableSelect'
 
 interface BookingTestCreateStudentFormProps {
+  leadInfo?: {
+    parentName: string
+    phone: string
+    childName: string
+  } | null
   contactId: string
   onContactChange: (id: string) => void
   contactsList?: ContactPerson[]
-  contactSelectOptions?: Array<{ value: string; label: string }>
   selectedContactObj?: ContactPerson
   childId: string
   onChildChange: (id: string) => void
   childSelectOptions: Array<{ value: string; label: string }>
-  customChildName: string
-  onCustomChildNameChange: (val: string) => void
-  customParentName: string
-  onCustomParentNameChange: (val: string) => void
-  customPhone: string
-  onCustomPhoneChange: (val: string) => void
+  onAddNewContact?: () => void
+  onAddNewChild?: () => void
   school: string
   onSchoolChange: (val: string) => void
   schoolSelectOptions: Array<{ value: string; label: string }>
@@ -37,20 +38,16 @@ interface BookingTestCreateStudentFormProps {
 }
 
 export function BookingTestCreateStudentForm({
+  leadInfo,
   contactId,
   onContactChange,
   contactsList = [],
-  contactSelectOptions = [],
   selectedContactObj,
   childId,
   onChildChange,
   childSelectOptions,
-  customChildName,
-  onCustomChildNameChange,
-  customParentName,
-  onCustomParentNameChange,
-  customPhone,
-  onCustomPhoneChange,
+  onAddNewContact,
+  onAddNewChild,
   school,
   onSchoolChange,
   schoolSelectOptions,
@@ -65,84 +62,81 @@ export function BookingTestCreateStudentForm({
   className,
 }: BookingTestCreateStudentFormProps) {
   return (
-    <div className={className || "w-full md:w-[35%] shrink-0 space-y-3 bg-card border rounded-xl p-4 shadow-2xs flex flex-col justify-between"}>
+    <div
+      className={
+        className ||
+        'w-full lg:w-[360px] xl:w-[380px] shrink-0 space-y-3 bg-card border rounded-xl p-4 shadow-2xs lg:sticky lg:top-0 self-start'
+      }
+    >
       <div className="space-y-3">
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5 border-b">
+        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b">
           Đối tượng & Chương trình
         </div>
 
-        {/* Chọn Contact / Phụ huynh (Searchable + Tạo mới ở đầu) */}
-        <FieldLabel label="Contact / Phụ huynh" required>
-          <ContactSearchableSelect
-            value={contactId}
-            onValueChange={onContactChange}
-            contacts={contactsList}
-          />
-        </FieldLabel>
+        {leadInfo ? (
+          <>
+            {/* Chế độ Lead: Hiển thị thông tin Contact/Phụ huynh có sẵn */}
+            <FieldLabel label="Contact / Phụ huynh" required>
+              <div className="w-full rounded-md border border-input bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground">
+                {leadInfo.parentName} - {leadInfo.phone}
+              </div>
+            </FieldLabel>
 
-        {/* Nếu chọn Contact có sẵn -> Chọn Con của họ */}
-        {contactId !== 'custom' && selectedContactObj && (
-          <FieldLabel label="Con / Học viên" required>
-            <InlineSelect
-              value={childId}
-              onValueChange={onChildChange}
-              options={childSelectOptions}
-              ariaLabel="Chọn con / học viên"
-            />
-          </FieldLabel>
-        )}
-
-
-        {/* Nếu thêm con mới dưới Contact hiện tại */}
-        {contactId !== 'custom' && childId === 'custom_child' && (
-          <FieldLabel label="Tên con / Học viên mới" required>
-            <input
-              type="text"
-              value={customChildName}
-              onChange={(e) => onCustomChildNameChange(e.target.value)}
-              placeholder="Nhập tên học viên..."
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              required
-            />
-          </FieldLabel>
-        )}
-
-        {/* Nếu thêm Contact mới hoàn toàn */}
-        {contactId === 'custom' && (
-          <div className="space-y-2 rounded-md bg-muted/30 p-2.5 border">
-            <div className="grid grid-cols-1 gap-2">
-              <FieldLabel label="Tên phụ huynh" required>
-                <input
-                  type="text"
-                  value={customParentName}
-                  onChange={(e) => onCustomParentNameChange(e.target.value)}
-                  placeholder="Nhập tên phụ huynh..."
-                  className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required
-                />
-              </FieldLabel>
-              <FieldLabel label="SĐT phụ huynh" required>
-                <input
-                  type="tel"
-                  value={customPhone}
-                  onChange={(e) => onCustomPhoneChange(e.target.value)}
-                  placeholder="Nhập SĐT phụ huynh..."
-                  className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required
-                />
-              </FieldLabel>
-            </div>
-            <FieldLabel label="Tên con / Học viên" required>
-              <input
-                type="text"
-                value={customChildName}
-                onChange={(e) => onCustomChildNameChange(e.target.value)}
-                placeholder="Nhập tên con / học viên..."
-                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                required
+            {/* Chế độ Lead: Hiển thị thông tin Con/Học viên có sẵn */}
+            <FieldLabel label="Con / Học viên" required>
+              <div className="w-full rounded-md border border-input bg-emerald-50/50 dark:bg-emerald-950/20 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                {leadInfo.childName}
+              </div>
+            </FieldLabel>
+          </>
+        ) : (
+          <>
+            {/* Chọn Contact / Phụ huynh (Searchable + Mở Modal tạo mới ở đầu) */}
+            <FieldLabel label="Contact / Phụ huynh" required>
+              <ContactSearchableSelect
+                value={contactId}
+                onValueChange={onContactChange}
+                contacts={contactsList}
+                onAddNewContact={onAddNewContact}
+                placeholder="Tìm kiếm tên hoặc SĐT phụ huynh..."
               />
             </FieldLabel>
-          </div>
+
+            {/* Chọn Con / Học viên */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-foreground">
+                  Con / Học viên <span className="text-destructive">*</span>
+                </label>
+                {selectedContactObj && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={onAddNewChild}
+                    className="h-6 px-2 text-xs font-medium text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>Thêm con</span>
+                  </Button>
+                )}
+              </div>
+              <InlineSelect
+                value={childId}
+                onValueChange={(val) => {
+                  if (val === 'add_new_child') {
+                    onAddNewChild?.()
+                  } else {
+                    onChildChange(val)
+                  }
+                }}
+                options={childSelectOptions}
+                placeholder={selectedContactObj ? 'Chọn con / học viên' : 'Vui lòng chọn phụ huynh trước'}
+                disabled={!selectedContactObj}
+                ariaLabel="Chọn con / học viên"
+              />
+            </div>
+          </>
         )}
 
         {/* Trường / Cơ sở */}
@@ -151,6 +145,7 @@ export function BookingTestCreateStudentForm({
             value={school}
             onValueChange={onSchoolChange}
             options={schoolSelectOptions}
+            placeholder="Chọn trường / cơ sở"
             ariaLabel="Chọn trường / cơ sở"
           />
         </FieldLabel>
@@ -165,18 +160,23 @@ export function BookingTestCreateStudentForm({
                 const cfg = PROGRAM_CONFIG[val]
                 if (cfg && cfg.levels.length > 0) {
                   onLevelChange(cfg.levels[0])
+                } else {
+                  onLevelChange('')
                 }
               }}
               options={programOptions}
+              placeholder="Chọn chương trình"
               ariaLabel="Chọn chương trình"
             />
           </FieldLabel>
 
-          <FieldLabel label="Chọn level" required>
+          <FieldLabel label="Chọn level">
             <InlineSelect
               value={level}
               onValueChange={onLevelChange}
               options={levelOptions}
+              placeholder={program ? 'Chọn level' : 'Vui lòng chọn chương trình'}
+              disabled={!program || levelOptions.length === 0}
               ariaLabel="Chọn level"
             />
           </FieldLabel>

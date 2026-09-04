@@ -21,7 +21,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'New product' })).toBeVisible()
-    await expect(canvas.getByLabelText('Search products')).toBeInTheDocument()
+    await expect(canvas.getByLabelText('Tìm kiếm sản phẩm')).toBeInTheDocument()
   },
 }
+

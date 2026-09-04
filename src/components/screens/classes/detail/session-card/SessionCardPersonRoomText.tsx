@@ -154,7 +154,7 @@ export function SessionCardPersonRoomText({
             </span>
           </PersonnelHoverCard>
         ) : (
-          <span className="text-muted-foreground/50 text-[11px]">Chưa có</span>
+          <span className="text-muted-foreground/50 text-xs">Chưa có</span>
         )}
       </span>
 

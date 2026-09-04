@@ -56,7 +56,7 @@ export function ClassesSessionUnitTestWarningDialog({
               <p className="font-bold text-zinc-800 dark:text-zinc-200 text-xs sm:text-[13px] leading-snug">
                 Chiếu video hướng dẫn (trên Class-in) và yêu cầu học sinh quay lại Class-in sau khi hoàn thành bài Test online.
               </p>
-              <p className="text-zinc-500 dark:text-zinc-400 italic text-[11px] sm:text-xs leading-normal mt-0.5">
+              <p className="text-zinc-500 dark:text-zinc-400 italic text-xs sm:text-xs leading-normal mt-0.5">
                 Show the instructional video (included on Class-in) and ask students to get back to Class-in after finishing the Online Test
               </p>
             </div>
@@ -71,14 +71,14 @@ export function ClassesSessionUnitTestWarningDialog({
               <p className="font-bold text-zinc-800 dark:text-zinc-200 text-xs sm:text-[13px] leading-snug">
                 Luôn kiểm tra trạng thái làm test của học sinh trên ERP như sau:
               </p>
-              <p className="text-zinc-500 dark:text-zinc-400 italic text-[11px] sm:text-xs leading-normal mt-0.5">
+              <p className="text-zinc-500 dark:text-zinc-400 italic text-xs sm:text-xs leading-normal mt-0.5">
                 Always check the student&apos;s test status on ERP as follows:
               </p>
               
               {/* Badges Explanation */}
               <div className="space-y-2 mt-2 pl-1">
                 <div className="flex items-start text-xs sm:text-[13px] leading-tight">
-                  <span className="bg-[#ef4444] text-white px-2 py-0.5 text-[9px] font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
+                  <span className="bg-[#ef4444] text-white px-2 py-0.5 text-xs font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
                     Not Start
                   </span>
                   <span className="text-zinc-700 dark:text-zinc-300 font-medium">
@@ -86,7 +86,7 @@ export function ClassesSessionUnitTestWarningDialog({
                   </span>
                 </div>
                 <div className="flex items-start text-xs sm:text-[13px] leading-tight">
-                  <span className="bg-[#f97316] text-white px-2 py-0.5 text-[9px] font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
+                  <span className="bg-[#f97316] text-white px-2 py-0.5 text-xs font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
                     Doing
                   </span>
                   <span className="text-zinc-700 dark:text-zinc-300 font-medium">
@@ -94,7 +94,7 @@ export function ClassesSessionUnitTestWarningDialog({
                   </span>
                 </div>
                 <div className="flex items-start text-xs sm:text-[13px] leading-tight">
-                  <span className="bg-[#22c55e] text-white px-2 py-0.5 text-[9px] font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
+                  <span className="bg-[#22c55e] text-white px-2 py-0.5 text-xs font-extrabold rounded-sm mr-2 shrink-0 select-none uppercase tracking-wide">
                     Done
                   </span>
                   <span className="text-zinc-700 dark:text-zinc-300 font-medium">
@@ -114,7 +114,7 @@ export function ClassesSessionUnitTestWarningDialog({
               <p className="font-bold text-zinc-800 dark:text-zinc-200 text-xs sm:text-[13px] leading-snug">
                 Luôn nhận xét kết quả test trước 9h sáng hôm sau, nhận xét sau thời gian quy định không được ghi nhận công.
               </p>
-              <p className="text-zinc-500 dark:text-zinc-400 italic text-[11px] sm:text-xs leading-normal mt-0.5">
+              <p className="text-zinc-500 dark:text-zinc-400 italic text-xs sm:text-xs leading-normal mt-0.5">
                 Always comment on test results before 9:00 a.m. the next morning. Comments after the specified time will not be credited.
               </p>
             </div>

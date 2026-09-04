@@ -336,15 +336,15 @@ export function LeaveReserveCreateDialog({
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-sm font-bold text-foreground">{selectedStudent.name}</span>
-                            <span className="text-[10px] font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.2 rounded border">
+                            <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.2 rounded border">
                               + Thêm tên TA ✎
                             </span>
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0">
                               {type === 'off' ? 'Nghỉ phép' : 'Bảo lưu'}
                             </Badge>
                           </div>
 
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>NS: {selectedStudent.dob || '15/03/2012'}</span>
                             <span>•</span>
                             <span>{selectedStudent.gender || 'Nam'}</span>
@@ -352,11 +352,11 @@ export function LeaveReserveCreateDialog({
                             <span>ĐC: {selectedStudent.branch}</span>
                           </div>
 
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-0.5">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
                             <span className="font-medium text-foreground">
                               {selectedStudent.parentName || 'Phạm Mai (Mẹ)'}
                             </span>
-                            <span className="text-[9px] font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 px-1 py-0.2 rounded border border-sky-200">
+                            <span className="text-xs font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 px-1 py-0.2 rounded border border-sky-200">
                               Chính
                             </span>
                             <span>•</span>
@@ -368,13 +368,13 @@ export function LeaveReserveCreateDialog({
                       </div>
 
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-[10px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border">
+                        <span className="text-xs font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border">
                           STU-00{selectedStudent.id.replace(/\D/g, '') || '01'}
                         </span>
                         {type === 'reservation' && (
                           <span
                             className={cn(
-                              'inline-flex items-center text-[9px] font-semibold px-1.5 py-0.5 rounded-full border',
+                              'inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded-full border',
                               eligibility.eligible
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                 : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
@@ -396,7 +396,7 @@ export function LeaveReserveCreateDialog({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60 rounded-lg px-2.5 py-1 text-[11px] text-amber-900 dark:text-amber-200">
+                    <div className="flex items-center gap-1.5 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60 rounded-lg px-2.5 py-1 text-xs text-amber-900 dark:text-amber-200">
                       <span className="text-amber-600 font-bold shrink-0">✎</span>
                       <span className="italic font-medium truncate">
                         Ghi chú: {selectedStudent.notes || 'Học viên tiếp thu tốt, phụ huynh mong muốn theo sát chuyên cần và bài tập.'}

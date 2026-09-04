@@ -209,7 +209,7 @@ export function TrialClassFeedbackPage({ trialId }: TrialClassFeedbackPageProps)
                               <span className="text-sm font-semibold text-foreground">
                                 {s.className}
                               </span>
-                              <Badge variant="secondary" className="font-mono text-[10px]">
+                              <Badge variant="secondary" className="font-mono text-xs">
                                 {s.classId}
                               </Badge>
                             </div>

@@ -6,6 +6,7 @@ import {
   Ticket,
   Settings,
   TrendingUp,
+  Package,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -55,11 +56,20 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'CRM & Thương mại',
     icon: TrendingUp,
     items: [
+      { id: 'crm_my_leads', label: 'Lead của tôi', href: '/app/crm_my_leads' },
       { id: 'crm_leads', label: 'Quản lý Lead', href: '/app/crm_leads' },
-      { id: 'orders', label: 'Đơn hàng & Thu phí', href: '/app/orders' },
-      { id: 'payment_receipts', label: 'Quản lý Phiếu thu', href: '/app/payment_receipts' },
-      { id: 'products', label: 'Gói Sản phẩm & Học phí', href: '/app/products' },
-      { id: 'promotions', label: 'Khuyến mãi & Ưu đãi', href: '/app/promotions' },
+      { id: 'orders', label: 'Quản lý đơn hàng', href: '/app/orders' },
+      { id: 'payment_receipts', label: 'Thanh toán', href: '/app/payment_receipts' },
+    ],
+  },
+  {
+    id: 'group_products_programs',
+    label: 'Sản phẩm & Chương trình',
+    icon: Package,
+    items: [
+      { id: 'products', label: 'Quản lý sản phẩm', href: '/app/products' },
+      { id: 'campaigns', label: 'Quản lý Chiến dịch', href: '/app/campaigns' },
+      { id: 'promotions', label: 'Quản lý Khuyến mãi', href: '/app/promotions' },
     ],
   },
   {
@@ -69,7 +79,7 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       { id: 'booking_test', label: 'Kiểm tra/Trải nghiệm', href: '/app/booking_test' },
       { id: 'trial_class', label: 'Lớp học thử', href: '/app/trial_class' },
-      { id: 'students', label: 'Xếp lớp học viên', href: '/app/students' },
+      { id: 'class_placement', label: 'Xếp lớp học viên', href: '/app/class_placement' },
     ],
   },
   {
@@ -110,6 +120,7 @@ export const navigationGroups: NavigationGroup[] = [
     icon: Settings,
     items: [
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
+      { id: 'permissions', label: 'Nhóm quyền', href: '/app/permissions' },
     ],
   },
 ]

@@ -84,7 +84,7 @@ export default function LoginPage() {
                       onSelect={() => setLocale(option.code)}
                     >
                       <span className="flex items-center gap-2">
-                        <span className="inline-flex h-5 w-7 items-center justify-center rounded border border-border bg-muted text-[10px] font-semibold text-muted-foreground">
+                        <span className="inline-flex h-5 w-7 items-center justify-center rounded border border-border bg-muted text-xs font-semibold text-muted-foreground">
                           {option.shortLabel}
                         </span>
                         <span className="font-medium">{option.label}</span>

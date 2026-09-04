@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { BranchSelect, InlineSelect, StudentCombobox, type StudentOption } from '@/components/controls'
+import { BranchSelect, InlineSelect, StudentCombobox, SYSTEM_BRANCHES, type StudentOption } from '@/components/controls'
+import { mockStudents } from '@/mocks/students'
 import { FieldLabel } from '@/components/shared'
 import { PROGRAM_OPTIONS, SUBJECT_MAP } from './trialClassConstants'
 import { TrialClassSchedulePanel } from './TrialClassSchedulePanel'
@@ -20,18 +21,25 @@ import type { CreateTrialClassForm } from './trialClassTypes'
 interface TrialClassCreateDialogProps {
   open: boolean
   form: CreateTrialClassForm
-  branchOptions: string[]
-  studentOptions: StudentOption[]
+  branchOptions?: string[]
+  studentOptions?: StudentOption[]
   onOpenChange: (open: boolean) => void
   onFormChange: (form: CreateTrialClassForm | ((current: CreateTrialClassForm) => CreateTrialClassForm)) => void
   onSubmit: () => void
 }
 
+const DEFAULT_STUDENT_OPTIONS: StudentOption[] = mockStudents.map((s) => ({
+  id: s.id,
+  label: s.name,
+  familyName: s.parentName,
+  phone: s.parentPhone || s.phone,
+}))
+
 export function TrialClassCreateDialog({
   open,
   form,
-  branchOptions,
-  studentOptions,
+  branchOptions = SYSTEM_BRANCHES,
+  studentOptions = DEFAULT_STUDENT_OPTIONS,
   onOpenChange,
   onFormChange,
   onSubmit,
@@ -60,27 +68,33 @@ export function TrialClassCreateDialog({
           <section className="p-2">
             <h3 className="mb-4 text-sm font-semibold">Thông tin chung</h3>
             <div className="grid gap-3">
-              <FieldLabel label="Tên học viên / Lead">
-                <StudentCombobox
-                  options={studentOptions}
-                  value={form.studentId}
-                  onChange={(studentId, selected) => {
-                    onFormChange((current) => ({
-                      ...current,
-                      studentId,
-                      studentName: selected ? selected.label : current.studentName,
-                    }))
-                  }}
-                  onCreateNew={(name) => {
-                    onFormChange((current) => ({
-                      ...current,
-                      studentId: '',
-                      studentName: name,
-                    }))
-                  }}
-                  placeholder="Chọn học viên..."
-                  className="h-9 border-solid text-sm shadow-xs"
-                />
+              <FieldLabel label="Tên học viên / Lead" required>
+                {form.studentName && !form.studentId ? (
+                  <div className="w-full rounded-md border border-input bg-emerald-50/50 dark:bg-emerald-950/20 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                    {form.studentName}
+                  </div>
+                ) : (
+                  <StudentCombobox
+                    options={studentOptions}
+                    value={form.studentId}
+                    onChange={(studentId, selected) => {
+                      onFormChange((current) => ({
+                        ...current,
+                        studentId,
+                        studentName: selected ? selected.label : current.studentName,
+                      }))
+                    }}
+                    onCreateNew={(name) => {
+                      onFormChange((current) => ({
+                        ...current,
+                        studentId: '',
+                        studentName: name,
+                      }))
+                    }}
+                    placeholder="Chọn học viên..."
+                    className="h-9 border-solid text-sm shadow-xs"
+                  />
+                )}
               </FieldLabel>
 
 

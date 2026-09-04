@@ -63,7 +63,7 @@ export function QcRemediationTable({
 
     if (text && !link && !image) {
       return (
-        <Badge variant="outline" className="gap-1 rounded text-[10px] truncate max-w-[120px]">
+        <Badge variant="outline" className="gap-1 rounded text-xs truncate max-w-[120px]">
           <ImageIcon className="h-3 w-3 shrink-0" />
           Mô tả
         </Badge>
@@ -72,7 +72,7 @@ export function QcRemediationTable({
 
     if (image || link) {
       return (
-        <Badge variant="outline" className="gap-1 rounded text-[10px]">
+        <Badge variant="outline" className="gap-1 rounded text-xs">
           {image ? (
             <ImageIcon className="h-3 w-3" />
           ) : (
@@ -89,17 +89,17 @@ export function QcRemediationTable({
     if (hasRemediation && hasAction) {
       return (
         <div className="flex flex-col gap-0.5">
-          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px]">
+          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 text-xs">
             Đã khắc phục
           </Badge>
-          <Badge className="border-blue-200 bg-blue-50 text-blue-700 text-[10px]">
+          <Badge className="border-blue-200 bg-blue-50 text-blue-700 text-xs">
             Đã có hành động
           </Badge>
         </div>
       )
     }
     if (hasRemediation) {
-      return <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px]">Đã khắc phục</Badge>
+      return <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 text-xs">Đã khắc phục</Badge>
     }
     return <span className="text-muted-foreground text-xs">Chưa</span>
   }
@@ -155,7 +155,7 @@ export function QcRemediationTable({
                 {/* Hạng mục lỗi */}
                 <td className="px-3 py-2.5 cursor-pointer max-w-[200px]">
                   <p className="text-xs font-medium truncate">{error.itemLabel}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{error.code}</p>
+                  <p className="font-mono text-xs text-muted-foreground mt-0.5">{error.code}</p>
                 </td>
 
                 {/* Sự kiện QC */}
@@ -173,7 +173,7 @@ export function QcRemediationTable({
 
                 {/* Loại lỗi */}
                 <td className="px-3 py-2.5 cursor-pointer">
-                  <Badge variant="outline" className="rounded text-[10px]">
+                  <Badge variant="outline" className="rounded text-xs">
                     {QC_ERROR_TYPE_LABELS[error.errorType] ?? error.errorType}
                   </Badge>
                 </td>
@@ -219,7 +219,7 @@ export function QcRemediationTable({
 
                     return assignedInspector ? (
                       <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                           {getInitials(assignedInspector.name)}
                         </div>
                         <span className="truncate max-w-[80px] text-xs">{assignedInspector.name}</span>
@@ -251,7 +251,7 @@ export function QcRemediationTable({
                                   onClick={() => onAssign(error.id, ins.id)}
                                   className="text-xs"
                                 >
-                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary mr-2">
+                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary mr-2">
                                     {getInitials(ins.name)}
                                   </div>
                                   <span className="truncate">{ins.name}</span>
@@ -292,12 +292,12 @@ export function QcRemediationTable({
                                 onClick={() => onAssign(error.id, ins.id)}
                                 className="text-xs"
                               >
-                                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary mr-2">
+                                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary mr-2">
                                   {getInitials(ins.name)}
                                 </div>
                                 <span className="truncate">{ins.name}</span>
                                 {ins.role && (
-                                  <span className="ml-1 text-muted-foreground text-[10px]">— {ins.role}</span>
+                                  <span className="ml-1 text-muted-foreground text-xs">— {ins.role}</span>
                                 )}
                               </DropdownMenuItem>
                             ))
@@ -329,12 +329,12 @@ export function QcRemediationTable({
                       label={QC_ERROR_STATUS_LABELS[error.status]}
                     />
                     {isLate && (
-                      <Badge className="border-violet-200 bg-violet-50 text-violet-700 text-[10px] dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 font-medium">
+                      <Badge className="border-violet-200 bg-violet-50 text-violet-700 text-xs dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 font-medium">
                         Trễ hạn
                       </Badge>
                     )}
                     {error.status === 'not_met' && (
-                      <p className="text-[10px] text-destructive font-medium">
+                      <p className="text-xs text-destructive font-medium">
                         Cần cập nhật lại
                       </p>
                     )}

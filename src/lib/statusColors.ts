@@ -177,8 +177,18 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   buoi_3: 'info',
   buoi_cuoi: 'error',
 
-  // Products
+  // Products & Promotions & Campaigns
   archived: 'neutral',
+  ma_chung: 'info',
+  ma_rieng: 'purple',
+  dang_ap_dung: 'success',
+  tam_dung: 'warning',
+  het_han: 'error',
+  het_luot: 'neutral',
+  hoat_dong: 'success',
+  ngung_hoat_dong: 'error',
+  giam_truc_tiep: 'info',
+  giam_theo_phantram: 'purple',
 
   // Trial Class
   pending_confirmation: 'warning',
@@ -199,10 +209,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   mo_chieu_sinh: 'info',
   cho_khai_giang: 'purple',
   dang_hoc: 'success',
-  tam_dung: 'warning',
   huy: 'completed',
 
-  // Tuition Renewal
+  // Tuition Renewal & CRM Lead
+  chua_tiep_can: 'info',
+  chuyen_doi: 'completed',
   moi: 'neutral',
   chua_den_han: 'neutral',
   can_nhac: 'warning',
@@ -296,7 +307,6 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   da_xep_lich: 'info',
   da_vang: 'error',
   tu_choi: 'error',
-  het_han: 'neutral',
 
   // Generic
   draft: 'neutral',
@@ -341,6 +351,10 @@ export function getStatusBadgeClass(status: string): string {
 
 export function getStatusDotClass(status: string): string {
   return getStatusColors(resolveStatusSemantic(status)).dot
+}
+
+export function getStatusTextColor(status: string): string {
+  return getStatusColors(resolveStatusSemantic(status)).text
 }
 
 /**

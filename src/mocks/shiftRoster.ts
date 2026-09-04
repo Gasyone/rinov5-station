@@ -9,6 +9,7 @@ export interface DutyEmployee {
   name: string
   shortName: string
   role: 'Giáo viên' | 'Trợ giảng' | 'CS' | 'Khác'
+  subject?: 'english' | 'math' | 'all'
   colorClass: string
   branch: string
 }
@@ -83,50 +84,50 @@ export const WEEKDAYS = [
 
 export const ALL_DUTY_EMPLOYEES: DutyEmployee[] = [
   // --- RinoEdu Smart City ---
-  { id: 'e1', name: 'Nguyễn Văn Quản Lý', shortName: 'QL', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'e4', name: 'Hoàng Thị Giáo Viên', shortName: 'HG', role: 'Giáo viên', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'e5', name: 'Lê Thị Chăm Sóc', shortName: 'LC', role: 'CS', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 't6', name: 'Coenrad Redman', shortName: 'CR', role: 'Giáo viên', colorClass: 'bg-purple-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'tg_sc1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'tg_sc2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'e9', name: 'Bùi Văn Support', shortName: 'BS', role: 'Khác', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc1', name: 'Trần Bảo Ngọc', shortName: 'BN', role: 'Giáo viên', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc2', name: 'Vũ Đình Trọng', shortName: 'VT', role: 'Giáo viên', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc3', name: 'Phạm Mai Anh', shortName: 'MA', role: 'CS', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc4', name: 'Đinh Quốc Tuấn', shortName: 'QT', role: 'CS', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc5', name: 'Lê Thu Trang', shortName: 'TT', role: 'Giáo viên', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Smart City' },
-  { id: 'sc6', name: 'Nguyễn Hải Đăng', shortName: 'HĐ', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'e1', name: 'Nguyễn Văn Quản Lý', shortName: 'QL', role: 'Khác', subject: 'all', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'e4', name: 'Hoàng Thị Giáo Viên', shortName: 'HG', role: 'Giáo viên', subject: 'english', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'e5', name: 'Lê Thị Chăm Sóc', shortName: 'LC', role: 'CS', subject: 'all', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 't6', name: 'Coenrad Redman', shortName: 'CR', role: 'Giáo viên', subject: 'english', colorClass: 'bg-purple-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'tg_sc1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'tg_sc2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'e9', name: 'Bùi Văn Support', shortName: 'BS', role: 'Khác', subject: 'all', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc1', name: 'Trần Bảo Ngọc', shortName: 'BN', role: 'Giáo viên', subject: 'english', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc2', name: 'Vũ Đình Trọng', shortName: 'VT', role: 'Giáo viên', subject: 'math', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc3', name: 'Phạm Mai Anh', shortName: 'MA', role: 'CS', subject: 'all', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc4', name: 'Đinh Quốc Tuấn', shortName: 'QT', role: 'CS', subject: 'all', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc5', name: 'Lê Thu Trang', shortName: 'TT', role: 'Giáo viên', subject: 'english', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Smart City' },
+  { id: 'sc6', name: 'Nguyễn Hải Đăng', shortName: 'HĐ', role: 'Giáo viên', subject: 'math', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Smart City' },
 
   // --- RinoEdu Nguyễn Tuân ---
-  { id: 't1', name: 'Sarah J.', shortName: 'SJ', role: 'Giáo viên', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 't2', name: 'Robert L.', shortName: 'RL', role: 'Giáo viên', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 't3', name: 'Emily W.', shortName: 'EW', role: 'Giáo viên', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'tg_nt1', name: 'Lê Hồng Nhung', shortName: 'HN', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'tg_nt2', name: 'Phạm Thùy Linh', shortName: 'TL', role: 'Trợ giảng', colorClass: 'bg-indigo-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'e3', name: 'Phạm Văn Giảng Dạy', shortName: 'PG', role: 'Giáo viên', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'e2', name: 'Trần Thị Sale', shortName: 'TS', role: 'CS', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'e6', name: 'Đặng Văn Bắc', shortName: 'ĐB', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'e8', name: 'Ngô Thị Accounting', shortName: 'NA', role: 'Khác', colorClass: 'bg-slate-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'nt1', name: 'Nguyễn Đức Minh', shortName: 'DM', role: 'Giáo viên', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'nt2', name: 'Hoàng Thùy Linh', shortName: 'TL', role: 'Giáo viên', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'nt3', name: 'Bùi Thu Phương', shortName: 'TP', role: 'CS', colorClass: 'bg-pink-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
-  { id: 'nt4', name: 'Đỗ Anh Tuấn', shortName: 'AT', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 't1', name: 'Sarah J.', shortName: 'SJ', role: 'Giáo viên', subject: 'english', colorClass: 'bg-emerald-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 't2', name: 'Robert L.', shortName: 'RL', role: 'Giáo viên', subject: 'english', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 't3', name: 'Emily W.', shortName: 'EW', role: 'Giáo viên', subject: 'english', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'tg_nt1', name: 'Lê Hồng Nhung', shortName: 'HN', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'tg_nt2', name: 'Phạm Thùy Linh', shortName: 'TL', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-indigo-700 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'e3', name: 'Phạm Văn Giảng Dạy', shortName: 'PG', role: 'Giáo viên', subject: 'math', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'e2', name: 'Trần Thị Sale', shortName: 'TS', role: 'CS', subject: 'all', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'e6', name: 'Đặng Văn Bắc', shortName: 'ĐB', role: 'Khác', subject: 'all', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'e8', name: 'Ngô Thị Accounting', shortName: 'NA', role: 'Khác', subject: 'all', colorClass: 'bg-slate-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'nt1', name: 'Nguyễn Đức Minh', shortName: 'DM', role: 'Giáo viên', subject: 'english', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'nt2', name: 'Hoàng Thùy Linh', shortName: 'TL', role: 'Giáo viên', subject: 'english', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'nt3', name: 'Bùi Thu Phương', shortName: 'TP', role: 'CS', subject: 'all', colorClass: 'bg-pink-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
+  { id: 'nt4', name: 'Đỗ Anh Tuấn', shortName: 'AT', role: 'Giáo viên', subject: 'math', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Nguyễn Tuân' },
 
   // --- RinoEdu Linh Đàm ---
-  { id: 't4', name: 'Thu Hà', shortName: 'TH', role: 'Giáo viên', colorClass: 'bg-emerald-700 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 't5', name: 'Mỹ Linh', shortName: 'ML', role: 'Giáo viên', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'tg_ld1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'tg_ld2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'tg_ld3', name: 'Vũ Mai Hương', shortName: 'MH', role: 'Trợ giảng', colorClass: 'bg-teal-700 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'e10', name: 'Đỗ Thị Part-time', shortName: 'ĐP', role: 'Khác', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'e7', name: 'Vũ Văn Reception', shortName: 'VR', role: 'Khác', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'e12', name: 'Nguyễn Hoàng Sale', shortName: 'HS', role: 'CS', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld1', name: 'Nguyễn Minh Đức', shortName: 'MĐ', role: 'Giáo viên', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld2', name: 'Lê Phương Thảo', shortName: 'PT', role: 'Giáo viên', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld3', name: 'Trần Quang Huy', shortName: 'QH', role: 'CS', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld4', name: 'Đào Thị Lan', shortName: 'TL', role: 'CS', colorClass: 'bg-pink-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld5', name: 'Phạm Hoàng Yến', shortName: 'HY', role: 'Giáo viên', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Linh Đàm' },
-  { id: 'ld6', name: 'Vũ Minh Khang', shortName: 'MK', role: 'Giáo viên', colorClass: 'bg-purple-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 't4', name: 'Thu Hà', shortName: 'TH', role: 'Giáo viên', subject: 'english', colorClass: 'bg-emerald-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 't5', name: 'Mỹ Linh', shortName: 'ML', role: 'Giáo viên', subject: 'english', colorClass: 'bg-sky-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld1', name: 'Nguyễn Thu Hà', shortName: 'TH', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-purple-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld2', name: 'Trần Minh Châu', shortName: 'MC', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-pink-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'tg_ld3', name: 'Vũ Mai Hương', shortName: 'MH', role: 'Trợ giảng', subject: 'english', colorClass: 'bg-teal-700 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'e10', name: 'Đỗ Thị Part-time', shortName: 'ĐP', role: 'Khác', subject: 'all', colorClass: 'bg-violet-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'e7', name: 'Vũ Văn Reception', shortName: 'VR', role: 'Khác', subject: 'all', colorClass: 'bg-amber-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'e12', name: 'Nguyễn Hoàng Sale', shortName: 'HS', role: 'CS', subject: 'all', colorClass: 'bg-rose-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld1', name: 'Nguyễn Minh Đức', shortName: 'MĐ', role: 'Giáo viên', subject: 'english', colorClass: 'bg-blue-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld2', name: 'Lê Phương Thảo', shortName: 'PT', role: 'Giáo viên', subject: 'math', colorClass: 'bg-teal-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld3', name: 'Trần Quang Huy', shortName: 'QH', role: 'CS', subject: 'all', colorClass: 'bg-indigo-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld4', name: 'Đào Thị Lan', shortName: 'TL', role: 'CS', subject: 'all', colorClass: 'bg-pink-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld5', name: 'Phạm Hoàng Yến', shortName: 'HY', role: 'Giáo viên', subject: 'english', colorClass: 'bg-cyan-600 text-white', branch: 'RinoEdu Linh Đàm' },
+  { id: 'ld6', name: 'Vũ Minh Khang', shortName: 'MK', role: 'Giáo viên', subject: 'math', colorClass: 'bg-purple-600 text-white', branch: 'RinoEdu Linh Đàm' },
 ]
 
 // Master Shift Template Cố định ban đầu cho các chi nhánh
@@ -462,10 +463,11 @@ export function getDutyStaffForSlot(params: {
   school: string
   dateStr: string
   slotTime: string
+  subject?: string
   currentBookingId?: string
   extraBookings?: BookingTest[]
 }): SlotStaffAvailability[] {
-  const { school, dateStr, slotTime, currentBookingId, extraBookings } = params
+  const { school, dateStr, slotTime, subject, currentBookingId, extraBookings } = params
   const dayIndex = getDayIndexFromDateStr(dateStr)
   const section = getSectionFromTime(slotTime)
 
@@ -477,11 +479,26 @@ export function getDutyStaffForSlot(params: {
   const assignedIds = assignment?.assignedEmployeeIds || []
   const branchEmployees = getDutyEmployeesByBranch(school)
 
-  // Nếu chưa có master assignment cho branch này, lấy fallback 2 nhân sự đầu tiên của cơ sở
-  const targetEmployees =
+  // Nếu chưa có master assignment cho branch này, lấy fallback nhân sự của cơ sở
+  let targetEmployees =
     assignedIds.length > 0
       ? (assignedIds.map(findDutyEmployeeById).filter(Boolean) as DutyEmployee[])
-      : branchEmployees.slice(0, 2)
+      : branchEmployees.slice(0, 3)
+
+  // Lọc theo môn học / chương trình (tiếng Anh, toán tư duy)
+  if (subject && subject !== 'all') {
+    const subjectMatched = targetEmployees.filter(
+      (emp) => emp.subject === subject || emp.subject === 'all' || emp.role === 'CS'
+    )
+    if (subjectMatched.length > 0) {
+      targetEmployees = subjectMatched
+    } else {
+      const branchSubjectTeachers = branchEmployees.filter(
+        (emp) => emp.subject === subject || emp.subject === 'all' || emp.role === 'CS'
+      )
+      targetEmployees = branchSubjectTeachers.length > 0 ? branchSubjectTeachers.slice(0, 3) : targetEmployees
+    }
+  }
 
   // 2. Chạy qua Conflict Engine
   return targetEmployees.map((emp) => {
@@ -501,10 +518,11 @@ export function getDutyStaffForSlot(params: {
 export function getDailySlotSummary(params: {
   school: string
   dateStr: string
+  subject?: string
   currentBookingId?: string
   extraBookings?: BookingTest[]
 }): SlotCapacitySummary[] {
-  const { school, dateStr, currentBookingId, extraBookings } = params
+  const { school, dateStr, subject, currentBookingId, extraBookings } = params
 
   return DUTY_SECTIONS.flatMap((sec) =>
     sec.slots.map((slot) => {
@@ -512,6 +530,7 @@ export function getDailySlotSummary(params: {
         school,
         dateStr,
         slotTime: slot,
+        subject,
         currentBookingId,
         extraBookings,
       })
@@ -563,5 +582,100 @@ export function autoAssignBranchMasterRoster(branch: string): void {
 
       updateMasterShiftRosterSlot(branch, day.index, sec.id, finalIds)
     })
+  })
+}
+
+export interface DayTeacherSummary {
+  employee: DutyEmployee
+  isAvailable: boolean
+  availableSlotsCount: number
+  totalSlotsCount: number
+  conflictSlots: Record<string, string>
+  isDutyToday: boolean
+  substituteInfo?: {
+    isSubstitute: boolean
+    date?: string
+    reason?: string
+  }
+}
+
+const DEMO_SUBSTITUTE_MAP: Record<string, { isSubstitute: boolean; date?: string; reason?: string }> = {
+  'Hoàng Thị Mai': {
+    isSubstitute: true,
+    date: '04/06',
+    reason: 'Lê Thị Lan nghỉ ốm',
+  },
+  'Lê Hồng Nhung': {
+    isSubstitute: true,
+    date: 'Hôm nay',
+    reason: 'Dạy thay ca kiểm tra đầu vào cơ sở',
+  },
+  'Sarah J.': {
+    isSubstitute: true,
+    date: '04/06',
+    reason: 'Lê Thị Lan nghỉ ốm',
+  },
+}
+
+/**
+ * ENGINE TRẢ VỀ TỔNG HỢP LỊCH RẢNH TẤT CẢ GIÁO VIÊN CỦA CHI NHÁNH TRONG NGÀY
+ */
+export function getBranchTeachersDailySummary(params: {
+  school: string
+  dateStr: string
+  subject?: string
+  currentBookingId?: string
+  extraBookings?: BookingTest[]
+}): DayTeacherSummary[] {
+  const { school, dateStr, subject, currentBookingId, extraBookings } = params
+  let branchEmployees = getDutyEmployeesByBranch(school)
+  if (subject && subject !== 'all') {
+    branchEmployees = branchEmployees.filter(
+      (emp) => emp.subject === subject || emp.subject === 'all' || emp.role === 'CS'
+    )
+  }
+  const dayIndex = getDayIndexFromDateStr(dateStr)
+
+  // Lấy danh sách ID nhân viên có trong master roster hôm nay tại chi nhánh
+  const dayAssignments = currentMasterRoster.filter(
+    (item) => item.branch === school && item.dayIndex === dayIndex
+  )
+  const assignedIdsToday = new Set(dayAssignments.flatMap((item) => item.assignedEmployeeIds))
+
+  // Lấy toàn bộ các slots trong ngày (loại bỏ trùng nếu có)
+  const allSlots = Array.from(new Set(DUTY_SECTIONS.flatMap((sec) => sec.slots)))
+
+  // Ưu tiên hiển thị: những người có trực ca hôm nay đưa lên đầu, sau đó đến các nhân sự khác của chi nhánh
+  const sortedEmployees = [...branchEmployees].sort((a, b) => {
+    const aDuty = assignedIdsToday.has(a.id) ? 1 : 0
+    const bDuty = assignedIdsToday.has(b.id) ? 1 : 0
+    if (aDuty !== bDuty) return bDuty - aDuty
+    return a.name.localeCompare(b.name, 'vi')
+  })
+
+  return sortedEmployees.map((emp) => {
+    const conflictSlots: Record<string, string> = {}
+    let availableCount = 0
+
+    allSlots.forEach((slot) => {
+      const conflict = checkStaffConflict(emp.name, dateStr, slot, currentBookingId, extraBookings)
+      if (conflict.isConflicted) {
+        conflictSlots[slot] = conflict.conflictDetail || 'Đang bận lịch khác'
+      } else {
+        availableCount++
+      }
+    })
+
+    const substituteInfo = DEMO_SUBSTITUTE_MAP[emp.name]
+
+    return {
+      employee: emp,
+      isAvailable: availableCount > 0,
+      availableSlotsCount: availableCount,
+      totalSlotsCount: allSlots.length,
+      conflictSlots,
+      isDutyToday: assignedIdsToday.has(emp.id),
+      substituteInfo,
+    }
   })
 }

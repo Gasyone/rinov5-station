@@ -147,7 +147,7 @@ export function SemesterEvaluationDialog({
               <DialogTitle className="text-sm font-bold text-foreground">
                 Semester Evaluation / Đánh giá cuối kỳ &mdash; {studentName} ({studentId})
               </DialogTitle>
-              <p className="text-[10px] text-muted-foreground mt-0.5 font-semibold">Thời gian đánh giá: {month}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 font-semibold">Thời gian đánh giá: {month}</p>
             </div>
           </div>
         </DialogHeader>
@@ -280,21 +280,21 @@ export function SemesterEvaluationDialog({
               {/* Vocabulary Textareas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">Các chủ điểm từ vựng con nhớ và sử dụng linh hoạt</span>
+                  <span className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">Các chủ điểm từ vựng con nhớ và sử dụng linh hoạt</span>
                   <Textarea
                     value={evaluation.vocabLearned}
                     onChange={(e) => handleUpdateField('vocabLearned', e.target.value)}
                     placeholder="Điền các chủ điểm từ vựng phân cách bởi dấu chấm phẩy ;"
-                    className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
+                    className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">Các chủ điểm từ vựng con chưa ghi nhớ</span>
+                  <span className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">Các chủ điểm từ vựng con chưa ghi nhớ</span>
                   <Textarea
                     value={evaluation.vocabNotLearned}
                     onChange={(e) => handleUpdateField('vocabNotLearned', e.target.value)}
                     placeholder="Các chủ điểm từ vựng HS chưa ghi nhớ"
-                    className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
+                    className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
                   />
                 </div>
               </div>
@@ -324,21 +324,21 @@ export function SemesterEvaluationDialog({
               {/* Grammar Textareas */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">Các cấu trúc ngữ pháp con đã thành thạo</span>
+                  <span className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">Các cấu trúc ngữ pháp con đã thành thạo</span>
                   <Textarea
                     value={evaluation.grammarLearned}
                     onChange={(e) => handleUpdateField('grammarLearned', e.target.value)}
                     placeholder="Các cấu trúc cách nhau bởi ;"
-                    className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
+                    className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <span className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300">Các cấu trúc ngữ pháp con chưa thành thạo</span>
+                  <span className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">Các cấu trúc ngữ pháp con chưa thành thạo</span>
                   <Textarea
                     value={evaluation.grammarNotLearned}
                     onChange={(e) => handleUpdateField('grammarNotLearned', e.target.value)}
                     placeholder="Các cấu trúc cách nhau bởi ;"
-                    className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
+                    className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs py-2 resize-none"
                   />
                 </div>
               </div>

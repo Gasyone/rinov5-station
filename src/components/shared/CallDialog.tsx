@@ -267,7 +267,7 @@ export function CallDialog() {
                     <BookOpen className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">VoIP</span>
+                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">VoIP</span>
               </div>
             </div>
 
@@ -285,7 +285,7 @@ export function CallDialog() {
               <h3 className="text-lg font-bold text-foreground">{parentName || 'Phụ huynh'}</h3>
               <p className="text-xs text-muted-foreground font-medium">Học viên: <span className="text-foreground font-semibold">{studentName}</span></p>
               <div className="text-xl font-mono font-bold tracking-wider text-primary mt-2">{parentPhone}</div>
-              <span className="text-[10px] text-muted-foreground block italic mt-1">Sẽ tự động nhấc máy sau 3 giây...</span>
+              <span className="text-xs text-muted-foreground block italic mt-1">Sẽ tự động nhấc máy sau 3 giây...</span>
             </div>
 
             {/* Calling Action Buttons */}
@@ -333,11 +333,11 @@ export function CallDialog() {
                   </Button>
                 )}
                 <div className="flex items-center gap-1.5">
-                  <span className="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 font-bold px-1.5 py-0.5 rounded text-[8px] uppercase tracking-wider select-none">
+                  <span className="flex items-center gap-1 bg-red-50 dark:bg-red-950/20 text-red-600 font-bold px-1.5 py-0.5 rounded text-xs uppercase tracking-wider select-none">
                     <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
                     REC
                   </span>
-                  <span className="font-mono text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded text-[10px]">
+                  <span className="font-mono text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded text-xs">
                     {formatDuration(duration)}
                   </span>
                 </div>
@@ -356,7 +356,7 @@ export function CallDialog() {
             {/* Caller Info */}
             <div className="space-y-0.5">
               <h3 className="text-base font-bold text-foreground">{parentName || 'Phụ huynh'}</h3>
-              <p className="text-[11px] text-muted-foreground font-medium">Học viên: <span className="font-semibold text-foreground">{studentName}</span></p>
+              <p className="text-xs text-muted-foreground font-medium">Học viên: <span className="font-semibold text-foreground">{studentName}</span></p>
               <div className="text-base font-mono font-bold tracking-wider text-muted-foreground">{parentPhone}</div>
             </div>
 
@@ -395,7 +395,7 @@ export function CallDialog() {
 
             {/* Dialpad mockup */}
             {isKeypadOpen && (
-              <div className="text-[10px] text-amber-600 font-semibold bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 rounded-lg p-1.5 mt-1.5 w-full animate-fade-in">
+              <div className="text-xs text-amber-600 font-semibold bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 rounded-lg p-1.5 mt-1.5 w-full animate-fade-in">
                 Bàn phím số khả dụng trong phiên bản thật.
               </div>
             )}
@@ -403,10 +403,10 @@ export function CallDialog() {
             {/* In-Call In-Place Editable Bullet Notes (Enhanced Feature) */}
             <div className="w-full mt-3 text-left border-t border-zinc-100 dark:border-zinc-800/80 pt-3 flex-1 flex flex-col min-h-0">
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Ghi chú trong cuộc gọi {quickNotes.filter(n => n.trim()).length > 0 && `(${quickNotes.filter(n => n.trim()).length})`}
                 </label>
-                <span className="text-[8px] text-zinc-400 dark:text-zinc-500 font-normal normal-case">
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 font-normal normal-case">
                   Nhấn Enter để xuống dòng
                 </span>
               </div>
@@ -460,7 +460,7 @@ export function CallDialog() {
                               }, 0)
                             }
                           }}
-                          className="in-call-note-input w-full bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-[11px] font-medium leading-relaxed text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400/80"
+                          className="in-call-note-input w-full bg-transparent border-none outline-none focus:ring-0 focus:outline-none p-0 text-xs font-medium leading-relaxed text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400/80"
                         />
                       </div>
                       {quickNotes.length > 1 && (
@@ -526,7 +526,7 @@ export function CallDialog() {
                     <BookOpen className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-[10px]">
+                <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs">
                   Thời lượng: {formatDuration(duration)}
                 </span>
               </div>
@@ -548,7 +548,7 @@ export function CallDialog() {
                 )}
               </Button>
               <div className="flex-1 space-y-1 text-left min-w-0">
-                <div className="flex justify-between items-center text-[9px] font-bold text-muted-foreground uppercase tracking-wide">
+                <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase tracking-wide">
                   <span>Nghe lại cuộc ghi âm</span>
                   <span className="font-mono">{playbackIsPlaying ? `00:${Math.round(playbackProgress / 10).toString().padStart(2, '0')}` : '00:00'} / {formatDuration(duration)}</span>
                 </div>
@@ -563,16 +563,16 @@ export function CallDialog() {
 
             <div className="space-y-0.5">
               <h4 className="text-xs font-bold text-foreground">Ghi nhận phản hồi cuộc gọi</h4>
-              <p className="text-[11px] text-muted-foreground">Lưu lịch sử chăm sóc học viên: <strong className="text-foreground">{studentName}</strong></p>
+              <p className="text-xs text-muted-foreground">Lưu lịch sử chăm sóc học viên: <strong className="text-foreground">{studentName}</strong></p>
             </div>
 
             {/* Form Fields */}
             <div className="flex-1 flex flex-col gap-2.5 min-h-0">
               <div className="flex-1 flex flex-col gap-1 min-h-0">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex justify-between">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex justify-between">
                   <span>Ghi chú cuộc gọi</span>
                   {quickNotes.length > 0 && (
-                    <span className="text-[9px] text-indigo-600 dark:text-indigo-400 font-semibold normal-case">
+                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold normal-case">
                       Tổng hợp: {quickNotes.length} dòng ghi chú
                     </span>
                   )}
@@ -587,12 +587,12 @@ export function CallDialog() {
 
               {/* Instant Outcomes Buttons Grid */}
               <div className="space-y-1.5 text-left">
-                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">Chọn kết quả để lưu luôn</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Chọn kết quả để lưu luôn</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   <Button
                     size="xs"
                     type="button"
-                    className="h-8 text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white col-span-2 flex items-center justify-center gap-1 shadow-sm rounded-lg"
+                    className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white col-span-2 flex items-center justify-center gap-1 shadow-sm rounded-lg"
                     onClick={() => {
                       saveCallLog('Đã gọi thành công', noteText)
                       toast.success('Đã lưu kết quả: Đã gọi thành công')
@@ -606,7 +606,7 @@ export function CallDialog() {
                     size="xs"
                     type="button"
                     variant="outline"
-                    className="h-7 text-[10px] font-semibold border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg py-0 px-1"
+                    className="h-7 text-xs font-semibold border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg py-0 px-1"
                     onClick={() => {
                       saveCallLog('Không nhấc máy', noteText)
                       toast.success('Đã lưu kết quả: Không nghe máy')
@@ -619,7 +619,7 @@ export function CallDialog() {
                     size="xs"
                     type="button"
                     variant="outline"
-                    className="h-7 text-[10px] font-semibold border-amber-200 text-amber-600 hover:bg-amber-50 rounded-lg py-0 px-1"
+                    className="h-7 text-xs font-semibold border-amber-200 text-amber-600 hover:bg-amber-50 rounded-lg py-0 px-1"
                     onClick={() => {
                       saveCallLog('Máy bận', noteText)
                       toast.success('Đã lưu kết quả: Máy bận')
@@ -632,7 +632,7 @@ export function CallDialog() {
                     size="xs"
                     type="button"
                     variant="outline"
-                    className="h-7 text-[10px] font-semibold border-sky-200 text-sky-600 hover:bg-sky-50 rounded-lg py-0 px-1"
+                    className="h-7 text-xs font-semibold border-sky-200 text-sky-600 hover:bg-sky-50 rounded-lg py-0 px-1"
                     onClick={() => {
                       saveCallLog('Hẹn gọi lại sau', noteText)
                       toast.success('Đã lưu kết quả: Hẹn gọi lại')
@@ -645,7 +645,7 @@ export function CallDialog() {
                     size="xs"
                     type="button"
                     variant="outline"
-                    className="h-7 text-[10px] font-semibold border-zinc-200 text-zinc-650 hover:bg-zinc-50 rounded-lg py-0 px-1"
+                    className="h-7 text-xs font-semibold border-zinc-200 text-zinc-650 hover:bg-zinc-50 rounded-lg py-0 px-1"
                     onClick={() => {
                       saveCallLog('Số điện thoại sai', noteText)
                       toast.success('Đã lưu kết quả: SĐT không đúng')

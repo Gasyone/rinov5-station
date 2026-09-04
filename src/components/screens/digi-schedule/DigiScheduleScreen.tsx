@@ -35,7 +35,7 @@ export function DigiScheduleScreen() {
 
   // Top Filters
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('all')
+  const [activeBranch, setActiveBranch] = useState(SYSTEM_BRANCHES[0] ?? 'RinoEdu Nguyễn Tuân')
 
   // Filter Sheet Panel States
   const [branchFilters, setBranchFilters] = useState<string[]>([])

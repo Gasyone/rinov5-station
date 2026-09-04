@@ -18,7 +18,7 @@ export function StudentDetailGlobalLogs({ logs }: StudentDetailGlobalLogsProps) 
           </div>
           
           {/* Timestamp */}
-          <div className="text-[10px] text-muted-foreground font-mono font-semibold">
+          <div className="text-xs text-muted-foreground font-mono font-semibold">
             {log.timestamp}
           </div>
           
@@ -28,7 +28,7 @@ export function StudentDetailGlobalLogs({ logs }: StudentDetailGlobalLogsProps) 
           </p>
           
           {/* Operator */}
-          <div className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1.5 font-medium">
+          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 font-medium">
             <ShieldCheck className="h-3 w-3 text-emerald-600" />
             <span>Người thực hiện: <strong className="text-foreground">{log.operator}</strong></span>
           </div>

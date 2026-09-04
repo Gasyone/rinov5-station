@@ -50,9 +50,9 @@ export function ClassesSessionClassInfoTab({
         <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 py-2">
           {/* Giáo viên chủ nhiệm with avatar */}
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Phụ trách</div>
+            <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Phụ trách</div>
             <div className="flex items-center gap-2 mt-1">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border bg-primary/10 text-primary text-[10px] font-bold shrink-0">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border bg-primary/10 text-primary text-xs font-bold shrink-0">
                 {cls.teacher.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -63,10 +63,10 @@ export function ClassesSessionClassInfoTab({
           </div>
           {/* Giáo viên giảng dạy with avatar */}
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Giáo viên giảng dạy</div>
+            <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Giáo viên giảng dạy</div>
             <div className="flex items-center gap-2 mt-1">
               <div className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-bold shrink-0",
+                "flex h-7 w-7 items-center justify-center rounded-full border text-xs font-bold shrink-0",
                 session.substituteTeacherName
                   ? "border-amber-200 bg-amber-100 text-amber-700"
                   : "bg-primary/10 text-primary"
@@ -78,7 +78,7 @@ export function ClassesSessionClassInfoTab({
                   {activeTeacher}
                 </div>
                 {session.substituteTeacherName && (
-                  <div className="text-[10px] text-amber-600 font-medium">Dạy thay (GV chính: {originalTeacher})</div>
+                  <div className="text-xs text-amber-600 font-medium">Dạy thay (GV chính: {originalTeacher})</div>
                 )}
               </div>
             </div>
@@ -86,12 +86,12 @@ export function ClassesSessionClassInfoTab({
 
           {/* Lịch học cố định — liệt kê từng dòng */}
           <div className="sm:col-span-2 min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Lịch học cố định</div>
+            <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Lịch học cố định</div>
             {cls.scheduleSlots && cls.scheduleSlots.length > 0 ? (
               <div className="space-y-1">
                 {cls.scheduleSlots.map((slot, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs">
-                    <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary shrink-0 min-w-[52px] justify-center">
+                    <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-xs font-bold text-primary shrink-0 min-w-[52px] justify-center">
                       {slot.dayOfWeek}
                     </span>
                     <span className="font-mono font-semibold text-foreground">

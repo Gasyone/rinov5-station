@@ -394,7 +394,7 @@ export function ClassesDetailSessions({
                   </Select>
                 )}
                 {cancelErrors.reason && (
-                  <p className="mt-1 text-[10px] font-medium text-destructive">{cancelErrors.reason}</p>
+                  <p className="mt-1 text-xs font-medium text-destructive">{cancelErrors.reason}</p>
                 )}
               </FieldLabel>
 
@@ -406,7 +406,7 @@ export function ClassesDetailSessions({
                   className="min-h-[80px] text-xs"
                 />
                 {cancelErrors.description && (
-                  <p className="mt-1 text-[10px] font-medium text-destructive">{cancelErrors.description}</p>
+                  <p className="mt-1 text-xs font-medium text-destructive">{cancelErrors.description}</p>
                 )}
               </FieldLabel>
             </div>

@@ -1,42 +1,57 @@
-import { mockProducts, type Product } from '@/mocks/products'
+import { mockProducts, type Product, type ProductCategory } from '@/mocks/products'
 import type { ProductFilterState, ProductStatusFilter } from './productsTypes'
 
 export function getInitialProducts(): Product[] {
   return [...mockProducts]
 }
 
-export function getProductBranches(items: Product[]) {
-  return Array.from(new Set(items.map((p) => p.branch))).sort()
+export function getProductCategories(items: Product[]): ProductCategory[] {
+  return Array.from(new Set(items.map((p) => p.category))) as ProductCategory[]
 }
 
-export function getProductCategories(items: Product[]): Product['category'][] {
-  return Array.from(new Set(items.map((p) => p.category))) as Product['category'][]
-}
-
-export function countProductsByStatus(items: Product[], status: ProductStatusFilter): number {
-  if (status === 'all') return items.length
-  return items.filter((p) => p.status === status).length
+export function getProductGroups(items: Product[]): string[] {
+  return Array.from(new Set(items.map((p) => p.group))).sort()
 }
 
 export function filterProducts(
   items: Product[],
   filters: {
     search: string
-    branch: string
-    status: ProductStatusFilter
-    extra: ProductFilterState
+    status?: ProductStatusFilter
+    extra?: ProductFilterState
   }
 ): Product[] {
   const query = filters.search.trim().toLowerCase()
   return items.filter((p) => {
-    if (filters.branch !== 'all' && p.branch !== filters.branch) return false
-    if (filters.status !== 'all' && p.status !== filters.status) return false
-    if (filters.extra.branches.length > 0 && !filters.extra.branches.includes(p.branch))
+    if (filters.status && filters.status !== 'all' && p.status !== filters.status) {
       return false
-    if (filters.extra.categories.length > 0 && !filters.extra.categories.includes(p.category))
+    }
+    if (
+      filters.extra?.categories &&
+      filters.extra.categories.length > 0 &&
+      !filters.extra.categories.includes(p.category)
+    ) {
       return false
+    }
+    if (
+      filters.extra?.groups &&
+      filters.extra.groups.length > 0 &&
+      !filters.extra.groups.includes(p.group)
+    ) {
+      return false
+    }
     if (query) {
-      const haystack = [p.name, p.code, p.description ?? '', p.tags?.join(' ') ?? '']
+      const haystack = [
+        p.name,
+        p.code,
+        p.group,
+        p.unit,
+        p.duration,
+        p.createdBy,
+        p.description ?? '',
+        p.tags?.join(' ') ?? '',
+        p.vouchers?.join(' ') ?? '',
+      ]
         .join(' ')
         .toLowerCase()
       if (!haystack.includes(query)) return false
@@ -45,12 +60,21 @@ export function filterProducts(
   })
 }
 
-export function nextProductId(items: Product[]): string {
-  const max = items.reduce((acc, p) => {
-    const numeric = Number.parseInt(p.id.replace(/^\D+/g, ''), 10)
-    return Number.isNaN(numeric) ? acc : Math.max(acc, numeric)
-  }, 0)
-  return `p${max + 1}`
+export function countProductsByStatus(
+  items: Product[],
+  status: ProductStatusFilter,
+  contextFilters?: {
+    search: string
+    extra?: ProductFilterState
+  }
+): number {
+  const filteredContext = filterProducts(items, {
+    search: contextFilters?.search ?? '',
+    extra: contextFilters?.extra,
+  })
+
+  if (status === 'all') return filteredContext.length
+  return filteredContext.filter((p) => p.status === status).length
 }
 
 export function buildEmptyProduct(): Omit<Product, 'id'> {
@@ -58,12 +82,15 @@ export function buildEmptyProduct(): Omit<Product, 'id'> {
     name: '',
     code: '',
     category: 'course',
+    group: 'Station NEW (mkt)',
     price: 0,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
     status: 'active',
-    branch: 'Toàn hệ thống',
-    description: '',
-    duration: '',
-    tags: [],
+    createdBy: 'Admin Hệ thống',
     createdAt: new Date().toISOString().slice(0, 10),
+    description: '',
+    tags: [],
   }
 }
+

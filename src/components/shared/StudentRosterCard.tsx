@@ -74,7 +74,7 @@ function ParentContactRow({
         <div className="text-xs font-semibold text-foreground">
           {parent.name} ({parent.relationship})
         </div>
-        <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+        <div className="mt-0.5 font-mono text-xs text-muted-foreground">
           {maskPhone(parent.phone)}
         </div>
       </div>
@@ -152,11 +152,11 @@ export function StudentRosterCard({
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-foreground">{student.name}</h4>
-                    <p className="font-mono text-[9px] text-muted-foreground">{student.code}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{student.code}</p>
                   </div>
                 </div>
                 <div className="space-y-2 text-xs text-muted-foreground">
-                  <p className="border-b border-muted/40 pb-1 text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  <p className="border-b border-muted/40 pb-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
                     LIÊN HỆ GIA ĐÌNH
                   </p>
                   {parents.map((parent, index) => (
@@ -185,7 +185,7 @@ export function StudentRosterCard({
             >
               {student.name}
             </button>
-            <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{student.code}</p>
+            <p className="mt-0.5 font-mono text-xs text-muted-foreground">{student.code}</p>
           </div>
         </div>
 
@@ -194,10 +194,10 @@ export function StudentRosterCard({
             <StatusBadge
               status="trial"
               label="Học thử"
-              className="text-[10px] px-2 py-0.5"
+              className="text-xs px-2 py-0.5"
             />
           )}
-          <div className="flex items-center justify-end gap-1 text-[10px] font-normal text-muted-foreground">
+          <div className="flex items-center justify-end gap-1 text-xs font-normal text-muted-foreground">
             <CalendarDays className="h-3 w-3 text-muted-foreground/60" />
             <span>
               Nhập học:{' '}

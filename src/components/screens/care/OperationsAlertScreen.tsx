@@ -8,7 +8,6 @@ import { StudentCareDetailPage } from './StudentCareDetailPage'
 import { mockStudents } from '@/mocks/students'
 import { OperationsAlertTable } from './OperationsAlertTable'
 import { OperationsAlertToolbar } from './OperationsAlertToolbar'
-import { CareDashboardView } from './CareDashboardView'
 import { CareJourneyModal } from './CareJourneyModal'
 import { toast } from 'sonner'
 import {
@@ -73,7 +72,6 @@ export function OperationsAlertScreen() {
   const [pageSize, setPageSize] = useState(20)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
-  const [viewMode, setViewMode] = useState<'table' | 'dashboard'>('table')
 
   // Detail sheet & roadmap modal states
   const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(null)
@@ -432,7 +430,7 @@ export function OperationsAlertScreen() {
         const unassigned = getUnassignedStaffStatus(item)
         if (unassigned.isUnassigned) return 10 // Always on top if CS or GV unassigned!
         const active = getStudentActiveTags(item)
-        if (active.some((tag) => tag.startsWith('ĐB'))) return 3 // Đặc biệt
+        if (active.some((tag) => tag.startsWith('ĐB')) || active.some((tag) => tag === 'CSCĐ')) return 3 // Đặc biệt
         if (active.some((tag) => tag.startsWith('TB'))) return 2 // Warning
         return 1 // Chăm sóc
       }
@@ -440,14 +438,11 @@ export function OperationsAlertScreen() {
     })
   }, [tabFiltered, csdbFilter])
 
-  // Split into Special Care vs Regular Students
   // Paginated list
   const paginatedAlerts = useMemo(() => {
     const startIndex = (page - 1) * pageSize
     return filtered.slice(startIndex, startIndex + pageSize)
   }, [filtered, page, pageSize])
-
-
 
   // 7. Checkbox selection handlers
   const handleSelectChange = (id: string, checked: boolean) => {
@@ -553,6 +548,7 @@ export function OperationsAlertScreen() {
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <OperationsAlertToolbar
+        alerts={filtered}
         searchQuery={searchQuery}
         onSearchChange={(q) => { setSearchQuery(q); resetPagination() }}
         activeFilterCount={activeFilterCount}
@@ -573,80 +569,42 @@ export function OperationsAlertScreen() {
         dueDateCounts={dueDateCounts}
         exportFields={exportFields}
         onConfirmExport={handleConfirmExport}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
         csdbCounts={csdbCounts}
         csdbFilter={csdbFilter}
         onCsdbFilterChange={(val) => { setCsdbFilter(val); resetPagination() }}
       />
 
-      {viewMode === 'dashboard' ? (
-        <CareDashboardView 
-          alerts={filtered} 
-          onDrillDown={(filterType) => {
-            if (filterType === 'overdue') {
-              setDueDateFilter('overdue')
-            } else if (filterType === 'pending') {
-              setCareStatusFilter('pending')
-              setSelectedCareStatuses(new Set())
-            } else if (filterType === 'cared') {
-              setCareStatusFilter('cared')
-              setSelectedCareStatuses(new Set())
-            } else if (filterType === 'academic') {
-              setSelectedCareTypes(new Set(['ĐB', 'TB']))
-            } else if (filterType === 'attendance') {
-              setSelectedCareTypes(new Set(['TB']))
-            } else {
-              setDueDateFilter('all')
-              setCareStatusFilter('all')
-              setSelectedCareStatuses(new Set())
-              setSelectedCareTypes(new Set())
-            }
-            resetPagination()
-            setViewMode('table')
-          }}
-          onSelectStudent={(studentId) => {
-            setActiveDetailStudentId(studentId)
-          }}
-          onFilterByStaff={(staffName) => {
-            setSearchQuery(staffName)
-            resetPagination()
-            setViewMode('table')
-          }}
-        />
-      ) : (
-        <div className="min-h-0 flex-1 px-2 py-1.5 lg:px-3 pb-3 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 flex flex-col">
-            <OperationsAlertTable
-              alerts={paginatedAlerts}
-              selectedIds={selectedIds}
-              onSelectChange={handleSelectChange}
-              onSelectAll={(checked) => {
-                setSelectedIds((prev) => {
-                  const otherIds = prev.filter((id) => !paginatedAlerts.some((x) => x.id === id))
-                  return checked ? [...otherIds, ...paginatedAlerts.map((x) => x.id)] : otherIds
-                })
-              }}
-              className="flex-1"
-              pagination={{
-                page: page,
-                total: filtered.length,
-                pageSize: pageSize,
-                onPageChange: setPage,
-                onPageSizeChange: setPageSize,
-              }}
-              viewMode={careViewMode}
-              onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
-              onViewDetail={(id) => {
-                setActiveDetailStudentId(id)
-              }}
-              onOpenRoadmapModal={(alert) => {
-                setRoadmapModalStudent(alert)
-              }}
-            />
-          </div>
+      <div className="min-h-0 flex-1 px-2 py-1.5 lg:px-3 pb-3 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col">
+          <OperationsAlertTable
+            alerts={paginatedAlerts}
+            selectedIds={selectedIds}
+            onSelectChange={handleSelectChange}
+            onSelectAll={(checked) => {
+              setSelectedIds((prev) => {
+                const otherIds = prev.filter((id) => !paginatedAlerts.some((x) => x.id === id))
+                return checked ? [...otherIds, ...paginatedAlerts.map((x) => x.id)] : otherIds
+              })
+            }}
+            className="flex-1"
+            pagination={{
+              page: page,
+              total: filtered.length,
+              pageSize: pageSize,
+              onPageChange: setPage,
+              onPageSizeChange: setPageSize,
+            }}
+            viewMode={careViewMode}
+            onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
+            onViewDetail={(id) => {
+              setActiveDetailStudentId(id)
+            }}
+            onOpenRoadmapModal={(alert) => {
+              setRoadmapModalStudent(alert)
+            }}
+          />
         </div>
-      )}
+      </div>
 
       {/* Advanced Filters Sheet Panel */}
       <OperationsAlertFilterPanel
@@ -677,16 +635,6 @@ export function OperationsAlertScreen() {
             : null
         }
       />
-
-      {/* Student Care Detail Dialog (Temporarily Disabled)
-      <StudentCareDetailDialog
-        studentId={activeDetailStudentId}
-        open={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        alerts={mockCareAlerts}
-        onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
-      />
-      */}
     </div>
   )
 }

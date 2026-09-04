@@ -42,12 +42,12 @@ export function MonthlyReportsList({
   return (
     <div className="space-y-3 pb-3 text-left">
       <div className="flex items-center justify-between gap-4">
-        <h4 className="text-[11px] font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+        <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
           <FileText className="h-3.5 w-3.5 text-violet-500" />
           Báo cáo học tập & Đánh giá
         </h4>
         {reports.length > 0 && (
-          <span className="text-[10px] text-muted-foreground font-normal">
+          <span className="text-xs text-muted-foreground font-normal">
             Hiển thị {visibleReports.length}/{reports.length} báo cáo
           </span>
         )}
@@ -66,7 +66,7 @@ export function MonthlyReportsList({
                   href={report.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between py-2 px-3 rounded-lg border border-violet-100 dark:border-violet-900/40 bg-violet-50/15 dark:bg-violet-950/5 hover:border-violet-400 dark:hover:border-violet-700 hover:bg-violet-50/60 dark:hover:bg-violet-950/20 transition-all text-[11px] group cursor-pointer h-full min-h-[52px] shadow-xs"
+                  className="flex items-center justify-between py-2 px-3 rounded-lg border border-violet-100 dark:border-violet-900/40 bg-violet-50/15 dark:bg-violet-950/5 hover:border-violet-400 dark:hover:border-violet-700 hover:bg-violet-50/60 dark:hover:bg-violet-950/20 transition-all text-xs group cursor-pointer h-full min-h-[52px] shadow-xs"
                 >
                   <div className="min-w-0 flex items-center gap-2 flex-1">
                     <FileText className="h-3.5 w-3.5 text-violet-500 shrink-0" />
@@ -121,19 +121,19 @@ export function MonthlyReportsList({
                     setSelectedEvalPkgId(pkg.id)
                     setIsEvalOpen(true)
                   }}
-                  className="py-1.5 px-2.5 rounded-lg border border-amber-200/80 dark:border-amber-900/40 bg-amber-50/15 dark:bg-amber-950/5 hover:border-amber-400 dark:hover:border-amber-700 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 flex flex-col justify-between gap-1.5 text-[11px] w-full cursor-pointer transition-all h-full min-h-[38px] shadow-xs"
+                  className="py-1.5 px-2.5 rounded-lg border border-amber-200/80 dark:border-amber-900/40 bg-amber-50/15 dark:bg-amber-950/5 hover:border-amber-400 dark:hover:border-amber-700 hover:bg-amber-50/60 dark:hover:bg-amber-950/20 flex flex-col justify-between gap-1.5 text-xs w-full cursor-pointer transition-all h-full min-h-[38px] shadow-xs"
                 >
                   {/* Top: Title & Month inline */}
                   <div className="flex items-center gap-2 min-w-0 flex-1 w-full">
                     <FileText className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                     <div className="min-w-0 flex items-baseline justify-between flex-1">
                       <span className="font-normal text-foreground truncate">Đánh giá cuối kỳ</span>
-                      <span className="text-[9px] text-muted-foreground ml-2 shrink-0">{evalItem.month}</span>
+                      <span className="text-xs text-muted-foreground ml-2 shrink-0">{evalItem.month}</span>
                     </div>
                   </div>
 
                   {/* Bottom: Scores in 4 columns */}
-                  <div className="grid grid-cols-4 gap-1 text-[9px] font-normal w-full border-t border-amber-100/50 dark:border-amber-900/30 pt-1.5 mt-0.5 shrink-0 text-center">
+                  <div className="grid grid-cols-4 gap-1 text-xs font-normal w-full border-t border-amber-100/50 dark:border-amber-900/30 pt-1.5 mt-0.5 shrink-0 text-center">
                     <div className="flex flex-col items-center">
                       <span className="text-[7.5px] uppercase tracking-wider text-muted-foreground">Ý thức</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-400">{evalItem.attitude}/5</span>
@@ -162,7 +162,7 @@ export function MonthlyReportsList({
               <button
                 type="button"
                 onClick={() => setShowAllReports(!showAllReports)}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
               >
                 <span>
                   {showAllReports
@@ -175,7 +175,7 @@ export function MonthlyReportsList({
           )}
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground italic pl-1">
+        <p className="text-xs text-muted-foreground italic pl-1">
           Chưa có báo cáo học tập hay đánh giá cuối kỳ cho lớp học này.
         </p>
       )}

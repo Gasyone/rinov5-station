@@ -146,7 +146,7 @@ export function MakeupClassDetailDialog({
               <div className="flex items-center justify-between gap-4 pr-6">
                 <DialogTitle className="text-xs font-normal text-muted-foreground">
                   Chi tiết Phiếu học bù
-                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-[11px] font-normal text-muted-foreground">
+                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-xs font-normal text-muted-foreground">
                     {request.id}
                   </Badge>
                 </DialogTitle>
@@ -418,7 +418,7 @@ export function MakeupClassDetailDialog({
                           </div>
                           <p className="text-muted-foreground font-medium mt-0.5">{log.action}</p>
                           {log.detail && (
-                            <p className="text-[11px] text-muted-foreground/80">{log.detail}</p>
+                            <p className="text-xs text-muted-foreground/80">{log.detail}</p>
                           )}
                         </div>
                       </div>

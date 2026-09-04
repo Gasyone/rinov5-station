@@ -110,7 +110,7 @@ export function StudentDetailRecommendedClasses({
             <span
               role="button"
               tabIndex={0}
-              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] font-medium shrink-0"
+              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-xs font-medium shrink-0"
               title={`Xem lịch sử đổi giáo viên (${teacherHistoryList.length} giáo viên)`}
             >
               <History className="h-3 w-3" />
@@ -199,7 +199,7 @@ export function StudentDetailRecommendedClasses({
                   <div className="col-span-12 sm:col-span-5 space-y-1.5 flex flex-col justify-center text-left">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-foreground">
-                        {enrolled}/{max} <span className="text-muted-foreground font-normal text-[11px]">({pct}%)</span>
+                        {enrolled}/{max} <span className="text-muted-foreground font-normal text-xs">({pct}%)</span>
                       </span>
                       <span className="text-[9.5px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
                         +{newCount} mới, Trial
@@ -298,23 +298,23 @@ export function StudentDetailRecommendedClasses({
                                   className="rounded-md border border-border/40 px-1.5 py-1 space-y-0.5 bg-card/30 flex flex-col items-center justify-center shrink-0 min-w-[105px]"
                                 >
                                   <div className="flex items-center gap-1 justify-center">
-                                    <span className="inline-flex items-center rounded bg-primary/10 px-1 py-0 text-[9px] font-bold text-primary shrink-0">
+                                    <span className="inline-flex items-center rounded bg-primary/10 px-1 py-0 text-xs font-bold text-primary shrink-0">
                                       {slot.dayOfWeek}
                                     </span>
-                                    <span className="font-mono text-[10px] font-semibold text-foreground shrink-0">
+                                    <span className="font-mono text-xs font-semibold text-foreground shrink-0">
                                       {slot.startTime}–{slot.endTime}
                                     </span>
                                   </div>
                                   
                                   <PersonnelHoverCard person={teacherPersonObj} align="center">
-                                    <div className="flex items-center justify-center gap-1 truncate max-w-[100px] cursor-pointer hover:opacity-80 transition-opacity text-[10px] text-muted-foreground" title={`Nhấp/Rê chuột để xem thông tin giáo viên: ${slotTeacher}`}>
+                                    <div className="flex items-center justify-center gap-1 truncate max-w-[100px] cursor-pointer hover:opacity-80 transition-opacity text-xs text-muted-foreground" title={`Nhấp/Rê chuột để xem thông tin giáo viên: ${slotTeacher}`}>
                                       <AppAvatar
                                         src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${slotTeacher}`}
                                         name={slotTeacher}
                                         size="xs"
                                         className="h-3.5 w-3.5 shrink-0 border border-primary/20 cursor-pointer"
                                       />
-                                      <span className="font-medium text-foreground text-[10px] truncate">{slotTeacher}</span>
+                                      <span className="font-medium text-foreground text-xs truncate">{slotTeacher}</span>
                                     </div>
                                   </PersonnelHoverCard>
                                 </div>
@@ -394,7 +394,7 @@ export function StudentDetailRecommendedClasses({
                                 Buổi {sess.no}
                               </span>
                               <span className="font-mono text-xs font-semibold text-foreground">{sess.date} ({sess.time})</span>
-                              <span className="text-[11px] text-muted-foreground truncate max-w-[220px]" title={sess.topic}>
+                              <span className="text-xs text-muted-foreground truncate max-w-[220px]" title={sess.topic}>
                                 • {sess.topic}
                               </span>
                               <span className="text-[10.5px] font-mono text-muted-foreground">• Phòng {sess.room}</span>

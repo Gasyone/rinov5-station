@@ -475,7 +475,7 @@ ${finalImprovementSection}${reminderText}`
         <div className="flex-1 min-h-0 flex overflow-hidden">
           {/* Left Student List Sidebar */}
           <aside className="w-[280px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
-            <div className="px-3 py-2 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="px-3 py-2 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Học sinh ({totalCount})
             </div>
             <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
@@ -497,7 +497,7 @@ ${finalImprovementSection}${reminderText}`
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className={cn(
-                        "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border",
+                        "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border",
                         isSelected
                           ? "bg-primary/20 border-primary/20 text-primary"
                           : "bg-muted border-transparent text-muted-foreground group-hover:bg-background"
@@ -511,13 +511,13 @@ ${finalImprovementSection}${reminderText}`
                             return (
                               <div className="flex flex-col min-w-0 leading-tight">
                                 <span className="truncate font-bold text-xs">{np.englishName}</span>
-                                <span className="truncate text-[11px] text-muted-foreground font-normal">{np.vietnameseName}</span>
+                                <span className="truncate text-xs text-muted-foreground font-normal">{np.vietnameseName}</span>
                               </div>
                             )
                           }
                           return <p className="truncate font-semibold leading-tight">{np.vietnameseName}</p>
                         })()}
-                        <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{student.code}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{student.code}</p>
                       </div>
                     </div>
                     {state?.isSent && (

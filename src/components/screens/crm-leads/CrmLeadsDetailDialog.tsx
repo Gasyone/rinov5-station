@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
 import {
@@ -14,24 +15,23 @@ import { Button } from '@/components/ui/button'
 import { InfoField, Panel } from '@/components/shared'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { SOURCE_LABEL_MAP, STATUS_LABEL_MAP } from './crmLeadsTypes'
-import { Baby, Phone, Mail, UserCheck, Calendar, Copy, Check, Sparkles, GraduationCap, User, Users } from 'lucide-react'
-import { CrmLeadsBookingTestModal } from './CrmLeadsBookingTestModal'
-import { CrmLeadsTrialClassModal } from './CrmLeadsTrialClassModal'
+import { Baby, Phone, Mail, UserCheck, Calendar, Copy, Check, Sparkles, GraduationCap, User, Users, Plus } from 'lucide-react'
 
 interface CrmLeadsDetailDialogProps {
   lead: Lead | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onOpenCreateOrder?: (lead: Lead) => void
 }
 
 export function CrmLeadsDetailDialog({
   lead,
   open,
   onOpenChange,
+  onOpenCreateOrder,
 }: CrmLeadsDetailDialogProps) {
+  const router = useRouter()
   const [copied, setCopied] = useState(false)
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false)
-  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false)
 
   if (!lead) return null
 
@@ -43,20 +43,11 @@ export function CrmLeadsDetailDialog({
   }
 
   const birthYear = lead.birthYear ?? 2026 - lead.studentAge
-  const leadChildObj = {
-    id: lead.id,
-    name: lead.studentName,
-    age: lead.studentAge,
-    birthYear,
-    targetSubject: lead.targetSubject,
-    notes: lead.lastNote,
-  }
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="pr-8">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pr-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -66,11 +57,11 @@ export function CrmLeadsDetailDialog({
                   <DialogTitle className="text-xl font-bold flex items-center gap-2">
                     <span>{lead.studentName}</span>
                     <span className="text-sm font-normal text-muted-foreground">
-                      ({lead.studentAge}t - {birthYear})
+                      ({lead.studentAge} tuổi - {birthYear})
                     </span>
                   </DialogTitle>
                   <div className="text-xs text-muted-foreground">
-                    Mã Lead: <span className="font-mono">{lead.code}</span> • Phụ huynh: <span className="font-semibold text-foreground">{lead.parentName}</span> ({lead.parentRole || 'Phụ huynh'})
+                    Mã Lead: <span className="font-mono">{lead.code}</span> • Phụ huynh: <span className="font-semibold text-foreground">{lead.parentName}</span> {lead.parentRole ? `(${lead.parentRole})` : ''}
                   </div>
                 </div>
               </div>
@@ -91,8 +82,22 @@ export function CrmLeadsDetailDialog({
                   type="button"
                   size="sm"
                   variant="outline"
+                  className="h-8 gap-1.5 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950 text-xs font-medium cursor-pointer"
+                  onClick={() => {
+                    onOpenChange(false)
+                    onOpenCreateOrder?.(lead)
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>{lead.orderCode ? 'Chi tiết đơn hàng' : 'Lên đơn hàng'}</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
                   className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 text-xs font-medium cursor-pointer"
-                  onClick={() => setIsTestModalOpen(true)}
+                  onClick={() => router.push(`/app/booking_test/create?leadId=${lead.id}`)}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Đặt lịch Kiểm tra năng lực</span>
@@ -103,7 +108,7 @@ export function CrmLeadsDetailDialog({
                   size="sm"
                   variant="outline"
                   className="h-8 gap-1.5 border-violet-500/30 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950 text-xs font-medium cursor-pointer"
-                  onClick={() => setIsTrialModalOpen(true)}
+                  onClick={() => router.push(`/app/trial_class/create?leadId=${lead.id}`)}
                 >
                   <GraduationCap className="h-3.5 w-3.5" />
                   <span>Đăng ký Lớp học thử</span>
@@ -215,23 +220,6 @@ export function CrmLeadsDetailDialog({
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Modal 1: Đặt lịch Kiểm tra & Đánh giá năng lực */}
-      <CrmLeadsBookingTestModal
-        lead={lead}
-        child={leadChildObj}
-        open={isTestModalOpen}
-        onOpenChange={setIsTestModalOpen}
-      />
-
-      {/* Modal 2: Đăng ký Lớp học thử */}
-      <CrmLeadsTrialClassModal
-        lead={lead}
-        child={leadChildObj}
-        open={isTrialModalOpen}
-        onOpenChange={setIsTrialModalOpen}
-      />
-    </>
   )
 }
 

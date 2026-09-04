@@ -325,7 +325,7 @@ export function ClassesSessionDetailDialog({
                 size="xs"
                 onClick={() => setIsSemesterEvalOpen(true)}
                 disabled={session.status === 'cancelled' || session.status === 'absent'}
-                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2.5 h-7 text-[10px] rounded-md cursor-pointer mr-1"
+                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2.5 h-7 text-xs rounded-md cursor-pointer mr-1"
               >
                 <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />
                 Semester Eval ({completedEvalCount}/{activeRoster.length})
@@ -365,18 +365,18 @@ export function ClassesSessionDetailDialog({
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
                         {s.id === currentSessionId && (
-                          <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-1.5 py-0 rounded-md border-none shrink-0">
+                          <Badge className="bg-primary text-primary-foreground font-bold text-xs px-1.5 py-0 rounded-md border-none shrink-0">
                             Đang xem
                           </Badge>
                         )}
-                        <Badge variant="outline" className={`rounded-full text-[9px] font-bold px-1.5 py-0 scale-90 shrink-0 ${
+                        <Badge variant="outline" className={`rounded-full text-xs font-bold px-1.5 py-0 scale-90 shrink-0 ${
                           s.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(s.status)
                         }`}>
                           {getSessionStatusLabel(s.status)}
                         </Badge>
                       </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-mono font-normal">
+                    <span className="text-xs text-muted-foreground font-mono font-normal">
                       {s.date} ({s.startTime}–{s.endTime})
                     </span>
                   </DropdownMenuItem>
@@ -410,13 +410,13 @@ export function ClassesSessionDetailDialog({
               <div>
                 <DialogTitle className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
                   <span>{session.topic}</span>
-                  <Badge variant="outline" className={`rounded-full text-[9px] font-bold px-1.5 py-0 ${
+                  <Badge variant="outline" className={`rounded-full text-xs font-bold px-1.5 py-0 ${
                     session.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(session.status)
                   }`}>
                     {getSessionStatusLabel(session.status)}
                   </Badge>
                   {isTestSession && (
-                    <Badge variant="outline" className="rounded-full text-[9px] font-bold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                    <Badge variant="outline" className="rounded-full text-xs font-bold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                       Buổi kiểm tra
                     </Badge>
                   )}
@@ -442,7 +442,7 @@ export function ClassesSessionDetailDialog({
                 <CalendarX className="h-5 w-5 shrink-0 text-red-500" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold">Buổi học đã hủy</p>
-                  <p className="mt-0.5 text-[11px] opacity-90">Lý do hủy: {session.cancelReason || session.cancelDescription || 'Giáo viên xin nghỉ hoặc trung tâm chủ động dời lịch.'}</p>
+                  <p className="mt-0.5 text-xs opacity-90">Lý do hủy: {session.cancelReason || session.cancelDescription || 'Giáo viên xin nghỉ hoặc trung tâm chủ động dời lịch.'}</p>
                 </div>
                 <Button
                   type="button"
@@ -496,7 +496,7 @@ export function ClassesSessionDetailDialog({
               >
                 <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                 <span>Học viên</span>
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-xs font-bold ${
                   leftPanelTab === 'roster'
                     ? 'bg-zinc-100 dark:bg-zinc-800 text-foreground'
                     : 'bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-400'

@@ -88,7 +88,7 @@ export function ContactsTable({
               />
             </TableCell>
             <TableCell>
-              <Badge variant="outline" className="rounded-md text-[10px]">
+              <Badge variant="outline" className="rounded-md text-xs">
                 {SOURCE_LABELS[contact.source]}
               </Badge>
             </TableCell>

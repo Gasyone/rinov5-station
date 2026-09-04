@@ -90,13 +90,92 @@ export function UserProfileDialog() {
         }
       }
 
-      if (!teacher) return null
+      if (!teacher) {
+        teacher = {
+          id: `t-${q.replace(/[^a-zA-Z0-9]/g, '') || 'teacher'}`,
+          code: `GV-${q.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || '099'}`,
+          name: userId,
+          email: `${q.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'teacher'}@rinoedu.com`,
+          phone: '0912345678',
+          branch: 'RinoEdu Nguyễn Tuân',
+          subjects: ['Tiếng Anh', 'Cambridge'],
+          status: 'active',
+          totalStudents: 42,
+          totalClasses: 3,
+          rating: 4.9,
+          startDate: '2023-09-01',
+        }
+      }
 
       // Fetch teacher assignments, notes, reviews, logs
-      const assignments = mockTeacherAssignments.filter((a) => a.teacherId === teacher.id)
-      const reviews = mockQualityReviews.filter((r) => r.teacherId === teacher.id)
-      const notes = mockTeacherNotes.filter((n) => n.teacherId === teacher.id)
-      const logs = mockActivityLogs.filter((l) => l.teacherId === teacher.id)
+      let assignments = mockTeacherAssignments.filter((a) => a.teacherId === teacher.id)
+      let reviews = mockQualityReviews.filter((r) => r.teacherId === teacher.id)
+      let notes = mockTeacherNotes.filter((n) => n.teacherId === teacher.id)
+      let logs = mockActivityLogs.filter((l) => l.teacherId === teacher.id)
+
+      if (assignments.length === 0) {
+        assignments = [
+          {
+            id: `asg-${teacher.id}-1`,
+            teacherId: teacher.id,
+            classId: 'CLS-001',
+            className: 'Cambridge Starter A1',
+            classCode: 'CS-A1',
+            level: 'Starter A1',
+            role: 'primary',
+            startDate: '2025-01-10',
+            schedule: 'T3/T5/CN (18:00 - 19:30)',
+            room: 'Phòng 201',
+            studentCount: 12,
+            maxStudents: 15,
+            status: 'active',
+          },
+          {
+            id: `asg-${teacher.id}-2`,
+            teacherId: teacher.id,
+            classId: 'CLS-001B',
+            className: 'Cambridge Starter A2 (Buổi tối)',
+            classCode: 'CS-A2',
+            level: 'Starter A2',
+            role: 'primary',
+            startDate: '2025-02-15',
+            schedule: 'T2/T4/T6 (19:15 - 20:45)',
+            room: 'Phòng 102',
+            studentCount: 9,
+            maxStudents: 15,
+            status: 'active',
+          },
+        ]
+      }
+
+      if (reviews.length === 0) {
+        reviews = [
+          {
+            id: `rev-${teacher.id}-1`,
+            teacherId: teacher.id,
+            reviewer: 'Đào Duy Anh (Chuyên môn)',
+            date: '15/05/2026',
+            classCode: 'CS-A1',
+            category: 'methodology',
+            score: 4.9,
+            feedback: 'Giáo viên tương tác rất tốt với học sinh, kiểm soát lớp học trật tự và phát âm chuẩn bản ngữ.',
+            improvementSuggestions: 'Tiếp tục phát huy phương pháp tương tác phản xạ tương tác trực tiếp.',
+          },
+        ]
+      }
+
+      if (notes.length === 0) {
+        notes = [
+          {
+            id: `note-${teacher.id}-1`,
+            teacherId: teacher.id,
+            author: 'Quản lý Chuyên môn',
+            date: '10/05/2026',
+            content: 'Giáo viên nhiệt huyết, được học sinh và phụ huynh phản hồi rất tích cực sau các buổi học thử.',
+            priority: 'normal',
+          },
+        ]
+      }
 
       return {
         type: 'teacher' as const,
@@ -131,8 +210,25 @@ export function UserProfileDialog() {
     }
 
     if (userType === 'staff') {
-      const employee = mockEmployees.find((e) => e.id.toLowerCase() === q || e.name.toLowerCase() === q)
-      if (!employee) return null
+      let employee = mockEmployees.find((e) => e.id.toLowerCase() === q || e.name.toLowerCase() === q)
+      if (!employee) {
+        employee = {
+          id: `emp-${q.replace(/[^a-zA-Z0-9]/g, '') || 'sale'}`,
+          name: userId,
+          email: `${q.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'sale'}@rinoedu.ai`,
+          phone: '0901112233',
+          gender: userId.toLowerCase().includes('thị') || userId.toLowerCase().includes('huyền') ? 'Female' : 'Male',
+          dob: '1995-08-20',
+          department: 'Phòng Tuyển sinh & Kinh doanh (Sales)',
+          position: 'Chuyên viên Tư vấn Tuyển sinh',
+          branch: 'RinoEdu Bắc Giang',
+          status: 'active',
+          salary: 15000000,
+          hireDate: '2024-03-01',
+          contractType: 'Full-time',
+          address: 'Hà Nội, Việt Nam',
+        }
+      }
       return {
         type: 'staff' as const,
         payload: employee,
@@ -284,11 +380,11 @@ export function UserProfileDialog() {
                       <div className="grid grid-cols-2 gap-2 text-center">
                         <div className="p-2.5 rounded-lg bg-background border">
                           <div className="text-lg font-bold text-primary">{data.payload.totalClasses}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase font-bold mt-0.5">Đang dạy</div>
+                          <div className="text-xs text-muted-foreground uppercase font-bold mt-0.5">Đang dạy</div>
                         </div>
                         <div className="p-2.5 rounded-lg bg-background border">
                           <div className="text-lg font-bold text-primary">{data.payload.totalStudents}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase font-bold mt-0.5">Học viên</div>
+                          <div className="text-xs text-muted-foreground uppercase font-bold mt-0.5">Học viên</div>
                         </div>
                       </div>
                     </div>
@@ -300,7 +396,7 @@ export function UserProfileDialog() {
                       <div className="space-y-2 max-h-[120px] overflow-y-auto pr-1">
                         {data.notes.map((note) => (
                           <div key={note.id} className="text-xs leading-relaxed text-foreground border-b border-border/40 pb-1.5 last:border-0 last:pb-0">
-                            <div className="flex justify-between text-[10px] text-muted-foreground mb-0.5">
+                            <div className="flex justify-between text-xs text-muted-foreground mb-0.5">
                               <span>Tác giả: {note.author}</span>
                               <span>{note.date}</span>
                             </div>
@@ -329,7 +425,7 @@ export function UserProfileDialog() {
                             <tr key={cls.id} className="border-b last:border-0 hover:bg-muted/10">
                               <td className="p-3 font-semibold text-foreground">
                                 <div>{cls.className}</div>
-                                <div className="text-[10px] text-muted-foreground font-mono">{cls.classCode}</div>
+                                <div className="text-xs text-muted-foreground font-mono">{cls.classCode}</div>
                               </td>
                               <td className="p-3 text-muted-foreground">{cls.schedule}</td>
                               <td className="p-3 text-foreground font-medium">{cls.room}</td>
@@ -356,7 +452,7 @@ export function UserProfileDialog() {
                           <div className="flex justify-between items-center">
                             <div>
                               <span className="text-xs font-bold text-foreground">Đánh giá chuyên môn</span>
-                              <span className="text-[10px] text-muted-foreground block">Người kiểm định: {rev.reviewer} &middot; {rev.date}</span>
+                              <span className="text-xs text-muted-foreground block">Người kiểm định: {rev.reviewer} &middot; {rev.date}</span>
                             </div>
                             <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900 rounded-md font-bold">
                               {rev.score} / 5.0
@@ -364,7 +460,7 @@ export function UserProfileDialog() {
                           </div>
                           <p className="text-xs text-muted-foreground whitespace-pre-wrap italic">&ldquo;{rev.feedback}&rdquo;</p>
                           {rev.improvementSuggestions && (
-                            <div className="text-[11px] text-indigo-600 dark:text-indigo-400 bg-indigo-50/30 dark:bg-indigo-950/10 p-2 rounded-lg leading-relaxed">
+                            <div className="text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50/30 dark:bg-indigo-950/10 p-2 rounded-lg leading-relaxed">
                               <span className="font-bold">Đề xuất cải tiến: </span>
                               {rev.improvementSuggestions}
                             </div>
@@ -522,7 +618,7 @@ export function UserProfileDialog() {
                             <tr key={cls.classCode} className="border-b last:border-0 hover:bg-muted/10">
                               <td className="p-3 font-semibold text-foreground">
                                 <div>{cls.className}</div>
-                                <div className="text-[10px] text-muted-foreground font-mono">{cls.classCode}</div>
+                                <div className="text-xs text-muted-foreground font-mono">{cls.classCode}</div>
                               </td>
                               <td className="p-3 text-muted-foreground font-medium">{cls.teacherName}</td>
                               <td className="p-3 text-foreground font-semibold">{cls.progress}</td>
@@ -570,11 +666,11 @@ export function UserProfileDialog() {
                           <AppAvatar src={child.avatar} name={child.name} size="md" shape="circle" />
                           <div className="min-w-0 flex-1">
                             <h5 className="text-xs font-bold text-foreground truncate">{child.name}</h5>
-                            <p className="text-[10px] text-muted-foreground mt-0.5 font-mono truncate">
+                            <p className="text-xs text-muted-foreground mt-0.5 font-mono truncate">
                               {child.id} &middot; {child.level}
                             </p>
                           </div>
-                          <Badge className="text-[9px] scale-90" variant="secondary">
+                          <Badge className="text-xs scale-90" variant="secondary">
                             Con
                           </Badge>
                         </div>
@@ -656,7 +752,7 @@ export function UserProfileDialog() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Trạng thái:</span>
-                          <span className="font-semibold uppercase text-foreground text-[10px]">
+                          <span className="font-semibold uppercase text-foreground text-xs">
                             {data.payload.status}
                           </span>
                         </div>

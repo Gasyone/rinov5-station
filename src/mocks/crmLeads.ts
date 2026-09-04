@@ -31,12 +31,14 @@ export interface Lead {
   familySiblings?: string[] // Danh sách các anh chị em khác cùng Phụ huynh
   source: 'facebook' | 'hotline' | 'event' | 'referral' | 'website'
   status: LeadStatus
+  subStatus?: string // Trạng thái phụ
   assignedTo: string
   branch: string
   createdAt: string
   lastNote?: string
 
   // Chi tiết buổi Test / Đánh giá năng lực
+  initialLevel?: string // Trình độ ban đầu khi tạo test
   testStatus?: 'scheduled' | 'completed' | 'no_show'
   testDate?: string
   testTime?: string
@@ -682,4 +684,15 @@ export function getLeads(filters?: {
   }
 
   return result
+}
+
+export function updateLead(leadId: string, updater: Partial<Lead> | ((prev: Lead) => Lead)): void {
+  const index = mockLeads.findIndex((l) => l.id === leadId)
+  if (index !== -1) {
+    if (typeof updater === 'function') {
+      mockLeads[index] = updater(mockLeads[index])
+    } else {
+      mockLeads[index] = { ...mockLeads[index], ...updater }
+    }
+  }
 }

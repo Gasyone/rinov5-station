@@ -148,7 +148,7 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
       <div className="overflow-auto flex-1 min-h-0">
         <table className="w-full text-left text-xs border-collapse">
           {/* OPAQUE STICKY HEADER */}
-          <thead className="sticky top-0 z-20 bg-muted/60 dark:bg-zinc-900 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-[11px]">
+          <thead className="sticky top-0 z-20 bg-muted/60 dark:bg-zinc-900 border-b border-border text-muted-foreground font-semibold uppercase tracking-wider text-xs">
             <tr>
               <th className="py-2.5 px-3 w-10 text-center">
                 <Checkbox
@@ -201,7 +201,7 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
                           {item.name}
                         </span>
                         
-                        <Badge variant="outline" className={`text-[10px] w-fit px-1.5 py-0 h-4 ${natureBadge.badgeClass}`}>
+                        <Badge variant="outline" className={`text-xs w-fit px-1.5 py-0 h-4 ${natureBadge.badgeClass}`}>
                           {natureBadge.label}
                         </Badge>
                       </div>
@@ -257,7 +257,7 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
                         {metricDisplay.mainText}
                       </span>
                       {metricDisplay.subText && (
-                        <span className="text-[11px] text-muted-foreground line-clamp-1">
+                        <span className="text-xs text-muted-foreground line-clamp-1">
                           {metricDisplay.subText}
                         </span>
                       )}
@@ -277,7 +277,7 @@ export const CareConditionsConfigTable: React.FC<CareConditionsConfigTableProps>
                         {(item.assignedRoles && item.assignedRoles.length > 0 ? item.assignedRoles : [item.primaryRole]).map((r) => (
                           <span
                             key={r}
-                            className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-mono font-medium"
+                            className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-xs font-mono font-medium"
                           >
                             {r}
                           </span>

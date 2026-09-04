@@ -43,19 +43,19 @@ export function LeaveReservePolicyPanel({
             {/* Condition */}
             <div className="flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 <strong className="text-foreground">Điều kiện:</strong> Còn <strong>tối thiểu 16 buổi học</strong> (không áp dụng học bổng 100%).
               </p>
             </div>
 
             {/* Hold Seat Rule */}
-            <div className="space-y-1 pt-1 border-t border-border/40 text-[11px]">
+            <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                   1. Bảo lưu Giữ chỗ (Trong lớp)
                 </span>
-                <span className="text-[9px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                <span className="text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
                   Không trừ phí
                 </span>
               </div>
@@ -66,13 +66,13 @@ export function LeaveReservePolicyPanel({
             </div>
 
             {/* No Hold Seat Rule */}
-            <div className="space-y-1 pt-1 border-t border-border/40 text-[11px]">
+            <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
                   2. Bảo lưu Không giữ chỗ (Out lớp)
                 </span>
-                <span className="text-[9px] bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                <span className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
                   Tối đa 3 tháng
                 </span>
               </div>
@@ -86,12 +86,12 @@ export function LeaveReservePolicyPanel({
           <div className="space-y-2 text-xs text-muted-foreground">
             <div className="flex items-start gap-2">
               <Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 <strong className="text-foreground">Thời hạn báo:</strong> Gửi trước giờ ca học <strong>tối thiểu 02 tiếng</strong> để được tính vắng có phép.
               </p>
             </div>
 
-            <div className="space-y-1.5 pt-1 border-t border-border/40 text-[11px] leading-relaxed">
+            <div className="space-y-1.5 pt-1 border-t border-border/40 text-xs leading-relaxed">
               <div className="flex items-start gap-1.5">
                 <span className="text-amber-600 font-bold">•</span>
                 <div>
@@ -124,7 +124,7 @@ export function LeaveReservePolicyPanel({
             <History className="h-4 w-4 text-primary shrink-0" />
             <span>Lịch sử đơn của học viên</span>
           </div>
-          <span className="text-[10px] font-semibold bg-muted px-2 py-0.5 rounded-full border text-muted-foreground font-mono">
+          <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-full border text-muted-foreground font-mono">
             {studentHistory.length} đơn
           </span>
         </div>
@@ -142,16 +142,16 @@ export function LeaveReservePolicyPanel({
                 <div key={item.id} className="py-2 first:pt-0 last:pb-0 text-xs space-y-1">
                   <div className="flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-[10px] text-foreground">
+                      <span className="font-mono font-bold text-xs text-foreground">
                         {item.id}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         • {typeText}
                       </span>
                     </div>
                     <span
                       className={cn(
-                        'text-[9px] font-semibold px-1.5 py-0.2 rounded-full border',
+                        'text-xs font-semibold px-1.5 py-0.2 rounded-full border',
                         getStatusBadgeClass(item.status)
                       )}
                     >
@@ -159,13 +159,13 @@ export function LeaveReservePolicyPanel({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                     <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
                     <span>{item.startDate} {item.endDate && item.endDate !== item.startDate ? `→ ${item.endDate}` : ''}</span>
                   </div>
 
                   {item.reason && (
-                    <p className="text-[10px] text-muted-foreground italic truncate">
+                    <p className="text-xs text-muted-foreground italic truncate">
                       {item.reason}
                     </p>
                   )}

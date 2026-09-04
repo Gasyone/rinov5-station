@@ -1,10 +1,10 @@
 'use client'
 
-import { Eye, Copy, Check, UserPlus, MapPin, Mail, ExternalLink, FileText, School, GraduationCap, Plus } from 'lucide-react'
+import { Eye, Copy, Check, ExternalLink, FileText, School, GraduationCap, Calendar, UserPlus, Plus, User } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
-import { mockClassRecords, ClassRecord } from '@/mocks/classRecords'
+import { ClassRecord } from '@/mocks/classRecords'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -22,13 +22,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
+import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { AppAvatar } from '@/components/shared/AppAvatar'
-import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
-import type { GenericSessionData } from '@/components/screens/calendar/SessionHoverCard'
 import { ClassesDetailDialog } from '@/components/screens/classes/detail/ClassesDetailDialog'
-import { maskPhoneNumber } from './crmLeadsHelpers'
+import { maskPhoneNumber, formatAgeAndBirthYear, getInitialLevel, getLeadSubStatusLabel, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateShort, formatDateTimeWithDayOfWeek, getClassRecord } from './crmLeadsHelpers'
 import { SOURCE_LABEL_MAP, STATUS_LABEL_MAP } from './crmLeadsTypes'
+import { CrmLeadsCareHistoryPopover } from './CrmLeadsCareHistoryPopover'
+import { StaffSelect } from './CrmCustomerCreateSearchSelect'
+import { STAFF_LIST, StaffOption } from './crmCustomerCreateTypes'
 
 interface CrmLeadsTableProps {
   viewScope?: 'my' | 'all'
@@ -39,143 +40,10 @@ interface CrmLeadsTableProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onViewDetail: (lead: Lead) => void
-}
-
-const SALES_STAFF_OPTIONS = [
-  'Trần Thị Mai (Sales)',
-  'Lê Hoàng Nam (Sales)',
-  'Nguyễn Văn Hùng (Sales Manager)',
-]
-
-function getProductGroup(subject: string): string {
-  if (!subject) return 'Nhóm Tiếng Anh Tổng Quát'
-  if (subject.includes('Kindy') || subject.includes('Mẫu giáo')) return 'Nhóm Mẫu Giáo (Kindy)'
-  if (subject.includes('SuperKids') || subject.includes('Nhi đồng') || subject.includes('Movers') || subject.includes('Starters')) return 'Nhóm Thiếu Nhi (Kids)'
-  if (subject.includes('IELTS') || subject.includes('Flyers') || subject.includes('Thiếu niên')) return 'Nhóm Luyện Thi & Chứng Chỉ'
-  return 'Nhóm Tiếng Anh Giao Tiếp'
-}
-
-function getStaffTeam(staffName: string): string {
-  if (!staffName || staffName === 'Chưa phân bổ') return ''
-  if (staffName.includes('Manager')) return 'Team Sales Manager'
-  if (staffName.includes('Mai')) return 'Team Sale 01'
-  if (staffName.includes('Nam')) return 'Team Sale 02'
-  return 'Team Sales'
-}
-
-function getCleanStaffName(staffName: string): string {
-  return staffName.replace(/\s*\([^)]*\)/g, '').trim()
-}
-
-// Định dạng Thứ và Ngày (BỎ năm & BỎ giờ để tối ưu 1 dòng)
-function formatDateShort(dateStr?: string): string {
-  if (!dateStr) return '---'
-  let dateWithoutYear = dateStr
-  if (dateStr.includes('/')) {
-    const parts = dateStr.split('/')
-    if (parts.length >= 2) {
-      dateWithoutYear = `${parts[0]}/${parts[1]}`
-    }
-  }
-
-  let dayOfWeek = ''
-  if (dateStr.includes('/')) {
-    const parts = dateStr.split('/')
-    if (parts.length === 3) {
-      const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
-      const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
-      if (!isNaN(d.getTime())) {
-        dayOfWeek = `${days[d.getDay()]}, `
-      }
-    }
-  }
-
-  return `${dayOfWeek}${dateWithoutYear}`
-}
-
-// Lấy hoặc khởi tạo ClassRecord để gọi Modal Lớp học sẵn có
-function getClassRecord(classCode: string, subjectName?: string): ClassRecord {
-  const found = mockClassRecords.find((c) => c.code === classCode)
-  if (found) return found
-
-  return {
-    id: `class-${classCode}`,
-    code: classCode,
-    name: `${subjectName || 'SuperKids'} S1`,
-    level: 'Level 2',
-    branch: 'RinoEdu Quận 1',
-    teacher: 'Mỹ Linh',
-    teacherPhone: '0901234567',
-    room: 'Phòng 2 • RinoEdu Quận 1',
-    schedule: 'Chủ Nhật (15:30 - 17:30)',
-    scheduleSlots: [
-      { dayOfWeek: 'Chủ Nhật', date: '16/08', startTime: '15:30', endTime: '17:30' }
-    ],
-    startDate: '2026-08-01',
-    endDate: '2026-11-01',
-    maxStudents: 16,
-    enrolledStudents: 15,
-    status: 'dang_hoc',
-    tuitionFee: 3500000,
-    assistant: 'Đức Anh'
-  }
-}
-
-// Khởi tạo Dữ liệu Hover Card Hồ sơ Buổi học
-function getSessionHoverData(lead: Lead, type: 'trial' | 'test'): GenericSessionData {
-  if (type === 'trial') {
-    const code = lead.trialClassName || 'SK-02'
-    const fullDate = `${formatDateShort(lead.trialDate)} (${lead.trialTime || '15:30 - 17:30'})`
-    return {
-      id: `trial-${lead.id}`,
-      title: `${code} - ${lead.targetSubject || 'Lớp Học thử'}`,
-      classCode: code,
-      className: lead.targetSubject || 'SuperKids S1',
-      subject: lead.targetSubject || 'SuperKids',
-      level: lead.testResultLevel || 'Level 2',
-      teacher: lead.testerTeacherName || 'Mỹ Linh',
-      assistantTeacher: 'Đức Anh',
-      branch: lead.branch || 'RinoEdu Quận 1',
-      schoolRoom: 'Phòng 2 • RinoEdu Quận 1',
-      timeSlot: lead.trialTime ? `${lead.trialTime}` : '15:30 - 17:30',
-      timeLabel: '15:30',
-      endTimeLabel: '17:30',
-      date: fullDate,
-      dateBucket: 'today',
-      status: 'active',
-      type: 'trial',
-      totalStudents: 16,
-      officialStudents: 15,
-      trialStudents: 1,
-      lessonSubtitle: 'Thực hành giao tiếp & Cân chỉnh cảm biến',
-      note: lead.trialFeedback || 'Học viên tham gia học thử',
-    }
-  } else {
-    const fullDate = `${formatDateShort(lead.testDate)} (${lead.testTime || '18:00 - 19:00'})`
-    return {
-      id: `test-${lead.id}`,
-      title: `Đánh giá: ${lead.testerTeacherName || 'Thầy Alex'}`,
-      classCode: 'TEST-01',
-      className: 'Đánh giá năng lực & Phỏng vấn đầu vào',
-      subject: lead.targetSubject || 'Anh văn',
-      level: lead.testResultLevel || 'Đầu vào',
-      teacher: lead.testerTeacherName || 'Thầy Alex',
-      assistantTeacher: 'Trần Thị Mai (Sales)',
-      branch: lead.branch || 'RinoEdu Quận 1',
-      schoolRoom: 'Phòng Test 01 • RinoEdu Quận 1',
-      timeSlot: lead.testTime ? `${lead.testTime}` : '18:00 - 19:00',
-      timeLabel: '18:00',
-      endTimeLabel: '19:00',
-      date: fullDate,
-      dateBucket: 'today',
-      status: 'active',
-      type: 'test',
-      totalStudents: 1,
-      trialStudents: 1,
-      lessonSubtitle: 'Đánh giá kỹ năng Listening & Speaking',
-      note: lead.testScore ? `Đạt score: ${lead.testScore}` : 'Chờ kiểm tra',
-    }
-  }
+  onOpenContactProfile?: (lead: Lead) => void
+  onOpenBookingTest?: (lead: Lead) => void
+  onOpenTrialClass?: (lead: Lead) => void
+  onOpenCreateOrder?: (lead: Lead) => void
 }
 
 export function CrmLeadsTable({
@@ -187,11 +55,14 @@ export function CrmLeadsTable({
   onPageChange,
   onPageSizeChange,
   onViewDetail,
+  onOpenContactProfile,
+  onOpenBookingTest,
+  onOpenTrialClass,
+  onOpenCreateOrder,
 }: CrmLeadsTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [assignments, setAssignments] = useState<Record<string, string>>({})
-  const [openAssignPopoverId, setOpenAssignPopoverId] = useState<string | null>(null)
 
   // State quản lý Modal Chi tiết Lớp học có sẵn
   const [selectedClassRecord, setSelectedClassRecord] = useState<ClassRecord | null>(null)
@@ -239,9 +110,9 @@ export function CrmLeadsTable({
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const handleAssignStaff = (lead: Lead, staffName: string) => {
+  const handleAssignStaff = (lead: Lead, staff: StaffOption | string) => {
+    const staffName = typeof staff === 'string' ? staff : `${staff.name} (${staff.role})`
     setAssignments((prev) => ({ ...prev, [lead.id]: staffName }))
-    setOpenAssignPopoverId(null)
     toast.success(`Đã phân bổ lead ${lead.code} (${lead.studentName}) cho ${staffName}`)
   }
 
@@ -251,7 +122,7 @@ export function CrmLeadsTable({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-0.5 text-[11px] text-primary hover:opacity-80 p-0 bg-transparent border-0 font-mono font-bold cursor-pointer shrink-0 ml-0.5"
+          className="inline-flex items-center gap-0.5 text-xs text-primary hover:opacity-80 p-0 bg-transparent border-0 font-mono font-bold cursor-pointer shrink-0 ml-0.5"
           title="Xem lịch sử đánh giá & học thử"
         >
           <FileText className="h-3.5 w-3.5 text-primary" />
@@ -272,18 +143,18 @@ export function CrmLeadsTable({
                   <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
                   Đánh giá: {lead.testerTeacherName || 'Thầy Alex'}
                 </span>
-                <Badge variant="outline" className="text-[10px] py-0 px-1">
+                <Badge variant="outline" className="text-xs py-0 px-1">
                   {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Hẹn test' : 'Vắng test'}
                 </Badge>
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {lead.testResultLevel ? `${lead.testResultLevel} (${lead.testScore})` : `Lịch: ${formatDateShort(lead.testDate)}`}
               </div>
               <a
                 href={`/app/booking_test?leadId=${lead.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-primary font-medium hover:underline mt-0.5"
+                className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline mt-0.5"
               >
                 <ExternalLink className="h-3 w-3" />
                 <span>Phiếu kết quả</span>
@@ -299,18 +170,18 @@ export function CrmLeadsTable({
                   <School className="h-3.5 w-3.5 text-sky-600" />
                   Học thử: {lead.trialClassName || 'SK-02'}
                 </span>
-                <Badge variant="outline" className="text-[10px] py-0 px-1">
+                <Badge variant="outline" className="text-xs py-0 px-1">
                   {lead.trialStatus === 'completed' ? 'Đã học thử' : lead.trialStatus === 'scheduled' ? 'Hẹn thử' : 'Vắng thử'}
                 </Badge>
               </div>
-              <div className="text-[11px] text-muted-foreground italic line-clamp-1">
+              <div className="text-xs text-muted-foreground italic line-clamp-1">
                 {lead.trialFeedback || `Ngày học: ${formatDateShort(lead.trialDate)}`}
               </div>
               <a
                 href={`/app/trial_class?leadId=${lead.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] text-sky-600 dark:text-sky-400 font-medium hover:underline mt-0.5"
+                className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline mt-0.5"
               >
                 <ExternalLink className="h-3 w-3" />
                 <span>Phiếu nhận xét</span>
@@ -335,39 +206,39 @@ export function CrmLeadsTable({
           />
         }
       >
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
+        <Table containerClassName="w-full overflow-x-auto min-h-full" className="min-w-[1750px] border-collapse">
+          <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-xs shadow-xs [&_th]:bg-muted/95 [&_th]:backdrop-blur-xs">
+            <TableRow className="border-b border-border hover:bg-transparent">
               {/* Checkbox */}
-              <TableHead className="w-[40px] px-3">
+              <TableHead className="w-[48px] min-w-[48px] px-3">
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={handleSelectAll}
                   aria-label="Chọn tất cả Lead"
                 />
               </TableHead>
-              <TableHead className="w-[200px]">Lead</TableHead>
-              <TableHead className="w-[170px]">Phụ huynh / Liên hệ</TableHead>
-              <TableHead className="min-w-[190px]">Địa chỉ & Email</TableHead>
+              <TableHead className="min-w-[260px]">Lead & Nguồn</TableHead>
+              <TableHead className="min-w-[190px]">Phụ huynh / Liên hệ</TableHead>
+              <TableHead className="min-w-[160px]">Tuổi & Trình độ</TableHead>
               <TableHead className="min-w-[210px]">Khóa học & Nhóm SP</TableHead>
-              <TableHead className="min-w-[270px]">Đánh giá & Trải nghiệm</TableHead>
-              <TableHead className="w-[110px]">Nguồn Lead</TableHead>
-              <TableHead className="w-[130px]">Trạng thái</TableHead>
-
-              {/* Cột theo góc nhìn (Role View Scope) */}
-              {viewScope === 'all' ? (
-                <TableHead className="w-[170px]">Người phụ trách</TableHead>
-              ) : (
-                <TableHead className="min-w-[240px]">Đơn hàng</TableHead>
+              <TableHead className="min-w-[240px]">Đánh giá & Trải nghiệm</TableHead>
+              <TableHead className="min-w-[290px] text-left">Lịch sử chăm sóc</TableHead>
+              <TableHead className="min-w-[150px]">Trạng thái</TableHead>
+              {viewScope === 'all' && (
+                <TableHead className="min-w-[180px]">Người phụ trách</TableHead>
               )}
+              <TableHead className="min-w-[250px]">Đơn hàng</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedLeads.map((lead) => {
+            {paginatedLeads.map((lead, index) => {
               const isSelected = selectedIds.includes(lead.id)
+              const isEven = index % 2 === 0
               const birthYear = lead.birthYear ?? 2026 - lead.studentAge
               const assignedStaff = assignments[lead.id] ?? lead.assignedTo
               const isUnassigned = !assignedStaff || assignedStaff.trim() === '' || assignedStaff === 'Chưa phân bổ'
+              const careInfo = getLeadCareInfo(lead)
+              const staffAssignInfo = getStaffAssignmentInfo(lead)
 
               // Kiểm tra sự kiện
               const hasTest = Boolean(lead.testStatus)
@@ -377,7 +248,14 @@ export function CrmLeadsTable({
               return (
                 <TableRow
                   key={lead.id}
-                  className={isSelected ? 'bg-muted/50 group' : 'hover:bg-muted/30 group'}
+                  className={cn(
+                    'border-b border-border/60 transition-colors group',
+                    isSelected
+                      ? 'bg-accent/40 data-[state=selected]:bg-accent/40'
+                      : isEven
+                      ? 'bg-background hover:bg-muted/50'
+                      : 'bg-muted/25 dark:bg-muted/15 hover:bg-muted/50'
+                  )}
                 >
                   {/* Checkbox dòng */}
                   <TableCell className="px-3">
@@ -390,48 +268,58 @@ export function CrmLeadsTable({
                     />
                   </TableCell>
 
-                  {/* Cột 1: Lead - Tên + Mã */}
+                  {/* Cột 1: Lead & Nguồn - Tên học viên (Focus chính) + Mã Lead & Nguồn */}
                   <TableCell className="relative cursor-pointer" onClick={() => onViewDetail(lead)}>
-                    <div className="flex flex-col gap-0.5 pr-8">
-                      <div className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                    <div className="flex flex-col gap-0.5 pr-14">
+                      <div className="font-semibold text-foreground text-sm flex items-center gap-1.5">
                         <span>{lead.studentName}</span>
-                        <span className="text-xs font-normal text-muted-foreground">
-                          ({lead.studentAge}t - {birthYear})
-                        </span>
                       </div>
-                      <div className="text-xs font-mono text-muted-foreground">{lead.code}</div>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="font-mono font-medium text-foreground/80">{lead.code}</span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span>{SOURCE_LABEL_MAP[lead.source] ?? lead.source}</span>
+                      </div>
                     </div>
 
-                    {/* Icon thao tác xem chi tiết Modal - Chỉ hiển thị khi hover */}
+                    {/* Icons thao tác xem chi tiết & xem hồ sơ contact - Hiển thị khi hover */}
                     <div
-                      className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 bg-background/90 backdrop-blur-xs p-0.5 rounded-lg border border-border/60 shadow-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-primary hover:bg-primary/10 rounded-full"
+                        className="h-7 w-7 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-md cursor-pointer"
+                        onClick={() => onOpenContactProfile?.(lead)}
+                        title="Xem / Sửa thông tin hồ sơ liên hệ (Contact Info Modal)"
+                      >
+                        <User className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-primary hover:bg-primary/10 rounded-md cursor-pointer"
                         onClick={() => onViewDetail(lead)}
-                        title="Xem chi tiết Lead trong Modal"
+                        title="Xem chi tiết tác nghiệp Lead"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>
 
-                  {/* Cột 2: Phụ huynh / Liên hệ */}
+                  {/* Cột 2: Phụ huynh / Liên hệ (Đưa lên trước Tuổi & Trình độ) */}
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <div className="font-semibold text-foreground text-sm flex items-center gap-1.5">
+                      <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
                         <span>{lead.parentName}</span>
                         {lead.parentRole && (
-                          <Badge variant="outline" className="text-[10px] py-0 px-1 font-normal">
+                          <Badge variant="outline" className="text-xs py-0 px-1 font-normal text-muted-foreground border-muted-foreground/30">
                             {lead.parentRole}
                           </Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-                        <span className="text-foreground font-medium">
+                        <span>
                           {maskPhoneNumber(lead.phone)}
                         </span>
                         <Button
@@ -452,113 +340,108 @@ export function CrmLeadsTable({
                     </div>
                   </TableCell>
 
-                  {/* Cột 3: Địa chỉ & Email */}
+                  {/* Cột 3: Tuổi & Trình độ ban đầu khi tạo test */}
                   <TableCell>
-                    <div className="flex flex-col gap-1 max-w-[200px]">
-                      <div
-                        className="flex items-center gap-1.5 text-xs text-foreground font-medium line-clamp-1"
-                        title={lead.address}
-                      >
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
-                        <span className="truncate">{lead.address || 'Chưa cập nhật địa chỉ'}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-xs font-medium text-foreground">
+                        {formatAgeAndBirthYear(lead.studentAge, birthYear)}
                       </div>
-                      <div
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground line-clamp-1 font-mono"
-                        title={lead.email}
-                      >
-                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-                        <span className="truncate">{lead.email || 'Chưa có email'}</span>
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {getInitialLevel(lead)}
                       </div>
                     </div>
                   </TableCell>
 
-                  {/* Cột 4: Khóa học đăng ký & Nhóm sản phẩm (Đã lược bớt icon theo yêu cầu) */}
+                  {/* Cột 4: Khóa học đăng ký & Nhóm sản phẩm */}
                   <TableCell>
-                    <div className="flex flex-col gap-0.5 max-w-[220px]">
-                      <div className="font-semibold text-emerald-800 dark:text-emerald-300 text-xs truncate">
+                    <div className="flex flex-col gap-0.5 max-w-[200px]">
+                      <div className="font-medium text-foreground text-xs truncate">
                         {lead.targetSubject}
                       </div>
-                      <div className="text-[11px] text-muted-foreground truncate">
+                      <div className="text-xs text-muted-foreground truncate">
                         {getProductGroup(lead.targetSubject)}
                       </div>
                     </div>
                   </TableCell>
 
-                  {/* Cột 5: Đánh giá & Trải nghiệm (Bỏ giờ, Dòng 2 chỉ Thứ & Ngày, không tách dòng) */}
+                  {/* Cột 5: Đánh giá & Trải nghiệm (Sự kiện mới nhất hiển thị chung dòng 1-2 + Icon lịch sử riêng) */}
                   <TableCell>
                     {eventCount === 0 ? (
-                      <span className="text-xs text-muted-foreground font-mono">---</span>
+                      <div className="flex items-center gap-1.5 flex-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs font-medium border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 cursor-pointer shadow-2xs shrink-0"
+                          onClick={() => onOpenBookingTest?.(lead)}
+                          title="Đặt lịch đánh giá năng lực (ĐK trải nghiệm)"
+                        >
+                          <span>ĐK trải nghiệm</span>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs font-medium border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-2xs shrink-0"
+                          onClick={() => onOpenTrialClass?.(lead)}
+                          title="Đăng ký ghép lớp học thử (ĐK học thử)"
+                        >
+                          <span>ĐK học thử</span>
+                        </Button>
+                      </div>
                     ) : (
-                      <div className="flex flex-col gap-0.5 max-w-[280px]">
+                      <div className="flex flex-col gap-0.5 max-w-[240px]">
                         {hasTrial ? (
                           <>
-                            {/* Dòng 1 Học thử: "Học thử:" + Mã lớp (KHÔNG in đậm) + Icon (N) */}
-                            <div className="flex items-center gap-1.5 text-xs text-sky-800 dark:text-sky-300 font-normal">
-                              <span>Học thử:</span>
-                              <ClassSessionHoverCard session={getSessionHoverData(lead, 'trial')}>
-                                <button
-                                  type="button"
-                                  className="font-normal text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-transparent p-0 border-0"
-                                  onClick={(e) => handleOpenClassDetail(e, lead.trialClassName, lead.targetSubject)}
-                                  title="Rê chuột xem lịch học • Bấm để mở chi tiết Lớp học"
-                                >
-                                  {lead.trialClassName || 'SK-02'}
-                                </button>
-                              </ClassSessionHoverCard>
+                            {/* Dòng 1 Học thử: "Học thử:" + Mã lớp + Icon Lịch sử */}
+                            <div className="flex items-center gap-1.5 text-xs text-foreground font-medium flex-nowrap">
+                              <span className="text-muted-foreground font-normal shrink-0">Học thử:</span>
+                              <button
+                                type="button"
+                                className="font-medium text-primary hover:underline cursor-pointer bg-transparent p-0 border-0 truncate"
+                                onClick={(e) => handleOpenClassDetail(e, lead.trialClassName, lead.targetSubject)}
+                                title="Bấm để mở chi tiết Lớp học"
+                              >
+                                {lead.trialClassName || 'SK-02'}
+                              </button>
                               {eventCount > 1 && renderHistoryPopoverButton(lead, eventCount)}
                             </div>
 
-                            {/* Dòng 2 Học thử (Không tách dòng): Trình độ (Gắn Link mở Phiếu nhận xét tab mới) • Thứ, Ngày (Không có Giờ) */}
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
-                              <ClassSessionHoverCard session={getSessionHoverData(lead, 'trial')}>
-                                <a
-                                  href={`/app/trial_class?leadId=${lead.id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-medium text-sky-700 dark:text-sky-300 hover:underline inline-flex items-center gap-1 shrink-0"
-                                  title="Mở phiếu nhận xét học thử (Tab mới)"
-                                >
-                                  <ExternalLink className="h-3 w-3 text-sky-600 shrink-0" />
-                                  <span>{lead.testResultLevel || 'SuperKids Level 2'}</span>
-                                </a>
-                              </ClassSessionHoverCard>
-                              <span>•</span>
-                              <ClassSessionHoverCard session={getSessionHoverData(lead, 'trial')}>
-                                <span className="font-mono text-muted-foreground cursor-pointer hover:text-foreground shrink-0">
-                                  {formatDateShort(lead.trialDate)}
-                                </span>
-                              </ClassSessionHoverCard>
+                            {/* Dòng 2 Học thử: Click vào link mở ra tab kết quả (Thứ, Ngày, Giờ) */}
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                              <a
+                                href={`/app/trial_class?leadId=${lead.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono truncate max-w-[200px]"
+                                title="Bấm để mở phiếu nhận xét / kết quả học thử"
+                              >
+                                <ExternalLink className="h-3 w-3 shrink-0" />
+                                <span>{formatDateTimeWithDayOfWeek(lead.trialDate, lead.trialTime)}</span>
+                              </a>
                             </div>
                           </>
                         ) : (
                           <>
-                            {/* Dòng 1 Đánh giá: "Đánh giá: Tên GV" (KHÔNG in đậm) + Icon (N) */}
-                            <div className="flex items-center gap-1.5 text-xs text-purple-900 dark:text-purple-300 font-normal">
-                              <span>Đánh giá:</span>
-                              <span className="text-foreground font-normal">{lead.testerTeacherName || 'Thầy Alex'}</span>
+                            {/* Dòng 1 Đánh giá: "Đánh giá:" + Tên Người phụ trách + Icon Lịch sử */}
+                            <div className="flex items-center gap-1.5 text-xs text-foreground font-medium flex-nowrap">
+                              <span className="text-muted-foreground font-normal shrink-0">Đánh giá:</span>
+                              <span className="text-foreground truncate font-medium">{lead.testerTeacherName || 'Thầy Alex'}</span>
                               {eventCount > 1 && renderHistoryPopoverButton(lead, eventCount)}
                             </div>
 
-                            {/* Dòng 2 Đánh giá (Không tách dòng): Trình độ & Điểm số (Gắn Link mở Phiếu kết quả tab mới) • Thứ, Ngày (Không có Giờ) */}
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
-                              <ClassSessionHoverCard session={getSessionHoverData(lead, 'test')}>
-                                <a
-                                  href={`/app/booking_test?leadId=${lead.id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-medium text-amber-800 dark:text-amber-300 hover:underline inline-flex items-center gap-1 shrink-0"
-                                  title="Mở phiếu kết quả đánh giá năng lực (Tab mới)"
-                                >
-                                  <ExternalLink className="h-3 w-3 text-amber-600 shrink-0" />
-                                  <span>{lead.testResultLevel || 'Flyers Level B2'} {lead.testScore ? `(${lead.testScore})` : ''}</span>
-                                </a>
-                              </ClassSessionHoverCard>
-                              <span>•</span>
-                              <ClassSessionHoverCard session={getSessionHoverData(lead, 'test')}>
-                                <span className="font-mono text-muted-foreground cursor-pointer hover:text-foreground shrink-0">
-                                  {formatDateShort(lead.testDate)}
-                                </span>
-                              </ClassSessionHoverCard>
+                            {/* Dòng 2 Đánh giá: Click vào link mở ra kết quả (Thứ, Ngày, Giờ) */}
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                              <a
+                                href={`/app/booking_test?leadId=${lead.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono truncate max-w-[200px]"
+                                title="Bấm để mở phiếu kết quả đánh giá năng lực"
+                              >
+                                <ExternalLink className="h-3 w-3 shrink-0" />
+                                <span>{formatDateTimeWithDayOfWeek(lead.testDate, lead.testTime)}</span>
+                              </a>
                             </div>
                           </>
                         )}
@@ -566,27 +449,95 @@ export function CrmLeadsTable({
                     )}
                   </TableCell>
 
-                  {/* Cột 7: Nguồn Lead */}
-                  <TableCell className="text-sm">
-                    {SOURCE_LABEL_MAP[lead.source] ?? lead.source}
+                  {/* Cột 6: Lịch sử chăm sóc (Mới - Thiết kế giống màn Tái phí) */}
+                  <TableCell className="min-w-[290px]" onClick={(e) => e.stopPropagation()}>
+                    {(() => {
+                      const { isUncared, inProgress, attemptCount, isRescheduled, rescheduleDate, rescheduleTime, latestLog } = careInfo
+
+                      const cellContent = (
+                        <div className="flex flex-col gap-1 py-0.5 text-left max-w-[280px] cursor-pointer group/care">
+                          {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className={cn(
+                                'text-xs font-normal transition-colors',
+                                isUncared
+                                  ? 'text-muted-foreground select-none'
+                                  : inProgress
+                                  ? 'text-sky-600 dark:text-sky-400 group-hover/care:underline'
+                                  : 'text-emerald-600 dark:text-emerald-400 group-hover/care:underline'
+                              )}
+                              title={isUncared ? undefined : 'Rê chuột hoặc bấm để xem chi tiết Lịch sử chăm sóc'}
+                            >
+                              {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
+                            </span>
+
+                            {/* Lịch hẹn gọi lại / chăm sóc */}
+                            {isRescheduled && rescheduleDate && (
+                              <span
+                                className="text-xs font-normal text-violet-600 dark:text-violet-400 flex items-center gap-1 whitespace-nowrap"
+                                title="Lịch hẹn gọi lại / chăm sóc"
+                              >
+                                <Calendar className="h-3.5 w-3.5 shrink-0 text-violet-500 dark:text-violet-400" />
+                                <span>Hẹn: {rescheduleDate} {rescheduleTime ? `(${rescheduleTime})` : ''}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Hàng 2: Nội dung ghi chú chăm sóc gần nhất (1 dòng rút gọn) */}
+                          {isUncared ? (
+                            <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
+                              Cần liên hệ trao đổi với phụ huynh ngay
+                            </div>
+                          ) : (
+                            latestLog && (
+                              <div
+                                className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                                title={`Ghi chú (${latestLog.date}): ${latestLog.note}`}
+                              >
+                                <span className="font-mono text-foreground/70">{latestLog.date}:</span> {latestLog.note}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )
+
+                      if (isUncared) {
+                        return cellContent
+                      }
+
+                      return (
+                        <CrmLeadsCareHistoryPopover
+                          lead={lead}
+                          careInfo={careInfo}
+                          trigger={cellContent}
+                        />
+                      )
+                    })()}
                   </TableCell>
 
-                  {/* Cột 8: Trạng thái phễu gộp */}
-                  <TableCell>
-                    <Badge className={getStatusBadgeClass(lead.status)}>
-                      {STATUS_LABEL_MAP[lead.status] ?? lead.status}
-                    </Badge>
+                  {/* Cột 7: Trạng thái phễu gộp & Trạng thái phụ */}
+                  <TableCell className="min-w-[150px]">
+                    <div className="flex flex-col gap-1 items-start">
+                      <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
+                        {STATUS_LABEL_MAP[lead.status] ?? lead.status}
+                      </Badge>
+                      <span className="text-xs font-normal text-muted-foreground/80 truncate max-w-[140px]">
+                        {getLeadSubStatusLabel(lead)}
+                      </span>
+                    </div>
                   </TableCell>
 
-                  {/* Cột 9: Đổi động theo Role/ViewScope (Mới: Điều hướng chính xác tới Landing Page /quote/${lead.orderCode}) */}
-                  {viewScope === 'all' ? (
-                    <TableCell>
+                  {/* Cột 8: Người phụ trách (Chỉ hiển thị trên viewScope 'all', ẩn trên viewScope 'my' vì là Lead của chính họ) */}
+                  {viewScope === 'all' && (
+                    <TableCell className="min-w-[180px]" onClick={(e) => e.stopPropagation()}>
                       {isUnassigned ? (
-                        <Popover
-                          open={openAssignPopoverId === lead.id}
-                          onOpenChange={(open) => setOpenAssignPopoverId(open ? lead.id : null)}
-                        >
-                          <PopoverTrigger asChild>
+                        <StaffSelect
+                          mode="single"
+                          selectedStaff={assignedStaff}
+                          onSelectStaff={(staff) => handleAssignStaff(lead, staff)}
+                          staffList={STAFF_LIST}
+                          trigger={
                             <Button
                               type="button"
                               variant="outline"
@@ -596,120 +547,110 @@ export function CrmLeadsTable({
                               <UserPlus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                               <span>Chưa phân bổ</span>
                             </Button>
-                          </PopoverTrigger>
-                          <PopoverContent align="start" className="w-56 p-2 z-50">
-                            <div className="text-xs font-bold text-muted-foreground uppercase px-2 py-1 mb-1 border-b">
-                              Gán người phụ trách
-                            </div>
-                            <div className="space-y-0.5">
-                              {SALES_STAFF_OPTIONS.map((staff) => (
-                                <Button
-                                  key={staff}
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full justify-start text-xs font-medium h-8 px-2"
-                                  onClick={() => handleAssignStaff(lead, staff)}
-                                >
-                                  <AppAvatar name={getCleanStaffName(staff)} size="xs" className="mr-1.5" />
-                                  <span>{staff}</span>
-                                </Button>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                          }
+                        />
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <AppAvatar name={getCleanStaffName(assignedStaff)} size="sm" className="shrink-0" />
-                          <div className="flex flex-col gap-0.5 min-w-0">
-                            <span className="text-xs font-medium text-foreground truncate">
-                              {getCleanStaffName(assignedStaff)}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-mono truncate">
-                              {getStaffTeam(assignedStaff)}
-                            </span>
-                          </div>
-                        </div>
+                        <StaffSelect
+                          mode="single"
+                          selectedStaff={assignedStaff}
+                          onSelectStaff={(staff) => handleAssignStaff(lead, staff)}
+                          staffList={STAFF_LIST}
+                          trigger={
+                            <button
+                              type="button"
+                              className="flex flex-col gap-0.5 text-left bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer group"
+                              title="Bấm để chuyển đổi người phụ trách"
+                            >
+                              <span className="text-xs font-normal text-foreground group-hover:text-primary group-hover:underline truncate">
+                                {getCleanStaffName(assignedStaff)}
+                              </span>
+                              <span
+                                className="text-xs text-muted-foreground font-mono truncate"
+                                title={`Bắt đầu phụ trách: ${staffAssignInfo.label}`}
+                              >
+                                {staffAssignInfo.label}
+                              </span>
+                            </button>
+                          }
+                        />
                       )}
                     </TableCell>
-                  ) : (
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5 max-w-[250px]">
-                        {lead.orderCode ? (
-                          <>
-                            {/* Dòng 1: Gói học & Số tiền (Điều hướng chuẩn tới Landing Page Báo Giá /quote/${lead.orderCode}) */}
-                            <div className="flex items-center gap-1 text-xs font-semibold text-emerald-800 dark:text-emerald-300 truncate">
-                              <a
-                                href={`/quote/${lead.orderCode}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline flex items-center gap-1 font-semibold text-emerald-800 dark:text-emerald-300 truncate"
-                                title={`Mở Landing Page Báo Giá & Chi tiết Đơn hàng (${lead.orderCode})`}
-                              >
-                                <ExternalLink className="h-3 w-3 text-emerald-600 shrink-0" />
-                                <span className="truncate">{lead.expectedPackage || 'Gói tư vấn'}</span>
-                                {lead.expectedAmount && (
-                                  <span className="font-mono text-[11px] font-normal text-muted-foreground shrink-0">
-                                    ({lead.expectedAmount})
-                                  </span>
-                                )}
-                              </a>
-                            </div>
-
-                            {/* Dòng 2: Mã đơn nháp • Lần thanh toán (Ví dụ: Cọc 50%) */}
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground flex-wrap">
-                              <a
-                                href={`/quote/${lead.orderCode}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-mono font-bold text-foreground hover:text-primary hover:underline cursor-pointer"
-                                title="Xem Landing Page Báo giá & Chi tiết Đơn hàng nháp"
-                              >
-                                {lead.orderCode}
-                              </a>
-                              {lead.paymentTerm && (
-                                <>
-                                  <span>•</span>
-                                  <span className="font-medium text-amber-700 dark:text-amber-400">
-                                    {lead.paymentTerm}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {/* Trường hợp chưa có đơn nháp: Nút Tạo đơn nháp */}
-                            <div className="flex items-center gap-1 text-xs">
-                              <a
-                                href={`/quote/OD-DRAFT-9230`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                                title="Mở Landing Page Báo giá & Tạo Đơn nháp mới"
-                              >
-                                <Plus className="h-3.5 w-3.5 text-amber-600" />
-                                <span>Tạo đơn nháp</span>
-                              </a>
-                            </div>
-
-                            {/* Dòng 2: Gói dự kiến & Lần thanh toán */}
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate">
-                              <span className="truncate">{lead.expectedPackage || 'Chưa chọn gói'}</span>
-                              {lead.paymentTerm && (
-                                <>
-                                  <span>•</span>
-                                  <span className="text-amber-700 dark:text-amber-400 font-medium">
-                                    {lead.paymentTerm}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
                   )}
+
+                  {/* Cột 9: Đơn hàng (Luôn hiển thị ở cuối cùng) */}
+                  <TableCell className="min-w-[250px]">
+                    <div className="flex flex-col gap-1 max-w-[250px]">
+                      {lead.orderCode ? (
+                        <>
+                          {/* Dòng 1: Gói học & Số tiền (Text thường, không in đậm) */}
+                          <div className="flex items-center gap-1 text-xs font-normal text-foreground truncate">
+                            <button
+                              type="button"
+                              onClick={() => onOpenCreateOrder?.(lead)}
+                              className="hover:text-primary hover:underline flex items-center gap-1 font-normal text-foreground truncate text-left cursor-pointer bg-transparent border-0 p-0"
+                              title={`Mở chi tiết & Chỉnh sửa Đơn hàng (${lead.orderCode})`}
+                            >
+                              <FileText className="h-3 w-3 text-primary shrink-0" />
+                              <span className="truncate">{lead.expectedPackage || 'Gói tư vấn'}</span>
+                              {lead.expectedAmount && (
+                                <span className="font-mono text-xs font-normal text-emerald-600 dark:text-emerald-400 shrink-0 ml-1">
+                                  ({lead.expectedAmount})
+                                </span>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Dòng 2: Mã đơn nháp • Lần thanh toán */}
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => onOpenCreateOrder?.(lead)}
+                              className="font-mono font-medium text-muted-foreground hover:text-primary hover:underline cursor-pointer bg-transparent border-0 p-0"
+                              title={`Xem chi tiết đơn hàng nháp (${lead.orderCode})`}
+                            >
+                              {lead.orderCode}
+                            </button>
+                            {lead.paymentTerm && (
+                              <>
+                                <span className="text-muted-foreground/40">•</span>
+                                <span className="font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded border border-emerald-200/60 dark:border-emerald-800/60 text-xs">
+                                  {lead.paymentTerm}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Trường hợp chưa có đơn: Nút Tạo đơn */}
+                          <div className="flex items-center gap-1 text-xs">
+                            <button
+                              type="button"
+                              onClick={() => onOpenCreateOrder?.(lead)}
+                              className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                              title="Mở Modal Lên đơn mới cho Lead"
+                            >
+                              <Plus className="h-3.5 w-3.5 text-primary" />
+                              <span>Tạo đơn</span>
+                            </button>
+                          </div>
+
+                          {/* Dòng 2: Gói dự kiến & Lần thanh toán */}
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                            <span className="truncate">{lead.expectedPackage || 'Chưa chọn gói'}</span>
+                            {lead.paymentTerm && (
+                              <>
+                                <span className="text-muted-foreground/40">•</span>
+                                <span className="text-muted-foreground font-medium">
+                                  {lead.paymentTerm}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               )
             })}

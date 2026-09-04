@@ -44,7 +44,7 @@ export function AudioPlayButton({ duration = '0:00', className }: AudioPlayButto
       <button
         type="button"
         onClick={handleToggle}
-        className="flex items-center gap-1 p-0.5 px-1.5 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded cursor-pointer transition-colors text-[10px] font-bold h-5 shrink-0"
+        className="flex items-center gap-1 p-0.5 px-1.5 hover:bg-emerald-100/80 dark:hover:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 rounded cursor-pointer transition-colors text-xs font-bold h-5 shrink-0"
         title={isPlaying ? "Tạm dừng" : "Phát ghi âm"}
       >
         {isPlaying ? (

@@ -45,6 +45,7 @@ interface StudentCareDetailPageProps {
   onRefresh?: () => void
   onStudentSelect?: (studentId: string) => void
   initialTab?: 'learning' | 'orders'
+  headerTitle?: string
 }
 
 export function StudentCareDetailPage({
@@ -53,15 +54,16 @@ export function StudentCareDetailPage({
   alerts,
   onRefresh,
   initialTab = 'learning',
+  headerTitle = 'Chi tiết chăm sóc',
 }: StudentCareDetailPageProps) {
   const setCustomHeaderTitle = useUIStore((s) => s.setCustomHeaderTitle)
 
   useEffect(() => {
-    setCustomHeaderTitle('Chi tiết chăm sóc')
+    setCustomHeaderTitle(headerTitle)
     return () => {
       setCustomHeaderTitle(null)
     }
-  }, [setCustomHeaderTitle])
+  }, [setCustomHeaderTitle, headerTitle])
 
   const [leftTab, setLeftTab] = useState<'learning' | 'orders'>(initialTab)
 
@@ -353,7 +355,7 @@ export function StudentCareDetailPage({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <h4 className="font-bold text-sm text-foreground truncate">{student.studentName}</h4>
-                            <Badge className={cn('text-[8px] font-bold py-0.5 px-1.5 rounded-full shadow-none border-none uppercase leading-none h-4', getStatusBadgeClass(student.status))}>
+                            <Badge className={cn('text-xs font-bold py-0.5 px-1.5 rounded-full shadow-none border-none uppercase leading-none h-4', getStatusBadgeClass(student.status))}>
                               {student.status}
                             </Badge>
                           </div>
@@ -363,15 +365,15 @@ export function StudentCareDetailPage({
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
-                          <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lớp học:</span>
+                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Lớp học:</span>
                           <span className="font-semibold text-foreground truncate">{student.classCode}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
-                          <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Môn học:</span>
+                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Môn học:</span>
                           <span className="font-semibold text-foreground">{student.subject}</span>
                         </div>
                         <div className="space-y-1.5 pt-1">
-                          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">LIÊN HỆ GIA ĐÌNH</p>
+                          <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">LIÊN HỆ GIA ĐÌNH</p>
                           {contactsList.map((contact, idx) => (
                             <div key={idx} className="flex justify-between items-center gap-2 py-0.5">
                               <span className="font-medium text-foreground">{contact.name} ({contact.relationship})</span>
@@ -394,7 +396,7 @@ export function StudentCareDetailPage({
                     <span className="text-base font-bold text-foreground">
                       {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
                     </span>
-                    <Badge className={cn('text-[9px] font-semibold py-0.5 px-2 rounded-full leading-none shadow-none', 
+                    <Badge className={cn('text-xs font-semibold py-0.5 px-2 rounded-full leading-none shadow-none', 
                       student.status === 'Đang học'
                         ? getStatusBadgeClass('dang_hoc')
                         : student.status === 'Chờ chuyển lớp'
@@ -501,6 +503,8 @@ export function StudentCareDetailPage({
               onRefresh={onRefresh}
               topicsList={topicsList}
               allLogs={allLogs}
+              selectedPackageId={selectedPackageId}
+              selectedPackage={activePackage}
             />
           </aside>
 

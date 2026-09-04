@@ -46,7 +46,7 @@ export function StudentSelectorPopoverContent({
       {/* Title & Subtitle Header */}
       <div className="pb-2 border-b border-zinc-100 dark:border-zinc-800 space-y-0.5 mb-2">
         <p className="text-xs font-bold text-foreground">{title}</p>
-        {subtitle && <p className="text-[11px] text-muted-foreground italic">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-muted-foreground italic">{subtitle}</p>}
       </div>
 
       {/* Search Input with Icon */}
@@ -129,18 +129,18 @@ export function StudentSelectorPopoverContent({
               )}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`h-7 w-7 rounded-full ${bg} ${text} flex items-center justify-center font-bold text-[11px] shrink-0 border`}>
+                <div className={`h-7 w-7 rounded-full ${bg} ${text} flex items-center justify-center font-bold text-xs shrink-0 border`}>
                   {st.initials || st.name.slice(0, 1)}
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="truncate block font-semibold text-xs">{st.name}</span>
-                  {st.code && <span className="text-[9px] text-muted-foreground font-mono">{st.code}</span>}
+                  {st.code && <span className="text-xs text-muted-foreground font-mono">{st.code}</span>}
                 </div>
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
                 {isFilterMode && (
-                  <span className="text-[10px] font-mono text-muted-foreground bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-mono text-muted-foreground bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
                     {count}
                   </span>
                 )}

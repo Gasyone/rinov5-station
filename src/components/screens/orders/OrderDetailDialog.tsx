@@ -1,18 +1,26 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react'
 import {
   ArrowRightLeft,
   Banknote,
-  CircleDollarSign,
   ExternalLink,
   Receipt,
   Truck,
   User,
   X,
+  Plus,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -24,23 +32,37 @@ import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import type { Order } from '@/mocks/orders'
+import {
+  mockPaymentReceipts,
+  type PaymentReceipt,
+  type PaymentMethod,
+  type ReceiptStatus,
+} from '@/mocks/paymentReceipts'
 import type { DetailedOrder } from '../care/student-orders/studentOrdersTypes'
+import { PaymentReceiptDetailDialog } from '../payment-receipts/PaymentReceiptDetailDialog'
+import { PaymentReceiptPayMoreDialog } from '../payment-receipts/PaymentReceiptPayMoreDialog'
 import { ProductConversionDialog } from './ProductConversionDialog'
-import { AddPaymentDialog } from './AddPaymentDialog'
+import { isOrderDeposit } from './ordersHelpers'
 
 interface OrderDetailDialogProps {
   order: Order | DetailedOrder | null
   onOpenChange: (open: boolean) => void
   onCancel?: (order: Order) => void
+  onUpdateOrder?: (order: Order) => void
 }
 
 export function OrderDetailDialog({
   order,
   onOpenChange,
-  onCancel,
+  onUpdateOrder,
 }: OrderDetailDialogProps) {
   const [isConversionOpen, setIsConversionOpen] = useState(false)
-  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false)
+  const [isPayMoreOpen, setIsPayMoreOpen] = useState(false)
+  const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null)
+  const [isReceiptDetailOpen, setIsReceiptDetailOpen] = useState(false)
+  const [payAmount, setPayAmount] = useState<number>(0)
+  const [payMethod, setPayMethod] = useState<string>('bank_transfer')
+  const [payNote, setPayNote] = useState<string>('')
 
   if (!order) {
     return (
@@ -226,7 +248,7 @@ interface OrderDetailItem {
                     <User className="h-3.5 w-3.5" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-medium text-rose-600 dark:text-rose-400 block tracking-normal">
+                    <span className="text-xs font-medium text-rose-600 dark:text-rose-400 block tracking-normal">
                       Khách hàng
                     </span>
                     <p className="text-xs font-semibold text-foreground">
@@ -237,7 +259,7 @@ interface OrderDetailItem {
 
                 <button
                   type="button"
-                  className="text-sky-600 hover:text-sky-700 dark:text-sky-400 text-[11px] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-sky-600 hover:text-sky-700 dark:text-sky-400 text-xs font-medium hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <span>Xem chi tiết thông tin</span>
                   <ExternalLink className="h-3 w-3" />
@@ -250,13 +272,13 @@ interface OrderDetailItem {
                   <Truck className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0 flex-1 text-left">
-                  <span className="text-[10px] font-medium text-rose-600 dark:text-rose-400 block tracking-normal">
+                  <span className="text-xs font-medium text-rose-600 dark:text-rose-400 block tracking-normal">
                     Giao Hàng
                   </span>
                   <p className="text-xs font-semibold text-foreground truncate">
                     {customerName} - <span className="font-mono text-muted-foreground">{customerPhone}</span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {shippingAddress}
                   </p>
                 </div>
@@ -339,7 +361,7 @@ interface OrderDetailItem {
                           <span className="font-bold text-xs text-rose-600 dark:text-rose-400">
                             {item.categoryName || 'Sản phẩm gia sư'}
                           </span>
-                          <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+                          <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                             <label className="flex items-center gap-1 cursor-default">
                               <input
                                 type="checkbox"
@@ -361,7 +383,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
 
-                        <span className="px-2.5 py-0.5 rounded border border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-[11px] font-bold">
+                        <span className="px-2.5 py-0.5 rounded border border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 text-xs font-bold">
                           ĐÃ HOÀN TẤT
                         </span>
                       </div>
@@ -369,7 +391,7 @@ interface OrderDetailItem {
                       {/* Item Row 2: Sub-info (Chương trình, Giáo viên, Gói, Cơ sở) */}
                       <div className="grid grid-cols-4 gap-3 text-[11.5px] text-muted-foreground">
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             CHƯƠNG TRÌNH
                           </div>
                           <div className="font-medium text-foreground text-xs pt-0.5">
@@ -377,7 +399,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             GIÁO VIÊN
                           </div>
                           <div className="font-medium text-foreground text-xs pt-0.5">
@@ -385,7 +407,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             GÓI
                           </div>
                           <div className="font-medium text-foreground text-xs pt-0.5">
@@ -393,7 +415,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div>
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             CƠ SỞ
                           </div>
                           <div className="font-medium text-foreground text-xs pt-0.5">
@@ -405,7 +427,7 @@ interface OrderDetailItem {
                       {/* Item Row 3: Product Values Table Breakdown */}
                       <div className="grid grid-cols-12 gap-2 text-[11.5px] pt-1.5 border-t">
                         <div className="col-span-4">
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             SẢN PHẨM
                           </div>
                           <div className="font-semibold text-foreground text-xs pt-0.5">
@@ -413,7 +435,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div className="col-span-1 text-center">
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             SỐ GÓI
                           </div>
                           <div className="font-medium text-foreground text-xs pt-0.5">
@@ -421,7 +443,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div className="col-span-2 text-right">
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             ĐƠN GIÁ
                           </div>
                           <div className="font-mono font-medium text-foreground text-xs pt-0.5">
@@ -429,7 +451,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div className="col-span-2 text-right">
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             KHUYẾN MẠI
                           </div>
                           <div className="font-mono font-medium text-rose-600 dark:text-rose-400 text-xs pt-0.5">
@@ -437,7 +459,7 @@ interface OrderDetailItem {
                           </div>
                         </div>
                         <div className="col-span-3 text-right">
-                          <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             THÀNH TIỀN
                           </div>
                           <div className="font-mono font-bold text-foreground text-xs pt-0.5">
@@ -450,7 +472,7 @@ interface OrderDetailItem {
                       <div className="pt-2 flex items-center justify-between gap-2 flex-wrap border-t text-xs">
                         {item.bonusText ? (
                           <div className="flex items-center gap-4 flex-wrap text-xs">
-                            <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                               CHÍNH SÁCH ƯU ĐÃI
                             </span>
                             <span className="text-foreground font-medium text-xs">
@@ -459,13 +481,13 @@ interface OrderDetailItem {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-muted-foreground text-[11px]">
+                            <span className="text-muted-foreground text-xs">
                               KHUYẾN MẠI ÁP DỤNG:
                             </span>
-                            <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 font-mono font-semibold text-[11px]">
+                            <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 font-mono font-semibold text-xs">
                               {item.voucherCode || 'IELGH24091'}
                             </span>
-                            <span className="text-muted-foreground text-[11px]">
+                            <span className="text-muted-foreground text-xs">
                               Giảm giá sản phẩm:{' '}
                               <strong className="font-mono text-foreground">
                                 {formatCurrency(item.voucherDiscount || 200000)}
@@ -479,117 +501,146 @@ interface OrderDetailItem {
                 ))}
               </div>
 
-              {/* RIGHT COLUMN: THÔNG TIN THANH TOÁN (Col 4) */}
-              <div className="lg:col-span-4 rounded-xl border overflow-hidden bg-card shadow-2xs text-left">
-                {/* Header with Pink Background */}
-                <div className="bg-rose-50 dark:bg-rose-950/40 border-b border-rose-100 dark:border-rose-900/40 px-3.5 py-2.5 text-rose-800 dark:text-rose-300 font-bold text-xs flex items-center gap-1.5">
-                  <span>$</span>
-                  <span>Thông tin thanh toán</span>
-                </div>
-
-                <div className="p-3.5 space-y-3 text-xs">
-                  {/* Total & Discount */}
-                  <div className="space-y-1.5 text-muted-foreground">
-                    <div className="flex items-center justify-between">
-                      <span>• Tổng giá trị đơn hàng</span>
-                      <span className="font-mono font-semibold text-foreground">
-                        {formatCurrency(totalAmount)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>• Tổng tiền được giảm</span>
-                      <span className="font-mono font-semibold text-rose-600 dark:text-rose-400">
-                        {formatCurrency(discountAmount)}
-                      </span>
-                    </div>
+              {/* RIGHT COLUMN: 2 SECTIONS (Thông tin thanh toán & Phiếu thu) */}
+              <div className="lg:col-span-4 flex flex-col gap-3">
+                {/* SECTION 1: THÔNG TIN THANH TOÁN */}
+                <div className="rounded-xl border overflow-hidden bg-card shadow-2xs text-left">
+                  {/* Header with Pink Background */}
+                  <div className="bg-rose-50 dark:bg-rose-950/40 border-b border-rose-100 dark:border-rose-900/40 px-3.5 py-2.5 text-rose-800 dark:text-rose-300 font-bold text-xs flex items-center gap-1.5">
+                    <span className="font-bold">$</span>
+                    <span>Thông tin thanh toán</span>
                   </div>
 
-                  <hr className="border-border/60" />
-
-                  {/* Payment Requirements */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">• SỐ TIỀN CẦN THANH TOÁN</span>
-                      <span className="font-mono font-semibold text-foreground">
-                        {remainingAmount > 0 ? formatCurrency(remainingAmount) : '--'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">• SỐ TIỀN ĐÃ THANH TOÁN</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {formatCurrency(paidAmount)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Method & Options Select Boxes */}
-                  <div className="space-y-2 pt-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">• Hình thức thanh toán</span>
-                      <span className="px-2.5 py-1 rounded-md border bg-muted/30 text-foreground font-medium text-[11px]">
-                        {paymentOption}
-                      </span>
-                    </div>
-                    {paymentOption !== 'NHIỀU LẦN' && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-muted-foreground">• Phương thức thanh toán</span>
-                        <span className="px-2.5 py-1 rounded-md border bg-muted/30 text-foreground font-medium text-[11px]">
-                          {receiptMethod}
+                  <div className="p-3.5 space-y-3 text-xs">
+                    {/* Total & Discount */}
+                    <div className="space-y-1.5 text-muted-foreground">
+                      <div className="flex items-center justify-between">
+                        <span>• Tổng giá trị đơn hàng</span>
+                        <span className="font-mono font-semibold text-foreground">
+                          {formatCurrency(totalAmount)}
                         </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>• Tổng tiền được giảm</span>
+                        <span className="font-mono font-semibold text-rose-600 dark:text-rose-400">
+                          {formatCurrency(discountAmount)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <hr className="border-border/60" />
+
+                    {/* Payment Requirements */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">• SỐ TIỀN CẦN THANH TOÁN</span>
+                        <span className="font-mono font-semibold text-foreground">
+                          {remainingAmount > 0 ? formatCurrency(remainingAmount) : '--'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">• SỐ TIỀN ĐÃ THANH TOÁN</span>
+                        <span className="font-mono font-bold text-foreground">
+                          {formatCurrency(paidAmount)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Method & Options Select Boxes */}
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground">• Hình thức thanh toán</span>
+                        <span className="px-2.5 py-1 rounded-md border bg-muted/30 text-foreground font-medium text-xs">
+                          {paymentOption}
+                        </span>
+                      </div>
+                      {paymentOption !== 'NHIỀU LẦN' && (
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground">• Phương thức thanh toán</span>
+                          <span className="px-2.5 py-1 rounded-md border bg-muted/30 text-foreground font-medium text-xs">
+                            {receiptMethod}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Deposit Options Checkboxes if Applicable */}
+                    {(paymentOption === 'NHIỀU LẦN' || (order as any).hasDepositStudyNow || (order as any).hasDepositPre || paymentTag.toLowerCase().includes('cọc')) && (
+                      <div className="flex items-center justify-end gap-3 text-xs pt-0.5">
+                        <label className="flex items-center gap-1.5 cursor-default text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            disabled
+                            checked={Boolean((order as any).hasDepositPre)}
+                            className="rounded border-zinc-300 text-blue-600"
+                          />
+                          <span>Cọc trước tiền</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-default text-foreground font-medium">
+                          <input
+                            type="checkbox"
+                            disabled
+                            checked={Boolean((order as any).hasDepositStudyNow ?? true)}
+                            className="rounded border-zinc-300 text-blue-600"
+                          />
+                          <span>Cọc học luôn</span>
+                        </label>
+                      </div>
+                    )}
+
+                    {/* Nút Thanh toán thêm & Hủy phần còn lại */}
+                    {remainingAmount > 0 && (
+                      <div className="pt-2 pb-0.5 space-y-2">
+                        {isOrderDeposit(order as Order) ? (
+                          <Button
+                            type="button"
+                            onClick={() => setIsPayMoreOpen(true)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider flex items-center justify-center gap-1.5"
+                          >
+                            <span>TẠO ĐƠN HOÀN TẤT</span>
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            onClick={() => setIsPayMoreOpen(true)}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider flex items-center justify-center gap-1.5"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            <span>THANH TOÁN THÊM</span>
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            toast.info(
+                              `Đã xác nhận yêu cầu hủy phần công nợ còn lại (${formatCurrency(remainingAmount)}) cho đơn ${order.orderNo}!`
+                            )
+                          }}
+                          className="w-full bg-rose-900 hover:bg-rose-950 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
+                        >
+                          <span>HỦY PHẦN CÒN LẠI</span>
+                        </Button>
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Deposit Options Checkboxes if Applicable */}
-                  {(paymentOption === 'NHIỀU LẦN' || (order as any).hasDepositStudyNow || (order as any).hasDepositPre || paymentTag.toLowerCase().includes('cọc')) && (
-                    <div className="flex items-center justify-end gap-3 text-[11px] pt-0.5">
-                      <label className="flex items-center gap-1.5 cursor-default text-muted-foreground">
-                        <input
-                          type="checkbox"
-                          disabled
-                          checked={Boolean((order as any).hasDepositPre)}
-                          className="rounded border-zinc-300 text-blue-600"
-                        />
-                        <span>Cọc trước tiền</span>
-                      </label>
-                      <label className="flex items-center gap-1.5 cursor-default text-foreground font-medium">
-                        <input
-                          type="checkbox"
-                          disabled
-                          checked={Boolean((order as any).hasDepositStudyNow ?? true)}
-                          className="rounded border-zinc-300 text-blue-600"
-                        />
-                        <span>Cọc học luôn</span>
-                      </label>
+                {/* SECTION 2: PHIẾU THU */}
+                <div className="rounded-xl border overflow-hidden bg-card shadow-2xs text-left">
+                  {/* Header with Receipt Icon */}
+                  <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-border/70 px-3.5 py-2.5 font-bold text-xs flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-foreground">
+                      <Receipt className="h-3.5 w-3.5 text-primary" />
+                      <span>Phiếu thu</span>
                     </div>
-                  )}
+                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-mono font-semibold">
+                      {((order as any).receipts?.length || 1)} phiếu
+                    </span>
+                  </div>
 
-                  {/* Nút Thanh toán thêm & Hủy phần còn lại (Đặt ở TRÊN lịch sử phiếu thu) */}
-                  {remainingAmount > 0 && (
-                    <div className="pt-2.5 pb-1 space-y-2">
-                      <Button
-                        type="button"
-                        onClick={() => setIsAddPaymentOpen(true)}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
-                      >
-                        <span>THANH TOÁN THÊM</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          toast.info(
-                            `Đã xác nhận yêu cầu hủy phần công nợ còn lại (${formatCurrency(remainingAmount)}) cho đơn ${order.orderNo}!`
-                          )
-                        }}
-                        className="w-full bg-rose-900 hover:bg-rose-950 text-white font-bold text-xs h-9 uppercase shadow-2xs rounded-md cursor-pointer tracking-wider"
-                      >
-                        <span>HỦY PHẦN CÒN LẠI</span>
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Multiple Transaction Receipts List (Lịch sử các phiếu thu - Gộp 2 dòng) */}
-                  <div className="space-y-2 pt-1">
+                  {/* Multiple Transaction Receipts List */}
+                  <div className="p-3.5 space-y-2 text-xs max-h-[300px] overflow-y-auto">
                     {((order as any).receipts && (order as any).receipts.length > 0
                       ? (order as any).receipts
                       : [
@@ -606,11 +657,54 @@ interface OrderDetailItem {
                       const isSuccess = rc.status?.toUpperCase() === 'THÀNH CÔNG'
                       const isCancelled = rc.status?.toUpperCase() === 'HỦY'
 
+                      const handleOpenReceipt = () => {
+                        const existing = mockPaymentReceipts.find(
+                          (m) => m.code === rc.code || m.id === rc.id
+                        )
+                        if (existing) {
+                          setSelectedReceipt(existing)
+                        } else {
+                          const mappedMethod: PaymentMethod =
+                            rc.method?.toLowerCase().includes('bank') || rc.method?.toLowerCase().includes('chuyển khoản')
+                              ? 'bank_transfer'
+                              : rc.method?.toLowerCase().includes('pos') || rc.method?.toLowerCase().includes('thẻ')
+                                ? 'pos_card'
+                                : rc.method?.toLowerCase().includes('qr')
+                                  ? 'qr_transfer'
+                                  : 'cash'
+
+                          const status: ReceiptStatus = isSuccess ? 'completed' : isCancelled ? 'cancelled' : 'pending'
+
+                          setSelectedReceipt({
+                            id: rc.id || rc.code,
+                            code: rc.code,
+                            transactionType: 'receipt',
+                            orderCode: order.orderNo,
+                            orderTotalAmount: totalAmount,
+                            orderRemainingAmount: remainingAmount,
+                            parentName: customerName,
+                            studentName: order.studentName,
+                            phone: customerPhone,
+                            amount: rc.amount,
+                            receiptType: (order as any).hasDepositStudyNow || paymentTag.toLowerCase().includes('cọc') ? 'deposit' : 'tuition_full',
+                            paymentMethod: mappedMethod,
+                            bankAccount: rc.bankAccount || (mappedMethod === 'bank_transfer' ? 'MBBank - 090327988899' : undefined),
+                            status: status,
+                            isReconciled: isSuccess,
+                            createdBy: (order as any).saleBy || 'Thủ quỹ',
+                            createdAt: rc.timestamp || receiptTime,
+                            branch: order.branch || 'RinoEdu Bắc Giang',
+                            notes: rc.note || `Phiếu thu thanh toán cho đơn hàng ${order.orderNo}`,
+                          })
+                        }
+                        setIsReceiptDetailOpen(true)
+                      }
+
                       return (
                         <div
                           key={rc.id || rc.code}
                           className={cn(
-                            'p-2.5 rounded-r-lg border-l-2 space-y-1.5 text-[11px] transition-all',
+                            'p-2.5 rounded-r-lg border-l-2 space-y-1.5 text-xs transition-all',
                             isSuccess
                               ? 'border-l-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20'
                               : isCancelled
@@ -618,7 +712,7 @@ interface OrderDetailItem {
                                 : 'border-l-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
                           )}
                         >
-                          {/* Dòng 1: Thời gian + (Phiếu thu) và Mã phiếu thu: Số tiền (VNĐ) */}
+                          {/* Dòng 1: Thời gian + (Phiếu thu) và Mã phiếu thu (Clickable): Số tiền (VNĐ) */}
                           <div className="flex items-center justify-between gap-1.5 flex-wrap">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span
@@ -635,12 +729,19 @@ interface OrderDetailItem {
                                 {rc.timestamp} (Phiếu thu)
                               </span>
                             </div>
-                            <div className="flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-xs">
-                              <span>
-                                {rc.code}: {formatCurrency(rc.amount)} (VNĐ)
+
+                            <button
+                              type="button"
+                              onClick={handleOpenReceipt}
+                              className="inline-flex items-center gap-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 text-xs hover:underline hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors cursor-pointer group text-left"
+                              title="Nhấp xem chi tiết phiếu thu này"
+                            >
+                              <span className="underline underline-offset-2 decoration-emerald-500/50 group-hover:decoration-emerald-700">
+                                {rc.code}
                               </span>
-                              <Receipt className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                            </div>
+                              <span>: {formatCurrency(rc.amount)} (VNĐ)</span>
+                              <Receipt className="h-3.5 w-3.5 text-muted-foreground group-hover:text-emerald-700 dark:group-hover:text-emerald-400 shrink-0 transition-colors" />
+                            </button>
                           </div>
 
                           {/* Dòng 2: Phương thức thanh toán + Trạng thái thanh toán */}
@@ -682,11 +783,44 @@ interface OrderDetailItem {
         onOpenChange={setIsConversionOpen}
       />
 
-      {/* ── 4. ADD PAYMENT POPUP DIALOG ── */}
-      <AddPaymentDialog
-        order={order}
-        open={isAddPaymentOpen}
-        onOpenChange={setIsAddPaymentOpen}
+      {/* ── 4. PAYMENT RECEIPT DETAIL SUB-DIALOG ── */}
+      <PaymentReceiptDetailDialog
+        receipt={selectedReceipt}
+        open={isReceiptDetailOpen}
+        onOpenChange={setIsReceiptDetailOpen}
+      />
+
+      {/* ── 5. MODAL THANH TOÁN NHIỀU LẦN / THANH TOÁN THÊM ── */}
+      <PaymentReceiptPayMoreDialog
+        order={order as Order}
+        open={isPayMoreOpen}
+        onOpenChange={setIsPayMoreOpen}
+        onSuccess={(newReceiptData) => {
+          if (!newReceiptData) return
+          const newPaid = paidAmount + (newReceiptData.amount || 0)
+          const newRemaining = Math.max(0, finalAmount - newPaid)
+          const isFull = newRemaining === 0
+          const currentReceipts = (order as any).receipts || []
+          const updatedOrder = {
+            ...order,
+            paidAmount: newPaid,
+            remainingAmount: newRemaining,
+            paymentStatus: isFull ? ('paid' as const) : ('partial' as const),
+            status: isFull ? ('completed' as const) : (order as any).status,
+            receipts: [
+              {
+                id: newReceiptData.id || `rc-${Date.now()}`,
+                code: newReceiptData.code,
+                amount: newReceiptData.amount,
+                method: newReceiptData.paymentMethod || 'COD',
+                timestamp: new Date().toLocaleString('vi-VN'),
+                status: 'THÀNH CÔNG',
+              },
+              ...currentReceipts,
+            ],
+          }
+          onUpdateOrder?.(updatedOrder as Order)
+        }}
       />
     </>
   )

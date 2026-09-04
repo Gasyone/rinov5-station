@@ -52,9 +52,9 @@ export function BookingTestCreateSummary({
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/60">
         <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="uppercase tracking-wider text-[11px]">Tóm tắt ca test đã chọn</span>
+          <span className="uppercase tracking-wider text-xs">Tóm tắt ca test đã chọn</span>
         </div>
-        <span className="text-[10px] text-muted-foreground font-medium bg-background px-2 py-0.5 rounded-full border border-border/60">
+        <span className="text-xs text-muted-foreground font-medium bg-background px-2 py-0.5 rounded-full border border-border/60">
           Thời lượng: 30 phút
         </span>
       </div>
@@ -64,7 +64,7 @@ export function BookingTestCreateSummary({
         <div className="flex items-start gap-2 min-w-0">
           <Calendar className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <span className="text-[10px] text-muted-foreground block font-medium">Lịch đánh giá</span>
+            <span className="text-xs text-muted-foreground block font-medium">Lịch đánh giá</span>
             <p className="font-semibold text-foreground truncate">
               {dateLabel} • <span className="text-primary font-bold">{timeRange}</span>
             </p>
@@ -75,7 +75,7 @@ export function BookingTestCreateSummary({
         <div className="flex items-start gap-2 min-w-0">
           <MapPin className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <span className="text-[10px] text-muted-foreground block font-medium">Cơ sở & Chương trình</span>
+            <span className="text-xs text-muted-foreground block font-medium">Cơ sở & Chương trình</span>
             <p className="font-semibold text-foreground truncate" title={`${school} • ${program} (${level})`}>
               {school} • {level || program}
             </p>
@@ -86,7 +86,7 @@ export function BookingTestCreateSummary({
         <div className="flex items-start gap-2 min-w-0">
           <User className="h-3.5 w-3.5 text-teal-600 mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <span className="text-[10px] text-muted-foreground block font-medium">Học viên & Phụ huynh</span>
+            <span className="text-xs text-muted-foreground block font-medium">Học viên & Phụ huynh</span>
             <p className="font-semibold text-foreground truncate" title={`${studentName} (PH: ${parentName} - ${maskedPhone})`}>
               {studentName} <span className="font-normal text-muted-foreground">({parentName} - {maskedPhone})</span>
             </p>
@@ -97,13 +97,13 @@ export function BookingTestCreateSummary({
         <div className="flex items-start gap-2 min-w-0">
           <GraduationCap className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <span className="text-[10px] text-muted-foreground block font-medium">Nhân sự phụ trách</span>
+            <span className="text-xs text-muted-foreground block font-medium">Nhân sự phụ trách</span>
             {isAssigned ? (
               <div className="flex items-center gap-1.5 truncate">
                 <span className="font-bold text-foreground truncate">{teacherName}</span>
                 <span
                   className={cn(
-                    'text-[9px] px-1.5 py-0.2 rounded font-semibold border shrink-0',
+                    'text-xs px-1.5 py-0.2 rounded font-semibold border shrink-0',
                     teacherRole === 'CS'
                       ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
                       : teacherRole === 'Khác'

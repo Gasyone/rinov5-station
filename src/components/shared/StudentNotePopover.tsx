@@ -27,7 +27,7 @@ export function StudentNotePopover({
           variant="ghost"
           size="xs"
           className={cn(
-            'text-muted-foreground hover:text-foreground rounded-lg text-[10px] h-7 px-2 font-medium flex items-center gap-1.5 max-w-full min-w-0 bg-transparent hover:bg-transparent shadow-none',
+            'text-muted-foreground hover:text-foreground rounded-lg text-xs h-7 px-2 font-medium flex items-center gap-1.5 max-w-full min-w-0 bg-transparent hover:bg-transparent shadow-none',
             className
           )}
         >

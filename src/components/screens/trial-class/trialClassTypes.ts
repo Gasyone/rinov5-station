@@ -11,6 +11,10 @@ export interface TrialSessionSelection {
   sessionId: string
   sessionName: string
   trialDate: string
+  teacher?: string
+  assistantTeacher?: string
+  room?: string
+  lessonTopic?: string
 }
 
 export interface TrialClassFilterState {

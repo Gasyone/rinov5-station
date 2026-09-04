@@ -138,7 +138,7 @@ export function StudentParentInfoCards({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                   <span className="font-extrabold text-xs text-foreground tracking-tight">{parent.name}</span>
-                  <span className="text-[11px] text-muted-foreground font-medium">({parent.relationship})</span>
+                  <span className="text-xs text-muted-foreground font-medium">({parent.relationship})</span>
                   {parent.isPrimary && (
                     <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 text-[9.5px] py-0 px-1.5 rounded-full font-bold shadow-none">
                       Chính
@@ -167,7 +167,7 @@ export function StudentParentInfoCards({
                   <Textarea
                     value={editNoteValue}
                     onChange={(e) => setEditNoteValue(e.target.value)}
-                    className="text-[11px] min-h-[56px] resize-none"
+                    className="text-xs min-h-[56px] resize-none"
                     placeholder="Nhập ghi chú..."
                   />
                   <div className="flex items-center justify-end gap-1.5">
@@ -183,7 +183,7 @@ export function StudentParentInfoCards({
                 <div className="flex items-center justify-between gap-2 pt-0.5">
                   <p
                     className={cn(
-                      'text-[11px] text-muted-foreground/90 italic font-normal flex-1 transition-all',
+                      'text-xs text-muted-foreground/90 italic font-normal flex-1 transition-all',
                       isExpanded ? 'whitespace-pre-wrap' : 'truncate max-w-[230px]'
                     )}
                     title={parent.note}

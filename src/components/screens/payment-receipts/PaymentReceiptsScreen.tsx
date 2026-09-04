@@ -8,6 +8,7 @@ import {
   ReceivableItem,
   ReceiptType,
   PaymentMethod,
+  TransactionType,
   mockPaymentReceipts,
   mockReceivables,
 } from '@/mocks/paymentReceipts'
@@ -19,10 +20,12 @@ import {
   SegmentedControl,
 } from '@/components/controls'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { PaymentReceiptsTable } from './PaymentReceiptsTable'
 import { ReceivablesTable } from './ReceivablesTable'
 import { PaymentReceiptDetailDialog } from './PaymentReceiptDetailDialog'
 import { PaymentReceiptCreateDialog } from './PaymentReceiptCreateDialog'
+import { PaymentReceiptPayMoreDialog } from './PaymentReceiptPayMoreDialog'
 import {
   PaymentReceiptsFilterState,
   STATUS_TILES,
@@ -33,7 +36,7 @@ type MainMode = 'receivables' | 'receipts'
 
 const MAIN_MODE_OPTIONS: { value: MainMode; label: string }[] = [
   { value: 'receivables', label: '📋 Khoản cần thu' },
-  { value: 'receipts', label: '🧾 Phiếu thu & Đối soát' },
+  { value: 'receipts', label: '🧾 Phiếu thanh toán' },
 ]
 
 const BRANCH_OPTIONS = [
@@ -43,13 +46,20 @@ const BRANCH_OPTIONS = [
   'Chi nhánh Thảo Điền',
 ]
 
+const TRANSACTION_TYPE_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: 'Tất cả loại phiếu' },
+  { value: 'receipt', label: '📥 Phiếu thu' },
+  { value: 'payment_voucher', label: '📤 Phiếu chi / Hoàn' },
+]
+
 const TYPE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Tất cả khoản thu' },
+  { value: 'all', label: 'Tất cả mục đích' },
   { value: 'deposit', label: 'Cọc giữ chỗ' },
   { value: 'tuition_full', label: 'Thu đủ học phí' },
   { value: 'installment', label: 'Kỳ trả góp' },
   { value: 'event_fee', label: 'Phí sự kiện' },
-  { value: 'other', label: 'Khoản thu khác' },
+  { value: 'refund', label: 'Hoàn tiền / Trả lại' },
+  { value: 'other', label: 'Khoản khác' },
 ]
 
 const METHOD_FILTER_OPTIONS: { value: string; label: string }[] = [
@@ -61,7 +71,7 @@ const METHOD_FILTER_OPTIONS: { value: string; label: string }[] = [
 ]
 
 export function PaymentReceiptsScreen() {
-  const [mainMode, setMainMode] = useState<MainMode>('receivables')
+  const [mainMode, setMainMode] = useState<MainMode>('receipts')
   const [receipts, setReceipts] = useState<PaymentReceipt[]>(mockPaymentReceipts)
   const [receivables, setReceivables] = useState<ReceivableItem[]>(mockReceivables)
 
@@ -69,8 +79,10 @@ export function PaymentReceiptsScreen() {
     search: '',
     branch: 'all',
     status: 'all',
+    transactionType: 'all',
     receiptType: 'all',
     paymentMethod: 'all',
+    quickCondition: 'all',
   })
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(20)
@@ -79,17 +91,24 @@ export function PaymentReceiptsScreen() {
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null)
   const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false)
   const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false)
+  const [createInitialType, setCreateInitialType] = useState<TransactionType>('receipt')
+  const [isPayMoreOpen, setIsPayMoreOpen] = useState<boolean>(false)
+  const [payMoreReceipt, setPayMoreReceipt] = useState<PaymentReceipt | null>(null)
 
   // Pre-fill state for Create Dialog from a ReceivableItem
   const [prefillOrderCode, setPrefillOrderCode] = useState<string>('')
 
-  // Lọc danh sách Phiếu thu
+  // Lọc danh sách Phiếu thanh toán
   const filteredReceipts = useMemo(() => {
     return receipts.filter((r) => {
       if (filters.branch !== 'all' && r.branch !== filters.branch) return false
       if (filters.status !== 'all' && r.status !== filters.status) return false
+      if (filters.transactionType !== 'all' && r.transactionType !== filters.transactionType) return false
       if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) return false
       if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) return false
+      if (filters.quickCondition === 'reconciled' && !r.isReconciled) return false
+      if (filters.quickCondition === 'fully_paid' && r.orderRemainingAmount !== 0) return false
+      if (filters.quickCondition === 'deposit' && r.receiptType !== 'deposit') return false
       if (filters.search.trim()) {
         const q = filters.search.toLowerCase().trim()
         const match =
@@ -128,8 +147,12 @@ export function PaymentReceiptsScreen() {
   const statusCounts = useMemo(() => {
     const base = receipts.filter((r) => {
       if (filters.branch !== 'all' && r.branch !== filters.branch) return false
+      if (filters.transactionType !== 'all' && r.transactionType !== filters.transactionType) return false
       if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) return false
       if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) return false
+      if (filters.quickCondition === 'reconciled' && !r.isReconciled) return false
+      if (filters.quickCondition === 'fully_paid' && r.orderRemainingAmount !== 0) return false
+      if (filters.quickCondition === 'deposit' && r.receiptType !== 'deposit') return false
       if (filters.search.trim()) {
         const q = filters.search.toLowerCase().trim()
         return (
@@ -146,8 +169,7 @@ export function PaymentReceiptsScreen() {
     const counts: Record<string, number> = {
       all: base.length,
       completed: 0,
-      pending_verification: 0,
-      refunded: 0,
+      pending: 0,
       cancelled: 0,
     }
 
@@ -158,7 +180,7 @@ export function PaymentReceiptsScreen() {
     })
 
     return counts
-  }, [receipts, filters.branch, filters.receiptType, filters.paymentMethod, filters.search])
+  }, [receipts, filters.branch, filters.transactionType, filters.receiptType, filters.paymentMethod, filters.quickCondition, filters.search])
 
   const tilesWithCounts = useMemo(() => {
     return STATUS_TILES.map((t) => ({
@@ -179,6 +201,7 @@ export function PaymentReceiptsScreen() {
 
   const handleCreateFromReceivableItem = (item: ReceivableItem) => {
     setPrefillOrderCode(item.orderCode)
+    setCreateInitialType('receipt')
     setIsCreateOpen(true)
   }
 
@@ -187,19 +210,24 @@ export function PaymentReceiptsScreen() {
     setIsDetailOpen(true)
   }
 
+  const handlePayMore = (rcpt: PaymentReceipt) => {
+    setPayMoreReceipt(rcpt)
+    setIsPayMoreOpen(true)
+  }
+
   const handleExportExcel = () => {
     const count = mainMode === 'receivables' ? filteredReceivables.length : filteredReceipts.length
-    toast.success(`Đã xuất báo cáo ${mainMode === 'receivables' ? 'khoản cần thu' : 'phiếu thu'} (${count} dòng) thành công!`)
+    toast.success(`Đã xuất báo cáo ${mainMode === 'receivables' ? 'khoản cần thu' : 'phiếu thanh toán'} (${count} dòng) thành công!`)
   }
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] gap-2.5 pl-4 pt-3 lg:pl-6 pr-0 pb-0 overflow-hidden">
       {/* Khối Toolbar & Filters bên trên */}
       <div className="pr-4 lg:pr-6 flex flex-col gap-2.5 shrink-0">
-        {/* HÀNG 1: 2 TAB CHÍNH NẰM Ở ĐẦU -> Chọn cơ sở -> Lọc Loại/PTTT | Search -> Xuất Excel -> Nút Lập phiếu */}
+        {/* HÀNG 1: 2 TAB CHÍNH NẰM Ở ĐẦU -> Chọn cơ sở -> Lọc Thu/Chi/Loại/PTTT | Search -> Xuất Excel -> Nút Lập phiếu */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 py-0.5">
           <div className="flex items-center gap-2 flex-nowrap shrink-0">
-            {/* 🌟 2 TAB CHÍNH: KHOẢN CẦN THU vs PHIẾU THU & ĐỐI SOÁT (ĐẶT Ở ĐẦU BỘ LỌC) */}
+            {/* 🌟 2 TAB CHÍNH: KHOẢN CẦN THU vs PHIẾU THANH TOÁN (ĐÃ BỎ CHỮ THU & ĐỐI SOÁT) */}
             <SegmentedControl
               value={mainMode}
               options={MAIN_MODE_OPTIONS}
@@ -221,7 +249,20 @@ export function PaymentReceiptsScreen() {
               className="w-[140px] shrink-0"
             />
 
-            {/* 2. Lọc loại khoản thu */}
+            {/* 2. Lọc Thu / Chi (Chỉ ở tab Phiếu thanh toán) */}
+            {mainMode === 'receipts' && (
+              <InlineSelect
+                value={filters.transactionType}
+                onValueChange={(val: string) => {
+                  setFilters((prev) => ({ ...prev, transactionType: val as TransactionType | 'all' }))
+                  setCurrentPage(1)
+                }}
+                options={TRANSACTION_TYPE_FILTER_OPTIONS}
+                className="w-[145px] shrink-0"
+              />
+            )}
+
+            {/* 3. Lọc loại mục đích giao dịch */}
             <InlineSelect
               value={filters.receiptType}
               onValueChange={(val: string) => {
@@ -232,7 +273,7 @@ export function PaymentReceiptsScreen() {
               className="w-[140px] shrink-0"
             />
 
-            {/* 3. Lọc phương thức thanh toán (chỉ hiển thị ở Tab Phiếu thu) */}
+            {/* 4. Lọc phương thức thanh toán (chỉ hiển thị ở Tab Phiếu thanh toán) */}
             {mainMode === 'receipts' && (
               <InlineSelect
                 value={filters.paymentMethod}
@@ -247,17 +288,17 @@ export function PaymentReceiptsScreen() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* 4. Ô Tìm kiếm */}
+            {/* 5. Ô Tìm kiếm */}
             <ExpandableSearch
               value={filters.search}
               onValueChange={(val: string) => {
                 setFilters((prev) => ({ ...prev, search: val }))
                 setCurrentPage(1)
               }}
-              placeholder="Tìm Mã phiếu, Đơn hàng, Tên..."
+              placeholder="Tìm Mã TNX, Đơn hàng, Tên..."
             />
 
-            {/* 5. Nút Xuất Excel */}
+            {/* 6. Nút Xuất Excel */}
             <Button
               type="button"
               variant="outline"
@@ -269,32 +310,102 @@ export function PaymentReceiptsScreen() {
               <span>Xuất Excel</span>
             </Button>
 
-            {/* 6. Nút Lập phiếu thu mới */}
+            {/* 7. Nút Lập phiếu thanh toán mới */}
             <Button
               type="button"
               size="sm"
               className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-xs h-8"
               onClick={() => {
                 setPrefillOrderCode('')
+                setCreateInitialType('receipt')
                 setIsCreateOpen(true)
               }}
             >
               <Plus className="h-4 w-4" />
-              <span>Lập phiếu thu mới</span>
+              <span>Lập phiếu mới</span>
             </Button>
           </div>
         </div>
 
-        {/* HÀNG 2: Tab Lọc Trạng Thái (Status Tiles) - Chỉ hiển thị khi xem Phiếu thu & Đối soát */}
+        {/* HÀNG 2: Tab Lọc Trạng Thái (Status Tiles) ở bên trái + Lọc nhanh điều kiện ở cạnh phải */}
         {mainMode === 'receipts' && (
-          <StatusTiles
-            tiles={tilesWithCounts}
-            activeId={filters.status}
-            onSelect={(id) => {
-              setFilters((prev) => ({ ...prev, status: id as FilterStatus }))
-              setCurrentPage(1)
-            }}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <StatusTiles
+              tiles={tilesWithCounts}
+              activeId={filters.status}
+              noOverflowCollapse={true}
+              className="flex-1 min-w-0"
+              onSelect={(id) => {
+                setFilters((prev) => ({ ...prev, status: id as FilterStatus }))
+                setCurrentPage(1)
+              }}
+            />
+
+            {/* Cụm Lọc nhanh ở cạnh phải */}
+            <div className="flex items-center gap-1.5 shrink-0 text-xs py-0.5">
+              <span className="text-xs text-muted-foreground mr-0.5">Lọc nhanh:</span>
+
+              {/* Nút Đã đối soát */}
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    quickCondition: prev.quickCondition === 'reconciled' ? 'all' : 'reconciled',
+                  }))
+                  setCurrentPage(1)
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-md text-xs transition-colors border select-none',
+                  filters.quickCondition === 'reconciled'
+                    ? 'bg-primary/10 text-primary border-primary/40 font-medium'
+                    : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
+                )}
+              >
+                Đã đối soát
+              </button>
+
+              {/* Nút Đã tất toán */}
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    quickCondition: prev.quickCondition === 'fully_paid' ? 'all' : 'fully_paid',
+                  }))
+                  setCurrentPage(1)
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-md text-xs transition-colors border select-none',
+                  filters.quickCondition === 'fully_paid'
+                    ? 'bg-primary/10 text-primary border-primary/40 font-medium'
+                    : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
+                )}
+              >
+                Đã tất toán
+              </button>
+
+              {/* Nút Cọc */}
+              <button
+                type="button"
+                onClick={() => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    quickCondition: prev.quickCondition === 'deposit' ? 'all' : 'deposit',
+                  }))
+                  setCurrentPage(1)
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-md text-xs transition-colors border select-none',
+                  filters.quickCondition === 'deposit'
+                    ? 'bg-primary/10 text-primary border-primary/40 font-medium'
+                    : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
+                )}
+              >
+                Cọc
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
@@ -319,23 +430,34 @@ export function PaymentReceiptsScreen() {
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
             onViewDetail={handleViewDetail}
+            onPayMore={handlePayMore}
           />
         )}
       </div>
 
-      {/* Modal Chi tiết Phiếu thu */}
+      {/* Modal Chi tiết Phiếu thanh toán */}
       <PaymentReceiptDetailDialog
         receipt={selectedReceipt}
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
       />
 
-      {/* Modal Lập Phiếu thu mới */}
+      {/* Modal Thanh toán nhiều lần / Thanh toán thêm */}
+      <PaymentReceiptPayMoreDialog
+        receipt={payMoreReceipt || selectedReceipt}
+        open={isPayMoreOpen}
+        onOpenChange={setIsPayMoreOpen}
+        onSuccess={handleCreateReceipt}
+      />
+
+      {/* Modal Lập Phiếu thanh toán mới */}
       <PaymentReceiptCreateDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onCreateReceipt={handleCreateReceipt}
+        initialTransactionType={createInitialType}
       />
     </div>
   )
 }
+

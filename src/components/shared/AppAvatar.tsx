@@ -55,8 +55,8 @@ export function AppAvatar({
   const isInteractive = Boolean(userId && userType)
 
   const sizeClasses = {
-    xs: 'size-5 text-[9px] border',
-    sm: 'size-7 text-[10px] border',
+    xs: 'size-5 text-xs border',
+    sm: 'size-7 text-xs border',
     default: 'size-8 text-xs border',
     md: 'size-9 text-xs border',
     lg: 'size-11 text-sm border-2',

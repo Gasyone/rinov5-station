@@ -74,7 +74,7 @@ export function CallConnectionBanner({
               <div className="font-bold text-foreground text-xs flex items-center gap-1.5 flex-wrap">
                 <span>Đã kết thúc cuộc gọi với:</span>
                 <span className="text-emerald-800 dark:text-emerald-300 font-extrabold">{contactName}</span>
-                <span className="text-muted-foreground font-mono text-[11px]">({contactPhone})</span>
+                <span className="text-muted-foreground font-mono text-xs">({contactPhone})</span>
               </div>
               <p className="text-[10.5px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5 flex-wrap">
                 <span>✓ Thời lượng cuộc gọi: <span className="font-mono font-extrabold">{formatTimer(seconds || 165)}</span></span>
@@ -114,7 +114,7 @@ export function CallConnectionBanner({
             <div className="font-bold text-foreground text-xs flex items-center gap-1.5 flex-wrap">
               <span>{callStatus === 'dialing' ? 'Đang gọi điện cho:' : 'Cuộc gọi đang kết nối với:'}</span>
               <span className="text-primary font-extrabold">{contactName}</span>
-              <span className="text-muted-foreground font-mono text-[11px]">({contactPhone})</span>
+              <span className="text-muted-foreground font-mono text-xs">({contactPhone})</span>
             </div>
 
             <p className="text-[10.5px] text-muted-foreground font-medium">
@@ -138,7 +138,7 @@ export function CallConnectionBanner({
           {callStatus === 'connected' && (
             <>
               {/* Recording Indicator */}
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-[10px] border border-rose-200 dark:border-rose-900/80">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-900/80">
                 <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
                 <Disc className="h-3 w-3 text-rose-600 animate-spin" />
                 <span>REC Ghi âm</span>
@@ -162,7 +162,7 @@ export function CallConnectionBanner({
             type="button"
             onClick={() => setIsMuted(!isMuted)}
             className={cn(
-              'h-7 px-2 text-[11px] font-semibold rounded-md border flex items-center gap-1 transition-colors cursor-pointer',
+              'h-7 px-2 text-xs font-semibold rounded-md border flex items-center gap-1 transition-colors cursor-pointer',
               isMuted
                 ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
                 : 'bg-background hover:bg-muted text-foreground border-border'
@@ -177,7 +177,7 @@ export function CallConnectionBanner({
             type="button"
             onClick={() => setIsSpeakerOn(!isSpeakerOn)}
             className={cn(
-              'h-7 px-2 text-[11px] font-semibold rounded-md border flex items-center gap-1 transition-colors cursor-pointer',
+              'h-7 px-2 text-xs font-semibold rounded-md border flex items-center gap-1 transition-colors cursor-pointer',
               !isSpeakerOn
                 ? 'bg-zinc-100 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300'
                 : 'bg-background hover:bg-muted text-foreground border-border'
@@ -197,7 +197,7 @@ export function CallConnectionBanner({
               if (onOutcomeSelect) onOutcomeSelect('nghe_may')
               setCallStatus('ended')
             }}
-            className="h-7 px-3 text-[11px] font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            className="h-7 px-3 text-xs font-bold rounded-lg bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             title="Kết thúc cuộc gọi và lưu vết"
           >
             <PhoneOff className="h-3.5 w-3.5" />

@@ -90,7 +90,7 @@ export function TrialClassTableRow({
               </p>
               <div className="flex min-w-0 items-center gap-1.5 mt-0.5">
                 <span className="font-mono text-xs text-muted-foreground">{trial.id}</span>
-                <Badge variant="secondary" className="h-4 rounded px-1 text-[10px] uppercase shrink-0">
+                <Badge variant="secondary" className="h-4 rounded px-1 text-xs uppercase shrink-0">
                   {trial.subject}
                 </Badge>
               </div>
@@ -239,7 +239,7 @@ export function TrialClassTableRow({
             label={getTrialStatusLabel(trial.status)}
           />
           {trial.status === 'reschedule' && (
-            <span className="text-[11px] font-semibold text-red-600 dark:text-red-400">
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">
               Cần đổi lịch
             </span>
           )}

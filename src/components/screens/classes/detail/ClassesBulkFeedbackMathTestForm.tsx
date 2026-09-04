@@ -93,7 +93,7 @@ export function ClassesBulkFeedbackMathTestForm({
           <p className="text-xs text-muted-foreground mt-0.5">Mã học viên: {studentCode}</p>
         </div>
         {formState.isSent && (
-          <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
+          <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
             <Check className="h-3.5 w-3.5 stroke-[2.5px]" />
             Đã gửi nhận xét
           </span>

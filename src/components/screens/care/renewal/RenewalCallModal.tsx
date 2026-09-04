@@ -102,7 +102,7 @@ export function RenewalCallModal({
         <Button
           variant="ghost"
           size="sm"
-          className="text-[10px] text-muted-foreground hover:bg-muted font-bold mt-2"
+          className="text-xs text-muted-foreground hover:bg-muted font-bold mt-2"
           onClick={() => onOpenChange(false)}
         >
           <PhoneOff className="h-3.5 w-3.5 mr-1" />

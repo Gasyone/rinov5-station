@@ -57,7 +57,7 @@ export function BadgeGroupCell({
           <Badge
             key={index}
             variant={item.variant ?? 'outline'}
-            className={cn('rounded-md text-[10px] font-semibold whitespace-nowrap shrink-0', item.className)}
+            className={cn('rounded-md text-xs font-semibold whitespace-nowrap shrink-0', item.className)}
           >
             {item.label}
           </Badge>
@@ -68,7 +68,7 @@ export function BadgeGroupCell({
             <TooltipTrigger asChild>
               <Badge
                 variant="secondary"
-                className="rounded-md text-[10px] font-semibold cursor-help shrink-0 hover:bg-muted"
+                className="rounded-md text-xs font-semibold cursor-help shrink-0 hover:bg-muted"
               >
                 +{remainingCount}
               </Badge>
@@ -80,7 +80,7 @@ export function BadgeGroupCell({
                   <Badge
                     key={index}
                     variant={item.variant ?? 'outline'}
-                    className={cn('rounded-md text-[10px] font-semibold whitespace-nowrap', item.className)}
+                    className={cn('rounded-md text-xs font-semibold whitespace-nowrap', item.className)}
                   >
                     {item.label}
                   </Badge>

@@ -40,7 +40,7 @@ export function BookingTestStaffCard({
         shape="circle"
       />
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
         <p className="truncate text-sm font-semibold">{displayName}</p>

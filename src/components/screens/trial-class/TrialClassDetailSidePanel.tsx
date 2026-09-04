@@ -60,7 +60,7 @@ export function TrialClassDetailSidePanel({
                   {(trial.internalNotes ?? []).map((note, index) => (
                     <div key={`${note.timestamp}-${index}`} className="rounded-md bg-muted p-1.5">
                       <p className="text-sm">{note.text}</p>
-                      <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                         <span className="text-xs font-semibold">{note.author}</span>
                         <span className="font-mono">{note.timestamp}</span>
                       </div>
@@ -101,7 +101,7 @@ export function TrialClassDetailSidePanel({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{log.action}</p>
                   {log.detail ? <p className="text-xs text-muted-foreground">{log.detail}</p> : null}
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {log.timestamp} &middot; {log.author}
                   </p>
                 </div>

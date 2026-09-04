@@ -27,7 +27,7 @@ import {
   Clock,
   AlertCircle,
   Repeat,
-  ArrowLeftRight,
+  UserCheck,
   Plus,
 } from 'lucide-react'
 import {
@@ -70,12 +70,20 @@ export function DigiSessionDetailDialog({
 }: DigiSessionDetailDialogProps) {
   const [bookings, setBookings] = useState<DigiStudentBooking[]>(INITIAL_DIGI_BOOKINGS)
   const [commentText, setCommentText] = useState('Luyện tập bài học Digi theo lộ trình cá nhân hóa')
+  const [prevSessionId, setPrevSessionId] = useState<string | undefined>(session?.id)
   const [mainAssistant, setMainAssistant] = useState(
-    session?.assistantTeacher || (typeof session?.teacher === 'string' && session.teacher.includes('Thu Hà') ? 'Nguyễn Thu Hà' : 'Nguyễn Thu Hà')
+    session?.assistantTeacher || ''
   )
   const [substituteAssistant, setSubstituteAssistant] = useState<string | null>(null)
   const [isChangeAssistantOpen, setIsChangeAssistantOpen] = useState(false)
   const [changeAssistantScope, setChangeAssistantScope] = useState<'today_only' | 'all_future'>('today_only')
+
+  // Sync state when active session changes
+  if (session && session.id !== prevSessionId) {
+    setPrevSessionId(session.id)
+    setMainAssistant(session.assistantTeacher || '')
+    setSubstituteAssistant(null)
+  }
 
   if (!session) return null
 
@@ -106,10 +114,12 @@ export function DigiSessionDetailDialog({
   const currentActiveAssistantName = substituteAssistant || mainAssistant
   const assistantPerson: PersonnelItem = {
     id: substituteAssistant ? 'EMP-SUB-TG' : 'EMP-TG04',
-    name: currentActiveAssistantName,
+    name: currentActiveAssistantName || 'Trợ giảng',
     role: substituteAssistant ? 'Trợ giảng (Trực thay buổi hôm nay)' : 'Trợ giảng phụ trách Trạm Digi',
     phone: '0988 123 456',
-    email: `${currentActiveAssistantName.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`,
+    email: currentActiveAssistantName
+      ? `${currentActiveAssistantName.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
+      : 'trogiang@rinoedu.vn',
     avatar: substituteAssistant
       ? 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'
       : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
@@ -120,6 +130,18 @@ export function DigiSessionDetailDialog({
     isTemporaryOneDay: boolean
     reason: string
   }) => {
+    if (!mainAssistant) {
+      if (data.isTemporaryOneDay) {
+        setSubstituteAssistant(data.assistantName)
+        toast.success(`Đã gán ${data.assistantName} trực ca tự học hôm nay!`)
+      } else {
+        setMainAssistant(data.assistantName)
+        setSubstituteAssistant(null)
+        toast.success(`Đã gán ${data.assistantName} phụ trách cố định ca tự học!`)
+      }
+      return
+    }
+
     if (data.isTemporaryOneDay) {
       setSubstituteAssistant(data.assistantName)
       toast.success(`Đã phân công ${data.assistantName} trực thay cho ${mainAssistant} ca hôm nay!`)
@@ -206,27 +228,6 @@ export function DigiSessionDetailDialog({
       })
     )
     toast.success(`Đã cấp máy ${deviceCode} & tự động đăng nhập tài khoản cho ${studentName}!`)
-  }
-
-  const handleToggleLessonStatus = (bookingId: string, lessonId: string) => {
-    setBookings((prev) =>
-      prev.map((b) => {
-        if (b.id !== bookingId) return b
-        const updatedLessons = b.selectedLessons.map((l) => {
-          if (l.lessonId !== lessonId) return l
-          const nextStatus: 'completed' | 'skipped' | 'in_progress' | 'pending' =
-            l.status === 'completed'
-              ? 'skipped'
-              : l.status === 'skipped'
-              ? 'pending'
-              : l.status === 'pending'
-              ? 'in_progress'
-              : 'completed'
-          return { ...l, status: nextStatus }
-        })
-        return { ...b, selectedLessons: updatedLessons }
-      })
-    )
   }
 
   return (
@@ -321,7 +322,7 @@ export function DigiSessionDetailDialog({
               <div>
                 <DialogTitle className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
                   <span>Ca tự học Digi: {session.schoolRoom}</span>
-                  <Badge variant="outline" className="rounded-full text-[9px] font-bold px-1.5 py-0 border-sky-300 bg-sky-100 text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
+                  <Badge variant="outline" className="rounded-full text-xs font-bold px-1.5 py-0 border-sky-300 bg-sky-100 text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
                     {session.statusLabel || 'Đang diễn ra'}
                   </Badge>
                 </DialogTitle>
@@ -342,7 +343,7 @@ export function DigiSessionDetailDialog({
             <div className="flex-1 min-h-0 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs overflow-hidden flex flex-col">
               <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 <table className="w-full text-left text-xs border-collapse table-auto">
-                  <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur-xs text-muted-foreground text-[11px] font-semibold border-b border-border/60">
+                  <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur-xs text-muted-foreground text-xs font-semibold border-b border-border/60">
                     <tr>
                       <th className="py-2.5 px-3 w-[22%]">Học viên</th>
                       <th className="py-2.5 px-2.5 w-[14%]">Điểm danh</th>
@@ -369,8 +370,13 @@ export function DigiSessionDetailDialog({
                         <tr key={booking.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
                           {/* 1. Cột Học viên: Tên tiếng Anh (in đậm, màu đen) + Tên tiếng Việt (text thường, không in đậm, màu đen) */}
                           <td className="py-2.5 px-3 align-middle">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className={cn('h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border', avatarClass)}>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className={cn(
+                                  'h-16 w-16 rounded-xl flex items-center justify-center text-xl font-bold shrink-0 border shadow-2xs',
+                                  avatarClass
+                                )}
+                              >
                                 {initialLetter}
                               </div>
                               <div className="min-w-0 leading-tight">
@@ -379,7 +385,7 @@ export function DigiSessionDetailDialog({
                                     <span className="font-bold text-xs text-foreground block leading-tight truncate">
                                       {booking.studentEnglishName}
                                     </span>
-                                    <span className="font-normal text-[11px] text-foreground/80 block leading-tight truncate mt-0.5">
+                                    <span className="font-normal text-xs text-foreground/80 block leading-tight truncate mt-1">
                                       {booking.studentName}
                                     </span>
                                   </>
@@ -400,7 +406,7 @@ export function DigiSessionDetailDialog({
                                   <Button
                                     type="button"
                                     size="xs"
-                                    className="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900 font-medium text-[10px] h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs"
+                                    className="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900 font-medium text-xs h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs"
                                   >
                                     <span>Vắng mặt</span>
                                     <ChevronDown className="h-2.5 w-2.5 ml-1 opacity-60" />
@@ -409,7 +415,7 @@ export function DigiSessionDetailDialog({
                                   <Button
                                     type="button"
                                     size="xs"
-                                    className="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900 font-medium text-[10px] h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs"
+                                    className="bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900 font-medium text-xs h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs"
                                   >
                                     <span>Nghỉ phép</span>
                                     <ChevronDown className="h-2.5 w-2.5 ml-1 opacity-60" />
@@ -418,7 +424,7 @@ export function DigiSessionDetailDialog({
                                   <Button
                                     type="button"
                                     size="xs"
-                                    className="bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900 font-medium text-[10px] h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1"
+                                    className="bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900 font-medium text-xs h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1"
                                   >
                                     <Clock className="h-2.5 w-2.5" />
                                     <span>Đến muộn</span>
@@ -428,7 +434,7 @@ export function DigiSessionDetailDialog({
                                   <Button
                                     type="button"
                                     size="xs"
-                                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900 font-medium text-[10px] h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1"
+                                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900 font-medium text-xs h-6 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1"
                                   >
                                     <Check className="h-2.5 w-2.5 stroke-[2.5px]" />
                                     <span>Có mặt</span>
@@ -447,21 +453,21 @@ export function DigiSessionDetailDialog({
                               <DropdownMenuContent align="center" className="w-[140px] rounded-xl shadow-xl p-1 z-50">
                                 <DropdownMenuItem
                                   onClick={() => handleAttendanceChange(booking.id, 'present')}
-                                  className="flex items-center gap-2 text-[11px] font-medium text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-950/20 cursor-pointer"
+                                  className="flex items-center gap-2 text-xs font-medium text-emerald-600 focus:bg-emerald-50 dark:focus:bg-emerald-950/20 cursor-pointer"
                                 >
                                   <Check className="h-3 w-3 stroke-[2.5px]" />
                                   <span>Đã đến</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleAttendanceChange(booking.id, 'late')}
-                                  className="flex items-center gap-2 text-[11px] font-medium text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20 cursor-pointer"
+                                  className="flex items-center gap-2 text-xs font-medium text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20 cursor-pointer"
                                 >
                                   <Clock className="h-3 w-3" />
                                   <span>Đến muộn</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleAttendanceChange(booking.id, 'absent')}
-                                  className="flex items-center gap-2 text-[11px] font-medium text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/20 cursor-pointer"
+                                  className="flex items-center gap-2 text-xs font-medium text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/20 cursor-pointer"
                                 >
                                   <div className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                                   <span>Vắng</span>
@@ -477,26 +483,26 @@ export function DigiSessionDetailDialog({
                                 {booking.totalLessons} bài ({booking.totalMinutes}p)
                               </span>
                               {isCancelled ? (
-                                <span className="inline-flex items-center text-[10px] font-medium text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.2 rounded-md">
+                                <span className="inline-flex items-center text-xs font-medium text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.2 rounded-md">
                                   Không đến (0/{booking.totalLessons})
                                 </span>
                               ) : completedLessonsCount === booking.totalLessons && booking.totalLessons > 0 ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-1.5 py-0.2 rounded-md">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-1.5 py-0.2 rounded-md">
                                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                                   Xong {completedLessonsCount}/{booking.totalLessons} bài
                                 </span>
                               ) : skippedLessonsCount > 0 ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-orange-700 bg-orange-100 dark:bg-orange-950/60 dark:text-orange-300 px-1.5 py-0.2 rounded-md">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-700 bg-orange-100 dark:bg-orange-950/60 dark:text-orange-300 px-1.5 py-0.2 rounded-md">
                                   <AlertCircle className="h-3 w-3 text-orange-600" />
                                   Xong {completedLessonsCount}/{booking.totalLessons} (Bỏ dở {skippedLessonsCount})
                                 </span>
                               ) : inProgressLessonsCount > 0 ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.2 rounded-md">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.2 rounded-md">
                                   <Clock className="h-3 w-3 text-amber-600 animate-pulse" />
                                   Đang học ({completedLessonsCount}/{booking.totalLessons})
                                 </span>
                               ) : (
-                                <span className="text-[10px] text-muted-foreground font-normal">
+                                <span className="text-xs text-muted-foreground font-normal">
                                   Chờ bắt đầu
                                 </span>
                               )}
@@ -512,15 +518,13 @@ export function DigiSessionDetailDialog({
                                 return (
                                   <div
                                     key={l.lessonId}
-                                    onClick={() => handleToggleLessonStatus(booking.id, l.lessonId)}
                                     className={cn(
-                                      'flex items-center gap-1.5 text-xs py-0.5 px-1.5 rounded-md transition-colors cursor-pointer group select-none',
+                                      'flex items-center gap-1.5 text-xs py-0.5 px-1.5 rounded-md select-none',
                                       isLessonDone && 'bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-medium',
                                       isLessonInProgress && 'bg-amber-50/80 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 font-normal',
                                       isLessonSkipped && 'bg-orange-50/80 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 line-through font-normal',
-                                      isLessonPending && 'text-muted-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800/50 font-normal'
+                                      isLessonPending && 'text-muted-foreground font-normal'
                                     )}
-                                    title="Bấm để chuyển trạng thái bài học (Đã học / Bỏ dở / Đang học / Chưa học)"
                                   >
                                     {isLessonDone && (
                                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -558,7 +562,7 @@ export function DigiSessionDetailDialog({
                                   <button
                                     type="button"
                                     onClick={() => handleReturnDevice(booking.id, booking.studentName, cleanDevice)}
-                                    className="inline-flex items-center gap-1 text-[10px] font-medium text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 px-1.5 py-0.5 rounded cursor-pointer transition-all shadow-2xs"
+                                    className="inline-flex items-center gap-1 text-xs font-medium text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 px-1.5 py-0.5 rounded cursor-pointer transition-all shadow-2xs"
                                     title="Thu hồi máy của học viên"
                                   >
                                     <Check className="h-2.5 w-2.5" />
@@ -572,14 +576,14 @@ export function DigiSessionDetailDialog({
                                   <DropdownMenuTrigger asChild>
                                     <button
                                       type="button"
-                                      className="inline-flex items-center text-[10px] font-medium text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded cursor-pointer transition-all shadow-2xs"
+                                      className="inline-flex items-center text-xs font-medium text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded cursor-pointer transition-all shadow-2xs"
                                       title="Cấp máy cho học viên"
                                     >
                                       + Cấp máy
                                     </button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="start" className="w-36">
-                                    <div className="px-2 py-1 text-[9px] font-medium text-muted-foreground uppercase tracking-wider border-b">
+                                    <div className="px-2 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
                                       Chọn máy cấp:
                                     </div>
                                     {['PC-01', 'PC-02', 'PC-03', 'PC-04', 'iPad-01', 'iPad-02', 'iPad-03'].map((dev) => (
@@ -637,31 +641,31 @@ export function DigiSessionDetailDialog({
             {/* ── 5 SMART CARDS THỐNG KÊ (HÀNG 5 THẺ RỰC RỠ TRÊN CÙNG) ── */}
             <div className="shrink-0 grid grid-cols-5 gap-1.5">
               <div className="flex flex-col items-center justify-center rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-800 p-1.5 text-center shadow-2xs">
-                <p className="text-[9px] text-muted-foreground font-medium leading-none">Sĩ số</p>
+                <p className="text-xs text-muted-foreground font-medium leading-none">Sĩ số</p>
                 <p className="text-xs font-bold font-mono text-foreground leading-tight mt-1">{currentBookings.length}</p>
               </div>
 
               <div className="flex flex-col items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-1.5 text-center shadow-2xs">
-                <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
                 <p className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-1">
                   {activeCount + completedCount}/{currentBookings.length}
                 </p>
               </div>
 
               <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20 p-1.5 text-center shadow-2xs">
-                <p className="text-[9px] text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
                 <p className="text-xs font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-1">
                   {absentCount}·0
                 </p>
               </div>
 
               <div className="flex flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20 p-1.5 text-center shadow-2xs">
-                <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium leading-none">Chờ vào</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-medium leading-none">Chờ vào</p>
                 <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-1">{waitingCount}</p>
               </div>
 
               <div className="flex flex-col items-center justify-center rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-900/50 dark:bg-violet-950/20 p-1.5 text-center shadow-2xs">
-                <p className="text-[9px] text-violet-600 dark:text-violet-400 font-medium leading-none">Thiết bị</p>
+                <p className="text-xs text-violet-600 dark:text-violet-400 font-medium leading-none">Thiết bị</p>
                 <p className="text-xs font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-1">{deviceCount}</p>
               </div>
             </div>
@@ -677,32 +681,47 @@ export function DigiSessionDetailDialog({
                     <button
                       type="button"
                       className="h-6 w-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-colors cursor-pointer border-none bg-transparent"
-                      title="Chỉnh sửa ca trực / nhân sự"
+                      title={mainAssistant ? 'Đổi trợ giảng hoặc phân công dạy thay' : 'Gán trợ giảng phụ trách ca'}
                     >
                       <PenSquare className="h-3.5 w-3.5" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44 rounded-xl p-1 shadow-xl z-50">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setChangeAssistantScope('all_future')
-                        setIsChangeAssistantOpen(true)
-                      }}
-                      className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/30 cursor-pointer"
-                    >
-                      <Repeat className="h-3.5 w-3.5 text-purple-600" />
-                      <span>Đổi Trợ giảng</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setChangeAssistantScope('today_only')
-                        setIsChangeAssistantOpen(true)
-                      }}
-                      className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
-                    >
-                      <Clock className="h-3.5 w-3.5 text-amber-600" />
-                      <span>Dạy thay</span>
-                    </DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 shadow-xl z-50">
+                    {mainAssistant ? (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setChangeAssistantScope('all_future')
+                            setIsChangeAssistantOpen(true)
+                          }}
+                          className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/30 cursor-pointer"
+                        >
+                          <Repeat className="h-3.5 w-3.5 text-purple-600" />
+                          <span>Đổi Trợ giảng (Cố định)</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setChangeAssistantScope('today_only')
+                            setIsChangeAssistantOpen(true)
+                          }}
+                          className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/30 cursor-pointer"
+                        >
+                          <Clock className="h-3.5 w-3.5 text-amber-600" />
+                          <span>Dạy thay / Trực thay</span>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setChangeAssistantScope('all_future')
+                          setIsChangeAssistantOpen(true)
+                        }}
+                        className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/30 cursor-pointer"
+                      >
+                        <UserCheck className="h-3.5 w-3.5 text-purple-600" />
+                        <span>Gán Trợ giảng phụ trách</span>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -713,11 +732,11 @@ export function DigiSessionDetailDialog({
                   <div className="flex items-start gap-2.5">
                     <Calendar className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                     <div className="leading-tight min-w-0">
-                      <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Lịch học</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-0.5">Lịch học</p>
                       <span className="font-semibold text-foreground font-mono block">
                         {session.dateDisplay || session.date}
                       </span>
-                      <span className="text-[10px] text-purple-700 dark:text-purple-300 font-medium flex items-center gap-1 mt-0.5">
+                      <span className="text-xs text-purple-700 dark:text-purple-300 font-medium flex items-center gap-1 mt-0.5">
                         <Repeat className="h-2.5 w-2.5 shrink-0" />
                         Hàng ngày (18h–21h)
                       </span>
@@ -725,7 +744,7 @@ export function DigiSessionDetailDialog({
                   </div>
 
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Giờ ca trực</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Giờ ca trực</p>
                     <span className="font-semibold text-foreground font-mono block text-purple-700 dark:text-purple-300 font-bold">
                       {session.timeLabel}–{session.endTimeLabel}
                     </span>
@@ -737,7 +756,7 @@ export function DigiSessionDetailDialog({
                   <div className="flex items-start gap-2.5">
                     <Building2 className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                     <div className="leading-tight min-w-0">
-                      <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Cơ sở</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-0.5">Cơ sở</p>
                       <span className="font-semibold text-foreground truncate block">
                         {session.branch || 'RinoEdu Linh Đàm'}
                       </span>
@@ -745,7 +764,7 @@ export function DigiSessionDetailDialog({
                   </div>
 
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Phòng học</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Phòng học</p>
                     <span className="font-semibold text-foreground flex items-center gap-1 flex-wrap">
                       <span>{session.schoolRoom}</span>
                       <button
@@ -764,7 +783,7 @@ export function DigiSessionDetailDialog({
                   <div className="flex items-start gap-2.5">
                     <BookOpen className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                     <div className="leading-tight min-w-0">
-                      <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Tên lớp</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-0.5">Tên lớp</p>
                       <span className="font-semibold text-foreground truncate block">
                         Ca tự học Digi
                       </span>
@@ -772,19 +791,19 @@ export function DigiSessionDetailDialog({
                   </div>
 
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Mã lớp</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Mã lớp</p>
                     <span className="font-semibold text-muted-foreground font-mono">
                       —
                     </span>
                   </div>
                 </div>
 
-                {/* 4. Người trực là Trợ giảng & Trợ giảng trực ca (có icon Đổi / Dạy thay) */}
+                {/* 4. Người trực là Trợ giảng & Trợ giảng trực ca (Đã bỏ chữ Đổi bên dưới) */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-start gap-2.5">
                     <User className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                     <div className="leading-tight min-w-0">
-                      <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Người trực</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-0.5">Người trực</p>
                       <span className="font-semibold text-foreground truncate block">
                         Trợ giảng
                       </span>
@@ -792,21 +811,7 @@ export function DigiSessionDetailDialog({
                   </div>
 
                   <div className="leading-tight min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <p className="text-[10px] text-muted-foreground font-medium">Trợ giảng trực ca</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setChangeAssistantScope('today_only')
-                          setIsChangeAssistantOpen(true)
-                        }}
-                        className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-0.5 cursor-pointer hover:underline p-0 border-none bg-transparent"
-                        title="Đổi trợ giảng hoặc phân công trực thay"
-                      >
-                        <ArrowLeftRight className="h-2.5 w-2.5" />
-                        Đổi
-                      </button>
-                    </div>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Trợ giảng trực ca</p>
 
                     {substituteAssistant ? (
                       <div className="space-y-0.5">
@@ -814,7 +819,7 @@ export function DigiSessionDetailDialog({
                           <div className="flex items-center gap-1.5 cursor-pointer group hover:opacity-85 transition-opacity">
                             <Avatar className="h-4.5 w-4.5 border border-amber-300 shrink-0">
                               <AvatarImage src={assistantPerson.avatar || ''} alt={assistantPerson.name} />
-                              <AvatarFallback className="bg-amber-100 text-amber-800 text-[8px] font-bold">
+                              <AvatarFallback className="bg-amber-100 text-amber-800 text-xs font-bold">
                                 {assistantPerson.name.slice(-2)}
                               </AvatarFallback>
                             </Avatar>
@@ -830,20 +835,20 @@ export function DigiSessionDetailDialog({
                           <button
                             type="button"
                             onClick={handleResetSubstitute}
-                            className="text-[9px] text-muted-foreground hover:text-rose-600 cursor-pointer underline"
+                            className="text-xs text-muted-foreground hover:text-rose-600 cursor-pointer underline"
                             title="Khôi phục trợ giảng chính"
                           >
                             Hủy thay
                           </button>
                         </div>
                       </div>
-                    ) : (
+                    ) : mainAssistant ? (
                       <PersonnelHoverCard person={assistantPerson} align="end">
                         <div className="flex items-center gap-1.5 cursor-pointer group hover:opacity-85 transition-opacity pt-0.5">
                           <Avatar className="h-4.5 w-4.5 border border-purple-200 shrink-0">
                             <AvatarImage src={assistantPerson.avatar || ''} alt={assistantPerson.name} />
-                            <AvatarFallback className="bg-purple-100 text-purple-700 text-[8px] font-bold">
-                              TH
+                            <AvatarFallback className="bg-purple-100 text-purple-700 text-xs font-bold">
+                              {mainAssistant.slice(-2)}
                             </AvatarFallback>
                           </Avatar>
                           <span className="font-semibold text-foreground group-hover:text-primary group-hover:underline truncate text-xs">
@@ -851,6 +856,15 @@ export function DigiSessionDetailDialog({
                           </span>
                         </div>
                       </PersonnelHoverCard>
+                    ) : (
+                      <div className="flex items-center gap-1.5 pt-0.5">
+                        <div className="h-4.5 w-4.5 rounded-full border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0">
+                          <User className="h-2.5 w-2.5" />
+                        </div>
+                        <span className="text-xs text-muted-foreground italic font-normal">
+                          Chưa phân công
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -860,7 +874,7 @@ export function DigiSessionDetailDialog({
                   <div className="flex items-start gap-2.5">
                     <Users className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
                     <div className="leading-tight">
-                      <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Quy mô</p>
+                      <p className="text-xs text-muted-foreground font-medium mb-0.5">Quy mô</p>
                       <span className="font-semibold text-foreground">
                         1:8 (Chỗ)
                       </span>
@@ -868,7 +882,7 @@ export function DigiSessionDetailDialog({
                   </div>
 
                   <div className="leading-tight">
-                    <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Trình độ</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ</p>
                     <span className="font-semibold text-muted-foreground">
                       —
                     </span>

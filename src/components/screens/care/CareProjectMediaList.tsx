@@ -125,7 +125,7 @@ export function CareProjectMediaList({ pkgIsEnglish }: CareProjectMediaListProps
           <h3 className="text-xs font-bold text-foreground tracking-tight">
             Dự án
           </h3>
-          <span className="text-[10px] text-muted-foreground font-normal">
+          <span className="text-xs text-muted-foreground font-normal">
             Hiển thị {visibleProjects.length}/{projectSessions.length} dự án
           </span>
         </div>
@@ -146,8 +146,8 @@ export function CareProjectMediaList({ pkgIsEnglish }: CareProjectMediaListProps
                   {project.title}
                 </h4>
 
-                <div className="flex items-center gap-1.5 flex-wrap text-[11px] shrink-0">
-                  <span className="font-extrabold text-[10px] px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 shrink-0 shadow-3xs">
+                <div className="flex items-center gap-1.5 flex-wrap text-xs shrink-0">
+                  <span className="font-extrabold text-xs px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 shrink-0 shadow-3xs">
                     Thứ 6
                   </span>
                   <span className="font-semibold text-foreground">
@@ -165,7 +165,7 @@ export function CareProjectMediaList({ pkgIsEnglish }: CareProjectMediaListProps
                 <div className="pt-1 pb-0.5 space-y-1">
                   <p
                     className={cn(
-                      'text-[11px] text-slate-900 dark:text-zinc-100 font-normal leading-relaxed',
+                      'text-xs text-slate-900 dark:text-zinc-100 font-normal leading-relaxed',
                       !expandedProjectComments[project.id] && 'line-clamp-3'
                     )}
                   >
@@ -232,9 +232,9 @@ export function CareProjectMediaList({ pkgIsEnglish }: CareProjectMediaListProps
                     )}
 
                     {/* Bottom title & duration */}
-                    <div className="relative z-10 text-[10px] text-white font-medium truncate leading-tight">
+                    <div className="relative z-10 text-xs text-white font-medium truncate leading-tight">
                       {mediaItem.type === 'video' && (
-                        <span className="bg-sky-600 px-1 rounded text-[9px] font-mono mr-1">
+                        <span className="bg-sky-600 px-1 rounded text-xs font-mono mr-1">
                           {mediaItem.duration}
                         </span>
                       )}

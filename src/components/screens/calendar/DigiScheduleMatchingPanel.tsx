@@ -106,7 +106,7 @@ export function DigiScheduleMatchingPanel({
             <GraduationCap className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] text-muted-foreground leading-tight">
+            <span className="text-xs text-muted-foreground leading-tight">
               Đang ghép lịch cho:
             </span>
             <span className="text-xs font-bold text-primary leading-tight mt-0.5">
@@ -118,10 +118,10 @@ export function DigiScheduleMatchingPanel({
         {/* Cột phải: Đang cấu hình (dòng 1) -> SĐT + Cơ sở (dòng 2) */}
         <div className="flex flex-col items-end text-right min-w-0">
           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground truncate">
-            <span className="text-muted-foreground font-normal text-[11px]">Đang cấu hình:</span>
+            <span className="text-muted-foreground font-normal text-xs">Đang cấu hình:</span>
             <span className="text-primary truncate">{activeStudent.name}</span>
             {activeStudent.englishName && (
-              <span className="text-muted-foreground italic text-[11px] font-normal">
+              <span className="text-muted-foreground italic text-xs font-normal">
                 ({activeStudent.englishName})
               </span>
             )}
@@ -192,11 +192,11 @@ export function DigiScheduleMatchingPanel({
                     <div className="font-bold text-xs text-foreground truncate">
                       {pkg.packageName}
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                       <Building2 className="h-3 w-3 text-muted-foreground/70 shrink-0" />
                       <span className="truncate">Cơ sở: {activeStudent.branch}</span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground/80 mt-0.5 font-medium">
+                    <div className="text-xs text-muted-foreground/80 mt-0.5 font-medium">
                       {pkg.availableLessons.length} bài học tiếp theo • {pkg.availableLessons.length * 30} phút
                     </div>
                   </div>
@@ -226,10 +226,10 @@ export function DigiScheduleMatchingPanel({
                       : 'border-border/80 bg-background hover:bg-accent/40 text-foreground'
                   )}
                 >
-                  <span className={cn('text-[11px] font-medium', isSelected ? 'text-primary' : 'text-foreground')}>
+                  <span className={cn('text-xs font-medium', isSelected ? 'text-primary' : 'text-foreground')}>
                     {d.label}
                   </span>
-                  <span className={cn('text-[10px] mt-0.5', isSelected ? 'text-primary font-bold' : 'text-muted-foreground')}>
+                  <span className={cn('text-xs mt-0.5', isSelected ? 'text-primary font-bold' : 'text-muted-foreground')}>
                     {d.dateDisplay}
                   </span>
                 </button>
@@ -259,11 +259,11 @@ export function DigiScheduleMatchingPanel({
               >
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3 text-muted-foreground" />
-                  <span className={cn('text-[11px] font-medium', isCustomDate ? 'text-primary' : 'text-foreground')}>
+                  <span className={cn('text-xs font-medium', isCustomDate ? 'text-primary' : 'text-foreground')}>
                     {isCustomDate ? 'Ngày đã chọn' : 'Ngày khác'}
                   </span>
                 </div>
-                <span className={cn('text-[10px] mt-0.5', isCustomDate ? 'text-primary font-bold' : 'text-muted-foreground')}>
+                <span className={cn('text-xs mt-0.5', isCustomDate ? 'text-primary font-bold' : 'text-muted-foreground')}>
                   {isCustomDate ? selectedDateKey.split('-').reverse().slice(0, 2).join('/') : 'Tùy chọn...'}
                 </span>
               </button>
@@ -287,7 +287,7 @@ export function DigiScheduleMatchingPanel({
                 <span className="text-xs font-normal text-muted-foreground">
                   Bài học & Khung giờ {isMulti && `(${activeStudent.name})`}
                 </span>
-                <span className="text-[10px] font-normal text-muted-foreground/70">
+                <span className="text-xs font-normal text-muted-foreground/70">
                   (Dung lượng: {roomCapacity} chỗ/ca)
                 </span>
               </div>
@@ -296,7 +296,7 @@ export function DigiScheduleMatchingPanel({
             {/* Danh sách từng bài học đi liền với khung giờ và số chỗ */}
             <div className="border border-border/80 rounded-xl overflow-hidden divide-y divide-border/60 bg-background">
               {/* Header thanh công cụ chọn tất cả */}
-              <div className="flex items-center justify-between px-3 py-2 bg-muted/40 text-[11px] font-semibold text-muted-foreground">
+              <div className="flex items-center justify-between px-3 py-2 bg-muted/40 text-xs font-semibold text-muted-foreground">
                 <button
                   type="button"
                   onClick={onToggleSelectAll}
@@ -357,7 +357,7 @@ export function DigiScheduleMatchingPanel({
                         >
                           {lesson.lessonName}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Thời lượng: {lesson.durationMinutes} phút
                         </span>
                       </div>
@@ -370,7 +370,7 @@ export function DigiScheduleMatchingPanel({
                       </span>
                       <span
                         className={cn(
-                          'text-[10px] font-semibold',
+                          'text-xs font-semibold',
                           isFull
                             ? 'text-red-600 dark:text-red-400 font-bold'
                             : slotInfo.remaining <= 2

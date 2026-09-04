@@ -62,8 +62,8 @@ export function DetailHistoryViews({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-foreground">Buổi {item.session}</span>
-                  <span className="text-[10px] text-muted-foreground">{item.date}</span>
-                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">★ {item.rating}</span>
+                  <span className="text-xs text-muted-foreground">{item.date}</span>
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400">★ {item.rating}</span>
                 </div>
                 <p className="text-xs text-muted-foreground bg-muted/30 dark:bg-muted/10 p-2 rounded-lg border border-border/40">
                   &ldquo;{item.comment}&rdquo;
@@ -102,9 +102,9 @@ export function DetailHistoryViews({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-foreground">Buổi {item.session}</span>
-                  <span className="text-[10px] text-muted-foreground">{item.date}</span>
+                  <span className="text-xs text-muted-foreground">{item.date}</span>
                   <Badge variant="outline" className={cn(
-                    "text-[9px] px-1 py-0 h-4 font-semibold shrink-0 uppercase",
+                    "text-xs px-1 py-0 h-4 font-semibold shrink-0 uppercase",
                     item.status === 'present' && getStatusBadgeClass('present'),
                     item.status === 'late' && getStatusBadgeClass('late'),
                     item.status === 'excused' && getStatusBadgeClass('excused'),
@@ -147,7 +147,7 @@ export function DetailHistoryViews({
               <div className="space-y-1 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">Bài tập buổi {item.session}</span>
-                  <span className="text-[10px] text-muted-foreground">{item.date}</span>
+                  <span className="text-xs text-muted-foreground">{item.date}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {item.completion > 0 ? (
@@ -157,22 +157,22 @@ export function DetailHistoryViews({
                         e.preventDefault();
                         toast.info(`Đang tải bài tập buổi ${item.session}...`);
                       }}
-                      className="text-[10px] text-primary hover:underline font-bold flex items-center gap-0.5"
+                      className="text-xs text-primary hover:underline font-bold flex items-center gap-0.5"
                     >
                       <ExternalLink className="h-2.5 w-2.5 inline shrink-0" />
                       BT{item.session} - {item.score} ({item.completion}%)
                     </a>
                   ) : (
-                    <span className="text-[10px] text-rose-600 font-bold">Chưa nộp</span>
+                    <span className="text-xs text-rose-600 font-bold">Chưa nộp</span>
                   )}
                 </div>
                 
                 {/* Uploader info */}
                 <div className="flex items-center gap-1.5 mt-1.5 p-1 px-1.5 bg-muted/40 dark:bg-zinc-800/40 rounded border border-border/40 w-fit">
-                  <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0 bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                  <div className="h-4.5 w-4.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">
                     LH
                   </div>
-                  <span className="text-[9px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     GV. Lâm Tuấn Huy &bull; Đính kèm: <span className="font-mono text-foreground/85 font-medium">{item.date}</span>
                   </span>
                 </div>
@@ -185,22 +185,22 @@ export function DetailHistoryViews({
       {type === 'score' && (
         <div className="space-y-4">
           <div className="p-3 bg-muted/20 dark:bg-muted/10 rounded-xl border border-border/40 space-y-2">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Biểu đồ xu hướng điểm số</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">Biểu đồ xu hướng điểm số</span>
             <div className="h-20 flex items-end justify-between px-4 pt-4 border-b border-border">
               <div className="flex flex-col items-center gap-1.5">
-                <span className="text-[10px] font-bold text-foreground">4.0</span>
+                <span className="text-xs font-bold text-foreground">4.0</span>
                 <div className="w-4 bg-rose-500 rounded-t h-8" />
-                <span className="text-[9px] text-muted-foreground">Đầu vào</span>
+                <span className="text-xs text-muted-foreground">Đầu vào</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <span className="text-[10px] font-bold text-foreground">6.0</span>
+                <span className="text-xs font-bold text-foreground">6.0</span>
                 <div className="w-4 bg-amber-500 rounded-t h-12" />
-                <span className="text-[9px] text-muted-foreground">Lần 1</span>
+                <span className="text-xs text-muted-foreground">Lần 1</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <span className="text-[10px] font-bold text-foreground">8.5</span>
+                <span className="text-xs font-bold text-foreground">8.5</span>
                 <div className="w-4 bg-emerald-500 rounded-t h-16" />
-                <span className="text-[9px] text-muted-foreground">Lần 2</span>
+                <span className="text-xs text-muted-foreground">Lần 2</span>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ export function DetailHistoryViews({
                   <span className="text-xs font-bold text-foreground">{item.title}</span>
                   <span className="text-xs font-bold text-foreground">{item.score}/{item.max}</span>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Ngày làm bài: {item.date}</span>
                   {item.diff > 0 && (
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold">+{item.diff} điểm</span>
@@ -263,7 +263,7 @@ export function DetailHistoryViews({
                   <span className={cn("text-xs font-bold", item.status === 'active' ? "text-rose-700 dark:text-rose-400" : "text-foreground")}>
                     {item.level}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{item.date}</span>
+                  <span className="text-xs text-muted-foreground">{item.date}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {item.label}
@@ -301,9 +301,9 @@ export function DetailHistoryViews({
                   {item.status === 'processing' ? <Clock className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
                 </div>
                 <div className="space-y-1 flex-1">
-                  <p className="text-foreground leading-snug text-[11px] font-medium">{item.desc}</p>
-                  <p className="text-muted-foreground text-[10px] italic">{item.reason}</p>
-                  <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 font-medium">
+                  <p className="text-foreground leading-snug text-xs font-medium">{item.desc}</p>
+                  <p className="text-muted-foreground text-xs italic">{item.reason}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground/80 mt-1 font-medium">
                     <span>Người thực hiện: {item.staff}</span>
                     <span className="text-muted-foreground">{item.date}</span>
                   </div>
@@ -347,7 +347,7 @@ export function DetailHistoryViews({
               <div className="space-y-0.5 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground">Buổi {item.session}</span>
-                  <span className="text-[10px] text-muted-foreground">{item.date}</span>
+                  <span className="text-xs text-muted-foreground">{item.date}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {item.type === 'upcoming' ? (
@@ -383,11 +383,11 @@ export function DetailHistoryViews({
                   <CheckCircle2 className="h-3 w-3" />
                 </div>
                 <div className="space-y-1 flex-1">
-                  <p className="text-foreground leading-snug text-[11px] font-medium">{item.desc}</p>
-                  <p className="text-muted-foreground text-[10px] italic">
+                  <p className="text-foreground leading-snug text-xs font-medium">{item.desc}</p>
+                  <p className="text-muted-foreground text-xs italic">
                     {item.reason.startsWith('Lý do:') ? item.reason : `Lý do: ${item.reason}`}
                   </p>
-                  <div className="flex items-center justify-between text-[9px] text-muted-foreground/80 mt-1 font-medium">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground/80 mt-1 font-medium">
                     <span>Người thực hiện: {item.staff}</span>
                     <span className="text-muted-foreground">{item.date}</span>
                   </div>
@@ -453,9 +453,9 @@ export function DetailHeaderView({
           <h4 className="text-xs font-bold flex items-center gap-1.5 text-amber-500 fill-amber-500">
             <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
             <span>★ {rating}</span>
-            <span className="text-muted-foreground font-normal text-[10px]">({votes} lượt đánh giá)</span>
+            <span className="text-muted-foreground font-normal text-xs">({votes} lượt đánh giá)</span>
           </h4>
-          <p className="text-[11px] text-muted-foreground mt-1 font-medium italic">
+          <p className="text-xs text-muted-foreground mt-1 font-medium italic">
             &ldquo;{generalComment}&rdquo;
           </p>
         </>
@@ -465,7 +465,7 @@ export function DetailHeaderView({
             <Clock className="h-4 w-4 text-sky-500" />
             <span>{recentAttStatus} &bull; {attRate}%</span>
           </h4>
-          <p className="text-[10px] text-muted-foreground mt-1 font-medium">
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
             Đã học {attendanceRatio} buổi &bull; Số buổi đi muộn: {lateSessions || 0} buổi
           </p>
         </>
@@ -475,7 +475,7 @@ export function DetailHeaderView({
             <TrendingUp className="h-4 w-4 text-violet-500" />
             <span>Gần nhất: {rating} &mdash; Trung bình: {avgScore}</span>
           </h4>
-          <p className="text-[10px] text-muted-foreground mt-1 font-medium">
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
             Cao nhất: {highScore} &bull; Thấp nhất: {lowScore} &bull; Số bài thiếu: {missedTestsCount || 0}
           </p>
         </>
@@ -499,7 +499,7 @@ export function DetailHeaderView({
               <h4 className="text-xs font-bold text-rose-600">Chưa nộp</h4>
             )}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-1.5 space-y-0.5 text-left">
+          <div className="text-xs text-muted-foreground mt-1.5 space-y-0.5 text-left">
             <p className="font-semibold text-foreground">
               {subject === 'Toán tư duy' ? 'Chủ đề: Hàm số bậc nhất' : 'Chủ đề: Phonics lab - Nguyên âm ngắn'}
             </p>
@@ -518,7 +518,7 @@ export function DetailHeaderView({
               )}>{rating}</span>
             </h4>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed font-medium bg-muted/40 p-2 rounded border border-border/40 text-left">
+          <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium bg-muted/40 p-2 rounded border border-border/40 text-left">
             Ghi nhận gần nhất: <span className="text-foreground font-normal">
               {rating === 'Tiến bộ' 
                 ? 'Học viên có ý thức tự giác học tập tốt, hoàn thành bài tập về nhà đầy đủ và tiếp thu bài giảng nhanh.' 
@@ -534,7 +534,7 @@ export function DetailHeaderView({
             {type === 'sessions' && <Calendar className="h-4 w-4 text-blue-500" />}
             {type === 'sessions' ? curriculumName : dialogTitle}
           </h4>
-          <p className="text-[10px] text-muted-foreground mt-1 text-left">
+          <p className="text-xs text-muted-foreground mt-1 text-left">
             {type === 'sessions' ? (
               <>
                 Môn học: <span className="font-semibold text-foreground">{subject}</span> &bull; Trình độ: <span className="font-semibold text-foreground">{level || '—'}</span>

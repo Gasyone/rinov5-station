@@ -167,12 +167,12 @@ export function LeaveReserveDetailDialog({
                       </span>
                       <button
                         type="button"
-                        className="text-[11px] font-medium text-muted-foreground hover:text-foreground bg-muted/60 hover:bg-muted px-2 py-0.5 rounded-md border border-border/70 inline-flex items-center gap-1 transition-colors"
+                        className="text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/60 hover:bg-muted px-2 py-0.5 rounded-md border border-border/70 inline-flex items-center gap-1 transition-colors"
                       >
                         <span>+ Thêm tên TA</span>
-                        <span className="text-[10px]">✎</span>
+                        <span className="text-xs">✎</span>
                       </button>
-                      <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0.5">
+                      <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5">
                         {typeLabel}
                       </Badge>
                     </div>
@@ -189,7 +189,7 @@ export function LeaveReserveDetailDialog({
                       <span className="font-medium text-foreground">
                         {activeReq.parentName || student?.parentName || 'Phạm Mai (Mẹ)'}
                       </span>
-                      <span className="text-[10px] font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 px-1.5 py-0.2 rounded border border-sky-200 dark:border-sky-800">
+                      <span className="text-xs font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 px-1.5 py-0.2 rounded border border-sky-200 dark:border-sky-800">
                         Chính
                       </span>
                       <span>•</span>
@@ -213,7 +213,7 @@ export function LeaveReserveDetailDialog({
 
                 {/* Right Student Code Pill */}
                 <div className="text-right shrink-0">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-mono font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border">
+                  <span className="inline-flex items-center gap-1 text-xs font-mono font-medium text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border">
                     <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                     {activeReq.studentCode || `STU-00${activeReq.studentId.replace(/\D/g, '')}`}
                   </span>
@@ -240,22 +240,22 @@ export function LeaveReserveDetailDialog({
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Cơ sở / Trường</span>
+                    <span className="text-muted-foreground block text-xs">Cơ sở / Trường</span>
                     <span className="font-semibold text-foreground">{activeReq.branch}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Môn học</span>
+                    <span className="text-muted-foreground block text-xs">Môn học</span>
                     <span className="font-semibold text-foreground">{subjectText()}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Lớp học</span>
+                    <span className="text-muted-foreground block text-xs">Lớp học</span>
                     <span className="font-semibold text-foreground">{activeReq.className}</span>
-                    <span className="text-[10px] font-mono text-muted-foreground block">
+                    <span className="text-xs font-mono text-muted-foreground block">
                       ({activeReq.classCode})
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Gói học phí</span>
+                    <span className="text-muted-foreground block text-xs">Gói học phí</span>
                     <span className="font-semibold text-foreground">
                       {activeReq.productPackage || 'Gói chuẩn'}
                     </span>
@@ -279,13 +279,13 @@ export function LeaveReserveDetailDialog({
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Ngày tạo phiếu</span>
+                    <span className="text-muted-foreground block text-xs">Ngày tạo phiếu</span>
                     <span className="font-semibold text-foreground font-mono">
                       {activeReq.requestedDate}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground block text-[11px]">Phân loại</span>
+                    <span className="text-muted-foreground block text-xs">Phân loại</span>
                     <span className="font-semibold text-foreground">{typeLabel}</span>
                   </div>
                 </div>
@@ -297,7 +297,7 @@ export function LeaveReserveDetailDialog({
                         LN
                       </div>
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Nguồn tạo (Sale / CSM)</span>
+                        <span className="text-xs text-muted-foreground block">Nguồn tạo (Sale / CSM)</span>
                         <span className="font-medium text-foreground">Lê Hoàng Nam</span>
                       </div>
                     </div>
@@ -309,14 +309,14 @@ export function LeaveReserveDetailDialog({
                         GV
                       </div>
                       <div>
-                        <span className="text-[10px] text-muted-foreground block">Giáo viên phụ trách</span>
+                        <span className="text-xs text-muted-foreground block">Giáo viên phụ trách</span>
                         <span className="font-medium text-foreground">Sarah J. ({activeReq.branch})</span>
                       </div>
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2.5 text-[11px] font-medium cursor-pointer"
+                      className="h-7 px-2.5 text-xs font-medium cursor-pointer"
                       onClick={() => toast.info('Tính năng đổi người phụ trách đang phát triển!')}
                     >
                       Đổi GV
@@ -336,17 +336,17 @@ export function LeaveReserveDetailDialog({
                   <div className="space-y-2 text-xs">
                     <div className="grid grid-cols-2 gap-2 bg-amber-50/50 dark:bg-amber-950/20 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-800/40">
                       <div>
-                        <span className="text-muted-foreground block text-[11px]">Hạn mức vắng phép</span>
+                        <span className="text-muted-foreground block text-xs">Hạn mức vắng phép</span>
                         <span className="font-bold text-foreground">{activeReq.quota ?? 12} buổi / năm</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[11px]">Số buổi xin nghỉ đợt này</span>
+                        <span className="text-muted-foreground block text-xs">Số buổi xin nghỉ đợt này</span>
                         <span className="font-bold text-amber-700 dark:text-amber-400">
                           {activeReq.usedAbsences ? `${activeReq.usedAbsences} buổi` : '1 buổi'}
                         </span>
                       </div>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       ✓ Đơn xin nghỉ hợp lệ (đã gửi trước giờ học &gt; 2 tiếng). Sau khi duyệt, học viên có thể đăng ký lịch học bù tại phân hệ Học bù.
                     </p>
                   </div>
@@ -354,17 +354,17 @@ export function LeaveReserveDetailDialog({
                   <div className="space-y-2 text-xs">
                     <div className="grid grid-cols-2 gap-2 bg-sky-50/50 dark:bg-sky-950/20 p-2.5 rounded-lg border border-sky-200/60 dark:border-sky-800/40">
                       <div>
-                        <span className="text-muted-foreground block text-[11px]">Hình thức bảo lưu</span>
+                        <span className="text-muted-foreground block text-xs">Hình thức bảo lưu</span>
                         <span className="font-bold text-foreground">Bảo lưu giữ chỗ</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block text-[11px]">Hết hạn dự kiến</span>
+                        <span className="text-muted-foreground block text-xs">Hết hạn dự kiến</span>
                         <span className="font-bold text-sky-700 dark:text-sky-400 font-mono">
                           {activeReq.endDate || 'Chưa cập nhật'}
                         </span>
                       </div>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       ✓ Bảo lưu giữ chỗ: Tạm ngưng trừ phí trong thời hạn bảo lưu. Học viên vẫn nằm trong danh sách lớp.
                     </p>
                   </div>
@@ -382,11 +382,11 @@ export function LeaveReserveDetailDialog({
                   <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-foreground">Lê Hoàng Nam (Sale)</span>
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {activeReq.requestedDate} 09:30
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
+                    <p className="text-xs text-muted-foreground leading-snug">
                       Đã tạo đơn yêu cầu theo đề nghị của Phụ huynh qua Zalo/Điện thoại.
                     </p>
                   </div>
@@ -395,11 +395,11 @@ export function LeaveReserveDetailDialog({
                     <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-foreground">Quản lý chi nhánh</span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground font-mono">
                           {activeReq.requestedDate} 10:15
                         </span>
                       </div>
-                      <p className="text-[11px] text-foreground font-medium leading-snug">
+                      <p className="text-xs text-foreground font-medium leading-snug">
                         Trạng thái: <span className="font-bold">{statusLabel}</span>
                       </p>
                     </div>
@@ -415,7 +415,7 @@ export function LeaveReserveDetailDialog({
                   <History className="h-4 w-4 text-primary shrink-0" />
                   <span>Lịch sử đơn nghỉ phép & bảo lưu của học viên</span>
                 </div>
-                <span className="text-[10px] font-mono font-semibold bg-muted px-2 py-0.5 rounded-full border text-muted-foreground">
+                <span className="text-xs font-mono font-semibold bg-muted px-2 py-0.5 rounded-full border text-muted-foreground">
                   {studentHistory.length} đơn
                 </span>
               </div>
@@ -428,7 +428,7 @@ export function LeaveReserveDetailDialog({
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b border-border/60 text-muted-foreground text-[11px] text-left">
+                      <tr className="border-b border-border/60 text-muted-foreground text-xs text-left">
                         <th className="pb-2 font-medium">Mã đơn</th>
                         <th className="pb-2 font-medium">Loại đơn</th>
                         <th className="pb-2 font-medium">Thời gian</th>
@@ -449,17 +449,17 @@ export function LeaveReserveDetailDialog({
                           <td className="py-2.5 font-mono font-bold text-foreground">
                             {item.id}
                             {item.id === activeReq.id && (
-                              <span className="ml-1 text-[9px] bg-primary/20 text-primary px-1 py-0.2 rounded font-sans">
+                              <span className="ml-1 text-xs bg-primary/20 text-primary px-1 py-0.2 rounded font-sans">
                                 Đang xem
                               </span>
                             )}
                           </td>
                           <td className="py-2.5">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0">
                               {TYPE_LABELS[item.type] || item.type}
                             </Badge>
                           </td>
-                          <td className="py-2.5 font-mono text-muted-foreground text-[11px]">
+                          <td className="py-2.5 font-mono text-muted-foreground text-xs">
                             {item.startDate} {item.endDate && item.endDate !== item.startDate ? `→ ${item.endDate}` : ''}
                           </td>
                           <td className="py-2.5 text-foreground">
@@ -471,7 +471,7 @@ export function LeaveReserveDetailDialog({
                           <td className="py-2.5 text-right">
                             <span
                               className={cn(
-                                'text-[10px] font-semibold px-2 py-0.5 rounded-full border',
+                                'text-xs font-semibold px-2 py-0.5 rounded-full border',
                                 getStatusBadgeClass(item.status)
                               )}
                             >

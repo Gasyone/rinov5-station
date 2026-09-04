@@ -97,7 +97,7 @@ export function StudentOrderCardItem({
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100/90 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100/90 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200">
                 Đang chờ duyệt & thanh toán
               </span>
 
@@ -141,7 +141,7 @@ export function StudentOrderCardItem({
 
         {/* Parent Order Notice (if this is a completion order linked to deposit) */}
         {order.sourceOrderNo && !isDraft && (
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground pb-0.5 font-sans">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground pb-0.5 font-sans">
             <span>Đơn hoàn tất từ đơn cọc:</span>
             <button
               type="button"
@@ -162,12 +162,13 @@ export function StudentOrderCardItem({
               type="button"
               onClick={() => onViewDetail(order)}
               className="font-mono text-sm font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
-              title={isDraft ? 'Chỉnh sửa đơn hàng nháp' : 'Nhấp xem chi tiết đơn hàng'}
+              title="Nhấp xem chi tiết đơn hàng"
             >
-              {order.orderNo || order.id}
+              <span>{order.orderNo || order.id}</span>
+              <ExternalLink className="h-3 w-3 text-sky-500/70" />
             </button>
             {isDraft && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-sans font-medium border border-amber-200/60">
+              <span className="px-1.5 py-0.2 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-sans font-medium border border-amber-200/60">
                 Nháp
               </span>
             )}
@@ -190,7 +191,7 @@ export function StudentOrderCardItem({
             ) : (
               <span
                 className={cn(
-                  'font-medium text-[11px] font-sans',
+                  'font-medium text-xs font-sans',
                   isCancelled
                     ? 'text-zinc-500'
                     : 'text-foreground'
@@ -324,7 +325,7 @@ export function StudentOrderCardItem({
             )}
           </div>
 
-          <div className="text-[11px] text-muted-foreground shrink-0 font-normal font-sans">
+          <div className="text-xs text-muted-foreground shrink-0 font-normal font-sans">
             Người lên đơn: <span className="text-foreground font-medium">{order.saleRep || order.saleBy || 'Lê Phương Thảo'} {order.saleDate ? `(${order.saleDate})` : ''}</span>
           </div>
         </div>
@@ -365,7 +366,7 @@ export function StudentOrderCardItem({
               </div>
 
               {/* Sub-line: Duration (Clock), Bonus Extra Sessions (Hourglass), Gift (Gift icon - only when exists) */}
-              <div className="flex items-center gap-4 text-[11px] text-muted-foreground pl-6 flex-wrap">
+              <div className="flex items-center gap-4 text-xs text-muted-foreground pl-6 flex-wrap">
                 {/* Duration / Sessions */}
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
@@ -404,8 +405,8 @@ export function StudentOrderCardItem({
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground">
                 LỊCH SỬ THANH TOÁN
               </span>
-              <span className="text-[10px] text-muted-foreground font-normal">
-                ({order.payments && order.payments.length > 0 ? `${order.payments.length} chuyển khoản` : 'Chưa có giao dịch'})
+              <span className="text-[10.5px] text-muted-foreground font-normal font-mono">
+                ({order.payments?.length ?? 0})
               </span>
               {isPaymentsExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
             </button>
@@ -441,8 +442,8 @@ export function StudentOrderCardItem({
                         onViewDetail(order)
                       }
                     }}
-                    className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
-                    title="Ghi nhận số tiền thanh toán thêm từ khách hàng"
+                    className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-2 py-0.5 rounded-md cursor-pointer transition-all shadow-2xs shrink-0"
+                    title="Ghi nhận số tiền thanh toán thêm"
                   >
                     <span>+ Thanh toán thêm</span>
                   </button>
@@ -467,7 +468,7 @@ export function StudentOrderCardItem({
                         <div className="flex items-start gap-2.5 min-w-0 flex-1">
                           <span
                             className={cn(
-                              'w-15 text-center py-0.5 text-[11px] font-medium rounded-md text-white shadow-2xs shrink-0 mt-0.5',
+                              'w-15 text-center py-0.5 text-xs font-medium rounded-md text-white shadow-2xs shrink-0 mt-0.5',
                               isDeposit ? 'bg-emerald-700 dark:bg-emerald-800' : 'bg-purple-800 dark:bg-purple-900'
                             )}
                           >
@@ -507,19 +508,20 @@ export function StudentOrderCardItem({
                                     if (onCreateCompletionOrder) {
                                       onCreateCompletionOrder(order)
                                     } else {
-                                      toast.success(`Đã mở giao diện tạo đơn hoàn tất từ đơn cọc ${order.orderNo}`)
+                                      toast.info(`Tạo đơn hoàn tất cho đơn cọc ${order.orderNo}`)
                                     }
                                   }}
                                   className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
                                 >
                                   <span>Tạo đơn hoàn tất</span>
+                                  <ExternalLink className="h-3 w-3" />
                                 </button>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="text-right text-[11px] shrink-0 font-sans space-y-0.5">
+                        <div className="text-right text-xs shrink-0 font-sans space-y-0.5">
                           {pm.saleBy && (
                             <div className="text-muted-foreground">
                               Người lên đơn: <span className="font-medium text-foreground">{pm.saleBy}</span>
@@ -540,7 +542,7 @@ export function StudentOrderCardItem({
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className={cn(
-                              'text-[10px] font-medium px-2 py-0.5 rounded-md border shrink-0',
+                              'text-xs font-medium px-2 py-0.5 rounded-md border shrink-0',
                               pm.statusLabel === 'Chờ xử lý'
                                 ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white border-blue-600 shadow-2xs font-semibold'
                                 : pm.status === 'completed' || pm.statusLabel === 'Thành công'
@@ -557,7 +559,7 @@ export function StudentOrderCardItem({
                                   ? 'Chờ thanh toán'
                                   : 'Hủy')}
                           </span>
-                          <span className="font-mono text-muted-foreground text-[11px] shrink-0">
+                          <span className="font-mono text-muted-foreground text-xs shrink-0">
                             {pm.timestamp}
                           </span>
                           <span className="font-semibold text-foreground truncate">
@@ -566,7 +568,7 @@ export function StudentOrderCardItem({
                         </div>
 
                         {pm.saleBy && (
-                          <span className="text-[11px] text-muted-foreground shrink-0 font-sans">
+                          <span className="text-xs text-muted-foreground shrink-0 font-sans">
                             Người lên đơn: <span className="font-medium text-foreground">{pm.saleBy}</span>
                           </span>
                         )}
@@ -579,7 +581,7 @@ export function StudentOrderCardItem({
                             <span className="font-sans font-normal text-[12.5px] text-foreground leading-snug">
                               {pm.note}
                             </span>
-                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               {pm.convertedSessions !== undefined && (
                                 <span>Quy đổi: <span className="text-foreground font-medium font-mono">{pm.convertedSessions} (buổi)</span></span>
                               )}
@@ -590,9 +592,9 @@ export function StudentOrderCardItem({
                           </div>
 
                           {pm.remainingConversion && (
-                            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[11px] font-medium pt-0.5">
+                            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-xs font-medium pt-0.5">
                               <span className="font-semibold">Quy đổi còn lại</span>
-                              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                              <div className="flex items-center gap-1.5 font-mono text-xs">
                                 {pm.remainingConversion.sessions !== undefined && (
                                   <span>{pm.remainingConversion.sessions} buổi</span>
                                 )}
@@ -616,12 +618,12 @@ export function StudentOrderCardItem({
 
                       {/* Multi-Package Allocation Breakdown Tree */}
                       {pm.allocations && pm.allocations.length > 0 && (
-                        <div className="space-y-1.5 pt-1 text-[11px] font-sans">
+                        <div className="space-y-1.5 pt-1 text-xs font-sans">
                           {pm.allocations.map((alloc, aIdx) => (
                             <div key={aIdx} className="space-y-1">
                               <div className="flex items-center justify-between font-normal text-xs text-foreground">
                                 <span className="font-sans text-[12.5px] text-foreground leading-snug">{alloc.groupName}</span>
-                                <span className="font-mono text-muted-foreground font-normal text-[11px]">
+                                <span className="font-mono text-muted-foreground font-normal text-xs">
                                   Tiền quy đổi: {formatCurrency(alloc.groupConvertedAmount ?? 0)}
                                 </span>
                               </div>
@@ -641,9 +643,9 @@ export function StudentOrderCardItem({
 
                               {/* Remaining Conversion Summary Row */}
                               {alloc.remainingConversion && (
-                                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[11px] font-medium pt-1 pl-1">
+                                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-xs font-medium pt-1 pl-1">
                                   <span className="font-semibold">Quy đổi còn lại</span>
-                                  <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                  <div className="flex items-center gap-1.5 font-mono text-xs">
                                     {alloc.remainingConversion.sessions !== undefined && (
                                       <span>{alloc.remainingConversion.sessions} buổi</span>
                                     )}

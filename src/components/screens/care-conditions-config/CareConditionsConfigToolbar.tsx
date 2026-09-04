@@ -109,7 +109,7 @@ export const CareConditionsConfigToolbar: React.FC<CareConditionsConfigToolbarPr
 
         {/* RADIO BUTTONS DÒNG TAB: ÁP DỤNG / NGỪNG ÁP DỤNG / TẤT CẢ */}
         <div className="flex items-center gap-3 text-xs shrink-0 pl-3 border-l border-border py-0.5">
-          <span className="text-muted-foreground font-medium text-[11px] hidden sm:inline">Trạng thái:</span>
+          <span className="text-muted-foreground font-medium text-xs hidden sm:inline">Trạng thái:</span>
           <RadioGroup
             value={filters.status}
             onValueChange={(val) => onFilterChange({ ...filters, status: val as 'all' | 'active' | 'inactive' })}

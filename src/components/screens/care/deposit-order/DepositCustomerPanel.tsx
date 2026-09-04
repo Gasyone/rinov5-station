@@ -174,7 +174,7 @@ export function DepositCustomerPanel({
           <div className="space-y-3 text-xs pt-1">
             {/* Tên người nhận */}
             <div className="space-y-1">
-              <Label className="text-[11px] font-semibold text-muted-foreground">
+              <Label className="text-xs font-semibold text-muted-foreground">
                 Tên người nhận <span className="text-rose-500">*</span>
               </Label>
               <Input
@@ -188,7 +188,7 @@ export function DepositCustomerPanel({
             {/* Số điện thoại & Email (2 cột bằng nhau) */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-muted-foreground">
+                <Label className="text-xs font-semibold text-muted-foreground">
                   Số điện thoại <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -200,7 +200,7 @@ export function DepositCustomerPanel({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-muted-foreground">
+                <Label className="text-xs font-semibold text-muted-foreground">
                   Email
                 </Label>
                 <Input
@@ -216,7 +216,7 @@ export function DepositCustomerPanel({
             {/* Tỉnh / TP & Quận / Huyện (2 cột bằng nhau) */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-muted-foreground">
+                <Label className="text-xs font-semibold text-muted-foreground">
                   Tỉnh / TP <span className="text-rose-500">*</span>
                 </Label>
                 <Select
@@ -244,7 +244,7 @@ export function DepositCustomerPanel({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-muted-foreground">
+                <Label className="text-xs font-semibold text-muted-foreground">
                   Quận / Huyện <span className="text-rose-500">*</span>
                 </Label>
                 <Select
@@ -273,7 +273,7 @@ export function DepositCustomerPanel({
 
             {/* Phường / Xã (Full width để form cân đối, không thụt thò) */}
             <div className="space-y-1">
-              <Label className="text-[11px] font-semibold text-muted-foreground">
+              <Label className="text-xs font-semibold text-muted-foreground">
                 Phường / Xã <span className="text-rose-500">*</span>
               </Label>
               <Select
@@ -295,7 +295,7 @@ export function DepositCustomerPanel({
 
             {/* Mở rộng ô nhập địa chỉ chi tiết ra */}
             <div className="space-y-1">
-              <Label className="text-[11px] font-semibold text-muted-foreground">
+              <Label className="text-xs font-semibold text-muted-foreground">
                 Địa chỉ chi tiết (số nhà, đường, thôn/ấp...) <span className="text-rose-500">*</span>
               </Label>
               <Textarea

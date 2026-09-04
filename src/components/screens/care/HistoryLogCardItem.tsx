@@ -48,7 +48,6 @@ export function HistoryLogCardItem({
   date,
   channel,
   subject,
-  showSubjectBadge = false,
 }: HistoryLogCardItemProps) {
   const [showMissedCalls, setShowMissedCalls] = useState(false)
 
@@ -59,30 +58,6 @@ export function HistoryLogCardItem({
     effectiveStaffName.toLowerCase().includes('hoàng thị mai') ||
     effectiveStaffName.toLowerCase().includes('nguyễn huy hoàng') ||
     effectiveStaffName.toLowerCase().includes('gv')
-
-  // Resolve subject badge abbreviation (TA, TO, CH)
-  const subjectBadge = useMemo(() => {
-    const raw = ((subject || '') + ' ' + (log.notes || '') + ' ' + (topic || '')).toLowerCase()
-    if (raw.includes('toán') || raw.includes('math') || raw.includes('[to]')) {
-      return {
-        code: 'TO',
-        label: 'Toán tư duy',
-        className: 'bg-amber-100/90 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-      }
-    }
-    if (raw.includes('tiếng anh') || raw.includes('english') || raw.includes('ielts') || raw.includes('toeic') || raw.includes('starters') || raw.includes('movers') || raw.includes('flyers') || raw.includes('speaking') || raw.includes('[ta]')) {
-      return {
-        code: 'TA',
-        label: 'Tiếng Anh',
-        className: 'bg-indigo-100/90 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800'
-      }
-    }
-    return {
-      code: 'CH',
-      label: 'Dịch vụ chung',
-      className: 'bg-zinc-100/90 text-zinc-700 border-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
-    }
-  }, [subject, log.notes, topic])
 
   // Resolve contact channel
   let effectiveChannel = channel || ''
@@ -130,25 +105,12 @@ export function HistoryLogCardItem({
           <span
             className={
               isGV
-                ? 'text-[11px] font-extrabold text-purple-700 dark:text-purple-400 shrink-0'
-                : 'text-[11px] font-extrabold text-sky-700 dark:text-sky-400 shrink-0'
+                ? 'text-xs font-extrabold text-purple-700 dark:text-purple-400 shrink-0'
+                : 'text-xs font-extrabold text-sky-700 dark:text-sky-400 shrink-0'
             }
           >
             {isGV ? 'GV' : 'CS'}
           </span>
-
-          {/* Subject abbreviation badge: TA / TO / CH (Only shown when showSubjectBadge is true) */}
-          {showSubjectBadge && (
-            <span
-              className={cn(
-                'text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider shrink-0 select-none',
-                subjectBadge.className
-              )}
-              title={`Môn học: ${subjectBadge.label}`}
-            >
-              {subjectBadge.code}
-            </span>
-          )}
           
           <PersonnelHoverCard person={getStaffPerson(effectiveStaffName, isGV)}>
             <span className="font-bold text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
@@ -156,7 +118,7 @@ export function HistoryLogCardItem({
             </span>
           </PersonnelHoverCard>
 
-          <span className="text-[11px] text-muted-foreground font-normal truncate">
+          <span className="text-xs text-muted-foreground font-normal truncate">
             • {effectiveChannel}: {effectiveRecipient}
           </span>
           <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100/70 dark:bg-zinc-800/60 px-1.5 py-0.5 rounded-md shrink-0">
@@ -201,7 +163,7 @@ export function HistoryLogCardItem({
             <button
               type="button"
               onClick={() => setShowMissedCalls(!showMissedCalls)}
-              className="w-full text-left text-[11px] font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+              className="w-full text-left text-xs font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
             >
               <span className="flex items-center gap-1.5 underline decoration-rose-300">
                 <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 no-underline" />
@@ -221,16 +183,16 @@ export function HistoryLogCardItem({
                 {log.missedCallsList.map((mCall, mIdx) => (
                   <div key={mIdx} className="p-1 rounded-md hover:bg-rose-50/50 space-y-0.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="font-semibold text-foreground text-[11px]">
+                      <span className="font-semibold text-foreground text-xs">
                         • {mCall.time}: {mCall.status}
                       </span>
                       {mCall.nextCallback && (
-                        <span className="text-[9px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                        <span className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
                           📅 Hẹn gọi lại: {mCall.nextCallback}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
+                    <p className="text-xs text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
                       * Ghi chú: {mCall.note}
                     </p>
                   </div>

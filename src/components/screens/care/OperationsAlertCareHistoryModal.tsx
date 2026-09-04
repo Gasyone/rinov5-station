@@ -94,7 +94,7 @@ export function OperationsAlertCareHistoryModal({
         className="bg-muted/30 hover:bg-muted/50 border border-border/60 rounded-md p-2.5 text-xs space-y-1.5 transition-colors text-left"
       >
         {/* Hàng tiêu đề: Lần XX · Tên CS/GV · Kênh  ---  Ngày */}
-        <div className="flex items-center justify-between gap-1 text-[10px]">
+        <div className="flex items-center justify-between gap-1 text-xs">
           <div className="font-bold text-foreground">
             Lần {attemptNum} · {log.staff} · {channelLabel}
           </div>
@@ -102,7 +102,7 @@ export function OperationsAlertCareHistoryModal({
         </div>
 
         {/* Nội dung note & Ý kiến phản hồi phụ huynh */}
-        <div className="text-[11px] text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal space-y-0.5">
+        <div className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal space-y-0.5">
           {showReschedule && (
             <div className="font-semibold text-violet-600 dark:text-violet-400">
               Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}
@@ -156,7 +156,7 @@ export function OperationsAlertCareHistoryModal({
             <Badge
               variant="outline"
               className={cn(
-                'text-[10px] font-semibold px-1.5 py-0 h-4.5 shrink-0',
+                'text-xs font-semibold px-1.5 py-0 h-4.5 shrink-0',
                 isCompleted ? getStatusBadgeClass('completed') : getStatusBadgeClass('in_progress')
               )}
             >
@@ -167,7 +167,7 @@ export function OperationsAlertCareHistoryModal({
 
         {/* Lịch hẹn gần nhất nếu có */}
         {rescheduleInfo.isRescheduled && (
-          <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-md p-1.5 flex items-center justify-between text-[11px]">
+          <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-md p-1.5 flex items-center justify-between text-xs">
             <span className="text-violet-800 dark:text-violet-300 font-medium">
               Hẹn gọi lại: <strong>{rescheduleInfo.rescheduleDate} ({rescheduleInfo.rescheduleTime})</strong>
             </span>
@@ -176,7 +176,7 @@ export function OperationsAlertCareHistoryModal({
 
         {/* 2 Tab nếu có tái phí */}
         {hasRenewal && (
-          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg text-[11px] font-semibold">
+          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg text-xs font-semibold">
             <button
               type="button"
               onClick={() => {

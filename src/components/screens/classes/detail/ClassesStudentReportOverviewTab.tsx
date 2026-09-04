@@ -93,16 +93,16 @@ export function ClassesStudentReportOverviewTab({ studentId }: ClassesStudentRep
           </h4>
           <div className="h-40 flex items-end justify-between gap-1 pt-6 px-2 relative">
             {/* Grid lines */}
-            <div className="absolute inset-x-0 top-6 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-[9px] text-muted-foreground pt-0.5">Band 9.0</div>
-            <div className="absolute inset-x-0 top-18 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-[9px] text-muted-foreground pt-0.5">Band 6.0</div>
-            <div className="absolute inset-x-0 top-30 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-[9px] text-muted-foreground pt-0.5">Band 3.0</div>
+            <div className="absolute inset-x-0 top-6 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-xs text-muted-foreground pt-0.5">Band 9.0</div>
+            <div className="absolute inset-x-0 top-18 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-xs text-muted-foreground pt-0.5">Band 6.0</div>
+            <div className="absolute inset-x-0 top-30 border-t border-dashed border-zinc-100 dark:border-zinc-800 text-xs text-muted-foreground pt-0.5">Band 3.0</div>
 
             {chartData.map((val, idx) => {
               const heightPct = Math.round((val / 9.5) * 100)
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center group relative z-10">
                   {/* Tooltip on hover */}
-                  <span className="opacity-0 group-hover:opacity-100 absolute -top-5 bg-zinc-850 text-white text-[9px] font-bold px-1 py-0.5 rounded shadow-xs transition-opacity pointer-events-none font-mono">
+                  <span className="opacity-0 group-hover:opacity-100 absolute -top-5 bg-zinc-850 text-white text-xs font-bold px-1 py-0.5 rounded shadow-xs transition-opacity pointer-events-none font-mono">
                     {val}
                   </span>
                   {/* Bar */}
@@ -115,12 +115,12 @@ export function ClassesStudentReportOverviewTab({ studentId }: ClassesStudentRep
                         : "bg-primary/80 group-hover:bg-primary"
                     )}
                   />
-                  <span className="text-[9px] text-muted-foreground font-mono mt-1.5">{idx + 1}</span>
+                  <span className="text-xs text-muted-foreground font-mono mt-1.5">{idx + 1}</span>
                 </div>
               )}
             )}
           </div>
-          <div className="flex justify-center gap-4 mt-3 text-[10px] text-muted-foreground">
+          <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-primary" />
               <span>Buổi học thường</span>
@@ -141,7 +141,7 @@ export function ClassesStudentReportOverviewTab({ studentId }: ClassesStudentRep
           <div className="space-y-3">
             {skills.map((skill, idx) => (
               <div key={idx} className="space-y-1">
-                <div className="flex justify-between text-[11px] font-medium">
+                <div className="flex justify-between text-xs font-medium">
                   <span className="text-foreground">{skill.name}</span>
                   <span className="font-mono text-muted-foreground font-semibold">{skill.scoreText}</span>
                 </div>
@@ -174,10 +174,10 @@ export function ClassesStudentReportOverviewTab({ studentId }: ClassesStudentRep
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-xs font-bold text-foreground">{phase.phaseName}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground font-mono">{phase.duration}</span>
+                    <span className="text-xs text-muted-foreground font-mono">{phase.duration}</span>
                     <Badge
                       className={cn(
-                        "font-mono font-extrabold text-[10px] px-1.5 py-0",
+                        "font-mono font-extrabold text-xs px-1.5 py-0",
                         phase.score >= 7.0 ? "bg-emerald-100 text-emerald-800 border-emerald-200" : "bg-amber-100 text-amber-800 border-amber-200"
                       )}
                     >
@@ -188,7 +188,7 @@ export function ClassesStudentReportOverviewTab({ studentId }: ClassesStudentRep
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{phase.comment}</p>
                 <div className="mt-2 pt-2 border-t border-dashed border-zinc-200/50 dark:border-zinc-700/50 flex items-start gap-1.5">
                   <AlertCircle className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <p className="text-[11px] text-foreground leading-snug">
+                  <p className="text-xs text-foreground leading-snug">
                     <span className="font-semibold text-primary">Đề xuất lộ trình: </span>
                     {phase.recommendation}
                   </p>

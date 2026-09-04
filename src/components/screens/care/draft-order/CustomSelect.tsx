@@ -105,14 +105,14 @@ export function CustomSelect({
 
                   {/* Line 2: Subtext 1 (Soft gray italic) */}
                   {opt.subtext1 && (
-                    <p className="text-[11px] italic pt-0.5 text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs italic pt-0.5 text-zinc-500 dark:text-zinc-400">
                       • {opt.subtext1}
                     </p>
                   )}
 
                   {/* Line 3: Subtext 2 (Soft gray italic) */}
                   {opt.subtext2 && (
-                    <p className="text-[11px] italic text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs italic text-zinc-500 dark:text-zinc-400">
                       • {opt.subtext2}
                     </p>
                   )}

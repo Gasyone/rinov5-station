@@ -306,7 +306,7 @@ export function ClassesDetailOverview({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors focus:outline-none"
+                className="text-xs font-semibold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors focus:outline-none"
               >
                 <span>Cập nhật</span>
               </button>
@@ -395,13 +395,13 @@ export function ClassesDetailOverview({
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-0.5">
           {/* Item 1: Tên lớp (IN ĐẬM) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Tên lớp</span>
+            <span className="text-xs font-medium text-muted-foreground block">Tên lớp</span>
             <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.name}</span>
           </div>
 
           {/* Item 2: Mã lớp (Có icon copy) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Mã lớp</span>
+            <span className="text-xs font-medium text-muted-foreground block">Mã lớp</span>
             <div className="flex items-center gap-1 min-w-0">
               <span className="text-xs md:text-[13px] font-normal text-foreground font-mono truncate">{cls.code}</span>
               <Button
@@ -424,19 +424,19 @@ export function ClassesDetailOverview({
 
           {/* Item 3: Cơ sở đào tạo (IN ĐẬM) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Cơ sở đào tạo</span>
+            <span className="text-xs font-medium text-muted-foreground block">Cơ sở đào tạo</span>
             <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.branch}</span>
           </div>
 
           {/* Item 4: Phòng học (IN ĐẬM) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Phòng học</span>
+            <span className="text-xs font-medium text-muted-foreground block">Phòng học</span>
             <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.room || 'A101'}</span>
           </div>
 
           {/* Item 5: Khung chương trình (Đã đổi vị trí lên trước Môn học - IN ĐẬM + MÀU XANH NHẸ) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Khung chương trình</span>
+            <span className="text-xs font-medium text-muted-foreground block">Khung chương trình</span>
             <SyllabusProfileHoverCard cls={cls}>
               <span className="text-xs md:text-[13px] font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 truncate">
                 {cls.syllabus || 'IELTS Junior v2.1'}
@@ -446,7 +446,7 @@ export function ClassesDetailOverview({
 
           {/* Item 6: Trình độ (IN ĐẬM) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Trình độ</span>
+            <span className="text-xs font-medium text-muted-foreground block">Trình độ</span>
             <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">
               {cls.level || (isMath ? 'Toán THCS' : 'IELTS')}
               {(cls.subLevel || (isMath ? 'Nâng cao' : '5.0–5.5')) ? ` (${cls.subLevel || (isMath ? 'Nâng cao' : '5.0–5.5')})` : ''}
@@ -455,33 +455,33 @@ export function ClassesDetailOverview({
 
           {/* Item 7: Môn học (Đã chuyển xuống vị trí cũ của Khung chương trình) */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Môn học</span>
+            <span className="text-xs font-medium text-muted-foreground block">Môn học</span>
             <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{isMath ? 'Môn Toán' : 'Tiếng Anh'}</span>
           </div>
 
           {/* Item 8: Loại lớp */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Loại lớp</span>
+            <span className="text-xs font-medium text-muted-foreground block">Loại lớp</span>
             <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.classRatio || (cls.maxStudents ? `1:${cls.maxStudents}` : '1:20')}</span>
           </div>
 
           {/* Item 9: Loại giáo viên */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Loại giáo viên</span>
+            <span className="text-xs font-medium text-muted-foreground block">Loại giáo viên</span>
             <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.teacherType || 'Việt Nam'}</span>
           </div>
 
           {/* Item 10 (Nếu là Môn toán): Lớp phổ thông */}
           {isMath && (
             <div className="min-w-0 space-y-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground block">Lớp phổ thông</span>
+              <span className="text-xs font-medium text-muted-foreground block">Lớp phổ thông</span>
               <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.grade || 'Lớp 7'}</span>
             </div>
           )}
 
           {/* Item 11: Thời gian */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-[11px] font-medium text-muted-foreground block">Thời gian</span>
+            <span className="text-xs font-medium text-muted-foreground block">Thời gian</span>
             <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">
               {cls.startDate && cls.startDate !== '---' ? new Date(cls.startDate).toLocaleDateString('vi-VN') : '01/05/2026'} – {cls.endDate && cls.endDate !== '---' ? new Date(cls.endDate).toLocaleDateString('vi-VN') : '01/08/2026'}
             </span>
@@ -498,7 +498,7 @@ export function ClassesDetailOverview({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[11px] font-semibold text-primary hover:bg-primary/10 hover:text-primary gap-1"
+            className="h-6 px-2 text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary gap-1"
             onClick={() => onRescheduleClick?.()}
           >
             <span>Đổi lịch</span>
@@ -514,7 +514,7 @@ export function ClassesDetailOverview({
                 <div className="font-medium text-foreground text-xs">
                   {slot.dayOfWeek}
                 </div>
-                <div className="text-muted-foreground text-[11px] font-normal">
+                <div className="text-muted-foreground text-xs font-normal">
                   {slot.startTime}–{slot.endTime}
                 </div>
               </div>
@@ -523,7 +523,7 @@ export function ClassesDetailOverview({
               <div className="flex items-start gap-4 ml-auto shrink-0">
                 {/* Cột Giáo viên chính */}
                 <div className="flex flex-col min-w-0 w-[140px] shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">GV</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">GV</span>
                   <PersonnelHoverCard
                     person={{
                       id: slot.teacher.id,
@@ -547,7 +547,7 @@ export function ClassesDetailOverview({
 
                 {/* Cột Trợ giảng (TG) */}
                 <div className="flex flex-col min-w-0 w-[110px] shrink-0">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">TG</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">TG</span>
                   {slot.assistant ? (
                     <PersonnelHoverCard
                       person={{
@@ -564,7 +564,7 @@ export function ClassesDetailOverview({
                       </span>
                     </PersonnelHoverCard>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground/50 italic font-normal block">
+                    <span className="text-xs text-muted-foreground/50 italic font-normal block">
                       Chưa có
                     </span>
                   )}
@@ -588,7 +588,7 @@ export function ClassesDetailOverview({
             trigger={
               <button
                 type="button"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors focus:outline-none"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors focus:outline-none"
               >
                 <Clock className="h-3.5 w-3.5 shrink-0" />
                 <span>Lịch sử đổi {cls.teacherHistory?.length || 3} lần giáo viên</span>

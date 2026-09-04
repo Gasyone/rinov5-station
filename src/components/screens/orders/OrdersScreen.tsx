@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Banknote, CheckCircle, ReceiptText, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { DataTableFrame } from '@/components/data-table'
 import {
@@ -14,22 +13,25 @@ import {
   type FilterGroupConfig,
   getSchoolFilterGroup,
 } from '@/components/filters'
-import { ConfirmDialog, MetricTile } from '@/components/shared'
+import { ConfirmDialog } from '@/components/shared'
 import type { Order } from '@/mocks/orders'
 import {
+  calculateOrderMetrics,
   filterOrders,
   getInitialOrders,
   getOrderBranches,
+  getOrderEffectiveStatus,
   getOrderPaymentMethods,
   getOrderPaymentStatuses,
-  sumOrders,
-  sumOrdersPaid,
+  getOrderStatusLabel,
 } from './ordersHelpers'
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
   type OrderFilterState,
   type OrderStatusFilter,
+  type PackageTypeFilter,
+  type PaymentConditionFilter,
 } from './ordersTypes'
 import { OrdersToolbar } from './OrdersToolbar'
 import { OrdersTable } from './OrdersTable'
@@ -38,12 +40,15 @@ import { OrderDetailDialog } from './OrderDetailDialog'
 export function OrdersScreen() {
   const [orders, setOrders] = useState<Order[]>(() => getInitialOrders())
   const [activeBranch, setActiveBranch] = useState('all')
+  const [activePackageType, setActivePackageType] = useState<PackageTypeFilter>('all')
   const [activeStatus, setActiveStatus] = useState<OrderStatusFilter>('all')
+  const [activePaymentCondition, setActivePaymentCondition] = useState<PaymentConditionFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<OrderFilterState>({
     branches: [],
     paymentMethods: [],
     paymentStatuses: [],
+    orderStatuses: [],
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [page, setPage] = useState(1)
@@ -55,15 +60,29 @@ export function OrdersScreen() {
   const paymentMethods = useMemo(() => getOrderPaymentMethods(orders), [orders])
   const paymentStatuses = useMemo(() => getOrderPaymentStatuses(orders), [orders])
 
+  const baseOrdersForToolbar = useMemo(
+    () =>
+      filterOrders(orders, {
+        search: searchTerm,
+        branch: activeBranch,
+        status: 'all',
+        packageType: activePackageType,
+        extra: filters,
+      }),
+    [orders, searchTerm, activeBranch, activePackageType, filters]
+  )
+
   const filtered = useMemo(
     () =>
       filterOrders(orders, {
         search: searchTerm,
         branch: activeBranch,
         status: activeStatus,
+        packageType: activePackageType,
+        paymentCondition: activePaymentCondition,
         extra: filters,
       }),
-    [orders, searchTerm, activeBranch, activeStatus, filters]
+    [orders, searchTerm, activeBranch, activeStatus, activePackageType, activePaymentCondition, filters]
   )
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -73,7 +92,8 @@ export function OrdersScreen() {
   const activeFilterCount =
     filters.branches.length +
     filters.paymentMethods.length +
-    filters.paymentStatuses.length
+    filters.paymentStatuses.length +
+    filters.orderStatuses.length
 
   const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
@@ -83,6 +103,15 @@ export function OrdersScreen() {
         (branch) => orders.filter((o) => o.branch === branch).length,
         branches
       ),
+      createFilterGroup({
+        id: 'orderStatuses',
+        title: 'Trạng thái đơn hàng',
+        options: ['completed', 'processing', 'pending', 'cancelled', 'refunded'] as Array<Order['status']>,
+        selectedValues: filters.orderStatuses,
+        getOptionLabel: (status) => getOrderStatusLabel(status as Order['status']),
+        getOptionCount: (status) =>
+          orders.filter((o) => getOrderEffectiveStatus(o) === status).length,
+      }),
       createFilterGroup({
         id: 'paymentMethods',
         options: paymentMethods,
@@ -106,53 +135,54 @@ export function OrdersScreen() {
     setFilters((current) => {
       const arr = current[key] as string[]
       const exists = arr.includes(value as string)
-      return {
-        ...current,
-        [key]: exists ? arr.filter((v) => v !== value) : [...arr, value],
-      } as OrderFilterState
+      const next = exists ? arr.filter((v) => v !== value) : [...arr, value]
+      return { ...current, [key]: next } as OrderFilterState
     })
   }
 
-  const handleCancel = (order: Order) => setCancelTarget(order)
+  const handleCancel = (order: Order) => {
+    setCancelTarget(order)
+  }
 
   const handleConfirmCancel = () => {
     if (!cancelTarget) return
-    const id = cancelTarget.id
-    setOrders((current) =>
-      current.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o))
+    setOrders((prev) =>
+      prev.map((o) => (o.id === cancelTarget.id ? { ...o, status: 'cancelled' as const } : o))
     )
-    setCancelTarget(null)
-    setDetail(null)
     toast.success(`Đã hủy đơn hàng ${cancelTarget.orderNo}`)
+    setCancelTarget(null)
   }
 
-  const metrics = useMemo(
-    () => ({
-      total: filtered.length,
-      revenue: sumOrdersPaid(filtered),
-      outstanding: sumOrders(filtered) - sumOrdersPaid(filtered),
-      completed: filtered.filter((o) => o.status === 'completed').length,
-    }),
-    [filtered]
-  )
+  const metrics = useMemo(() => calculateOrderMetrics(baseOrdersForToolbar), [baseOrdersForToolbar])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] gap-2 pl-3 pt-2 lg:pl-4 pr-0 pb-0 overflow-hidden bg-background">
+    <div className="flex h-full w-full flex-col min-h-0 pl-4 lg:pl-6 pr-0 pt-3 pb-0 bg-background overflow-hidden">
       <div className="pr-3 lg:pr-4 shrink-0 flex flex-col gap-2">
-        {/* Thanh công cụ tìm kiếm và lọc */}
+        {/* Thanh công cụ tìm kiếm, lọc gói/cơ sở và Smartcard Popover ở góc trên phải */}
         <OrdersToolbar
-          orders={orders}
+          orders={baseOrdersForToolbar}
           branches={branches}
           activeBranch={activeBranch}
+          activePackageType={activePackageType}
           activeStatus={activeStatus}
+          activePaymentCondition={activePaymentCondition}
           searchTerm={searchTerm}
           activeFilterCount={activeFilterCount}
+          metrics={metrics}
           onBranchChange={(b) => {
             setActiveBranch(b)
             setPage(1)
           }}
+          onPackageTypeChange={(pkg) => {
+            setActivePackageType(pkg)
+            setPage(1)
+          }}
           onStatusChange={(s) => {
             setActiveStatus(s)
+            setPage(1)
+          }}
+          onPaymentConditionChange={(cond) => {
+            setActivePaymentCondition(cond)
             setPage(1)
           }}
           onSearchChange={(v) => {
@@ -161,22 +191,6 @@ export function OrdersScreen() {
           }}
           onOpenFilters={() => setIsFilterOpen(true)}
         />
-
-        {/* Thẻ Metric Thu hẹp (Smartcards tinh gọn, bỏ badding/margin) */}
-        <div className="grid shrink-0 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <MetricTile label="Tổng số đơn" value={metrics.total.toString()} icon={ReceiptText} />
-          <MetricTile
-            label="Doanh thu đã thu"
-            value={`${metrics.revenue.toLocaleString('vi-VN')} đ`}
-            icon={Banknote}
-          />
-          <MetricTile
-            label="Học phí còn nợ"
-            value={`${metrics.outstanding.toLocaleString('vi-VN')} đ`}
-            icon={Wallet}
-          />
-          <MetricTile label="Đơn hoàn tất" value={metrics.completed.toString()} icon={CheckCircle} />
-        </div>
       </div>
 
       {/* Bảng Dữ Liệu Đơn Hàng tràn sát mép dưới và mép phải */}
@@ -198,6 +212,7 @@ export function OrdersScreen() {
             onRowClick={setDetail}
             onView={setDetail}
             onCancel={handleCancel}
+            onAddPayment={setDetail}
           />
         </DataTableFrame>
       </div>
@@ -210,13 +225,15 @@ export function OrdersScreen() {
         onOpenChange={setIsFilterOpen}
         onToggle={(sectionId, value) => {
           if (sectionId === 'branches') toggleArray('branches', value)
+          if (sectionId === 'orderStatuses')
+            toggleArray('orderStatuses', value as Order['status'])
           if (sectionId === 'paymentMethods')
             toggleArray('paymentMethods', value as Order['paymentMethod'])
           if (sectionId === 'paymentStatuses')
             toggleArray('paymentStatuses', value as Order['paymentStatus'])
         }}
         onClearAll={() => {
-          setFilters({ branches: [], paymentMethods: [], paymentStatuses: [] })
+          setFilters({ branches: [], paymentMethods: [], paymentStatuses: [], orderStatuses: [] })
           setPage(1)
         }}
       />
@@ -227,6 +244,10 @@ export function OrdersScreen() {
           if (!open) setDetail(null)
         }}
         onCancel={handleCancel}
+        onUpdateOrder={(updated: Order) => {
+          setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)))
+          setDetail(updated)
+        }}
       />
 
       <ConfirmDialog

@@ -183,7 +183,7 @@ export function ClassesSessionCommentBox({
                       : 'hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300'
                   }`}
                 >
-                  <div className="w-6 h-6 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 flex items-center justify-center text-[10px] font-bold shrink-0 border border-sky-200/60 dark:border-sky-800/60">
+                  <div className="w-6 h-6 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 flex items-center justify-center text-xs font-bold shrink-0 border border-sky-200/60 dark:border-sky-800/60">
                     {s.avatar ? (
                       <img src={s.avatar} alt="" className="w-full h-full rounded-full object-cover" />
                     ) : (
@@ -193,7 +193,7 @@ export function ClassesSessionCommentBox({
                   <div className="min-w-0 flex-1 leading-tight">
                     <p className="truncate font-bold text-xs text-foreground">{s.name}</p>
                     {s.code && (
-                      <p className="text-[10px] text-muted-foreground font-mono truncate">{s.code}</p>
+                      <p className="text-xs text-muted-foreground font-mono truncate">{s.code}</p>
                     )}
                   </div>
                   {idx === selectedIndex && (

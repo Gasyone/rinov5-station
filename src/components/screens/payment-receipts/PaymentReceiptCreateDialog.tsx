@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { toast } from 'sonner'
-import { PaymentReceipt, ReceiptType, PaymentMethod } from '@/mocks/paymentReceipts'
+import { PaymentReceipt, ReceiptType, PaymentMethod, TransactionType } from '@/mocks/paymentReceipts'
 import {
   Dialog,
   DialogContent,
@@ -20,17 +20,23 @@ interface PaymentReceiptCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreateReceipt: (newReceipt: PaymentReceipt) => void
+  initialTransactionType?: TransactionType
 }
 
 const ORDER_OPTIONS = [
-  { value: 'OD-DRAFT-9230', label: 'OD-DRAFT-9230 • Bé An (Gói SuperKids 12T)' },
-  { value: 'OD-DRAFT-9231', label: 'OD-DRAFT-9231 • Bé Bình (Flyers Intensive)' },
-  { value: 'OD-DRAFT-9232', label: 'OD-DRAFT-9232 • Bé Đức (Gói Movers 1N)' },
-  { value: 'OD-DRAFT-9235', label: 'OD-DRAFT-9235 • Bé Quốc (SuperKids 6T)' },
-  { value: 'OD-DRAFT-9236', label: 'OD-DRAFT-9236 • Bé Hà (Gói Kindy 12T)' },
+  { value: 'OD-DRAFT-9230', label: 'OD-DRAFT-9230 • Bé An (Gói SuperKids 12T - 18.000.000 đ)' },
+  { value: 'OD-DRAFT-9231', label: 'OD-DRAFT-9231 • Bé Bình (Flyers Intensive - 15.000.000 đ)' },
+  { value: 'OD-DRAFT-9232', label: 'OD-DRAFT-9232 • Bé Đức (Gói Movers 1N - 28.000.000 đ)' },
+  { value: 'OD-DRAFT-9235', label: 'OD-DRAFT-9235 • Bé Quốc (SuperKids 6T - 12.000.000 đ)' },
+  { value: 'OD-DRAFT-9236', label: 'OD-DRAFT-9236 • Bé Hà (Gói Kindy 12T - 20.000.000 đ)' },
 ]
 
-const TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
+const TRANSACTION_TYPE_OPTIONS = [
+  { value: 'receipt', label: '📥 Phiếu thu (Thu tiền học viên/phụ huynh)' },
+  { value: 'payment_voucher', label: '📤 Phiếu chi (Hoàn tiền/Chi trả)' },
+]
+
+const RECEIPT_TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
   { value: 'deposit', label: 'Cọc giữ chỗ' },
   { value: 'tuition_full', label: 'Thu đủ học phí' },
   { value: 'installment', label: 'Thanh toán kỳ trả góp' },
@@ -38,18 +44,25 @@ const TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
   { value: 'other', label: 'Khoản thu khác' },
 ]
 
+const VOUCHER_TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
+  { value: 'refund', label: 'Hoàn tiền cọc / Hoàn học phí' },
+  { value: 'other', label: 'Khoản chi khác' },
+]
+
 const METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: 'qr_transfer', label: 'Chuyển khoản QR (MBBank / Techcombank)' },
   { value: 'cash', label: 'Tiền mặt tại quầy' },
   { value: 'pos_card', label: 'Cà thẻ POS' },
-  { value: 'bank_transfer', label: 'Chuyển khoản Ngân hàng trực tiếp' },
+  { value: 'bank_transfer', label: 'Chuyển khoản Ngân hàng' },
 ]
 
 export function PaymentReceiptCreateDialog({
   open,
   onOpenChange,
   onCreateReceipt,
+  initialTransactionType = 'receipt',
 }: PaymentReceiptCreateDialogProps) {
+  const [transactionType, setTransactionType] = useState<TransactionType>(initialTransactionType)
   const [orderCode, setOrderCode] = useState('OD-DRAFT-9230')
   const [studentName, setStudentName] = useState('Bé An')
   const [parentName, setParentName] = useState('Nguyễn Thu Hà')
@@ -59,26 +72,53 @@ export function PaymentReceiptCreateDialog({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('qr_transfer')
   const [notes, setNotes] = useState('Thu tiền cọc học phí giữ chỗ')
 
+  const isReceipt = transactionType === 'receipt'
+
+  const handleTransactionTypeChange = (type: TransactionType) => {
+    setTransactionType(type)
+    if (type === 'payment_voucher') {
+      setReceiptType('refund')
+      setNotes('Chi hoàn tiền do phụ huynh yêu cầu')
+    } else {
+      setReceiptType('deposit')
+      setNotes('Thu tiền cọc học phí giữ chỗ')
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     const numericAmount = Number(amount) || 0
     if (numericAmount <= 0) {
-      toast.error('Vui lòng nhập số tiền thu hợp lệ!')
+      toast.error('Vui lòng nhập số tiền giao dịch hợp lệ!')
       return
     }
 
+    const tnxSuffix = Math.floor(270000 + Math.random() * 90000)
+    const newCode = `TNX00000${tnxSuffix}`
+
     const newRcpt: PaymentReceipt = {
       id: `rcpt-${Date.now()}`,
-      code: `PT-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      code: newCode,
+      transactionType,
       orderCode,
       studentName,
       parentName,
       phone,
       receiptType,
       amount: numericAmount,
+      orderTotalAmount: 18000000,
+      orderRemainingAmount: isReceipt ? Math.max(0, 18000000 - numericAmount) : 0,
       paymentMethod,
-      bankAccount: paymentMethod === 'qr_transfer' ? 'MBBank - 090327988899' : undefined,
+      isReconciled: false,
+      bankAccount:
+        paymentMethod === 'qr_transfer'
+          ? 'MBBank - 090327988899'
+          : paymentMethod === 'pos_card'
+          ? 'POS Vietcombank - 0451000'
+          : paymentMethod === 'bank_transfer'
+          ? 'Techcombank - 1902888899'
+          : 'Tiền mặt tại quầy',
       status: 'completed',
       createdBy: 'Trần Thị Mai (Sales)',
       branch: 'Chi nhánh Quận 1',
@@ -87,7 +127,7 @@ export function PaymentReceiptCreateDialog({
     }
 
     onCreateReceipt(newRcpt)
-    toast.success(`Đã tạo thành công Phiếu thu ${newRcpt.code}!`)
+    toast.success(`Đã tạo thành công ${isReceipt ? 'Phiếu thu' : 'Phiếu chi'} ${newRcpt.code}!`)
     onOpenChange(false)
   }
 
@@ -96,12 +136,28 @@ export function PaymentReceiptCreateDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader className="border-b pb-2">
           <div className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-emerald-600" />
-            <DialogTitle className="text-lg font-bold">Lập Phiếu thu mới</DialogTitle>
+            {isReceipt ? (
+              <ArrowDownLeft className="h-5 w-5 text-emerald-600" />
+            ) : (
+              <ArrowUpRight className="h-5 w-5 text-rose-600" />
+            )}
+            <DialogTitle className="text-lg font-bold">
+              {isReceipt ? 'Lập Phiếu thu mới' : 'Lập Phiếu chi / Hoàn tiền'}
+            </DialogTitle>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3 py-2 text-xs">
+          {/* Loại giao dịch: Thu vs Chi */}
+          <FieldLabel label="Loại phiếu giao dịch" required>
+            <InlineSelect
+              value={transactionType}
+              onValueChange={(val: string) => handleTransactionTypeChange(val as TransactionType)}
+              options={TRANSACTION_TYPE_OPTIONS}
+              className="w-full font-semibold"
+            />
+          </FieldLabel>
+
           {/* Chọn Đơn hàng */}
           <FieldLabel label="Đơn hàng liên kết" required>
             <InlineSelect
@@ -129,11 +185,11 @@ export function PaymentReceiptCreateDialog({
                 placeholder="Tên bé"
               />
             </FieldLabel>
-            <FieldLabel label="Người nộp (Phụ huynh)" required>
+            <FieldLabel label="Khách hàng (Người nộp/nhận)" required>
               <Input
                 value={parentName}
                 onChange={(e) => setParentName(e.target.value)}
-                placeholder="Tên phụ huynh"
+                placeholder="Tên phụ huynh / khách hàng"
               />
             </FieldLabel>
           </div>
@@ -146,18 +202,18 @@ export function PaymentReceiptCreateDialog({
                 placeholder="0912345678"
               />
             </FieldLabel>
-            <FieldLabel label="Loại khoản thu" required>
+            <FieldLabel label="Phân loại mục đích" required>
               <InlineSelect
                 value={receiptType}
                 onValueChange={(val: string) => setReceiptType(val as ReceiptType)}
-                options={TYPE_OPTIONS}
+                options={isReceipt ? RECEIPT_TYPE_OPTIONS : VOUCHER_TYPE_OPTIONS}
                 className="w-full"
               />
             </FieldLabel>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <FieldLabel label="Số tiền thu (VND)" required>
+            <FieldLabel label={`Số tiền ${isReceipt ? 'thu' : 'chi'} (VND)`} required>
               <Input
                 type="number"
                 value={amount}
@@ -175,11 +231,11 @@ export function PaymentReceiptCreateDialog({
             </FieldLabel>
           </div>
 
-          <FieldLabel label="Ghi chú phiếu thu">
+          <FieldLabel label="Ghi chú giao dịch">
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Nhập ghi chú hoặc lý do thu..."
+              placeholder="Nhập ghi chú hoặc lý do thu/chi..."
               rows={2}
             />
           </FieldLabel>
@@ -193,9 +249,17 @@ export function PaymentReceiptCreateDialog({
             >
               Hủy
             </Button>
-            <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1">
+            <Button
+              type="submit"
+              size="sm"
+              className={
+                isReceipt
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white gap-1'
+                  : 'bg-rose-600 hover:bg-rose-700 text-white gap-1'
+              }
+            >
               <Check className="h-4 w-4" />
-              <span>Xác nhận lập phiếu</span>
+              <span>Xác nhận lập {isReceipt ? 'phiếu thu' : 'phiếu chi'}</span>
             </Button>
           </div>
         </form>
@@ -203,3 +267,4 @@ export function PaymentReceiptCreateDialog({
     </Dialog>
   )
 }
+

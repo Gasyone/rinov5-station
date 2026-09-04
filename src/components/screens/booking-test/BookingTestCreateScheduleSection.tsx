@@ -14,6 +14,7 @@ interface DateOptionItem {
 }
 
 interface BookingTestCreateScheduleSectionProps {
+  mode?: 'slot_first' | 'teacher_first'
   testDate: string
   onTestDateChange: (dateStr: string) => void
   selectedSlot: string
@@ -26,17 +27,23 @@ interface BookingTestCreateScheduleSectionProps {
     slot: string
     availableCount: number
   }>
+  selectedTeacher?: string
+  teacherSlotConflicts?: Record<string, string>
 }
 
 export function BookingTestCreateScheduleSection({
+  mode = 'slot_first',
   testDate,
   onTestDateChange,
   selectedSlot,
   onSlotChange,
   dateOptions,
   dailySlotsSummary,
+  selectedTeacher = '',
+  teacherSlotConflicts = {},
 }: BookingTestCreateScheduleSectionProps) {
   const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const isTeacherFirst = mode === 'teacher_first'
 
   const isFirst3Selected = dateOptions.first3.some((d) => d.dateStr === testDate)
 
@@ -129,8 +136,21 @@ export function BookingTestCreateScheduleSection({
       {/* SECTION 2: KHUNG GIỜ TEST (30 PHÚT/CA) */}
       <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-3">
         <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-1 border-b">
-          <span>Khung giờ test (30 phút/ca)</span>
-          <span className="text-primary font-bold text-xs">Ca đang chọn: {selectedSlot}</span>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            <span>Khung giờ test (30 phút/ca)</span>
+          </div>
+
+          <span className="text-xs text-muted-foreground font-normal">
+            {isTeacherFirst && selectedTeacher ? (
+              <span>
+                Lịch của: <span className="font-semibold text-primary">{selectedTeacher}</span>
+                {selectedSlot && <span className="ml-1 text-foreground">({selectedSlot})</span>}
+              </span>
+            ) : (
+              <span className="text-primary font-bold text-xs">Ca đang chọn: {selectedSlot}</span>
+            )}
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -139,7 +159,7 @@ export function BookingTestCreateScheduleSection({
               <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                 <span>{group.icon}</span>
                 <span>{group.title}</span>
-                <span className="text-[10px] text-muted-foreground font-normal">({group.slots.length} ca)</span>
+                <span className="text-xs text-muted-foreground font-normal">({group.slots.length} ca)</span>
               </div>
 
               {/* Lưới 4 cột rộng rãi cho các ca test */}
@@ -147,37 +167,62 @@ export function BookingTestCreateScheduleSection({
                 {group.slots.map((slot) => {
                   const isSlotSelected = selectedSlot === slot
                   const slotSummary = dailySlotsSummary.find((s) => s.slot === slot)
-                  const availableCount = slotSummary ? slotSummary.availableCount : 0
+                  const generalAvailableCount = slotSummary ? slotSummary.availableCount : 0
+
+                  // Nếu đang ở chế độ Teacher-First và có chọn Teacher
+                  const hasTeacher = Boolean(selectedTeacher && selectedTeacher !== '')
+                  const isTeacherBusy = hasTeacher && Boolean(teacherSlotConflicts[slot])
+                  const teacherConflictDetail = hasTeacher ? teacherSlotConflicts[slot] : undefined
+                  const isTeacherAvailable = hasTeacher && !isTeacherBusy
 
                   return (
                     <button
                       key={slot}
                       type="button"
                       onClick={() => onSlotChange(slot)}
+                      title={teacherConflictDetail ? `⚠️ ${teacherConflictDetail}` : undefined}
                       className={cn(
                         'flex items-center justify-between rounded-lg border px-2.5 py-1.5 text-xs transition-all cursor-pointer h-9',
                         isSlotSelected
                           ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs ring-1 ring-primary/40'
-                          : availableCount > 0
+                          : isTeacherFirst && hasTeacher
+                          ? isTeacherAvailable
+                            ? 'border-border bg-muted/20 hover:bg-muted text-foreground'
+                            : 'border-border/60 bg-muted/10 text-muted-foreground opacity-60 hover:opacity-90 border-dashed'
+                          : generalAvailableCount > 0
                           ? 'border-border bg-muted/20 hover:bg-muted text-foreground'
                           : 'border-border/60 bg-muted/10 text-muted-foreground opacity-60 hover:opacity-90'
                       )}
                     >
-                      <span className="flex items-center gap-1.5">
+                      <span className="flex items-center gap-1.5 min-w-0">
                         <Clock className="h-3.5 w-3.5 opacity-70 shrink-0" />
-                        <span>{slot}</span>
+                        <span className="truncate">{slot}</span>
                       </span>
+
+                      {/* Nhãn trạng thái (chỉ hiển thị text màu xanh/đỏ, không có nền) */}
                       <span
                         className={cn(
-                          'text-[10px] px-1.5 py-0.5 rounded font-medium',
+                          'text-[10.5px] font-medium shrink-0 ml-1 transition-colors',
                           isSlotSelected
-                            ? 'bg-primary-foreground/20 text-primary-foreground'
-                            : availableCount > 0
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold'
-                            : 'bg-muted text-muted-foreground font-normal'
+                            ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.5 rounded'
+                            : isTeacherFirst && hasTeacher
+                            ? isTeacherAvailable
+                              ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                              : 'text-rose-600 dark:text-rose-400 font-medium'
+                            : generalAvailableCount > 0
+                            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                            : 'text-muted-foreground font-normal'
                         )}
                       >
-                        {availableCount > 0 ? `${availableCount} rảnh` : 'Hết chỗ'}
+                        {isSlotSelected
+                          ? 'Đã chọn'
+                          : isTeacherFirst && hasTeacher
+                          ? isTeacherAvailable
+                            ? 'Khả dụng'
+                            : 'Bận'
+                          : generalAvailableCount > 0
+                          ? `${generalAvailableCount} rảnh`
+                          : 'Hết chỗ'}
                       </span>
                     </button>
                   )

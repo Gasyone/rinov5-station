@@ -97,7 +97,7 @@ export function ClassesCreateBasicInfo({
             placeholder="VD: IELTS Junior 1A"
           />
           {validationErrors.className && (
-            <span className="text-[11px] text-red-500 font-semibold mt-1 block">
+            <span className="text-xs text-red-500 font-semibold mt-1 block">
               {validationErrors.className}
             </span>
           )}
@@ -133,7 +133,7 @@ export function ClassesCreateBasicInfo({
             className="w-full justify-between"
           />
           {validationErrors.subject && (
-            <span className="text-[11px] text-red-500 font-semibold mt-1 block">
+            <span className="text-xs text-red-500 font-semibold mt-1 block">
               {validationErrors.subject}
             </span>
           )}
@@ -152,7 +152,7 @@ export function ClassesCreateBasicInfo({
             variant="solid"
           />
           {validationErrors.curriculumFrame && (
-            <span className="text-[11px] text-red-500 font-semibold mt-1 block">
+            <span className="text-xs text-red-500 font-semibold mt-1 block">
               {validationErrors.curriculumFrame}
             </span>
           )}
@@ -203,7 +203,7 @@ export function ClassesCreateBasicInfo({
             className="w-full justify-between"
           />
           {validationErrors.branch && (
-            <span className="text-[11px] text-red-500 font-semibold mt-1 block">
+            <span className="text-xs text-red-500 font-semibold mt-1 block">
               {validationErrors.branch}
             </span>
           )}
@@ -278,7 +278,7 @@ export function ClassesCreateBasicInfo({
             }}
           />
           {validationErrors.startDate && (
-            <span className="text-[11px] text-red-500 font-semibold mt-1 block">
+            <span className="text-xs text-red-500 font-semibold mt-1 block">
               {validationErrors.startDate}
             </span>
           )}

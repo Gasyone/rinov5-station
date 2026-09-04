@@ -88,7 +88,7 @@ export function NoteCell({
               <div key={index} className={cn('text-xs space-y-0.5 pb-1.5', index < allNotes.length - 1 && 'border-b border-border')}>
                 <p className="text-foreground whitespace-pre-wrap">{note.text}</p>
                 {(note.author || note.timestamp) && (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {note.author ? `${note.author} · ` : ''}
                     {note.timestamp || ''}
                   </p>

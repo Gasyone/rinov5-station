@@ -4,16 +4,17 @@ import { Suspense, lazy, use } from 'react'
 import { EmptyState, ModuleLoadingSkeleton } from '@/components/shared'
 import { screens } from '@/config/screens'
 
-function safeLazy<T extends React.ComponentType<any>>(
+function safeLazy<T extends React.ComponentType<Record<string, unknown>>>(
   importFn: () => Promise<{ default: T }>
 ) {
   return lazy(async () => {
     try {
       return await importFn()
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { name?: string; message?: string } | undefined
       if (
         typeof window !== 'undefined' &&
-        (error?.name === 'ChunkLoadError' || error?.message?.includes('Loading chunk'))
+        (err?.name === 'ChunkLoadError' || err?.message?.includes('Loading chunk'))
       ) {
         const hasReloaded = sessionStorage.getItem('chunk_load_reloaded')
         if (!hasReloaded) {
@@ -48,6 +49,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { WorkRegistrationScreen } = await import('@/components/screens/work-registration/WorkRegistrationScreen')
     return { default: WorkRegistrationScreen }
   }),
+  class_placement: safeLazy(async () => {
+    const { StudentsScreen } = await import('@/components/screens/students/StudentsScreen')
+    return { default: StudentsScreen }
+  }),
   students: safeLazy(async () => {
     const { StudentsScreen } = await import('@/components/screens/students/StudentsScreen')
     return { default: StudentsScreen }
@@ -72,6 +77,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { CareConditionsConfigScreen } = await import('@/components/screens/care-conditions-config/CareConditionsConfigScreen')
     return { default: CareConditionsConfigScreen }
   }),
+  permissions: safeLazy(async () => {
+    const { PermissionsScreen } = await import('@/components/screens/permissions/PermissionsScreen')
+    return { default: PermissionsScreen }
+  }),
   hr_employees: safeLazy(async () => {
     const { EmployeesScreen } = await import('@/components/screens/employees/EmployeesScreen')
     return { default: EmployeesScreen }
@@ -80,9 +89,21 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { ProductsScreen } = await import('@/components/screens/products/ProductsScreen')
     return { default: ProductsScreen }
   }),
+  campaigns: safeLazy(async () => {
+    const { CampaignsScreen } = await import('@/components/screens/campaigns/CampaignsScreen')
+    return { default: CampaignsScreen }
+  }),
+  promotions: safeLazy(async () => {
+    const { PromotionsScreen } = await import('@/components/screens/promotions/PromotionsScreen')
+    return { default: PromotionsScreen }
+  }),
+  crm_my_leads: safeLazy(async () => {
+    const { CrmLeadsScreen } = await import('@/components/screens/crm-leads/CrmLeadsScreen')
+    return { default: () => <CrmLeadsScreen defaultViewScope="my" /> }
+  }),
   crm_leads: safeLazy(async () => {
     const { CrmLeadsScreen } = await import('@/components/screens/crm-leads/CrmLeadsScreen')
-    return { default: CrmLeadsScreen }
+    return { default: () => <CrmLeadsScreen defaultViewScope="all" /> }
   }),
   users: safeLazy(async () => {
     const { UsersScreen } = await import('@/components/screens/users/UsersScreen')

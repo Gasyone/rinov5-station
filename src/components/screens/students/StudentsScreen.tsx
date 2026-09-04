@@ -128,7 +128,7 @@ export function StudentsScreen() {
       getOptionCount: filterOptionCounts.dateRanges,
       customContent: (
         <div className="space-y-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
             Chọn khoảng thời gian
           </div>
           <div className="grid grid-cols-2 gap-3">

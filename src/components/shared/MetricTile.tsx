@@ -44,7 +44,7 @@ export function MetricTile({
   const content = (
     <CardContent className={cn('flex items-center justify-between gap-3', compact ? 'px-3 py-2' : 'p-4')}>
       <div className="min-w-0">
-        <p className={cn('font-medium uppercase tracking-wide text-muted-foreground', compact ? 'text-[10px]' : 'text-xs')}>
+        <p className={cn('font-medium uppercase tracking-wide text-muted-foreground', compact ? 'text-xs' : 'text-xs')}>
           {label}
         </p>
         <div className={cn('font-semibold', compact ? 'text-lg' : 'mt-1 text-2xl')}>{value}</div>

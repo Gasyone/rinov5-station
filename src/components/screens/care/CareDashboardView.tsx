@@ -197,10 +197,10 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <kpi.Icon className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground truncate">{kpi.label}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate">{kpi.label}</p>
               <div className="flex items-baseline gap-1.5">
                 <span className={`text-base font-black leading-tight ${kpi.accent}`}>{kpi.value}</span>
-                <span className={`text-[9px] font-bold ${kpi.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{kpi.trend}</span>
+                <span className={`text-xs font-bold ${kpi.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{kpi.trend}</span>
               </div>
             </div>
           </button>
@@ -216,7 +216,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <Clock className="h-4 w-4 text-sky-500" />
               Hiệu suất Phản hồi SLA
             </h3>
-            <span className="text-[10px] text-muted-foreground font-medium">Toàn hệ thống</span>
+            <span className="text-xs text-muted-foreground font-medium">Toàn hệ thống</span>
           </div>
           
           <div className="flex-1 flex flex-col justify-center items-center py-4">
@@ -242,7 +242,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               </svg>
               <div className="absolute text-center">
                 <span className="text-2xl font-black text-foreground">{slaPercentage.inTime}%</span>
-                <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Trong hạn</p>
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Trong hạn</p>
               </div>
             </div>
 
@@ -269,7 +269,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <PhoneCall className="h-4 w-4 text-sky-500" />
               Phân bổ Kênh Tương tác
             </h3>
-            <span className="text-[10px] text-muted-foreground font-medium">Thống kê CSKH</span>
+            <span className="text-xs text-muted-foreground font-medium">Thống kê CSKH</span>
           </div>
 
           <div className="flex-1 flex flex-col justify-center space-y-3 py-2">
@@ -294,7 +294,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <UserCheck className="h-4 w-4 text-sky-500" />
               Phân bổ Trạng thái Tác nghiệp
             </h3>
-            <span className="text-[10px] text-muted-foreground font-medium">Tiến độ CS</span>
+            <span className="text-xs text-muted-foreground font-medium">Tiến độ CS</span>
           </div>
 
           <div className="flex-1 flex flex-col justify-center space-y-4 py-2">
@@ -324,7 +324,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
             <ShieldCheck className="h-4 w-4 text-sky-500" />
             Đo lường Hiệu suất Tác nghiệp theo Khối Chuyên môn (CSKH vs Giáo viên)
           </h3>
-          <span className="text-[10px] text-muted-foreground font-medium">Phân định Trách nhiệm SLA</span>
+          <span className="text-xs text-muted-foreground font-medium">Phân định Trách nhiệm SLA</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -337,7 +337,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-foreground">Bộ phận CSKH (Chăm sóc Khách hàng)</h4>
-                  <p className="text-[10px] text-muted-foreground">Phụ trách Dịch vụ, Tái phí, Tiếp nhận yêu cầu</p>
+                  <p className="text-xs text-muted-foreground">Phụ trách Dịch vụ, Tái phí, Tiếp nhận yêu cầu</p>
                 </div>
               </div>
               <Badge variant="outline" className="border-sky-300 text-sky-700 dark:text-sky-300 font-bold">
@@ -347,15 +347,15 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
 
             <div className="grid grid-cols-3 gap-2 pt-1 text-center">
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Tổng ca giao</span>
+                <span className="text-xs text-muted-foreground font-medium block">Tổng ca giao</span>
                 <span className="text-base font-bold text-foreground">{csSummary.totalAlerts}</span>
               </div>
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Đã chăm sóc</span>
+                <span className="text-xs text-muted-foreground font-medium block">Đã chăm sóc</span>
                 <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">{csSummary.caredAlerts}</span>
               </div>
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Quá hạn SLA</span>
+                <span className="text-xs text-muted-foreground font-medium block">Quá hạn SLA</span>
                 <span className="text-base font-bold text-rose-600 dark:text-rose-400">{csSummary.overdueAlerts}</span>
               </div>
             </div>
@@ -370,7 +370,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-foreground">Bộ phận Giáo viên (Giảng dạy)</h4>
-                  <p className="text-[10px] text-muted-foreground">Phụ trách Học lực, Chuyên cần, Nhận xét chuyên môn</p>
+                  <p className="text-xs text-muted-foreground">Phụ trách Học lực, Chuyên cần, Nhận xét chuyên môn</p>
                 </div>
               </div>
               <Badge variant="outline" className="border-violet-300 text-violet-700 dark:text-violet-300 font-bold">
@@ -380,15 +380,15 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
 
             <div className="grid grid-cols-3 gap-2 pt-1 text-center">
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Tổng ca giao</span>
+                <span className="text-xs text-muted-foreground font-medium block">Tổng ca giao</span>
                 <span className="text-base font-bold text-foreground">{gvSummary.totalAlerts}</span>
               </div>
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Đã chăm sóc</span>
+                <span className="text-xs text-muted-foreground font-medium block">Đã chăm sóc</span>
                 <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">{gvSummary.caredAlerts}</span>
               </div>
               <div className="p-2 rounded-md bg-background border border-border/60">
-                <span className="text-[10px] text-muted-foreground font-medium block">Quá hạn SLA</span>
+                <span className="text-xs text-muted-foreground font-medium block">Quá hạn SLA</span>
                 <span className="text-base font-bold text-rose-600 dark:text-rose-400">{gvSummary.overdueAlerts}</span>
               </div>
             </div>
@@ -404,12 +404,12 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <GraduationCap className="h-4 w-4 text-sky-500" />
               Bảng Đo lường Tác nghiệp Chi tiết theo Từng Nhân sự
             </h3>
-            <p className="text-[10px] text-muted-foreground">Theo dõi trực tiếp khối lượng công việc, tỷ lệ hoàn thành và ca quá hạn của từng nhân viên CS & Giáo viên</p>
+            <p className="text-xs text-muted-foreground">Theo dõi trực tiếp khối lượng công việc, tỷ lệ hoàn thành và ca quá hạn của từng nhân viên CS & Giáo viên</p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             {/* Filter Tabs */}
-            <div className="flex bg-muted/60 p-0.5 rounded-lg border border-border/40 text-[10px]">
+            <div className="flex bg-muted/60 p-0.5 rounded-lg border border-border/40 text-xs">
               <button
                 onClick={() => setStaffRoleTab('all')}
                 className={`px-2 py-1 rounded-md font-medium transition-colors ${staffRoleTab === 'all' ? 'bg-background text-foreground shadow-xs font-bold' : 'text-muted-foreground hover:text-foreground'}`}
@@ -447,7 +447,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
         {/* Staff Table */}
         <div className="overflow-x-auto border border-border/60 rounded-lg">
           <table className="w-full text-left text-xs">
-            <thead className="bg-muted/50 border-b border-border/60 text-[10px] uppercase font-bold text-muted-foreground">
+            <thead className="bg-muted/50 border-b border-border/60 text-xs uppercase font-bold text-muted-foreground">
               <tr>
                 <th className="py-2.5 px-3">Nhân sự Phụ trách</th>
                 <th className="py-2.5 px-3">Vai trò</th>
@@ -473,7 +473,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                     <tr key={`${st.role}-${st.staffName}`} className="hover:bg-accent/40 transition-colors">
                       <td className="py-2.5 px-3">
                         <div className="flex items-center gap-2">
-                          <div className={`h-6 w-6 rounded-full font-bold text-[9px] flex items-center justify-center uppercase shrink-0 ${st.role === 'CS' ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' : 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300'}`}>
+                          <div className={`h-6 w-6 rounded-full font-bold text-xs flex items-center justify-center uppercase shrink-0 ${st.role === 'CS' ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' : 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300'}`}>
                             {st.staffName.slice(0, 2)}
                           </div>
                           <span className="font-bold text-foreground">{st.staffName}</span>
@@ -482,7 +482,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                       <td className="py-2.5 px-3">
                         <Badge 
                           variant="outline" 
-                          className={`text-[9px] px-1.5 py-0 ${st.role === 'CS' ? 'border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300' : 'border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300'}`}
+                          className={`text-xs px-1.5 py-0 ${st.role === 'CS' ? 'border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300' : 'border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300'}`}
                         >
                           {st.role === 'CS' ? 'CSKH' : 'Giáo viên'}
                         </Badge>
@@ -495,7 +495,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                       </td>
                       <td className="py-2.5 px-3 text-center font-mono">
                         {st.overdueCount > 0 ? (
-                          <Badge variant="outline" className="border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold text-[10px]">
+                          <Badge variant="outline" className="border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold text-xs">
                             {st.overdueCount} ca trễ
                           </Badge>
                         ) : (
@@ -504,7 +504,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                       </td>
                       <td className="py-2.5 px-3">
                         <div className="space-y-1 max-w-[160px]">
-                          <div className="flex justify-between text-[10px] font-bold">
+                          <div className="flex justify-between text-xs font-bold">
                             <span>{st.inTimeRate}%</span>
                             <span className="text-muted-foreground font-normal">
                               {st.assignedCount - st.overdueCount}/{st.assignedCount} trong hạn
@@ -520,7 +520,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                           variant="ghost"
                           size="sm"
                           onClick={() => onFilterByStaff?.(st.staffName)}
-                          className="h-7 text-[10px] px-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40"
+                          className="h-7 text-xs px-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40"
                         >
                           <Filter className="h-3 w-3 mr-1" />
                           Lọc ca tác nghiệp
@@ -544,7 +544,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <UserCheck className="h-4 w-4 text-sky-500" />
               Nhật ký Tác nghiệp Gần đây
             </h3>
-            <span className="text-[10px] text-muted-foreground font-medium">Real-time Feed</span>
+            <span className="text-xs text-muted-foreground font-medium">Real-time Feed</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3.5 pt-3 pr-1 max-h-[260px]">
@@ -553,7 +553,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
             ) : (
               recentActivities.map((act, index) => (
                 <div key={index} className="flex gap-3 items-start border-b border-border/30 pb-3 last:border-b-0 last:pb-0">
-                  <div className="h-7 w-7 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-[10px] font-bold flex items-center justify-center shrink-0 uppercase border border-sky-200 dark:border-sky-800">
+                  <div className="h-7 w-7 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center justify-center shrink-0 uppercase border border-sky-200 dark:border-sky-800">
                     {act.staff.slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -565,12 +565,12 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                         >
                           {act.studentName}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-mono">({act.studentId})</span>
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
+                        <span className="text-xs text-muted-foreground font-mono">({act.studentId})</span>
+                        <Badge variant="outline" className="text-xs px-1.5 py-0 border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
                           {act.channel}
                         </Badge>
                       </div>
-                      <span className="text-[9px] font-mono text-muted-foreground whitespace-nowrap shrink-0">{act.date}</span>
+                      <span className="text-xs font-mono text-muted-foreground whitespace-nowrap shrink-0">{act.date}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                       <strong className="text-foreground font-semibold">{act.staff}:</strong> {act.note}
@@ -589,7 +589,7 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
               <AlertTriangle className="h-4 w-4 text-rose-500" />
               Ca Cảnh báo Cấp bách
             </h3>
-            <span className="text-[10px] text-rose-500 font-bold font-mono">{urgentAlerts.length} ca ưu tiên</span>
+            <span className="text-xs text-rose-500 font-bold font-mono">{urgentAlerts.length} ca ưu tiên</span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2.5 pt-3 max-h-[260px]">
@@ -613,16 +613,16 @@ export function CareDashboardView({ alerts, onDrillDown, onSelectStudent, onFilt
                         >
                           {item.studentName}
                         </span>
-                        <span className="text-[9px] font-mono text-muted-foreground">({item.classCode})</span>
+                        <span className="text-xs font-mono text-muted-foreground">({item.classCode})</span>
                       </div>
                       <div className="flex items-center gap-1 mt-1 flex-wrap">
                         {isItemOverdue && (
-                          <Badge variant="outline" className="text-[8px] px-1 py-0 border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold">
+                          <Badge variant="outline" className="text-xs px-1 py-0 border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold">
                             Quá hạn SLA
                           </Badge>
                         )}
                         {tags.map(t => (
-                          <Badge key={t} variant="secondary" className="text-[8px] px-1 py-0">
+                          <Badge key={t} variant="secondary" className="text-xs px-1 py-0">
                             {t}
                           </Badge>
                         ))}

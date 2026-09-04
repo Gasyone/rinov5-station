@@ -98,7 +98,7 @@ export function ClassesSessionUploadsTab({
           options={FILTER_OPTIONS}
           onValueChange={setActiveFilter}
           className="bg-transparent p-0 gap-1"
-          itemClassName="h-7 px-2.5 text-[11px] border border-transparent [&.bg-background]:border-primary [&.bg-background]:bg-primary [&.bg-background]:text-primary-foreground shadow-none"
+          itemClassName="h-7 px-2.5 text-xs border border-transparent [&.bg-background]:border-primary [&.bg-background]:bg-primary [&.bg-background]:text-primary-foreground shadow-none"
         />
         
         <div className="flex items-center gap-2">
@@ -266,17 +266,17 @@ export function ClassesSessionUploadsTab({
                         {mat.student ? (
                           <div className="flex items-center gap-2">
                             <div className={cn(
-                              "h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0",
+                              "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                               getAvatarColor(mat.student.id)
                             )}>
                               {getInitials(mat.student.name)}
                             </div>
-                            <span className="text-[11px] font-medium text-foreground truncate max-w-[120px]" title={mat.student.name}>
+                            <span className="text-xs font-medium text-foreground truncate max-w-[120px]" title={mat.student.name}>
                               {mat.student.name}
                             </span>
                           </div>
                         ) : (
-                          <Badge variant="outline" className="rounded-md text-[9px] font-bold px-1.5 py-0 border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                          <Badge variant="outline" className="rounded-md text-xs font-bold px-1.5 py-0 border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                             Tất cả thành viên
                           </Badge>
                         )}

@@ -96,6 +96,7 @@ Design System Document
 |----------|---------|
 | Type scale table (level → class → usage) | ✅ |
 | Tối thiểu 4 levels (Title, Body, Caption, Mono) | ✅ |
+| Ngưỡng sàn font size (Floor threshold: tối thiểu 12px / `text-xs`, cấm font `< 12px`) | ✅ |
 
 #### S3.d Spacing
 

@@ -124,7 +124,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
             </>
           )}
           <span className="font-semibold text-xs">{tag.label}</span>
-          <span className="text-[10px] font-bold opacity-85 shrink-0 ml-0.5" title={`Phụ trách: ${assignees.join(' · ')}`}>
+          <span className="text-xs font-bold opacity-85 shrink-0 ml-0.5" title={`Phụ trách: ${assignees.join(' · ')}`}>
             {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
           </span>
         </Badge>
@@ -159,7 +159,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div
               className={cn(
-                'h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 hover:opacity-80 transition-opacity',
+                'h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 hover:opacity-80 transition-opacity',
                 getAvatarColor(cls.studentId)
               )}
             >
@@ -171,7 +171,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                   {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
                 </span>
               </div>
-              <div className="text-[10px] text-muted-foreground font-medium">
+              <div className="text-xs text-muted-foreground font-medium">
                 {cls.subject} - {cls.level}
               </div>
             </div>
@@ -224,10 +224,10 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
             >
               <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
+                  <span className="text-xs px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
                     CS
                   </span>
-                  <span className="font-normal text-muted-foreground text-[10px] hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
+                  <span className="font-normal text-muted-foreground text-xs hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
                 </div>
               </div>
             </PersonnelHoverCard>
@@ -254,10 +254,10 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               >
                 <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
                   <div className="flex items-center gap-1">
-                    <span className="text-[8px] px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
+                    <span className="text-xs px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
                       GV
                     </span>
-                    <span className="font-normal text-muted-foreground text-[10px] hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
+                    <span className="font-normal text-muted-foreground text-xs hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
                   </div>
                 </div>
               </PersonnelHoverCard>
@@ -322,19 +322,19 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {isWaitAssignment ? (
-                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
                     Chờ ghép lớp
                   </span>
                 ) : studentInfo?.status === 'reserve' ? (
-                  <span className="text-[10px] font-semibold text-violet-750 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
+                  <span className="text-xs font-semibold text-violet-750 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
                     Bảo lưu
                   </span>
                 ) : cls.status === 'Hết buổi' ? (
-                  <span className="text-[10px] font-semibold text-zinc-655 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
+                  <span className="text-xs font-semibold text-zinc-655 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
                     Hết phí
                   </span>
                 ) : cls.status === 'Chờ chuyển lớp' ? (
-                  <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
+                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
                     Chờ ghép lớp mới
                   </span>
                 ) : (
@@ -351,7 +351,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-[8px] px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
+                        'text-xs px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
                         cls.status === 'Đang học'
                           ? getStatusBadgeClass('dang_hoc')
                           : cls.status === 'Chờ chuyển lớp'
@@ -398,7 +398,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                   />
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
             </div>
           )
         })()}
@@ -424,7 +424,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                             e.stopPropagation()
                             setIsItemsModalOpen(true)
                           }}
-                          className="h-6 px-1.5 text-[11px] font-extrabold text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded-md shrink-0 shadow-none cursor-pointer"
+                          className="h-6 px-1.5 text-xs font-extrabold text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded-md shrink-0 shadow-none cursor-pointer"
                           title="Xem toàn bộ danh sách hạng mục chăm sóc"
                         >
                           +{remainingCount}
@@ -432,7 +432,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                       )}
                     </>
                   ) : (
-                    <span className="text-zinc-400 italic text-[10px]">-</span>
+                    <span className="text-zinc-400 italic text-xs">-</span>
                   )}
                 </div>
               )}
@@ -447,7 +447,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               )}
 
               {!showTagsInColumn && !unassignedInfo.isUnassigned && (
-                <span className="text-zinc-400 italic text-[10px]">-</span>
+                <span className="text-zinc-400 italic text-xs">-</span>
               )}
 
               {remainingCount > 0 && (
@@ -483,7 +483,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
                   className={cn(
-                    'text-[10px] font-bold transition-colors',
+                    'text-xs font-bold transition-colors',
                     isUncared
                       ? 'text-zinc-500 dark:text-zinc-400 select-none'
                       : inProgress
@@ -498,7 +498,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                 {/* Lịch hẹn gọi lại (Cùng hàng với nút Chăm sóc, không viền) */}
                 {rescheduleInfo.isRescheduled && (
                   <span
-                    className="text-[10px] font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
+                    className="text-xs font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
                     title="Lịch hẹn gọi lại"
                   >
                     <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
@@ -509,7 +509,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
 
               {/* Hàng 2 & 3: Nội dung chăm sóc (Dòng 2) và Ý kiến phụ huynh (Dòng 3) */}
               {isUncared ? (
-                <div className="text-[10px] italic text-amber-600 dark:text-amber-400 font-medium">
+                <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
                   Cần liên hệ trao đổi với phụ huynh ngay
                 </div>
               ) : (
@@ -517,7 +517,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                   <>
                     {/* Dòng 2: Nội dung chăm sóc */}
                     <div
-                      className="text-[10px] text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
+                      className="text-xs text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
                       title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
                     >
                       <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
@@ -526,7 +526,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                     {/* Dòng 3: Ý kiến phản hồi của phụ huynh (Chỉ hiển thị khi Đã hoàn thành) */}
                     {isCompleted && (
                       <div
-                        className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium truncate cursor-pointer hover:underline transition-colors"
+                        className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate cursor-pointer hover:underline transition-colors"
                         title={`Phụ huynh phản hồi: ${latestLog.note}`}
                       >
                         Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở, sẽ cho con ôn tập thêm trong tối nay'}&rdquo;
@@ -579,13 +579,13 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
             <div className="space-y-1 text-left">
               {/* Dòng 1: Trạng thái Vòng đời chăm sóc */}
               <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className={cn("text-[10px] font-semibold px-1.5 py-0.5", lifecycleStatus.badgeClass)}>
+                <Badge variant="outline" className={cn("text-xs font-semibold px-1.5 py-0.5", lifecycleStatus.badgeClass)}>
                   {lifecycleStatus.label}
                 </Badge>
               </div>
 
               {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) */}
-              <div className="text-[10px] font-mono">
+              <div className="text-xs font-mono">
                 {isCompleted ? (
                   <span className="text-muted-foreground font-normal">Gần nhất: {latestDate}</span>
                 ) : isOverdueAlert ? (

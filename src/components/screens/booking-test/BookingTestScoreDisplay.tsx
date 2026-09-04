@@ -38,7 +38,7 @@ export function SpeakingScore({
   return (
     <div className="min-w-0">
       {!compact ? (
-        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Điểm Speaking
         </p>
       ) : null}
@@ -67,7 +67,7 @@ export function LwrScore({
   return (
     <div className="min-w-0">
       {!compact ? (
-        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Điểm LWR
         </p>
       ) : null}

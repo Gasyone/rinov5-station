@@ -17,7 +17,7 @@ interface AvatarStackProps {
 }
 
 const SIZE_MAP = {
-  xs: 'h-5 w-5 text-[8px] border',
+  xs: 'h-5 w-5 text-xs border',
   sm: 'h-7 w-7 text-xs border-2',
   md: 'h-9 w-9 text-sm border-2',
 }

@@ -116,7 +116,7 @@ export function NotificationDropdown() {
             {mounted && unreadCount > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               </span>
@@ -160,13 +160,13 @@ export function NotificationDropdown() {
                   options={categoryOptions}
                   onValueChange={(val) => setCategoryFilter(val)}
                   className="w-full flex"
-                  itemClassName="flex-1 text-[10px] font-semibold py-1 h-7 text-center justify-center"
+                  itemClassName="flex-1 text-xs font-semibold py-1 h-7 text-center justify-center"
                 />
               </div>
 
               {/* Status Filter */}
               <div className="border-b border-border px-3 py-1.5 flex items-center justify-between bg-muted/5">
-                <span className="text-[11px] text-muted-foreground font-medium">Lọc theo trạng thái</span>
+                <span className="text-xs text-muted-foreground font-medium">Lọc theo trạng thái</span>
                 <SegmentedControl
                   value={statusFilter}
                   options={[
@@ -175,7 +175,7 @@ export function NotificationDropdown() {
                   ]}
                   onValueChange={(val) => setStatusFilter(val)}
                   className="w-40 flex"
-                  itemClassName="flex-1 text-[10px] py-1 h-6 font-semibold text-center justify-center"
+                  itemClassName="flex-1 text-xs py-1 h-6 font-semibold text-center justify-center"
                 />
               </div>
 
@@ -235,12 +235,12 @@ export function NotificationDropdown() {
                             >
                               {notif.title}
                             </p>
-                            <span className="shrink-0 whitespace-nowrap text-[10px] text-muted-foreground/85">
+                            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground/85">
                               {getRelativeTime(notif.timestamp)}
                             </span>
                           </div>
                           <p 
-                            className="text-[11px] text-muted-foreground line-clamp-1 leading-normal" 
+                            className="text-xs text-muted-foreground line-clamp-1 leading-normal" 
                             title={notif.message}
                           >
                             {notif.message}

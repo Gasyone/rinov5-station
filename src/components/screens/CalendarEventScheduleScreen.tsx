@@ -9,6 +9,7 @@ import {
   FilterIconButton,
   IconActionButton,
   SegmentedControl,
+  SYSTEM_BRANCHES,
 } from '@/components/controls'
 import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { EmptyState, ModuleLoadingSkeleton } from '@/components/shared'
@@ -79,7 +80,7 @@ export function CalendarEventScheduleScreen() {
   const [teacherFilters, setTeacherFilters] = useState<string[]>([])
   const [bookingStatusFilters, setBookingStatusFilters] = useState<string[]>([])
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('all')
+  const [activeBranch, setActiveBranch] = useState(SYSTEM_BRANCHES[0] ?? 'RinoEdu Nguyễn Tuân')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
 
@@ -270,6 +271,13 @@ export function CalendarEventScheduleScreen() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex flex-col gap-2 px-3 py-3 md:flex-row md:items-center md:justify-between lg:px-3">
         <div className="flex flex-wrap items-center gap-2">
+          <BranchSelect
+            value={activeBranch}
+            branches={branches.length > 0 ? branches : SYSTEM_BRANCHES}
+            onValueChange={setActiveBranch}
+            includeAll={false}
+            className="h-8 min-w-48"
+          />
           <Button
             type="button"
             variant="ghost"
@@ -332,12 +340,6 @@ export function CalendarEventScheduleScreen() {
               </Button>
             </div>
           )}
-          <BranchSelect
-            value={activeBranch}
-            branches={branches}
-            onValueChange={setActiveBranch}
-            className="h-8 min-w-48"
-          />
           <ExpandableSearch
             value={search}
             onValueChange={setSearch}
@@ -432,7 +434,7 @@ export function CalendarEventScheduleScreen() {
                                 />
                               ))}
                               {daySessions.length === 0 && (
-                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                <div className="text-xs text-muted-foreground/30 text-center py-2.5 select-none">
                                   —
                                 </div>
                               )}
@@ -486,7 +488,7 @@ export function CalendarEventScheduleScreen() {
                                 />
                               ))}
                               {daySessions.length === 0 && (
-                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                <div className="text-xs text-muted-foreground/30 text-center py-2.5 select-none">
                                   —
                                 </div>
                               )}
@@ -540,7 +542,7 @@ export function CalendarEventScheduleScreen() {
                                 />
                               ))}
                               {daySessions.length === 0 && (
-                                <div className="text-[10px] text-muted-foreground/30 text-center py-2.5 select-none">
+                                <div className="text-xs text-muted-foreground/30 text-center py-2.5 select-none">
                                   —
                                 </div>
                               )}
@@ -681,10 +683,10 @@ function WeekHeader({
               )}
             >
               <div className="flex items-center gap-1.5">
-                <span className={cn('text-[10px] font-semibold uppercase tracking-wider', isToday ? 'text-primary' : 'text-muted-foreground')}>
+                <span className={cn('text-xs font-semibold uppercase tracking-wider', isToday ? 'text-primary' : 'text-muted-foreground')}>
                   {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
                 </span>
-                <span className={cn('flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold', isToday ? 'bg-primary text-primary-foreground' : 'text-foreground')}>
+                <span className={cn('flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold', isToday ? 'bg-primary text-primary-foreground' : 'text-foreground')}>
                   {day.getDate()}
                 </span>
               </div>
@@ -693,7 +695,7 @@ function WeekHeader({
                   {count} sự kiện
                 </span>
                 {isToday && (
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-1.5 py-0.2 text-[8px] font-bold text-red-600 dark:text-red-400">
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 px-1.5 py-0.2 text-xs font-bold text-red-600 dark:text-red-400">
                     <span className="h-1 w-1 rounded-full bg-red-500 animate-pulse" />
                     {formatMinutesToTime(now.getHours() * 60 + now.getMinutes())}
                   </span>

@@ -123,12 +123,12 @@ export function BookingTestAssessmentDialog({
                 <div className="ml-auto flex items-center gap-4 shrink-0">
                   <div className="hidden md:flex items-center gap-4">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Người đánh giá</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Người đánh giá</p>
                       <p className="text-sm font-semibold truncate">{booking.teacher || 'N/A'}</p>
                     </div>
                     <div className="h-8 w-px bg-border" />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Thời gian test</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Thời gian test</p>
                       <p className="text-sm font-semibold truncate">{booking.testTime || 'N/A'}</p>
                     </div>
                   </div>

@@ -141,7 +141,7 @@ export function TrialClassDetailDialog({
               <div className="flex items-center justify-between gap-4 pr-6">
                 <DialogTitle className="text-xs font-normal text-muted-foreground">
                   Chi tiết Phiếu học thử
-                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-[11px] font-normal text-muted-foreground">
+                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-xs font-normal text-muted-foreground">
                     {trial.id}
                   </Badge>
                 </DialogTitle>
@@ -379,10 +379,10 @@ export function TrialClassDetailDialog({
                       <div key={idx} className="relative pl-4 border-l-2 border-primary/30 text-xs">
                         <div className="flex items-center justify-between text-muted-foreground">
                           <span className="font-semibold text-foreground">{log.author}</span>
-                          <span className="text-[11px]">{log.timestamp}</span>
+                          <span className="text-xs">{log.timestamp}</span>
                         </div>
                         <p className="font-medium text-foreground mt-0.5">{log.action}</p>
-                        {log.detail && <p className="text-muted-foreground text-[11px] mt-0.5">{log.detail}</p>}
+                        {log.detail && <p className="text-muted-foreground text-xs mt-0.5">{log.detail}</p>}
                       </div>
                     ))}
                   </div>

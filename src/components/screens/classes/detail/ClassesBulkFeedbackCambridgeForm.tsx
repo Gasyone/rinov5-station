@@ -217,7 +217,7 @@ function PerformanceEvaluationTagInput({
       onClick={() => {
         if (!readOnly) inputRef.current?.focus()
       }}
-      className="min-h-9 flex flex-wrap items-center gap-1.5 p-1.5 px-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[11px] relative cursor-text select-none focus-within:ring-1 focus-within:ring-zinc-950 dark:focus-within:ring-zinc-300 focus-within:border-transparent transition-all"
+      className="min-h-9 flex flex-wrap items-center gap-1.5 p-1.5 px-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs relative cursor-text select-none focus-within:ring-1 focus-within:ring-zinc-950 dark:focus-within:ring-zinc-300 focus-within:border-transparent transition-all"
     >
       {/* First Tag */}
       {tags.length > 0 && (
@@ -248,7 +248,7 @@ function PerformanceEvaluationTagInput({
 
           {/* Popup */}
           <div className="absolute z-50 top-full mt-1.5 right-0 bg-white dark:bg-zinc-900 border border-zinc-250 dark:border-zinc-800 p-2 rounded-xl shadow-lg w-64 space-y-1 text-left hidden group-hover:block transition-all duration-150">
-            <p className="text-[10px] text-muted-foreground font-semibold border-b border-zinc-100 dark:border-zinc-850 pb-1 mb-1.5 px-1">
+            <p className="text-xs text-muted-foreground font-semibold border-b border-zinc-100 dark:border-zinc-850 pb-1 mb-1.5 px-1">
               Attached tags ({tags.length})
             </p>
             <div className="max-h-40 overflow-y-auto space-y-1 pr-0.5">
@@ -256,7 +256,7 @@ function PerformanceEvaluationTagInput({
                 if (idx === 0) return null
                 return (
                   <div key={idx} className={cn("flex items-center justify-between gap-1.5 border rounded px-1.5 py-0.5 font-medium", chipBg)}>
-                    <span className="truncate flex-1 text-[11px]">{tag}</span>
+                    <span className="truncate flex-1 text-xs">{tag}</span>
                     {!readOnly && (
                       <button
                         type="button"
@@ -283,7 +283,7 @@ function PerformanceEvaluationTagInput({
         type="text"
         disabled={readOnly}
         placeholder={tags.length === 0 ? placeholder : ''}
-        className="flex-1 bg-transparent border-none outline-none min-w-[50px] text-[11px] placeholder:text-muted-foreground focus:ring-0 p-0 h-5"
+        className="flex-1 bg-transparent border-none outline-none min-w-[50px] text-xs placeholder:text-muted-foreground focus:ring-0 p-0 h-5"
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault()
@@ -346,7 +346,7 @@ function PerformanceEvaluationItem({
                 type="button"
                 disabled={readOnly}
                 onClick={() => onUpdateField(ratingKey, opt.value)}
-                className="flex items-center gap-2 text-left text-[11px] transition-all cursor-pointer font-medium hover:text-foreground/80 select-none disabled:cursor-default"
+                className="flex items-center gap-2 text-left text-xs transition-all cursor-pointer font-medium hover:text-foreground/80 select-none disabled:cursor-default"
               >
                 <span className={cn(
                   "h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all shadow-2xs bg-background",
@@ -371,7 +371,7 @@ function PerformanceEvaluationItem({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Good points */}
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <label className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 ✅ Good points
               </label>
               <PerformanceEvaluationTagInput
@@ -388,7 +388,7 @@ function PerformanceEvaluationItem({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleTagClick(goodNotesKey, tag)}
-                    className="text-[10px] bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 rounded-lg px-2 py-0.5 font-medium hover:bg-sky-100 cursor-pointer select-none transition-colors disabled:cursor-default"
+                    className="text-xs bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 rounded-lg px-2 py-0.5 font-medium hover:bg-sky-100 cursor-pointer select-none transition-colors disabled:cursor-default"
                   >
                     {tag}
                   </button>
@@ -398,7 +398,7 @@ function PerformanceEvaluationItem({
 
             {/* Areas to improve */}
             <div className="space-y-1">
-              <label className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+              <label className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
                 ⚠️ Areas to improve
               </label>
               <PerformanceEvaluationTagInput
@@ -415,7 +415,7 @@ function PerformanceEvaluationItem({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleTagClick(improveNotesKey, tag)}
-                    className="text-[10px] bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 rounded-lg px-2 py-0.5 font-medium hover:bg-rose-100 cursor-pointer select-none transition-colors disabled:cursor-default"
+                    className="text-xs bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/80 rounded-lg px-2 py-0.5 font-medium hover:bg-rose-100 cursor-pointer select-none transition-colors disabled:cursor-default"
                   >
                     {tag}
                   </button>
@@ -459,7 +459,7 @@ export function ClassesBulkFeedbackCambridgeForm({
           <p className="text-xs text-muted-foreground mt-0.5">Mã học viên: {studentCode}</p>
         </div>
         {formState.isSent && (
-          <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
+          <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
             <Check className="h-3.5 w-3.5 stroke-[2.5px]" />
             Đã hoàn thành nhận xét
           </span>
@@ -534,22 +534,22 @@ export function ClassesBulkFeedbackCambridgeForm({
                       {isChecked && <div className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-zinc-100" />}
                     </span>
                     {opt.type === 'done' && (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
                         <Check className="h-3 w-3 stroke-[3px]" /> Done
                       </span>
                     )}
                     {opt.type === 'partly' && (
-                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        <span className="text-[10px] leading-none">♦</span> Partly Done
+                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
+                        <span className="text-xs leading-none">♦</span> Partly Done
                       </span>
                     )}
                     {opt.type === 'not_yet' && (
-                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
                         <X className="h-3 w-3 stroke-[3px]" /> Not Yet
                       </span>
                     )}
                     {opt.type === 'none' && (
-                      <span className={cn("text-[11px] font-semibold", isChecked ? "text-foreground font-bold" : "text-muted-foreground")}>
+                      <span className={cn("text-xs font-semibold", isChecked ? "text-foreground font-bold" : "text-muted-foreground")}>
                         No Homework
                       </span>
                     )}
@@ -580,22 +580,22 @@ export function ClassesBulkFeedbackCambridgeForm({
                       {isChecked && <div className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-zinc-100" />}
                     </span>
                     {opt.type === 'done' && (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
                         <Check className="h-3 w-3 stroke-[3px]" /> Done
                       </span>
                     )}
                     {opt.type === 'partly' && (
-                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        <span className="text-[10px] leading-none">♦</span> Partly Done
+                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
+                        <span className="text-xs leading-none">♦</span> Partly Done
                       </span>
                     )}
                     {opt.type === 'not_yet' && (
-                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/50 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/50 px-1.5 py-0.5 rounded text-xs font-bold">
                         <X className="h-3 w-3 stroke-[3px]" /> Not Yet
                       </span>
                     )}
                     {opt.type === 'none' && (
-                      <span className={cn("text-[11px] font-semibold", isChecked ? "text-foreground font-bold" : "text-muted-foreground")}>
+                      <span className={cn("text-xs font-semibold", isChecked ? "text-foreground font-bold" : "text-muted-foreground")}>
                         No Homework
                       </span>
                     )}
@@ -615,7 +615,7 @@ export function ClassesBulkFeedbackCambridgeForm({
         </div>
 
         {/* Lesson Summary banner */}
-        <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/50 text-[11px] text-[#0369a1] dark:text-sky-400 whitespace-pre-line leading-relaxed font-medium space-y-0.5">
+        <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/50 text-xs text-[#0369a1] dark:text-sky-400 whitespace-pre-line leading-relaxed font-medium space-y-0.5">
           <div className="font-bold">Lesson summary:</div>
           <div>{`- Words: inside, outside, stairs, wall\n- Sentences:\nThe cat is in front of/behind the armchair.\nThe cat is between the desk and the chair.\n- Reading`}</div>
         </div>
@@ -669,13 +669,13 @@ export function ClassesBulkFeedbackCambridgeForm({
 
         {/* Other text field */}
         <div className="py-1.5 bg-transparent space-y-1">
-          <label className="text-[11px] font-bold text-foreground uppercase tracking-wide">Other</label>
+          <label className="text-xs font-bold text-foreground uppercase tracking-wide">Other</label>
           <Input
             value={formState.otherNotes}
             onChange={(e) => onUpdateField('otherNotes', e.target.value)}
             disabled={readOnly}
             placeholder="Note ..."
-            className="text-[11px] h-8 bg-zinc-50/50 dark:bg-zinc-950/50 border-zinc-200 dark:border-zinc-800 rounded-lg"
+            className="text-xs h-8 bg-zinc-50/50 dark:bg-zinc-950/50 border-zinc-200 dark:border-zinc-800 rounded-lg"
           />
         </div>
       </div>
@@ -713,7 +713,7 @@ export function ClassesBulkFeedbackCambridgeForm({
               onChange={(e) => onUpdateField('otherReminder', e.target.value)}
               disabled={readOnly}
               placeholder="other issues ..."
-              className="text-[11px] h-8.5 bg-background"
+              className="text-xs h-8.5 bg-background"
             />
           </div>
         </div>
@@ -762,7 +762,7 @@ export function ClassesBulkFeedbackCambridgeForm({
                   3 tries left!
                 </span>
               ) : (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   You can regenerate feedback 2 more times
                 </span>
               )}
@@ -784,7 +784,7 @@ export function ClassesBulkFeedbackCambridgeForm({
             onChange={(e) => onUpdateField('generatedFeedback', e.target.value)}
             readOnly={readOnly}
             placeholder="Nội dung nhận xét chi tiết..."
-            className="text-[11px] min-h-[120px] bg-background border-zinc-200 font-sans leading-relaxed rounded-xl shadow-2xs focus-visible:ring-primary/20"
+            className="text-xs min-h-[120px] bg-background border-zinc-200 font-sans leading-relaxed rounded-xl shadow-2xs focus-visible:ring-primary/20"
           />
         </div>
 

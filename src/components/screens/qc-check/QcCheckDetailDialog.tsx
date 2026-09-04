@@ -181,7 +181,7 @@ export function QcCheckDetailDialog({
             <div className="mt-2 flex items-center gap-2">
               {event.inspectors.map((ins: Inspector) => (
                 <div key={ins.id} className="flex items-center gap-1.5">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                     {getInitials(ins.name)}
                   </div>
                   <span className="text-xs">{ins.name}</span>
@@ -287,7 +287,7 @@ export function QcCheckDetailDialog({
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="font-mono text-xs text-muted-foreground font-semibold">{error.code}</span>
                                   <span className="font-semibold text-sm truncate">{error.itemLabel}</span>
-                                  <Badge variant="outline" className="rounded text-[10px]">
+                                  <Badge variant="outline" className="rounded text-xs">
                                     {QC_ERROR_TYPE_LABELS[error.errorType as keyof typeof QC_ERROR_TYPE_LABELS] ?? error.errorType}
                                   </Badge>
                                   <Badge className={isOverdue
@@ -317,7 +317,7 @@ export function QcCheckDetailDialog({
                                   </Badge>
                                 )}
                                 {error.deadline && (
-                                  <span className={`text-[11px] font-medium rounded px-1.5 py-0.5 border ${
+                                  <span className={`text-xs font-medium rounded px-1.5 py-0.5 border ${
                                     isOverdue
                                       ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-800/30 dark:bg-red-950/20 dark:text-red-400'
                                       : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400'
@@ -335,7 +335,7 @@ export function QcCheckDetailDialog({
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs font-semibold text-muted-foreground block">Vấn đề & Bằng chứng lỗi</span>
                                   {error.createdAt && (
-                                    <span className="text-[11px] text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground">
                                       Phát hiện: {formatDateTime(error.createdAt)}
                                     </span>
                                   )}
@@ -351,7 +351,7 @@ export function QcCheckDetailDialog({
                                       href={error.evidenceLink}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline border rounded px-1.5 py-0.5 bg-background"
+                                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline border rounded px-1.5 py-0.5 bg-background"
                                     >
                                       <ExternalLink className="h-3 w-3" />
                                       Tệp đính kèm
@@ -361,7 +361,7 @@ export function QcCheckDetailDialog({
                                     <button
                                       type="button"
                                       onClick={() => setZoomImageUrl(error.evidenceImage || null)}
-                                      className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-primary hover:underline border rounded px-1.5 py-0.5 bg-background dark:text-slate-300"
+                                      className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-primary hover:underline border rounded px-1.5 py-0.5 bg-background dark:text-slate-300"
                                     >
                                       <ImageIcon className="h-3 w-3" />
                                       Ảnh bằng chứng
@@ -384,7 +384,7 @@ export function QcCheckDetailDialog({
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs font-semibold text-muted-foreground block">Thông tin khắc phục</span>
                                   {error.completionDate && (
-                                    <span className="text-[11px] text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground">
                                       Khắc phục lúc: {formatDateTime(error.completionDate)}
                                     </span>
                                   )}
@@ -399,7 +399,7 @@ export function QcCheckDetailDialog({
                                     
                                     {error.correctiveEvidence && (
                                       <div className="mt-1">
-                                        <span className="text-[11px] font-medium text-muted-foreground block mb-0.5">Bằng chứng khắc phục:</span>
+                                        <span className="text-xs font-medium text-muted-foreground block mb-0.5">Bằng chứng khắc phục:</span>
                                         <p className="text-xs text-foreground bg-emerald-50/20 dark:bg-emerald-950/10 p-2 rounded border border-emerald-100 dark:border-emerald-900/30 italic">
                                           &ldquo;{error.correctiveEvidence}&rdquo;
                                         </p>
@@ -412,7 +412,7 @@ export function QcCheckDetailDialog({
                                           href={error.correctiveLink}
                                           target="_blank"
                                           rel="noreferrer"
-                                          className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 hover:underline border rounded px-1.5 py-0.5 bg-background dark:text-emerald-400"
+                                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:underline border rounded px-1.5 py-0.5 bg-background dark:text-emerald-400"
                                         >
                                           <ExternalLink className="h-3 w-3" />
                                           Link báo cáo
@@ -422,7 +422,7 @@ export function QcCheckDetailDialog({
                                         <button
                                           type="button"
                                           onClick={() => setZoomImageUrl(error.correctiveImage || null)}
-                                          className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 hover:text-emerald-800 hover:underline border border-emerald-200 rounded px-1.5 py-0.5 bg-background dark:text-emerald-300"
+                                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline border border-emerald-200 rounded px-1.5 py-0.5 bg-background dark:text-emerald-300"
                                         >
                                           <ImageIcon className="h-3 w-3" />
                                           Ảnh khắc phục
@@ -450,9 +450,9 @@ export function QcCheckDetailDialog({
                               <InfoField label="Người phát hiện" value={event.inspectors.find(i => i.id === error.issuedBy)?.name || '—'} />
                               <InfoField label="Người phụ trách" value={error.assignee || '—'} />
                               {error.notes && <InfoField label="Ghi chú" value={error.notes} />}
-                              {isOverdue && <span className="ml-auto text-red-600 font-semibold flex items-center gap-1 text-[11px]">⚠ Quá hạn khắc phục</span>}
+                              {isOverdue && <span className="ml-auto text-red-600 font-semibold flex items-center gap-1 text-xs">⚠ Quá hạn khắc phục</span>}
                               {!isOverdue && error.closedAt && (
-                                <span className="ml-auto text-[11px]">Đóng lỗi lúc: {formatDateTime(error.closedAt)}</span>
+                                <span className="ml-auto text-xs">Đóng lỗi lúc: {formatDateTime(error.closedAt)}</span>
                               )}
                             </div>
 
@@ -551,11 +551,11 @@ export function QcCheckDetailDialog({
                             <div className="flex flex-wrap items-baseline gap-2">
                               <span className="font-semibold text-sm">{comm.userName}</span>
                               {comm.userRole && (
-                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                                   {comm.userRole}
                                 </span>
                               )}
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-xs text-muted-foreground">
                                 {formatDateTime(comm.createdAt)}
                               </span>
                             </div>
@@ -638,7 +638,7 @@ export function QcCheckDetailDialog({
                                   {log.details}
                                 </p>
                               )}
-                              <span className="text-[10px] text-muted-foreground block mt-1 font-mono">
+                              <span className="text-xs text-muted-foreground block mt-1 font-mono">
                                 {formatDateTime(log.createdAt)}
                               </span>
                             </div>

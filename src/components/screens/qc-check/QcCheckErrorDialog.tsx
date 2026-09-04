@@ -337,7 +337,7 @@ export function QcCheckErrorDialog({
                 <img src={form.evidenceImage} alt="Preview" className="h-14 w-14 rounded-md object-cover border" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold truncate">Xem trước ảnh bằng chứng</p>
-                  <p className="text-[10px] text-muted-foreground truncate font-mono">{form.evidenceImage}</p>
+                  <p className="text-xs text-muted-foreground truncate font-mono">{form.evidenceImage}</p>
                 </div>
               </div>
             )}
@@ -443,7 +443,7 @@ export function QcCheckErrorDialog({
 
                   {/* Quick image picker for correction */}
                   <div className="mt-2">
-                    <span className="text-[11px] text-muted-foreground font-medium block mb-1.5">
+                    <span className="text-xs text-muted-foreground font-medium block mb-1.5">
                       Chọn nhanh ảnh khắc phục (Đã sửa xong):
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -467,7 +467,7 @@ export function QcCheckErrorDialog({
                             alt="Toilet clean"
                             className="h-5 w-5 rounded-sm object-cover"
                           />
-                          <span className="text-[11px]">Đã dọn sạch</span>
+                          <span className="text-xs">Đã dọn sạch</span>
                         </div>
                       </button>
                       <button
@@ -490,7 +490,7 @@ export function QcCheckErrorDialog({
                             alt="Room clean"
                             className="h-5 w-5 rounded-sm object-cover"
                           />
-                          <span className="text-[11px]">Đã ngăn nắp</span>
+                          <span className="text-xs">Đã ngăn nắp</span>
                         </div>
                       </button>
                       {form.correctiveImage && (
@@ -515,7 +515,7 @@ export function QcCheckErrorDialog({
                       />
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-emerald-700 truncate">Ảnh bằng chứng khắc phục</p>
-                        <p className="text-[10px] text-muted-foreground truncate font-mono">{form.correctiveImage}</p>
+                        <p className="text-xs text-muted-foreground truncate font-mono">{form.correctiveImage}</p>
                       </div>
                     </div>
                   )}

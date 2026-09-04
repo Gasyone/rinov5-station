@@ -148,7 +148,7 @@ function FilterSectionBlock({
               {section.title}
             </span>
             {selectedOptions.length > 0 ? (
-              <Badge variant="secondary" className="h-5 rounded-full px-1.5 text-[10px]">
+              <Badge variant="secondary" className="h-5 rounded-full px-1.5 text-xs">
                 {selectedOptions.length}
               </Badge>
             ) : null}
@@ -158,7 +158,7 @@ function FilterSectionBlock({
               <span
                 role="button"
                 tabIndex={0}
-                className="text-[10px] font-semibold text-muted-foreground hover:text-foreground px-1"
+                className="text-xs font-semibold text-muted-foreground hover:text-foreground px-1"
                 onClick={(e) => {
                   e.stopPropagation()
                   onClearSection()

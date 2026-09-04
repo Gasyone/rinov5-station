@@ -105,7 +105,7 @@ export function WorkRegistrationStaffPanel({
             onAddRange={onAddRange}
             headerPrefix={
               <div className="flex flex-col justify-center min-w-[120px] max-w-[180px]">
-                <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Đăng ký cho
                 </span>
                 <span className="text-xs sm:text-sm font-bold text-primary truncate" title={activeEmployeeName}>

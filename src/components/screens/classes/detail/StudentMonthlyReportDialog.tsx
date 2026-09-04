@@ -271,7 +271,7 @@ export function StudentMonthlyReportDialog({
           <div className="flex-1 flex overflow-hidden">
             {/* Left Roster Student Sidebar */}
             <div className="w-64 border-r bg-muted/10 flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
-              <div className="p-3 border-b text-[11px] font-extrabold text-muted-foreground uppercase tracking-wider flex items-center justify-between bg-muted/20">
+              <div className="p-3 border-b text-xs font-extrabold text-muted-foreground uppercase tracking-wider flex items-center justify-between bg-muted/20">
                 <span>HỌC VIÊN IN ROSTER</span>
                 <span>TRẠNG THÁI</span>
               </div>
@@ -303,7 +303,7 @@ export function StudentMonthlyReportDialog({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
                           className={cn(
-                            'h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-[10px] shrink-0',
+                            'h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0',
                             isSelected
                               ? 'bg-primary text-primary-foreground'
                               : 'bg-muted text-muted-foreground'
@@ -315,7 +315,7 @@ export function StudentMonthlyReportDialog({
                           <div className={cn('text-xs truncate', isSelected && 'font-bold text-primary')}>
                             {student.name}
                           </div>
-                          <div className="text-[10px] font-mono text-muted-foreground/80 truncate">
+                          <div className="text-xs font-mono text-muted-foreground/80 truncate">
                             {student.code}
                           </div>
                         </div>
@@ -328,7 +328,7 @@ export function StudentMonthlyReportDialog({
                             <Check className="h-3 w-3 stroke-[3]" />
                           </div>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground/50 italic">—</span>
+                          <span className="text-xs text-muted-foreground/50 italic">—</span>
                         )}
                       </div>
                     </button>
@@ -425,7 +425,7 @@ export function StudentMonthlyReportDialog({
                   <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
                     B - KẾ HOẠCH HỌC TẬP CẢI THIỆN {activeMonthConfig.next.toUpperCase()}
                   </h4>
-                  <span className="text-[11px] font-semibold text-primary">Quy trình 2 bước: Step 1 Chọn bài → Step 2 AI Tổng hợp</span>
+                  <span className="text-xs font-semibold text-primary">Quy trình 2 bước: Step 1 Chọn bài → Step 2 AI Tổng hợp</span>
                 </div>
 
                 {/* Sub-section 1: Nội dung bài học tháng tới (Ô 01) */}
@@ -543,7 +543,7 @@ export function StudentMonthlyReportDialog({
                               <button
                                 type="button"
                                 onClick={() => handleStartEditingLink(wIdx)}
-                                className="text-muted-foreground hover:text-foreground text-[10px] font-semibold ms-1 px-1.5 py-0.5 rounded hover:bg-background/80 transition-colors flex items-center gap-0.5"
+                                className="text-muted-foreground hover:text-foreground text-xs font-semibold ms-1 px-1.5 py-0.5 rounded hover:bg-background/80 transition-colors flex items-center gap-0.5"
                                 title="Dán link khác"
                               >
                                 <Pencil className="h-3 w-3" />
@@ -568,7 +568,7 @@ export function StudentMonthlyReportDialog({
                                     }
                                   }}
                                   placeholder="Dán link tài liệu Drive / Website tại đây..."
-                                  className="text-[11px] pl-8 pr-2.5 py-1 w-56 sm:w-72 md:w-80 rounded-lg border border-amber-400/40 bg-background focus:border-primary focus:outline-none font-mono shadow-2xs"
+                                  className="text-xs pl-8 pr-2.5 py-1 w-56 sm:w-72 md:w-80 rounded-lg border border-amber-400/40 bg-background focus:border-primary focus:outline-none font-mono shadow-2xs"
                                 />
                               </div>
                               {week.docLink && (
@@ -593,13 +593,13 @@ export function StudentMonthlyReportDialog({
                             ) : (
                               <div className="h-full w-full flex flex-col items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-950/20">
                                 <FileText className="h-6 w-6 mb-1" />
-                                <span className="text-[10px] font-bold">Thêm ảnh / link</span>
+                                <span className="text-xs font-bold">Thêm ảnh / link</span>
                               </div>
                             )}
 
                             {/* Hover Actions Mask */}
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1.5 text-white">
-                              <label className="flex items-center gap-1 text-[10px] font-bold bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md cursor-pointer transition-colors w-full justify-center">
+                              <label className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md cursor-pointer transition-colors w-full justify-center">
                                 <Upload className="h-3 w-3" />
                                 <span>Upload ảnh</span>
                                 <input
@@ -613,7 +613,7 @@ export function StudentMonthlyReportDialog({
                               <button
                                 type="button"
                                 onClick={() => handleStartEditingLink(wIdx)}
-                                className="flex items-center gap-1 text-[10px] font-bold bg-primary/80 hover:bg-primary px-2 py-1 rounded-md cursor-pointer transition-colors w-full justify-center"
+                                className="flex items-center gap-1 text-xs font-bold bg-primary/80 hover:bg-primary px-2 py-1 rounded-md cursor-pointer transition-colors w-full justify-center"
                               >
                                 <LinkIcon className="h-3 w-3" />
                                 <span>Dán Link</span>

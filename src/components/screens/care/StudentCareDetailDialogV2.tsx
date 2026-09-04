@@ -109,8 +109,7 @@ export function StudentCareDetailDialogV2({
     return getSimulatedPackagesList(student)
   }, [student])
 
-
-
+  const [selectedPackageId, setSelectedPackageId] = useState<string>('pkg-1')
   const [prevStudentId, setPrevStudentId] = useState<string | null>(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
 
@@ -118,11 +117,15 @@ export function StudentCareDetailDialogV2({
   if (student && student.studentId !== prevStudentId) {
     setPrevStudentId(student.studentId)
     setClosedBanners([])
+    const pkgs = getSimulatedPackagesList(student)
+    if (pkgs.length > 0) {
+      setSelectedPackageId(pkgs[0].id)
+    }
   }
 
   const activePackage = useMemo(() => {
-    return packagesList[0] || null
-  }, [packagesList])
+    return packagesList.find((p) => p.id === selectedPackageId) || packagesList[0] || null
+  }, [packagesList, selectedPackageId])
 
   const staffInfo = useMemo(() => {
     if (!activePackage) return {
@@ -431,7 +434,7 @@ export function StudentCareDetailDialogV2({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <h4 className="font-bold text-sm text-foreground truncate">{student.studentName}</h4>
-                            <Badge className={cn('text-[8px] font-bold py-0.5 px-1.5 rounded-full shadow-none border-none uppercase leading-none h-4', getStatusBadgeClass(student.status))}>
+                            <Badge className={cn('text-xs font-bold py-0.5 px-1.5 rounded-full shadow-none border-none uppercase leading-none h-4', getStatusBadgeClass(student.status))}>
                               {student.status}
                             </Badge>
                           </div>
@@ -441,11 +444,11 @@ export function StudentCareDetailDialogV2({
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
-                          <span className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Lớp học:</span>
+                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Lớp học:</span>
                           <span className="font-semibold text-foreground truncate">{student.classCode}</span>
                         </div>
                         <div className="space-y-1.5">
-                          <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">LIÊN HỆ GIA ĐÌNH</p>
+                          <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">LIÊN HỆ GIA ĐÌNH</p>
                           {contactsList.map((contact, idx) => (
                             <div key={idx} className="flex justify-between items-center gap-2 py-0.5">
                               <span className="font-medium text-foreground">{contact.name} ({contact.relationship})</span>
@@ -465,7 +468,7 @@ export function StudentCareDetailDialogV2({
                 <div className="min-w-0 space-y-1 flex-1">
                   <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2 flex-wrap leading-tight">
                     <span>{student.studentName} {student.englishName ? `(${student.englishName})` : ''}</span>
-                    <Badge className={cn('text-[9px] font-semibold py-0.5 px-2 rounded-full shadow-none border-none', getStatusBadgeClass(student.status))}>
+                    <Badge className={cn('text-xs font-semibold py-0.5 px-2 rounded-full shadow-none border-none', getStatusBadgeClass(student.status))}>
                       {student.status}
                     </Badge>
                   </DialogTitle>
@@ -522,7 +525,7 @@ export function StudentCareDetailDialogV2({
                   <span>Đơn hàng</span>
                   <span
                     className={cn(
-                      'inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                      'inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
                       leftTab === 'orders'
                         ? 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200'
                         : 'bg-slate-200/80 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300'
@@ -539,8 +542,8 @@ export function StudentCareDetailDialogV2({
                   studentName={student.studentName}
                   activePackage={activePackage}
                   packagesList={packagesList}
-                  selectedPackageId={activePackage?.id || ''}
-                  setSelectedPackageId={() => {}}
+                  selectedPackageId={selectedPackageId}
+                  setSelectedPackageId={setSelectedPackageId}
                   staffInfo={staffInfo}
                   assignedCS={assignedCS}
                   onAssignedCSChange={setAssignedCS}
@@ -566,6 +569,8 @@ export function StudentCareDetailDialogV2({
               onRefresh={onRefresh}
               topicsList={topicsList}
               allLogs={allLogs}
+              selectedPackageId={selectedPackageId}
+              selectedPackage={activePackage}
             />
           </aside>
 

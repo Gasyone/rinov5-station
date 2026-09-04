@@ -49,7 +49,7 @@ export function StudentCareHoverCard({ student, children }: StudentCareHoverCard
           </Avatar>
           <div className="min-w-0 flex-1">
             <h4 className="text-xs font-bold text-foreground truncate">{student.name}</h4>
-            <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded text-[9px] font-mono font-semibold">
+            <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded text-xs font-mono font-semibold">
               {student.code}
             </span>
           </div>
@@ -57,7 +57,7 @@ export function StudentCareHoverCard({ student, children }: StudentCareHoverCard
 
         {/* Thẻ Chăm sóc list (Care Badges) */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
             <span className="flex items-center gap-1">
               {student.type === 'at_risk' ? (
                 <ShieldAlert className="h-3 w-3 text-rose-500" />
@@ -72,7 +72,7 @@ export function StudentCareHoverCard({ student, children }: StudentCareHoverCard
             {student.careTags.map((tag, idx) => (
               <div
                 key={idx}
-                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] border font-medium transition-colors ${getCareTagBadgeStyle(
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs border font-medium transition-colors ${getCareTagBadgeStyle(
                   tag.category
                 )}`}
               >

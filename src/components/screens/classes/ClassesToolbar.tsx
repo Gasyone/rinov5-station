@@ -224,7 +224,7 @@ export function ClassesToolbar({
       {/* Grade Selector Row: visible only when math subject is active */}
       {activeSubject === 'math' && (
         <div className="flex items-center gap-2 border-t border-dashed border-border/80 pt-2 flex-wrap">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
           <SegmentedControl
             value={activeGrade}
             options={[
@@ -253,7 +253,7 @@ export function ClassesToolbar({
         {/* Quick Problem Filters (Right Aligned - No Outer Background) */}
         {onProblemFilterChange && (
           <div className="flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="text-[11px] font-semibold text-muted-foreground mr-0.5 flex items-center gap-1">
+            <span className="text-xs font-semibold text-muted-foreground mr-0.5 flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
               Lọc nhanh:
             </span>
@@ -270,7 +270,7 @@ export function ClassesToolbar({
                 </button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-48 p-2 space-y-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide px-1 pb-1">Hiển thị bộ lọc</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1 pb-1">Hiển thị bộ lọc</p>
                 {QUICK_FILTER_DEFS.map((def) => (
                   <label
                     key={def.id}
@@ -294,14 +294,14 @@ export function ClassesToolbar({
                 type="button"
                 onClick={() => onProblemFilterChange(activeProblemFilter === def.id ? 'all' : def.id)}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer border',
+                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold transition-all cursor-pointer border',
                   activeProblemFilter === def.id
                     ? getStatusColors(semanticMap[def.id]).badge
                     : 'border-border/60 bg-background text-muted-foreground hover:bg-muted hover:text-foreground shadow-2xs'
                 )}
               >
                 <span>{def.label}</span>
-                <span className={cn('rounded-full px-1.5 py-0 text-[10px]', activeProblemFilter === def.id ? activeBadgeBg[def.id] : 'bg-muted text-muted-foreground')}>
+                <span className={cn('rounded-full px-1.5 py-0 text-xs', activeProblemFilter === def.id ? activeBadgeBg[def.id] : 'bg-muted text-muted-foreground')}>
                   {countMap[def.id]}
                 </span>
               </button>

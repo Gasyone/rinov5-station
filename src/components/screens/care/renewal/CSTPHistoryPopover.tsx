@@ -195,14 +195,14 @@ export function CSTPHistoryPopover({
                   <span title={tagDescription} className="cursor-help inline-flex items-center"><Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground shrink-0" /></span>
                   {alertRecord && (
                     <span className={cn(
-                      "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0",
+                      "text-xs font-bold px-1.5 py-0.5 rounded border leading-none shrink-0",
                       getStatusBadgeClass(currentClassification)
                     )}>
                       {getRenewalClassificationLabel(currentClassification)}
                     </span>
                   )}
                 </div>
-                <div className="text-[9px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                   <span>SLA: <strong className="text-emerald-500">Trong hạn SLA</strong></span>
                   &bull;
                   <span>Đã liên hệ: <strong>{totalAttempts} lần</strong></span>
@@ -224,7 +224,7 @@ export function CSTPHistoryPopover({
                     />
                     <label
                       htmlFor={`popover-tai-phi-${studentId}`}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-foreground cursor-pointer select-none leading-none"
+                      className="text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer select-none leading-none"
                     >
                       Đã tái phí
                     </label>
@@ -236,14 +236,14 @@ export function CSTPHistoryPopover({
             {/* 3. Add Interaction Form — Send + Call buttons on the LEFT of textarea */}
             {!readOnly && (
               <div className="space-y-2">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                   Ghi nhận tương tác mới
                 </span>
                 
                 <div className="flex gap-1.5 flex-wrap">
-                  <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); setCallStatusMarking(null); }}>Zalo</Button>
-                  <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
-                  <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); setCallStatusMarking(null); }}>Trực tiếp</Button>
+                  <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); setCallStatusMarking(null); }}>Zalo</Button>
+                  <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
+                  <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold cursor-pointer" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); setCallStatusMarking(null); }}>Trực tiếp</Button>
                 </div>
 
                 {newLogChannel === 'telephone' && (
@@ -261,7 +261,7 @@ export function CSTPHistoryPopover({
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setCallStatusMarking(callStatusMarking === opt.id ? null : opt.id); }}
                           className={cn(
-                            "flex-1 h-7 text-[9px] font-bold border rounded px-0.5 text-center transition-all cursor-pointer shadow-3xs truncate",
+                            "flex-1 h-7 text-xs font-bold border rounded px-0.5 text-center transition-all cursor-pointer shadow-3xs truncate",
                             isSel
                               ? "bg-zinc-800 border-zinc-800 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900 font-extrabold"
                               : opt.color
@@ -284,14 +284,14 @@ export function CSTPHistoryPopover({
                         if (warningMessage) setWarningMessage(null);
                       }}
                       placeholder="Nhập nội dung tương tác (Call/Zalo)..."
-                      className="flex-1 border rounded p-2 text-[10px] bg-background focus:outline-none focus:ring-1 focus:ring-primary min-h-[55px] resize-none"
+                      className="flex-1 border rounded p-2 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary min-h-[55px] resize-none"
                     />
 
                     <div className="flex flex-col gap-1 shrink-0">
                       <Button
                         size="xs"
                         type="button"
-                        className="h-7 px-2.5 text-[9px] font-bold bg-sky-600 hover:bg-sky-700 text-white cursor-pointer"
+                        className="h-7 px-2.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!newLogNotes.trim()) { toast.error("Vui lòng nhập nội dung!"); return; }
@@ -304,7 +304,7 @@ export function CSTPHistoryPopover({
                       size="xs"
                       variant="outline"
                       type="button"
-                      className="h-7 px-2.5 text-[9px] font-bold text-sky-600 border-sky-200 bg-sky-50/50 hover:bg-sky-100 hover:text-sky-700 flex items-center gap-1 cursor-pointer"
+                      className="h-7 px-2.5 text-xs font-bold text-sky-600 border-sky-200 bg-sky-50/50 hover:bg-sky-100 hover:text-sky-700 flex items-center gap-1 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         const contacts = getFamilyContacts(studentId, studentName);
@@ -321,19 +321,19 @@ export function CSTPHistoryPopover({
                   </div>
                 </div>
                 {warningMessage && (
-                  <p className="text-[10px] text-rose-600 font-semibold mt-1 animate-pulse">
+                  <p className="text-xs text-rose-600 font-semibold mt-1 animate-pulse">
                     ⚠️ {warningMessage}
                   </p>
                 )}
               </div>
 
                 {addedLogs.length > 0 && (
-                  <div className="space-y-1 text-[10px] text-muted-foreground bg-muted/20 p-2 rounded">
-                    <p className="font-bold text-[9px] uppercase tracking-wide text-foreground/80 mb-1">Tương tác vừa ghi nhận:</p>
+                  <div className="space-y-1 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+                    <p className="font-bold text-xs uppercase tracking-wide text-foreground/80 mb-1">Tương tác vừa ghi nhận:</p>
                     {addedLogs.map((itemLog) => (
                       <div key={itemLog.id} className="flex justify-between items-start gap-2">
                         <span>• <strong>{itemLog.callConfirmation}:</strong> {itemLog.notes.replace(`[${tagLabel}] `, '')}</span>
-                        <span className="text-[8px] font-mono whitespace-nowrap shrink-0">{itemLog.date}</span>
+                        <span className="text-xs font-mono whitespace-nowrap shrink-0">{itemLog.date}</span>
                       </div>
                     ))}
                   </div>
@@ -345,7 +345,7 @@ export function CSTPHistoryPopover({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "h-6 text-[9px] px-2 font-semibold text-emerald-600 border-emerald-250 bg-emerald-50 hover:bg-emerald-100 cursor-pointer",
+                      "h-6 text-xs px-2 font-semibold text-emerald-600 border-emerald-250 bg-emerald-50 hover:bg-emerald-100 cursor-pointer",
                       currentClassification === 'dang_cham_soc' && "ring-1 ring-emerald-400 font-bold"
                     )}
                     onClick={(e) => {
@@ -361,7 +361,7 @@ export function CSTPHistoryPopover({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "h-6 text-[9px] px-2 font-semibold text-zinc-650 dark:text-zinc-400 cursor-pointer",
+                      "h-6 text-xs px-2 font-semibold text-zinc-650 dark:text-zinc-400 cursor-pointer",
                       currentClassification === 'can_nhac' && "bg-zinc-100 border-zinc-350 dark:bg-zinc-800 font-bold"
                     )}
                     onClick={(e) => {
@@ -377,7 +377,7 @@ export function CSTPHistoryPopover({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "h-6 text-[9px] px-2 font-semibold text-amber-600 border-amber-250 bg-amber-50 hover:bg-amber-100 cursor-pointer",
+                      "h-6 text-xs px-2 font-semibold text-amber-600 border-amber-250 bg-amber-50 hover:bg-amber-100 cursor-pointer",
                       currentClassification === 'tiem_nang' && "ring-1 ring-amber-400 font-bold"
                     )}
                     onClick={(e) => {
@@ -393,7 +393,7 @@ export function CSTPHistoryPopover({
                     type="button"
                     variant="outline"
                     className={cn(
-                      "h-6 text-[9px] px-2 font-semibold text-sky-600 border-sky-200 bg-sky-50 hover:bg-sky-100 cursor-pointer",
+                      "h-6 text-xs px-2 font-semibold text-sky-600 border-sky-200 bg-sky-50 hover:bg-sky-100 cursor-pointer",
                       currentClassification === 'hen_tai' && "ring-1 ring-sky-400 font-bold"
                     )}
                     onClick={(e) => {
@@ -409,12 +409,12 @@ export function CSTPHistoryPopover({
 
             {/* 4. History Logs — show ALL logs, not filtered by tag */}
             <div className="space-y-2 mt-4">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                 Lịch sử chăm sóc ({rawLogs.length})
               </span>
               
               {rawLogs.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground italic py-1">Chưa có lịch sử chăm sóc.</p>
+                <p className="text-xs text-muted-foreground italic py-1">Chưa có lịch sử chăm sóc.</p>
               ) : (
                 <div className="space-y-3 pr-1">
                   {(() => {
@@ -429,7 +429,7 @@ export function CSTPHistoryPopover({
                           {showDivider && (
                             <div className="flex items-center gap-2 my-3.5 select-none px-1">
                               <div className="flex-1 border-t border-dashed border-border/80"></div>
-                              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded-full">
+                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider bg-muted px-1.5 py-0.5 rounded-full">
                                 {currentMonthYear}
                               </span>
                               <div className="flex-1 border-t border-dashed border-border/80"></div>
@@ -439,7 +439,7 @@ export function CSTPHistoryPopover({
                           <div className="group flex gap-2.5 items-start text-xs border-b border-border/20 pb-2 last:border-b-0 last:pb-0 relative">
                             <div 
                               className={cn(
-                                "h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-bold border border-background shadow-sm shrink-0 mt-0.5",
+                                "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold border border-background shadow-sm shrink-0 mt-0.5",
                                 getStaffAvatarColor(log.staff)
                               )}
                               title={`Người thực hiện: ${log.staff}`}
@@ -448,7 +448,7 @@ export function CSTPHistoryPopover({
                             </div>
 
                             <div className="flex-1 flex flex-col text-left gap-0.5">
-                                  <p className="text-[11px] text-foreground leading-normal font-medium whitespace-pre-wrap">
+                                  <p className="text-xs text-foreground leading-normal font-medium whitespace-pre-wrap">
                                     {(() => {
                                       const isGV = log.staff.includes('(GV)') || log.staff.toLowerCase().includes('gv') || log.staff.toLowerCase().includes('giáo viên');
                                       const channel = (log.channel || 'zalo') as string;
@@ -459,7 +459,7 @@ export function CSTPHistoryPopover({
                                         : 'Zalo';
                                       return (
                                         <span className={cn(
-                                          "font-bold text-[8px] px-1 py-0.2 rounded mr-1 inline-block shrink-0 uppercase select-none",
+                                          "font-bold text-xs px-1 py-0.2 rounded mr-1 inline-block shrink-0 uppercase select-none",
                                           isGV 
                                             ? "bg-violet-100 dark:bg-violet-950/40 text-violet-700 dark:text-violet-350"
                                             : "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-350"
@@ -483,7 +483,7 @@ export function CSTPHistoryPopover({
                                   <span className="font-semibold text-zinc-655 dark:text-zinc-400">{log.staff}</span>
                                   {" "}<span>{log.action}</span>
                                 </span>
-                                <span className="font-mono text-[9px]">{log.date}</span>
+                                <span className="font-mono text-xs">{log.date}</span>
                               </div>
                             </div>
                           </div>

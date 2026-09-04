@@ -9,6 +9,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { CareTagHoverCard } from '@/components/shared'
 import { AudioPlayButton } from './AudioPlayButton'
 import { StudentCareWorkItem } from './careJourneyHelpers'
+import { getMilestoneTagAbbrev } from './CareJourneyMilestoneCard'
 
 interface CareHorizontalJourneyTimelineProps {
   workItem: StudentCareWorkItem
@@ -267,7 +268,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                 <Calendar className="h-3.5 w-3.5 text-sky-600" />
                 <span>{col.monthName}</span>
               </div>
-              <Badge variant="secondary" className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-background border">
+              <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-background border">
                 {col.milestones.length} mốc
               </Badge>
             </div>
@@ -294,8 +295,10 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                       >
                         {/* Milestone Top Line: Code & Role */}
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-mono text-[10.5px] font-bold text-muted-foreground">{m.code}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-muted text-muted-foreground tracking-wider border">
+                          <span className={cn('font-mono text-[9.5px] font-bold px-1.5 py-0.5 rounded border shrink-0', getMilestoneTagAbbrev(m.code).badgeClass)}>
+                            {getMilestoneTagAbbrev(m.code).label}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-xs font-extrabold uppercase bg-muted text-muted-foreground tracking-wider border">
                             {m.role} PHỤ TRÁCH
                           </span>
                         </div>
@@ -303,11 +306,11 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                         {/* Milestone Title & Description */}
                         <div className="space-y-0.5">
                           <div className="font-bold text-foreground text-xs leading-snug">{m.name}</div>
-                          <div className="text-[11px] text-muted-foreground leading-relaxed">{m.sub}</div>
+                          <div className="text-xs text-muted-foreground leading-relaxed">{m.sub}</div>
                         </div>
 
                         {/* Milestone Footer: Date & Status */}
-                        <div className="pt-2 border-t border-border/40 flex items-center justify-between text-[10px] font-mono">
+                        <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs font-mono">
                           <span className="text-muted-foreground">{m.date}</span>
                           {isCompleted && (
                             <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100/70 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
@@ -346,7 +349,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                           </span>
                           <span className="font-bold text-xs text-foreground truncate">{m.name}</span>
                         </div>
-                        <Badge variant="outline" className="text-[9px] font-extrabold uppercase shrink-0">
+                        <Badge variant="outline" className="text-xs font-extrabold uppercase shrink-0">
                           {m.role} PHỤ TRÁCH
                         </Badge>
                       </div>
@@ -359,7 +362,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={cn(
-                                  'px-2 py-0.5 rounded-full text-[10px] font-bold border',
+                                  'px-2 py-0.5 rounded-full text-xs font-bold border',
                                   isTeacher
                                     ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300'
                                     : 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300'
@@ -372,7 +375,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                                 • {historyLog.channel}
                               </span>
                             </div>
-                            <span className="font-mono text-[11px] text-muted-foreground">{historyLog.date}</span>
+                            <span className="font-mono text-xs text-muted-foreground">{historyLog.date}</span>
                           </div>
 
                           {/* Inner Card Container matching Dạng Dọc card */}
@@ -439,7 +442,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                             <span>{m.role === 'CS' ? 'Lê Thị Lan (Chuyên viên CS)' : 'Hoàng Thị Mai (Giáo viên)'}</span>
                           </div>
                           <p className="text-xs font-mono">{m.date} &bull; {m.sub}</p>
-                          <p className="text-[11px] italic text-muted-foreground/80 pt-1.5 border-t border-border/50">
+                          <p className="text-xs italic text-muted-foreground/80 pt-1.5 border-t border-border/50">
                             • Mốc tương lai - Chưa thực hiện chăm sóc
                           </p>
                         </div>

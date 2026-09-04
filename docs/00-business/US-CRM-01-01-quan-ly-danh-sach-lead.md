@@ -13,7 +13,7 @@ tags: [crm, lead, list]
 
 > **Tham chiếu:** BF-CRM-01 · SR-SALE-001 · Giao diện Mẫu §4.2 (Danh sách)
 > **Đường dẫn màn hình & Trạng thái liên quan:**
-> - `/app/crm_leads` -> Trạng thái: `[Tất cả, Chưa tiếp cận, Đang chăm sóc, Đánh giá & Trải nghiệm, Tiềm năng, Chuyển đổi, Thất bại]`
+> - `/app/crm_leads` -> Trạng thái: `[Tất cả, Chưa tiếp cận, Đang chăm sóc, Đánh giá & Trải nghiệm, Tiềm năng, Chuyển đổi]`
 
 ---
 
@@ -23,6 +23,8 @@ tags: [crm, lead, list]
 
 | Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
 |---|---|---|
+| 26/08/2026 | Bỏ thẻ "Thất bại" trên dải Tab lọc trạng thái chính (chỉ giữ các trạng thái đang xử lý/tiến trình), chuyển bộ lọc "Thất bại" và trạng thái đầy đủ vào Bảng lọc nâng cao (Filter Sheet) | Tối ưu không gian tác nghiệp và tập trung vào các Lead đang trong quy trình tư vấn thực tế |
+| 25/08/2026 | Bỏ cột Địa chỉ & Email, đưa cột Phụ huynh lên trước Tuổi & Trình độ, bổ sung cột Lịch sử chăm sóc, chuẩn hóa cột Người phụ trách (ngày bắt đầu + số ngày) và hiển thị cột Đơn hàng ở cuối cùng | Tối ưu bảng dữ liệu theo dõi tác nghiệp chăm sóc và nâng cao trải nghiệm người dùng |
 | 13/08/2026 | Gom các trạng thái phụ về Trạng thái vòng đời Lead chuẩn: Thêm "Đánh giá & Trải nghiệm", chuẩn hóa "Tiềm năng" | Chuẩn hóa bộ trạng thái chính theo đúng bản chất pipeline tuyển sinh |
 | 12/08/2026 | Cập nhật tài liệu đặc tả danh sách Lead theo chuẩn 1 Lead = 1 Học viên tiềm năng | Chuẩn hóa mô hình dữ liệu: Lead theo từng học viên, Phụ huynh làm người đại diện liên hệ |
 
@@ -87,26 +89,26 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 #### B. Khối lọc nhanh theo trạng thái (Status Tiles)
 | Thẻ Trạng thái | Nhóm màu hiển thị | Điều kiện lọc | Diễn giải | Mobile Responsive |
 |----------------|-------------------|----------------|-----------|-------------------|
-| Tất cả | Mặc định | Bỏ lọc trạng thái | Tổng số Lead (Học viên) | Cuộn ngang |
+| Tất cả | Mặc định | Bỏ lọc trạng thái | Tổng số Lead đang xử lý | Cuộn ngang |
 | Chưa tiếp cận | Màu xanh dương | Trạng thái = "Chưa tiếp cận" | Lead học viên mới đổ về chưa gọi | Cuộn ngang |
 | Đang chăm sóc | Màu vàng cam | Trạng thái = "Đang chăm sóc" | Đang tư vấn chương trình cho học viên | Cuộn ngang |
 | Đánh giá & Trải nghiệm | Màu tím | Trạng thái = "Đánh giá & Trải nghiệm" | Học viên trong giai đoạn làm test đầu vào hoặc học thử | Cuộn ngang |
 | Tiềm năng | Màu xanh lá | Trạng thái = "Tiềm năng" | Học viên đã chốt báo giá, giữ chỗ 24h hoặc hẹn nộp tiền | Cuộn ngang |
 | Chuyển đổi | Màu xanh ngọc | Trạng thái = "Chuyển đổi" | Học viên đã mua khóa học chính thức | Cuộn ngang |
-| Thất bại | Màu đỏ | Trạng thái = "Thất bại" | Học viên/Gia đình từ chối nhập học | Cuộn ngang |
 
 #### C. Bảng dữ liệu danh sách chính
 | Cột thông tin | Kiểu hiển thị | Nguồn dữ liệu | Quy tắc thị giác & Trạng thái | Mobile Responsive |
 |---------------|---------------|----------------|--------------------------------|-------------------|
-| **Học viên (Lead)** | Chữ đậm + Mã mờ | Thực thể Học viên | Tên Học viên + Độ tuổi đậm, Mã Lead mờ, Môn học quan tâm bên dưới | Giữ nguyên |
-| **Phụ huynh đại diện** | Chữ đậm + Thẻ quan hệ | Thực thể Phụ huynh | Tên Phụ huynh đậm + Badge (Mẹ/Bố/Người bảo hộ) | Giữ nguyên |
-| **Số điện thoại & Địa chỉ** | Văn bản che số | Trường SĐT & Địa chỉ | Dạng che trung tâm `091****111` kèm nút Sao chép & Địa chỉ mờ bên dưới | Giữ nguyên |
-| **Nhóm Gia đình** | Nhãn danh sách con | Trường Liên kết Gia đình | Hiển thị nhãn ghi nhận các học viên cùng Phụ huynh (VD: "Có 2 anh chị em") | Thu gọn |
-| **Nguồn Lead** | Văn bản thường | Trường nguồn | Tên kênh tiếp thị | Ẩn trên di động |
-| **Trạng thái** | Nhãn màu | Trường trạng thái | Màu chuẩn theo từng trạng thái | Thu gọn dạng chấm |
-| **Đơn hàng** | Gói học + Mã đơn nháp | Trường Đơn hàng nháp | Hiển thị Tên gói học dự kiến, mã đơn nháp và lần thanh toán | Thu gọn |
-| **Người phụ trách** | Văn bản thường | Trường nhân viên | Tên chuyên viên tư vấn | Ẩn trên di động |
-| **Hành động** | Nút biểu tượng | Hệ thống | Biểu tượng mắt xem chi tiết, bút sửa | Luôn hiện |
+| **Học viên (Lead & Nguồn)** | Chữ đậm + Mã mờ | Thực thể Học viên | Tên Học viên in đậm làm trọng tâm chính, Mã Lead và Nguồn mờ bên dưới | Giữ nguyên |
+| **Phụ huynh / Liên hệ** | Chữ vừa + Thẻ quan hệ | Thực thể Phụ huynh | Tên Phụ huynh + Badge vai trò (Mẹ/Bố), SĐT che dạng `091****111` kèm nút Sao chép | Giữ nguyên |
+| **Tuổi & Trình độ** | 2 dòng chữ | Thực thể Học viên | Dòng 1: Tuổi và năm sinh; Dòng 2: Trình độ ban đầu khi tạo test | Giữ nguyên |
+| **Khóa học & Nhóm SP** | Chữ vừa + Chữ mờ | Thực thể Chương trình | Khóa học quan tâm dòng 1, Nhóm sản phẩm dòng 2 | Thu gọn |
+| **Đánh giá & Trải nghiệm** | Chữ vừa + Liên kết | Thực thể Test / Học thử | Thông tin lịch test/học thử, kết quả đánh giá và liên kết phiếu chi tiết | Thu gọn |
+| **Lịch sử chăm sóc** | Chữ vừa + Hộp thoại nổi | Lịch sử tương tác Lead | Tiến trình CS (Chưa CS / Chăm sóc lần N), lịch hẹn gọi lại, nội dung và phản hồi | Thu gọn |
+| **Trạng thái** | Nhãn màu | Trường trạng thái | Màu chuẩn theo từng trạng thái vòng đời | Thu gọn dạng chấm |
+| **Người phụ trách** | 2 dòng chữ | Trường nhân viên | Dòng 1: Tên tư vấn viên; Dòng 2: Ngày bắt đầu phụ trách và đếm số ngày (Ví dụ: `10/08/2026 (15 ngày)`) | Ẩn trên di động |
+| **Đơn hàng** | Gói học + Mã đơn nháp | Trường Đơn hàng nháp | Gói học, doanh thu dự kiến, mã đơn nháp và lần thanh toán nổi bật (đặt ở cuối cùng) | Thu gọn |
+| **Hành động** | Nút biểu tượng | Hệ thống | Biểu tượng mắt xem chi tiết nhanh khi rê chuột | Luôn hiện |
 
 ### 3.3. Các trạng thái giao diện mặc định
 1. **Trạng thái đang tải (Loading state):** Hiển thị hiệu ứng chờ tải dữ liệu giả lập (Skeleton).

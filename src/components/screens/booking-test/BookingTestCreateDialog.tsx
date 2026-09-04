@@ -21,10 +21,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { FieldLabel } from '@/components/shared'
+import { FieldLabel, PersonnelHoverCard, type PersonnelItem } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { BookingTest } from '@/mocks/bookingTests'
 import { mockStudents } from '@/mocks/students'
+import { mockEmployees } from '@/mocks/employees'
 import {
   getDailySlotSummary,
   getDutyStaffForSlot,
@@ -45,14 +46,25 @@ export {
 }
 export type { TeacherAvatarItem } from './bookingTestCreateTypes'
 
+export interface BookingTestInitialData {
+  parentName?: string
+  phone?: string
+  childName?: string
+  school?: string
+  program?: string
+  level?: string
+  notes?: string
+}
+
 interface BookingTestCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  schoolOptions: string[]
-  teacherOptions: string[]
-  activeSubject: string
+  schoolOptions?: string[]
+  teacherOptions?: string[]
+  activeSubject?: string
   bookings?: BookingTest[]
   onSubmit: (newBooking: BookingTest) => void
+  initialData?: BookingTestInitialData | null
 }
 
 interface ContactPerson {
@@ -62,14 +74,30 @@ interface ContactPerson {
   children: Array<{ id: string; name: string; dob?: string }>
 }
 
+const DEFAULT_SCHOOLS = [
+  'RinoEdu Nguyễn Tuân',
+  'Chi nhánh Quận 1',
+  'Chi nhánh Cầu Giấy',
+  'RinoEdu Smart City',
+]
+
+const DEFAULT_TEACHERS = [
+  'Sarah J.',
+  'Robert L.',
+  'Emily W.',
+  'Phạm Văn Giang',
+  'Trần Thị Mai',
+]
+
 export function BookingTestCreateDialog({
   open,
   onOpenChange,
-  schoolOptions,
-  teacherOptions,
-  activeSubject,
+  schoolOptions = DEFAULT_SCHOOLS,
+  teacherOptions = DEFAULT_TEACHERS,
+  activeSubject = 'all',
   bookings = [],
   onSubmit,
+  initialData,
 }: BookingTestCreateDialogProps) {
   // 1. 3 Ngày đầu tiên (Hôm nay, Ngày mai, Ngày kia) + Min date cho Ngày khác
   const dateOptions = useMemo(() => {
@@ -132,14 +160,8 @@ export function BookingTestCreateDialog({
     return Array.from(map.values())
   }, [])
 
-  const defaultContact = contactsList[0]
-  const [contactId, setContactId] = useState(defaultContact?.id || 'custom')
-  const [childId, setChildId] = useState(defaultContact?.children[0]?.id || 'custom_child')
-
-  // Trường thông tin tự nhập
-  const [customParentName, setCustomParentName] = useState('')
-  const [customPhone, setCustomPhone] = useState('')
-  const [customChildName, setCustomChildName] = useState('')
+  const [contactId, setContactId] = useState('')
+  const [childId, setChildId] = useState('')
 
   // Chương trình & Level
   const initialProgram =
@@ -157,6 +179,29 @@ export function BookingTestCreateDialog({
   const [selectedSlot, setSelectedSlot] = useState(TIME_SLOTS[1] || '08:30')
   const [notes, setNotes] = useState('')
   const [datePickerOpen, setDatePickerOpen] = useState(false)
+
+  // Đồng bộ thông tin khi mở với dữ liệu khởi tạo từ Lead hoặc bên ngoài (React 19 render-time adjustment)
+  const [prevKey, setPrevKey] = useState<{ open: boolean; initialData?: BookingTestInitialData | null }>({
+    open: false,
+    initialData: null,
+  })
+
+  if (prevKey.open !== open || prevKey.initialData !== initialData) {
+    setPrevKey({ open, initialData })
+    if (open && initialData) {
+      if (initialData.school) {
+        setSchool(initialData.school)
+      }
+      if (initialData.program) {
+        setProgram(initialData.program)
+        const levels = PROGRAM_CONFIG[initialData.program]?.levels || []
+        setLevel(initialData.level && levels.includes(initialData.level) ? initialData.level : (levels[0] || ''))
+      }
+      if (initialData.notes) {
+        setNotes(initialData.notes)
+      }
+    }
+  }
 
   const calendarSelectedDate = useMemo(() => {
     if (!testDate) return undefined
@@ -207,29 +252,20 @@ export function BookingTestCreateDialog({
   const selectedContactObj = contactsList.find((c) => c.id === contactId)
 
   const currentChildName = useMemo(() => {
-    if (contactId === 'custom') {
-      return customChildName.trim() || 'Học viên mới'
-    }
-    if (childId === 'custom_child') {
-      return customChildName.trim() || 'Học viên mới'
-    }
+    if (initialData?.childName) return initialData.childName
     const foundChild = selectedContactObj?.children.find((c) => c.id === childId)
-    return foundChild ? foundChild.name : 'Học viên mới'
-  }, [contactId, childId, customChildName, selectedContactObj])
+    return foundChild ? foundChild.name : 'Học viên'
+  }, [initialData, selectedContactObj, childId])
 
   const currentParentName = useMemo(() => {
-    if (contactId === 'custom' || !selectedContactObj) {
-      return customParentName.trim() || 'Phụ huynh khách hàng'
-    }
-    return selectedContactObj.name
-  }, [contactId, selectedContactObj, customParentName])
+    if (initialData?.parentName) return initialData.parentName
+    return selectedContactObj ? selectedContactObj.name : 'Phụ huynh'
+  }, [initialData, selectedContactObj])
 
   const currentPhone = useMemo(() => {
-    if (contactId === 'custom' || !selectedContactObj) {
-      return customPhone.trim() || '0900000000'
-    }
-    return selectedContactObj.phone
-  }, [contactId, selectedContactObj, customPhone])
+    if (initialData?.phone) return initialData.phone
+    return selectedContactObj ? selectedContactObj.phone : '0900000000'
+  }, [initialData, selectedContactObj])
 
   // Khi đổi Contact: tự động chọn đứa con đầu tiên của Contact đó
   const handleContactChange = (newContactId: string) => {
@@ -245,9 +281,6 @@ export function BookingTestCreateDialog({
   }
 
   const handleResetAndClose = () => {
-    setCustomParentName('')
-    setCustomPhone('')
-    setCustomChildName('')
     setNotes('')
     onOpenChange(false)
   }
@@ -307,22 +340,15 @@ export function BookingTestCreateDialog({
     handleResetAndClose()
   }
 
-  // Dropdown options
-  const contactSelectOptions = [
-    ...contactsList.map((c) => ({
-      value: c.id,
-      label: `${c.name} - ${c.phone}`,
-    })),
-    { value: 'custom', label: '+ Thêm Contact / Phụ huynh mới' },
-  ]
-
-  const childSelectOptions = [
-    ...(selectedContactObj?.children.map((ch) => ({
-      value: ch.id,
-      label: `${ch.name} ${ch.dob ? `(${ch.dob})` : ''}`,
-    })) || []),
-    { value: 'custom_child', label: '+ Thêm con / học viên mới' },
-  ]
+  const childSelectOptions = selectedContactObj
+    ? [
+        ...selectedContactObj.children.map((ch) => ({
+          value: ch.id,
+          label: `${ch.name} ${ch.dob ? `(${ch.dob})` : ''}`,
+        })),
+        { value: 'custom_child', label: '+ Thêm con / học viên mới' },
+      ]
+    : []
 
   const schoolSelectOptions = (
     schoolOptions.length > 0 ? schoolOptions : ['RinoEdu Nguyễn Tuân']
@@ -362,19 +388,21 @@ export function BookingTestCreateDialog({
           <div className="flex flex-col md:flex-row gap-3.5 items-stretch">
             {/* CỘT TRÁI: ĐỐI TƯỢNG & CHƯƠNG TRÌNH */}
             <BookingTestCreateStudentForm
+              leadInfo={
+                initialData?.parentName && initialData?.childName
+                  ? {
+                      parentName: initialData.parentName,
+                      phone: initialData.phone || '',
+                      childName: initialData.childName,
+                    }
+                  : null
+              }
               contactId={contactId}
               onContactChange={handleContactChange}
-              contactSelectOptions={contactSelectOptions}
               selectedContactObj={selectedContactObj}
               childId={childId}
               onChildChange={setChildId}
               childSelectOptions={childSelectOptions}
-              customChildName={customChildName}
-              onCustomChildNameChange={setCustomChildName}
-              customParentName={customParentName}
-              onCustomParentNameChange={setCustomParentName}
-              customPhone={customPhone}
-              onCustomPhoneChange={setCustomPhone}
               school={school}
               onSchoolChange={setSchool}
               schoolSelectOptions={schoolSelectOptions}
@@ -451,7 +479,7 @@ export function BookingTestCreateDialog({
 
               {/* SECTION 2: KHUNG GIỜ TEST (30 PHÚT/CA) - HIỂN THỊ FULL TOÀN BỘ CÁC CA */}
               <div className="rounded-xl p-3 bg-white dark:bg-zinc-950 shadow-2xs space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-0.5 border-b border-border/50">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-0.5 border-b border-border/50">
                   <span>Khung giờ test (30 phút/ca)</span>
                   <span className="text-primary font-bold text-xs">Ca đang chọn: {selectedSlot}</span>
                 </div>
@@ -504,7 +532,7 @@ export function BookingTestCreateDialog({
                               </span>
                               <span
                                 className={cn(
-                                  'text-[9px] px-1.5 py-0.2 rounded font-medium',
+                                  'text-xs px-1.5 py-0.2 rounded font-medium',
                                   isSlotSelected
                                     ? 'bg-primary-foreground/20 text-primary-foreground'
                                     : availableCount > 0
@@ -525,9 +553,9 @@ export function BookingTestCreateDialog({
 
               {/* SECTION 3: PHỤ TRÁCH CA ĐÃ CHỌN - ĐẶT THÀNH SECTION DƯỚI CÙNG CỐ ĐỊNH CHIỀU CAO THẺ */}
               <div className="rounded-xl p-3 bg-white dark:bg-zinc-950 shadow-2xs space-y-1.5">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-0.5 border-b border-border/50">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-0.5 border-b border-border/50">
                   <span>Phụ trách ca {selectedSlot}</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">
+                  <span className="text-xs text-muted-foreground font-normal">
                     <span className="font-semibold text-foreground">{availableStaffCount}</span>/{currentSlotStaffList.length} nhân sự rảnh
                   </span>
                 </div>
@@ -549,7 +577,7 @@ export function BookingTestCreateDialog({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold truncate">Chưa gán Phụ trách</p>
-                        <p className="text-[10px] text-muted-foreground opacity-75 truncate">Phân công nhân sự sau</p>
+                        <p className="text-xs text-muted-foreground opacity-75 truncate">Phân công nhân sự sau</p>
                       </div>
                     </div>
                     <div className="shrink-0 ml-1">
@@ -562,78 +590,89 @@ export function BookingTestCreateDialog({
                     const t = item.employee
                     const isSelectedTeacher = teacher === t.name
                     const isAvailable = item.isAvailable
+                    const emp = mockEmployees.find((e) => e.name.toLowerCase() === t.name.toLowerCase())
+                    const nameInitials = t.name.split(' ').map((n) => n[0]).join('').toUpperCase()
+                    const personItem: PersonnelItem = {
+                      id: emp?.id ? `EMP-${emp.id.toUpperCase()}` : `EMP-${nameInitials}`,
+                      name: t.name,
+                      avatar: emp?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(t.name)}`,
+                      role: emp?.position || t.role || 'Giáo viên',
+                      phone: emp?.phone || '0901 223 344',
+                      email: emp?.email || `${t.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.com`,
+                    }
 
                     return (
-                      <div
-                        key={t.id}
-                        onClick={() => {
-                          if (isAvailable) {
-                            setTeacher(t.name)
-                          }
-                        }}
-                        className={cn(
-                          'flex items-center justify-between rounded-lg border p-2 h-[54px] transition-all',
-                          !isAvailable
-                            ? 'opacity-65 cursor-not-allowed bg-muted/10 border-dashed'
-                            : 'cursor-pointer',
-                          isSelectedTeacher && isAvailable
-                            ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/30 shadow-2xs'
-                            : isAvailable
-                            ? 'border-border bg-muted/20 hover:bg-muted/50 text-foreground'
-                            : ''
-                        )}
-                      >
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div
-                            className={cn(
-                              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white',
-                              t.colorClass || 'bg-primary'
-                            )}
-                          >
-                            {t.shortName}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <p className="truncate text-xs font-bold">{t.name}</p>
-                              <span
-                                className={cn(
-                                  'inline-block text-[9px] px-1.5 py-0.2 rounded font-semibold border shrink-0',
-                                  t.role === 'CS'
-                                    ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-                                    : t.role === 'Khác'
-                                    ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
-                                    : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800'
-                                )}
-                              >
-                                {t.role || 'Giáo viên'}
-                              </span>
-                            </div>
-                            {isAvailable ? (
-                              <p className="text-[10px] text-muted-foreground truncate">Khả dụng trực ca</p>
-                            ) : (
-                              <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium truncate" title={item.conflictDetail}>
-                                ⚠️ {item.conflictDetail || 'Đang bận lịch khác'}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 ml-1">
-                          {isSelectedTeacher && isAvailable ? (
-                            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
-                              <Check className="h-2.5 w-2.5" />
-                            </span>
-                          ) : isAvailable ? (
-                            <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
-                              Rảnh
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-medium text-rose-600 bg-rose-50 dark:bg-rose-950 px-1.5 py-0.5 rounded border border-rose-200 shrink-0">
-                              Bận
-                            </span>
+                      <PersonnelHoverCard key={t.id} person={personItem} align="start">
+                        <div
+                          onClick={() => {
+                            if (isAvailable) {
+                              setTeacher(t.name)
+                            }
+                          }}
+                          className={cn(
+                            'flex items-center justify-between rounded-lg border p-2 h-[54px] transition-all',
+                            !isAvailable
+                              ? 'opacity-65 cursor-not-allowed bg-muted/10 border-dashed'
+                              : 'cursor-pointer',
+                            isSelectedTeacher && isAvailable
+                              ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/30 shadow-2xs'
+                              : isAvailable
+                              ? 'border-border bg-muted/20 hover:bg-muted/50 text-foreground'
+                              : ''
                           )}
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div
+                              className={cn(
+                                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
+                                t.colorClass || 'bg-primary'
+                              )}
+                            >
+                              {t.shortName}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <p className="truncate text-xs font-bold">{t.name}</p>
+                                <span
+                                  className={cn(
+                                    'inline-block text-xs px-1.5 py-0.2 rounded font-semibold border shrink-0',
+                                    t.role === 'CS'
+                                      ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                                      : t.role === 'Khác'
+                                      ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                                      : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800'
+                                  )}
+                                >
+                                  {t.role || 'Giáo viên'}
+                                </span>
+                              </div>
+                              {isAvailable ? (
+                                <p className="text-xs text-muted-foreground truncate">Khả dụng trực ca</p>
+                              ) : (
+                                <p className="text-xs text-rose-600 dark:text-rose-400 font-medium truncate" title={item.conflictDetail}>
+                                  ⚠️ {item.conflictDetail || 'Đang bận lịch khác'}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 ml-1">
+                            {isSelectedTeacher && isAvailable ? (
+                              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
+                                <Check className="h-2.5 w-2.5" />
+                              </span>
+                            ) : isAvailable ? (
+                              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                Rảnh
+                              </span>
+                            ) : (
+                              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 shrink-0">
+                                Bận
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      </PersonnelHoverCard>
                     )
                   })}
 

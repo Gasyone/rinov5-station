@@ -395,7 +395,7 @@ export function ClassesAddScheduleDialog({
 
         {/* Form Content */}
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-1">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">
             Các ngày học trong tuần
           </span>
           
@@ -437,7 +437,7 @@ export function ClassesAddScheduleDialog({
                         {day.label}
                       </span>
                       {activeOriginalDays.has(day.id) && (
-                        <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-semibold border border-primary/20 select-none">
+                        <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded font-semibold border border-primary/20 select-none">
                           Đang hoạt động
                         </span>
                       )}
@@ -451,7 +451,7 @@ export function ClassesAddScheduleDialog({
                             variant="outline"
                             size="sm"
                             onClick={() => handleAddSecondarySlot(day.id)}
-                            className="h-8 text-[11px] gap-1 font-medium text-primary border-primary/30 hover:bg-primary/5 hover:text-primary shrink-0"
+                            className="h-8 text-xs gap-1 font-medium text-primary border-primary/30 hover:bg-primary/5 hover:text-primary shrink-0"
                           >
                             <Plus className="h-3.5 w-3.5" />
                             Thêm buổi phụ
@@ -477,13 +477,13 @@ export function ClassesAddScheduleDialog({
                           <div className="flex items-center justify-between w-full">
                             <span>Phòng học</span>
                             {state.startTime && (
-                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                 {getMockRoomCount(day.id, state.startTime)} trống
                               </span>
                             )}
                           </div>
                         }
-                        className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                        className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                       >
                         <DirectSearchableSelect
                           value={state.room}
@@ -503,13 +503,13 @@ export function ClassesAddScheduleDialog({
                           <div className="flex items-center justify-between w-full">
                             <span>Giáo viên</span>
                             {state.startTime && (
-                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                 {getMockTeacherCount(day.id, state.startTime)} khả dụng
                               </span>
                             )}
                           </div>
                         }
-                        className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                        className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                       >
                         <DirectSearchableSelect
                           value={state.teachers[0] || ''}
@@ -537,13 +537,13 @@ export function ClassesAddScheduleDialog({
                           <div className="flex items-center justify-between w-full">
                             <span>Trợ giảng</span>
                             {state.startTime && (
-                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                 {getMockTeacherCount(day.id, state.startTime)} khả dụng
                               </span>
                             )}
                           </div>
                         }
-                        className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                        className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                       >
                         <DirectSearchableSelect
                           value={state.assistants[0] || ''}
@@ -589,7 +589,7 @@ export function ClassesAddScheduleDialog({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveSecondarySlot(day.id)}
-                            className="h-8 text-[11px] text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 gap-1 px-2 font-medium shrink-0"
+                            className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 gap-1 px-2 font-medium shrink-0"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             Xóa
@@ -613,13 +613,13 @@ export function ClassesAddScheduleDialog({
                             <div className="flex items-center justify-between w-full">
                               <span>Phòng học</span>
                               {state.secondarySlot?.startTime && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                   {getMockRoomCount(day.id, state.secondarySlot.startTime)} trống
                                 </span>
                               )}
                             </div>
                           }
-                          className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                          className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                         >
                           <DirectSearchableSelect
                             value={state.secondarySlot?.room || ''}
@@ -639,13 +639,13 @@ export function ClassesAddScheduleDialog({
                             <div className="flex items-center justify-between w-full">
                               <span>Giáo viên</span>
                               {state.secondarySlot?.startTime && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                   {getMockTeacherCount(day.id, state.secondarySlot.startTime)} khả dụng
                                 </span>
                               )}
                             </div>
                           }
-                          className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                          className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                         >
                           <DirectSearchableSelect
                             value={state.secondarySlot?.teachers[0] || ''}
@@ -675,13 +675,13 @@ export function ClassesAddScheduleDialog({
                             <div className="flex items-center justify-between w-full">
                               <span>Trợ giảng</span>
                               {state.secondarySlot?.startTime && (
-                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold normal-case">
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold normal-case">
                                   {getMockTeacherCount(day.id, state.secondarySlot.startTime)} khả dụng
                                 </span>
                               )}
                             </div>
                           }
-                          className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider w-full"
+                          className="text-xs text-muted-foreground font-semibold uppercase tracking-wider w-full"
                         >
                           <DirectSearchableSelect
                             value={state.secondarySlot?.assistants[0] || ''}
@@ -716,7 +716,7 @@ export function ClassesAddScheduleDialog({
         {/* Footer */}
         <div className="px-5 py-2.5 border-t border-border/80 bg-muted/20 flex flex-wrap items-center justify-between gap-3 shrink-0">
           {/* Left: Notice Badge */}
-          <div className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200/70 dark:border-amber-900/50">
+          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200/70 dark:border-amber-900/50">
             <Info className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span className="font-medium">Lưu ý: Thay đổi lịch cố định sẽ tự động cập nhật lịch các buổi học tương lai.</span>
           </div>

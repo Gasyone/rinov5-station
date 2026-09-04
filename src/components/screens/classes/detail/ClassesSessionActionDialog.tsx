@@ -276,7 +276,7 @@ export function ClassesSessionActionDialog({
                 <span className="text-xs text-muted-foreground font-medium">Tải tài liệu cho học viên:</span>
                 <div className="flex items-center gap-1.5 font-bold text-foreground">
                   <div className={cn(
-                    "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
+                    "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                     getAvatarColor(student.id)
                   )}>
                     {getInitials(student.name)}
@@ -308,7 +308,7 @@ export function ClassesSessionActionDialog({
                         Chọn Giáo viên giảng dạy thay thế
                         <span className="text-destructive">*</span>
                       </span>
-                      <label className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground cursor-pointer select-none">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={isCover}
@@ -327,7 +327,7 @@ export function ClassesSessionActionDialog({
                     </div>
                   }
                 >
-                  <span className="text-[10px] text-muted-foreground block mb-1.5 font-normal leading-tight">
+                  <span className="text-xs text-muted-foreground block mb-1.5 font-normal leading-tight">
                     Hệ thống sẽ tìm các GV dạy môn học này (Bao gồm cả GV đang có lịch trùng, GV Cover chéo...)
                   </span>
                   <Popover open={teacherPickerOpen} onOpenChange={setTeacherPickerOpen}>
@@ -351,9 +351,9 @@ export function ClassesSessionActionDialog({
                               const found = mockTeachers.find((t) => t.value === selectedTeacher)
                               return found ? (
                                 <>
-                                  <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{found.id}</span>
+                                  <span className="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{found.id}</span>
                                   {found.isCover && (
-                                    <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
+                                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
                                   )}
                                 </>
                               ) : null
@@ -415,12 +415,12 @@ export function ClassesSessionActionDialog({
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="font-bold text-foreground truncate">{teacher.value}</span>
-                                    <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{teacher.id}</span>
+                                    <span className="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded-sm">{teacher.id}</span>
                                     {isCover && teacher.isCover && (
-                                      <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
+                                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded-sm">Mở rộng</span>
                                     )}
                                   </div>
-                                  <div className="flex flex-col gap-0.5 mt-0.5 text-[10px] text-muted-foreground leading-tight">
+                                  <div className="flex flex-col gap-0.5 mt-0.5 text-xs text-muted-foreground leading-tight">
                                     <span className="truncate">{teacher.label}</span>
                                     {teacher.conflict && (
                                       <span className="text-amber-600 dark:text-amber-400 font-medium whitespace-normal">
@@ -470,7 +470,7 @@ export function ClassesSessionActionDialog({
                     </SelectContent>
                   </Select>
                   {errors.coverType && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.coverType}
                     </span>
                   )}
@@ -604,7 +604,7 @@ export function ClassesSessionActionDialog({
                                   <span className="min-w-0 truncate font-bold text-foreground">Phòng {room.value}</span>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
-                                  <span className="text-[10px] font-semibold text-muted-foreground">
+                                  <span className="text-xs font-semibold text-muted-foreground">
                                     Hạn mức {room.capacity}
                                   </span>
                                   {selectedRoom === room.value && (
@@ -621,7 +621,7 @@ export function ClassesSessionActionDialog({
                     </PopoverContent>
                   </Popover>
                   {errors.room && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.room}
                     </span>
                   )}
@@ -653,7 +653,7 @@ export function ClassesSessionActionDialog({
                     </SelectContent>
                   </Select>
                   {errors.coverType && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.coverType}
                     </span>
                   )}
@@ -691,7 +691,7 @@ export function ClassesSessionActionDialog({
                     )}
                   />
                   {errors.lectureName && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.lectureName}
                     </span>
                   )}
@@ -728,7 +728,7 @@ export function ClassesSessionActionDialog({
                     )}
                   />
                   {errors.lectureLink && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.lectureLink}
                     </span>
                   )}
@@ -769,7 +769,7 @@ export function ClassesSessionActionDialog({
                     )}
                   />
                   {errors.rescheduleDate && (
-                    <span className="text-[10px] text-destructive font-medium mt-1 block">
+                    <span className="text-xs text-destructive font-medium mt-1 block">
                       {errors.rescheduleDate}
                     </span>
                   )}

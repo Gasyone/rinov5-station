@@ -74,7 +74,7 @@ export function ChangeCSStaffPopover({
     >
       <div className="pb-1 border-b border-border/40 space-y-0.5">
         <p className="font-bold text-foreground text-xs leading-tight">Đổi nhân viên phụ trách</p>
-        <p className="text-[10px] text-muted-foreground italic leading-tight">Danh sách thuộc {branchName}</p>
+        <p className="text-xs text-muted-foreground italic leading-tight">Danh sách thuộc {branchName}</p>
       </div>
 
       <div className="relative flex items-center">
@@ -90,7 +90,7 @@ export function ChangeCSStaffPopover({
 
       <div className="max-h-52 overflow-y-auto space-y-1 pt-0.5 pr-0.5">
         {filteredList.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground italic text-center py-3">
+          <p className="text-xs text-muted-foreground italic text-center py-3">
             Không tìm thấy nhân viên phụ trách thuộc cơ sở
           </p>
         ) : (
@@ -149,7 +149,7 @@ export function ChangeCSStaffPopover({
   if (label) {
     return (
       <div className={cn("text-xs select-none", className)}>
-        <div className="text-[11px] text-muted-foreground font-medium mb-0.5 flex items-center justify-between">
+        <div className="text-xs text-muted-foreground font-medium mb-0.5 flex items-center justify-between">
           <span>{label}</span>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>

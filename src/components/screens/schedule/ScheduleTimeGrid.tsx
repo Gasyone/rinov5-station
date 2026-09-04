@@ -167,7 +167,7 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
       >
         <div className="border-r border-border/40 flex items-center justify-center">
           {isTodayInDays && showCurrentTimeIndicator && (
-            <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">
+            <span className="text-xs font-bold text-red-500 uppercase tracking-tighter">
               Bây giờ
             </span>
           )}
@@ -208,7 +208,7 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
               <div className="flex items-center gap-1.5">
                 <span
                   className={cn(
-                    'text-[11px] font-semibold uppercase tracking-wider',
+                    'text-xs font-semibold uppercase tracking-wider',
                     isToday ? 'text-primary' : 'text-muted-foreground'
                   )}
                 >
@@ -216,7 +216,7 @@ export function ScheduleTimeGrid<T extends ScheduleGridItem>({
                 </span>
                 <span
                   className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold',
+                    'flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold',
                     isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
                   )}
                 >

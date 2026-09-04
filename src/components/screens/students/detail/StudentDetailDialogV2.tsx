@@ -469,7 +469,7 @@ export function StudentDetailDialogV2({
                   >
                     <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
                     <span>Nhật ký</span>
-                    <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-[10px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                    <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
                       {sideLogs.length}
                     </span>
                   </TabsTrigger>
@@ -524,7 +524,7 @@ export function StudentDetailDialogV2({
                                 />
                                 <span className="font-bold text-foreground">{log.operator}</span>
                               </div>
-                              <span className="text-[10px] font-mono text-muted-foreground">{log.timestamp}</span>
+                              <span className="text-xs font-mono text-muted-foreground">{log.timestamp}</span>
                             </div>
                             <p className="text-xs text-foreground/90 leading-relaxed pl-8">{log.action}</p>
                           </div>

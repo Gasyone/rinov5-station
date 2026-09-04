@@ -230,7 +230,7 @@ export function DevPanel({ componentName }: DevPanelProps) {
                   <div className="space-y-2">
                     <div className="rounded-lg border border-border p-3 text-xs">
                       <h4 className="mb-1 font-medium text-foreground">Auth State</h4>
-                      <div className="space-y-0.5 font-mono text-[11px] text-muted-foreground">
+                      <div className="space-y-0.5 font-mono text-xs text-muted-foreground">
                         <div>
                           authenticated: <span className="text-foreground">{String(isAuthenticated)}</span>
                         </div>
@@ -248,7 +248,7 @@ export function DevPanel({ componentName }: DevPanelProps) {
 
                     <div className="rounded-lg border border-border p-3 text-xs">
                       <h4 className="mb-1 font-medium text-foreground">UI State</h4>
-                      <div className="space-y-0.5 font-mono text-[11px] text-muted-foreground">
+                      <div className="space-y-0.5 font-mono text-xs text-muted-foreground">
                         <div>
                           sidebar: <span className="text-foreground">{String(sidebarOpen)}</span>
                         </div>

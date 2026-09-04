@@ -98,7 +98,7 @@ function renderDeadlineBadge(
 
   if (isOverdue) {
     return (
-      <span className="font-bold text-red-600 dark:text-red-400 text-[10px] shrink-0 whitespace-nowrap">
+      <span className="font-bold text-red-600 dark:text-red-400 text-xs shrink-0 whitespace-nowrap">
         Quá hạn: {dateStr}
       </span>
     )
@@ -106,14 +106,14 @@ function renderDeadlineBadge(
 
   if (isDueToday) {
     return (
-      <span className="font-semibold text-amber-600 dark:text-amber-400 text-[10px] shrink-0 whitespace-nowrap">
+      <span className="font-semibold text-amber-600 dark:text-amber-400 text-xs shrink-0 whitespace-nowrap">
         Đến hạn: {dateStr}
       </span>
     )
   }
 
   return (
-    <span className="font-medium text-foreground dark:text-zinc-300 text-[10px] shrink-0 whitespace-nowrap">
+    <span className="font-medium text-foreground dark:text-zinc-300 text-xs shrink-0 whitespace-nowrap">
       Hạn: {dateStr}
     </span>
   )
@@ -149,12 +149,12 @@ export function CareTagHoverCard({
           <Badge
             variant="outline"
             className={cn(
-              'text-[11px] px-2 py-0.5 min-h-[22px] font-semibold cursor-help shadow-none border whitespace-nowrap leading-none rounded-md transition-opacity hover:opacity-90 inline-flex items-center gap-1.5',
+              'text-xs px-2 py-0.5 min-h-[22px] font-semibold cursor-help shadow-none border whitespace-nowrap leading-none rounded-md transition-opacity hover:opacity-90 inline-flex items-center gap-1.5',
               colorClass
             )}
           >
             <span>{label || code}</span>
-            <span className="text-[10px] font-bold opacity-85 shrink-0 ml-0.5">
+            <span className="text-xs font-bold opacity-85 shrink-0 ml-0.5">
               {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
             </span>
           </Badge>
@@ -169,7 +169,7 @@ export function CareTagHoverCard({
         {/* Header: Title on left, Deadline badge on top-right */}
         <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-1.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0', colorClass)}>
+            <span className={cn('px-1.5 py-0.5 rounded text-xs font-bold border shrink-0', colorClass)}>
               {code}
             </span>
             <span className="font-bold text-foreground text-xs truncate">{defaults.fullLabel}</span>
@@ -178,7 +178,7 @@ export function CareTagHoverCard({
         </div>
 
         {/* Body: Normal flowing text lines without 2-column flex splits and with normal-case labels */}
-        <div className="space-y-1.5 text-[11px] leading-snug">
+        <div className="space-y-1.5 text-xs leading-snug">
           <p className="text-foreground/90">
             <span className="text-muted-foreground font-medium">Mô tả: </span>
             {defaults.configRule}
@@ -192,7 +192,7 @@ export function CareTagHoverCard({
         </div>
 
         {/* Footer: Date created */}
-        <div className="pt-1.5 border-t border-border/40 text-[10px] text-muted-foreground">
+        <div className="pt-1.5 border-t border-border/40 text-xs text-muted-foreground">
           Phát sinh: <strong className="text-foreground font-medium">{occurredDate}</strong>
         </div>
       </HoverCardContent>

@@ -95,7 +95,7 @@ export function UsersTable({
               ) : null}
             </TableCell>
             <TableCell>
-              <Badge variant="outline" className="rounded-md text-[10px]">
+              <Badge variant="outline" className="rounded-md text-xs">
                 <ShieldCheck className="mr-1 h-3 w-3" />
                 {ROLE_LABELS[user.role]}
               </Badge>

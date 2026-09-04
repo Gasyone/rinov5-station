@@ -60,7 +60,7 @@ export function WorkRegistrationMonthView({
                     {day.date.getDate()}
                   </span>
                   {dayRecords.length > 0 ? (
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                       {formatMinutes(sumRegistrationMinutes(dayRecords))}
                     </span>
                   ) : null}
@@ -70,19 +70,19 @@ export function WorkRegistrationMonthView({
                   {bySection.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-md border border-border px-2 py-1 text-[10px] font-medium"
+                      className="rounded-md border border-border px-2 py-1 text-xs font-medium"
                     >
                       {item.label}: {item.count}
                     </div>
                   ))}
                   {priorityCount > 0 ? (
-                    <div className={cn('flex items-center gap-1 text-[10px] font-semibold', warning.text)}>
+                    <div className={cn('flex items-center gap-1 text-xs font-semibold', warning.text)}>
                       <Star className="h-3 w-3" />
                       {priorityCount} giờ vàng
                     </div>
                   ) : null}
                   {dayRecords.length === 0 ? (
-                    <p className="pt-2 text-[10px] text-muted-foreground">Chưa đăng ký</p>
+                    <p className="pt-2 text-xs text-muted-foreground">Chưa đăng ký</p>
                   ) : null}
                 </div>
               </div>

@@ -61,7 +61,7 @@ export function StudentCareInfoTab({
               </span>
             </div>
             <div className={cn(
-              "text-[10px] font-semibold leading-none mt-0.5",
+              "text-xs font-semibold leading-none mt-0.5",
               parseAttendanceRate(activePackage.attendanceRatio) >= 80 
                 ? "text-emerald-600 dark:text-emerald-400" 
                 : "text-rose-600 dark:text-rose-400"
@@ -81,7 +81,7 @@ export function StudentCareInfoTab({
               </span>
             </div>
             <div className={cn(
-              "text-[10px] font-semibold leading-none mt-0.5",
+              "text-xs font-semibold leading-none mt-0.5",
               activePackage.homeworkCompletion >= 80 
                 ? "text-emerald-600 dark:text-emerald-400" 
                 : "text-rose-600 dark:text-rose-400"
@@ -136,7 +136,7 @@ export function StudentCareInfoTab({
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-foreground mb-0.5">{activePackage.className}</div>
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-muted-foreground">Mã lớp:</span>
+                  <span className="text-xs text-muted-foreground">Mã lớp:</span>
                   <ClassCodeHoverCell
                     classCode={activePackage.classCode}
                     subject={activePackage.className === 'Lớp Tiếng Anh Giao Tiếp 00019' ? 'IELTS' : 'Tiếng Anh'}
@@ -187,7 +187,7 @@ export function StudentCareInfoTab({
                 >
                   <div className="inline-flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-all">
                     <AppAvatar src="https://api.dicebear.com/7.x/adventurer/svg?seed=LanAnh" name="Lan Anh (CSM)" size="xs" className="h-5 w-5 border border-sky-100 shrink-0" />
-                    <span className="font-semibold text-foreground text-[11px] hover:underline">Lan Anh (CSM)</span>
+                    <span className="font-semibold text-foreground text-xs hover:underline">Lan Anh (CSM)</span>
                   </div>
                 </PersonnelHoverCard>
               </div>
@@ -210,7 +210,7 @@ export function StudentCareInfoTab({
                   >
                     <div className="inline-flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-all">
                       <AppAvatar src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${activePackage.teacherCode}`} name={activePackage.teacherCode} size="xs" className="h-5 w-5 border border-violet-100 shrink-0" />
-                      <span className="font-semibold text-foreground font-mono text-[11px] hover:underline">{activePackage.teacherCode} ({activePackage.teacherCode === 'GV_F010' ? 'Cô Lan' : activePackage.teacherCode})</span>
+                      <span className="font-semibold text-foreground font-mono text-xs hover:underline">{activePackage.teacherCode} ({activePackage.teacherCode === 'GV_F010' ? 'Cô Lan' : activePackage.teacherCode})</span>
                     </div>
                   </PersonnelHoverCard>
                 </div>
@@ -227,7 +227,7 @@ export function StudentCareInfoTab({
                   >
                     <div className="inline-flex items-center gap-2 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-all">
                       <AppAvatar src="https://api.dicebear.com/7.x/adventurer/svg?seed=GV_T203" name="GV_T203" size="xs" className="h-5 w-5 border border-zinc-205 shrink-0" />
-                      <span className="font-semibold text-foreground font-mono text-[11px] hover:underline">GV_T203</span>
+                      <span className="font-semibold text-foreground font-mono text-xs hover:underline">GV_T203</span>
                     </div>
                   </PersonnelHoverCard>
                 </div>
@@ -271,7 +271,7 @@ export function StudentCareInfoTab({
                     {nextLessonInfo.session}: {nextLessonInfo.topic}
                   </span>
                 </div>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {nextLessonInfo.time}
                 </span>
               </div>
@@ -297,7 +297,7 @@ export function StudentCareInfoTab({
                     </Badge>
                   )}
                 </div>
-                <p className="text-[11px] font-mono text-foreground font-semibold">{contact.phone}</p>
+                <p className="text-xs font-mono text-foreground font-semibold">{contact.phone}</p>
               </div>
 
               <Button
@@ -315,7 +315,7 @@ export function StudentCareInfoTab({
           ))}
           {siblings.length > 0 && (
             <div className="pt-3 border-t border-border/60 mt-3 space-y-2.5">
-              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Học viên cùng gia đình ({siblings.length})
               </p>
               <div className="space-y-2">
@@ -326,12 +326,12 @@ export function StudentCareInfoTab({
                   >
                     <div className="min-w-0">
                       <p className="font-bold text-foreground truncate">{sib.studentName}</p>
-                      <p className="text-[10px] text-muted-foreground font-semibold">{sib.studentId} &bull; {sib.subject}</p>
+                      <p className="text-xs text-muted-foreground font-semibold">{sib.studentId} &bull; {sib.subject}</p>
                     </div>
                     <Button
                       variant="outline"
                       size="xs"
-                      className="h-6 text-[10px] font-bold border-amber-250 bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 flex items-center gap-1.5 cursor-pointer shrink-0"
+                      className="h-6 text-xs font-bold border-amber-250 bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 flex items-center gap-1.5 cursor-pointer shrink-0"
                       onClick={() => {
                         setLocalStudentId(sib.studentId)
                         toast.success(`Đang chuyển sang hồ sơ của ${sib.studentName}`)

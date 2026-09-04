@@ -48,11 +48,11 @@ export function LeaveReserveReservationForm({
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Bảo lưu Giữ chỗ
                 </span>
-                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">
                   Vẫn trong lớp
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
+              <p className="text-xs text-muted-foreground mt-1 leading-snug">
                 Tối đa {subjectHoldInfo.maxSessions} buổi ({subjectHoldInfo.subjectName}). Không tính phí các buổi trong lớp.
               </p>
             </button>
@@ -72,11 +72,11 @@ export function LeaveReserveReservationForm({
                   <span className="h-2 w-2 rounded-full bg-amber-500" />
                   Không giữ chỗ
                 </span>
-                <span className="text-[10px] bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-semibold">
+                <span className="text-xs bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-semibold">
                   Out khỏi lớp
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
+              <p className="text-xs text-muted-foreground mt-1 leading-snug">
                 Tối đa 3 tháng. Rút khỏi danh sách lớp để nhường chỗ.
               </p>
             </button>
@@ -94,7 +94,7 @@ export function LeaveReserveReservationForm({
           <button
             type="button"
             onClick={onPastReservationDate}
-            className="text-[11px] font-medium text-sky-700 hover:text-sky-900 dark:text-sky-300 underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-medium text-sky-700 hover:text-sky-900 dark:text-sky-300 underline flex items-center gap-1 cursor-pointer"
           >
             <History className="h-3 w-3" />
             Bảo lưu từ 1 buổi học trước (Quá khứ)
@@ -126,7 +126,7 @@ export function LeaveReserveReservationForm({
         </div>
 
         {isStartDateInPast && (
-          <div className="flex items-center gap-1.5 text-[10px] text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 p-1.5 px-2 rounded border border-sky-200 dark:border-sky-800">
+          <div className="flex items-center gap-1.5 text-xs text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 p-1.5 px-2 rounded border border-sky-200 dark:border-sky-800">
             <CheckCircle2 className="h-3 w-3 text-sky-600 shrink-0" />
             <span>Hợp lệ: Đã kích hoạt bảo lưu quá khứ (trong hạn mức tối đa 1 buổi học trước).</span>
           </div>
@@ -134,11 +134,11 @@ export function LeaveReserveReservationForm({
 
         {/* Informative Note for Mode */}
         {reserveMode === 'hold_seat' ? (
-          <div className="text-[11px] text-emerald-800 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800">
+          <div className="text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800">
             ✓ <strong>Bảo lưu Giữ chỗ:</strong> Hệ thống tự động tính số buổi giữ chỗ theo khoảng ngày (Tối đa {subjectHoldInfo.maxSessions} buổi môn {subjectHoldInfo.subjectName}). Học viên không bị trừ phí trong thời gian này.
           </div>
         ) : (
-          <div className="text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200/70 dark:border-amber-800">
+          <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200/70 dark:border-amber-800">
             ⚠️ <strong>Bảo lưu Không giữ chỗ:</strong> Học viên được rút khỏi sĩ số lớp. Khi hết hạn bảo lưu, Phụ huynh liên hệ để CSM làm thủ tục xếp lớp mới.
           </div>
         )}

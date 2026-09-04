@@ -256,7 +256,7 @@ export function DepositOrderModal({
                   <span>ĐƠN HÀNG:</span>
                   <span className="text-foreground tracking-tight">{currentOrderNo}</span>
                 </DialogTitle>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-xs text-muted-foreground">
                   PHIẾU THU:{' '}
                   <span className="font-semibold text-foreground">TNX00000099780</span>
                 </div>
@@ -288,7 +288,7 @@ export function DepositOrderModal({
                   )}
                 >
                   <span>Đơn hoàn tất</span>
-                  <span className="h-4 w-4 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold">
+                  <span className="h-4 w-4 rounded-full bg-rose-500 text-white text-xs flex items-center justify-center font-bold">
                     !
                   </span>
                 </button>
@@ -358,7 +358,7 @@ export function DepositOrderModal({
                 Trạng thái: <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">(T5-Đã nhận bank)</strong>
               </span>
             </div>
-            <div className="text-muted-foreground text-[11px]">
+            <div className="text-muted-foreground text-xs">
               Mã khách hàng: <strong className="font-mono text-foreground">{studentId}</strong>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { RefObject, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Phone, X, ChevronDown, ChevronUp, Plus, Check, Copy, Clock, Pencil, CheckCircle } from 'lucide-react'
+import { Phone, X, ChevronDown, ChevronUp, Plus, Check, Copy, Clock, Pencil, CheckCircle, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
@@ -12,7 +12,9 @@ import type { StudentCareAlert, FamilyContact } from '@/mocks/careAlerts'
 import type { CareTopic } from './studentCareDetailTypes'
 import { CallConnectionBanner } from './CallConnectionBanner'
 import { StudentActiveCareCard } from './StudentActiveCareCard'
+import { ConfirmDialog } from '@/components/shared'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { getRenewalClassification, getStudentOrderInfo } from './renewal/renewalHelpers'
 
 export function formatContactDisplayName(name: string, relationship: string): string {
   if (!name) return ''
@@ -166,7 +168,13 @@ interface StudentCareFormCardProps {
   setCallbackTime?: (time: string) => void
   showCallbackInput?: boolean
   setShowCallbackInput?: (show: boolean) => void
-  startCall: (info: any) => void
+  startCall: (params: {
+    studentId: string
+    studentName: string
+    parentPhone: string
+    parentName: string
+    scheduleItemId?: string | null
+  }) => void
   textareaRef: RefObject<HTMLTextAreaElement | null>
   chatText: string
   setChatText: (val: string) => void
@@ -239,10 +247,26 @@ export function StudentCareFormCard({
 }: StudentCareFormCardProps) {
   const [isCallActive, setIsCallActive] = useState(false)
   const [renewalStatus, setRenewalStatus] = useState<string>('')
+  const [isConfirmCompleteOpen, setIsConfirmCompleteOpen] = useState(false)
   const { user } = useAuthStore()
   const chatRecipient = formatContactDisplayName(selectedContact.name, selectedContact.relationship)
-
   const isRenewalMode = careMode === 'renewal'
+  const orderInfo = useMemo(() => (student ? getStudentOrderInfo(student) : null), [student])
+
+  const handleCheckComplete = () => {
+    if (student) {
+      const classification = getRenewalClassification(student)
+      const orderInfo = getStudentOrderInfo(student)
+      // Check if student has a linked order from CRM / draft / deposit / completed order
+      const hasLinkedOrder = Boolean(orderInfo?.orderCode) || classification === 'tai_phi' || classification === 'hen_tai'
+      
+      if (!hasLinkedOrder) {
+        toast.error('Chưa có đơn hàng liên kết. Vui lòng tạo đơn hàng tái phí trước khi hoàn tất ca chăm sóc!')
+        return
+      }
+    }
+    setIsConfirmCompleteOpen(true)
+  }
 
   // Filter Care Tags by mode:
   // Regular mode: show all non-CSTP tags
@@ -301,7 +325,7 @@ export function StudentCareFormCard({
               const badgeClass = getStatusBadgeClass(statusKey)
 
               return (
-                <span className={cn('inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
+                <span className={cn('inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
                   {statusLabel} ({regTopics.length})
                 </span>
               )
@@ -326,7 +350,7 @@ export function StudentCareFormCard({
               const badgeClass = getStatusBadgeClass(statusKey)
 
               return (
-                <span className={cn('inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
+                <span className={cn('inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
                   {statusLabel}
                 </span>
               )
@@ -336,7 +360,7 @@ export function StudentCareFormCard({
 
         <div className="space-y-1">
           {visibleTopics.length === 0 ? (
-            <div className="py-3 text-center text-[11px] text-muted-foreground italic bg-white dark:bg-zinc-900 rounded-lg border border-border/40">
+            <div className="py-3 text-center text-xs text-muted-foreground italic bg-white dark:bg-zinc-900 rounded-lg border border-border/40">
               {isRenewalMode
                 ? (student?.activeCSTP === false
                     ? `Học viên chưa đến kỳ chăm sóc tái phí (Còn ${student?.remainingSessions || 24}/${student?.totalSessions || 30} buổi)`
@@ -351,7 +375,12 @@ export function StudentCareFormCard({
 
               const natureAbbrev = getCareNatureAbbrev(topic.code)
               const issueText = getCareIssueText(topic)
-              const assigneeText = getCareAssigneeText(topic.code, student?.csStaff, (student as any)?.teacherCode || (student as any)?.teacher)
+              const assigneeText = getCareAssigneeText(
+                topic.code,
+                student?.csStaff,
+                (student as { teacherCode?: string; teacher?: string })?.teacherCode ||
+                  (student as { teacherCode?: string; teacher?: string })?.teacher
+              )
               const dueDate = getCareDueDate(topic.code)
               const rowBgStyle = getCareNatureBgStyle(topic.code, false)
 
@@ -364,38 +393,38 @@ export function StudentCareFormCard({
                     isCompletedTag && isCSDB && "opacity-65"
                   )}
                 >
-                  <span className={cn("text-[11px] font-extrabold shrink-0 select-none", getCareNatureTextColor(topic.code))}>
+                  <span className={cn("text-xs font-extrabold shrink-0 select-none", getCareNatureTextColor(topic.code))}>
                     {natureAbbrev}
                   </span>
 
                   <span className={cn(
-                    "text-[11px] font-semibold shrink-0 max-w-[45%] truncate",
+                    "text-xs font-semibold shrink-0 max-w-[45%] truncate",
                     isCompletedTag && isCSDB ? "line-through opacity-70" : "text-foreground"
                   )} title={issueText}>
                     {issueText}
                   </span>
 
-                  <span className="text-[10px] text-muted-foreground/60 shrink-0">•</span>
+                  <span className="text-xs text-muted-foreground/60 shrink-0">•</span>
 
                   <span className="text-[10.5px] font-medium text-muted-foreground flex-1 min-w-0 truncate">
                     Phụ trách: <strong className="font-semibold text-foreground/90">{assigneeText}</strong>
                   </span>
 
                   {isCompletedTag ? (
-                    <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center gap-1">
+                    <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400 shrink-0 flex items-center gap-1">
                       <CheckCircle className="h-3.5 w-3.5 inline" />
                       <span>Đã xong</span>
                     </span>
                   ) : slaStatus === 'overdue' ? (
-                    <span className="text-[11px] font-normal text-red-600 dark:text-red-400 shrink-0">
+                    <span className="text-xs font-normal text-red-600 dark:text-red-400 shrink-0">
                       Quá hạn: {dueDate}
                     </span>
                   ) : slaStatus === 'due_today' ? (
-                    <span className="text-[11px] font-normal text-amber-600 dark:text-amber-400 shrink-0">
+                    <span className="text-xs font-normal text-amber-600 dark:text-amber-400 shrink-0">
                       Đến hạn: {dueDate}
                     </span>
                   ) : (
-                    <span className="text-[11px] font-normal text-muted-foreground shrink-0">
+                    <span className="text-xs font-normal text-muted-foreground shrink-0">
                       Hạn: {dueDate}
                     </span>
                   )}
@@ -460,7 +489,7 @@ export function StudentCareFormCard({
                         >
                           <div className="flex flex-col">
                             <span>{formatContactDisplayName(c.name, c.relationship)}</span>
-                            <span className="text-[10px] text-muted-foreground font-mono">{c.phone}</span>
+                            <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
                           </div>
                           {selectedContactIndex === idx && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
                         </button>
@@ -490,22 +519,35 @@ export function StudentCareFormCard({
                   </button>
                   <button
                     type="button"
+                    disabled={!activeContactPhone || activeContactPhone === '--'}
                     onClick={() => {
+                      if (!activeContactPhone || activeContactPhone === '--' || activeContactPhone.trim() === '') {
+                        toast.warning('Người liên hệ chưa được gán số điện thoại. Vui lòng cập nhật số điện thoại trước khi gọi!')
+                        return
+                      }
                       setChatChannel('telephone')
                       if (setCallOutcome) setCallOutcome('nghe_may')
                       setIsCallActive(true)
                       startCall({
+                        studentId: student?.studentId || 's1',
                         studentName: student?.studentName || 'Alex (Nguyễn An)',
-                        studentCode: student?.classCode || 'HV-S4-10',
-                        contactName: selectedContact.name,
-                        contactPhone: activeContactPhone,
-                        contactRole: selectedContact.relationship,
+                        parentPhone: activeContactPhone,
+                        parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
                       })
                     }}
-                    className="h-6 px-2.5 text-[10.5px] font-bold rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0"
-                    title={`Kích hoạt cuộc gọi cho ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})`}
+                    className={cn(
+                      'h-6 px-2.5 text-[10.5px] font-bold rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0',
+                      !activeContactPhone || activeContactPhone === '--'
+                        ? 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    )}
+                    title={
+                      !activeContactPhone || activeContactPhone === '--'
+                        ? 'Chưa gán số điện thoại liên hệ'
+                        : `Kích hoạt cuộc gọi cho ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})`
+                    }
                   >
-                    <Phone className="h-3 w-3 fill-current text-white" />
+                    <Phone className="h-3 w-3 fill-current" />
                     <span>Gọi</span>
                   </button>
                 </div>
@@ -581,43 +623,9 @@ export function StudentCareFormCard({
                   if (!e.target.value) e.target.type = 'text'
                 }}
                 onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                className="h-7 text-[11px] px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
+                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
               />
             </div>
-
-            {isRenewalMode && (
-              <div className="flex items-center justify-between gap-2 min-w-0 w-full">
-                <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
-                  Gia hạn:
-                </span>
-                <select
-                  value={
-                    renewalStatus ||
-                    (['can_nhac', 'tiem_nang', 'hen_tai'].includes(cstpStatus) ? cstpStatus : '')
-                  }
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setRenewalStatus(val)
-                    if (onCstpStatusChange) {
-                      onCstpStatusChange(val)
-                    }
-                  }}
-                  className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
-                >
-                  <option value="" disabled hidden>
-                    Chọn phân loại...
-                  </option>
-                  <option value="can_nhac">Cân nhắc</option>
-                  <option value="tiem_nang">Tiềm năng</option>
-                  <option value="hen_tai">Hẹn tái</option>
-                  {(renewalStatus === 'that_bai' || cstpStatus === 'that_bai') && (
-                    <option value="that_bai" disabled>
-                      Thất bại (Hệ thống tự động)
-                    </option>
-                  )}
-                </select>
-              </div>
-            )}
           </div>
 
           {/* Right Column (~67%): Resizable Textareas & Action Buttons */}
@@ -653,49 +661,169 @@ export function StudentCareFormCard({
               />
             </div>
 
-            {/* Action Buttons: Lưu & Hoàn thành + Lưu */}
-            <div className="flex items-center justify-end gap-1.5 pt-1 flex-wrap">
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  if (handleCompleteCare) handleCompleteCare()
-                  setIsCallActive(false)
-                }}
-                className="h-7 px-3 text-xs font-semibold cursor-pointer shrink-0 bg-transparent text-sky-600 border border-sky-600/40 hover:bg-sky-600 hover:text-white dark:text-sky-400 dark:border-sky-500/40 dark:hover:bg-sky-600 dark:hover:text-white rounded-lg transition-colors shadow-none"
-                title="Đánh dấu lưu & hoàn thành đợt chăm sóc này"
-              >
-                Lưu & Hoàn thành
-              </Button>
+            {/* Action Row: Selection Trạng thái Tái phí (Left - Chỉ hiển thị ở tab Tái phí) + Action Buttons (Right) */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                {isRenewalMode ? (
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10.5px] text-muted-foreground font-medium shrink-0">
+                      Trạng thái Tái phí:
+                    </span>
+                    <select
+                      value={
+                        renewalStatus ||
+                        (['can_nhac', 'tiem_nang', 'hen_tai'].includes(cstpStatus) ? cstpStatus : '')
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setRenewalStatus(val)
+                        if (onCstpStatusChange) {
+                          onCstpStatusChange(val)
+                        }
+                      }}
+                      className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
+                    >
+                      <option value="" disabled hidden>
+                        Chọn phân loại...
+                      </option>
+                      <option value="can_nhac">Cân nhắc</option>
+                      <option value="tiem_nang">Tiềm năng</option>
+                      <option value="hen_tai">Hẹn tái</option>
+                      {(renewalStatus === 'that_bai' || cstpStatus === 'that_bai') && (
+                        <option value="that_bai" disabled>
+                          Thất bại (Hệ thống tự động)
+                        </option>
+                      )}
+                    </select>
+                  </div>
+                ) : (
+                  <div />
+                )}
 
-              <Button
-                type="button"
-                size="sm"
-                disabled={!chatText.trim() && !parentOpinionText.trim()}
-                onClick={() => {
-                  handleSendChat()
-                  setIsCallActive(false)
-                }}
-                className="h-7 px-4 text-xs font-semibold cursor-pointer shrink-0 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs"
-                title="Lưu ghi chú nội dung đã trao đổi"
-              >
-                Lưu
-              </Button>
+                <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCheckComplete}
+                    className="h-7 px-3 text-xs font-semibold cursor-pointer shrink-0 bg-transparent text-sky-600 border border-sky-600/40 hover:bg-sky-600 hover:text-white dark:text-sky-400 dark:border-sky-500/40 dark:hover:bg-sky-600 dark:hover:text-white rounded-lg transition-colors shadow-none"
+                    title="Lưu nội dung tương tác, xác nhận tái phí thành công và đóng ca chăm sóc"
+                  >
+                    Lưu & Đóng
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={!chatText.trim() && !parentOpinionText.trim()}
+                    onClick={() => {
+                      handleSendChat()
+                      setIsCallActive(false)
+                    }}
+                    className="h-7 px-4 text-xs font-semibold cursor-pointer shrink-0 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs"
+                    title="Lưu ghi chú tương tác và tiếp tục theo dõi ca chăm sóc"
+                  >
+                    Lưu
+                  </Button>
+                </div>
+              </div>
+
+              {/* Dòng mô tả diễn giải ở góc phải bên dưới cụm nút */}
+              <div className="flex justify-end pr-0.5">
+                <p className="text-xs text-muted-foreground/80 italic text-right leading-tight select-none">
+                  {isRenewalMode
+                    ? '* "Lưu & Đóng": Lưu nội dung trao đổi, xác nhận Đã tái phí và đóng ca chăm sóc.'
+                    : '* "Lưu & Đóng": Lưu nội dung trao đổi và đánh dấu đóng ca chăm sóc này.'}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-          {/* Active Care Card */}
-          {!isCaredStatus && (
-            <div className="border-t border-border/50 pt-2.5 mt-3">
+        {/* Active Care Card / Linked Order Section */}
+        {(!isCaredStatus || (isRenewalMode && orderInfo?.orderCode)) && (
+          <div className="border-t border-border/50 pt-2 mt-2.5 space-y-1">
+            {/* Thông tin Đơn hàng liên kết: Dưới đường line, phía trên Đang xử lý, không viền, không nền */}
+            {isRenewalMode && orderInfo?.orderCode && (
+              <div className="flex items-center justify-between gap-2 text-xs select-none py-0.5">
+                <div className="flex items-center gap-1.5 flex-wrap min-w-0 text-xs">
+                  <span className="font-semibold text-muted-foreground text-xs">
+                    Đơn hàng liên kết:
+                  </span>
+                  <a
+                    href={`/quote/${orderInfo.orderCode}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono font-bold text-foreground hover:text-primary hover:underline cursor-pointer"
+                    title="Xem chi tiết đơn hàng báo giá"
+                  >
+                    {orderInfo.orderCode}
+                  </a>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="font-medium text-foreground truncate">
+                    {orderInfo.packageName}
+                  </span>
+                  {orderInfo.packageAmount && (
+                    <span className="font-mono font-semibold text-emerald-700 dark:text-emerald-400">
+                      ({orderInfo.packageAmount})
+                    </span>
+                  )}
+                  {orderInfo.paymentTerm && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-amber-700 dark:text-amber-400 font-medium text-xs">
+                        {orderInfo.paymentTerm}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <a
+                  href={`/quote/${orderInfo.orderCode}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline shrink-0"
+                  title="Mở Landing Page Báo giá & Chi tiết Đơn hàng"
+                >
+                  <span>Xem đơn</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+
+            {!isCaredStatus && (
               <StudentActiveCareCard
                 student={student}
                 chatRecipient={chatRecipient}
                 isCaredStatus={isCaredStatus}
               />
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal xác nhận Lưu & Đóng ca */}
+      <ConfirmDialog
+        open={isConfirmCompleteOpen}
+        onOpenChange={setIsConfirmCompleteOpen}
+        title="Xác nhận đóng ca tái phí"
+        description={
+          <div className="space-y-1.5 text-xs text-left">
+            <p>
+              Bạn có chắc chắn muốn lưu thông tin và đóng ca chăm sóc tái phí cho học viên{' '}
+              <strong className="text-foreground">{student?.studentName}</strong>?
+            </p>
+            <p className="text-muted-foreground">
+              Thao tác này sẽ ghi nhận trạng thái <strong>ĐÃ TÁI PHÍ THÀNH CÔNG</strong>, lưu các nội dung trao đổi và chính thức đóng ca chăm sóc.
+            </p>
+          </div>
+        }
+        confirmLabel="Xác nhận đóng ca"
+        cancelLabel="Hủy"
+        onConfirm={() => {
+          if (handleCompleteCare) handleCompleteCare()
+          setIsCallActive(false)
+          setIsConfirmCompleteOpen(false)
+        }}
+      />
       </div>
     )
   }

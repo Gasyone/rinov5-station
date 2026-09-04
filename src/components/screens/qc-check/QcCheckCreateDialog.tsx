@@ -237,7 +237,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
             <h3 className="text-sm font-bold uppercase tracking-wider text-primary">2. Ghi nhận lỗi</h3>
             
             {/* Header row for error list (only on desktop md screens) */}
-            <div className="hidden md:flex items-center gap-3 px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 mb-0.5">
+            <div className="hidden md:flex items-center gap-3 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0 mb-0.5">
               <div className="w-7 text-center shrink-0">#</div>
               <div className="flex-1 grid grid-cols-12 gap-2.5">
                 <div className="col-span-3">Hạng mục & Mức độ</div>
@@ -255,7 +255,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                 >
                   {/* Left Column: Index & Delete */}
                   <div className="w-7 shrink-0 flex flex-col justify-center items-center border-r border-border/40 pr-1.5">
-                    <span className="text-[10px] font-bold text-muted-foreground">#{idx + 1}</span>
+                    <span className="text-xs font-bold text-muted-foreground">#{idx + 1}</span>
                     {form.errors.length > 1 && (
                       <button
                         type="button"
@@ -279,7 +279,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                             type="button"
                             key={cat.id}
                             onClick={() => handleUpdateErrorField(idx, 'errorType', cat.id)}
-                            className={`flex-1 rounded-md text-[10px] font-bold border transition-all ${
+                            className={`flex-1 rounded-md text-xs font-bold border transition-all ${
                               error.errorType === cat.id
                                 ? 'bg-primary/10 border-primary text-primary shadow-xs'
                                 : 'bg-background border-border text-muted-foreground hover:bg-muted/50'
@@ -294,7 +294,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                       <InlineSelect
                         value={error.severity}
                         ariaLabel="Mức độ nghiêm trọng"
-                        className="h-6.5 text-[10px] py-0"
+                        className="h-6.5 text-xs py-0"
                         options={[
                           { value: 'low', label: 'Thấp' },
                           { value: 'medium', label: 'Trung bình' },
@@ -313,7 +313,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                         value={error.area}
                         onChange={(e) => handleUpdateErrorField(idx, 'area', e.target.value)}
                         placeholder="Khu vực * (VD: Phòng A201)"
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-[10px] shadow-xs placeholder:text-muted-foreground/75"
+                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
                       />
 
                       {/* Description input */}
@@ -322,7 +322,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                         value={error.description}
                         onChange={(e) => handleUpdateErrorField(idx, 'description', e.target.value)}
                         placeholder="Mô tả chi tiết lỗi phát hiện được... *"
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-[10px] shadow-xs placeholder:text-muted-foreground/75"
+                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
                       />
                     </div>
 
@@ -334,12 +334,12 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                         value={error.notes}
                         onChange={(e) => handleUpdateErrorField(idx, 'notes', e.target.value)}
                         placeholder="Ghi chú thêm cho lỗi này..."
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-[10px] shadow-xs placeholder:text-muted-foreground/75"
+                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
                       />
 
                       {/* Image upload preview row */}
                       <div className="flex items-center gap-1.5 h-6.5">
-                        <label className="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md border border-dashed border-border hover:bg-muted/40 transition-colors text-[9px] font-semibold text-muted-foreground">
+                        <label className="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md border border-dashed border-border hover:bg-muted/40 transition-colors text-xs font-semibold text-muted-foreground">
                           <span>+ Ảnh bằng chứng</span>
                           <input
                             type="file"
@@ -360,7 +360,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
                             <button
                               type="button"
                               onClick={() => handleUpdateErrorField(idx, 'evidenceImage', '')}
-                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[8px] font-bold transition-opacity"
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity"
                             >
                               Xóa
                             </button>

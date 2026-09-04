@@ -141,7 +141,7 @@ export function StudentMonthlyReportLandingDialog({
               </div>
               <div>
                 <div className="text-xs font-extrabold text-foreground">{studentName}</div>
-                <div className="text-[10px] font-mono text-muted-foreground">{student?.code || 'HV-S18-8'} • Kỳ Tháng 4/2026</div>
+                <div className="text-xs font-mono text-muted-foreground">{student?.code || 'HV-S18-8'} • Kỳ Tháng 4/2026</div>
               </div>
             </div>
           </div>
@@ -165,7 +165,7 @@ export function StudentMonthlyReportLandingDialog({
 
               {/* Award Badge Pill */}
               <div className="shrink-0 text-center">
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Danh hiệu tuyên dương:</div>
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Danh hiệu tuyên dương:</div>
                 <div className="px-5 py-2 bg-amber-400 text-amber-950 font-black text-sm md:text-base rounded-full shadow-2xs uppercase tracking-wide">
                   🏆 {awardBadge}
                 </div>
@@ -188,7 +188,7 @@ export function StudentMonthlyReportLandingDialog({
                 <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
                   A - BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4
                 </h3>
-                <p className="text-[11px] text-muted-foreground font-medium">Tổng hợp đánh giá năng lực, điểm nổi bật & kết quả học tập</p>
+                <p className="text-xs text-muted-foreground font-medium">Tổng hợp đánh giá năng lực, điểm nổi bật & kết quả học tập</p>
               </div>
             </div>
 
@@ -235,7 +235,7 @@ export function StudentMonthlyReportLandingDialog({
                 <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
                   B - KẾ HOẠCH HỌC TẬP CẢI THIỆN THÁNG 5
                 </h3>
-                <p className="text-[11px] text-muted-foreground font-medium">Lộ trình rèn luyện trên lớp, bài tập & thói quen học tại nhà</p>
+                <p className="text-xs text-muted-foreground font-medium">Lộ trình rèn luyện trên lớp, bài tập & thói quen học tại nhà</p>
               </div>
             </div>
 
@@ -269,7 +269,7 @@ export function StudentMonthlyReportLandingDialog({
                         ) : (
                           <div className="h-full w-full flex flex-col items-center justify-center text-amber-600">
                             <FileText className="h-6 w-6" />
-                            <span className="text-[10px] font-bold mt-1">Tranh / Bài tập</span>
+                            <span className="text-xs font-bold mt-1">Tranh / Bài tập</span>
                           </div>
                         )}
                         {week.docLink && (
@@ -296,7 +296,7 @@ export function StudentMonthlyReportLandingDialog({
                               href={week.docLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[11px] text-primary hover:underline font-bold inline-flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20"
+                              className="text-xs text-primary hover:underline font-bold inline-flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20"
                             >
                               <span>Link Tranh Ảnh</span>
                               <ExternalLink className="h-3 w-3" />

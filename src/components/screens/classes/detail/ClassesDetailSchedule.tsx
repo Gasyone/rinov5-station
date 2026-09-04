@@ -142,9 +142,9 @@ export function ClassesDetailSchedule({ cls, onUpdateSchedule, validationErrors 
                         <MapPin className="h-3.5 w-3.5" />
                       </span>
                       <div className="min-w-0">
-                        <p className={`text-[10px] font-medium uppercase tracking-wider truncate ${hasRoomError ? 'text-destructive/80' : 'text-muted-foreground'}`}>Phòng học</p>
+                        <p className={`text-xs font-medium uppercase tracking-wider truncate ${hasRoomError ? 'text-destructive/80' : 'text-muted-foreground'}`}>Phòng học</p>
                         <p className="font-semibold truncate">{slot.room || cls.room || 'Chưa gán'}</p>
-                        {hasRoomError && <span className="text-[9px] text-destructive block mt-0.5">{validationErrors[`room_${index}`]}</span>}
+                        {hasRoomError && <span className="text-xs text-destructive block mt-0.5">{validationErrors[`room_${index}`]}</span>}
                       </div>
                     </div>
 
@@ -153,9 +153,9 @@ export function ClassesDetailSchedule({ cls, onUpdateSchedule, validationErrors 
                         <User className="h-3.5 w-3.5" />
                       </span>
                       <div className="min-w-0">
-                        <p className={`text-[10px] font-medium uppercase tracking-wider truncate ${hasTeacherError ? 'text-destructive/80' : 'text-muted-foreground'}`}>Giảng viên chính</p>
+                        <p className={`text-xs font-medium uppercase tracking-wider truncate ${hasTeacherError ? 'text-destructive/80' : 'text-muted-foreground'}`}>Giảng viên chính</p>
                         <p className="font-semibold truncate">{slot.teachers?.[0] || cls.teacher || 'Chưa gán'}</p>
-                        {hasTeacherError && <span className="text-[9px] text-destructive block mt-0.5">{validationErrors[`teacher_${index}`]}</span>}
+                        {hasTeacherError && <span className="text-xs text-destructive block mt-0.5">{validationErrors[`teacher_${index}`]}</span>}
                       </div>
                     </div>
                   </div>

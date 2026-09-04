@@ -168,7 +168,7 @@ export function BookingTestEmployeePickerDialog({
                         {employee.email} · {maskPhone(employee.phone)}
                       </p>
                       {doubleBooking ? (
-                        <p className="text-[10px] font-semibold text-destructive mt-0.5">
+                        <p className="text-xs font-semibold text-destructive mt-0.5">
                           Trùng lịch: ca của {doubleBooking.childName} ({doubleBooking.program})
                         </p>
                       ) : null}

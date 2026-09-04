@@ -178,7 +178,7 @@ export function WorkRegistrationGrid({
                 ) : null}
                 <div className="min-w-0 text-right">
                   <p className="text-xs font-medium text-muted-foreground">{slot.start}</p>
-                  <p className="text-[10px] text-muted-foreground/70">{slot.end}</p>
+                  <p className="text-xs text-muted-foreground/70">{slot.end}</p>
                 </div>
               </div>
             {days.map((day) => {
@@ -230,7 +230,7 @@ export function WorkRegistrationGrid({
                               record.branch || 'RinoEdu Linh Đàm'
                             )}
                           >
-                            <span className="line-clamp-2 text-[10px] sm:text-xs text-center leading-tight flex-1 font-semibold hover:underline cursor-pointer">
+                            <span className="line-clamp-2 text-xs sm:text-xs text-center leading-tight flex-1 font-semibold hover:underline cursor-pointer">
                               {record.assignedClass}
                             </span>
                           </ClassSessionHoverCard>

@@ -156,7 +156,7 @@ export function LeaveReserveOffForm({
             <button
               type="button"
               onClick={onToggleSelectAllSessions}
-              className="text-[11px] font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 underline cursor-pointer"
+              className="text-xs font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 underline cursor-pointer"
             >
               {selectedSessionIds.size === availableSessions.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả ca'}
             </button>
@@ -192,11 +192,11 @@ export function LeaveReserveOffForm({
                         <span className="font-bold text-foreground truncate">
                           {session.sessionTitle}
                         </span>
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-mono">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
                           {session.classCode}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
                         <span className="text-foreground font-medium">Lớp: {session.className}</span>
                         <span>•</span>
                         <span className="flex items-center gap-1 font-medium text-amber-900 dark:text-amber-300">
@@ -216,7 +216,7 @@ export function LeaveReserveOffForm({
 
                   <span
                     className={cn(
-                      'text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0 border ml-2',
+                      'text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 border ml-2',
                       isChecked
                         ? 'bg-amber-600 text-white border-amber-600'
                         : 'bg-muted text-muted-foreground border-border/60'

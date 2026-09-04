@@ -212,12 +212,12 @@ export function CalendarClassScheduleListTable({
                             <div className="flex items-center gap-1.5 font-bold text-foreground">
                               <span>{session.classCode}</span>
                               {session.isOpeningDay && (
-                                <Badge className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-800 text-[9px] px-1 py-0 font-bold uppercase shrink-0">
+                                <Badge className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-800 text-xs px-1 py-0 font-bold uppercase shrink-0">
                                   Khai giảng
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-[11px] text-muted-foreground line-clamp-1">
+                            <span className="text-xs text-muted-foreground line-clamp-1">
                               {session.className}
                             </span>
                           </div>
@@ -239,7 +239,7 @@ export function CalendarClassScheduleListTable({
                       <td className="py-2 px-3">
                         <div className="flex flex-col">
                           <span className="font-semibold text-foreground">{session.subject}</span>
-                          <span className="text-[11px] text-muted-foreground">Level: {session.level}</span>
+                          <span className="text-xs text-muted-foreground">Level: {session.level}</span>
                         </div>
                       </td>
                       <td className="py-2 px-3">
@@ -247,13 +247,13 @@ export function CalendarClassScheduleListTable({
                           <span className="font-medium text-foreground truncate max-w-[140px]" title={session.branch}>
                             {session.branch}
                           </span>
-                          <span className="text-[11px] text-muted-foreground">Phòng: {session.schoolRoom}</span>
+                          <span className="text-xs text-muted-foreground">Phòng: {session.schoolRoom}</span>
                         </div>
                       </td>
                       <td className="py-2 px-3">
                         <div className="flex flex-col">
                           <span className="font-semibold text-foreground">{session.dateDisplay || session.date}</span>
-                          <span className="text-[11px] font-mono text-muted-foreground">
+                          <span className="text-xs font-mono text-muted-foreground">
                             {session.timeLabel} - {session.endTimeLabel}
                           </span>
                         </div>
@@ -272,7 +272,7 @@ export function CalendarClassScheduleListTable({
                                 >
                                   <Avatar className="size-6 shrink-0 border border-border/60">
                                     <AvatarImage src={teacherPersonnel.avatar ?? undefined} alt={activeTeacher} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-[9px] font-bold">
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
                                       {getInitials(activeTeacher)}
                                     </AvatarFallback>
                                   </Avatar>
@@ -281,7 +281,7 @@ export function CalendarClassScheduleListTable({
                                       {activeTeacher}
                                     </span>
                                     {session.substituteTeacher && (
-                                      <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold truncate max-w-[100px]">
+                                      <span className="text-xs text-sky-600 dark:text-sky-400 font-semibold truncate max-w-[100px]">
                                         (Dạy thay cho {session.teacher})
                                       </span>
                                     )}
@@ -304,11 +304,11 @@ export function CalendarClassScheduleListTable({
                                 >
                                   <Avatar className="size-5 shrink-0 border border-border/60">
                                     <AvatarImage src={assistantPersonnel.avatar ?? undefined} alt={assistantName} />
-                                    <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] font-bold">
+                                    <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold">
                                       {getInitials(assistantName)}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <span className="text-[11px] text-muted-foreground hover:underline hover:text-foreground font-medium truncate max-w-[140px]">
+                                  <span className="text-xs text-muted-foreground hover:underline hover:text-foreground font-medium truncate max-w-[140px]">
                                     TG: {assistantName}
                                   </span>
                                 </div>
@@ -321,7 +321,7 @@ export function CalendarClassScheduleListTable({
                         <div className="flex flex-col items-center">
                           <span className="font-bold text-foreground">{session.totalStudents} HS</span>
                           {session.trialStudents > 0 && (
-                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                            <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
                               {session.trialStudents} học thử
                             </span>
                           )}
@@ -336,12 +336,12 @@ export function CalendarClassScheduleListTable({
                               <Star className="size-3.5 fill-amber-400 text-amber-500" />
                               <span>{session.ratingAverage.toFixed(1)}</span>
                             </div>
-                            <span className="text-[10px] text-muted-foreground font-medium">
+                            <span className="text-xs text-muted-foreground font-medium">
                               {session.ratingCount}/{session.totalStudents} ĐG
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground/60 italic">—</span>
+                          <span className="text-xs text-muted-foreground/60 italic">—</span>
                         )}
                       </td>
 
@@ -352,18 +352,18 @@ export function CalendarClassScheduleListTable({
                             <span className="font-bold text-foreground">
                               {session.homeworkSubmitted}/{session.totalStudents}
                             </span>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                               ({Math.round((session.homeworkSubmitted / session.totalStudents) * 100)}%)
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-muted-foreground/60 italic">—</span>
+                          <span className="text-xs text-muted-foreground/60 italic">—</span>
                         )}
                       </td>
 
                       <td className="py-2 px-3">
                         <div className="flex flex-col items-start">
-                          <Badge className={cn("text-[10px] font-semibold border px-2 py-0.5", statusBadgeClass)}>
+                          <Badge className={cn("text-xs font-semibold border px-2 py-0.5", statusBadgeClass)}>
                             {session.statusLabel || (statusKey === 'completed' ? 'Đã hoàn thành' : statusKey === 'cancelled' ? 'Đã hủy' : 'Đã lên lịch')}
                           </Badge>
                           {session.attendedStudents !== undefined && (

@@ -42,7 +42,7 @@ export function LocationCell({
         <span className="truncate" title={branch}>{branch}</span>
       </div>
       {room && (
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {showIcon && <MapPin className="h-3 w-3 shrink-0" />}
           <span className="truncate" title={room}>
             {room.toLowerCase().startsWith('phòng') ? room : `Phòng ${room}`}

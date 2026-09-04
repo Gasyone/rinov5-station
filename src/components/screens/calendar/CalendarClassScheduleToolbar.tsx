@@ -69,6 +69,7 @@ export function CalendarClassScheduleToolbar({
           value={activeBranch}
           branches={SYSTEM_BRANCHES}
           onValueChange={onActiveBranchChange}
+          includeAll={false}
           className="h-8 min-w-44"
         />
 

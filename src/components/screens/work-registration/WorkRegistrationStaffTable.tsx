@@ -43,7 +43,7 @@ export function WorkRegistrationStaffTable({
     <DataTableFrame
       footer={
         <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground border-t bg-muted/15">
-          <span className="text-[11px] font-medium tabular-nums">
+          <span className="text-xs font-medium tabular-nums">
             {total > 0 ? `${firstRecord}–${lastRecord} / ${total} NV` : '0 nhân viên'}
           </span>
 
@@ -59,7 +59,7 @@ export function WorkRegistrationStaffTable({
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
-              <span className="text-[11px] font-medium px-1 tabular-nums">
+              <span className="text-xs font-medium px-1 tabular-nums">
                 {safePage}/{totalPages}
               </span>
               <Button
@@ -98,7 +98,7 @@ export function WorkRegistrationStaffTable({
                     <p className="truncate font-semibold text-xs text-foreground">
                       {summary.employee.name}
                     </p>
-                    <p className="truncate text-[11px] text-muted-foreground">
+                    <p className="truncate text-xs text-muted-foreground">
                       {summary.employee.code} · {getEmployeeRoleLabel(summary.employee.id, summary.employee.position, summary.employee.department)}
                     </p>
                   </div>

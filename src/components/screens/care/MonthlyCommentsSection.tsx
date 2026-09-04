@@ -73,7 +73,7 @@ export function MonthlyCommentsSection({
         <h3 className="text-xs font-bold text-foreground tracking-tight">
           Báo cáo Tháng của Học viên
         </h3>
-        <span className="text-[10px] text-muted-foreground font-normal">
+        <span className="text-xs text-muted-foreground font-normal">
           Hiển thị {visibleComments.length}/{monthlyComments.length} báo cáo tháng
         </span>
       </div>
@@ -103,7 +103,7 @@ export function MonthlyCommentsSection({
                   </button>
 
                   {mc.awardBadge && (
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none">
+                    <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none">
                       🏆 {mc.awardBadge}
                     </span>
                   )}
@@ -152,7 +152,7 @@ export function MonthlyCommentsSection({
                     e.stopPropagation()
                     toggleExpand(idx)
                   }}
-                  className="text-[10px] text-muted-foreground group-hover/cmt:text-foreground flex items-center gap-0.5 shrink-0 pt-0.5 font-semibold transition-colors cursor-pointer"
+                  className="text-xs text-muted-foreground group-hover/cmt:text-foreground flex items-center gap-0.5 shrink-0 pt-0.5 font-semibold transition-colors cursor-pointer"
                 >
                   <span>{isExpanded ? 'Thu gọn' : 'Xem thêm'}</span>
                   {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}

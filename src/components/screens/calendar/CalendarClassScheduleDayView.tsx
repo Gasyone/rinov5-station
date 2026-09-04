@@ -110,7 +110,7 @@ export function CalendarClassScheduleDayView({
                 {selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </h3>
               {isToday && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:text-red-400 shadow-2xs">
+                <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 px-2 py-0.5 text-xs font-bold text-red-600 dark:text-red-400 shadow-2xs">
                   <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                   Hôm nay: {formatMinute(currentMinute)}
                 </span>

@@ -134,7 +134,7 @@ export function ClassesSessionMediaToolbar({
                     setCustomStartDate('')
                     setCustomEndDate('')
                   }}
-                  className="text-[10px] text-sky-600 hover:underline font-normal cursor-pointer"
+                  className="text-xs text-sky-600 hover:underline font-normal cursor-pointer"
                 >
                   Đặt lại
                 </button>
@@ -165,10 +165,10 @@ export function ClassesSessionMediaToolbar({
             </div>
 
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
-              <span className="text-[11px] font-semibold text-muted-foreground block">Tùy chọn ngày:</span>
+              <span className="text-xs font-semibold text-muted-foreground block">Tùy chọn ngày:</span>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-muted-foreground block mb-0.5">Từ ngày</label>
+                  <label className="text-xs text-muted-foreground block mb-0.5">Từ ngày</label>
                   <Input
                     type="date"
                     value={customStartDate}
@@ -180,7 +180,7 @@ export function ClassesSessionMediaToolbar({
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground block mb-0.5">Đến ngày</label>
+                  <label className="text-xs text-muted-foreground block mb-0.5">Đến ngày</label>
                   <Input
                     type="date"
                     value={customEndDate}

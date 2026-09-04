@@ -56,7 +56,7 @@ export function BookingTestConditionFilters({
               <span>{item.label}</span>
               <span
                 className={cn(
-                  'rounded px-1.5 py-0.5 text-[10px] font-bold font-mono',
+                  'rounded px-1.5 py-0.5 text-xs font-bold font-mono',
                   isActive
                     ? 'bg-primary/20 text-primary'
                     : 'bg-muted text-muted-foreground'

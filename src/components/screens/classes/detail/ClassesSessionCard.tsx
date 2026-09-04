@@ -189,7 +189,7 @@ export function ClassesSessionCard({
           </h5>
 
           {isTestSession && (
-            <Badge variant="outline" className="rounded-md text-[9px] px-1.5 py-0 font-medium border-border bg-muted/40 text-muted-foreground">
+            <Badge variant="outline" className="rounded-md text-xs px-1.5 py-0 font-medium border-border bg-muted/40 text-muted-foreground">
               Buổi kiểm tra
             </Badge>
           )}
@@ -214,7 +214,7 @@ export function ClassesSessionCard({
           )}
 
           {isCompleted && (
-            <Badge variant="outline" className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 shrink-0">
+            <Badge variant="outline" className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 shrink-0">
               Đã điểm danh
             </Badge>
           )}
@@ -234,7 +234,7 @@ export function ClassesSessionCard({
                       e.stopPropagation()
                       handleRequestRevertSchedule()
                     }}
-                    className="inline-flex items-center gap-0.5 ml-1 px-1 py-0.5 rounded text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-0.5 ml-1 px-1 py-0.5 rounded text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                     title="Hủy đổi giờ, khôi phục ngày học gốc"
                   >
                     <RotateCcw className="h-3 w-3" />
@@ -313,7 +313,7 @@ export function ClassesSessionCard({
                 e.stopPropagation()
                 onView(session)
               }}
-              className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-md cursor-pointer"
+              className="h-6 px-2 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 rounded-md cursor-pointer"
             >
               Chi tiết
             </Button>

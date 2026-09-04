@@ -152,7 +152,7 @@ export function FeedbackRequestDialog({ open, onOpenChange }: FeedbackRequestDia
           <div className="rounded-lg border border-border/80 bg-muted/40 p-2.5 text-xs space-y-1.5">
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-muted-foreground">Màn hình:</span>
-              <span className="font-semibold text-foreground px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[11px]">
+              <span className="font-semibold text-foreground px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
                 {screenName}
               </span>
             </div>
@@ -162,7 +162,7 @@ export function FeedbackRequestDialog({ open, onOpenChange }: FeedbackRequestDia
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 Thời gian:
               </span>
-              <span className="font-medium text-foreground text-[11px] font-mono">
+              <span className="font-medium text-foreground text-xs font-mono">
                 {currentTime || 'Đang cập nhật...'}
               </span>
             </div>
@@ -173,7 +173,7 @@ export function FeedbackRequestDialog({ open, onOpenChange }: FeedbackRequestDia
                 Đường dẫn:
               </span>
               <div className="flex items-center gap-1 min-w-0 flex-1 justify-end">
-                <span className="truncate text-muted-foreground font-mono text-[10px] max-w-[200px]">
+                <span className="truncate text-muted-foreground font-mono text-xs max-w-[200px]">
                   {currentUrl}
                 </span>
                 <Button
@@ -194,7 +194,7 @@ export function FeedbackRequestDialog({ open, onOpenChange }: FeedbackRequestDia
                 <User className="h-3 w-3 text-muted-foreground" />
                 Người gửi:
               </span>
-              <span className="text-[11px] text-foreground truncate max-w-[220px]">
+              <span className="text-xs text-foreground truncate max-w-[220px]">
                 <b>{user?.name || 'User'}</b> {user?.email ? `(${user.email})` : ''}
               </span>
             </div>

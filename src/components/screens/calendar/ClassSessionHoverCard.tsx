@@ -105,14 +105,14 @@ export function ClassSessionHoverCard({
               </div>
             )}
             {session.isOpeningDay && (
-              <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700 uppercase tracking-wider border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800">
+              <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 uppercase tracking-wider border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800">
                 Khai giảng
               </span>
             )}
             {session.typeLabel && session.typeLabel !== 'Chính thức' && !session.isOpeningDay && !subTeacher && (
               <span
                 className={cn(
-                  'inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-bold',
+                  'inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold',
                   getStatusBadgeClass(session.type || 'class_session')
                 )}
               >
@@ -135,7 +135,7 @@ export function ClassSessionHoverCard({
           {!isDigi && (
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               {classCode && (
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-foreground border border-border/60">
+                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-bold text-foreground border border-border/60">
                   {classCode}
                 </span>
               )}
@@ -147,7 +147,7 @@ export function ClassSessionHoverCard({
 
           {/* 3. Dòng KCT riêng 1 dòng (Chỉ cho lớp học) */}
           {!isDigi && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
               <span className="text-muted-foreground font-normal">KCT:</span>
               <span className="font-semibold text-foreground truncate">
                 {kctName || 'Chương trình tiêu chuẩn'}
@@ -157,7 +157,7 @@ export function ClassSessionHoverCard({
 
           {/* 4. Dòng Tên môn học - Level (Chỉ cho lớp học) */}
           {!isDigi && (subject || level) && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
               <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="font-medium text-foreground/90">
                 {subject}
@@ -175,7 +175,7 @@ export function ClassSessionHoverCard({
 
           {/* 5. Phòng & Cơ sở */}
           {locationDisplay && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
               <span className="font-medium text-foreground">{locationDisplay}</span>
             </div>
@@ -183,8 +183,8 @@ export function ClassSessionHoverCard({
 
           {/* 6. Staff Section: Đối với Digi chỉ hiển thị Trợ giảng trực ca, không có GV */}
           {isDigi ? (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                 Trợ giảng trực ca:
               </div>
               <div className="flex items-center justify-between">
@@ -199,8 +199,8 @@ export function ClassSessionHoverCard({
               </div>
             </div>
           ) : (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                 Đội ngũ giảng dạy & Quản lý:
               </div>
 
@@ -211,7 +211,7 @@ export function ClassSessionHoverCard({
                   <span>GV:</span>
                 </div>
                 {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
-                  <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-2 py-0.5 rounded text-[11px]">
+                  <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-2 py-0.5 rounded text-xs">
                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                     <span>Chưa gán GV</span>
                   </div>
@@ -253,7 +253,7 @@ export function ClassSessionHoverCard({
 
           {/* 7. Students & Attendance */}
           {session.totalStudents !== undefined && (
-            <div className="flex items-center justify-between border-t border-border/40 pt-2 text-[11px]">
+            <div className="flex items-center justify-between border-t border-border/40 pt-2 text-xs">
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <span>
@@ -289,16 +289,16 @@ export function ClassSessionHoverCard({
 
           {/* 8. Nội dung bài học (ở dưới sĩ số) - Chỉ cho lớp học */}
           {!isDigi && (session.lessonContent || session.lessonSubtitle || session.note) && (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-[11px]">
-              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
                 <span>Nội dung buổi học</span>
                 {session.lessonNumber && (
-                  <span className="font-semibold text-[10px] text-primary/80 lowercase">
+                  <span className="font-semibold text-xs text-primary/80 lowercase">
                     (Buổi {session.lessonNumber})
                   </span>
                 )}
               </div>
-              <div className="rounded-md bg-muted/40 p-2.5 text-[11px] text-foreground space-y-1.5 border border-border/40">
+              <div className="rounded-md bg-muted/40 p-2.5 text-xs text-foreground space-y-1.5 border border-border/40">
                 {session.lessonSubtitle && (
                   <p className="font-medium text-foreground/90 italic pb-0.5 border-b border-border/30">
                     {session.lessonSubtitle}
@@ -350,7 +350,7 @@ export function ClassSessionHoverCard({
         </div>
 
         {/* Footer Hint */}
-        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-[10px] text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-xs text-muted-foreground flex items-center gap-1.5">
           <Info className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           <span>Nhấp vào thẻ để mở chi tiết & thao tác</span>
         </div>

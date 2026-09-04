@@ -103,7 +103,7 @@ export function DirectSearchableSelect({
                 setInputValue('')
                 setOpen(false)
               }}
-              className="p-1.5 rounded-md cursor-pointer text-[11px] text-muted-foreground hover:bg-muted/60 transition-colors italic"
+              className="p-1.5 rounded-md cursor-pointer text-xs text-muted-foreground hover:bg-muted/60 transition-colors italic"
             >
               -- Bỏ chọn / Chưa gán --
             </div>
@@ -136,12 +136,12 @@ export function DirectSearchableSelect({
                     {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                   </div>
                   {opt.subText && (
-                    <span className="truncate text-[10px] text-muted-foreground">
+                    <span className="truncate text-xs text-muted-foreground">
                       {opt.subText}
                     </span>
                   )}
                   {opt.isConflict && opt.conflictText && (
-                    <span className="text-[10px] text-red-500 font-semibold mt-0.5 truncate">
+                    <span className="text-xs text-red-500 font-semibold mt-0.5 truncate">
                       Trùng: {opt.conflictText}
                     </span>
                   )}

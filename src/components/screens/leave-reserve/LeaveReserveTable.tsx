@@ -136,7 +136,7 @@ export function LeaveReserveTable({
                       <div className="min-w-0 flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="font-semibold text-sm text-foreground truncate">{req.studentName}</span>
-                          <Badge variant="outline" className={cn('shrink-0 text-[10px] px-1.5 py-0.5 h-auto', getTypeBadgeClass(req.type))}>
+                          <Badge variant="outline" className={cn('shrink-0 text-xs px-1.5 py-0.5 h-auto', getTypeBadgeClass(req.type))}>
                             {getTypeText(req.type)}
                           </Badge>
                         </div>
@@ -237,7 +237,7 @@ export function LeaveReserveTable({
                         triggerTextPrefix=""
                         className="p-0 h-auto hover:bg-transparent"
                       />
-                      <span className="text-[10px] text-muted-foreground pl-5 italic shrink-0">
+                      <span className="text-xs text-muted-foreground pl-5 italic shrink-0">
                         Tạo ngày: {req.requestedDate}
                       </span>
                     </div>
@@ -248,7 +248,7 @@ export function LeaveReserveTable({
                         {getStatusText(req.status)}
                       </Badge>
                       {req.approvedBy && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Bởi: {req.approvedBy} ({req.approvedDate})
                         </span>
                       )}

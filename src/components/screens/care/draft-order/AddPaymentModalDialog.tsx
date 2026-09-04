@@ -65,7 +65,7 @@ export function AddPaymentModalDialog({
               className="h-10 text-sm font-mono font-bold"
             />
             {remainingAmount > 0 && (
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-slate-500">
                 Gợi ý còn nợ: <strong className="text-orange-600 font-mono">{formatCurrency(remainingAmount)}</strong>
               </p>
             )}

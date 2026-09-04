@@ -74,7 +74,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
           <button
             type="button"
             onClick={onDelete}
-            className="text-[10px] text-destructive hover:underline font-semibold cursor-pointer border-none bg-transparent p-0"
+            className="text-xs text-destructive hover:underline font-semibold cursor-pointer border-none bg-transparent p-0"
           >
             Xóa nhãn
           </button>
@@ -83,7 +83,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
 
       {/* Emoji selector */}
       <div className="space-y-1">
-        <label className="text-[9px] font-bold text-muted-foreground uppercase">Biểu tượng (Icon)</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase">Biểu tượng (Icon)</label>
         <div className="flex flex-wrap gap-1">
           {EMOJIS.map((em) => (
             <button
@@ -103,7 +103,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
 
       {/* Color selector */}
       <div className="space-y-1">
-        <label className="text-[9px] font-bold text-muted-foreground uppercase">Màu sắc</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase">Màu sắc</label>
         <div className="flex gap-2 items-center">
           {COLORS_LIST.map((c) => (
             <button
@@ -122,7 +122,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
 
       {/* Title / Label */}
       <div className="space-y-1">
-        <label className="text-[9px] font-bold text-muted-foreground uppercase">Tiêu đề nhãn</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase">Tiêu đề nhãn</label>
         <input
           type="text"
           value={label}
@@ -135,7 +135,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
 
       {/* Description */}
       <div className="space-y-1">
-        <label className="text-[9px] font-bold text-muted-foreground uppercase">Mô tả</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase">Mô tả</label>
         <input
           type="text"
           value={description}
@@ -148,12 +148,12 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
 
       {/* Note */}
       <div className="space-y-1">
-        <label className="text-[9px] font-bold text-muted-foreground uppercase">Ghi chú riêng</label>
+        <label className="text-xs font-bold text-muted-foreground uppercase">Ghi chú riêng</label>
         <Textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Nhập ghi chú chi tiết cho học viên..."
-          className="min-h-12 text-[11px] p-2 resize-none rounded-md"
+          className="min-h-12 text-xs p-2 resize-none rounded-md"
         />
       </div>
 
@@ -162,7 +162,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="px-2.5 py-1.5 rounded border text-[10px] font-semibold text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer bg-transparent"
+          className="px-2.5 py-1.5 rounded border text-xs font-semibold text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer bg-transparent"
         >
           Hủy
         </button>
@@ -175,7 +175,7 @@ function TagForm({ initialTag, onSave, onDelete, onCancel }: TagFormProps) {
             }
             onSave({ emoji, label, color, description, note })
           }}
-          className="px-2.5 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/95 text-[10px] font-semibold cursor-pointer border-none"
+          className="px-2.5 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-semibold cursor-pointer border-none"
         >
           Lưu
         </button>
@@ -205,7 +205,7 @@ function StudentTagFlagSingle({ tag, onUpdate, onDelete }: StudentTagFlagProps) 
             <span
               className={cn(
                 'inline-flex items-center justify-center cursor-pointer select-none transition-transform hover:scale-110',
-                'w-[14px] h-[20px] text-[8px] leading-none text-white font-bold',
+                'w-[14px] h-[20px] text-xs leading-none text-white font-bold',
                 colors.bg,
               )}
               style={{
@@ -231,32 +231,32 @@ function StudentTagFlagSingle({ tag, onUpdate, onDelete }: StudentTagFlagProps) 
           <div className={cn('px-3 py-2.5 flex items-center gap-2', popColors.bg)}>
             <span className="text-base leading-none">{tag.emoji}</span>
             <div className="min-w-0">
-              <p className={cn('text-[11px] font-bold leading-tight', popColors.badge.split(' ').filter(c => c.startsWith('text-')).join(' '))}>
+              <p className={cn('text-xs font-bold leading-tight', popColors.badge.split(' ').filter(c => c.startsWith('text-')).join(' '))}>
                 {tag.label}
               </p>
               {tag.isAutomatic && (
-                <span className="text-[9px] text-muted-foreground italic">Tự động gán</span>
+                <span className="text-xs text-muted-foreground italic">Tự động gán</span>
               )}
             </div>
           </div>
           {/* Body */}
           <div className="px-3 py-2 space-y-1.5">
-            <p className="text-[10px] text-muted-foreground leading-snug">
+            <p className="text-xs text-muted-foreground leading-snug">
               {tag.description}
             </p>
             {tag.note && (
               <div className="bg-zinc-50 dark:bg-zinc-900 rounded-md px-2 py-1.5 border border-zinc-100 dark:border-zinc-800">
-                <p className="text-[9px] font-semibold text-muted-foreground mb-0.5">📝 Ghi chú:</p>
-                <p className="text-[10px] text-foreground leading-snug">{tag.note}</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-0.5">📝 Ghi chú:</p>
+                <p className="text-xs text-foreground leading-snug">{tag.note}</p>
               </div>
             )}
             <div className="flex items-center justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800">
-              <span className="text-[9px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 👤 {tag.assignedBy}
               </span>
               <button
                 type="button"
-                className="text-[9px] text-primary hover:underline font-semibold cursor-pointer border-none bg-transparent p-0"
+                className="text-xs text-primary hover:underline font-semibold cursor-pointer border-none bg-transparent p-0"
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsEditOpen(true)
@@ -347,7 +347,7 @@ export function StudentTagFlags({ tags, className, onUpdateTags }: StudentTagFla
         <HoverCard openDelay={200} closeDelay={100}>
           <HoverCardTrigger asChild>
             <span
-              className="inline-flex items-center justify-center w-[14px] h-[20px] text-[7px] leading-none font-bold text-white bg-zinc-400 dark:bg-zinc-600 cursor-default select-none"
+              className="inline-flex items-center justify-center w-[14px] h-[20px] text-xs leading-none font-bold text-white bg-zinc-400 dark:bg-zinc-600 cursor-default select-none"
               style={{ clipPath: 'polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)' }}
               title={`+${overflow} nhãn khác`}
             >
@@ -355,14 +355,14 @@ export function StudentTagFlags({ tags, className, onUpdateTags }: StudentTagFla
             </span>
           </HoverCardTrigger>
           <HoverCardContent side="top" align="start" sideOffset={6} className="w-48 p-2 rounded-lg shadow-xl">
-            <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Nhãn còn lại:</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-1.5">Nhãn còn lại:</p>
             <div className="flex flex-wrap gap-1">
               {tags.slice(MAX_VISIBLE_FLAGS).map((tag) => {
                 return (
                   <span
                     key={tag.id}
                     className={cn(
-                      'inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-opacity hover:opacity-80',
+                      'inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-opacity hover:opacity-80',
                       FLAG_POPOVER_COLORS[tag.color]?.badge ?? 'bg-zinc-100 text-zinc-700',
                     )}
                   >
@@ -388,7 +388,7 @@ export function StudentTagFlags({ tags, className, onUpdateTags }: StudentTagFla
               className="inline-flex items-center justify-center w-[14px] h-[14px] rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all cursor-pointer ml-0.5"
               title="Gán nhãn mới"
             >
-              <span className="text-[9px] font-bold leading-none">+</span>
+              <span className="text-xs font-bold leading-none">+</span>
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" side="bottom" align="start">

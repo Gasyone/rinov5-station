@@ -44,7 +44,7 @@ export function StudentActiveCareCard({
         {/* Header row */}
         <div className="flex items-center justify-between flex-wrap gap-2 pt-0.5 pb-1 select-none">
           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 shrink-0">
+            <span className="px-1.5 py-0.5 rounded-md text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 shrink-0">
               Đang xử lý
             </span>
             <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300 flex items-center gap-1">
@@ -62,7 +62,7 @@ export function StudentActiveCareCard({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
               Hẹn gọi lại: 20/07 14:00
             </span>
           </div>
@@ -93,7 +93,7 @@ export function StudentActiveCareCard({
             <button
               type="button"
               onClick={() => setShowMissedCalls(!showMissedCalls)}
-              className="w-full text-left text-[11px] font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+              className="w-full text-left text-xs font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
             >
               <span className="flex items-center gap-1.5 underline decoration-rose-300">
                 <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 no-underline" />
@@ -107,36 +107,36 @@ export function StudentActiveCareCard({
               <div className="mt-1.5 pl-2.5 border-l-2 border-rose-200 dark:border-rose-800 space-y-1 text-[10.5px] text-muted-foreground font-medium animate-in fade-in-50 duration-150">
                 <div className="p-1 rounded-md hover:bg-rose-50/50 transition-colors space-y-0.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-semibold text-foreground text-[11px]">• 18/07 09:30: Gọi KNM (Không nghe máy)</span>
-                    <span className="text-[9px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                    <span className="font-semibold text-foreground text-xs">• 18/07 09:30: Gọi KNM (Không nghe máy)</span>
+                    <span className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
                       📅 Hẹn gọi lại: 18/07 14:15
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
+                  <p className="text-xs text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
                     * Ghi chú: Chuông reo 5 tiếng phụ huynh không nghe máy, hẹn gọi lại ca chiều
                   </p>
                 </div>
 
                 <div className="p-1 rounded-md hover:bg-rose-50/50 transition-colors space-y-0.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-semibold text-foreground text-[11px]">• 18/07 14:15: Máy bận / Số bận</span>
-                    <span className="text-[9px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                    <span className="font-semibold text-foreground text-xs">• 18/07 14:15: Máy bận / Số bận</span>
+                    <span className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
                       📅 Hẹn gọi lại: 19/07 10:00
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
+                  <p className="text-xs text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
                     * Ghi chú: Số điện thoại bận cuộc gọi khác, hẹn gọi lại sáng hôm sau
                   </p>
                 </div>
 
                 <div className="p-1 rounded-md hover:bg-rose-50/50 transition-colors space-y-0.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-semibold text-foreground text-[11px]">• 19/07 10:00: Gọi KNM (Không nghe máy)</span>
-                    <span className="text-[9px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                    <span className="font-semibold text-foreground text-xs">• 19/07 10:00: Gọi KNM (Không nghe máy)</span>
+                    <span className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
                       📅 Hẹn gọi lại: 20/07 14:00
                     </span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
+                  <p className="text-xs text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
                     * Ghi chú: Máy bận/tắt máy, chuyển lịch chăm sóc cho ca tiếp theo
                   </p>
                 </div>

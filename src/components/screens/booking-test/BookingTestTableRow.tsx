@@ -110,7 +110,7 @@ export function BookingTestTableRow({
                 )}
               </div>
               <div className="flex min-w-0 items-center gap-2 mt-0.5">
-                <Badge variant="outline" className="rounded-md text-[10px] font-bold">
+                <Badge variant="outline" className="rounded-md text-xs font-bold">
                   {getSubjectLabel(booking.subject)}
                 </Badge>
               </div>
@@ -190,7 +190,7 @@ export function BookingTestTableRow({
           <p className="truncate text-xs font-normal text-foreground" title={booking.program}>
             {booking.program}
           </p>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>{formatTestTimeWithDay(booking.testTime)}</span>
           </div>

@@ -114,7 +114,7 @@ export function MakeupClassToolbar({
 
         {/* Quick Result Filters (Right Aligned) */}
         <div className="flex items-center gap-1.5 shrink-0 text-xs">
-          <span className="text-[11px] font-semibold text-muted-foreground mr-0.5">
+          <span className="text-xs font-semibold text-muted-foreground mr-0.5">
             Kết quả:
           </span>
           {MAKEUP_RESULT_FILTERS.map((def) => {
@@ -126,7 +126,7 @@ export function MakeupClassToolbar({
                 type="button"
                 onClick={() => onResultFilterChange(activeResultFilter === def.id ? 'all' : def.id)}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer border',
+                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold transition-all cursor-pointer border',
                   isActive
                     ? getStatusColors(semantic).badge
                     : 'border-border/60 bg-background text-muted-foreground hover:bg-muted hover:text-foreground shadow-2xs'
@@ -134,7 +134,7 @@ export function MakeupClassToolbar({
               >
                 <span>{def.label}</span>
                 <span className={cn(
-                  'rounded-full px-1.5 py-0 text-[10px]',
+                  'rounded-full px-1.5 py-0 text-xs',
                   isActive ? 'opacity-80' : 'bg-muted text-muted-foreground'
                 )}>
                   {countStatus(baseForStatus, def.id)}

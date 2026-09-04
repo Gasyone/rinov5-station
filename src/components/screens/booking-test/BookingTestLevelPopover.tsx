@@ -41,7 +41,7 @@ export function BookingTestLevelPopover({
             <p className="truncate text-xs font-normal text-foreground">
               {level || <span className="font-normal italic text-muted-foreground">Chưa đặt</span>}
             </p>
-            <p className="font-mono text-[11px] text-muted-foreground">
+            <p className="font-mono text-xs text-muted-foreground">
               {subLevel || '-'}
             </p>
           </div>
@@ -67,7 +67,7 @@ export function BookingTestLevelPopover({
             Cập nhật trình độ
           </p>
           {!canEdit && (
-            <span className="text-[10px] font-medium text-amber-600">Chưa thể sửa</span>
+            <span className="text-xs font-medium text-amber-600">Chưa thể sửa</span>
           )}
         </div>
 

@@ -78,7 +78,7 @@ function TileButton<T extends string>({
       <span>{tile.label}</span>
       <span
         className={cn(
-          'rounded-full px-1.5 text-[10px] font-semibold',
+          'rounded-full px-1.5 text-xs font-semibold',
           isActive
             ? 'bg-primary-foreground/20 text-primary-foreground'
             : 'bg-muted text-muted-foreground'

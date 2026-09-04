@@ -62,7 +62,7 @@ export function StudentDetailSessionsDialog({
               />
             </div>
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-xs text-muted-foreground">
             Số buổi còn lại sẽ được tính tự động:{' '}
             <strong className="text-foreground">{Math.max(0, totalSessions - studiedSessions)} buổi</strong>.
           </div>

@@ -8,15 +8,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { User, Truck, Plus, ExternalLink, X, Users } from 'lucide-react'
+import { User, Truck, Plus, ExternalLink, X } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
 import { toast } from 'sonner'
 import type { DetailedOrder } from '../StudentOrdersTab'
-import { PRODUCT_CATALOG, type DraftOrderItem, type ChildGroup } from './draftOrderTypes'
-import { ChildGroupCard, ChildProfileHoverCard, RICH_CHILD_OPTIONS } from './ChildGroupCard'
+import { type DraftOrderItem, type ChildGroup } from './draftOrderTypes'
+import { ChildGroupCard, ChildProfileHoverCard, RICH_CHILD_OPTIONS, type ChildDataOption } from './ChildGroupCard'
 import { DraftOrderPaymentSummary } from './DraftOrderPaymentSummary'
 import { StudentDetailDialog } from '@/components/screens/students/detail/StudentDetailDialog'
 import { AddPaymentModalDialog } from './AddPaymentModalDialog'
+import { MultiPaymentModalDialog, type MultiPaymentData } from './MultiPaymentModalDialog'
+import { OrderConfirmationModalDialog, type OrderConfirmationRecipient } from './OrderConfirmationModalDialog'
 
 interface DraftOrderEditorDialogProps {
   open: boolean
@@ -30,15 +32,7 @@ interface DraftOrderEditorDialogProps {
   onDeleteDraft?: (orderId: string) => void
 }
 
-const CHILD_POOL = [
-  { account: 'con-1', name: 'Đặng Nguyễn Phương Linh' },
-  { account: 'con-2', name: 'Đặng Quốc Bảo (Con thứ 2)' },
-  { account: 'con-3', name: 'Đặng Minh Châu (Con thứ 3)' },
-  { account: 'con-4', name: 'Đặng Bảo An (Con thứ 4)' },
-]
-
-export function DraftOrderEditorDialog({
-  open,
+function DraftOrderEditorInner({
   onOpenChange,
   studentId = 'HV-8849',
   studentName = 'Đặng Hiền',
@@ -46,121 +40,106 @@ export function DraftOrderEditorDialog({
   studentAddress = '13 Tông Đản, Phường Tràng Tiền, Quận Hoàn Kiếm, TP. Hà Nội',
   existingOrder,
   onSaveSuccess,
-  onDeleteDraft,
-}: DraftOrderEditorDialogProps) {
-  // Form State: Child Groups containing items grouped by child
-  const [childGroups, setChildGroups] = useState<ChildGroup[]>([
-    {
-      id: 'group-1',
-      childAccount: 'con-1',
-      childName: studentName || 'Đặng Thiên An',
-      items: [
-        {
-          id: 'item-1',
-          category: 'gia_su',
-          categoryName: 'Sản phẩm gia sư',
-          isNew: true,
-          isRenewal: false,
-          program: '',
-          teacher: '',
-          packageType: '',
-          center: '',
-          productCode: '',
-          productName: '',
-          quantity: 1,
-          unitPrice: 0,
-          discount: 0,
-          childAccount: 'con-1',
-        },
-      ],
-    },
-  ])
+}: Omit<DraftOrderEditorDialogProps, 'open'>) {
+  // Dynamic child accounts pool for this customer/lead
+  const childOptions: ChildDataOption[] = useMemo(() => {
+    const primaryName = studentName || 'Học viên'
+    const primaryId = studentId || 'con-1'
+    const primaryPhone = studentPhone || '0903279888'
 
-  // Sync primary child and order pre-fill whenever dialog opens or props change
-  React.useEffect(() => {
-    if (open) {
-      const primaryName = studentName || 'Đặng Thiên An'
-      const primaryChildOpt = RICH_CHILD_OPTIONS.find(
-        (c) =>
-          c.name.toLowerCase().includes(primaryName.toLowerCase()) ||
-          primaryName.toLowerCase().includes(c.name.split(' ')[0].toLowerCase())
-      ) || { value: 'con-1', name: primaryName }
+    const existingMock = RICH_CHILD_OPTIONS.find(
+      (c) =>
+        c.name.toLowerCase() === primaryName.toLowerCase() ||
+        c.studentId === studentId
+    )
 
-      if (existingOrder && existingOrder.detailedItems && existingOrder.detailedItems.length > 0) {
-        const firstItem = existingOrder.detailedItems[0]
-        setChildGroups([
-          {
-            id: 'group-1',
-            childAccount: primaryChildOpt.value,
-            childName: primaryChildOpt.name,
-            items: [
-              {
-                id: `item-${Date.now()}`,
-                category: 'gia_su',
-                categoryName: 'Sản phẩm gia sư',
-                isNew: false,
-                isRenewal: true,
-                program: '',
-                teacher: '',
-                packageType: firstItem.durationText || '40 buổi',
-                center: 'RinoEdu Nguyễn Tuân',
-                productCode: firstItem.productId || 'P-001',
-                productName: firstItem.productName || 'Gói học tái phí',
-                quantity: firstItem.quantity || 1,
-                unitPrice: firstItem.unitPrice || existingOrder.finalAmount || 8400000,
-                discount: 0,
-                childAccount: primaryChildOpt.value,
-              },
-            ],
-          },
-        ])
-      } else {
-        setChildGroups([
-          {
-            id: 'group-1',
-            childAccount: primaryChildOpt.value,
-            childName: primaryChildOpt.name,
-            items: [
-              {
-                id: 'item-1',
-                category: 'gia_su',
-                categoryName: 'Sản phẩm gia sư',
-                isNew: true,
-                isRenewal: false,
-                program: '',
-                teacher: '',
-                packageType: '',
-                center: '',
-                productCode: '',
-                productName: '',
-                quantity: 1,
-                unitPrice: 0,
-                discount: 0,
-                childAccount: primaryChildOpt.value,
-              },
-            ],
-          },
-        ])
-      }
+    if (existingMock) {
+      return RICH_CHILD_OPTIONS
     }
-  }, [open, existingOrder, studentName])
+
+    return [
+      {
+        value: primaryId,
+        name: primaryName,
+        account: primaryPhone,
+        lastOrderDate: existingOrder?.saleDate || 'Chưa có',
+        studentId: primaryId,
+        branch: 'Station',
+        status: 'Mới',
+      },
+      {
+        value: `${primaryId}-sib-1`,
+        name: `${primaryName} (Con thứ 2)`,
+        account: primaryPhone,
+        lastOrderDate: 'Chưa có',
+        studentId: `${primaryId}-2`,
+        branch: 'Station',
+        status: 'Mới',
+      },
+      {
+        value: `${primaryId}-sib-2`,
+        name: `${primaryName} (Con thứ 3)`,
+        account: primaryPhone,
+        lastOrderDate: 'Chưa có',
+        studentId: `${primaryId}-3`,
+        branch: 'Station',
+        status: 'Mới',
+      },
+    ]
+  }, [studentName, studentId, studentPhone, existingOrder])
+
+  // Form State: Child Groups containing items grouped by child (trống sản phẩm khi tạo mới)
+  const [childGroups, setChildGroups] = useState<ChildGroup[]>(() => {
+    const primaryChild = childOptions[0] || { value: studentId || 'con-1', name: studentName || 'Học viên' }
+
+    if (existingOrder && existingOrder.detailedItems && existingOrder.detailedItems.length > 0) {
+      return [
+        {
+          id: 'group-1',
+          childAccount: primaryChild.value,
+          childName: primaryChild.name,
+          items: existingOrder.detailedItems.map((item, idx) => ({
+            id: `item-${Date.now()}-${idx}`,
+            category: 'gia_su',
+            categoryName: item.productName?.toLowerCase().includes('khóa') ? 'Sản phẩm khóa học' : 'Sản phẩm gia sư',
+            isNew: false,
+            isRenewal: item.orderType === 'Gia hạn' || item.orderType === 'Gia Hạn',
+            program: '',
+            teacher: '',
+            packageType: item.durationText || '40 buổi',
+            center: 'RinoEdu Nguyễn Tuân',
+            productCode: item.productId || `P-00${idx + 1}`,
+            productName: item.productName || 'Gói học tái phí',
+            quantity: item.quantity || 1,
+            unitPrice: item.unitPrice || existingOrder.finalAmount || 8400000,
+            discount: 0,
+            childAccount: primaryChild.value,
+          })),
+        },
+      ]
+    }
+
+    return [
+      {
+        id: 'group-1',
+        childAccount: primaryChild.value,
+        childName: primaryChild.name,
+        items: [],
+      },
+    ]
+  })
 
   const [paymentOption, setPaymentOption] = useState<'MOT_LAN' | 'NHIEU_LAN'>('NHIEU_LAN')
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANK'>('BANK')
+  const [isDepositStudyNow, setIsDepositStudyNow] = useState(true)
+  const [isDepositAdvance, setIsDepositAdvance] = useState(true)
+  const [isMultiPaymentOpen, setIsMultiPaymentOpen] = useState(false)
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [pendingPaidAmount, setPendingPaidAmount] = useState<number>(0)
+  const [pendingPayMethod, setPendingPayMethod] = useState<'COD' | 'BANK'>('COD')
   const [profileStudentId, setProfileStudentId] = useState<string | null>(null)
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false)
-  const [totalPaidAmount, setTotalPaidAmount] = useState(0)
-
-  // Sync totalPaidAmount based on existingOrder when opening modal
-  React.useEffect(() => {
-    if (open) {
-      if (existingOrder && existingOrder.totalPaidAmount !== undefined) {
-        setTotalPaidAmount(existingOrder.totalPaidAmount)
-      } else {
-        setTotalPaidAmount(0)
-      }
-    }
-  }, [open, existingOrder])
+  const [totalPaidAmount, setTotalPaidAmount] = useState(() => existingOrder?.totalPaidAmount ?? 0)
 
   // List of child accounts currently assigned across all groups
   const assignedChildAccounts = useMemo(
@@ -189,41 +168,21 @@ export function DraftOrderEditorDialog({
   // Child Group Handlers: Auto-pick next available unassigned child account
   const handleAddGroup = () => {
     const usedAccounts = new Set(childGroups.map((g) => g.childAccount))
-    const availableChild = CHILD_POOL.find((c) => !usedAccounts.has(c.account))
-
-    if (!availableChild) {
-      toast.error('Tất cả tài khoản con đã có nhóm sản phẩm!')
-      return
-    }
+    const availableChild = childOptions.find((c) => !usedAccounts.has(c.value))
 
     const newGroupId = `group-${Date.now()}`
-    const newItem: DraftOrderItem = {
-      id: `item-${Date.now()}`,
-      category: 'gia_su',
-      categoryName: 'Sản phẩm gia sư',
-      isNew: true,
-      isRenewal: false,
-      program: '',
-      teacher: '',
-      packageType: '',
-      center: '',
-      productCode: '',
-      productName: '',
-      quantity: 1,
-      unitPrice: 0,
-      discount: 0,
-      childAccount: '',
-    }
+    const childAccount = availableChild?.value || `child-${Date.now()}`
+    const childName = availableChild?.name || `${studentName || 'Con'} (Thêm mới)`
 
     const newGroup: ChildGroup = {
       id: newGroupId,
-      childAccount: '',
-      childName: '',
-      items: [newItem],
+      childAccount: childAccount,
+      childName: childName,
+      items: [],
     }
 
     setChildGroups((prev) => [...prev, newGroup])
-    toast.success('Đã thêm nhóm sản phẩm cho con mới')
+    toast.success(`Đã thêm nhóm sản phẩm cho ${childName}`)
   }
 
   const handleRemoveGroup = (groupId: string) => {
@@ -305,15 +264,12 @@ export function DraftOrderEditorDialog({
     setChildGroups((prev) =>
       prev.map((g) => {
         if (g.id === groupId) {
-          if (g.items.length <= 1) {
-            toast.error('Mỗi nhóm con phải có ít nhất 1 sản phẩm')
-            return g
-          }
           return { ...g, items: g.items.filter((i) => i.id !== itemId) }
         }
         return g
       })
     )
+    toast.info('Đã xóa sản phẩm')
   }
 
   const handleResetItemInGroup = (groupId: string, itemId: string) => {
@@ -331,13 +287,35 @@ export function DraftOrderEditorDialog({
     toast.info('Đã làm mới thông tin sản phẩm')
   }
 
-  const handleSaveOrder = () => {
+  const handleInitiateCreateOrder = () => {
     if (allItems.length === 0) {
       toast.error('Vui lòng chọn ít nhất 1 sản phẩm')
       return
     }
 
+    if (paymentOption === 'NHIEU_LAN') {
+      setIsMultiPaymentOpen(true)
+    } else {
+      setPendingPaidAmount(finalAmount)
+      setPendingPayMethod(paymentMethod)
+      setIsConfirmationOpen(true)
+    }
+  }
+
+  const handleMultiPaymentContinue = (paymentData: MultiPaymentData) => {
+    setPendingPaidAmount(paymentData.amount)
+    setPendingPayMethod(paymentData.method)
+    setIsMultiPaymentOpen(false)
+    setIsConfirmationOpen(true)
+  }
+
+  const handleFinalConfirmOrder = (finalData: {
+    shippingNote: string
+    operationNote: string
+    recipient: OrderConfirmationRecipient
+  }) => {
     const orderNo = existingOrder?.id || `DHN-${Math.floor(100000 + Math.random() * 900000)}`
+    const paidAmt = pendingPaidAmount > 0 ? pendingPaidAmount : (paymentOption === 'MOT_LAN' ? finalAmount : 0)
 
     const newOrder: DetailedOrder = {
       id: orderNo,
@@ -354,13 +332,15 @@ export function DraftOrderEditorDialog({
       totalAmount: subtotalAmount,
       discountAmount: totalDiscount,
       finalAmount: finalAmount,
-      paymentMethod: paymentMethod === 'BANK' ? 'bank_transfer' : 'cash',
-      paymentStatus: 'unpaid',
+      paymentMethod: pendingPayMethod === 'BANK' ? 'bank_transfer' : 'cash',
+      paymentStatus: paidAmt >= finalAmount ? 'paid' : paidAmt > 0 ? 'partial' : 'unpaid',
+      totalPaidAmount: paidAmt,
       status: 'pending',
       branch: 'Station',
       saleBy: 'Vũ Thị Lan 1',
       createdAt: new Date().toISOString(),
       saleDate: new Date().toISOString().split('T')[0],
+      shippingAddress: `${finalData.recipient.address}, ${finalData.recipient.ward}, ${finalData.recipient.district}, ${finalData.recipient.province}`,
       detailedItems: allItems.map((i) => ({
         productId: i.productCode,
         productName: i.productName,
@@ -371,15 +351,25 @@ export function DraftOrderEditorDialog({
         orderType: i.isRenewal ? 'Gia hạn' : 'Mua mới',
         durationText: i.packageType,
       })),
-      payments: [],
+      payments: paidAmt > 0 ? [
+        {
+          id: `pay-${Date.now()}`,
+          code: `TNX00000${Math.floor(100000 + Math.random() * 900000)}`,
+          amount: paidAmt,
+          method: pendingPayMethod,
+          timestamp: new Date().toISOString(),
+          status: 'completed',
+        }
+      ] : [],
     }
 
     if (onSaveSuccess) {
       onSaveSuccess(newOrder)
     }
-    toast.success(`Đã tạo Đơn hàng nháp thành công! Mã: ${orderNo}`, {
-      description: `Tổng tiền: ${formatCurrency(finalAmount)} - Trạng thái: Đơn nháp (Chờ thu phí)`,
+    toast.success(`Đã tạo Đơn hàng thành công! Mã: ${orderNo}`, {
+      description: `Thanh toán: ${formatCurrency(paidAmt)} (${pendingPayMethod}) - Tổng tiền: ${formatCurrency(finalAmount)}`,
     })
+    setIsConfirmationOpen(false)
     onOpenChange(false)
   }
 
@@ -459,8 +449,45 @@ export function DraftOrderEditorDialog({
       localStorage.setItem('latest_quote_data', JSON.stringify(quoteData))
     }
 
-    // Trigger order save
-    handleSaveOrder()
+    // Save order
+    const newOrder: DetailedOrder = {
+      id: orderNo,
+      orderNo: orderNo,
+      studentId: studentId,
+      studentName: studentName,
+      items: allItems.map((i) => ({
+        productId: i.productCode,
+        productName: i.productName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        subtotal: i.unitPrice * i.quantity - i.discount,
+      })),
+      totalAmount: subtotalAmount,
+      discountAmount: totalDiscount,
+      finalAmount: finalAmount,
+      paymentMethod: paymentMethod === 'BANK' ? 'bank_transfer' : 'cash',
+      paymentStatus: 'unpaid',
+      status: 'pending',
+      branch: 'Station',
+      saleBy: 'Vũ Thị Lan 1',
+      createdAt: new Date().toISOString(),
+      saleDate: new Date().toISOString().split('T')[0],
+      detailedItems: allItems.map((i) => ({
+        productId: i.productCode,
+        productName: i.productName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        subtotal: i.unitPrice * i.quantity - i.discount,
+        studentName: i.childAccount || studentName,
+        orderType: i.isRenewal ? 'Gia hạn' : 'Mua mới',
+        durationText: i.packageType,
+      })),
+      payments: [],
+    }
+
+    if (onSaveSuccess) {
+      onSaveSuccess(newOrder)
+    }
 
     // Copy link & Open Landing Page in new tab
     navigator.clipboard.writeText(quoteUrl)
@@ -471,7 +498,7 @@ export function DraftOrderEditorDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
       <DialogContent showCloseButton={false} className="w-[98vw] sm:max-w-[1440px] h-[90vh] flex flex-col p-0 gap-0 bg-zinc-50 dark:bg-zinc-950 text-foreground border border-border rounded-xl shadow-2xl overflow-hidden">
         {/* Top Header Bar */}
         <DialogHeader className="p-3 px-3 pb-1 bg-transparent shrink-0 space-y-1">
@@ -500,7 +527,7 @@ export function DraftOrderEditorDialog({
                   <User className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 block tracking-normal">
+                  <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 block tracking-normal">
                     Khách hàng
                   </span>
                   <p className="text-xs font-semibold text-foreground">
@@ -512,7 +539,7 @@ export function DraftOrderEditorDialog({
               <button
                 type="button"
                 onClick={() => toast.info(`Thông tin học viên: ${studentName}`)}
-                className="text-[11px] text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
+                className="text-xs text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
               >
                 Xem chi tiết thông tin
                 <ExternalLink className="h-3 w-3" />
@@ -525,13 +552,13 @@ export function DraftOrderEditorDialog({
                 <Truck className="h-3.5 w-3.5" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 block tracking-normal">
+                <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400 block tracking-normal">
                   Giao hàng
                 </span>
                 <p className="text-xs font-semibold text-foreground truncate">
                   {studentName} - <span className="font-mono text-muted-foreground">{studentPhone}</span>
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {studentAddress}
                 </p>
               </div>
@@ -553,7 +580,7 @@ export function DraftOrderEditorDialog({
                   <span className="text-xs text-foreground font-normal flex items-center gap-1 flex-wrap">
                     <span>(</span>
                     {childGroups.map((g, idx) => {
-                      const childOpt = RICH_CHILD_OPTIONS.find((c) => c.value === g.childAccount)
+                      const childOpt = childOptions.find((c) => c.value === g.childAccount)
                       const name = g.childName ? g.childName.split(' (')[0] : 'Chưa chọn con'
                       const count = g.items.length
                       return (
@@ -601,6 +628,7 @@ export function DraftOrderEditorDialog({
                     key={group.id}
                     group={group}
                     assignedChildAccounts={assignedChildAccounts}
+                    childOptions={childOptions}
                     canRemoveGroup={index > 0}
                     onUpdateGroupChild={handleUpdateGroupChild}
                     onRemoveGroup={handleRemoveGroup}
@@ -625,7 +653,11 @@ export function DraftOrderEditorDialog({
                 setPaymentOption={setPaymentOption}
                 paymentMethod={paymentMethod}
                 setPaymentMethod={setPaymentMethod}
-                onSubmit={handleSaveOrder}
+                isDepositStudyNow={isDepositStudyNow}
+                setIsDepositStudyNow={setIsDepositStudyNow}
+                isDepositAdvance={isDepositAdvance}
+                setIsDepositAdvance={setIsDepositAdvance}
+                onSubmit={handleInitiateCreateOrder}
                 onCreateLandingPage={handleCreateLandingPage}
                 onAddPaymentMore={() => setIsAddPaymentOpen(true)}
                 onCancelRemaining={() => toast.info('Đã hủy phần nợ còn lại của đơn hàng!')}
@@ -657,6 +689,74 @@ export function DraftOrderEditorDialog({
           })
         }}
       />
+
+      {/* Multi-Payment Modal Dialog (THANH TOÁN NHIỀU LẦN) */}
+      <MultiPaymentModalDialog
+        open={isMultiPaymentOpen}
+        onOpenChange={setIsMultiPaymentOpen}
+        totalAmount={finalAmount}
+        items={allItems}
+        studentName={studentName}
+        initialAmount={pendingPaidAmount > 0 ? pendingPaidAmount : Math.round(finalAmount / 2)}
+        initialMethod={paymentMethod}
+        showConversionTable={isDepositStudyNow}
+        onContinue={handleMultiPaymentContinue}
+      />
+
+      {/* Order Confirmation Modal Dialog (VUI LÒNG XÁC NHẬN THÔNG TIN) */}
+      <OrderConfirmationModalDialog
+        open={isConfirmationOpen}
+        onOpenChange={setIsConfirmationOpen}
+        summary={{
+          paymentOption,
+          paymentMethod: pendingPayMethod,
+          totalAmount: subtotalAmount,
+          currentPaidAmount: pendingPaidAmount > 0 ? pendingPaidAmount : finalAmount,
+          recipient: {
+            name: studentName,
+            phone: studentPhone,
+            countryCode: '+84',
+            province: 'TP. Hà Nội',
+            district: 'Quận Hoàng Mai',
+            ward: 'Phường Định Công',
+            address: studentAddress || 'Hh204, Phường Định Công, Quận Hoàng Mai, TP. Hà Nội',
+          },
+          items: allItems.map((item, idx) => ({
+            id: item.id || `item-${idx}`,
+            productName: item.productName || item.productCode || 'Sản phẩm học tập',
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            discount: item.discount,
+            subtotal: item.unitPrice * item.quantity - item.discount,
+            childAccount: item.childAccount || studentName,
+            durationText: item.packageType || '--',
+          })),
+          subtotalAmount,
+          totalDiscount,
+          finalAmount,
+        }}
+        onConfirmOrder={handleFinalConfirmOrder}
+      />
+    </>
+  )
+}
+
+export function DraftOrderEditorDialog(props: DraftOrderEditorDialogProps) {
+  return (
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+      {props.open && (
+        <DraftOrderEditorInner
+          key={`${props.studentId || 'std'}-${props.existingOrder?.id || 'new'}`}
+          onOpenChange={props.onOpenChange}
+          studentId={props.studentId}
+          studentName={props.studentName}
+          studentPhone={props.studentPhone}
+          studentAddress={props.studentAddress}
+          existingOrder={props.existingOrder}
+          onSaveSuccess={props.onSaveSuccess}
+          onDeleteDraft={props.onDeleteDraft}
+        />
+      )}
     </Dialog>
   )
 }

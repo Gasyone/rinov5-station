@@ -22,7 +22,7 @@ export function RecentEvaluationsList({ regularSessions, testSessions }: RecentE
     <div className="space-y-3">
       <div className="flex items-center gap-1.5 px-1">
         <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400 shrink-0" />
-        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
           Đánh giá & nhận xét 5 buổi gần nhất
         </h3>
       </div>
@@ -40,10 +40,10 @@ export function RecentEvaluationsList({ regularSessions, testSessions }: RecentE
             >
               {/* Header row with Buổi number and Date */}
               <div className="flex items-center justify-between gap-1.5 border-b border-border/40 pb-2">
-                <span className="inline-flex items-center rounded bg-muted/60 px-1.5 py-0.5 text-[9px] font-semibold text-foreground select-none shrink-0">
+                <span className="inline-flex items-center rounded bg-muted/60 px-1.5 py-0.5 text-xs font-semibold text-foreground select-none shrink-0">
                   Buổi {s.sessionNumber}
                 </span>
-                <span className="text-[9px] font-medium text-muted-foreground shrink-0">
+                <span className="text-xs font-medium text-muted-foreground shrink-0">
                   {s.date}
                 </span>
               </div>
@@ -65,11 +65,11 @@ export function RecentEvaluationsList({ regularSessions, testSessions }: RecentE
                 {/* Direct Flat Comment Text (No title header) */}
                 <div className="mt-auto pt-1 text-left">
                   {s.comment ? (
-                    <p className="text-[10px] text-muted-foreground leading-relaxed italic line-clamp-3" title={s.comment}>
+                    <p className="text-xs text-muted-foreground leading-relaxed italic line-clamp-3" title={s.comment}>
                       &ldquo;{s.comment}&rdquo;
                     </p>
                   ) : (
-                    <p className="text-[10px] text-zinc-400 dark:text-zinc-600 italic">Chưa nhận xét</p>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-600 italic">Chưa nhận xét</p>
                   )}
                 </div>
               </div>

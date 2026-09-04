@@ -93,19 +93,19 @@ export function StudentClassAssignmentTable({
                     <span className="text-foreground font-bold">{cls.name || cls.code}</span>
                     <Badge
                       variant="outline"
-                      className={`text-[8px] font-semibold px-1 py-0 border-transparent ${getStatusBadgeClass(
+                      className={`text-xs font-semibold px-1 py-0 border-transparent ${getStatusBadgeClass(
                         cls.status
                       )}`}
                     >
                       {CLASS_STATUS_LABELS[cls.status] || cls.status}
                     </Badge>
                     {isOnline && (
-                      <Badge variant="outline" className="text-[8px] font-semibold px-1 py-0 text-muted-foreground">
+                      <Badge variant="outline" className="text-xs font-semibold px-1 py-0 text-muted-foreground">
                         Online Tutor
                       </Badge>
                     )}
                   </div>
-                  <span className="text-[9px] font-mono text-muted-foreground font-semibold">
+                  <span className="text-xs font-mono text-muted-foreground font-semibold">
                     {cls.code || cls.id.toUpperCase()} • {cls.level} {cls.subLevel ? `(${cls.subLevel})` : ''}
                   </span>
                 </div>
@@ -138,7 +138,7 @@ export function StudentClassAssignmentTable({
                     </span>
                     {cls.nextSession.topic && (
                       <span
-                        className="text-[10px] text-muted-foreground truncate max-w-[140px]"
+                        className="text-xs text-muted-foreground truncate max-w-[140px]"
                         title={cls.nextSession.topic}
                       >
                         {cls.nextSession.topic}
@@ -155,13 +155,13 @@ export function StudentClassAssignmentTable({
                 ) : hasMultipleTeachers ? (
                   <div className="flex items-center gap-2">
                     <AvatarStack items={stackItems} size="xs" />
-                    <span className="text-muted-foreground text-[10px] font-semibold">
+                    <span className="text-muted-foreground text-xs font-semibold">
                       {teacherList.length} GV
                     </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-[9px] font-bold">
+                    <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-xs font-bold">
                       <AvatarFallback className="font-bold">{getInitials(teacherList[0])}</AvatarFallback>
                     </Avatar>
                     <span className="font-medium text-foreground truncate max-w-[100px]">
@@ -177,7 +177,7 @@ export function StudentClassAssignmentTable({
                     {cls.enrolledStudents}/{cls.maxStudents}
                   </span>
                 </div>
-                <div className="text-[10px] text-primary mt-0.5 font-medium">Phòng: {cls.room || '—'}</div>
+                <div className="text-xs text-primary mt-0.5 font-medium">Phòng: {cls.room || '—'}</div>
               </TableCell>
             </TableRow>
           )

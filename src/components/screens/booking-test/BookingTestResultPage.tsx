@@ -124,7 +124,7 @@ export function BookingTestResultPage({ bookingId }: BookingTestResultPageProps)
                       </p>
                     </div>
                     {member.isPrimary ? (
-                      <Badge variant="outline" className="rounded-md text-[10px]">
+                      <Badge variant="outline" className="rounded-md text-xs">
                         Chính
                       </Badge>
                     ) : null}

@@ -25,7 +25,7 @@ export function SessionCardLessonsExpand({ session }: SessionCardLessonsExpandPr
           <span>Nội dung buổi học</span>
         </div>
 
-        <ul className="space-y-1 text-muted-foreground text-[11px] font-normal leading-relaxed pl-1">
+        <ul className="space-y-1 text-muted-foreground text-xs font-normal leading-relaxed pl-1">
           {syllabusContent.words && (
             <li className="flex items-start gap-1">
               <span className="font-semibold text-foreground shrink-0">- Words:</span>
@@ -83,9 +83,9 @@ export function SessionCardLessonsExpand({ session }: SessionCardLessonsExpandPr
 
               <div className="space-y-0.5 min-w-0 flex-1">
                 <p className="font-bold text-foreground text-xs leading-snug">{c.name}</p>
-                <p className="text-[11px] text-muted-foreground leading-normal">{line2}</p>
+                <p className="text-xs text-muted-foreground leading-normal">{line2}</p>
                 <p className={cn(
-                  'text-[10px] flex items-center gap-1.5 leading-normal font-medium',
+                  'text-xs flex items-center gap-1.5 leading-normal font-medium',
                   isHomework ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
                 )}>
                   {isHomework ? (

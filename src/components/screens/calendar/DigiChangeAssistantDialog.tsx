@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils'
 interface DigiChangeAssistantDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentAssistantName: string
+  currentAssistantName?: string
   substituteAssistantName?: string
   initialScope?: 'today_only' | 'all_future'
   onConfirm: (data: { assistantName: string; isTemporaryOneDay: boolean; reason: string }) => void
@@ -60,6 +60,8 @@ export function DigiChangeAssistantDialog({
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const isAssigning = !currentAssistantName || currentAssistantName.trim() === ''
 
   // Reset form when dialog transitions to open without cascading effect render
   if (open !== prevOpen) {
@@ -100,7 +102,7 @@ export function DigiChangeAssistantDialog({
   )
 
   const filteredAssistants = AVAILABLE_TEACHING_ASSISTANTS.filter((a) => {
-    if (a.name === currentAssistantName) return false // Không chọn lại chính người đang trực
+    if (!isAssigning && a.name === currentAssistantName) return false // Không chọn lại chính người đang trực
     const q = searchQuery.toLowerCase().trim()
     if (!q) return true
     return (
@@ -114,7 +116,7 @@ export function DigiChangeAssistantDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedAssistant) {
-      toast.error('Vui lòng chọn trợ giảng thay thế.')
+      toast.error(isAssigning ? 'Vui lòng chọn trợ giảng phụ trách.' : 'Vui lòng chọn trợ giảng thay thế.')
       return
     }
     onConfirm({
@@ -131,13 +133,17 @@ export function DigiChangeAssistantDialog({
         <DialogHeader className="pb-1 border-b border-border/60">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-              <ArrowLeftRight className="h-4 w-4" />
+              {isAssigning ? <UserCheck className="h-4 w-4" /> : <ArrowLeftRight className="h-4 w-4" />}
             </div>
             <div>
               <DialogTitle className="text-sm font-bold text-foreground">
-                {scope === 'today_only' ? 'Phân công Dạy thay / Trực thay ca Digi' : 'Thay đổi Trợ giảng trực ca Digi'}
+                {isAssigning
+                  ? 'Gán Trợ giảng phụ trách ca Digi'
+                  : scope === 'today_only'
+                  ? 'Phân công Dạy thay / Trực thay ca Digi'
+                  : 'Thay đổi Trợ giảng trực ca Digi'}
               </DialogTitle>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Ca 18:00–21:00 • Phòng Digi (Lặp lại hàng ngày)
               </p>
             </div>
@@ -146,13 +152,20 @@ export function DigiChangeAssistantDialog({
 
         <form onSubmit={handleSubmit} className="space-y-3 pt-2">
           {/* Thông tin trợ giảng hiện tại */}
-          <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Trợ giảng cố định:</span>
-            <span className="font-bold text-foreground">{currentAssistantName}</span>
-          </div>
+          {isAssigning ? (
+            <div className="p-2.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 flex items-center justify-between text-xs">
+              <span className="text-amber-800 dark:text-amber-300 font-medium">Trạng thái phân công:</span>
+              <span className="font-semibold text-amber-700 dark:text-amber-400">Chưa có trợ giảng phụ trách</span>
+            </div>
+          ) : (
+            <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Trợ giảng hiện tại:</span>
+              <span className="font-bold text-foreground">{currentAssistantName}</span>
+            </div>
+          )}
 
-          {/* Chọn phạm vi thay đổi */}
-          <FieldLabel label="Phạm vi thay đổi" required>
+          {/* Chọn phạm vi thay đổi / gán */}
+          <FieldLabel label={isAssigning ? 'Phạm vi phân công' : 'Phạm vi thay đổi'} required>
             <div className="grid grid-cols-2 gap-2 mt-1">
               <button
                 type="button"
@@ -167,12 +180,12 @@ export function DigiChangeAssistantDialog({
                 <div className="flex items-center justify-between w-full mb-1">
                   <div className="flex items-center gap-1 text-xs font-bold text-foreground">
                     <Clock className="h-3 w-3 text-purple-600" />
-                    <span>Dạy thay / Trực thay 1 buổi</span>
+                    <span>{isAssigning ? 'Gán cho 1 buổi' : 'Dạy thay / Trực thay 1 buổi'}</span>
                   </div>
                   {scope === 'today_only' && <Check className="h-3.5 w-3.5 text-purple-600" />}
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  Chỉ áp dụng cho buổi hôm nay (19/08)
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {isAssigning ? 'Chỉ phân công cho buổi hôm nay' : 'Chỉ áp dụng cho buổi hôm nay'}
                 </p>
               </button>
 
@@ -189,12 +202,12 @@ export function DigiChangeAssistantDialog({
                 <div className="flex items-center justify-between w-full mb-1">
                   <div className="flex items-center gap-1 text-xs font-bold text-foreground">
                     <Repeat className="h-3 w-3 text-purple-600" />
-                    <span>Đổi cố định</span>
+                    <span>{isAssigning ? 'Gán cố định' : 'Đổi cố định'}</span>
                   </div>
                   {scope === 'all_future' && <Check className="h-3.5 w-3.5 text-purple-600" />}
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  Đổi trợ giảng chính cho tất cả các ngày sau
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {isAssigning ? 'Gán phụ trách tất cả các ngày' : 'Đổi trợ giảng chính cho tất cả các ngày sau'}
                 </p>
               </button>
             </div>
@@ -202,7 +215,7 @@ export function DigiChangeAssistantDialog({
 
           {/* Chọn trợ giảng mới (Có ô Tìm kiếm bên trong) */}
           <div className="space-y-1 relative" ref={dropdownRef}>
-            <FieldLabel label="Chọn Trợ giảng thay thế" required>
+            <FieldLabel label={isAssigning ? 'Chọn Trợ giảng phụ trách' : 'Chọn Trợ giảng thay thế'} required>
               <div className="mt-1 relative">
                 <button
                   type="button"
@@ -215,13 +228,13 @@ export function DigiChangeAssistantDialog({
                 >
                   {selectedAssistantObj ? (
                     <div className="flex items-center gap-2 truncate">
-                      <div className="h-5 w-5 rounded-full bg-purple-100 text-purple-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                      <div className="h-5 w-5 rounded-full bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center shrink-0">
                         {selectedAssistantObj.name.charAt(0)}
                       </div>
                       <span className="font-semibold text-foreground truncate">
                         {selectedAssistantObj.name}
                       </span>
-                      <span className="text-[10px] text-muted-foreground truncate">
+                      <span className="text-xs text-muted-foreground truncate">
                         ({selectedAssistantObj.code}) — {selectedAssistantObj.branch}
                       </span>
                     </div>
@@ -278,14 +291,14 @@ export function DigiChangeAssistantDialog({
                               )}
                             >
                               <div className="flex items-center gap-2 truncate">
-                                <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center shrink-0">
                                   {assistant.name.charAt(0)}
                                 </div>
                                 <div className="truncate leading-tight">
                                   <span className="font-semibold text-xs text-foreground block truncate">
                                     {assistant.name}
                                   </span>
-                                  <span className="text-[10px] text-muted-foreground block truncate">
+                                  <span className="text-xs text-muted-foreground block truncate">
                                     {assistant.code} • {assistant.branch}
                                   </span>
                                 </div>
@@ -308,13 +321,13 @@ export function DigiChangeAssistantDialog({
             </FieldLabel>
           </div>
 
-          {/* Lý do thay đổi (Textarea nhập nhiều dòng) */}
-          <FieldLabel label="Lý do / Ghi chú điều phối">
+          {/* Lý do thay đổi / phân công */}
+          <FieldLabel label={isAssigning ? 'Ghi chú điều phối (Tùy chọn)' : 'Lý do / Ghi chú điều phối'}>
             <textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Nhập lý do thay ca, dạy thay hoặc ghi chú bàn giao công việc..."
+              placeholder={isAssigning ? 'Nhập ghi chú hoặc dặn dò khi phân công...' : 'Nhập lý do thay ca, dạy thay hoặc ghi chú bàn giao công việc...'}
               className="w-full p-2.5 text-xs bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:border-purple-500 font-normal mt-1 resize-y min-h-[72px]"
             />
           </FieldLabel>
@@ -336,7 +349,7 @@ export function DigiChangeAssistantDialog({
               className="h-8 text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-2xs gap-1 cursor-pointer disabled:opacity-50"
             >
               <UserCheck className="h-3.5 w-3.5" />
-              Xác nhận thay đổi
+              {isAssigning ? 'Xác nhận gán trợ giảng' : 'Xác nhận thay đổi'}
             </Button>
           </DialogFooter>
         </form>

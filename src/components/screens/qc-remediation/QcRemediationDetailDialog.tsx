@@ -124,11 +124,11 @@ export function QcRemediationDetailDialog({
               }>
                 {QC_ERROR_SEVERITY_LABELS[error.severity]}
               </Badge>
-              <Badge variant="outline" className="rounded text-[10px]">
+              <Badge variant="outline" className="rounded text-xs">
                 {QC_ERROR_TYPE_LABELS[error.errorType]}
               </Badge>
               {error.recurrenceCount > 0 && (
-                <Badge variant="destructive" className="text-[10px]">
+                <Badge variant="destructive" className="text-xs">
                   Tái phạm: {error.recurrenceCount}
                 </Badge>
               )}

@@ -81,7 +81,7 @@ export function ClassesDetailHeader({
               <StatusBadge
                 status={cls.status}
                 label={CLASS_STATUS_LABELS[cls.status]}
-                className="h-5 px-2.5 text-[10px] font-bold tracking-wide uppercase"
+                className="h-5 px-2.5 text-xs font-bold tracking-wide uppercase"
               />
             </DialogTitle>
 
@@ -214,7 +214,7 @@ export function ClassesDetailHeader({
             </div>
 
             {cls.nextSession ? (
-              <div className="inline-flex h-6 min-w-0 max-w-[280px] items-center gap-1.5 rounded-full border border-primary/10 bg-primary/5 px-3 text-[10px] font-bold text-primary tracking-wide">
+              <div className="inline-flex h-6 min-w-0 max-w-[280px] items-center gap-1.5 rounded-full border border-primary/10 bg-primary/5 px-3 text-xs font-bold text-primary tracking-wide">
                 <Play className="h-2.5 w-2.5 shrink-0 fill-primary/20" />
                 <span className="truncate">
                   Buổi kế tiếp: {cls.nextSession.date} ({cls.nextSession.time} • {cls.nextSession.room})
@@ -227,7 +227,7 @@ export function ClassesDetailHeader({
         <section className="grid min-w-0 grid-cols-2 gap-6 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6 border-border/60">
           <div className="flex min-w-0 flex-col justify-between gap-3">
             <div>
-              <p className="text-[10px] leading-none font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs leading-none font-bold tracking-wider text-muted-foreground uppercase">
                 Phụ trách
               </p>
               {cls.teacher ? (
@@ -244,7 +244,7 @@ export function ClassesDetailHeader({
               )}
             </div>
             <div>
-              <p className="text-[10px] leading-none font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs leading-none font-bold tracking-wider text-muted-foreground uppercase">
                 Lịch học cố định
               </p>
               <div className="mt-2">
@@ -259,7 +259,7 @@ export function ClassesDetailHeader({
 
           <div className="flex min-w-0 flex-col justify-between gap-3">
             <div>
-              <p className="text-[10px] leading-none font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs leading-none font-bold tracking-wider text-muted-foreground uppercase">
                 Sĩ số roster
               </p>
               <div className="mt-2.5 flex items-center gap-1.5">
@@ -267,7 +267,7 @@ export function ClassesDetailHeader({
                   {cls.enrolledStudents}/{cls.maxStudents}
                   {typeof cls.trialStudents === 'number' && cls.trialStudents > 0 ? ` [+${cls.trialStudents}]` : ''}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-semibold">({enrollmentPercentage}%)</span>
+                <span className="text-xs text-muted-foreground font-semibold">({enrollmentPercentage}%)</span>
               </div>
               <div className="mt-2 h-1.5 w-full max-w-[180px] overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/20 dark:border-zinc-700/20">
                 <div
@@ -280,7 +280,7 @@ export function ClassesDetailHeader({
               </div>
             </div>
             <div>
-              <p className="text-[10px] leading-none font-bold tracking-wider text-muted-foreground uppercase">
+              <p className="text-xs leading-none font-bold tracking-wider text-muted-foreground uppercase">
                 Giáo viên
               </p>
               <div className="mt-2 flex items-center gap-1.5">
@@ -309,7 +309,7 @@ export function ClassesDetailHeader({
                     </PopoverTrigger>
                     <PopoverContent className="w-72 p-3" align="start">
                       <div className="space-y-2">
-                        <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                        <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                           Lịch sử thay đổi giáo viên
                         </p>
                         <div className="space-y-1.5">
@@ -318,9 +318,9 @@ export function ClassesDetailHeader({
                               <AppAvatar name={sub.name} size="xs" className="mt-0.5 ring-1 ring-border/50" />
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-semibold text-foreground">{sub.name}</p>
-                                <p className="text-[10px] text-muted-foreground font-mono">{sub.date}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{sub.date}</p>
                                 {sub.reason && (
-                                  <p className="mt-0.5 text-[10px] text-muted-foreground italic leading-snug">{sub.reason}</p>
+                                  <p className="mt-0.5 text-xs text-muted-foreground italic leading-snug">{sub.reason}</p>
                                 )}
                               </div>
                             </div>

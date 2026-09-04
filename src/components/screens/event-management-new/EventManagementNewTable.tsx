@@ -114,17 +114,17 @@ export function EventManagementNewTable({
 
                           {/* Line 2: Code + Badges on same line */}
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] font-mono text-muted-foreground font-semibold shrink-0">
+                            <span className="text-xs font-mono text-muted-foreground font-semibold shrink-0">
                               {evt.id}
                             </span>
-                            <span className="text-[10px] text-muted-foreground shrink-0">•</span>
-                            <Badge variant="secondary" className="h-4 text-[8px] font-semibold rounded-full shrink-0 px-1.5 py-0.5">
+                            <span className="text-xs text-muted-foreground shrink-0">•</span>
+                            <Badge variant="secondary" className="h-4 text-xs font-semibold rounded-full shrink-0 px-1.5 py-0.5">
                               {evt.typeLabel}
                             </Badge>
                             {evt.targetAudienceLabel && (
                               <Badge 
                                 variant="outline" 
-                                className={`h-4 text-[8px] font-bold rounded-full shrink-0 px-1.5 py-0.5 border ${
+                                className={`h-4 text-xs font-bold rounded-full shrink-0 px-1.5 py-0.5 border ${
                                   evt.targetAudience === 'parent'
                                     ? 'bg-neutral-50 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300 border-neutral-200'
                                     : evt.targetAudience === 'student'
@@ -216,7 +216,7 @@ export function EventManagementNewTable({
                         <p className="text-xs text-foreground font-medium">
                           {evt.branch}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {cleanLocation}
                         </p>
                       </div>
@@ -230,7 +230,7 @@ export function EventManagementNewTable({
                     {/* Capacity progress */}
                     <td className="p-3" onClick={(e) => e.stopPropagation()}>
                       <div className="space-y-1 w-28">
-                        <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{evt.registeredCount}/{evt.capacity}</span>
                           <span>{fillPercent}%</span>
                         </div>

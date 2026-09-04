@@ -56,7 +56,7 @@ export function ClassesStudentCareOverlayPanel({
       <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2.5 pt-1 mb-2 pr-1">
         {/* Left Side: Student Care Title & External Link Icon */}
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-[10px] font-extrabold text-rose-600 dark:text-rose-400">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-xs font-extrabold text-rose-600 dark:text-rose-400">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
           <div className="flex items-center gap-1.5 min-w-0">

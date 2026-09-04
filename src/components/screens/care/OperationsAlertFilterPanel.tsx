@@ -160,7 +160,7 @@ export function OperationsAlertFilterPanel({
           <div className="space-y-3">
             {/* Lọc theo tháng (Checkboxes) */}
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                 Lọc theo Tháng
               </span>
               <div className="flex flex-col gap-1 mt-1 max-h-44 overflow-y-auto pr-1">
@@ -186,7 +186,7 @@ export function OperationsAlertFilterPanel({
 
             {/* Lọc theo khoảng thời gian */}
             <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                 Khoảng thời gian tác nghiệp (Từ ngày - Đến ngày)
               </span>
               <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function OperationsAlertFilterPanel({
             {(state.selectedMonths.size > 0 || state.fromDate !== '' || state.toDate !== '') && (
               <Button
                 variant="link"
-                className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
                   actions.setSelectedMonths(new Set())
                   actions.setFromDate('')
@@ -293,7 +293,7 @@ export function OperationsAlertFilterPanel({
         defaultOpen: false,
         customContent: (
           <div className="space-y-2.5">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Mức độ nghỉ học liên tiếp
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -324,7 +324,7 @@ export function OperationsAlertFilterPanel({
             {state.selectedAbsences.size > 0 && (
               <Button
                 variant="link"
-                className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
                   actions.setSelectedAbsences(new Set())
                   actions.resetPagination()
@@ -343,7 +343,7 @@ export function OperationsAlertFilterPanel({
         defaultOpen: false,
         customContent: (
           <div className="space-y-2.5">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
               Mức độ thiếu BTVN liên tiếp
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -374,7 +374,7 @@ export function OperationsAlertFilterPanel({
             {state.selectedHomeworks.size > 0 && (
               <Button
                 variant="link"
-                className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
                   actions.setSelectedHomeworks(new Set())
                   actions.resetPagination()
@@ -394,7 +394,7 @@ export function OperationsAlertFilterPanel({
         customContent: (
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                 Khoảng điểm số
               </span>
               <div className="flex items-center gap-2">
@@ -429,7 +429,7 @@ export function OperationsAlertFilterPanel({
             </div>
 
             <div className="pt-2.5 border-t border-zinc-100 dark:border-zinc-800 space-y-1.5">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                 Điểm kém liên tiếp
               </span>
               <div className="grid grid-cols-2 gap-2 mt-1">
@@ -461,7 +461,7 @@ export function OperationsAlertFilterPanel({
             {(state.scoreMin !== '' || state.scoreMax !== '' || state.selectedLowScores.size > 0) && (
               <Button
                 variant="link"
-                className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
                   actions.setScoreMin('')
                   actions.setScoreMax('')
@@ -512,7 +512,7 @@ export function OperationsAlertFilterPanel({
             {(state.sessionMin !== '' || state.sessionMax !== '') && (
               <Button
                 variant="link"
-                className="h-auto p-0 text-[10px] text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground inline-flex cursor-pointer"
                 onClick={() => {
                   actions.setSessionMin('')
                   actions.setSessionMax('')
@@ -584,7 +584,7 @@ export function OperationsAlertFilterPanel({
       onClearSection={handleClearSection}
     >
       <div className="mb-4">
-        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-2">
+        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
           Tìm theo học viên
         </label>
         <input

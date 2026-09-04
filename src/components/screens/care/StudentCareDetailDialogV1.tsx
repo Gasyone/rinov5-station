@@ -346,8 +346,8 @@ export function StudentCareDetailDialogV1({
                       <AppAvatar src={studentAvatar} name={student.studentName} size="md" className="shrink-0 h-10 w-10" />
                       <div className="space-y-1 min-w-0">
                         <p className="font-bold text-sm leading-tight text-foreground truncate">{student.studentName}</p>
-                        <p className="text-[11px] font-mono text-muted-foreground">{student.studentId.toUpperCase()}</p>
-                        <p className="text-[11px] text-muted-foreground">Lớp: <span className="font-semibold text-foreground">{student.classCode}</span></p>
+                        <p className="text-xs font-mono text-muted-foreground">{student.studentId.toUpperCase()}</p>
+                        <p className="text-xs text-muted-foreground">Lớp: <span className="font-semibold text-foreground">{student.classCode}</span></p>
                       </div>
                     </div>
                   </HoverCardContent>
@@ -362,7 +362,7 @@ export function StudentCareDetailDialogV1({
                     >
                       {student.studentName}
                     </button>
-                    <span className={cn('px-2.5 py-0.5 text-[11px] font-extrabold rounded-full border shadow-2xs leading-none shrink-0', getStatusBadgeClass(student.status))}>
+                    <span className={cn('px-2.5 py-0.5 text-xs font-extrabold rounded-full border shadow-2xs leading-none shrink-0', getStatusBadgeClass(student.status))}>
                       {(student.status as string) === 'active' || student.status === 'Đang học' ? 'Đang học' : student.status}
                     </span>
                   </div>
@@ -417,7 +417,7 @@ export function StudentCareDetailDialogV1({
                   <span>Đơn hàng</span>
                   <span
                     className={cn(
-                      'inline-flex items-center justify-center text-[10px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                      'inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
                       leftTab === 'orders'
                         ? 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200'
                         : 'bg-slate-200/80 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300'
@@ -461,6 +461,8 @@ export function StudentCareDetailDialogV1({
               onRefresh={onRefresh}
               topicsList={topicsList}
               allLogs={allLogs}
+              selectedPackageId={selectedPackageId}
+              selectedPackage={activePackage}
             />
           </aside>
 
@@ -490,7 +492,7 @@ export function StudentCareDetailDialogV1({
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-bold text-foreground text-xs leading-none">{contact.name}</p>
-                    <Badge variant="outline" className="text-[8px] font-bold py-0.5 px-1 border-primary/20 text-primary uppercase select-none leading-none">
+                    <Badge variant="outline" className="text-xs font-bold py-0.5 px-1 border-primary/20 text-primary uppercase select-none leading-none">
                       {contact.relationship}
                     </Badge>
                     {contact.isPrimary && (
@@ -499,9 +501,9 @@ export function StudentCareDetailDialogV1({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[11px] font-mono text-foreground font-semibold">{contact.phone}</p>
+                  <p className="text-xs font-mono text-foreground font-semibold">{contact.phone}</p>
                   {contact.note && (
-                    <p className="text-[10px] text-muted-foreground leading-normal italic bg-background/50 p-1.5 rounded-lg border border-border/40">
+                    <p className="text-xs text-muted-foreground leading-normal italic bg-background/50 p-1.5 rounded-lg border border-border/40">
                       Ghi chú: {contact.note}
                     </p>
                   )}

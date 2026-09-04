@@ -30,6 +30,78 @@ interface CareJourneyMilestoneCardProps {
   index: number
 }
 
+export function getMilestoneTagAbbrev(code: string): { label: string; badgeClass: string; textColor: string } {
+  const upper = (code || '').toUpperCase()
+  if (upper.startsWith('ĐB') || upper.includes('CSĐB')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSĐB',
+      badgeClass: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900',
+      textColor: 'text-red-700 dark:text-red-400',
+    }
+  }
+  if (upper.startsWith('CSTP') || upper.startsWith('TP')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSTP',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
+      textColor: 'text-emerald-700 dark:text-emerald-400',
+    }
+  }
+  if (upper.startsWith('ĐK') || upper.includes('CSĐK')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSĐK',
+      badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900',
+      textColor: 'text-violet-700 dark:text-violet-400',
+    }
+  }
+  if (upper.startsWith('ĐX') || upper.includes('CSĐX')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSĐX',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+      textColor: 'text-amber-700 dark:text-amber-400',
+    }
+  }
+  if (upper.startsWith('TH') || upper.includes('CSTH')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSTH',
+      badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900',
+      textColor: 'text-sky-700 dark:text-sky-400',
+    }
+  }
+  if (upper.startsWith('TB') || upper.includes('CSBH')) {
+    return {
+      label: upper.includes('-') ? upper : 'CSBH',
+      badgeClass: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900',
+      textColor: 'text-orange-700 dark:text-orange-400',
+    }
+  }
+  if (upper.startsWith('HT')) {
+    return {
+      label: upper.includes('-') ? upper : 'HT',
+      badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900',
+      textColor: 'text-sky-700 dark:text-sky-400',
+    }
+  }
+  if (upper.startsWith('CC')) {
+    return {
+      label: upper.includes('-') ? upper : 'CC',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+      textColor: 'text-amber-700 dark:text-amber-400',
+    }
+  }
+  if (upper.startsWith('HP')) {
+    return {
+      label: upper.includes('-') ? upper : 'HP',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
+      textColor: 'text-emerald-700 dark:text-emerald-400',
+    }
+  }
+  return {
+    label: code || 'CS',
+    badgeClass: 'bg-zinc-50 text-zinc-700 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800',
+    textColor: 'text-zinc-700 dark:text-zinc-400',
+  }
+}
+
 export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> = ({
   item,
   index,
@@ -37,6 +109,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
   // Tab nội dung luôn THƯỜNG ĐÓNG by default (empty initial state)
   const [openCardKeys, setOpenCardKeys] = useState<Record<number, boolean>>({})
   const [openMissedCalls, setOpenMissedCalls] = useState<Record<number, boolean>>({})
+  const milestoneTag = getMilestoneTagAbbrev(item.code)
 
   const toggleLogCard = (hIdx: number) => {
     setOpenCardKeys((prev) => ({
@@ -57,15 +130,15 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
       {/* Left Timeline Node Icon - Perfectly centered on vertical line */}
       <div className="absolute -left-[18.5px] top-3.5 -translate-x-1/2 flex items-center justify-center z-10">
         {item.status === 'completed' ? (
-          <div className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
+          <div className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
             <Check className="h-3 w-3" />
           </div>
         ) : item.status === 'overdue' ? (
-          <div className="h-5 w-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-bold animate-pulse shadow-2xs">
+          <div className="h-5 w-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold animate-pulse shadow-2xs">
             !
           </div>
         ) : (
-          <div className="h-5 w-5 rounded-full bg-background border border-border text-muted-foreground flex items-center justify-center text-[10px] font-semibold shadow-2xs">
+          <div className="h-5 w-5 rounded-full bg-background border border-border text-muted-foreground flex items-center justify-center text-xs font-semibold shadow-2xs">
             {index + 1}
           </div>
         )}
@@ -83,10 +156,18 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
         {/* Row 1: Unified Title + Description & Date (at end) + Status Badge */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
-            <h4 className="font-normal text-zinc-900 dark:text-zinc-100 text-xs shrink-0">
+            <span
+              className={cn(
+                'text-xs font-bold font-mono px-1.5 py-0.5 rounded border shrink-0',
+                milestoneTag.badgeClass
+              )}
+            >
+              {milestoneTag.label}
+            </span>
+            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs shrink-0">
               {item.title}
             </h4>
-            <span className="text-[11px] text-muted-foreground font-normal truncate">
+            <span className="text-xs text-muted-foreground font-normal truncate">
               • {item.subtext}
             </span>
           </div>
@@ -99,20 +180,20 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
             )}
 
             {item.status === 'completed' && (
-              <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                 ✓ Hoàn thành
               </span>
             )}
 
             {item.status === 'overdue' && (
-              <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center gap-1">
+              <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 inline-flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" />
                 Quá hạn
               </span>
             )}
 
             {item.status === 'future' && (
-              <span className="text-[11px] text-muted-foreground/70">
+              <span className="text-xs text-muted-foreground/70">
                 Mốc tương lai
               </span>
             )}
@@ -121,7 +202,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
 
         {/* Row 3: Phụ trách (Bên dưới là phụ trách) */}
         {(!item.historyLogs || item.historyLogs.length === 0) && (
-          <div className="pt-0.5 flex items-center justify-between flex-wrap gap-1 text-[11px] text-muted-foreground">
+          <div className="pt-0.5 flex items-center justify-between flex-wrap gap-1 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <span
                 className={cn(
@@ -133,7 +214,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
               >
                 {item.roleOwner.includes('GV') ? 'GV' : 'CS'}
               </span>
-              <span className="font-medium text-foreground text-[11px]">
+              <span className="font-medium text-foreground text-xs">
                 {item.roleOwner.includes('GV') ? 'Hoàng Thị Mai' : 'Lê Thị Lan'}
               </span>
               <span className="text-muted-foreground/70 italic">• Chưa thực hiện chăm sóc</span>
@@ -174,11 +255,11 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                       >
                         {isTeacher ? 'GV' : 'CS'}
                       </span>
-                      <span className="font-medium text-foreground text-[11px] shrink-0">{cleanStaff}</span>
-                      <span className="text-muted-foreground text-[11px] font-normal truncate">
+                      <span className="font-medium text-foreground text-xs shrink-0">{cleanStaff}</span>
+                      <span className="text-muted-foreground text-xs font-normal truncate">
                         • {logItem.channel}
                       </span>
-                      <span className="font-mono text-[10px] font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
+                      <span className="font-mono text-xs font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
                         • {logItem.date}
                       </span>
                     </div>
@@ -233,7 +314,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                           <button
                             type="button"
                             onClick={() => toggleMissedCall(hIdx)}
-                            className="w-full text-left text-[11px] font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+                            className="w-full text-left text-xs font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
                           >
                             <span className="flex items-center gap-1.5 underline decoration-rose-300">
                               <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 no-underline" />
@@ -250,7 +331,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                             <div className="mt-1.5 pl-3 border-l-2 border-rose-200 dark:border-rose-800 space-y-1 text-[10.5px] text-muted-foreground font-normal animate-in fade-in-50 duration-150">
                               <div className="p-1.5 rounded-md hover:bg-rose-50/40 transition-colors space-y-0.5">
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <span className="font-semibold text-foreground text-[11px]">
+                                  <span className="font-semibold text-foreground text-xs">
                                     • {logItem.date.split(' ')[0]} 09:15: Gọi KNM (Không nghe máy)
                                   </span>
                                   <span className="text-[9.5px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">

@@ -49,7 +49,7 @@ export function FilterChipGroup<T extends string>({
               if (!option.disabled) onValueChange(option.value)
             }}
             className={cn(
-              'h-[30px] shrink-0 rounded-[10px] px-3 text-[11px] font-semibold whitespace-nowrap',
+              'h-[30px] shrink-0 rounded-[10px] px-3 text-xs font-semibold whitespace-nowrap',
               active
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'border border-transparent bg-background text-foreground hover:bg-muted',

@@ -145,7 +145,7 @@ export function BookingTestDetailDialog({
               <div className="flex items-center justify-between gap-4 pr-6">
                 <DialogTitle className="text-xs font-normal text-muted-foreground">
                   Chi tiết Phiếu kiểm tra/Trải nghiệm
-                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-[11px] font-normal text-muted-foreground">
+                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-xs font-normal text-muted-foreground">
                     {booking.id}
                   </Badge>
                 </DialogTitle>

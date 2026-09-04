@@ -513,7 +513,7 @@ export function ClassesDetailViewV2({
                     >
                       <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                       <span>Học viên</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-[10px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
                         {rosterState.length}
                       </span>
                     </TabsTrigger>
@@ -552,7 +552,7 @@ export function ClassesDetailViewV2({
                     >
                       <Clock className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                       <span>Lịch sử cập nhật</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-[10px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
                         {logs.length}
                       </span>
                     </TabsTrigger>
@@ -700,11 +700,11 @@ export function ClassesDetailViewV2({
                           <div className="divide-y divide-border/40">
                             {logs.map((log) => (
                               <div key={log.id} className="px-4 py-3 text-xs space-y-1 hover:bg-muted/20 transition-colors">
-                                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
                                   <span className="font-bold text-foreground">
                                     {log.operator}
                                   </span>
-                                  <span className="font-mono text-[10px]">{formatNoteTimestamp(log.timestamp)}</span>
+                                  <span className="font-mono text-xs">{formatNoteTimestamp(log.timestamp)}</span>
                                 </div>
                                 <p className="font-medium text-foreground/90 leading-relaxed">
                                   {log.action}

@@ -86,8 +86,8 @@ stateDiagram-v2
 
 ## 6. Danh sách Yêu cầu Người dùng (User Stories)
 
-| Mã Yêu cầu | Tên Yêu cầu (Loại màn hình) | Đường dẫn truy cập | Trạng thái |
-|------------|-----------------------------|--------------------|------------|
-| US-CRM-01-01 | Quản lý Danh bạ cá nhân (Danh sách) | /app/contact_directory | Đang soạn thảo |
-| US-CRM-01-02 | Quản lý Danh bạ chung (Danh sách) | /app/contact_shared_directory | Đang soạn thảo |
-| US-CRM-01-03 | Tạo/Sửa thông tin Khách hàng tiềm năng (Biểu mẫu) | Không có | Đang soạn thảo |
+| Tên Yêu cầu (Màn hình / Hộp thoại) | Phân loại | Mã Quyền Yêu Cầu |
+|---|---|---|
+| [Quản lý Danh sách Lead (Danh sách)](../../00-business/US-CRM-01-01-quan-ly-danh-sach-lead.md) | Màn hình danh sách | `admissions.customer.view` |
+| [Biểu mẫu Tạo khách hàng (Biểu mẫu)](../../00-business/US-CRM-01-02-bieu-mau-tao-khach-hang.md) | Biểu mẫu nhập liệu | `admissions.customer.create` |
+| Quản lý Danh bạ chung (Danh sách) | Màn hình danh sách | `admissions.customer.view_shared` |

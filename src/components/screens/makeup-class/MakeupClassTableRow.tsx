@@ -149,7 +149,7 @@ export function MakeupClassTableRow({
                 </p>
                 <div className="flex min-w-0 items-center gap-2 mt-0.5">
                   <span className="font-mono text-xs text-muted-foreground">{request.id}</span>
-                  <Badge variant="secondary" className="h-4 rounded px-1 text-[10px] uppercase">
+                  <Badge variant="secondary" className="h-4 rounded px-1 text-xs uppercase">
                     {request.subject}
                   </Badge>
                 </div>
@@ -298,7 +298,7 @@ export function MakeupClassTableRow({
           <div className="space-y-1">
             <Badge
               variant="outline"
-              className={`rounded px-1.5 py-0 text-[11px] font-medium border-0 ${
+              className={`rounded px-1.5 py-0 text-xs font-medium border-0 ${
                 attendanceText === 'Có mặt' || attendanceText === 'Đã điểm danh'
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
                   : attendanceText === 'Vắng mặt'

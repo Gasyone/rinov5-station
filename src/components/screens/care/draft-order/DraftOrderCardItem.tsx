@@ -5,12 +5,12 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { RotateCcw, Trash2, Tag, Info, Minus, Plus, User, Check, ChevronDown, ChevronUp, X } from 'lucide-react'
+import { RotateCcw, Trash2, Tag, Info, Minus, Plus, Check, ChevronDown, ChevronUp, X } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
 import { PRODUCT_CATALOG, MOCK_CHILD_PACKAGES, type DraftOrderItem } from './draftOrderTypes'
 import { ComboDetailsDialog } from './ComboDetailsDialog'
 import { VoucherSelectionDialog } from './VoucherSelectionDialog'
-import { MOCK_VOUCHERS, type VoucherItem } from './voucherData'
+import { type VoucherItem } from './voucherData'
 import { CustomSelect } from './CustomSelect'
 
 function ActivationMethodControl({
@@ -252,7 +252,7 @@ export function DraftOrderCardItem({
 
             {item.isRenewal && (
               <div className="flex items-center gap-1.5 ml-1">
-                <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">
+                <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 whitespace-nowrap">
                   Gói cần gia hạn:
                 </span>
                 <CustomSelect
@@ -437,7 +437,7 @@ export function DraftOrderCardItem({
                 <button
                   type="button"
                   onClick={handleShowComboDetails}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
                 >
                   <Info className="h-3 w-3 text-sky-500" />
                   <span>Chi tiết combo</span>
@@ -756,7 +756,7 @@ export function DraftOrderCardItem({
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-900 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300/80 shadow-2xs text-xs font-mono font-semibold"
                 >
                   <span>{v.code}</span>
-                  <span className="font-sans text-[11px] text-amber-700 dark:text-amber-400 font-normal">
+                  <span className="font-sans text-xs text-amber-700 dark:text-amber-400 font-normal">
                     (-{formatCurrency(itemDiscount)})
                   </span>
                 </span>

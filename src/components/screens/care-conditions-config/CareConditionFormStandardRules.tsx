@@ -428,7 +428,7 @@ export const CareConditionFormStandardRules: React.FC<StandardRulesProps> = ({
         <div className="rounded-md border border-primary/20 bg-primary/5 p-3 text-xs flex items-center gap-2 mt-2">
           <div className="flex flex-col gap-0.5">
             <span className="font-bold text-primary">{badgeInfo.title}</span>
-            <span className="text-muted-foreground text-[11px]">{badgeInfo.description}</span>
+            <span className="text-muted-foreground text-xs">{badgeInfo.description}</span>
           </div>
         </div>
       </div>

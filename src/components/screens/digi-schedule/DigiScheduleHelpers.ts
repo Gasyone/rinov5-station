@@ -3,6 +3,10 @@ import type {
   DigiScheduleFilterState,
   ClassSession,
 } from './DigiScheduleTypes'
+import { MOCK_DIGI_STUDENTS } from '@/mocks/digiSchedule'
+
+export const DIGI_BASE_HOUR_MINUTES = 18 * 60 // 18:00 = 1080
+export const DIGI_SLOT_HEIGHT = 64 // 64px per 30 minutes
 
 export const DIGI_TIMELINE_SLOTS = [
   '18:00',
@@ -52,7 +56,7 @@ export function formatShiftLabel(shift: string): string {
 }
 
 /**
- * Generates Digi calendar sessions between 18:00 and 21:00 (30m slots)
+ * Generates Digi calendar sessions for each 30m slot between 18:00 and 21:00
  */
 export function getDigiCalendarSessions(
   bookings: DigiStudentBooking[],
@@ -62,61 +66,169 @@ export function getDigiCalendarSessions(
   const todayKey = toDateKey(new Date())
   const sessions: ClassSession[] = []
 
-  // Preset recurring template slots from 18:00 - 21:00 across the week
+  // Preset recurring template slots for each 30m interval
   const slotTemplates = [
     {
       timeLabel: '18:00',
-      endTimeLabel: '19:30',
-      branch: 'RinoEdu Linh Đàm',
-      room: 'Phòng tự học Digi',
-      assistant: 'Nguyễn Thu Hà',
-      capacity: 10,
-      days: [0, 1, 2, 3, 4, 5], // Mon -> Sat
+      endTimeLabel: '18:30',
+      branch: 'RinoEdu Nguyễn Tuân',
+      room: 'Phòng Lab Digi',
+      assistant: 'Trần Minh Châu',
+      capacity: 15,
+      days: [0, 1, 2, 3, 4, 5],
     },
     {
-      timeLabel: '18:00',
+      timeLabel: '18:30',
+      endTimeLabel: '19:00',
+      branch: 'RinoEdu Nguyễn Tuân',
+      room: 'Phòng Lab Digi',
+      assistant: 'Trần Minh Châu',
+      capacity: 15,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '19:00',
       endTimeLabel: '19:30',
       branch: 'RinoEdu Nguyễn Tuân',
       room: 'Phòng Lab Digi',
       assistant: 'Trần Minh Châu',
       capacity: 15,
-      days: [0, 2, 4], // Mon, Wed, Fri
+      days: [0, 1, 2, 3, 4, 5],
+    },
+    {
+      timeLabel: '19:30',
+      endTimeLabel: '20:00',
+      branch: 'RinoEdu Nguyễn Tuân',
+      room: 'Phòng Lab Digi',
+      assistant: 'Trần Minh Châu',
+      capacity: 15,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '20:00',
+      endTimeLabel: '20:30',
+      branch: 'RinoEdu Nguyễn Tuân',
+      room: 'Phòng Lab Digi',
+      assistant: 'Trần Minh Châu',
+      capacity: 15,
+      days: [0, 1, 2, 3, 4, 5],
+    },
+    {
+      timeLabel: '20:30',
+      endTimeLabel: '21:00',
+      branch: 'RinoEdu Nguyễn Tuân',
+      room: 'Phòng Lab Digi',
+      assistant: 'Trần Minh Châu',
+      capacity: 15,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '18:00',
+      endTimeLabel: '18:30',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [0, 1, 2, 3, 4, 5],
     },
     {
       timeLabel: '18:30',
+      endTimeLabel: '19:00',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [1, 3, 5],
+    },
+    {
+      timeLabel: '19:00',
+      endTimeLabel: '19:30',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [0, 1, 2, 3, 4, 5],
+    },
+    {
+      timeLabel: '19:30',
+      endTimeLabel: '20:00',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '20:00',
+      endTimeLabel: '20:30',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [0, 1, 2, 3, 4, 5],
+    },
+    {
+      timeLabel: '20:30',
+      endTimeLabel: '21:00',
+      branch: 'RinoEdu Linh Đàm',
+      room: 'Phòng tự học Digi',
+      assistant: 'Nguyễn Thu Hà',
+      capacity: 12,
+      days: [1, 3, 5],
+    },
+    {
+      timeLabel: '18:00',
+      endTimeLabel: '18:30',
+      branch: 'RinoEdu Smart City',
+      room: 'Phòng Digi',
+      assistant: 'Lê Hoàng Nam',
+      capacity: 10,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '18:30',
+      endTimeLabel: '19:00',
+      branch: 'RinoEdu Smart City',
+      room: 'Phòng Digi',
+      assistant: 'Lê Hoàng Nam',
+      capacity: 10,
+      days: [1, 3, 5],
+    },
+    {
+      timeLabel: '19:00',
+      endTimeLabel: '19:30',
+      branch: 'RinoEdu Smart City',
+      room: 'Phòng Digi',
+      assistant: 'Lê Hoàng Nam',
+      capacity: 10,
+      days: [0, 2, 4],
+    },
+    {
+      timeLabel: '19:30',
       endTimeLabel: '20:00',
       branch: 'RinoEdu Smart City',
       room: 'Phòng Digi',
       assistant: 'Lê Hoàng Nam',
       capacity: 10,
-      days: [1, 3, 5], // Tue, Thu, Sat
+      days: [1, 3, 5],
     },
     {
-      timeLabel: '19:00',
+      timeLabel: '20:00',
       endTimeLabel: '20:30',
-      branch: 'RinoEdu Linh Đàm',
-      room: 'Phòng tự học Digi',
-      assistant: 'Trần Minh Châu',
-      capacity: 12,
-      days: [0, 1, 2, 3, 4, 5], // Mon -> Sat
-    },
-    {
-      timeLabel: '19:30',
-      endTimeLabel: '21:00',
-      branch: 'RinoEdu Linh Đàm',
-      room: 'Phòng tự học Digi',
-      assistant: 'Nguyễn Thu Hà',
+      branch: 'RinoEdu Smart City',
+      room: 'Phòng Digi',
+      assistant: 'Lê Hoàng Nam',
       capacity: 10,
-      days: [0, 1, 2, 3, 4, 5], // Mon -> Sat
+      days: [0, 2, 4],
     },
     {
-      timeLabel: '19:30',
+      timeLabel: '20:30',
       endTimeLabel: '21:00',
-      branch: 'RinoEdu Nguyễn Tuân',
-      room: 'Phòng Lab Digi',
-      assistant: 'Trần Minh Châu',
-      capacity: 15,
-      days: [0, 2, 4], // Mon, Wed, Fri
+      branch: 'RinoEdu Smart City',
+      room: 'Phòng Digi',
+      assistant: 'Lê Hoàng Nam',
+      capacity: 10,
+      days: [1, 3, 5],
     },
   ]
 
@@ -162,6 +274,28 @@ export function getDigiCalendarSessions(
         statusLabel = 'Đang diễn ra'
       }
 
+      const sampleStudents = MOCK_DIGI_STUDENTS.map((s) => ({
+        id: s.id,
+        name: s.name,
+        englishName: s.englishName,
+        status: isPast ? 'completed' : isToday ? 'dang_hoc' : 'da_xep_lich',
+      }))
+
+      let sessionStudents: { id: string; name: string; englishName?: string; status?: string }[] = []
+      if (dayBookings.length > 0) {
+        sessionStudents = dayBookings.map((b) => ({
+          id: b.studentId,
+          name: b.studentName,
+          englishName: b.studentEnglishName,
+          status: b.status,
+        }))
+      } else {
+        const offset = (dayIndex * 3 + tmplIndex) % sampleStudents.length
+        sessionStudents = Array.from({ length: studentCount }).map((_, i) => {
+          return sampleStudents[(offset + i) % sampleStudents.length]
+        })
+      }
+
       sessions.push({
         id: `DIGI-${dKey}-${tmplIndex}`,
         classCode: `DIGI_LAB_0${tmplIndex + 1}`,
@@ -190,6 +324,7 @@ export function getDigiCalendarSessions(
         isRecurring: true,
         roomCapacity: tmpl.capacity,
         digiBookingIds: bookingIds.length > 0 ? bookingIds : ['DG-2608-001', 'DG-2608-002', 'DG-2608-003', 'DG-2608-004'],
+        studentList: sessionStudents,
       })
     })
   })

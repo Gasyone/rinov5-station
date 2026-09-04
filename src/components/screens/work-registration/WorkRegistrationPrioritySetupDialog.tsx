@@ -191,7 +191,7 @@ function PrioritySetupBody({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        'min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold',
+                        'min-w-5 rounded-full px-1.5 py-0.5 text-center text-xs font-bold',
                         isActive && 'bg-primary-foreground text-primary'
                       )}
                     >

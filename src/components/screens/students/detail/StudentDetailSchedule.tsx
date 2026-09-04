@@ -79,7 +79,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
         {/* Top Header info */}
         <div className="flex items-center justify-between gap-2 border-b border-muted/50 pb-1.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] font-bold text-primary font-mono uppercase bg-primary/10 px-1.5 py-0.5 rounded shrink-0 animate-none">
+            <span className="text-xs font-bold text-primary font-mono uppercase bg-primary/10 px-1.5 py-0.5 rounded shrink-0 animate-none">
               Buổi {session.sessionNumber}
             </span>
             <span className="text-xs font-semibold text-foreground font-mono shrink-0">
@@ -88,7 +88,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
           </div>
 
           {session.status === 'absent' && (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${getStatusBadgeClass('absent')}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold border shrink-0 ${getStatusBadgeClass('absent')}`}>
               Xin nghỉ
             </span>
           )}
@@ -102,7 +102,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
               {session.topic}
             </h5>
             {session.description && (
-              <p className="text-[11px] text-muted-foreground mt-0.5 leading-normal font-normal truncate" title={session.description}>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-normal font-normal truncate" title={session.description}>
                 {session.description}
               </p>
             )}
@@ -141,7 +141,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
           <div className="flex flex-wrap gap-1.5 items-center">
             {session.materials && session.materials.length > 0 ? (
               session.materials.map((mat, matIdx) => (
-                <div key={matIdx} className="flex items-center gap-1 bg-muted/50 border px-1.5 py-0.5 rounded text-[10px] text-muted-foreground hover:border-primary/30 transition-all">
+                <div key={matIdx} className="flex items-center gap-1 bg-muted/50 border px-1.5 py-0.5 rounded text-xs text-muted-foreground hover:border-primary/30 transition-all">
                   <a 
                     href={mat.url && mat.url !== '#' ? mat.url : undefined} 
                     target="_blank" 
@@ -160,7 +160,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
                 </div>
               ))
             ) : (
-              <span className="text-[10px] text-muted-foreground/60 italic">
+              <span className="text-xs text-muted-foreground/60 italic">
                 {(isCancelled || isAbsent) ? 'Buổi học đã hủy hoặc nghỉ' : 'Chưa có tài liệu'}
               </span>
             )}
@@ -171,7 +171,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
             <Button
               variant="ghost"
               size="xs"
-              className="text-[10px] text-primary hover:text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
+              className="text-xs text-primary hover:text-primary hover:bg-primary/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
               onClick={() => {
                 const classSession: ClassSession = {
                   id: session.id,
@@ -208,7 +208,7 @@ export function StudentDetailSchedule({ sessions }: StudentDetailScheduleProps) 
               <Button
                 variant="ghost"
                 size="xs"
-                className="text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
+                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer flex items-center gap-1 rounded-md font-semibold"
                 onClick={() => {
                   toast.info('Tính năng chưa phát triển')
                 }}

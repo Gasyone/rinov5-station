@@ -6,7 +6,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ContactCell, PersonnelHoverCard } from '@/components/shared'
 import {
   ExternalLink,
-  Share2,
   ArrowLeftRight,
   RefreshCw,
   Calendar,
@@ -17,7 +16,7 @@ import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo } from './renewalHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getProductSku } from './renewalHelpers'
 import { RenewalHistoryPopover } from './RenewalHistoryPopover'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { mockClassRecords } from '@/mocks/classRecords'
@@ -226,7 +225,7 @@ export function RenewalAlertRow({
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className={cn(
-                'h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0',
+                'h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                 getAvatarColor(cls.studentId)
               )}
             >
@@ -237,36 +236,23 @@ export function RenewalAlertRow({
                 <span className="font-bold text-zinc-900 dark:text-zinc-50 text-sm truncate" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
                   {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
                 </span>
-                {cls.studentFolderLink && (
-                  <a
-                    href={cls.studentFolderLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Thư mục học viên"
-                    className="text-muted-foreground hover:text-primary shrink-0 transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
               </div>
-              <div className="text-[10px] text-muted-foreground font-medium mt-0.5">
+              <div className="text-xs text-muted-foreground font-medium mt-0.5">
                 {cls.subject} - {cls.level}
               </div>
             </div>
           </div>
 
           {/* Hover actions */}
-          <div 
-            className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity duration-150 shrink-0" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Only show create buttons when student has no active CSTP tag */}
-            {(() => {
-              const activeTags = getCareTags()
-              const hasActiveCSTP = activeTags.some(t => t.label === 'CSTP')
-              if (hasActiveCSTP) return null
-              return (
+          {(() => {
+            const activeTags = getCareTags()
+            const hasActiveCSTP = activeTags.some(t => t.label === 'CSTP')
+            if (hasActiveCSTP) return null
+            return (
+              <div 
+                className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity duration-150 shrink-0" 
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Button
                   variant="ghost"
                   size="icon-xs"
@@ -288,23 +274,9 @@ export function RenewalAlertRow({
                 >
                   <RefreshCw className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                 </Button>
-              )
-            })()}
-
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => {
-                const link = cls.learningResultsLink || `https://rinov5.com/report/${cls.studentId}`
-                navigator.clipboard.writeText(link)
-                toast.success(`Đã sao chép link báo cáo!`)
-              }}
-              title="Sao chép link báo cáo"
-              className="h-6 w-6 hover:bg-muted/80 rounded-md shrink-0 shadow-none"
-            >
-              <Share2 className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-            </Button>
-          </div>
+              </div>
+            )
+          })()}
         </div>
       </td>
 
@@ -339,10 +311,10 @@ export function RenewalAlertRow({
             >
               <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
                 <div className="flex items-center gap-1">
-                  <span className="text-[8px] px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
+                  <span className="text-xs px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
                     CS
                   </span>
-                  <span className="text-foreground text-[10px] hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
+                  <span className="text-foreground text-xs hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
                 </div>
               </div>
             </PersonnelHoverCard>
@@ -369,10 +341,10 @@ export function RenewalAlertRow({
               >
                 <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
                   <div className="flex items-center gap-1">
-                    <span className="text-[8px] px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
+                    <span className="text-xs px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
                       GV
                     </span>
-                    <span className="text-foreground text-[10px] hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
+                    <span className="text-foreground text-xs hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
                   </div>
                 </div>
               </PersonnelHoverCard>
@@ -437,19 +409,19 @@ export function RenewalAlertRow({
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {isWaitAssignment ? (
-                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
                     Chờ ghép lớp
                   </span>
                 ) : studentInfo?.status === 'reserve' ? (
-                  <span className="text-[10px] font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
+                  <span className="text-xs font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
                     Bảo lưu
                   </span>
                 ) : cls.status === 'Hết buổi' ? (
-                  <span className="text-[10px] font-semibold text-zinc-650 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
+                  <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
                     Hết phí
                   </span>
                 ) : cls.status === 'Chờ chuyển lớp' ? (
-                  <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
+                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
                     Chờ ghép lớp mới
                   </span>
                 ) : (
@@ -466,7 +438,7 @@ export function RenewalAlertRow({
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-[8px] px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
+                        'text-xs px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
                         cls.status === 'Đang học'
                           ? getStatusBadgeClass('dang_hoc')
                           : cls.status === 'Chờ chuyển lớp'
@@ -488,10 +460,13 @@ export function RenewalAlertRow({
       <td className="py-3 px-3">
         {(() => {
           const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
+          const skuName = getProductSku(cls)
           return (
-            <div className="flex flex-col gap-0.5 min-w-[155px]">
-              <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap">
-                <span className="text-zinc-600 dark:text-zinc-400 text-xs truncate shrink-0">{cls.level}</span>
+            <div className="flex flex-col gap-0.5 min-w-[200px] max-w-[280px]">
+              <div className="flex items-center gap-1.5 flex-nowrap">
+                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[230px]" title={skuName}>
+                  {skuName}
+                </span>
                 {hasPackageHistory && (
                   <RenewalHistoryPopover
                     type="package_history"
@@ -513,7 +488,7 @@ export function RenewalAlertRow({
                   />
                 )}
               </div>
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
             </div>
           )
         })()}
@@ -538,7 +513,7 @@ export function RenewalAlertRow({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span
                   className={cn(
-                    'text-[10px] font-bold transition-colors',
+                    'text-xs font-bold transition-colors',
                     isUncared
                       ? 'text-zinc-500 dark:text-zinc-400 select-none'
                       : inProgress
@@ -553,7 +528,7 @@ export function RenewalAlertRow({
                 {/* Lịch hẹn gọi lại */}
                 {rescheduleInfo.isRescheduled && (
                   <span
-                    className="text-[10px] font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
+                    className="text-xs font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
                     title="Lịch hẹn gọi lại"
                   >
                     <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
@@ -564,21 +539,21 @@ export function RenewalAlertRow({
 
               {/* Hàng 2 & 3: Nội dung chăm sóc & Phụ huynh phản hồi */}
               {isUncared ? (
-                <div className="text-[10px] italic text-amber-600 dark:text-amber-400 font-medium">
+                <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
                   Cần liên hệ trao đổi với phụ huynh ngay
                 </div>
               ) : (
                 latestLog && (
                   <>
                     <div
-                      className="text-[10px] text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                      className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
                       title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
                     >
                       <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
                     </div>
                     {isCompleted && (
                       <div
-                        className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium truncate group-hover/care:underline transition-colors"
+                        className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate group-hover/care:underline transition-colors"
                         title={`Phụ huynh phản hồi: ${latestLog.note}`}
                       >
                         Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở'}&rdquo;
@@ -616,7 +591,7 @@ export function RenewalAlertRow({
               <Badge
                 variant="outline"
                 className={cn(
-                  'text-[9px] px-2 py-0.5 font-bold uppercase tracking-wide',
+                  'text-xs px-2 py-0.5 font-bold uppercase tracking-wide',
                   getStatusBadgeClass(classification)
                 )}
               >
@@ -648,7 +623,7 @@ export function RenewalAlertRow({
                       <ExternalLink className="h-3 w-3 text-emerald-600 shrink-0" />
                       <span className="truncate">{order.packageName}</span>
                       {order.packageAmount && (
-                        <span className="font-mono text-[11px] font-normal text-muted-foreground shrink-0">
+                        <span className="font-mono text-xs font-normal text-muted-foreground shrink-0">
                           ({order.packageAmount})
                         </span>
                       )}
@@ -656,7 +631,7 @@ export function RenewalAlertRow({
                   </div>
 
                   {/* Dòng 2: Mã đơn nháp • Lần thanh toán (Ví dụ: Cọc 50%) */}
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
@@ -678,7 +653,7 @@ export function RenewalAlertRow({
                   </div>
                 </>
               ) : (
-                <span className="text-[11px] italic text-muted-foreground">
+                <span className="text-xs italic text-muted-foreground">
                   Chưa có đơn hàng
                 </span>
               )}

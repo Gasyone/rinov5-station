@@ -125,7 +125,7 @@ export function RosterSessionSelectionDialog({
                   {currentEnrolled}/{maxStudents}
                 </strong>
                 {isFull && (
-                  <span className="text-[9px] bg-destructive/10 text-destructive border border-destructive/20 px-1.5 py-0.25 rounded font-bold uppercase tracking-wider shrink-0">
+                  <span className="text-xs bg-destructive/10 text-destructive border border-destructive/20 px-1.5 py-0.25 rounded font-bold uppercase tracking-wider shrink-0">
                     Đầy
                   </span>
                 )}
@@ -176,7 +176,7 @@ export function RosterSessionSelectionDialog({
                         </TableCell>
                         <TableCell className="py-2.5 px-2 text-xs font-semibold text-foreground align-middle">
                           <div>{getDayOfWeekText(session.date)}</div>
-                          <div className="text-[10px] text-muted-foreground mt-0.5 font-normal">{session.startTime} - {session.endTime}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5 font-normal">{session.startTime} - {session.endTime}</div>
                         </TableCell>
                           <TableCell className="py-2.5 px-2 text-xs text-foreground align-middle">
                             <span className="font-semibold text-foreground">{classRecord.maxStudents || 15} chỗ</span>
@@ -184,14 +184,14 @@ export function RosterSessionSelectionDialog({
                           <TableCell className="py-2.5 px-2 text-xs text-foreground align-middle">
                             <div className="font-bold truncate max-w-[280px]" title={session.topic}>{session.topic}</div>
                             {session.description && (
-                              <div className="text-[10px] text-muted-foreground mt-0.5 max-w-[280px] truncate" title={session.description}>
+                              <div className="text-xs text-muted-foreground mt-0.5 max-w-[280px] truncate" title={session.description}>
                                 {session.description}
                               </div>
                             )}
                           </TableCell>
                           <TableCell className="py-2.5 px-2 pr-4 text-xs text-muted-foreground align-middle">
                             <div className="flex items-center gap-2">
-                              <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-[9px] font-bold shrink-0">
+                              <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-xs font-bold shrink-0">
                                 <AvatarFallback className="font-bold">
                                   {getInitials(session.substituteTeacherName || session.teacherName)}
                                 </AvatarFallback>

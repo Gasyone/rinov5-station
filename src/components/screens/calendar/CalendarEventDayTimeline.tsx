@@ -148,7 +148,7 @@ export function CalendarEventDayTimeline({
             >
               {/* Hour label */}
               <div className="flex w-16 shrink-0 items-start justify-end pr-3 pt-2 border-r border-border/40 bg-muted/5">
-                <span className="text-[11px] font-medium text-muted-foreground select-none">
+                <span className="text-xs font-medium text-muted-foreground select-none">
                   {slot}
                 </span>
               </div>

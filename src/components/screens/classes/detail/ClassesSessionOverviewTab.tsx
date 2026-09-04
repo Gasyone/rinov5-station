@@ -252,7 +252,7 @@ export function ClassesSessionOverviewTab({
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>Thông tin nhanh</span>
               </span>
-              <span className="text-[10px] text-muted-foreground font-normal">Đầu buổi</span>
+              <span className="text-xs text-muted-foreground font-normal">Đầu buổi</span>
             </div>
 
             {/* 4 Nhóm thông tin nhanh (2x2 Grid: HV mới, Xin phép, Học thử, Vận hành) */}
@@ -438,7 +438,7 @@ export function ClassesSessionOverviewTab({
                   <p className="text-[9.5px] text-muted-foreground truncate font-normal">{hasJournal ? 'Đã nhập nhận xét' : 'Chưa ghi nhật ký'}</p>
                 </div>
               </div>
-              <Badge variant="outline" className={cn('text-[9px] font-normal py-0 shrink-0 ml-1', hasJournal ? 'border-emerald-300 text-emerald-700 bg-emerald-50' : 'border-amber-300 text-amber-700 bg-amber-50')}>
+              <Badge variant="outline" className={cn('text-xs font-normal py-0 shrink-0 ml-1', hasJournal ? 'border-emerald-300 text-emerald-700 bg-emerald-50' : 'border-amber-300 text-amber-700 bg-amber-50')}>
                 {hasJournal ? 'Đã xong' : 'Chưa xong'}
               </Badge>
             </div>
@@ -453,7 +453,7 @@ export function ClassesSessionOverviewTab({
                     <p className="text-[9.5px] text-muted-foreground truncate font-normal">Đánh giá Unit Test</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-[9px] font-normal border-amber-300 text-amber-700 bg-amber-50 py-0 shrink-0 ml-1">
+                <Badge variant="outline" className="text-xs font-normal border-amber-300 text-amber-700 bg-amber-50 py-0 shrink-0 ml-1">
                   Cần chấm điểm
                 </Badge>
               </div>
@@ -513,7 +513,7 @@ export function ClassesSessionOverviewTab({
           <button
             type="button"
             onClick={() => onSwitchTab('roster')}
-            className="text-[11px] font-normal text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
+            className="text-xs font-normal text-primary hover:underline cursor-pointer bg-transparent border-none p-0"
           >
             Chuyển tab Học viên
           </button>
@@ -551,7 +551,7 @@ export function ClassesSessionOverviewTab({
                     >
                       {nameParts.formattedName}
                     </button>
-                    <span className="text-[11px] text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
+                    <span className="text-xs text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
                   </div>
 
                   {/* Line 2+: Care Badge cards left-aligned straight under the student name */}
@@ -571,7 +571,7 @@ export function ClassesSessionOverviewTab({
                         {/* Left: Bold Colored Code Text (No box, no border) + Full Reason & Assigned Person */}
                         <div className="flex items-center gap-1.5 min-w-0 flex-1 me-2">
                           <span className={cn(
-                            'font-bold text-[11px] shrink-0 me-0.5',
+                            'font-bold text-xs shrink-0 me-0.5',
                             badge.code === 'CSĐB' || badge.code === 'CSKH'
                               ? 'text-rose-700 dark:text-rose-400'
                               : badge.code === 'CSBH'
@@ -581,7 +581,7 @@ export function ClassesSessionOverviewTab({
                             {badge.code}
                           </span>
 
-                          <div className="min-w-0 flex-1 text-[11px] truncate">
+                          <div className="min-w-0 flex-1 text-xs truncate">
                             <span className="font-semibold text-foreground me-1.5">{badge.fullLabel}</span>
                             <span className="text-muted-foreground font-normal">
                               · Phụ trách: <strong className="font-normal text-foreground">{badge.assigneeText || 'CS Nguyễn Thị Ngọc Anh'}</strong>
@@ -591,7 +591,7 @@ export function ClassesSessionOverviewTab({
 
                         {/* Right: Plain Text SLA */}
                         <span className={cn(
-                          'text-[11px] font-normal shrink-0',
+                          'text-xs font-normal shrink-0',
                           badge.isOverdue ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-amber-600 dark:text-amber-400 font-medium'
                         )}>
                           {badge.isOverdue ? `Quá hạn: ${badge.slaText}` : `Đến hạn: ${badge.slaText}`}

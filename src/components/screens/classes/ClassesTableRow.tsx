@@ -188,7 +188,7 @@ export function ClassesTableRow({
               </TooltipTrigger>
               <TooltipContent>{cls.name}</TooltipContent>
             </Tooltip>
-            <p className="font-mono text-[11px] text-muted-foreground">{cls.code}</p>
+            <p className="font-mono text-xs text-muted-foreground">{cls.code}</p>
           </div>
           <div
             className="absolute right-0 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex"
@@ -224,7 +224,7 @@ export function ClassesTableRow({
         <SyllabusProfileHoverCard cls={cls}>
           <div className="space-y-0.5 cursor-pointer group/syllabus inline-block max-w-full">
             <div className="font-medium text-foreground">{subjectDisplay}</div>
-            <div className="text-[11px] text-primary truncate max-w-[130px] group-hover/syllabus:underline">
+            <div className="text-xs text-primary truncate max-w-[130px] group-hover/syllabus:underline">
               {cls.syllabus && cls.syllabus !== '—' ? cls.syllabus : <span className="text-muted-foreground">Chưa gán</span>}
             </div>
           </div>
@@ -235,7 +235,7 @@ export function ClassesTableRow({
       <TableCell className="min-w-40">
         <div className="flex flex-col gap-1 py-0.5">
           {allTeachers.length === 0 || !cls.teacher || cls.teacher === 'Chưa gán' ? (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50 text-[11px] font-bold shadow-2xs w-fit">
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50 text-xs font-bold shadow-2xs w-fit">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <span>Chưa gán GV</span>
             </div>
@@ -259,10 +259,10 @@ export function ClassesTableRow({
         <div className="space-y-0.5">
           <div>
             <span className="font-normal text-foreground">{cls.enrolledStudents}/{cls.maxStudents}</span>
-            <span className="ml-1 text-[11px] text-muted-foreground">({capacityPct}%)</span>
+            <span className="ml-1 text-xs text-muted-foreground">({capacityPct}%)</span>
           </div>
           {(Boolean(cls.trialStudents) || getClassNewStudents(cls) > 0) && (
-            <div className="text-[10px] flex items-center gap-1 flex-wrap pt-0.5">
+            <div className="text-xs flex items-center gap-1 flex-wrap pt-0.5">
               {typeof cls.trialStudents === 'number' && cls.trialStudents > 0 && (
                 <span className="inline-flex items-center px-1 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 font-semibold leading-none">
                   Học thử: {cls.trialStudents}
@@ -289,7 +289,7 @@ export function ClassesTableRow({
           <div>
             <StatusBadge status={cls.status} label={CLASS_STATUS_LABELS[cls.status]} withDot className="bg-transparent dark:bg-transparent border-0 shadow-none px-0" />
           </div>
-          <div className="text-[10px] text-muted-foreground leading-snug truncate">
+          <div className="text-xs text-muted-foreground leading-snug truncate">
             {isInactive ? (
               <span>
                 Khai giảng:{' '}
@@ -389,7 +389,7 @@ export function ClassesTableRow({
         ) : (
           <div>
             <span className="font-medium text-foreground">{avgTestScore}</span>
-            <span className="text-[10px] text-muted-foreground">/10</span>
+            <span className="text-xs text-muted-foreground">/10</span>
           </div>
         )}
       </TableCell>

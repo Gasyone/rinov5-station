@@ -48,9 +48,14 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
   const initialOrders = useMemo(() => getStudentOrders(studentId, studentName), [studentId, studentName])
   const transfers = useMemo(() => getFeeTransfers(studentId, studentName), [studentId, studentName])
 
-  // Combine custom draft orders with initial mock orders
+  // Combine custom draft orders with initial mock orders (deduplicated by id / orderNo)
   const orders = useMemo(() => {
-    return [...customDraftOrders, ...initialOrders]
+    const draftIds = new Set(customDraftOrders.map((o) => o.id))
+    const draftOrderNos = new Set(customDraftOrders.map((o) => o.orderNo).filter(Boolean))
+    const nonDuplicatedInitial = initialOrders.filter(
+      (o) => !draftIds.has(o.id) && (!o.orderNo || !draftOrderNos.has(o.orderNo))
+    )
+    return [...customDraftOrders, ...nonDuplicatedInitial]
   }, [customDraftOrders, initialOrders])
 
   const filteredOrders = useMemo(() => {
@@ -228,6 +233,11 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
     []
   )
 
+  const handleCreateNewOrder = useCallback(() => {
+    setEditingDraftOrder(null)
+    setIsDraftEditorOpen(true)
+  }, [])
+
   const scrollToOrder = useCallback((orderNo: string) => {
     const el = document.getElementById(`order-card-${orderNo}`)
     if (el) {
@@ -249,7 +259,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
           <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
             <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
               <span>Gói hiện tại</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-[11px] font-mono font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-xs font-mono font-bold">
                 {currentOrders.length}
               </span>
             </div>
@@ -269,10 +279,7 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
               {/* Button Tạo đơn ở trên cùng */}
               <Button
                 type="button"
-                onClick={() => {
-                  setEditingDraftOrder(null)
-                  setIsDraftEditorOpen(true)
-                }}
+                onClick={handleCreateNewOrder}
                 className="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white border border-indigo-200/80 dark:border-indigo-800 font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
               >
                 <Plus className="h-4 w-4" />
@@ -308,11 +315,11 @@ export function StudentOrdersTab({ studentId, studentName }: StudentOrdersTabPro
           <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
             <div className="flex items-center gap-1.5 font-bold text-sky-800 dark:text-sky-300">
               <span>Gói đã mua & Lịch sử chuyển đổi</span>
-              <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-[11px] font-mono font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-xs font-mono font-bold">
                 {historyTimelineItems.length}
               </span>
             </div>
-            <span className="text-[11px] font-normal text-muted-foreground italic">
+            <span className="text-xs font-normal text-muted-foreground italic">
               ({purchasedOrders.length} gói đã mua &bull; {transfers.length} phiếu chuyển phí)
             </span>
           </div>

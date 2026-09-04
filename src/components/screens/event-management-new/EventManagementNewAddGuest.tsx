@@ -101,7 +101,7 @@ export function EventManagementNewAddGuest({ isOpen, onClose, onAdd }: EventMana
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-foreground">Họ tên con</label>
+                <label className="text-xs font-medium text-foreground">Họ tên con</label>
                 <Input
                   placeholder="VD: Nguyễn Bảo Lâm"
                   value={childName}
@@ -110,7 +110,7 @@ export function EventManagementNewAddGuest({ isOpen, onClose, onAdd }: EventMana
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-foreground">Tuổi con</label>
+                <label className="text-xs font-medium text-foreground">Tuổi con</label>
                 <Input
                   type="number"
                   placeholder="VD: 8"
@@ -122,7 +122,7 @@ export function EventManagementNewAddGuest({ isOpen, onClose, onAdd }: EventMana
             </div>
             {childName.trim() && (
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-foreground">Trạm học thử đăng ký</label>
+                <label className="text-xs font-medium text-foreground">Trạm học thử đăng ký</label>
                 <SubjectSelect
                   value={trialStation}
                   options={TRIAL_STATION_OPTIONS}
@@ -161,7 +161,7 @@ export function EventManagementNewAddGuest({ isOpen, onClose, onAdd }: EventMana
                   >
                     <div>
                       <p className="text-xs font-semibold">{c.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{c.phone} {c.email ? `· ${c.email}` : ''}</p>
+                      <p className="text-xs text-muted-foreground">{c.phone} {c.email ? `· ${c.email}` : ''}</p>
                     </div>
                     <Button variant="ghost" size="icon-sm" className="text-primary hover:bg-primary/10">
                       <UserPlus className="h-4 w-4" />

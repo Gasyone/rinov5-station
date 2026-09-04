@@ -90,7 +90,7 @@ export function DigiStudentListPanel({
             <Badge
               variant={selectedCount > 0 ? 'default' : 'secondary'}
               className={cn(
-                'text-[10px] px-1.5 py-0 font-medium',
+                'text-xs px-1.5 py-0 font-medium',
                 selectedCount > 0 && 'bg-primary text-primary-foreground'
               )}
             >
@@ -191,14 +191,14 @@ export function DigiStudentListPanel({
                       {student.name}
                     </span>
                     {student.englishName && (
-                      <span className="text-[11px] text-muted-foreground italic truncate">
+                      <span className="text-xs text-muted-foreground italic truncate">
                         ({student.englishName})
                       </span>
                     )}
                   </div>
 
                   {/* Dòng 2: SĐT (chỉ hiện 3 số cuối ****xxx) + Nút Copy • Cơ sở */}
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5 truncate">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 truncate">
                     <div className="inline-flex items-center gap-1 shrink-0 font-mono">
                       <span>{formatPhoneMask3Last(student.phoneMasked)}</span>
                       <button
@@ -240,7 +240,7 @@ export function DigiStudentListPanel({
                   {hasScheduledLessons ? (
                     <Badge
                       variant="outline"
-                      className="text-[9px] px-1.5 py-0 font-bold leading-tight whitespace-nowrap border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                      className="text-xs px-1.5 py-0 font-bold leading-tight whitespace-nowrap border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                     >
                       {scheduleSummary.lessonCount} bài ({scheduleSummary.timeRange})
                     </Badge>
@@ -248,7 +248,7 @@ export function DigiStudentListPanel({
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-[9px] px-1.5 py-0 font-medium leading-tight whitespace-nowrap',
+                        'text-xs px-1.5 py-0 font-medium leading-tight whitespace-nowrap',
                         isSelected
                           ? 'border-primary/40 text-primary bg-primary/10'
                           : 'text-muted-foreground/90 bg-muted/40 border-border/60'

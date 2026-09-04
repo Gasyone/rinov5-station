@@ -413,7 +413,7 @@ export function IconActionButton({
     >
       <Icon className={cn('h-4 w-4', iconClassName)} />
       {activeCount ? (
-        <Badge className="absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-[9px] leading-none">
+        <Badge className="absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-xs leading-none">
           {activeCount}
         </Badge>
       ) : null}

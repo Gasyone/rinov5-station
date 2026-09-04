@@ -348,7 +348,7 @@ export function EventManagementNewDetailDialog({ isOpen, eventId, onClose, onEve
                                 <td className="p-3">
                                   <div className="space-y-0.5">
                                     <p className="font-semibold text-foreground">{att.name}</p>
-                                    {att.email && <p className="text-[10px] text-muted-foreground">{att.email}</p>}
+                                    {att.email && <p className="text-xs text-muted-foreground">{att.email}</p>}
                                   </div>
                                 </td>
                                 <td className="p-3">
@@ -356,19 +356,19 @@ export function EventManagementNewDetailDialog({ isOpen, eventId, onClose, onEve
                                     <div className="space-y-1">
                                       <div className="flex items-center gap-1.5">
                                         <span className="font-medium text-foreground">{att.childName}</span>
-                                        <Badge variant="outline" className="text-[9px] h-4.5 rounded-full border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400">
+                                        <Badge variant="outline" className="text-xs h-4.5 rounded-full border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400">
                                           {att.childAge} tuổi
                                         </Badge>
                                       </div>
                                       <div className="flex items-center gap-1">
-                                        <span className="text-[10px] text-muted-foreground">Trạm:</span>
-                                        <span className="text-[10px] font-semibold text-purple-600 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded">
+                                        <span className="text-xs text-muted-foreground">Trạm:</span>
+                                        <span className="text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-950/20 px-1.5 py-0.5 rounded">
                                           {att.trialStation}
                                         </span>
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="text-muted-foreground italic text-[11px]">Không đăng ký con</span>
+                                    <span className="text-muted-foreground italic text-xs">Không đăng ký con</span>
                                   )}
                                 </td>
                                 <td className="p-3 text-muted-foreground font-mono">{att.phone}</td>
@@ -381,7 +381,7 @@ export function EventManagementNewDetailDialog({ isOpen, eventId, onClose, onEve
                                         onChange={(e) => handleParentCheckIn(att.id, e.target.checked)}
                                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                       />
-                                      <span className={`text-[11px] font-semibold ${att.parentCheckedIn ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                                      <span className={`text-xs font-semibold ${att.parentCheckedIn ? 'text-emerald-600' : 'text-muted-foreground'}`}>
                                         {att.parentCheckedIn ? `Đã đến (${att.parentCheckInTime})` : 'Chờ check-in'}
                                       </span>
                                     </label>
@@ -401,17 +401,17 @@ export function EventManagementNewDetailDialog({ isOpen, eventId, onClose, onEve
                                           onChange={(e) => handleChildCheckIn(att.id, e.target.checked)}
                                           className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                                         />
-                                        <span className={`text-[11px] font-semibold ${att.childCheckedIn ? 'text-purple-600' : 'text-muted-foreground'}`}>
+                                        <span className={`text-xs font-semibold ${att.childCheckedIn ? 'text-purple-600' : 'text-muted-foreground'}`}>
                                           {att.childCheckedIn ? `Đã đến (${att.childCheckInTime})` : 'Chờ check-in'}
                                         </span>
                                       </label>
                                     ) : (
-                                      <span className="text-[11px] text-muted-foreground font-semibold">
+                                      <span className="text-xs text-muted-foreground font-semibold">
                                         {att.childCheckedIn ? `Đã đến (${att.childCheckInTime || '—'})` : 'Chờ check-in'}
                                       </span>
                                     )
                                   ) : (
-                                    <span className="text-[11px] text-muted-foreground">—</span>
+                                    <span className="text-xs text-muted-foreground">—</span>
                                   )}
                                 </td>
                                 <td className="p-3 text-right">
@@ -447,7 +447,7 @@ export function EventManagementNewDetailDialog({ isOpen, eventId, onClose, onEve
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                               <span className="text-xs font-mono font-semibold text-primary">{ag.timeLabel}</span>
                               {ag.speaker && (
-                                <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded w-max sm:w-auto">
+                                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded w-max sm:w-auto">
                                   Phụ trách: {ag.speaker}
                                 </span>
                               )}

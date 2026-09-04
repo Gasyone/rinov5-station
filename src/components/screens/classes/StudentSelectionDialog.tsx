@@ -287,7 +287,7 @@ export function StudentSelectionDialog({
                 }`}
               >
                 <span>Phù hợp Trình độ</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'suitable'
                     ? 'bg-background text-primary'
                     : 'bg-primary/20 text-primary'
@@ -302,7 +302,7 @@ export function StudentSelectionDialog({
                 className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
               >
                 <span>Tất cả</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'all'
                     ? 'bg-background text-primary'
                     : 'bg-muted text-muted-foreground'
@@ -317,7 +317,7 @@ export function StudentSelectionDialog({
                 className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
               >
                 <span>Học thử</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'trial'
                     ? 'bg-background text-primary'
                     : 'bg-muted text-muted-foreground'
@@ -332,7 +332,7 @@ export function StudentSelectionDialog({
                 className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
               >
                 <span>Chờ xếp lớp</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'waiting'
                     ? 'bg-background text-primary'
                     : 'bg-muted text-muted-foreground'
@@ -348,7 +348,7 @@ export function StudentSelectionDialog({
                 className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
               >
                 <span>Xếp lớp sau</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'enroll_later'
                     ? 'bg-background text-primary'
                     : 'bg-muted text-muted-foreground'
@@ -363,7 +363,7 @@ export function StudentSelectionDialog({
                 className="h-7 text-xs px-3 shrink-0 rounded-lg gap-1.5"
               >
                 <span>Chờ chuyển lớp</span>
-                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                <span className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${
                   studentTab === 'pending_transfer'
                     ? 'bg-background text-primary'
                     : 'bg-muted text-muted-foreground'
@@ -442,13 +442,13 @@ export function StudentSelectionDialog({
                         </div>
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-foreground truncate">{student.name}</div>
-                          <div className="text-[11px] text-muted-foreground font-mono truncate">
+                          <div className="text-xs text-muted-foreground font-mono truncate">
                             {studentCode} • {maskPhone(student.phone)}
                           </div>
                         </div>
                       </div>
                       <div className="col-span-1">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground">
                           {student.level}
                         </span>
                       </div>
@@ -456,7 +456,7 @@ export function StudentSelectionDialog({
                         <div className="text-xs text-muted-foreground font-medium truncate">
                           {getMockPackage(student.id, student.level)}
                         </div>
-                        <div className="text-[11px] text-muted-foreground/70 font-mono truncate">
+                        <div className="text-xs text-muted-foreground/70 font-mono truncate">
                           Hạn: {getMockPackageExpiryDate(student.id)}
                         </div>
                       </div>
@@ -473,7 +473,7 @@ export function StudentSelectionDialog({
                       </div>
                       <div className="col-span-2 text-right">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${getStatusBadgeClass(
+                          className={`px-2 py-0.5 rounded-full text-xs font-bold border ${getStatusBadgeClass(
                             student.status
                           )}`}
                         >

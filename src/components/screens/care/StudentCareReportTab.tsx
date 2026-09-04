@@ -14,13 +14,13 @@ import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/Lea
 import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
 import { toast } from 'sonner'
 import { SemesterEvaluationDialog } from './SemesterEvaluationDialog'
-import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { ClassTestsDialog } from './ClassTestsDialog'
 import { ClassAttendanceDialog } from './ClassAttendanceDialog'
 import { ClassHomeworkDialog } from './ClassHomeworkDialog'
 import { ClassEvaluationDialog } from './ClassEvaluationDialog'
 import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { generateSessionHistory, getMockMonthlyReports, getMockEvaluations, type SessionHistory, type SemesterEvaluationData } from './studentCareReportHelpers'
+import { buildMultiClassSessions } from './careModalFilterHelpers'
 import { HistoricalClassesList } from './HistoricalClassesList'
 import { CareReportSmartCards } from './CareReportSmartCards'
 import { CareSessionTimelineList } from './CareSessionTimelineList'
@@ -141,6 +141,7 @@ export function StudentCareReportTab({
     testSessions: SessionHistory[]
     isEnglish: boolean
     className: string
+    packageId?: string
   } | null>(null)
   
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false)
@@ -149,12 +150,14 @@ export function StudentCareReportTab({
     testSessions: SessionHistory[]
     className: string
     classCode: string
+    packageId?: string
   } | null>(null)
 
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false)
   const [homeworkModalData, setHomeworkModalData] = useState<{
     regularSessions: SessionHistory[]
     className: string
+    packageId?: string
   } | null>(null)
 
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false)
@@ -162,6 +165,7 @@ export function StudentCareReportTab({
     regularSessions: SessionHistory[]
     testSessions: SessionHistory[]
     className: string
+    packageId?: string
   } | null>(null)
 
   const [reportTitle, setReportTitle] = useState('')
@@ -298,7 +302,7 @@ export function StudentCareReportTab({
     const listToUse = packagesList.length > 0 ? packagesList : (activePackage ? [activePackage] : [])
     return listToUse.map((pkg) => {
       const pkgIsEnglish = !pkg.packageName.toLowerCase().includes('toán')
-      const pkgSessions = generateSessionHistory(studentId, pkgIsEnglish)
+      const pkgSessions = generateSessionHistory(studentId, pkgIsEnglish, pkg.id)
       const allRegular = pkgSessions.filter(s => s.type === 'lesson')
       const allTest = pkgSessions.filter(s => s.type === 'test')
 
@@ -307,20 +311,14 @@ export function StudentCareReportTab({
       let evals = [currentClassEval]
 
       if (pkg.id === 'pkg-3') {
-        regular = allRegular.filter(s => s.sessionNumber <= 4)
-        test = allTest.filter(s => s.sessionNumber <= 4)
         evals = [oldClassEval]
       } else if (pkg.id === 'pkg-2') {
-        regular = allRegular.slice(0, 5).map((s, idx) => ({ ...s, sessionNumber: idx + 1 }))
-        test = allTest.slice(0, 1).map((s) => ({ ...s, sessionNumber: 6 }))
         evals = [supplementalClassEval]
       } else if (pkg.id === 'pkg-4') {
         regular = []
         test = []
         evals = []
       } else {
-        regular = allRegular.filter(s => s.sessionNumber >= 5)
-        test = allTest.filter(s => s.sessionNumber >= 5)
         evals = [currentClassEval, oldClassEval]
       }
 
@@ -370,6 +368,10 @@ export function StudentCareReportTab({
       }
     })
   }, [packagesList, activePackage, studentId, oldClassEval, currentClassEval, supplementalClassEval, monthlyReports, customReports, selectedMonth, evalOverrides, reportOverrides])
+
+  const multiClassData = useMemo(() => {
+    return buildMultiClassSessions(classDataForPackages, activePackage?.id || '')
+  }, [classDataForPackages, activePackage])
 
   return (
     <div className="w-full space-y-6 text-left p-0 select-none">
@@ -519,7 +521,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                 {/* Row 1: Program Selector (Header bar with soft background tint) */}
                 <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-3 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-3">
                   <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium shrink-0">Lớp:</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium shrink-0">Lớp:</span>
                     {visiblePackages.map((pItem) => {
                       const isSelected = pItem.id === selectedPackageId
                       const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
@@ -583,7 +585,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 pt-1 text-left">
                   {/* Group 1: Cơ sở & CS phụ trách (Đổi CS ở ngay sau tên CS, có PersonnelHoverCard) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Cơ sở & CS phụ trách</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Cơ sở & CS phụ trách</span>
                     <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
                       <span>{currentBranchName}</span>
                       <span className="text-border/60 font-normal">•</span>
@@ -622,8 +624,8 @@ Phát huy tinh thần chủ động sáng tạo.`,
                           </PopoverTrigger>
                           <PopoverContent align="start" className="w-64 p-2.5 space-y-2 text-xs z-50 shadow-md border bg-popover text-popover-foreground">
                             <div className="pb-1 border-b border-border/40 space-y-0.5">
-                              <p className="font-bold text-foreground text-[11px]">Đổi CS phụ trách</p>
-                              <p className="text-[10px] text-muted-foreground italic">Danh sách thuộc {currentBranchName}</p>
+                              <p className="font-bold text-foreground text-xs">Đổi CS phụ trách</p>
+                              <p className="text-xs text-muted-foreground italic">Danh sách thuộc {currentBranchName}</p>
                             </div>
                             
                             <div className="relative flex items-center">
@@ -639,7 +641,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                             <div className="max-h-52 overflow-y-auto space-y-1 pt-0.5">
                               {filteredBranchCsList.length === 0 ? (
-                                <p className="text-[11px] text-muted-foreground italic text-center py-2">Không tìm thấy nhân viên thuộc cơ sở</p>
+                                <p className="text-xs text-muted-foreground italic text-center py-2">Không tìm thấy nhân viên thuộc cơ sở</p>
                               ) : (
                                 filteredBranchCsList.map((csItem) => (
                                   <button
@@ -674,7 +676,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 2: KCT & Trình độ */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">KCT & Trình độ</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">KCT & Trình độ</span>
                     <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
                       <SyllabusProfileHoverCard cls={classRecordForHover}>
                         <span className="hover:underline cursor-pointer">
@@ -690,13 +692,13 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 3: Gói học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Gói học</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Gói học</span>
                     <span className="text-xs font-normal text-foreground block">{pkg.packageName}</span>
                   </div>
 
                   {/* Group 4: Lịch học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Lịch học</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Lịch học</span>
                     <span className="text-xs font-normal text-foreground block">
                       {pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
                     </span>
@@ -704,7 +706,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 5: Ngày bắt đầu - Hạn học */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Ngày bắt đầu - Hạn học</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Ngày bắt đầu - Hạn học</span>
                     <span className="text-xs font-normal text-foreground block">
                       {pkg.startDate ? (pkg.startDate.includes('-') ? pkg.startDate.split('-').reverse().join('/') : pkg.startDate) : '01/05/2026'} - {pkg.endDate || '25/10/2026'}
                     </span>
@@ -712,7 +714,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
 
                   {/* Group 6: Giáo viên (GV) (Lịch sử đổi GV dạng icon cam + (3) ở ngay sau tên GV) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Giáo viên (GV)</span>
+                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Giáo viên (GV)</span>
                     {staffInfo && (
                       <div className="flex items-center gap-1 text-xs flex-wrap font-normal text-foreground">
                         {staffInfo.teachers.map((teacher, idx) => {
@@ -736,7 +738,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                               title="Lịch sử đổi giáo viên (3)"
                             >
                               <History className="h-3.5 w-3.5 text-amber-500/80" />
-                              <span className="text-[11px] font-semibold text-amber-600/90 dark:text-amber-400/90">(3)</span>
+                              <span className="text-xs font-semibold text-amber-600/90 dark:text-amber-400/90">(3)</span>
                             </button>
                           }
                         />
@@ -769,14 +771,16 @@ Phát huy tinh thần chủ động sáng tạo.`,
                             regularSessions,
                             testSessions,
                             className: pkg.className,
-                            classCode: pkg.classCode
+                            classCode: pkg.classCode,
+                            packageId: pkg.id,
                           })
                           setIsAttendanceModalOpen(true)
                         }}
                         onOpenHomework={() => {
                           setHomeworkModalData({
                             regularSessions,
-                            className: pkg.className
+                            className: pkg.className,
+                            packageId: pkg.id,
                           })
                           setIsHomeworkModalOpen(true)
                         }}
@@ -784,7 +788,8 @@ Phát huy tinh thần chủ động sáng tạo.`,
                           setTestsModalData({
                             testSessions,
                             isEnglish: pkgIsEnglish,
-                            className: pkg.className
+                            className: pkg.className,
+                            packageId: pkg.id,
                           })
                           setIsTestsModalOpen(true)
                         }}
@@ -792,7 +797,8 @@ Phát huy tinh thần chủ động sáng tạo.`,
                           setEvaluationModalData({
                             regularSessions,
                             testSessions,
-                            className: pkg.className
+                            className: pkg.className,
+                            packageId: pkg.id,
                           })
                           setIsEvaluationModalOpen(true)
                         }}
@@ -814,6 +820,7 @@ Phát huy tinh thần chủ động sáng tạo.`,
                         regularSessions,
                         testSessions,
                         className: pkg.className,
+                        packageId: pkg.id,
                       })
                       setIsEvaluationModalOpen(true)
                     }}
@@ -902,6 +909,9 @@ Phát huy tinh thần chủ động sáng tạo.`,
           testSessions={testsModalData.testSessions}
           isEnglish={testsModalData.isEnglish}
           className={testsModalData.className}
+          multiClassSessions={multiClassData.allTestSessions}
+          classList={multiClassData.classList}
+          initialPackageId={testsModalData.packageId || 'all'}
         />
       )}
 
@@ -913,6 +923,9 @@ Phát huy tinh thần chủ động sáng tạo.`,
           testSessions={attendanceModalData.testSessions}
           className={attendanceModalData.className}
           classCode={attendanceModalData.classCode}
+          multiClassSessions={multiClassData.allAttendanceSessions}
+          classList={multiClassData.classList}
+          initialPackageId={attendanceModalData.packageId || 'all'}
           onOpenLeave={(date) => { setSelectedLeaveDate(date); setLeaveDialogOpen(true); }}
         />
       )}
@@ -923,6 +936,9 @@ Phát huy tinh thần chủ động sáng tạo.`,
           onOpenChange={setIsHomeworkModalOpen}
           regularSessions={homeworkModalData.regularSessions}
           className={homeworkModalData.className}
+          multiClassSessions={multiClassData.allHomeworkSessions}
+          classList={multiClassData.classList}
+          initialPackageId={homeworkModalData.packageId || 'all'}
         />
       )}
 
@@ -933,6 +949,9 @@ Phát huy tinh thần chủ động sáng tạo.`,
           regularSessions={evaluationModalData.regularSessions}
           testSessions={evaluationModalData.testSessions}
           className={evaluationModalData.className}
+          multiClassSessions={multiClassData.allEvaluationSessions}
+          classList={multiClassData.classList}
+          initialPackageId={evaluationModalData.packageId || 'all'}
         />
       )}
     </div>

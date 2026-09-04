@@ -23,7 +23,7 @@ export function CalendarClassScheduleFooter() {
           <span className="h-3 w-3 rounded-full bg-red-500 border border-red-600 dark:bg-red-400 shadow-2xs" />
           <span className="font-semibold text-red-700 dark:text-red-400 flex items-center gap-1">
             Ngày khai giảng (Lớp mới)
-            <span className="inline-flex rounded bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-1.5 py-0.5 text-[8px] font-bold uppercase">
+            <span className="inline-flex rounded bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-1.5 py-0.5 text-xs font-bold uppercase">
               KHAI GIẢNG
             </span>
           </span>

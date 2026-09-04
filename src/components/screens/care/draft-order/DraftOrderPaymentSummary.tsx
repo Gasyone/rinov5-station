@@ -13,6 +13,10 @@ interface DraftOrderPaymentSummaryProps {
   setPaymentOption: (val: 'MOT_LAN' | 'NHIEU_LAN') => void
   paymentMethod: 'COD' | 'BANK'
   setPaymentMethod: (val: 'COD' | 'BANK') => void
+  isDepositStudyNow?: boolean
+  setIsDepositStudyNow?: (val: boolean) => void
+  isDepositAdvance?: boolean
+  setIsDepositAdvance?: (val: boolean) => void
   onSubmit: () => void
   onCreateLandingPage?: () => void
   onAddPaymentMore?: () => void
@@ -30,6 +34,10 @@ export function DraftOrderPaymentSummary({
   setPaymentOption,
   paymentMethod,
   setPaymentMethod,
+  isDepositStudyNow = true,
+  setIsDepositStudyNow,
+  isDepositAdvance = true,
+  setIsDepositAdvance,
   onSubmit,
   onCreateLandingPage,
   onAddPaymentMore,
@@ -65,7 +73,7 @@ export function DraftOrderPaymentSummary({
         {/* Số tiền cần thanh toán & Đã thanh toán */}
         <div className="space-y-1 py-0.5 border-b border-border/40 pb-2">
           <div className="flex justify-between items-center">
-            <span className="font-bold text-slate-800 dark:text-zinc-200 text-[11px] uppercase">
+            <span className="font-bold text-slate-800 dark:text-zinc-200 text-xs uppercase">
               • SỐ TIỀN CẦN THANH TOÁN
             </span>
             <span className="font-bold font-mono text-indigo-600 dark:text-indigo-400 text-xs">
@@ -73,7 +81,7 @@ export function DraftOrderPaymentSummary({
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="font-bold text-slate-800 dark:text-zinc-200 text-[11px] uppercase">
+            <span className="font-bold text-slate-800 dark:text-zinc-200 text-xs uppercase">
               • SỐ TIỀN ĐÃ THANH TOÁN
             </span>
             <span className="font-bold font-mono text-slate-900 dark:text-white text-xs">
@@ -111,11 +119,38 @@ export function DraftOrderPaymentSummary({
               <option value="BANK">Chuyển khoản</option>
             </select>
           </div>
+
+          {/* Deposit Mode Checkboxes when NHIEU_LAN is selected */}
+          {paymentOption === 'NHIEU_LAN' && (
+            <div className="pt-1.5 space-y-1.5 border-t border-border/30">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={isDepositAdvance}
+                  onChange={(e) => setIsDepositAdvance?.(e.target.checked)}
+                  className="rounded border-input text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+                />
+                <span>Cọc trước tiền</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={isDepositStudyNow}
+                  onChange={(e) => setIsDepositStudyNow?.(e.target.checked)}
+                  className="rounded border-input text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+                />
+                <span className="font-medium text-indigo-700 dark:text-indigo-300">
+                  Cọc học luôn (Quy đổi cho học luôn)
+                </span>
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Transaction History Timeline Box (CHỈ HIỆN KHI ĐÃ CÓ THANH TOÁN > 0) */}
         {totalPaidAmount > 0 && (
-          <div className="p-2 rounded-lg bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 space-y-1 text-[11px] font-mono">
+          <div className="p-2 rounded-lg bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 space-y-1 text-xs font-mono">
             <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 font-semibold text-[10.5px]">
               <span>🎯 08:24:51 - 12/06/2026 (Phiếu thu)</span>
             </div>

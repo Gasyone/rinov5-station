@@ -78,7 +78,7 @@ export function InfoField({
 }: InfoFieldProps) {
   return (
     <div className={cn('min-w-0', className)}>
-      <div className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+      <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
         {icon}
         {label}
       </div>

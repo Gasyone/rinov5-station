@@ -185,7 +185,7 @@ export function ClassesSemesterEvaluationDialog({
                 Form
               </Button>
             </div>
-            <label className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground cursor-pointer select-none">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={viewAllAttended}
@@ -211,7 +211,7 @@ export function ClassesSemesterEvaluationDialog({
             <>
               {/* Left Student List Sidebar */}
               <aside className="w-[280px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
-                <div className="p-3 border-b text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="p-3 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Học sinh ({displayedStudents.length})
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar bg-white dark:bg-zinc-950">
@@ -233,7 +233,7 @@ export function ClassesSemesterEvaluationDialog({
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className={cn(
-                            "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border",
+                            "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border",
                             isSelected
                               ? "bg-primary/20 border-primary/20 text-primary"
                               : "bg-muted border-transparent text-muted-foreground group-hover:bg-background"
@@ -247,13 +247,13 @@ export function ClassesSemesterEvaluationDialog({
                                 return (
                                   <div className="flex flex-col min-w-0 leading-tight">
                                     <span className="truncate font-bold text-xs">{np.englishName}</span>
-                                    <span className="truncate text-[11px] text-muted-foreground font-normal">{np.vietnameseName}</span>
+                                    <span className="truncate text-xs text-muted-foreground font-normal">{np.vietnameseName}</span>
                                   </div>
                                 )
                               }
                               return <p className="truncate font-semibold leading-tight">{np.vietnameseName}</p>
                             })()}
-                            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{student.code}</p>
+                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{student.code}</p>
                           </div>
                         </div>
                         {isSaved && (
@@ -280,7 +280,7 @@ export function ClassesSemesterEvaluationDialog({
                         <p className="text-xs text-muted-foreground mt-0.5">Mã học viên: {selectedStudent.code}</p>
                       </div>
                       {currentEval.isSubmitted && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
+                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs">
                           <Check className="h-3.5 w-3.5 stroke-[2.5px]" />
                           Đã hoàn thành đánh giá
                         </span>
@@ -407,7 +407,7 @@ export function ClassesSemesterEvaluationDialog({
                               value={currentEval.vocabLearned}
                               onChange={(e) => handleUpdateField('vocabLearned', e.target.value)}
                               placeholder="Điền các chủ điểm từ vựng phân cách bởi dấu chấm phẩy ;"
-                              className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
+                              className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -416,7 +416,7 @@ export function ClassesSemesterEvaluationDialog({
                               value={currentEval.vocabNotLearned}
                               onChange={(e) => handleUpdateField('vocabNotLearned', e.target.value)}
                               placeholder="Các chủ điểm từ vựng HS chưa ghi nhớ"
-                              className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
+                              className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
                             />
                           </div>
                         </div>
@@ -451,7 +451,7 @@ export function ClassesSemesterEvaluationDialog({
                               value={currentEval.grammarLearned}
                               onChange={(e) => handleUpdateField('grammarLearned', e.target.value)}
                               placeholder="Các cấu trúc cách nhau bởi ;"
-                              className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
+                              className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
                             />
                           </div>
                           <div className="space-y-1.5">
@@ -460,7 +460,7 @@ export function ClassesSemesterEvaluationDialog({
                               value={currentEval.grammarNotLearned}
                               onChange={(e) => handleUpdateField('grammarNotLearned', e.target.value)}
                               placeholder="Các cấu trúc cách nhau bởi ;"
-                              className="text-[11px] min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
+                              className="text-xs min-h-[80px] bg-background border-zinc-200 rounded-lg shadow-2xs"
                             />
                           </div>
                         </div>

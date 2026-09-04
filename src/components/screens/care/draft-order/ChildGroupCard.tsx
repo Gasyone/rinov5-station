@@ -82,17 +82,17 @@ export function ChildProfileHoverCard({
             <div className="space-y-0.5 min-w-0 flex-1">
               <div className="flex items-center justify-between gap-1">
                 <h4 className="font-bold text-xs text-foreground truncate">{child.name}</h4>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                   {child.status || 'Đang học'}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Mã HV: <strong className="font-semibold text-foreground">{child.studentId}</strong> • SĐT: {child.account}
               </p>
             </div>
           </div>
 
-          <div className="text-[11px] space-y-1 pt-2 border-t border-border/50 text-muted-foreground">
+          <div className="text-xs space-y-1 pt-2 border-t border-border/50 text-muted-foreground">
             <div className="flex items-center justify-between">
               <span>Cơ sở học:</span>
               <span className="font-medium text-foreground">{child.branch || 'Rino Linh Đàm'}</span>
@@ -124,10 +124,12 @@ export function ChildProfileHoverCard({
 function CleanChildSelect({
   value,
   assignedChildAccounts = [],
+  childOptions = RICH_CHILD_OPTIONS,
   onChange,
 }: {
   value: string
   assignedChildAccounts?: string[]
+  childOptions?: ChildDataOption[]
   onChange: (val: string, name: string) => void
 }) {
   const [isOpen, setIsOpen] = React.useState(false)
@@ -143,7 +145,7 @@ function CleanChildSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const selectedChild = RICH_CHILD_OPTIONS.find((c) => c.value === value)
+  const selectedChild = childOptions.find((c) => c.value === value)
 
   return (
     <div ref={containerRef} className={`relative min-w-[200px] ${isOpen ? 'z-50' : 'z-10'}`}>
@@ -162,7 +164,7 @@ function CleanChildSelect({
       {/* Dropdown Options Panel: CLEAN 1-LINE LIST OF NAMES ONLY */}
       {isOpen && (
         <div className="absolute left-0 top-full mt-1 w-full min-w-[220px] bg-white dark:bg-zinc-900 border border-border rounded-lg shadow-xl z-[120] p-1 space-y-0.5 overflow-hidden">
-          {RICH_CHILD_OPTIONS.map((opt) => {
+          {childOptions.map((opt) => {
             const isSelected = opt.value === value
             const isDisabled = assignedChildAccounts.includes(opt.value) && opt.value !== value
 
@@ -184,7 +186,7 @@ function CleanChildSelect({
                 }`}
               >
                 <span>{opt.name}</span>
-                {isDisabled && <span className="text-[10px] font-normal text-muted-foreground ml-1.5">(Đã chọn ở nhóm khác)</span>}
+                {isDisabled && <span className="text-xs font-normal text-muted-foreground ml-1.5">(Đã chọn ở nhóm khác)</span>}
               </div>
             )
           })}
@@ -197,6 +199,7 @@ function CleanChildSelect({
 interface ChildGroupCardProps {
   group: ChildGroup
   assignedChildAccounts?: string[]
+  childOptions?: ChildDataOption[]
   canRemoveGroup?: boolean
   onUpdateGroupChild: (groupId: string, childAccount: string, childName: string) => void
   onRemoveGroup: (groupId: string) => void
@@ -210,6 +213,7 @@ interface ChildGroupCardProps {
 export function ChildGroupCard({
   group,
   assignedChildAccounts = [],
+  childOptions = RICH_CHILD_OPTIONS,
   canRemoveGroup = true,
   onUpdateGroupChild,
   onRemoveGroup,
@@ -219,7 +223,7 @@ export function ChildGroupCard({
   onResetItem,
   onOpenChildProfile,
 }: ChildGroupCardProps) {
-  const selectedChild = RICH_CHILD_OPTIONS.find((c) => c.value === group.childAccount)
+  const selectedChild = childOptions.find((c) => c.value === group.childAccount)
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-border/80 rounded-xl shadow-2xs overflow-visible">
@@ -239,6 +243,7 @@ export function ChildGroupCard({
             <CleanChildSelect
               value={group.childAccount}
               assignedChildAccounts={assignedChildAccounts}
+              childOptions={childOptions}
               onChange={(val, name) => onUpdateGroupChild(group.id, val, name)}
             />
 

@@ -150,7 +150,7 @@ export function StudentDetailClasses({
                       type="button"
                       variant="outline"
                       size="xs"
-                      className="text-[10px] h-7 px-2.5 flex items-center gap-1 border-primary/20 hover:border-primary text-primary hover:bg-primary/5 cursor-pointer font-semibold shadow-2xs"
+                      className="text-xs h-7 px-2.5 flex items-center gap-1 border-primary/20 hover:border-primary text-primary hover:bg-primary/5 cursor-pointer font-semibold shadow-2xs"
                       onClick={() => {
                         if (activeLinkedPkg) handleOpenAssignClass(activeLinkedPkg)
                       }}
@@ -163,7 +163,7 @@ export function StudentDetailClasses({
                       type="button"
                       variant="outline"
                       size="xs"
-                      className="text-[10px] h-7 px-2.5 flex items-center gap-1 text-destructive hover:text-destructive border-destructive/20 hover:border-destructive hover:bg-destructive/5 cursor-pointer font-semibold shadow-2xs"
+                      className="text-xs h-7 px-2.5 flex items-center gap-1 text-destructive hover:text-destructive border-destructive/20 hover:border-destructive hover:bg-destructive/5 cursor-pointer font-semibold shadow-2xs"
                       onClick={() => {
                         setSelectedClassToManage(activeClass)
                         setConfirmDropOpen(true)

@@ -144,7 +144,7 @@ export function ClassesSessionAttendanceTab({
                 🎉 Welcome new students join in class!
               </span>
             </div>
-            <span className="text-[9px] font-bold text-amber-800 dark:text-amber-400 uppercase font-mono bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase font-mono bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 rounded-md">
               {welcomeStudents.length} Học viên
             </span>
           </div>
@@ -153,7 +153,7 @@ export function ClassesSessionAttendanceTab({
             <div className="mt-3 overflow-x-auto border-t border-amber-200/40 dark:border-amber-900/30 pt-3">
               <table className="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-amber-200/30 dark:border-amber-900/20 text-[9px] uppercase font-extrabold text-[#92400e]/80 dark:text-amber-400/80 tracking-wider">
+                  <tr className="border-b border-amber-200/30 dark:border-amber-900/20 text-xs uppercase font-extrabold text-[#92400e]/80 dark:text-amber-400/80 tracking-wider">
                     <th className="pb-2 pr-4 font-bold text-left w-[200px]">Student</th>
                     <th className="pb-2 px-4 font-bold text-center w-[120px]">Attendance</th>
                     <th className="pb-2 px-4 font-bold text-center w-[120px]">Do homework</th>

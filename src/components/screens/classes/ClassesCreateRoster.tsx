@@ -91,12 +91,12 @@ function StudentCardItem({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground truncate">{name}</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground shrink-0">
+              <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground shrink-0">
                 {level || '—'}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-              <span className="font-mono text-[10px] text-muted-foreground/80">{code}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+              <span className="font-mono text-xs text-muted-foreground/80">{code}</span>
               <span>•</span>
               <span className="truncate">{currentPackage}</span>
               <span>•</span>
@@ -140,7 +140,7 @@ function StudentCardItem({
 
       {/* Bottom Row: Full-width Note with inline italic Xem thêm / Thu gọn */}
       {noteContent && (
-        <div className="w-full border-t border-border/40 pt-1.5 mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+        <div className="w-full border-t border-border/40 pt-1.5 mt-0.5 text-xs text-muted-foreground leading-relaxed">
           <span className="font-normal text-muted-foreground mr-1">Ghi chú:</span>
           <span>
             {isExpanded ? (
@@ -150,7 +150,7 @@ function StudentCardItem({
                   <button
                     type="button"
                     onClick={() => setIsExpanded(false)}
-                    className="text-[11px] italic font-medium text-primary hover:underline cursor-pointer ml-1 inline-block"
+                    className="text-xs italic font-medium text-primary hover:underline cursor-pointer ml-1 inline-block"
                   >
                     Thu gọn
                   </button>
@@ -163,7 +163,7 @@ function StudentCardItem({
                   <button
                     type="button"
                     onClick={() => setIsExpanded(true)}
-                    className="text-[11px] italic font-medium text-primary hover:underline cursor-pointer ml-1 inline-block"
+                    className="text-xs italic font-medium text-primary hover:underline cursor-pointer ml-1 inline-block"
                   >
                     Xem thêm
                   </button>
@@ -369,7 +369,7 @@ export function ClassesCreateRoster({
   const isNearCapacity = capacityPercent >= 90
 
   const getTabClass = (isActive: boolean) =>
-    `text-[11px] h-6.5 px-2.5 rounded-full shrink-0 font-medium transition-all border cursor-pointer ${
+    `text-xs h-6.5 px-2.5 rounded-full shrink-0 font-medium transition-all border cursor-pointer ${
       isActive
         ? 'bg-primary text-primary-foreground border-primary font-semibold shadow-2xs'
         : 'bg-background text-foreground/80 border-border/80 hover:bg-muted hover:text-foreground hover:border-muted-foreground/40'
@@ -397,7 +397,7 @@ export function ClassesCreateRoster({
               <Users className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground">Học viên trong lớp</h3>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Danh sách học viên đã được xếp vào lớp học này.
             </p>
           </div>
@@ -408,7 +408,7 @@ export function ClassesCreateRoster({
                 variant="ghost"
                 size="xs"
                 onClick={() => setConfirmRemoveAll(true)}
-                className="text-[11px] h-7 font-semibold text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="text-xs h-7 font-semibold text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-3.5 w-3.5 mr-1" /> Xóa tất cả ({students.length})
               </Button>
@@ -484,7 +484,7 @@ export function ClassesCreateRoster({
                   variant="outline"
                   size="xs"
                   onClick={handleAddAllFiltered}
-                  className="text-[11px] h-7 font-semibold shrink-0"
+                  className="text-xs h-7 font-semibold shrink-0"
                 >
                   <Plus className="h-3 w-3 mr-1" /> Thêm tất cả ({unselectedFilteredStudents.length})
                 </Button>

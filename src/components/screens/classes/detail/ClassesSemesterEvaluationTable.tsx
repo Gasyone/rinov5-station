@@ -50,7 +50,7 @@ export function ClassesSemesterEvaluationTable({
                     <div className="flex items-center gap-3">
                       <Info className="h-4 w-4 text-cyan-500 fill-cyan-500/10 shrink-0" />
                       <div className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 overflow-hidden",
+                        "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden",
                         getAvatarColor(student.id)
                       )}>
                         {student.avatar ? (

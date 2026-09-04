@@ -55,16 +55,16 @@ export function ClassesTimetableCard({
         )}
       >
         {/* Dòng 1: Thời gian • Phòng • Trạng thái */}
-        <div className="flex items-center justify-between gap-1 text-[11px] min-w-0">
+        <div className="flex items-center justify-between gap-1 text-xs min-w-0">
           <div className="flex items-center gap-1.5 shrink-0 text-foreground font-semibold">
             <span>{slot.timeLabel}</span>
-            <span className="text-muted-foreground font-mono text-[10px]">@{slot.room}</span>
+            <span className="text-muted-foreground font-mono text-xs">@{slot.room}</span>
           </div>
 
           <StatusBadge
             status={cls.status}
             label={CLASS_STATUS_LABELS[cls.status]}
-            className="text-[9px] px-1 py-0 h-4 shadow-none shrink-0"
+            className="text-xs px-1 py-0 h-4 shadow-none shrink-0"
           />
         </div>
 
@@ -84,7 +84,7 @@ export function ClassesTimetableCard({
             </TooltipContent>
           </Tooltip>
 
-          <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+          <span className="text-xs text-muted-foreground font-mono shrink-0">
             {cls.code}
           </span>
         </div>
@@ -97,7 +97,7 @@ export function ClassesTimetableCard({
 
           <span
             className={cn(
-              'shrink-0 text-[10px] font-medium font-mono',
+              'shrink-0 text-xs font-medium font-mono',
               availableSlots > 0
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-rose-600 dark:text-rose-400'

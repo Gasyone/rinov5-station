@@ -379,30 +379,30 @@ export function ClassesDetailRoster({
                         <div className="relative flex items-center gap-2 min-w-0">
                           <HoverCard>
                             <HoverCardTrigger asChild>
-                              <div className="flex h-7 w-7 shrink-0 cursor-help items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-[9px] font-bold text-primary">
+                              <div className="flex h-7 w-7 shrink-0 cursor-help items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
                                 {initials}
                               </div>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-72 p-3" align="start">
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2 border-b border-muted pb-2">
-                                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary">
+                                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
                                     {initials}
                                   </div>
                                   <div>
                                     <h4 className="text-xs font-bold text-foreground">{student.name}</h4>
-                                    <p className="font-mono text-[9px] text-muted-foreground">{student.code}</p>
+                                    <p className="font-mono text-xs text-muted-foreground">{student.code}</p>
                                   </div>
                                 </div>
                                 <div className="space-y-1.5 text-xs text-muted-foreground">
-                                  <p className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">
+                                  <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                                     LIÊN HỆ GIA ĐÌNH
                                   </p>
                                   {(student.parents?.length ? student.parents : [{ name: student.parentName, phone: student.parentPhone, relationship: 'Phụ huynh' }]).map((parent, pi) => (
                                     <div key={`${student.id}-hover-${pi}`} className="flex items-center justify-between py-1">
                                       <div>
                                         <div className="text-xs font-semibold text-foreground">{parent.name} ({parent.relationship})</div>
-                                        <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">{maskPhoneUtil(parent.phone)}</div>
+                                        <div className="mt-0.5 font-mono text-xs text-muted-foreground">{maskPhoneUtil(parent.phone)}</div>
                                       </div>
                                       <div className="flex shrink-0 items-center gap-1">
                                         <Button
@@ -446,11 +446,11 @@ export function ClassesDetailRoster({
                               {student.name}
                             </button>
                             <div className="mt-0.5 flex items-center gap-1 min-w-0">
-                              <span className="font-mono text-[10px] text-muted-foreground truncate">{student.code}</span>
+                              <span className="font-mono text-xs text-muted-foreground truncate">{student.code}</span>
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  'text-[9px] px-1 py-0 font-bold shrink-0 shadow-none border leading-tight h-4 rounded-md truncate max-w-[65px]',
+                                  'text-xs px-1 py-0 font-bold shrink-0 shadow-none border leading-tight h-4 rounded-md truncate max-w-[65px]',
                                   milestoneTag.colorClass
                                 )}
                               >
@@ -536,7 +536,7 @@ export function ClassesDetailRoster({
                           )}>
                             {attendanceRate}%
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono leading-none">
+                          <span className="text-xs text-muted-foreground font-mono leading-none">
                             {attended}/{totalSessions}
                           </span>
                         </div>
@@ -553,7 +553,7 @@ export function ClassesDetailRoster({
                           )}>
                             {hwRate}%
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono leading-none">
+                          <span className="text-xs text-muted-foreground font-mono leading-none">
                             {hwDone}/{hwTotal}
                           </span>
                         </div>
@@ -568,7 +568,7 @@ export function ClassesDetailRoster({
                             </span>
                             {getTrendIcon(trend)}
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                          <span className="text-xs text-muted-foreground font-mono mt-0.5">
                             {prevScore}
                           </span>
                         </div>
@@ -638,7 +638,7 @@ export function ClassesDetailRoster({
                                 e.stopPropagation()
                                 setIsMonthlyReportModalOpen(true)
                               }}
-                              className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/40 hover:bg-primary/10 hover:text-primary rounded-md cursor-pointer"
+                              className="h-6 px-2 text-xs font-semibold text-primary border-primary/40 hover:bg-primary/10 hover:text-primary rounded-md cursor-pointer"
                               title="Tạo mới báo cáo tháng (Tự động làm mới từ 25 hàng tháng)"
                             >
                               <span>Tạo mới</span>

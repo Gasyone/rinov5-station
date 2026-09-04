@@ -1,12 +1,20 @@
 'use client'
 
-import { ExpandableSearch, FilterIconButton, ToolbarSelect, BranchSelect } from '@/components/controls'
+import {
+  ExpandableSearch,
+  FilterIconButton,
+  ToolbarSelect,
+  BranchSelect,
+} from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { STUDENT_STATUS_CONFIG } from '@/components/screens/students/studentTypes'
+import type { StudentCareAlert } from '@/mocks/careAlerts'
+import { RenewalSmartcardPopover } from './RenewalSmartcardPopover'
 
 interface RenewalToolbarProps {
+  alerts: StudentCareAlert[]
   searchQuery: string
   onSearchChange: (query: string) => void
   activeFilterCount: number
@@ -21,19 +29,12 @@ interface RenewalToolbarProps {
   careProgressTab: string
   onCareProgressTabChange: (tab: string) => void
   careProgressTiles: StatusTile<string>[]
-  selectedMonth: string
-  onMonthChange: (month: string) => void
-  alertsCount?: number
-  exportFields: { id: string; label: string; defaultChecked?: boolean }[]
-  onConfirmExport: (
-    selectedIds: string[],
-    filters: { month: string; startDate: string; endDate: string }
-  ) => void
-  viewMode: 'table' | 'dashboard'
-  onViewModeChange: (mode: 'table' | 'dashboard') => void
+  selectedExpiryPeriod: string
+  onExpiryPeriodChange: (period: string) => void
 }
 
 export function RenewalToolbar({
+  alerts,
   searchQuery,
   onSearchChange,
   activeFilterCount,
@@ -48,17 +49,12 @@ export function RenewalToolbar({
   careProgressTab,
   onCareProgressTabChange,
   careProgressTiles,
-  selectedMonth,
-  onMonthChange,
-  alertsCount: _alertsCount,
-  exportFields: _exportFields,
-  onConfirmExport: _onConfirmExport,
-  viewMode: _viewMode,
-  onViewModeChange: _onViewModeChange,
+  selectedExpiryPeriod,
+  onExpiryPeriodChange,
 }: RenewalToolbarProps) {
   return (
     <div className="flex flex-col gap-0 bg-background px-3 py-3 lg:px-3">
-      {/* Row 1: Branch, Subject, Student Status, Search + Filter */}
+      {/* Row 1: Branch, Subject, Student Status, Search + Filter + Smartcard Popover */}
       <div className="flex items-center justify-between flex-wrap gap-3 pb-2.5">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Branch Selector */}
@@ -80,7 +76,7 @@ export function RenewalToolbar({
             options={[
               { value: 'all', label: 'Tất cả môn học' },
               { value: 'Tiếng Anh', label: 'Tiếng Anh' },
-              { value: 'Toán tư duy', label: 'Toán tư duy' }
+              { value: 'Toán tư duy', label: 'Toán tư duy' },
             ]}
             onValueChange={onSubjectChange}
             className="h-8 text-xs min-w-[140px]"
@@ -113,6 +109,9 @@ export function RenewalToolbar({
             count={activeFilterCount > 0 ? activeFilterCount : undefined}
             onClick={onOpenFilter}
           />
+
+          {/* Smartcard Popover Chỉ số tài chính tái phí */}
+          <RenewalSmartcardPopover alerts={alerts} />
         </div>
       </div>
 
@@ -122,50 +121,75 @@ export function RenewalToolbar({
           <StatusTiles
             tiles={careProgressTiles}
             activeId={careProgressTab}
-            onSelect={(id) => onCareProgressTabChange(careProgressTab === id && id !== 'all' ? 'all' : id)}
+            onSelect={(id) =>
+              onCareProgressTabChange(careProgressTab === id && id !== 'all' ? 'all' : id)
+            }
           />
         </div>
 
         <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-border/40 dark:border-zinc-800">
-          <span className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap">Hạn học phí:</span>
+          <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+            Hạn học phí:
+          </span>
           <RadioGroup
-            value={selectedMonth}
-            onValueChange={onMonthChange}
+            value={selectedExpiryPeriod}
+            onValueChange={onExpiryPeriodChange}
             className="flex items-center gap-2.5"
           >
             <div className="flex items-center gap-1 cursor-pointer" title="Tất cả học viên">
               <RadioGroupItem value="all" id="month-all" className="cursor-pointer" />
-              <Label htmlFor="month-all" className="text-xs cursor-pointer font-medium whitespace-nowrap text-muted-foreground hover:text-foreground">
+              <Label
+                htmlFor="month-all"
+                className="text-xs cursor-pointer font-medium whitespace-nowrap text-muted-foreground hover:text-foreground"
+              >
                 Tất cả
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T1: Hết hạn học phí trong vòng 1 tháng tới (Khẩn cấp)">
-              <RadioGroupItem 
-                value="1" 
-                id="month-1" 
-                className="cursor-pointer border-red-500 text-red-600 focus-visible:ring-red-400 data-[state=checked]:border-red-600" 
+            <div
+              className="flex items-center gap-1 cursor-pointer"
+              title="Hạn T1: Hết hạn học phí trong vòng 1 tháng tới (Khẩn cấp)"
+            >
+              <RadioGroupItem
+                value="1"
+                id="month-1"
+                className="cursor-pointer border-red-500 text-red-600 focus-visible:ring-red-400 data-[state=checked]:border-red-600"
               />
-              <Label htmlFor="month-1" className="text-xs cursor-pointer font-bold whitespace-nowrap text-red-600 dark:text-red-400">
+              <Label
+                htmlFor="month-1"
+                className="text-xs cursor-pointer font-bold whitespace-nowrap text-red-600 dark:text-red-400"
+              >
                 Hạn T1 (≤ 1T)
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T2: Hết hạn học phí trong 1 - 2 tháng tới">
-              <RadioGroupItem 
-                value="2" 
-                id="month-2" 
-                className="cursor-pointer border-amber-500 text-amber-600 focus-visible:ring-amber-400 data-[state=checked]:border-amber-600" 
+            <div
+              className="flex items-center gap-1 cursor-pointer"
+              title="Hạn T2: Hết hạn học phí trong 1 - 2 tháng tới"
+            >
+              <RadioGroupItem
+                value="2"
+                id="month-2"
+                className="cursor-pointer border-amber-500 text-amber-600 focus-visible:ring-amber-400 data-[state=checked]:border-amber-600"
               />
-              <Label htmlFor="month-2" className="text-xs cursor-pointer font-bold whitespace-nowrap text-amber-600 dark:text-amber-400">
+              <Label
+                htmlFor="month-2"
+                className="text-xs cursor-pointer font-bold whitespace-nowrap text-amber-600 dark:text-amber-400"
+              >
                 Hạn T2 (1-2T)
               </Label>
             </div>
-            <div className="flex items-center gap-1 cursor-pointer" title="Hạn T3: Hết hạn học phí trong 2 - 3 tháng tới">
-              <RadioGroupItem 
-                value="3" 
-                id="month-3" 
-                className="cursor-pointer border-emerald-500 text-emerald-600 focus-visible:ring-emerald-400 data-[state=checked]:border-emerald-600" 
+            <div
+              className="flex items-center gap-1 cursor-pointer"
+              title="Hạn T3: Hết hạn học phí trong 2 - 3 tháng tới"
+            >
+              <RadioGroupItem
+                value="3"
+                id="month-3"
+                className="cursor-pointer border-emerald-500 text-emerald-600 focus-visible:ring-emerald-400 data-[state=checked]:border-emerald-600"
               />
-              <Label htmlFor="month-3" className="text-xs cursor-pointer font-bold whitespace-nowrap text-emerald-600 dark:text-emerald-400">
+              <Label
+                htmlFor="month-3"
+                className="text-xs cursor-pointer font-bold whitespace-nowrap text-emerald-600 dark:text-emerald-400"
+              >
                 Hạn T3 (2-3T)
               </Label>
             </div>
@@ -175,5 +199,3 @@ export function RenewalToolbar({
     </div>
   )
 }
-
-

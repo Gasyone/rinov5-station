@@ -164,7 +164,7 @@ export function ClassesSessionQualityEvaluation({
             Chất lượng
           </h3>
           {issues.length > 0 && (
-            <Badge variant="secondary" className="rounded-full text-[10px] font-bold px-1.5 py-0 h-4">
+            <Badge variant="secondary" className="rounded-full text-xs font-bold px-1.5 py-0 h-4">
               {issues.length}
             </Badge>
           )}
@@ -175,7 +175,7 @@ export function ClassesSessionQualityEvaluation({
             variant="outline"
             size="xs"
             onClick={() => setIsAddDialogOpen(true)}
-            className="h-6 text-[10px] gap-1 px-2 rounded-lg cursor-pointer border-amber-200 dark:border-amber-900/60 bg-amber-50/50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 shrink-0"
+            className="h-6 text-xs gap-1 px-2 rounded-lg cursor-pointer border-amber-200 dark:border-amber-900/60 bg-amber-50/50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 shrink-0"
           >
             <Plus className="h-3 w-3" /> Thêm vấn đề
           </Button>
@@ -202,7 +202,7 @@ export function ClassesSessionQualityEvaluation({
               >
                 {/* Category & Static Readonly Status Badge */}
                 <div className="flex items-center justify-between gap-1.5">
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
                     <CatIcon className="h-3 w-3 text-zinc-400 shrink-0" />
                     {CATEGORY_MAP[issue.category]?.label}
                   </span>
@@ -211,7 +211,7 @@ export function ClassesSessionQualityEvaluation({
                   <div className="flex items-center gap-1">
                     <Badge
                       variant="outline"
-                      className={`rounded-full text-[10px] font-bold px-2 py-0.5 border ${getStatusBadgeClass(
+                      className={`rounded-full text-xs font-bold px-2 py-0.5 border ${getStatusBadgeClass(
                         issue.status
                       )}`}
                     >
@@ -235,7 +235,7 @@ export function ClassesSessionQualityEvaluation({
                 </p>
 
                 {/* Footer metadata */}
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
                   <span>Bởi: {issue.author}</span>
                   <span>{issue.createdAt}</span>
                 </div>
@@ -250,7 +250,7 @@ export function ClassesSessionQualityEvaluation({
         <button
           type="button"
           onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-          className="w-full flex items-center justify-between text-[11px] font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline py-1 cursor-pointer"
+          className="w-full flex items-center justify-between text-xs font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline py-1 cursor-pointer"
         >
           <span className="flex items-center gap-1.5">
             <History className="h-3.5 w-3.5" />
@@ -261,7 +261,7 @@ export function ClassesSessionQualityEvaluation({
 
         {isHistoryExpanded && (
           <div className="mt-2 space-y-2 animate-in fade-in-50">
-            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Lịch sử các buổi trước ({MOCK_HISTORICAL_ISSUES.length})
             </div>
             {MOCK_HISTORICAL_ISSUES.map((hist) => {
@@ -271,26 +271,26 @@ export function ClassesSessionQualityEvaluation({
                   key={hist.id}
                   className="rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2 space-y-1 text-xs"
                 >
-                  <div className="flex items-center justify-between gap-1 text-[10px]">
+                  <div className="flex items-center justify-between gap-1 text-xs">
                     <span className="font-semibold text-foreground flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                       {hist.sessionName}
                     </span>
                     <Badge
                       variant="outline"
-                      className={`rounded-full text-[9px] font-bold px-1.5 py-0 border ${getStatusBadgeClass(
+                      className={`rounded-full text-xs font-bold px-1.5 py-0 border ${getStatusBadgeClass(
                         hist.status
                       )}`}
                     >
                       {STATUS_LABELS[hist.status]}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <CatIcon className="h-3 w-3" />
                     <span>{CATEGORY_MAP[hist.category]?.label}</span>
                   </div>
-                  <p className="text-[11px] text-zinc-700 dark:text-zinc-300">{hist.description}</p>
-                  <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300">{hist.description}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{hist.author}</span>
                     <span>{hist.createdAt}</span>
                   </div>
@@ -352,13 +352,13 @@ export function ClassesSessionQualityEvaluation({
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className={`rounded-full text-[10px] font-bold px-2 py-0.5 border ${getStatusBadgeClass(
+                  className={`rounded-full text-xs font-bold px-2 py-0.5 border ${getStatusBadgeClass(
                     newStatus
                   )}`}
                 >
                   {STATUS_LABELS[newStatus]}
                 </Badge>
-                <span className="text-[10px] text-muted-foreground italic">
+                <span className="text-xs text-muted-foreground italic">
                   (Trạng thái sẽ được bộ phận CS/CARE cập nhật sau)
                 </span>
               </div>

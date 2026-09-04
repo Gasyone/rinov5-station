@@ -130,8 +130,8 @@ export function StudentProfileHoverCard({
             </div>
 
             {/* Sub-info: Student Code, Birthdate, Gender */}
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
-              <span className="font-mono font-semibold text-foreground bg-muted px-1.5 py-0.2 rounded text-[10px]">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+              <span className="font-mono font-semibold text-foreground bg-muted px-1.5 py-0.2 rounded text-xs">
                 {studentCode}
               </span>
               <span>•</span>
@@ -156,7 +156,7 @@ export function StudentProfileHoverCard({
                 <span className="font-extrabold text-cyan-900 dark:text-cyan-200 text-[10.5px] uppercase tracking-wide">
                   HỌC VIÊN MỚI (TRIAL / HỌC THỬ)
                 </span>
-                <span className="text-[9px] font-extrabold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 px-1.5 py-0.2 rounded-full border border-cyan-300/60">
+                <span className="text-xs font-extrabold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 px-1.5 py-0.2 rounded-full border border-cyan-300/60">
                   Buổi 1/2
                 </span>
               </div>

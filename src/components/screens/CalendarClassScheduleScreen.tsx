@@ -49,7 +49,7 @@ export function CalendarClassScheduleScreen() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState('all')
+  const [activeBranch, setActiveBranch] = useState(SYSTEM_BRANCHES[0] ?? 'RinoEdu Nguyễn Tuân')
   const [activeSubject, setActiveSubject] = useState('all')
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
 

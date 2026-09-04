@@ -218,7 +218,7 @@ export function StudentHeaderInfoCard({
             <StatusBadge
               status={statusKey || status}
               label={statusLabel || (status.includes('_') ? undefined : status)}
-              className="text-[10px] font-bold py-0.5 px-2.5 shadow-none"
+              className="text-xs font-bold py-0.5 px-2.5 shadow-none"
             />
           </div>
 
@@ -238,7 +238,7 @@ export function StudentHeaderInfoCard({
               type="button"
               onClick={() => setShowCodes((prev) => !prev)}
               className={cn(
-                "inline-flex items-center gap-1 text-[10px] transition-colors cursor-pointer select-none shrink-0 py-0.5",
+                "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5",
                 showCodes
                   ? "text-primary font-bold"
                   : "text-muted-foreground hover:text-foreground font-medium"
@@ -254,7 +254,7 @@ export function StudentHeaderInfoCard({
           {/* Row 2: Codes CID, UID, SID */}
           {showCodes && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1.5 px-2.5 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200">
-              <span className="flex items-center gap-1 font-mono text-[11px]">
+              <span className="flex items-center gap-1 font-mono text-xs">
                 <ShieldCheck className="h-3 w-3 text-primary" /> CID: <strong className="text-foreground font-semibold">{cid}</strong>
                 <button
                   type="button"
@@ -266,7 +266,7 @@ export function StudentHeaderInfoCard({
                 </button>
               </span>
               <span className="text-muted-foreground/30">•</span>
-              <span className="flex items-center gap-1 font-mono text-[11px]">
+              <span className="flex items-center gap-1 font-mono text-xs">
                 UID: <strong className="text-foreground font-semibold">{uid}</strong>
                 <button
                   type="button"
@@ -278,7 +278,7 @@ export function StudentHeaderInfoCard({
                 </button>
               </span>
               <span className="text-muted-foreground/30">•</span>
-              <span className="flex items-center gap-1 font-mono text-[11px]">
+              <span className="flex items-center gap-1 font-mono text-xs">
                 SID: <strong className="text-foreground font-semibold">{sid}</strong>
                 <button
                   type="button"
@@ -397,7 +397,7 @@ export function StudentHeaderInfoCard({
             />
             <Button
               size="sm"
-              className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] rounded-md cursor-pointer"
+              className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-md cursor-pointer"
               onClick={() => {
                 setNoteText(editingNoteText)
                 setIsEditingNote(false)
@@ -409,7 +409,7 @@ export function StudentHeaderInfoCard({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-1.5 text-muted-foreground text-[10px] cursor-pointer"
+              className="h-6 px-1.5 text-muted-foreground text-xs cursor-pointer"
               onClick={() => setIsEditingNote(false)}
             >
               Hủy
@@ -479,10 +479,10 @@ export function StudentHeaderInfoCard({
                       <History className="h-3.5 w-3.5" />
                       Lịch sử ghi chú học viên
                     </h5>
-                    <div className="space-y-2 text-[11px]">
+                    <div className="space-y-2 text-xs">
                       {mockStudentNoteHistory.map((entry) => (
                         <div key={entry.id} className="border-l-2 border-amber-500 pl-2 space-y-0.5">
-                          <div className="flex justify-between text-muted-foreground text-[10px]">
+                          <div className="flex justify-between text-muted-foreground text-xs">
                             <span>{entry.author}</span>
                             <span>{entry.date}</span>
                           </div>

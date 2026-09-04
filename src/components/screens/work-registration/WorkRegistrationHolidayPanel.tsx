@@ -324,7 +324,7 @@ export function WorkRegistrationHolidayPanel({
       <DataTableFrame className="flex-1 min-h-0">
         <div className="h-full min-h-0 overflow-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="sticky top-0 z-10 bg-muted/70 text-muted-foreground uppercase text-[10px] font-bold tracking-wider border-b">
+            <thead className="sticky top-0 z-10 bg-muted/70 text-muted-foreground uppercase text-xs font-bold tracking-wider border-b">
               <tr>
                 <th className="py-2.5 px-3 w-9 text-center">
                   <Checkbox
@@ -369,7 +369,7 @@ export function WorkRegistrationHolidayPanel({
                             <span>{item.name}</span>
                             {item.isRecurring && (
                               <span
-                                className="inline-flex items-center gap-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 px-1.5 py-0.2 text-[9px] font-semibold"
+                                className="inline-flex items-center gap-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 px-1.5 py-0.2 text-xs font-semibold"
                                 title="Lặp lại hàng năm"
                               >
                                 <Repeat className="h-2.5 w-2.5" />
@@ -378,7 +378,7 @@ export function WorkRegistrationHolidayPanel({
                             )}
                           </div>
                           {item.description && (
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                               {item.description}
                             </p>
                           )}
@@ -429,7 +429,7 @@ export function WorkRegistrationHolidayPanel({
                         {item.scopes?.map((sc) => (
                           <span
                             key={sc}
-                            className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground"
+                            className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-foreground"
                           >
                             {sc}
                           </span>

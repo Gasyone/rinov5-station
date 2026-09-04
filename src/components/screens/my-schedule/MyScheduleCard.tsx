@@ -126,7 +126,7 @@ export function MyScheduleCard({
               <div
                 className={cn(
                   'flex min-w-0 items-center gap-1 font-bold text-primary',
-                  compact ? 'text-[9px]' : 'text-[11px]',
+                  compact ? 'text-xs' : 'text-xs',
                   isCancelled && 'text-muted-foreground'
                 )}
               >
@@ -153,7 +153,7 @@ export function MyScheduleCard({
 
             <div className="flex items-center gap-1 shrink-0 ml-0.5 mt-0.5">
               {slot.type === 'placement_test' && (
-                <span className={cn('inline-block shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold', getStatusBadgeClass(slot.type))}>
+                <span className={cn('inline-block shrink-0 rounded border px-1 py-0.5 text-xs font-semibold', getStatusBadgeClass(slot.type))}>
                   {slot.typeLabel}
                 </span>
               )}
@@ -173,12 +173,12 @@ export function MyScheduleCard({
           {isClass ? (
             <div className="mt-1 flex items-center gap-x-1.5 min-w-0 w-full overflow-hidden whitespace-nowrap">
               {slot.classCode && (
-                <span className="text-[9px] font-bold text-foreground shrink-0">
+                <span className="text-xs font-bold text-foreground shrink-0">
                   {slot.classCode}
                 </span>
               )}
               {slot.subject && (
-                <span className="text-[9px] text-muted-foreground font-medium truncate flex-1 min-w-0" title={`${slot.subject} - ${slot.level}`}>
+                <span className="text-xs text-muted-foreground font-medium truncate flex-1 min-w-0" title={`${slot.subject} - ${slot.level}`}>
                   {slot.subject} - {slot.level}
                 </span>
               )}
@@ -213,7 +213,7 @@ export function MyScheduleCard({
               </div>
             ) : (
               /* Regular compact slot (60 mins+) - multiple small lines stacked */
-              <div className="space-y-1 text-[9px] text-muted-foreground">
+              <div className="space-y-1 text-xs text-muted-foreground">
                 {/* Room & Branch */}
                 <div className="flex items-center gap-1 truncate">
                   {isClass ? (
@@ -273,7 +273,7 @@ export function MyScheduleCard({
             )
           ) : (
             /* Full expanded view layout */
-            <div className="mt-1.5 space-y-1 text-[10px] text-muted-foreground">
+            <div className="mt-1.5 space-y-1 text-xs text-muted-foreground">
               <div className="flex min-w-0 items-center gap-1.5">
                 {isClass ? (
                   <BookOpen className="h-3.5 w-3.5 shrink-0" />
@@ -288,7 +288,7 @@ export function MyScheduleCard({
 
               <div className="flex items-center justify-between mt-1">
                 {isClass && slot.totalStudents !== undefined ? (
-                  <div className="flex items-center gap-1 text-[10px]">
+                  <div className="flex items-center gap-1 text-xs">
                     {/* Dấu tích V cho những lớp đã hoàn thành điểm danh */}
                     {slot.attendedStudents !== undefined && (
                       <span
@@ -310,13 +310,13 @@ export function MyScheduleCard({
                 )}
 
                 {slot.substituteTeacher && (
-                  <span className="text-[9px] font-bold text-sky-700 dark:text-sky-400">
+                  <span className="text-xs font-bold text-sky-700 dark:text-sky-400">
                     Dạy thay: {slot.substituteTeacher}
                   </span>
                 )}
               </div>
               {slot.note && (
-                <div className="flex items-start gap-1.5 text-[9px] text-muted-foreground/90 mt-1.5 border-t border-border/20 pt-1">
+                <div className="flex items-start gap-1.5 text-xs text-muted-foreground/90 mt-1.5 border-t border-border/20 pt-1">
                   <FileText className="h-3 w-3 shrink-0 mt-0.5 text-muted-foreground/60" />
                   <span className="line-clamp-2 italic" title={slot.note}>
                     {slot.note}

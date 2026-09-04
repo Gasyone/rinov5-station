@@ -407,7 +407,7 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
   const classification = getRenewalClassification(item)
   const hash = stableHash(item.studentId)
 
-  // 1. Học viên Mới -> Chưa có đơn hàng nháp -> Hiển thị nút "+ Tạo đơn nháp"
+  // 1. Học viên Mới -> Chưa có đơn hàng nháp
   if (classification === 'moi') {
     return {
       orderCode: undefined,
@@ -417,7 +417,7 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     }
   }
 
-  // 2. Học viên Cân nhắc / Tiềm năng / Hẹn tái -> Đa số hiển thị nút "+ Tạo đơn nháp" hoặc đơn nháp đang giữ chỗ/chưa cọc
+  // 2. Học viên Cân nhắc / Tiềm năng / Hẹn tái
   if (classification === 'can_nhac' || classification === 'tiem_nang' || classification === 'hen_tai') {
     if (hash % 2 === 0) {
       return {
@@ -456,5 +456,100 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
   }
 }
 
+/**
+ * Formats full product SKU for student based on subject, level, and sessions
+ * e.g. [IE_TUTOR] Ielts Intermediate PLUS 5.0_40 buổi
+ */
+export function getProductSku(item: StudentCareAlert): string {
+  const sessions = item.totalSessions || 40
+  const isMath = item.subject === 'Toán tư duy'
+  
+  if (isMath) {
+    if (item.level.toLowerCase().includes('einstein') || item.level === 'Level 0' || item.level === 'Einstein 0') {
+      return `[MATH_PRE] Toán Einstein 0_${sessions} buổi`
+    }
+    if (item.level.toLowerCase().includes('archimedes') || item.level === 'Level 1' || item.level === 'Level 2') {
+      return `[MATH_ARCH] Toán Archimedes ${item.level}_${sessions} buổi`
+    }
+    return `[MATH_TUTOR] Toán Tư Duy ${item.level}_${sessions} buổi`
+  }
 
+  // Tiếng Anh
+  if (item.level === 'Level 5' || item.level.toLowerCase().includes('tutor') || item.level.toLowerCase().includes('5')) {
+    return `[IE_TUTOR] Ielts Intermediate PLUS 5.0_${sessions} buổi`
+  }
+  if (item.level === 'Level 0' || item.level.toLowerCase().includes('kindy')) {
+    return `[IE_KID] Tiếng Anh Kindy 0_${sessions} buổi`
+  }
+  if (item.level === 'Level 4') {
+    return `[IE_SUPER] Tiếng Anh SuperKids Level 4_${sessions} buổi`
+  }
+  if (item.level === 'Level 2') {
+    return `[IE_MOVERS] Tiếng Anh Movers Level 2_${sessions} buổi`
+  }
+  if (item.level === 'Level 1') {
+    return `[IE_STARTERS] Tiếng Anh Starters Level 1_${sessions} buổi`
+  }
+  return `[IE_PRO] Tiếng Anh ${item.level}_${sessions} buổi`
+}
 
+// Tag extraction helpers
+export function getStudentActiveTags(item: StudentCareAlert) {
+  const tags = []
+  const hash = stableHash(item.studentId)
+  const avgScore = ((item.lastTestScore + item.priorTestScore) / 2).toFixed(1)
+
+  // 1. CS Đặc biệt (Red / Error) -> ĐB
+  if (item.careAlert === 'C90B' || item.homeworkCompletion < 70 || parseFloat(avgScore) < 5.0) {
+    tags.push('ĐB1')
+  }
+
+  // 2. CS Định kỳ (Purple) -> ĐK
+  if (hash % 3 === 0) {
+    tags.push('ĐK1')
+    tags.push('ĐK2')
+  } else if (hash % 4 === 0) {
+    tags.push('ĐK1')
+  }
+
+  // 3. CS Theo buổi (Warning / Amber) -> TB
+  if (item.remainingSessions <= 5 || hash % 5 === 0) {
+    tags.push('TB1')
+  }
+  if (hash % 6 === 0) {
+    tags.push('TB2')
+  }
+
+  // 4. CS Tái phí (Success / Green) -> CSTP
+  tags.push('CSTP')
+
+  const completed = item.completedCareTags || []
+  return tags.filter((tag) => !completed.includes(tag))
+}
+
+export function hasActiveTags(item: StudentCareAlert) {
+  return getStudentActiveTags(item).length > 0
+}
+
+// Predicates for renewal progress
+export const isMoi = (item: StudentCareAlert) => getRenewalClassification(item) === 'moi'
+export const isCanNhac = (item: StudentCareAlert) => getRenewalClassification(item) === 'can_nhac'
+export const isTiemNang = (item: StudentCareAlert) => getRenewalClassification(item) === 'tiem_nang'
+export const isHenTai = (item: StudentCareAlert) => getRenewalClassification(item) === 'hen_tai'
+export const isDaTaiPhi = (item: StudentCareAlert) => getRenewalClassification(item) === 'tai_phi'
+export const isThatBai = (item: StudentCareAlert) => getRenewalClassification(item) === 'that_bai'
+export const isChuaDenHan = (item: StudentCareAlert) => getRenewalClassification(item) === 'chua_den_han'
+
+export const RENEWAL_EXPORT_FIELDS = [
+  { id: 'studentId', label: 'Mã học viên', defaultChecked: true },
+  { id: 'customerCode', label: 'Mã khách hàng', defaultChecked: true },
+  { id: 'studentName', label: 'Họ và tên học viên', defaultChecked: true },
+  { id: 'productName', label: 'Gói sản phẩm hiện tại', defaultChecked: true },
+  { id: 'expectedEndDate', label: 'Hạn kết thúc học phí dự kiến', defaultChecked: true },
+  { id: 'remainingSessions', label: 'Số buổi học còn lại', defaultChecked: true },
+  { id: 'subjectAndSchedule', label: 'Môn học & Lịch học', defaultChecked: true },
+  { id: 'officialRenewalStatus', label: 'Phân loại tái phí thực tế', defaultChecked: true },
+  { id: 'virtualRenewalStatus', label: 'Phân loại tái phí ảo', defaultChecked: true },
+  { id: 'latestRenewalNote', label: 'Ghi chú tương tác tái phí gần nhất', defaultChecked: true },
+  { id: 'csStaff', label: 'Người phụ trách chăm sóc', defaultChecked: true },
+]

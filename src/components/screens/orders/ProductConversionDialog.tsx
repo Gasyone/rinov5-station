@@ -129,7 +129,7 @@ export function ProductConversionDialog({
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs text-left">
           {/* Section 1: Gói hiện tại */}
           <div className="p-3 rounded-xl bg-muted/40 border space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <BookOpen className="h-3.5 w-3.5 text-rose-500" />
               Sản phẩm hiện tại trong đơn
             </span>

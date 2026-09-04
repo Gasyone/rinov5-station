@@ -63,7 +63,7 @@ export function PersonnelHoverCard({
             </Avatar>
             <div className="min-w-0 flex-1">
               <h4 className="text-sm font-bold text-foreground truncate">{person.name}</h4>
-              <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded-md text-[9px] font-mono font-semibold uppercase tracking-wider">
+              <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded-md text-xs font-mono font-semibold uppercase tracking-wider">
                 {staffCode}
               </span>
             </div>
@@ -74,7 +74,7 @@ export function PersonnelHoverCard({
             <div className="flex items-center gap-2">
               <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground block font-semibold uppercase tracking-wide">Chức danh</span>
+                <span className="text-xs text-muted-foreground block font-semibold uppercase tracking-wide">Chức danh</span>
                 <span className="font-semibold text-foreground truncate block">{person.role || '—'}</span>
               </div>
             </div>
@@ -83,7 +83,7 @@ export function PersonnelHoverCard({
               <div className="flex items-center gap-2 min-w-0">
                 <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <div className="min-w-0">
-                  <span className="text-[10px] text-muted-foreground block font-semibold uppercase tracking-wide">Số điện thoại</span>
+                  <span className="text-xs text-muted-foreground block font-semibold uppercase tracking-wide">Số điện thoại</span>
                   <span className="font-semibold text-foreground font-mono truncate block">{person.phone || '—'}</span>
                 </div>
               </div>
@@ -119,13 +119,13 @@ export function PersonnelHoverCard({
             <div className="flex items-center gap-2 border-t border-border/30 pt-2">
               <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] text-muted-foreground block font-semibold uppercase tracking-wide">Email liên hệ</span>
+                <span className="text-xs text-muted-foreground block font-semibold uppercase tracking-wide">Email liên hệ</span>
                 <span className="font-semibold text-foreground truncate block" title={person.email || undefined}>{person.email || '—'}</span>
               </div>
             </div>
 
             {person.isLeave && (
-              <div className="mt-2.5 pt-2 border-t border-dashed border-rose-500/30 text-[11px] text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10 p-2 rounded-lg">
+              <div className="mt-2.5 pt-2 border-t border-dashed border-rose-500/30 text-xs text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10 p-2 rounded-lg">
                 <p className="font-bold flex items-center gap-1">
                   ⚠️ Đang tạm nghỉ (Nghỉ)
                 </p>
@@ -133,7 +133,7 @@ export function PersonnelHoverCard({
             )}
 
             {person.isSubstitute && (
-              <div className="mt-2.5 pt-2 border-t border-dashed border-amber-500/30 text-[11px] text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/10 p-2 rounded-lg">
+              <div className="mt-2.5 pt-2 border-t border-dashed border-amber-500/30 text-xs text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/10 p-2 rounded-lg">
                 <p className="font-bold flex items-center gap-1">
                   ⚠️ Dạy thay {person.date ? `(${person.date})` : ''}
                 </p>

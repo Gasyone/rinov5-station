@@ -55,7 +55,7 @@ export function StudentClassAssignmentSessions({
             <button
               key={tab.id}
               onClick={() => onSetSessionFilter(tab.id)}
-              className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
                 sessionFilter === tab.id
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -106,13 +106,13 @@ export function StudentClassAssignmentSessions({
                     />
                   </TableCell>
                   <TableCell className="py-2.5 px-2 font-bold text-foreground text-xs align-middle">
-                    <span className="text-[10px] font-bold text-primary font-mono uppercase bg-primary/10 px-1.5 py-0.5 rounded border-transparent shrink-0">
+                    <span className="text-xs font-bold text-primary font-mono uppercase bg-primary/10 px-1.5 py-0.5 rounded border-transparent shrink-0">
                       Buổi {session.sessionNumber}
                     </span>
                   </TableCell>
                   <TableCell className="py-2.5 px-2 text-xs font-semibold text-foreground align-middle">
                     <div>{session.date}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 font-normal">
+                    <div className="text-xs text-muted-foreground mt-0.5 font-normal">
                       {session.startTime} - {session.endTime}
                     </div>
                   </TableCell>
@@ -122,7 +122,7 @@ export function StudentClassAssignmentSessions({
                     </div>
                     {session.description && (
                       <div
-                        className="text-[10px] text-muted-foreground mt-0.5 max-w-[280px] truncate"
+                        className="text-xs text-muted-foreground mt-0.5 max-w-[280px] truncate"
                         title={session.description}
                       >
                         {session.description}
@@ -131,7 +131,7 @@ export function StudentClassAssignmentSessions({
                   </TableCell>
                   <TableCell className="py-2.5 px-2 pr-4 text-xs text-muted-foreground align-middle">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-[9px] font-bold shrink-0">
+                      <Avatar className="h-5.5 w-5.5 border bg-primary/10 text-primary text-xs font-bold shrink-0">
                         <AvatarFallback className="font-bold">
                           {getInitials(session.substituteTeacherName || session.teacherName)}
                         </AvatarFallback>

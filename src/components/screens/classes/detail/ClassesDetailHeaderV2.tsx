@@ -57,7 +57,7 @@ export function ClassesDetailHeaderV2({
             <StatusBadge
               status={cls.status}
               label={CLASS_STATUS_LABELS[cls.status]}
-              className="h-5 px-2.5 text-[10px] font-bold tracking-wider uppercase"
+              className="h-5 px-2.5 text-xs font-bold tracking-wider uppercase"
             />
           </DialogTitle>
         </div>
@@ -97,12 +97,12 @@ export function ClassesDetailHeaderV2({
           <div className="flex flex-wrap items-center gap-1.5 justify-end">
             {/* Metric 1: Sĩ số */}
             <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1 min-w-[90px] min-h-[38px] text-center">
-              <span className="text-[9px] font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
+              <span className="text-xs font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
                 Sĩ số
               </span>
               <span className="text-xs font-extrabold text-[#0088cc] font-mono leading-none flex items-center gap-1">
                 <span>{rosterCount}/{cls.maxStudents || 20}</span>
-                <span className="rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 px-1 py-0.2 text-[8px] font-bold whitespace-nowrap">
+                <span className="rounded bg-amber-500/15 text-amber-700 dark:text-amber-400 px-1 py-0.2 text-xs font-bold whitespace-nowrap">
                   +2 học thử
                 </span>
               </span>
@@ -110,7 +110,7 @@ export function ClassesDetailHeaderV2({
 
             {/* Metric 2: Chuyên cần */}
             <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1 min-w-[70px] min-h-[38px] text-center">
-              <span className="text-[9px] font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
+              <span className="text-xs font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
                 Chuyên cần
               </span>
               <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 font-mono leading-none">
@@ -120,7 +120,7 @@ export function ClassesDetailHeaderV2({
 
             {/* Metric 3: Nộp BTVN */}
             <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1 min-w-[70px] min-h-[38px] text-center">
-              <span className="text-[9px] font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
+              <span className="text-xs font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
                 Nộp BTVN
               </span>
               <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 font-mono leading-none">
@@ -130,7 +130,7 @@ export function ClassesDetailHeaderV2({
 
             {/* Metric 4: Điểm KT */}
             <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1 min-w-[70px] min-h-[38px] text-center">
-              <span className="text-[9px] font-semibold uppercase tracking-tight text-muted-foreground mb-0.5 whitespace-nowrap">
+              <span className="text-xs font-semibold uppercase tracking-tight text-muted-foreground mb-0.5 whitespace-nowrap">
                 Điểm KT
               </span>
               <span className="text-xs font-extrabold text-purple-600 dark:text-purple-400 font-mono leading-none">
@@ -140,7 +140,7 @@ export function ClassesDetailHeaderV2({
 
             {/* Metric 5: Đánh giá */}
             <div className="flex flex-col items-center justify-center rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1 min-w-[70px] min-h-[38px] text-center">
-              <span className="text-[9px] font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
+              <span className="text-xs font-semibold uppercase tracking-tight text-muted-foreground mb-0.5">
                 Đánh giá
               </span>
               <span className="text-xs font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-0.5 leading-none">

@@ -27,7 +27,7 @@ export function BookingTestDetailSidePanel({ booking }: BookingTestDetailSidePan
         <div key={idx} className="relative pl-3 border-l-2 border-primary/30 text-xs">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="font-semibold text-foreground">{item.author}</span>
-            <span className="text-[11px] font-mono">{item.timestamp}</span>
+            <span className="text-xs font-mono">{item.timestamp}</span>
           </div>
           <p className="font-normal text-foreground mt-1 leading-relaxed">{item.text}</p>
         </div>

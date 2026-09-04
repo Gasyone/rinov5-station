@@ -268,14 +268,14 @@ export function RenewalHistoryPopover({
                       </h4>
                       {tag.label === 'CSTP' && alertRecord && (
                         <span className={cn(
-                          "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0",
+                          "text-xs font-bold px-1.5 py-0.5 rounded border leading-none shrink-0",
                           getStatusBadgeClass(getRenewalClassification(alertRecord))
                         )}>
                           {getRenewalClassificationLabel(getRenewalClassification(alertRecord))}
                         </span>
                       )}
                     </div>
-                    <div className="text-[9px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                       <span>SLA: <strong className={cn(tag.isOverdue ? "text-rose-500" : "text-emerald-500")}>
                         {tag.isOverdue ? "Quá hạn" : "Trong hạn"}
                       </strong></span>
@@ -289,7 +289,7 @@ export function RenewalHistoryPopover({
                       <Button
                         size="xs"
                         variant="outline"
-                        className="h-5.5 px-2 text-[10px] font-bold text-emerald-600 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 hover:text-emerald-700 flex items-center gap-1"
+                        className="h-5.5 px-2 text-xs font-bold text-emerald-600 border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 hover:text-emerald-700 flex items-center gap-1"
                         onClick={(e) => {
                           e.stopPropagation();
                           setConfirmCompleteTag(tag.label);
@@ -304,8 +304,8 @@ export function RenewalHistoryPopover({
 
                 {/* Trạng thái Tái phí */}
                 {tag.label === 'CSTP' && (
-                  <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/60 p-2 rounded-lg border border-border/50 text-[11px] gap-2">
-                    <span className="font-bold text-muted-foreground uppercase text-[9px] shrink-0">Trạng thái Tái phí:</span>
+                  <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/60 p-2 rounded-lg border border-border/50 text-xs gap-2">
+                    <span className="font-bold text-muted-foreground uppercase text-xs shrink-0">Trạng thái Tái phí:</span>
                     <select
                       value={alertRecord ? getRenewalClassification(alertRecord) : 'can_nhac'}
                       onChange={(e) => {
@@ -332,7 +332,7 @@ export function RenewalHistoryPopover({
 
                 {/* Inline Confirmation */}
                 {isConfirming && (
-                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded p-2 text-[10px] space-y-1.5">
+                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded p-2 text-xs space-y-1.5">
                     <p className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
                       <ShieldAlert className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                       Xác nhận hoàn thành {tag.label}?
@@ -341,7 +341,7 @@ export function RenewalHistoryPopover({
                     <div className="flex gap-1.5 justify-end">
                       <Button
                         size="xs"
-                        className="h-5 text-[9px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2"
+                        className="h-5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           completeCareTag(studentId, tag.label);
@@ -355,7 +355,7 @@ export function RenewalHistoryPopover({
                       <Button
                         size="xs"
                         variant="ghost"
-                        className="h-5 text-[9px] px-2 text-muted-foreground"
+                        className="h-5 text-xs px-2 text-muted-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           setConfirmCompleteTag(null);
@@ -367,21 +367,21 @@ export function RenewalHistoryPopover({
                   </div>
                 )}
 
-                <p className="text-[11px] font-medium text-foreground/80 leading-relaxed bg-muted/25 p-2 rounded mt-2.5 mb-1">
+                <p className="text-xs font-medium text-foreground/80 leading-relaxed bg-muted/25 p-2 rounded mt-2.5 mb-1">
                   {tag.description}
                 </p>
 
                 {/* 3. Add Interaction Form — Send + Call buttons on the LEFT of textarea */}
                 {!readOnly && (
                   <div className="space-y-2">
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                       Ghi nhận tương tác mới
                     </span>
                     
                     <div className="flex gap-1.5 flex-wrap">
-                      <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
-                      <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); }}>Zalo</Button>
-                      <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-[9px] px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); }}>Trực tiếp</Button>
+                      <Button size="xs" type="button" variant={newLogChannel === 'telephone' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('telephone'); }}>Cuộc gọi</Button>
+                      <Button size="xs" type="button" variant={newLogChannel === 'zalo' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('zalo'); }}>Zalo</Button>
+                      <Button size="xs" type="button" variant={newLogChannel === 'direct' ? 'default' : 'outline'} className="h-5.5 text-xs px-2 font-bold" onClick={(e) => { e.stopPropagation(); setNewLogChannel('direct'); }}>Trực tiếp</Button>
                     </div>
                     
                     <div className="flex gap-1.5 items-end">
@@ -389,14 +389,14 @@ export function RenewalHistoryPopover({
                         value={newLogNotes}
                         onChange={(e) => setNewLogNotes(e.target.value)}
                         placeholder="Nhập nội dung tương tác (Call/Zalo)..."
-                        className="flex-1 border rounded p-2 text-[10px] bg-background focus:outline-none focus:ring-1 focus:ring-primary min-h-[55px] resize-none"
+                        className="flex-1 border rounded p-2 text-xs bg-background focus:outline-none focus:ring-1 focus:ring-primary min-h-[55px] resize-none"
                       />
 
                       <div className="flex flex-col gap-1 shrink-0">
                         <Button
                           size="xs"
                           type="button"
-                          className="h-7 px-2.5 text-[9px] font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                          className="h-7 px-2.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!newLogNotes.trim()) { toast.error("Vui lòng nhập nội dung!"); return; }
@@ -414,7 +414,7 @@ export function RenewalHistoryPopover({
                           size="xs"
                           variant="outline"
                           type="button"
-                          className="h-7 px-2.5 text-[9px] font-bold text-sky-600 border-sky-200 bg-sky-50/50 hover:bg-sky-100 hover:text-sky-700 flex items-center gap-1"
+                          className="h-7 px-2.5 text-xs font-bold text-sky-600 border-sky-200 bg-sky-50/50 hover:bg-sky-100 hover:text-sky-700 flex items-center gap-1"
                           onClick={(e) => {
                             e.stopPropagation();
                             const contacts = getFamilyContacts(studentId, studentName);
@@ -433,12 +433,12 @@ export function RenewalHistoryPopover({
 
                     {/* Previous dynamic attempts */}
                     {addedLogs.length > 0 && (
-                      <div className="space-y-1 text-[10px] text-muted-foreground bg-muted/20 p-2 rounded">
-                        <p className="font-bold text-[9px] uppercase tracking-wide text-foreground/80 mb-1">Tương tác vừa ghi nhận:</p>
+                      <div className="space-y-1 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+                        <p className="font-bold text-xs uppercase tracking-wide text-foreground/80 mb-1">Tương tác vừa ghi nhận:</p>
                         {addedLogs.map((itemLog) => (
                           <div key={itemLog.id} className="flex justify-between items-start gap-2">
                             <span>• <strong>{itemLog.callConfirmation}:</strong> {itemLog.notes.replace(`[${tag.label}] `, '')}</span>
-                            <span className="text-[8px] font-mono whitespace-nowrap shrink-0">{itemLog.date}</span>
+                            <span className="text-xs font-mono whitespace-nowrap shrink-0">{itemLog.date}</span>
                           </div>
                         ))}
                       </div>
@@ -448,12 +448,12 @@ export function RenewalHistoryPopover({
 
                 {/* 4. History Logs */}
                 <div className="space-y-2 mt-4">
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
                     Lịch sử chăm sóc ({rawLogs.length})
                   </span>
                   
                   {rawLogs.length === 0 ? (
-                    <p className="text-[10px] text-muted-foreground italic py-1">Chưa có lịch sử chăm sóc.</p>
+                    <p className="text-xs text-muted-foreground italic py-1">Chưa có lịch sử chăm sóc.</p>
                   ) : (
                     <div className="space-y-3 pr-1">
                       {rawLogs.map((log, logIdx) => {
@@ -461,7 +461,7 @@ export function RenewalHistoryPopover({
                           <div key={logIdx} className="flex gap-2.5 items-start text-xs border-b border-border/20 pb-2 last:border-b-0 last:pb-0">
                             <div 
                               className={cn(
-                                "h-6 w-6 rounded-full flex items-center justify-center text-[9px] font-bold border border-background shadow-sm shrink-0 mt-0.5",
+                                "h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold border border-background shadow-sm shrink-0 mt-0.5",
                                 getStaffAvatarColor(log.staff)
                               )}
                               title={`Người thực hiện: ${log.staff}`}
@@ -474,7 +474,7 @@ export function RenewalHistoryPopover({
                                 <span className="font-bold text-foreground flex items-center gap-1">
                                   {log.staff} <span className="font-normal text-muted-foreground">•</span> {log.action}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground/80 font-medium shrink-0">{log.date}</span>
+                                <span className="text-xs text-muted-foreground/80 font-medium shrink-0">{log.date}</span>
                               </div>
 
                               {log.channel === 'telephone' && (
@@ -483,7 +483,7 @@ export function RenewalHistoryPopover({
                                 </div>
                               )}
                               
-                              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                              <p className="text-xs text-muted-foreground leading-snug mt-0.5">
                                 {(() => {
                                   const isGV = log.staff.includes('(GV)') || log.staff.toLowerCase().includes('gv') || log.staff.toLowerCase().includes('giáo viên');
                                   const channel = (log.channel || 'zalo') as string;
@@ -494,7 +494,7 @@ export function RenewalHistoryPopover({
                                     : 'Zalo';
                                   return (
                                     <span className={cn(
-                                      "font-bold text-[8px] px-1 py-0.2 rounded mr-1 inline-block shrink-0 uppercase select-none",
+                                      "font-bold text-xs px-1 py-0.2 rounded mr-1 inline-block shrink-0 uppercase select-none",
                                       isGV 
                                         ? "bg-violet-100 dark:bg-violet-955/40 text-violet-700 dark:text-violet-300"
                                         : "bg-emerald-100 dark:bg-emerald-955/40 text-emerald-700 dark:text-emerald-300"

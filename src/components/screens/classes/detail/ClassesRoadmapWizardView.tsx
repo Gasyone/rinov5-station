@@ -337,7 +337,7 @@ export function ClassesRoadmapWizardView({
         <div className="flex items-center justify-between bg-muted/15 p-4 rounded-xl border border-muted/80">
           <div>
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Cấu hình thay đổi lộ trình</h4>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Chọn Lộ trình, Chương trình và Bài học xuất phát cho các buổi học tiếp theo.
             </p>
           </div>
@@ -403,14 +403,14 @@ export function ClassesRoadmapWizardView({
             </FieldLabel>
 
             {/* Live Configuration Preview Alert (Not Applied yet indicator) */}
-            <div className="text-[11px] bg-primary/[0.02] border border-primary/10 rounded-lg p-2.5 space-y-1 animate-in fade-in duration-100">
+            <div className="text-xs bg-primary/[0.02] border border-primary/10 rounded-lg p-2.5 space-y-1 animate-in fade-in duration-100">
               <span className="font-bold text-primary flex items-center gap-1">
                 📌 Xem trước cấu hình thay đổi (Chưa áp dụng):
               </span>
               <p className="text-xs font-semibold text-foreground mt-0.5">
                 {currentRoadmap.name} — {currentSyllabus.name} (Bắt đầu từ: Bài {currentStartLesson.lessonNumber}: {currentStartLesson.title})
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Thông tin ở Giai đoạn 2 bên dưới vẫn hiển thị cấu hình cũ cho đến khi bạn nhấn nút <strong className="text-primary font-bold">Áp dụng</strong>.
               </p>
             </div>
@@ -459,12 +459,12 @@ export function ClassesRoadmapWizardView({
                     <div className="flex flex-col text-left gap-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         {isCurrent ? (
-                          <span className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
                             <Play className="h-3 w-3 fill-current" />
                             {isSelectorsOpen ? "Lộ trình đang cấu hình" : "Lộ trình đang áp dụng"}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 bg-muted border text-muted-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1.5 bg-muted border text-muted-foreground text-xs font-bold px-2 py-0.5 rounded-full">
                             <CheckCircle2 className="h-3 w-3" />
                             Lộ trình trước đó ({phase.sessions.length} buổi)
                           </span>
@@ -473,7 +473,7 @@ export function ClassesRoadmapWizardView({
                           Giai đoạn {phase.phaseNumber} (Buổi {phase.startSession} - {phase.endSession}): {phase.syllabusName || 'Chưa gán lộ trình'} {!isCurrent && "(Khóa lịch sử)"}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground font-normal italic leading-none">
+                      <p className="text-xs text-muted-foreground font-normal italic leading-none">
                         {isCurrent 
                           ? (lastChangedInfo || "Lộ trình đang được áp dụng hiện tại")
                           : (phase.phaseNumber === 1 
@@ -487,7 +487,7 @@ export function ClassesRoadmapWizardView({
                     {/* Progress Stats & Progress Bar */}
                     <div className="flex items-center gap-3">
                       <span className={cn(
-                        "text-[11px] font-bold font-mono",
+                        "text-xs font-bold font-mono",
                         percent === 100 
                           ? "text-emerald-600 dark:text-emerald-400" 
                           : "text-muted-foreground"
@@ -535,7 +535,7 @@ export function ClassesRoadmapWizardView({
                                   </span>
                                 </div>
                                 {/* Meta info row */}
-                                <div className="flex items-center gap-4 text-[10px] md:text-[11px] text-muted-foreground flex-wrap">
+                                <div className="flex items-center gap-4 text-xs md:text-xs text-muted-foreground flex-wrap">
                                   <span className="flex items-center gap-1">
                                     <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
                                     {session.date} ({session.startTime} - {session.endTime})
@@ -610,7 +610,7 @@ export function ClassesRoadmapWizardView({
                                                   <p className="font-bold text-foreground text-sm leading-snug">{c.name}</p>
                                                   <p className="text-xs text-muted-foreground leading-normal">{line2}</p>
                                                   <p className={cn(
-                                                    "text-[10px] flex items-center gap-1 leading-normal",
+                                                    "text-xs flex items-center gap-1 leading-normal",
                                                     isHomework ? "text-amber-600" : "text-muted-foreground"
                                                   )}>
                                                     {isHomework ? (

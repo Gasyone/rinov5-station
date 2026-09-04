@@ -115,7 +115,7 @@ export function SearchableCombobox<T extends string | string[]>({
             {selectedOptions.map((opt) => (
               <span
                 key={opt.id}
-                className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] font-medium px-2 py-0.5 rounded-full"
+                className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-xs font-medium px-2 py-0.5 rounded-full"
                 onClick={(e) => e.stopPropagation()}
               >
                 {opt.label}
@@ -126,7 +126,7 @@ export function SearchableCombobox<T extends string | string[]>({
                     e.stopPropagation()
                     handleSelect(opt.id)
                   }}
-                  className="hover:bg-primary/20 text-primary/70 rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold text-[9px] cursor-pointer ml-1"
+                  className="hover:bg-primary/20 text-primary/70 rounded-full w-3.5 h-3.5 flex items-center justify-center font-bold text-xs cursor-pointer ml-1"
                 >
                   ×
                 </button>
@@ -200,7 +200,7 @@ export function SearchableCombobox<T extends string | string[]>({
                     />
                   )}
 
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
                     isSelected ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
                   }`}>
                     {initials}
@@ -209,7 +209,7 @@ export function SearchableCombobox<T extends string | string[]>({
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="truncate font-semibold">{opt.label}</span>
                     {opt.subLabel && (
-                      <span className="truncate text-[10px] text-muted-foreground">{opt.subLabel}</span>
+                      <span className="truncate text-xs text-muted-foreground">{opt.subLabel}</span>
                     )}
                   </div>
 

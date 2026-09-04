@@ -245,7 +245,7 @@ export function ClassesTestScoreDialog({
           
           {/* LEFT SIDEBAR: Student List */}
           <aside className="flex flex-col bg-zinc-50/50 dark:bg-zinc-900/30 overflow-y-auto">
-            <div className="sticky top-0 bg-zinc-50 dark:bg-zinc-900/60 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-[10px] uppercase font-bold text-muted-foreground tracking-wider z-10">
+            <div className="sticky top-0 bg-zinc-50 dark:bg-zinc-900/60 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-xs uppercase font-bold text-muted-foreground tracking-wider z-10">
               <span>Student</span>
               <span>{skill} Score</span>
             </div>
@@ -270,7 +270,7 @@ export function ClassesTestScoreDialog({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
+                        "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                         getAvatarColor(student.id)
                       )}>
                         {getInitials(student.name)}
@@ -282,13 +282,13 @@ export function ClassesTestScoreDialog({
                             return (
                               <div className="flex flex-col min-w-0 leading-tight">
                                 <span className="truncate font-bold text-xs">{np.englishName}</span>
-                                <span className="truncate text-[11px] text-muted-foreground font-normal">{np.vietnameseName}</span>
+                                <span className="truncate text-xs text-muted-foreground font-normal">{np.vietnameseName}</span>
                               </div>
                             )
                           }
                           return <p className="font-semibold text-xs truncate leading-snug">{np.vietnameseName}</p>
                         })()}
-                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{student.code}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{student.code}</p>
                       </div>
                     </div>
                     <span className={cn(
@@ -306,7 +306,7 @@ export function ClassesTestScoreDialog({
           {/* RIGHT PANEL: Form */}
           <main className="flex flex-col h-full overflow-hidden">
             {/* Warning Banner */}
-            <div className="shrink-0 bg-amber-50 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/40 px-5 py-2.5 flex flex-wrap gap-3 items-center justify-between text-[11px]">
+            <div className="shrink-0 bg-amber-50 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/40 px-5 py-2.5 flex flex-wrap gap-3 items-center justify-between text-xs">
               <span className="text-amber-800 dark:text-amber-400 font-semibold flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
                 Importance: ONLY USE SEMICOLON ; to separate words, phrases or sentences
@@ -378,7 +378,7 @@ export function ClassesTestScoreDialog({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">3-5 words students used correctly: <span className="text-destructive">*</span></span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">3-5 words students used correctly: <span className="text-destructive">*</span></span>
                         <Textarea
                           value={rubricForm.vocabCorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, vocabCorrect: e.target.value }))}
@@ -387,7 +387,7 @@ export function ClassesTestScoreDialog({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Word(s) students could not used correctly (5 words maximum):</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Word(s) students could not used correctly (5 words maximum):</span>
                         <Textarea
                           value={rubricForm.vocabIncorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, vocabIncorrect: e.target.value }))}
@@ -421,7 +421,7 @@ export function ClassesTestScoreDialog({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Structure(s) students used correctly:</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Structure(s) students used correctly:</span>
                         <Textarea
                           value={rubricForm.grammarCorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, grammarCorrect: e.target.value }))}
@@ -430,7 +430,7 @@ export function ClassesTestScoreDialog({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Structure(s) students could not used correctly:</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Structure(s) students could not used correctly:</span>
                         <Textarea
                           value={rubricForm.grammarIncorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, grammarIncorrect: e.target.value }))}
@@ -464,7 +464,7 @@ export function ClassesTestScoreDialog({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Word(s) students could pronounce (5 words maximum):</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Word(s) students could pronounce (5 words maximum):</span>
                         <Textarea
                           value={rubricForm.pronunciationCorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, pronunciationCorrect: e.target.value }))}
@@ -473,7 +473,7 @@ export function ClassesTestScoreDialog({
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Word(s) students could not pronounce correctly (5 words maximum):</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Word(s) students could not pronounce correctly (5 words maximum):</span>
                         <Textarea
                           value={rubricForm.pronunciationIncorrect}
                           onChange={(e) => setRubricForm((p) => ({ ...p, pronunciationIncorrect: e.target.value }))}
@@ -508,10 +508,10 @@ export function ClassesTestScoreDialog({
                     <div className="grid grid-cols-2 gap-4">
                       {/* Fluency describe input */}
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-[#f43f5e] uppercase">
+                        <span className="text-xs font-bold text-[#f43f5e] uppercase">
                           Words best describe student&apos;s fluency and interaction: *
                         </span>
-                        <p className="text-[9px] text-muted-foreground italic -mt-1">
+                        <p className="text-xs text-muted-foreground italic -mt-1">
                           Click icons <Clipboard className="inline h-3 w-3 mx-0.5" /> to copy the Vietnamese words and paste on the textbox:
                         </p>
                         <Textarea
@@ -525,7 +525,7 @@ export function ClassesTestScoreDialog({
                       {/* Suggestions list */}
                       {showSuggestions && (
                         <div className="space-y-1.5 p-1 animate-fade-in">
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                             Suggestions (Based on rating)
                           </span>
                           <div className="space-y-1.5">
@@ -534,7 +534,7 @@ export function ClassesTestScoreDialog({
                                 key={index}
                                 onClick={() => handleCopySuggestion(item.text)}
                                 className={cn(
-                                  "flex items-center gap-2 text-[10px] px-2 py-1 rounded cursor-pointer transition-colors border select-none",
+                                  "flex items-center gap-2 text-xs px-2 py-1 rounded cursor-pointer transition-colors border select-none",
                                   rubricForm.fluency >= 4 
                                     ? "bg-sky-50/50 hover:bg-sky-100/50 border-sky-100 text-sky-800 dark:bg-sky-950/20 dark:border-sky-900/40 dark:text-sky-300"
                                     : "bg-orange-50/50 hover:bg-orange-100/50 border-orange-100 text-orange-800 dark:bg-orange-950/20 dark:border-orange-900/40 dark:text-orange-300"

@@ -3,11 +3,14 @@
 import { ExpandableSearch, FilterIconButton, ToolbarSelect, BranchSelect } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import { Button } from '@/components/ui/button'
-import { Download, Table2, LayoutGrid } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { StudentCareAlert } from '@/mocks/careAlerts'
 import { CompactExportPopover } from './CompactExportPopover'
+import { OperationsAlertSmartcardPopover } from './OperationsAlertSmartcardPopover'
 
 interface OperationsAlertToolbarProps {
+  alerts: StudentCareAlert[]
   searchQuery: string
   onSearchChange: (query: string) => void
   activeFilterCount: number
@@ -33,8 +36,6 @@ interface OperationsAlertToolbarProps {
     selectedIds: string[],
     filters: { month: string; startDate: string; endDate: string }
   ) => void
-  viewMode: 'table' | 'dashboard'
-  onViewModeChange: (mode: 'table' | 'dashboard') => void
   csdbCounts?: {
     weakAcademic: number
     homework: number
@@ -45,19 +46,16 @@ interface OperationsAlertToolbarProps {
 }
 
 export function OperationsAlertToolbar({
+  alerts,
   searchQuery,
   onSearchChange,
   activeFilterCount,
   onOpenFilter,
-  careViewMode = 'total',
-  onCareViewModeChange,
   selectedBranch,
   onBranchChange,
   branchOptions,
   selectedSubject,
   onSubjectChange,
-  selectedStudentStatus = 'all',
-  onStudentStatusChange,
   careStatusFilter,
   onCareStatusFilterChange,
   careStatusCounts,
@@ -67,8 +65,6 @@ export function OperationsAlertToolbar({
   alertsCount,
   exportFields,
   onConfirmExport,
-  viewMode,
-  onViewModeChange,
   csdbCounts,
   csdbFilter,
   onCsdbFilterChange,
@@ -83,7 +79,7 @@ export function OperationsAlertToolbar({
 
   return (
     <div className="flex flex-col gap-0 bg-background px-1.5 py-1.5 lg:px-1.5">
-      {/* Row 1: Branch, Subject, CSDB Filter, Search + Filter */}
+      {/* Row 1: Branch, Subject, CSDB Filter, Search + Filter + Export + Smartcard Popover */}
       <div className="flex items-center justify-between flex-wrap gap-2 pb-1.5">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Branch Selector */}
@@ -128,40 +124,6 @@ export function OperationsAlertToolbar({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Switch View Buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              size="xs"
-              variant="ghost"
-              className={cn(
-                "h-8 text-xs font-bold flex items-center gap-1.5 cursor-pointer px-2.5 rounded-md transition-colors",
-                viewMode === 'table' 
-                  ? "text-sky-600 hover:text-sky-700 hover:bg-sky-50/50" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-zinc-100"
-              )}
-              onClick={() => onViewModeChange('table')}
-              type="button"
-            >
-              <Table2 className="h-3.5 w-3.5" />
-              Bảng
-            </Button>
-            <Button
-              size="xs"
-              variant="ghost"
-              className={cn(
-                "h-8 text-xs font-bold flex items-center gap-1.5 cursor-pointer px-2.5 rounded-md transition-colors",
-                viewMode === 'dashboard' 
-                  ? "text-sky-600 hover:text-sky-700 hover:bg-sky-50/50" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-zinc-100"
-              )}
-              onClick={() => onViewModeChange('dashboard')}
-              type="button"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Dashboard
-            </Button>
-          </div>
-
           <ExpandableSearch
             value={searchQuery}
             onValueChange={onSearchChange}
@@ -189,6 +151,9 @@ export function OperationsAlertToolbar({
               </Button>
             }
           />
+
+          {/* Smart Card Popover Chỉ số Chăm sóc Học viên */}
+          <OperationsAlertSmartcardPopover alerts={alerts} />
         </div>
       </div>
 
@@ -233,7 +198,7 @@ export function OperationsAlertToolbar({
             >
               <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
               <span>Quá hạn</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold">
+              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold">
                 {dueDateCounts?.overdue ?? 0}
               </span>
             </button>
@@ -250,7 +215,7 @@ export function OperationsAlertToolbar({
             >
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
               <span>Đến hạn</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
+              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
                 {dueDateCounts?.today ?? 0}
               </span>
             </button>
@@ -267,7 +232,7 @@ export function OperationsAlertToolbar({
             >
               <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
               <span>Hẹn gọi lại</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
+              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
                 {dueDateCounts?.rescheduled ?? 0}
               </span>
             </button>

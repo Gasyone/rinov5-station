@@ -45,6 +45,10 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý sự kiện',
     description: 'Quản lý các sự kiện workshop, hội thảo và hoạt động trải nghiệm',
   },
+  crm_my_leads: {
+    label: 'Lead của tôi',
+    description: 'Danh sách Lead và khách hàng tiềm năng được phân bổ cho cá nhân tư vấn phụ trách',
+  },
   crm_leads: {
     label: 'Quản lý Lead',
     description: 'Tiếp nhận, phân bổ và theo dõi trạng thái tương tác với Phụ huynh (người đăng ký/thanh toán) và thông tin con (học viên tiềm năng)',
@@ -54,28 +58,40 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Bảng điều khiển luồng tư vấn Phụ huynh, theo dõi tiến độ test/học thử của con và dự báo doanh số chốt hợp đồng',
   },
   orders: {
-    label: 'Đơn hàng & Thu phí',
+    label: 'Quản lý đơn hàng',
     description: 'Quản lý đơn đăng ký học, trạng thái thanh toán và phát hành biên nhận/hóa đơn',
   },
   payment_receipts: {
-    label: 'Quản lý Phiếu thu',
-    description: 'Quản lý danh sách các phiếu thu tiền học phí, cọc giữ chỗ, thanh toán đơn hàng và biên nhận',
+    label: 'Thanh toán',
+    description: 'Quản lý danh sách các phiếu thanh toán (phiếu thu, phiếu chi/hoàn tiền), lịch sử giao dịch và biên nhận',
   },
   products: {
-    label: 'Gói Sản phẩm & Học phí',
+    label: 'Quản lý sản phẩm',
     description: 'Danh mục các khóa học, gói học phí, combo và chương trình đào tạo thương mại',
   },
+  campaigns: {
+    label: 'Quản lý Chiến dịch',
+    description: 'Thiết lập chiến dịch khuyến mại, quy tắc giảm giá, ngân sách, phân bổ chi phí và điều kiện áp dụng SKU',
+  },
   promotions: {
-    label: 'Khuyến mãi & Ưu đãi',
+    label: 'Quản lý Khuyến mãi',
     description: 'Cấu hình chính sách chiết khấu, mã giảm giá/voucher và quản lý suất học bổng',
   },
   design_system: {
     label: 'Design System',
     description: 'Thư viện thành phần giao diện và hướng dẫn quy chuẩn thiết kế',
   },
-  students: {
+  class_placement: {
     label: 'Xếp lớp học viên',
-    description: 'Danh sách học viên chờ xếp lớp, gói học và lịch sử phân lớp',
+    description: 'Danh sách học viên chờ xếp lớp, gói học và thao tác phân bổ vào lớp học',
+  },
+  students: {
+    label: 'Quản lý Học viên',
+    description: 'Hồ sơ học viên 360°, thông tin cá nhân, học lực, điểm danh và lịch sử đào tạo',
+  },
+  mdm_households: {
+    label: 'Quản lý Khách hàng & Hộ gia đình',
+    description: 'Quản lý danh sách Hộ gia đình, thông tin Phụ huynh (Bố, Mẹ), liên kết các con và công nợ gia đình',
   },
   leave_reserve: {
     label: 'Bảo lưu & Nghỉ phép',
@@ -101,6 +117,10 @@ export const screens: Record<string, ScreenConfig> = {
   care_conditions_config: {
     label: 'Danh mục chăm sóc',
     description: 'Cấu hình Quy tắc & Điều kiện Chăm sóc Học viên (Nguồn chỉ số CSDL, Tiêu chí, SLA & Phân công vai trò phụ trách)',
+  },
+  permissions: {
+    label: 'Nhóm quyền',
+    description: 'Quản lý Topic phân loại, Nhóm quyền và Ma trận cấp phép hành động RBAC & Data Scope',
   },
   support_tickets: {
     label: 'Quản lý Ticket & Chất lượng',

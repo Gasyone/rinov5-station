@@ -52,7 +52,101 @@ export const COMMENTS_POOL = [
   'Năng lực tốt, nên thử thách với bài tập nâng cao.',
 ]
 
-export function generateSessionHistory(studentId: string, isEnglish: boolean): SessionHistory[] {
+export const TOPICS_MATH = [
+  'Phép tính phân số & Hỗn số nâng cao', 'Tỉ số phần trăm & Ứng dụng thực tế',
+  'Hình học trực quan: Diện tích & Thể tích', 'Midterm Test Toán Tư Duy',
+  'Toán chuyển động đều: Cùng chiều & Ngược chiều', 'Phương pháp giải ngược từ cuối',
+  'Toán suy luận Logic & Bảng chân trị', 'Toán tổ hợp & Quy tắc đếm',
+  'Phương pháp giả thiết tạm & Ứng dụng', 'Final Test Toán Tư Duy A1',
+  'Tổng kết chuyên đề & Báo cáo dự án',
+]
+
+export const TOPICS_ENGLISH_LEVEL3 = [
+  'Everyday English: Daily Routines & Hobbies', 'Phonics & Intonation Mastery',
+  'Reading Comprehension: Animals & Nature', 'Midterm Assessment Level 3',
+  'Grammar: Past Simple & Past Continuous', 'Writing: Short Stories & Sequencing',
+  'Speaking: My Favorite Vacation', 'Vocabulary: Environment & Technology',
+  'Group Presentation: Save Our Planet', 'Final Assessment Level 3',
+]
+
+export function generateSessionHistory(studentId: string, isEnglish: boolean, pkgId?: string): SessionHistory[] {
+  // 1. Dữ liệu chuyên biệt cho Lớp Toán Tư Duy Nâng Cao A1 (pkg-2)
+  if (pkgId === 'pkg-2') {
+    const mathDates = [
+      '2026-05-13', '2026-05-20', '2026-05-27', '2026-06-03',
+      '2026-06-17', '2026-06-24', '2026-07-08', '2026-07-29',
+      '2026-08-05', '2026-08-12', '2026-08-19',
+    ]
+    return TOPICS_MATH.map((topic, i) => {
+      const isTest = i === 3 || i === 9
+      const h = stableHash(studentId + 'pkg2' + String(i))
+      const attList: SessionHistory['attendance'][] = ['present', 'present', 'present', 'late', 'present', 'present']
+      const hwList: SessionHistory['homework'][] = ['submitted', 'submitted', 'submitted', 'late', 'submitted']
+      return {
+        id: `sh-pkg2-${i}`,
+        sessionNumber: i + 1,
+        date: mathDates[i] || `2026-08-${String(i + 1).padStart(2, '0')}`,
+        topic,
+        type: isTest ? ('test' as const) : ('lesson' as const),
+        attendance: attList[h % attList.length],
+        homework: hwList[h % hwList.length],
+        rating: Math.min(5, Math.max(3, 4 + (h % 2))),
+        score: isTest ? (i === 3 ? 9.0 : 8.8) : (h % 3 === 0 ? 8.5 : null),
+        comment: isTest
+          ? (i === 3 ? 'Tư duy toán học nhạy bén, tính toán chuẩn xác.' : 'Hoàn thành xuất sắc khóa học tư duy nâng cao.')
+          : (h % 2 === 0 ? 'Tiếp thu bài cực nhanh, giải quyết tốt bài toán phân loại.' : null),
+      }
+    })
+  }
+
+  // 2. Dữ liệu chuyên biệt cho Lớp Tiếng Anh Giao Tiếp Level 3 (pkg-3)
+  if (pkgId === 'pkg-3') {
+    const engDates = [
+      '2026-05-15', '2026-05-22', '2026-06-05', '2026-06-19',
+      '2026-07-03', '2026-07-17', '2026-07-27', '2026-08-03',
+      '2026-08-10', '2026-08-17',
+    ]
+    return TOPICS_ENGLISH_LEVEL3.map((topic, i) => {
+      const isTest = i === 3 || i === 9
+      const h = stableHash(studentId + 'pkg3' + String(i))
+      const attList: SessionHistory['attendance'][] = ['present', 'present', 'present', 'present', 'late', 'present']
+      const hwList: SessionHistory['homework'][] = ['submitted', 'submitted', 'submitted', 'submitted', 'late']
+      const base: SessionHistory = {
+        id: `sh-pkg3-${i}`,
+        sessionNumber: i + 1,
+        date: engDates[i] || `2026-08-${String(i + 1).padStart(2, '0')}`,
+        topic,
+        type: isTest ? ('test' as const) : ('lesson' as const),
+        attendance: attList[h % attList.length],
+        homework: hwList[h % hwList.length],
+        rating: Math.min(5, Math.max(3, 4 + (h % 2))),
+        score: isTest ? (i === 3 ? 7.5 : 8.0) : null,
+        comment: isTest
+          ? (i === 3 ? 'Phản xạ nghe nói tự tin, phát âm chuẩn xác.' : 'Tiến bộ vượt bậc cả 4 kỹ năng trong suốt kỳ học.')
+          : (h % 2 === 0 ? 'Tương tác rất tốt với giáo viên bản ngữ và các bạn.' : null),
+      }
+
+      if (isTest) {
+        if (i === 3) {
+          base.listening = '8/10'
+          base.reading = '7.5/10'
+          base.writing = '7/10'
+          base.speaking = '7.5/10'
+          base.overall = '7.5/10'
+        } else {
+          base.listening = '8.5/10'
+          base.reading = '8/10'
+          base.writing = '7.5/10'
+          base.speaking = '8/10'
+          base.overall = '8.0/10'
+        }
+      }
+
+      return base
+    })
+  }
+
+  // 3. Dữ liệu cho Lớp hiện tại hoặc lớp mặc định
   return Array.from({ length: 12 }, (_, i) => {
     const h = stableHash(studentId + String(i))
     // Sessions 4, 8, 12 are tests to make sure old and new classes both have tests!
@@ -60,11 +154,17 @@ export function generateSessionHistory(studentId: string, isEnglish: boolean): S
     const att: SessionHistory['attendance'][] = ['present', 'present', 'present', 'late', 'absent', 'excused', 'present', 'present', 'present', 'present']
     const hwOptions: SessionHistory['homework'][] = ['submitted', 'submitted', 'submitted', 'late', 'not_submitted']
     
+    const sessionDates = [
+      '2026-05-12', '2026-05-19', '2026-05-26', '2026-06-02',
+      '2026-06-16', '2026-06-23', '2026-06-30', '2026-07-07',
+      '2026-07-28', '2026-08-04', '2026-08-11', '2026-08-18',
+    ]
+
     const base: SessionHistory = {
       id: `sh-${i}`,
       sessionNumber: i + 1,
-      date: `2026-${String(Math.floor(i / 4) + 5).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`,
-      topic: TOPICS[i % TOPICS.length],
+      date: sessionDates[i] || `2026-08-${String(i + 1).padStart(2, '0')}`,
+      topic: isEnglish ? TOPICS[i % TOPICS.length] : TOPICS_MATH[i % TOPICS_MATH.length],
       type: isTest ? 'test' as const : 'lesson' as const,
       attendance: att[h % att.length],
       homework: hwOptions[h % hwOptions.length],
@@ -89,7 +189,7 @@ export function generateSessionHistory(studentId: string, isEnglish: boolean): S
         base.speaking = '7/10'
         base.overall = '7.4/10'
       } else {
-        // Session 4 test (old class)
+        // Session 4 test
         base.listening = '7/10'
         base.reading = '6.5/10'
         base.writing = '7/10'

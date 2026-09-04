@@ -42,7 +42,7 @@ export function StatusActionButton({
       title={title}
       onClick={onClick}
       className={cn(
-        'h-7 min-w-0 rounded-lg px-2.5 text-[11px] font-semibold whitespace-nowrap',
+        'h-7 min-w-0 rounded-lg px-2.5 text-xs font-semibold whitespace-nowrap',
         toneClassName[tone],
         className
       )}

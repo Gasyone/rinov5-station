@@ -54,14 +54,14 @@ export function PersonnelCell({
 }: PersonnelCellProps) {
   const sizeClasses = {
     xs: {
-      container: 'h-5 w-5 text-[9px] border',
-      fallback: 'text-[8px] font-bold',
+      container: 'h-5 w-5 text-xs border',
+      fallback: 'text-xs font-bold',
       singleText: 'text-xs',
       singleContainer: 'h-5 w-5 rounded-md',
     },
     sm: {
       container: 'h-7 w-7 text-xs border-2',
-      fallback: 'text-[10px] font-bold',
+      fallback: 'text-xs font-bold',
       singleText: 'text-xs',
       singleContainer: 'h-7 w-7 rounded-md',
     },
@@ -102,13 +102,13 @@ export function PersonnelCell({
           <p className={cn('font-normal truncate text-foreground', currentSize.singleText)}>
             <span>{person.name}</span>
             {person.isLeave && (
-              <span className="text-red-600 dark:text-red-400 italic text-[11px] font-medium ml-1">
+              <span className="text-red-600 dark:text-red-400 italic text-xs font-medium ml-1">
                 (Nghỉ)
               </span>
             )}
           </p>
           {showRole && person.role && (
-            <p className="text-[10px] text-muted-foreground truncate">{person.role}</p>
+            <p className="text-xs text-muted-foreground truncate">{person.role}</p>
           )}
         </div>
       </div>
@@ -153,7 +153,7 @@ export function PersonnelCell({
                 className={cn(
                   'flex shrink-0 items-center justify-center rounded-full border-2 border-card bg-muted text-muted-foreground font-semibold cursor-help',
                   currentSize.container,
-                  size === 'sm' ? 'text-[9px]' : 'text-xs'
+                  size === 'sm' ? 'text-xs' : 'text-xs'
                 )}
               >
                 +{remainingCount}

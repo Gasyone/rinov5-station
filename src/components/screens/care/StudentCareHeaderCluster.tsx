@@ -190,7 +190,7 @@ export function StudentCareHeaderClusterNote({
           />
           <Button
             size="sm"
-            className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-[10px] rounded-md"
+            className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-md"
             onClick={() => {
               setStudentNote(editingStudentNoteText)
               setIsEditingStudentNote(false)
@@ -202,7 +202,7 @@ export function StudentCareHeaderClusterNote({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-1.5 text-muted-foreground text-[10px]"
+            className="h-6 px-1.5 text-muted-foreground text-xs"
             onClick={() => setIsEditingStudentNote(false)}
           >
             Hủy
@@ -248,7 +248,7 @@ export function StudentCareHeaderClusterNote({
                           e.stopPropagation()
                           setIsExpanded(false)
                         }}
-                        className="ml-1.5 text-[11px] font-normal not-italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                        className="ml-1.5 text-xs font-normal not-italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
                       >
                         Thu gọn
                       </span>
@@ -268,7 +268,7 @@ export function StudentCareHeaderClusterNote({
                     e.stopPropagation()
                     setIsExpanded(true)
                   }}
-                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-[11px] font-normal italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-xs font-normal italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
                 >
                   ... xem thêm
                 </button>
@@ -293,9 +293,9 @@ export function StudentCareHeaderClusterNote({
                     <History className="h-3.5 w-3.5" />
                     Lịch sử ghi chú học viên
                   </h5>
-                  <div className="space-y-2 text-[11px]">
+                  <div className="space-y-2 text-xs">
                     <div className="border-l-2 border-amber-500 pl-2 space-y-0.5">
-                      <div className="flex justify-between text-muted-foreground text-[10px]">
+                      <div className="flex justify-between text-muted-foreground text-xs">
                         <span>Nguyễn Văn Hùng (Bố)</span>
                         <span>26/07 14:20</span>
                       </div>
@@ -304,7 +304,7 @@ export function StudentCareHeaderClusterNote({
                       </p>
                     </div>
                     <div className="border-l-2 border-border pl-2 space-y-0.5">
-                      <div className="flex justify-between text-muted-foreground text-[10px]">
+                      <div className="flex justify-between text-muted-foreground text-xs">
                         <span>Cô Hoàng Thị Mai (GV)</span>
                         <span>18/07 16:45</span>
                       </div>

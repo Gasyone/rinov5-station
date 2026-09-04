@@ -88,7 +88,7 @@ export function StudentDetailTickets({ studentId, onCreateTicket }: StudentDetai
           variant="outline"
           size="sm"
           onClick={onCreateTicket || (() => toast.info('Tính năng Tạo ticket đang được phát triển!'))}
-          className="rounded-md text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-250 text-[11px] h-8 px-3 font-bold cursor-pointer flex items-center gap-1 shadow-none bg-background shrink-0"
+          className="rounded-md text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-250 text-xs h-8 px-3 font-bold cursor-pointer flex items-center gap-1 shadow-none bg-background shrink-0"
         >
           <LifeBuoy className="h-3.5 w-3.5 text-amber-500" /> Tạo Ticket
         </Button>
@@ -129,7 +129,7 @@ export function StudentDetailTickets({ studentId, onCreateTicket }: StudentDetai
                       <div className="font-semibold text-foreground text-xs">
                         {categoryLabels[t.category] || t.category}
                       </div>
-                      <div className="font-mono text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1.5 select-none">
+                      <div className="font-mono text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 select-none">
                         <span>{t.id}</span>
                         <span>&bull;</span>
                         <span>{new Date(t.createdDate).toLocaleDateString('vi-VN')}</span>
@@ -141,18 +141,18 @@ export function StudentDetailTickets({ studentId, onCreateTicket }: StudentDetai
                       <div className="font-bold text-foreground text-xs truncate" title={t.title}>
                         {t.title}
                       </div>
-                      <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" title={t.description}>
+                      <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5" title={t.description}>
                         {t.description}
                       </div>
                       {t.interactionLogs && t.interactionLogs.length > 0 && (
-                        <div className="text-[10px] bg-violet-500/5 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded mt-1 line-clamp-1" title={t.interactionLogs[t.interactionLogs.length - 1].notes}>
+                        <div className="text-xs bg-violet-500/5 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded mt-1 line-clamp-1" title={t.interactionLogs[t.interactionLogs.length - 1].notes}>
                           <strong>Xử lý: </strong>{t.interactionLogs[t.interactionLogs.length - 1].notes}
                         </div>
                       )}
                     </TableCell>
 
                     {/* Nhân viên (Người tạo & Người xử lý) */}
-                    <TableCell className="py-2.5 px-3 text-[11px]">
+                    <TableCell className="py-2.5 px-3 text-xs">
                       <div className="text-foreground">
                         <span className="text-muted-foreground">Tạo:</span> {(t as SupportTicket & { creator?: string }).creator || 'Minh Phương'}
                       </div>

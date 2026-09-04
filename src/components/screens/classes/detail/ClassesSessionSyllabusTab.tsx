@@ -35,7 +35,7 @@ export function ClassesSessionSyllabusTab({
             <BookOpen className="h-4 w-4 text-primary shrink-0 opacity-80" />
             <span>Nội dung buổi học</span>
           </span>
-          <span className="text-[10px] text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
+          <span className="text-xs text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
         </div>
 
         {/* Data list aligned flush left under 'Nội dung buổi học' text title (pl-[22px]), wrapped text flush to left without flex indent */}
@@ -140,9 +140,9 @@ export function ClassesSessionSyllabusTab({
                       </div>
                       <div className="space-y-0.5 min-w-0 flex-1">
                         <p className="font-bold text-foreground text-xs leading-snug">{c.name}</p>
-                        <p className="text-[11px] text-muted-foreground leading-normal">{line2}</p>
+                        <p className="text-xs text-muted-foreground leading-normal">{line2}</p>
                         <p className={cn(
-                          'text-[10px] flex items-center gap-1 leading-normal font-medium',
+                          'text-xs flex items-center gap-1 leading-normal font-medium',
                           bottomTextColor
                         )}>
                           <BottomIcon className="h-3 w-3 shrink-0" />

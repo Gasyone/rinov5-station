@@ -138,7 +138,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             <h3 className="text-xs md:text-sm font-extrabold text-foreground truncate">
               BÁO CÁO CHUYÊN SÂU & KẾ HOẠCH HỌC TẬP
             </h3>
-            <p className="text-[11px] text-muted-foreground truncate">{student.name} ({student.code})</p>
+            <p className="text-xs text-muted-foreground truncate">{student.name} ({student.code})</p>
           </div>
           <Button
             type="button"
@@ -256,7 +256,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
                 {/* Step 1 & Step 2 Controls */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold text-muted-foreground">Bài:</span>
+                  <span className="text-xs font-bold text-muted-foreground">Bài:</span>
                   <Select value={String(sectionB2StartLesson)} onValueChange={(v) => handleStartLessonChange(Number(v))}>
                     <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
                       <SelectValue />
@@ -291,7 +291,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                     size="sm"
                     onClick={handleAiSynthesizeNextMonthPlan}
                     disabled={isSynthesizingAi}
-                    className="h-7 text-[11px] font-bold px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1"
+                    className="h-7 text-xs font-bold px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1"
                     title="Tự động biên tập nội dung ngôn ngữ tự nhiên"
                   >
                     {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300" />}
@@ -333,7 +333,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                             href={week.docLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-bold hover:underline inline-flex items-center gap-1 min-w-0 truncate"
+                            className="text-xs font-bold hover:underline inline-flex items-center gap-1 min-w-0 truncate"
                             title={week.docLink}
                           >
                             <LinkIcon className="h-3 w-3 shrink-0 text-primary" />
@@ -346,7 +346,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                           <button
                             type="button"
                             onClick={() => handleStartEditingLink(wIdx)}
-                            className="text-muted-foreground hover:text-foreground text-[9px] font-semibold ms-1 px-1 py-0.2 rounded hover:bg-background/80 transition-colors flex items-center gap-0.5 shrink-0"
+                            className="text-muted-foreground hover:text-foreground text-xs font-semibold ms-1 px-1 py-0.2 rounded hover:bg-background/80 transition-colors flex items-center gap-0.5 shrink-0"
                             title="Dán link khác"
                           >
                             <Pencil className="h-2.5 w-2.5" />
@@ -371,14 +371,14 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                                 }
                               }}
                               placeholder="Dán link tài liệu Drive..."
-                              className="text-[11px] pl-7 pr-2 py-0.5 w-full rounded-lg border border-amber-400/40 bg-background focus:border-primary focus:outline-none font-mono"
+                              className="text-xs pl-7 pr-2 py-0.5 w-full rounded-lg border border-amber-400/40 bg-background focus:border-primary focus:outline-none font-mono"
                             />
                           </div>
                           {week.docLink && (
                             <button
                               type="button"
                               onClick={() => setEditingLinkMap((prev) => ({ ...prev, [wIdx]: false }))}
-                              className="text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-md hover:bg-primary/90 transition-colors shrink-0"
+                              className="text-xs font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-md hover:bg-primary/90 transition-colors shrink-0"
                             >
                               Xong
                             </button>
@@ -395,13 +395,13 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                         ) : (
                           <div className="h-full w-full flex flex-col items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-950/20">
                             <FileText className="h-5 w-5 mb-0.5" />
-                            <span className="text-[9px] font-bold">Thêm ảnh</span>
+                            <span className="text-xs font-bold">Thêm ảnh</span>
                           </div>
                         )}
 
                         {/* Hover Mask */}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1 text-white">
-                          <label className="flex items-center gap-1 text-[9px] font-bold bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded cursor-pointer w-full justify-center">
+                          <label className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded cursor-pointer w-full justify-center">
                             <Upload className="h-2.5 w-2.5" />
                             <span>Upload</span>
                             <input
@@ -415,7 +415,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                           <button
                             type="button"
                             onClick={() => handleStartEditingLink(wIdx)}
-                            className="flex items-center gap-1 text-[9px] font-bold bg-primary/80 hover:bg-primary px-1.5 py-0.5 rounded cursor-pointer w-full justify-center"
+                            className="flex items-center gap-1 text-xs font-bold bg-primary/80 hover:bg-primary px-1.5 py-0.5 rounded cursor-pointer w-full justify-center"
                           >
                             <LinkIcon className="h-2.5 w-2.5" />
                             <span>Dán Link</span>

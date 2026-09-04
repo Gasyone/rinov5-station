@@ -363,13 +363,13 @@ export function CareSessionTimelineList({
               {session.topic}
             </h4>
             {isTest && (
-              <Badge variant="secondary" className="text-[9px] font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
+              <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
                 Kiểm tra
               </Badge>
             )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-[11px] flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs flex-wrap sm:flex-nowrap">
             {session.rating && !isTest && (
               <span className="flex items-center gap-0.5 font-medium text-amber-500 shrink-0">
                 {session.rating}<Star className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -382,8 +382,8 @@ export function CareSessionTimelineList({
             )}
 
             {/* Lịch học thứ, ngày (giờ) ở phía sau Rating 5 sao */}
-            <div className="flex items-center gap-1.5 shrink-0 text-[11px]">
-              <span className="font-normal text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 shadow-3xs bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
+            <div className="flex items-center gap-1.5 shrink-0 text-xs">
+              <span className="font-normal text-xs px-1.5 py-0.5 rounded-md border shrink-0 shadow-3xs bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
                 {dayOfWeek}
               </span>
               <span className="text-muted-foreground text-xs font-normal shrink-0">
@@ -394,7 +394,7 @@ export function CareSessionTimelineList({
         </div>
 
         {/* Row 2: Thông tin GV, TG, Phòng & Điểm danh / BTVN */}
-        <div className="flex items-center justify-between gap-2 flex-wrap text-[11px]">
+        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
           <div className="flex items-center gap-1.5 text-muted-foreground flex-wrap">
             <span className="text-muted-foreground">GV:</span>
             <PersonnelHoverCard
@@ -479,7 +479,7 @@ export function CareSessionTimelineList({
             <div className="relative">
               <p
                 className={cn(
-                  'text-[11px] text-muted-foreground font-normal leading-relaxed whitespace-pre-line cursor-pointer',
+                  'text-xs text-muted-foreground font-normal leading-relaxed whitespace-pre-line cursor-pointer',
                   !isExpanded && 'line-clamp-3 pr-20'
                 )}
                 onClick={() => toggleExpand(session.id)}
@@ -511,7 +511,7 @@ export function CareSessionTimelineList({
           <h3 className="text-xs font-bold text-foreground tracking-tight">
             Nhật ký Buổi học
           </h3>
-          <span className="text-[10px] text-muted-foreground font-normal">
+          <span className="text-xs text-muted-foreground font-normal">
             Hiển thị {visibleSessions.length}/{allSessions.length} buổi
           </span>
         </div>
@@ -562,7 +562,7 @@ export function CareSessionTimelineList({
                   side="top"
                 >
                   <span className="text-xs text-muted-foreground hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer font-medium shrink-0 ml-2 whitespace-nowrap inline-flex items-center gap-1 transition-colors">
-                    <span className="font-extrabold text-[10px] px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300">
+                    <span className="font-extrabold text-xs px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300">
                       {dayOfWeek}
                     </span>
                     <span>{formattedDate} ({sessionTime})</span>
@@ -576,7 +576,7 @@ export function CareSessionTimelineList({
         {/* Completed Regular Lessons */}
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               <span>Các buổi học chính ({regularCompletedSessions.length})</span>
             </div>
@@ -613,7 +613,7 @@ export function CareSessionTimelineList({
             <h3 className="text-xs font-bold text-foreground tracking-tight">
               Kiểm tra
             </h3>
-            <span className="text-[10px] text-muted-foreground font-normal">
+            <span className="text-xs text-muted-foreground font-normal">
               Hiển thị {testCompletedSessions.length}/{allTestSessions.length} bài kiểm tra
             </span>
           </div>

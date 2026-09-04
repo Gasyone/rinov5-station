@@ -294,7 +294,7 @@ export function StudentClassAssignmentDialog({
             </DialogTitle>
             <div className="text-xs text-muted-foreground flex items-center gap-x-3 gap-y-1 flex-wrap">
               <span>Học viên: <strong className="text-foreground">{studentName}</strong></span>
-              <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-semibold">
+              <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-semibold">
                 {studentCode}
               </span>
               {studentLevel && (
@@ -467,7 +467,7 @@ export function StudentClassAssignmentDialog({
         <DialogFooter className="px-5 py-3 border-t bg-muted/10 flex flex-row items-center justify-between sm:justify-between gap-4">
           <div className="flex-1 min-w-0 text-left pr-4 select-none">
             {(isClassFull || isLevelMismatch || conflictingClasses.length > 0) && selectedClass && (
-              <div className="text-[11px] text-amber-700 dark:text-amber-400 font-medium space-y-0.5">
+              <div className="text-xs text-amber-700 dark:text-amber-400 font-medium space-y-0.5">
                 {isClassFull && (
                   <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
                     <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />

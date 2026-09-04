@@ -60,7 +60,7 @@ export function SessionCardMaterials({
                 ) : (
                   <div className="flex flex-col items-center justify-center p-2 text-center text-muted-foreground">
                     <FileText className="h-6 w-6 text-sky-600 dark:text-sky-400 mb-1" />
-                    <span className="text-[10px] font-mono uppercase tracking-wider">PDF / DOC</span>
+                    <span className="text-xs font-mono uppercase tracking-wider">PDF / DOC</span>
                   </div>
                 )}
 
@@ -68,7 +68,7 @@ export function SessionCardMaterials({
                 <Badge
                   variant="secondary"
                   className={cn(
-                    'absolute top-1 right-1 text-[9px] px-1 py-0 font-semibold backdrop-blur-xs shadow-2xs',
+                    'absolute top-1 right-1 text-xs px-1 py-0 font-semibold backdrop-blur-xs shadow-2xs',
                     meta.isVideo ? 'bg-purple-600/90 text-white' :
                     meta.isSlide ? 'bg-emerald-600/90 text-white' : 'bg-zinc-800/80 text-white'
                   )}
@@ -79,7 +79,7 @@ export function SessionCardMaterials({
 
               {/* Info footer */}
               <div className="p-1.5 flex items-center justify-between gap-1 min-w-0 bg-background">
-                <span className="text-[11px] font-medium text-foreground truncate min-w-0" title={mat.name}>
+                <span className="text-xs font-medium text-foreground truncate min-w-0" title={mat.name}>
                   {mat.name}
                 </span>
 

@@ -250,7 +250,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                     className="object-contain object-left"
                   />
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium leading-none">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium leading-none">
                   Hệ thống Đào tạo & Gia sư Tiêu chuẩn
                 </p>
               </div>
@@ -360,7 +360,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                   <span className="font-normal text-slate-400 dark:text-zinc-500 text-xs sm:text-sm">
                     Sản phẩm dành cho con: <span className="text-slate-800 dark:text-zinc-200 font-semibold">{childGroup.childName}</span>
                   </span>
-                  <span className="text-[11px] text-slate-400 font-normal">
+                  <span className="text-xs text-slate-400 font-normal">
                     (Mã HV: <strong className="font-normal text-slate-600 dark:text-zinc-400">{childGroup.studentCode}</strong>)
                   </span>
                 </div>
@@ -382,7 +382,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                           <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
                             {itemIdx + 1}. {item.productName}
                           </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-normal bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200/80 dark:border-zinc-700">
+                          <span className="px-2 py-0.5 rounded text-xs font-normal bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200/80 dark:border-zinc-700">
                             {item.orderType}
                           </span>
                         </div>
@@ -411,7 +411,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                                   <span className="text-slate-400 font-bold">•</span>
                                   <span>{variant.name}</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-[11px] text-slate-400 shrink-0 font-mono">
+                                <div className="flex items-center gap-3 text-xs text-slate-400 shrink-0 font-mono">
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-3.5 w-3.5 text-slate-400" />
                                     <span>{variant.durationText}</span>
@@ -478,7 +478,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                         <div className="w-2.5 h-2.5 bg-slate-900" />
                       </div>
                     </div>
-                    <div className="my-auto font-black text-[9px] text-amber-300 tracking-wider">
+                    <div className="my-auto font-black text-xs text-amber-300 tracking-wider">
                       MBBANK QR
                     </div>
                     <div className="w-full flex justify-between items-end">
@@ -489,7 +489,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400 font-normal leading-tight">
+                <span className="text-xs text-slate-400 font-normal leading-tight">
                   Quét QR bằng App
                 </span>
               </div>
@@ -497,13 +497,13 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
               {/* Account Details */}
               <div className="sm:col-span-7 space-y-2 text-xs">
                 <div className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60">
-                  <span className="text-slate-400 text-[10px] block">Ngân hàng:</span>
+                  <span className="text-slate-400 text-xs block">Ngân hàng:</span>
                   <strong className="font-bold text-slate-900 dark:text-white text-xs">{orderDetails.bankInfo.bankName}</strong>
                 </div>
 
                 <div className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-700/60 flex items-center justify-between gap-1">
                   <div className="min-w-0">
-                    <span className="text-slate-400 text-[10px] block">Số tài khoản:</span>
+                    <span className="text-slate-400 text-xs block">Số tài khoản:</span>
                     <strong className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate block">
                       {orderDetails.bankInfo.accountNumber}
                     </strong>
@@ -520,7 +520,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
 
                 <div className="p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 flex items-center justify-between gap-1">
                   <div className="min-w-0">
-                    <span className="text-amber-800 dark:text-amber-300 text-[10px] font-normal block">
+                    <span className="text-amber-800 dark:text-amber-300 text-xs font-normal block">
                       Nội dung chuyển khoản:
                     </span>
                     <strong className="font-mono font-bold text-amber-900 dark:text-amber-200 text-xs truncate block">
@@ -552,19 +552,19 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
             {/* Subtotal, Discount & Final Amount Line */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-xl bg-slate-50/80 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-700/60 text-xs">
               <div>
-                <span className="text-slate-400 text-[11px] block">• Tổng các gói:</span>
+                <span className="text-slate-400 text-xs block">• Tổng các gói:</span>
                 <strong className="font-bold font-mono text-slate-900 dark:text-white text-xs sm:text-sm">
                   {formatCurrency(orderDetails.subtotal)}
                 </strong>
               </div>
               <div>
-                <span className="text-slate-400 text-[11px] block">• Giảm giá:</span>
+                <span className="text-slate-400 text-xs block">• Giảm giá:</span>
                 <strong className="font-bold font-mono text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm">
                   - {formatCurrency(orderDetails.discount)}
                 </strong>
               </div>
               <div>
-                <span className="font-bold text-slate-900 dark:text-white text-[11px] block">CẦN THANH TOÁN:</span>
+                <span className="font-bold text-slate-900 dark:text-white text-xs block">CẦN THANH TOÁN:</span>
                 <strong className="font-black font-mono text-orange-600 dark:text-orange-400 text-sm sm:text-base">
                   {formatCurrency(orderDetails.finalAmount)}
                 </strong>
@@ -574,7 +574,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
             {/* Lịch sử thanh toán & Quy đổi */}
             <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-zinc-800/40 border border-slate-200/80 dark:border-zinc-700/60 space-y-2 text-xs">
               <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/50 dark:border-zinc-700/50">
-                <span className="font-normal text-slate-400 dark:text-zinc-500 text-[11px] uppercase tracking-wider">
+                <span className="font-normal text-slate-400 dark:text-zinc-500 text-xs uppercase tracking-wider">
                   SỐ TIỀN ĐÃ THANH TOÁN:
                 </span>
                 <span className="font-extrabold font-mono text-emerald-600 dark:text-emerald-400 text-sm">
@@ -587,7 +587,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                 {paymentHistory.length > 0 ? (
                   paymentHistory.map((pm) => (
                     <div key={pm.id} className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-700/60 text-xs font-mono space-y-1">
-                      <div className="flex justify-between text-slate-400 text-[11px]">
+                      <div className="flex justify-between text-slate-400 text-xs">
                         <span>{pm.timestamp} (Phiếu thu)</span>
                         <span className="text-emerald-600 font-bold">THÀNH CÔNG</span>
                       </div>
@@ -601,7 +601,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-2 text-[11px] text-slate-400 font-normal italic">
+                  <div className="text-center py-2 text-xs text-slate-400 font-normal italic">
                     Chưa ghi nhận phiếu thu thanh toán
                   </div>
                 )}
@@ -670,7 +670,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-slate-200 dark:border-zinc-800 p-3 shadow-xl">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <span className="text-[11px] text-slate-400 font-normal block">Tổng học phí cần thanh toán:</span>
+            <span className="text-xs text-slate-400 font-normal block">Tổng học phí cần thanh toán:</span>
             <span className="text-lg font-black text-orange-600 dark:text-orange-400">
               {formatCurrency(orderDetails.finalAmount)}
             </span>

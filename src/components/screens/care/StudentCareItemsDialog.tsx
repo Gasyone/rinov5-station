@@ -126,19 +126,19 @@ export function StudentCareItemsDialog({
                   </CareTagHoverCard>
 
                   {isOverdue && (
-                    <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900">
+                    <span className="text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900">
                       Quá hạn
                     </span>
                   )}
                   {isDueToday && (
-                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900">
+                    <span className="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900">
                       Đến hạn hôm nay
                     </span>
                   )}
                 </div>
 
                 {tag.description && (
-                  <p className="text-[11px] text-muted-foreground leading-snug font-medium pl-0.5 mt-0.5">
+                  <p className="text-xs text-muted-foreground leading-snug font-medium pl-0.5 mt-0.5">
                     {tag.description}
                   </p>
                 )}

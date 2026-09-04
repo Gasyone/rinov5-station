@@ -199,7 +199,7 @@ export function StudentDetailPackagesBar({
         >
           {getPackageIcon(pkg)}
           <span className="min-w-0 truncate">{pkg.packageName}</span>
-          {pkg.remainingSessions === 0 && <span className="text-[9px] opacity-75 font-normal">(Hết)</span>}
+          {pkg.remainingSessions === 0 && <span className="text-xs opacity-75 font-normal">(Hết)</span>}
         </button>
       ))}
 
@@ -231,7 +231,7 @@ export function StudentDetailPackagesBar({
       <div className="grid grid-cols-1 gap-y-2 text-[13px] md:grid-cols-3 md:divide-x md:divide-border/50">
         {/* Column 1: Trình độ & Lớp */}
         <div className="flex flex-col gap-1 md:pr-5">
-          <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Trình độ & Lớp</span>
+          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Trình độ & Lớp</span>
           <div className="space-y-0.5">
             <div className="flex justify-between md:justify-start md:gap-2 text-muted-foreground items-center">
               <span>Trình độ:</span>
@@ -256,7 +256,7 @@ export function StudentDetailPackagesBar({
 
         {/* Column 2: Số buổi */}
         <div className="flex flex-col gap-1 md:px-5">
-          <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Số buổi</span>
+          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Số buổi</span>
           <div className="space-y-0.5">
             <div className="flex justify-between md:justify-start md:gap-2 text-muted-foreground items-center">
               <span>Đã học/Tổng:</span>
@@ -291,7 +291,7 @@ export function StudentDetailPackagesBar({
 
         {/* Column 3: Thời gian */}
         <div className="flex flex-col gap-1 md:pl-5">
-          <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">Thời gian</span>
+          <span className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Thời gian</span>
           <div className="space-y-0.5">
             <div className="flex justify-between md:justify-start md:gap-2 text-muted-foreground">
               <span>Ngày bắt đầu:</span>

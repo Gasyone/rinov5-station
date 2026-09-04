@@ -273,13 +273,13 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                 <p className="ui-cell-secondary truncate text-sm text-muted-foreground">
                   {user?.email ?? ''}
                 </p>
-                <p className="mt-1 text-[11px] font-semibold capitalize text-muted-foreground">
+                <p className="mt-1 text-xs font-semibold capitalize text-muted-foreground">
                   {user?.role ?? ''}
                 </p>
               </div>
             </div>
             <div className="p-2 border-b border-border bg-muted/20">
-              <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="flex items-center justify-between px-2 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
                 <span>Giả lập Vai trò Demo</span>
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
               </div>
@@ -297,7 +297,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                     >
                       <div className="flex flex-col min-w-0 pr-2">
                         <span className="truncate">{item.label}</span>
-                        <span className="text-[10px] text-muted-foreground/80 font-normal truncate">
+                        <span className="text-xs text-muted-foreground/80 font-normal truncate">
                           {item.desc}
                         </span>
                       </div>
@@ -308,7 +308,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
               </div>
             </div>
             <div className="p-2 border-b border-border">
-              <div className="px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <div className="px-2 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
                 Hệ thống liên kết
               </div>
               <DropdownMenuItem asChild>
@@ -319,7 +319,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                   className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="flex h-5 w-8 items-center justify-center rounded bg-blue-500/10 text-[10px] font-bold text-blue-500 dark:bg-blue-500/20">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-blue-500/10 text-xs font-bold text-blue-500 dark:bg-blue-500/20">
                       CRM
                     </span>
                     <span>Hệ thống CRM</span>
@@ -335,7 +335,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                   className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="flex h-5 w-8 items-center justify-center rounded bg-emerald-500/10 text-[10px] font-bold text-emerald-500 dark:bg-emerald-500/20">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-emerald-500/10 text-xs font-bold text-emerald-500 dark:bg-emerald-500/20">
                       ERP
                     </span>
                     <span>Hệ thống ERP</span>
@@ -351,7 +351,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
                   className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="flex h-5 w-8 items-center justify-center rounded bg-indigo-500/10 text-[10px] font-bold text-indigo-500 dark:bg-indigo-500/20">
+                    <span className="flex h-5 w-8 items-center justify-center rounded bg-indigo-500/10 text-xs font-bold text-indigo-500 dark:bg-indigo-500/20">
                       CARE
                     </span>
                     <span>Hệ thống Care</span>

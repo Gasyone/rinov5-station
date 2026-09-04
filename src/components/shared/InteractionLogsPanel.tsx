@@ -87,7 +87,7 @@ export function InteractionLogsPanel({
                   {item.performer}
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {item.timestamp}
               </span>
             </div>

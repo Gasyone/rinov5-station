@@ -283,7 +283,7 @@ export function CrmLeadsBookingTestModal({
             {/* CỘT TRÁI (35% BỀ RỘNG) - ĐỐI TƯỢNG & CHƯƠNG TRÌNH */}
             <div className="w-full md:w-[35%] shrink-0 space-y-2 bg-white dark:bg-zinc-950 rounded-xl p-3 shadow-2xs flex flex-col justify-between">
               <div className="space-y-2">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pb-0.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5">
                   Đối tượng & Chương trình
                 </div>
 
@@ -416,7 +416,7 @@ export function CrmLeadsBookingTestModal({
                   {/* BẢNG TRÁI: KHUNG GIỜ TEST */}
                   <div className="rounded-xl p-2.5 bg-white dark:bg-zinc-950 shadow-2xs flex flex-col justify-between flex-1 min-h-0">
                     <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pb-0.5 flex items-center justify-between">
+                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5 flex items-center justify-between">
                         <span>Khung giờ test (30 phút/ca)</span>
                         <span className="text-sky-600 font-semibold">{selectedSlot}</span>
                       </div>
@@ -424,7 +424,7 @@ export function CrmLeadsBookingTestModal({
                       <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1">
                         {TIME_GROUPS.map((group) => (
                           <div key={group.title} className="space-y-1">
-                            <span className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
+                            <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
                               <span>{group.icon}</span>
                               <span>{group.title}</span>
                             </span>
@@ -458,7 +458,7 @@ export function CrmLeadsBookingTestModal({
                                     </span>
                                     <span
                                       className={cn(
-                                        'text-[9px] px-1.5 py-0.2 rounded font-medium',
+                                        'text-xs px-1.5 py-0.2 rounded font-medium',
                                         isSlotSelected
                                           ? 'bg-white/20 text-white'
                                           : availableCount > 0
@@ -481,9 +481,9 @@ export function CrmLeadsBookingTestModal({
                   {/* BẢNG PHẢI: PHỤ TRÁCH CA */}
                   <div className="rounded-xl p-2.5 bg-white dark:bg-zinc-950 shadow-2xs flex flex-col justify-between flex-1 min-h-0">
                     <div className="space-y-1.5 flex-1 flex flex-col min-h-0">
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pb-0.5 flex items-center justify-between">
+                      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-0.5 flex items-center justify-between">
                         <span>Phụ trách ca {selectedSlot}</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">
+                        <span className="text-xs text-muted-foreground font-normal">
                           {currentSlotTeachers.length} nhân sự
                         </span>
                       </div>
@@ -525,7 +525,7 @@ export function CrmLeadsBookingTestModal({
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <div
                                   className={cn(
-                                    'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white',
+                                    'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
                                     t.colorClass || 'bg-sky-600'
                                   )}
                                 >
@@ -541,7 +541,7 @@ export function CrmLeadsBookingTestModal({
                                   <Check className="h-2.5 w-2.5" />
                                 </span>
                               ) : (
-                                <span className="text-[9px] font-normal text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1 py-0.2 rounded border border-emerald-200 shrink-0">
+                                <span className="text-xs font-normal text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1 py-0.2 rounded border border-emerald-200 shrink-0">
                                   Rảnh
                                 </span>
                               )}
@@ -563,7 +563,7 @@ export function CrmLeadsBookingTestModal({
                       <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Timeline Ca Trực & Nhân Sự ({testDate})</span>
                     </span>
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Rảnh
                       </span>
@@ -626,7 +626,7 @@ export function CrmLeadsBookingTestModal({
                                           setTeacher(t.name)
                                         }}
                                         className={cn(
-                                          'w-full py-1 px-1.5 rounded font-normal text-[10px] transition-all cursor-pointer flex items-center justify-center gap-1',
+                                          'w-full py-1 px-1.5 rounded font-normal text-xs transition-all cursor-pointer flex items-center justify-center gap-1',
                                           isSelectedCell
                                             ? 'bg-sky-500 text-white font-semibold shadow-2xs'
                                             : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 hover:bg-emerald-100'
@@ -648,7 +648,7 @@ export function CrmLeadsBookingTestModal({
                                         type="button"
                                         disabled
                                         title="Nhân sự đã có lịch test/dạy khác trong khung giờ này"
-                                        className="w-full py-1 px-1.5 rounded font-normal text-[10px] bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 cursor-not-allowed opacity-75 flex items-center justify-center gap-1"
+                                        className="w-full py-1 px-1.5 rounded font-normal text-xs bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 cursor-not-allowed opacity-75 flex items-center justify-center gap-1"
                                       >
                                         <Lock className="h-2.5 w-2.5 shrink-0 opacity-60" />
                                         <span>Bận</span>
@@ -656,7 +656,7 @@ export function CrmLeadsBookingTestModal({
                                     )}
 
                                     {cellStatus === 'off' && (
-                                      <span className="text-[10px] text-muted-foreground/30 italic">---</span>
+                                      <span className="text-xs text-muted-foreground/30 italic">---</span>
                                     )}
                                   </td>
                                 )

@@ -8,7 +8,7 @@ import { updateCareAlertInteraction, completeCareTag, type StudentCareAlert, typ
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { isCared, isOverdue, stableHash } from './operationsAlertHelpers'
 import { getRenewalClassification } from './renewal/renewalHelpers'
-import { type CareTopic, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
+import { type CareTopic, type SimulatedPackage, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
 import {
   getCombinedLogs,
   parseLogTopic,
@@ -53,6 +53,8 @@ interface StudentCareChatFeedProps {
   onRefresh?: () => void
   topicsList: CareTopic[]
   allLogs: CareInteractionLog[]
+  selectedPackageId?: string
+  selectedPackage?: SimulatedPackage | null
 }
 
 export function StudentCareChatFeed({
@@ -62,6 +64,8 @@ export function StudentCareChatFeed({
   onRefresh,
   topicsList,
   allLogs = [],
+  selectedPackageId = 'pkg-1',
+  selectedPackage,
 }: StudentCareChatFeedProps) {
   const startCall = useCallStore((state) => state.startCall)
   const currentUser = useAuthStore((state) => state.user)
@@ -382,6 +386,8 @@ export function StudentCareChatFeed({
             student={student}
             filteredCombinedLogs={filteredCombinedLogs}
             stickyTopOffset={careFormHeight}
+            selectedPackageId={selectedPackageId}
+            selectedPackage={selectedPackage}
           />
         </div>
       </div>

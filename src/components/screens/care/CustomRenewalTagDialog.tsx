@@ -116,7 +116,7 @@ export function CustomRenewalTagDialog({ mode, initialData, trigger, onSave }: C
               min={1}
               max={90}
             />
-            <span className="text-[10px] text-muted-foreground mt-0.5">
+            <span className="text-xs text-muted-foreground mt-0.5">
               Thời hạn hoàn thành chăm sóc tối đa
             </span>
           </FieldLabel>

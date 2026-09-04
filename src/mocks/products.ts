@@ -1,38 +1,506 @@
+export type ProductCategory =
+  | 'course'
+  | 'combo'
+  | 'book'
+  | 'stationery'
+  | 'physical_product'
+  | 'service'
+
+export interface ProductComboItem {
+  name: string
+  quantity: number
+  originalPrice: number
+  discountPrice: number
+  unitPrice?: number
+  duration?: string
+  orderType?: string
+  branch?: string
+}
+
 export interface Product {
   id: string
   name: string
   code: string
-  category: "course" | "book" | "service" | "combo"
+  category: ProductCategory
+  group: string
   price: number
-  status: "active" | "inactive" | "archived"
-  branch: string
-  description?: string
-  duration?: string
-  tags?: string[]
+  unit: string
+  duration: string
+  status: 'active' | 'pending' | 'inactive'
+  image?: string
+  createdBy: string
   createdAt: string
+  branch?: string
+  description?: string
+  tags?: string[]
+  vouchers?: string[]
+  isCombo?: boolean
+  comboItems?: ProductComboItem[]
 }
 
 export const mockProducts: Product[] = [
-  { id: "p1", name: "Khóa học IELTS", code: "CRS-IELTS", category: "course", price: 3500000, status: "active", branch: "Toàn hệ thống", description: "Khóa học IELTS từ A1 đến C1", duration: "3 tháng", tags: ["ielts", "english"], createdAt: "2024-06-01" },
-  { id: "p2", name: "Khóa học TOEIC", code: "CRS-TOEIC", category: "course", price: 2500000, status: "active", branch: "Toàn hệ thống", description: "Khóa học TOEIC từ A2 đến B2", duration: "3 tháng", tags: ["toeic", "english"], createdAt: "2024-06-01" },
-  { id: "p3", name: "Khóa học Tiếng Nhật N5", code: "CRS-JP5", category: "course", price: 4000000, status: "active", branch: "RinoEdu Smart City", description: "Khóa học tiếng Nhật trình độ N5", duration: "4 tháng", tags: ["japanese", "n5"], createdAt: "2024-09-01" },
-  { id: "p4", name: "Khóa học Tiếng Anh A1-B1", code: "CRS-EN01", category: "course", price: 2000000, status: "active", branch: "Toàn hệ thống", description: "Khóa học tiếng Anh cơ bản", duration: "3 tháng", tags: ["english", "beginner"], createdAt: "2024-06-01" },
-  { id: "p5", name: "Sách IELTS Preparation", code: "BK-IELTS01", category: "book", price: 150000, status: "active", branch: "Toàn hệ thống", description: "Giáo trình ôn thi IELTS", tags: ["ielts", "book"], createdAt: "2024-07-01" },
-  { id: "p6", name: "Sách TOEIC Complete", code: "BK-TOEIC01", category: "book", price: 120000, status: "active", branch: "Toàn hệ thống", description: "Giáo trình luyện thi TOEIC", tags: ["toeic", "book"], createdAt: "2024-07-01" },
-  { id: "p7", name: "Test IELTS 1 Kỹ Năng", code: "SRVC-TEST", category: "service", price: 300000, status: "active", branch: "Toàn hệ thống", description: "Bài test 1 kỹ năng IELTS", duration: "2 tiếng", createdAt: "2024-08-01" },
-  { id: "p8", name: "Combo IELTS A1+B1", code: "COMBO-IELTS01", category: "combo", price: 6000000, status: "active", branch: "RinoEdu Nguyễn Tuân", description: "Combo 2 khóa IELTS A1 và B1 (tiết kiệm)", tags: ["ielts", "combo"], createdAt: "2024-10-01" },
-  { id: "p9", name: "Khóa học Tiếng Hàn Sơ Cấp", code: "CRS-KR", category: "course", price: 3800000, status: "inactive", branch: "RinoEdu Smart City", description: "Khóa học tiếng Hàn sơ cấp", duration: "4 tháng", tags: ["korean", "beginner"], createdAt: "2024-12-01" },
-  { id: "p10", name: "Tư Vấn Du Học", code: "SRVC-CONSULT", category: "service", price: 500000, status: "active", branch: "Toàn hệ thống", description: "Buổi tư vấn du học 1 tiếng", duration: "1 tiếng", createdAt: "2025-01-01" },
+  {
+    id: 'p1',
+    code: 'ST_OMO_1M',
+    name: '[Gia sư] Tiếng anh OMO 1:1 _ 1 buổi _ GV Phil',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 110000,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Nguyễn Thu Trang',
+    createdAt: '2024-05-10',
+    description: 'Khóa gia sư 1 kèm 1 Tiếng Anh OMO với giáo viên Philippines, thời lượng 1 buổi trải nghiệm.',
+    tags: ['omo', 'giasu-1:1', 'gv-phil'],
+    vouchers: ['PHREFER300'],
+    isCombo: false,
+  },
+  {
+    id: 'p2',
+    code: 'ST_OMO',
+    name: '[Station] Tiếng Anh OMO_1:10_1 buổi',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 175000,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Nguyễn Thu Trang',
+    createdAt: '2024-05-12',
+    description: 'Lớp học nhóm quy mô 1:10 tại Station, trải nghiệm chương trình Tiếng Anh OMO.',
+    tags: ['station', 'omo', 'nhom-1:10'],
+    vouchers: ['AEHB1000K', 'CSBHTGGIAM3'],
+    isCombo: false,
+  },
+  {
+    id: 'p3',
+    code: 'ST00385',
+    name: '[Gia sư] Tiếng anh OMO 1:1 _ 48 buổi _ GV Phil',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 12000000,
+    unit: 'Khóa',
+    duration: 'Sau 12 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Trần Minh Đức',
+    createdAt: '2024-05-15',
+    description: 'Gói lộ trình 48 buổi Gia sư 1 kèm 1 với giáo viên Philippines theo chuẩn OMO quốc tế.',
+    tags: ['giasu-1:1', '48-buoi', 'gv-phil'],
+    vouchers: ['GIOITHIEUGIAM1TR', 'PHREFER300'],
+    isCombo: false,
+  },
+  {
+    id: 'p4',
+    code: 'ST00384',
+    name: '[Gia sư] Tiếng anh OMO 1:1 _ 24 buổi _ GV Phil',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 6500000,
+    unit: 'Khóa',
+    duration: 'Sau 6 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Trần Minh Đức',
+    createdAt: '2024-05-18',
+    description: 'Gói lộ trình bán phần 24 buổi học gia sư 1:1 Tiếng Anh OMO kèm cam kết tiến độ.',
+    tags: ['giasu-1:1', '24-buoi', 'gv-phil'],
+    vouchers: ['TATTD500K'],
+    isCombo: false,
+  },
+  {
+    id: 'p5',
+    code: 'ST00383',
+    name: '[Station] Tiếng Anh OMO_1:10_48 buổi',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 18000000,
+    unit: 'Khóa',
+    duration: 'Sau 12 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Lê Hoàng Nam',
+    createdAt: '2024-05-20',
+    description: 'Chương trình học nhóm Station 1:10 kéo dài 48 buổi, tích hợp phương pháp phản xạ tương tác.',
+    tags: ['station', 'omo', '48-buoi'],
+    vouchers: ['STATIONHTTDHB', 'AEHB1000K'],
+    isCombo: false,
+  },
+  {
+    id: 'p6',
+    code: 'ST00382',
+    name: '[Station] Tiếng Anh OMO_1:10_96 buổi',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 25000000,
+    unit: 'Khóa',
+    duration: 'Sau 16 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Lê Hoàng Nam',
+    createdAt: '2024-05-22',
+    description: 'Khóa học dài hạn 96 buổi nhóm 1:10 tại Station, chuẩn bị đầu ra chứng chỉ Cambridge.',
+    tags: ['station', 'omo', '96-buoi', 'cambridge'],
+    vouchers: ['STATIONHTTDHB', 'CSBHTGGIAM3'],
+    isCombo: false,
+  },
+  {
+    id: 'p7',
+    code: 'ST00361',
+    name: '[Gia sư] Tiếng anh 1:4 _ 96 buổi _ GV Native',
+    category: 'course',
+    group: 'Gia sư tiểu học',
+    price: 10800000,
+    unit: 'Khóa',
+    duration: 'Sau 12 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Phạm Thị Lan',
+    createdAt: '2024-06-01',
+    description: 'Gia sư nhóm nhỏ 1 kèm 4 học sinh với giáo viên bản ngữ (GV Native), phát âm chuẩn bản xứ.',
+    tags: ['giasu-1:4', 'gv-native', 'tieu-hoc'],
+    vouchers: ['GIOITHIEUGIAM1TR'],
+    isCombo: false,
+  },
+  {
+    id: 'p8',
+    code: 'ST00390',
+    name: '[Gia sư][TH] Toán Tư Duy 1:1 (1 buổi)',
+    category: 'course',
+    group: 'Gia sư tiểu học',
+    price: 220000,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Phạm Thị Lan',
+    createdAt: '2024-06-03',
+    description: 'Buổi test và học thử Toán tư duy logic 1:1 dành riêng cho học sinh cấp tiểu học.',
+    tags: ['toan-tu-duy', 'giasu-1:1', 'tieu-hoc'],
+    vouchers: ['PHREFER300'],
+    isCombo: false,
+  },
+  {
+    id: 'p9',
+    code: 'ST00362',
+    name: '[Gia sư] Tiếng anh 1:1 _ 01 buổi _ GV Native',
+    category: 'course',
+    group: 'Gia sư tiểu học',
+    price: 225000,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Nguyễn Thu Trang',
+    createdAt: '2024-06-05',
+    description: 'Buổi học gia sư 1:1 tiếng Anh nâng cao phát âm trực tiếp cùng giáo viên bản ngữ.',
+    tags: ['giasu-1:1', 'gv-native'],
+    vouchers: ['PHREFER300'],
+    isCombo: false,
+  },
+  {
+    id: 'p10',
+    code: 'ST00369',
+    name: '[Gia sư] Tiếng anh 1:4 _ 01 buổi _ GV Native',
+    category: 'course',
+    group: 'Gia sư tiểu học',
+    price: 135000,
+    unit: 'Khóa',
+    duration: 'Sau 3 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Trần Minh Đức',
+    createdAt: '2024-06-08',
+    description: 'Buổi trải nghiệm lớp gia sư nhóm nhỏ 1:4 giáo viên bản ngữ chất lượng cao.',
+    tags: ['giasu-1:4', 'gv-native'],
+    isCombo: false,
+  },
+  {
+    id: 'p11',
+    code: 'CB-OMO-VIP',
+    name: '[Gói Combo] Combo Tiếng Anh OMO Toàn Diện + Balo & Giáo trình',
+    category: 'combo',
+    group: 'Station NEW (mkt)',
+    price: 28500000,
+    unit: 'Gói',
+    duration: 'Sau 18 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Lê Hoàng Nam',
+    createdAt: '2024-06-15',
+    description: 'Gói giải pháp toàn diện bao gồm khóa học OMO 96 buổi, full bộ giáo trình độc quyền và quà tặng balo chống gù.',
+    tags: ['combo', 'full-kit', 'tiet-kiem'],
+    vouchers: ['TATTD500K', 'GIOITHIEUGIAM1TR', 'AEHB1000K'],
+    isCombo: true,
+    comboItems: [
+      {
+        name: 'Khóa học Station OMO 96 buổi',
+        quantity: 1,
+        originalPrice: 27000000,
+        discountPrice: 25000000,
+        duration: '96 buổi',
+        orderType: 'Mua mới',
+        branch: 'RinoEdu Station Hà Nội',
+      },
+      {
+        name: 'Bộ sách OMO Primary Starter (Tập 1 & 2)',
+        quantity: 1,
+        originalPrice: 450000,
+        discountPrice: 350000,
+        duration: 'Không thời hạn',
+        orderType: 'Học liệu',
+      },
+      {
+        name: 'Balo học sinh chống gù Rino Edu',
+        quantity: 1,
+        originalPrice: 550000,
+        discountPrice: 450000,
+        duration: 'Không thời hạn',
+        orderType: 'Tặng kèm',
+      },
+    ],
+  },
+  {
+    id: 'p12',
+    code: 'CB-IELTS-PRO',
+    name: '[Gói Combo] Luyện thi IELTS 6.5+ (96 buổi) Tặng kèm Bộ sách Cambridge',
+    category: 'combo',
+    group: 'Luyện thi IELTS & Du học',
+    price: 32000000,
+    unit: 'Gói',
+    duration: 'Sau 12 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Trần Minh Đức',
+    createdAt: '2024-06-20',
+    description: 'Combo đào tạo chuyên sâu IELTS 4 kỹ năng cam kết đầu ra 6.5+ và bộ sách Cambridge 14-19.',
+    tags: ['combo', 'ielts-6.5', 'cambridge'],
+    vouchers: ['PHREFER300', 'GIOITHIEUGIAM1TR', 'STATIONHTTDHB'],
+    isCombo: true,
+    comboItems: [
+      {
+        name: 'Khóa luyện thi IELTS 4 kỹ năng 96 buổi',
+        quantity: 1,
+        originalPrice: 35000000,
+        discountPrice: 30000000,
+        duration: '96 buổi',
+        orderType: 'Mua mới',
+        branch: 'RinoEdu Cầu Giấy',
+      },
+      {
+        name: 'Bộ sách giáo trình Cambridge 14-19',
+        quantity: 1,
+        originalPrice: 1050000,
+        discountPrice: 850000,
+        duration: 'Không thời hạn',
+        orderType: 'Học liệu',
+      },
+      {
+        name: 'Tai nghe học tiếng Anh chuyên dụng Headset',
+        quantity: 1,
+        originalPrice: 850000,
+        discountPrice: 650000,
+        duration: '12 tháng',
+        orderType: 'Tặng kèm',
+      },
+    ],
+  },
+  {
+    id: 'p21',
+    code: 'CB-DUO-PLUS',
+    name: '[DUO PLUS] Combo Gia hạn KHTN & Toán (6 tháng)',
+    category: 'combo',
+    group: 'Gia sư tiểu học',
+    price: 1170000,
+    unit: 'Gói',
+    duration: 'Sau 6 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Phạm Thị Lan',
+    createdAt: '2024-06-25',
+    description: 'Combo gia hạn 2 môn Khoa học tự nhiên và Toán tư duy THCS với chính sách trợ giá ưu đãi.',
+    tags: ['duo-plus', 'khtn', 'toan-thcs'],
+    vouchers: ['TATTD500K'],
+    isCombo: true,
+    comboItems: [
+      {
+        name: '[DUO PLUS][THCS] Gia hạn KHTN ( 6 tháng )',
+        quantity: 1,
+        originalPrice: 720000,
+        discountPrice: 470000,
+        duration: '6 tháng',
+        orderType: 'Gia Hạn',
+        branch: 'RinoEdu Bắc Giang',
+      },
+      {
+        name: '[DUO PLUS][THCS] Gia hạn Toán ( 6 tháng )_mới',
+        quantity: 1,
+        originalPrice: 720000,
+        discountPrice: 700000,
+        duration: '6 tháng',
+        orderType: 'Gia Hạn',
+        branch: 'RinoEdu Bắc Giang',
+      },
+    ],
+  },
+  {
+    id: 'p13',
+    code: 'BK-OMO-01',
+    name: '[Sách] Giáo trình Tiếng Anh OMO Primary Starter (Tập 1 & 2)',
+    category: 'book',
+    group: 'Học liệu giáo dục',
+    price: 350000,
+    unit: 'Bộ',
+    duration: 'Không thời hạn',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Nguyễn Thu Trang',
+    createdAt: '2024-07-01',
+    description: 'Bộ sách bài học và sách bài tập chuẩn OMO thiết kế riêng cho học sinh độ tuổi 6-10.',
+    tags: ['sach', 'giao-trinh', 'omo'],
+    vouchers: ['TATTD500K'],
+    isCombo: false,
+  },
+  {
+    id: 'p14',
+    code: 'BK-MATH-02',
+    name: '[Sách] Tuyển tập Bài tập Toán Tư Duy Logic Tiểu học - Tập 1',
+    category: 'book',
+    group: 'Học liệu giáo dục',
+    price: 180000,
+    unit: 'Cuốn',
+    duration: 'Không thời hạn',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Phạm Thị Lan',
+    createdAt: '2024-07-05',
+    description: 'Sách bài tập rèn luyện tư duy số học và hình học không gian có hình minh họa sinh động.',
+    tags: ['sach', 'toan-logic'],
+  },
+  {
+    id: 'p15',
+    code: 'VPP-BALO-01',
+    name: '[Văn phòng phẩm] Balo Học Sinh Cao Cấp Rino Edu (Chống gù lưng)',
+    category: 'stationery',
+    group: 'Văn phòng phẩm & Đồng phục',
+    price: 450000,
+    unit: 'Chiếc',
+    duration: 'Không thời hạn',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Phạm Thị Lan',
+    createdAt: '2024-07-10',
+    description: 'Balo chất liệu siêu nhẹ, chống thấm nước, đệm lưng công thái học bảo vệ cột sống học sinh.',
+    tags: ['balo', 'dung-cu', 'rino-edu'],
+    vouchers: ['BALO-OFF100K'],
+  },
+  {
+    id: 'p16',
+    code: 'VPP-UNIFORM',
+    name: '[Đồng phục] Áo Polo Đồng Phục Học Viên Station Rino (Size M/L)',
+    category: 'stationery',
+    group: 'Văn phòng phẩm & Đồng phục',
+    price: 220000,
+    unit: 'Chiếc',
+    duration: 'Không thời hạn',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Nguyễn Thu Trang',
+    createdAt: '2024-07-12',
+    description: 'Áo polo cotton 100% thoáng mát in logo Rino Station chuẩn nhận diện thương hiệu.',
+    tags: ['dong-phuc', 'ao-polo'],
+  },
+  {
+    id: 'p17',
+    code: 'EQ-HEADSET',
+    name: '[Thiết bị] Tai Nghe Học Tiếng Anh Headset Có Mic Khử Ồn',
+    category: 'physical_product',
+    group: 'Thiết bị học tập',
+    price: 650000,
+    unit: 'Chiếc',
+    duration: 'Sau 12 tháng',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Trần Minh Đức',
+    createdAt: '2024-07-15',
+    description: 'Tai nghe chuyên dụng cho các buổi học trực tuyến 1:1, lọc tạp âm và hỗ trợ giọng nói rõ nét.',
+    tags: ['thiet-bi', 'tai-nghe', 'mic-khu-on'],
+    vouchers: ['THIETBI-15%'],
+  },
+  {
+    id: 'p18',
+    code: 'EQ-STEM-KIT',
+    name: '[Học cụ] Bộ Kit Lắp Ráp Robot & Khoa Học STEM Tương Tác',
+    category: 'physical_product',
+    group: 'Thiết bị học tập',
+    price: 1250000,
+    unit: 'Bộ',
+    duration: 'Không thời hạn',
+    status: 'active',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Lê Hoàng Nam',
+    createdAt: '2024-07-20',
+    description: 'Học cụ thực hành STEM cho học viên nghiên cứu mạch điện tử và lập trình mô hình thông minh.',
+    tags: ['stem', 'robot', 'hoc-cu'],
+    vouchers: ['STEM-OFF200K'],
+  },
+  {
+    id: 'p19',
+    code: 'ST00401',
+    name: '[Gia sư] Tiếng Anh Giao Tiếp Doanh Nghiệp 1:1',
+    category: 'course',
+    group: 'Station NEW (mkt)',
+    price: 450000,
+    unit: 'Buổi',
+    duration: 'Sau 6 tháng',
+    status: 'pending',
+    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Lê Hoàng Nam',
+    createdAt: '2024-08-01',
+    description: 'Khóa học đang trong giai đoạn thẩm định khung giáo án và phê duyệt chính sách định giá.',
+    tags: ['business-english', 'cho-duyet'],
+  },
+  {
+    id: 'p20',
+    code: 'BK-TOEIC-2023',
+    name: '[Sách] Giáo trình Luyện đề TOEIC (Phiên bản 2023)',
+    category: 'book',
+    group: 'Học liệu giáo dục',
+    price: 95000,
+    unit: 'Cuốn',
+    duration: 'Không thời hạn',
+    status: 'inactive',
+    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=150&auto=format&fit=crop&q=80',
+    createdBy: 'Admin Hệ thống',
+    createdAt: '2023-11-10',
+    description: 'Giáo trình đã dừng phân phối do chuyển sang bộ đề thi định dạng mới 2024-2025.',
+    tags: ['sach', 'het-han'],
+  },
 ]
 
-export function getProducts(filters?: { search?: string; category?: string; branch?: string; status?: string }): Product[] {
+export function getProducts(filters?: {
+  search?: string
+  category?: ProductCategory
+  group?: string
+  status?: string
+}): Product[] {
   return mockProducts.filter((p) => {
     if (filters?.search) {
       const q = filters.search.toLowerCase()
-      if (!p.name.toLowerCase().includes(q) && !p.code.toLowerCase().includes(q)) return false
+      if (
+        !p.name.toLowerCase().includes(q) &&
+        !p.code.toLowerCase().includes(q) &&
+        !(p.tags?.some((t) => t.toLowerCase().includes(q)) ?? false) &&
+        !(p.vouchers?.some((v) => v.toLowerCase().includes(q)) ?? false)
+      ) {
+        return false
+      }
     }
     if (filters?.category && p.category !== filters.category) return false
-    if (filters?.branch && p.branch !== filters.branch) return false
+    if (filters?.group && p.group !== filters.group) return false
     if (filters?.status && p.status !== filters.status) return false
     return true
   })

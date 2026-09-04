@@ -182,13 +182,20 @@ import { getStatusBadgeClass } from '@/lib/statusColors'
 
 ### 3.3. Typography
 
-| Level | Class | Khi nào dùng |
-|-------|-------|-------------|
-| Page Title | `text-lg font-semibold` | Tiêu đề trang (nếu cần hiện rõ) |
-| Section Title | `text-sm font-semibold uppercase tracking-wider text-muted-foreground` | Label group, filter header |
-| Body | `text-sm` (14px) | Mọi text trong bảng, form, card |
-| Caption | `text-xs text-muted-foreground` | Timestamp, ID, helper text |
-| Mono | `font-mono text-xs` | Booking code, serial number |
+> **Nguyên tắc cốt lõi:**
+> - **Sàn tối thiểu (Floor Threshold):** `text-xs` (12px / `0.75rem`) là kích thước chữ nhỏ nhất cho phép hiển thị nội dung đọc (caption, nhãn phụ, status badge, timestamp, helper text).
+> - **Nghiêm cấm tuyệt đối:** KHÔNG sử dụng các kích thước tùy biến dưới 12px (`text-[7px]`, `text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`) cho bất kỳ văn bản, bảng biểu, danh sách, modal hay nút bấm nào.
+> - **Ngoại lệ duy nhất:** Số đếm thông báo cực nhỏ (chấm tròn badge số lượng chưa đọc như `9+`) — cho phép tối thiểu `text-[11px] font-bold`.
+> - **Tỷ lệ hiển thị (Responsive Scaling):** Giữ nguyên `html { font-size: 100%; }` (16px base) ổn định trên mọi độ phân giải. Không tự ý dùng media query hạ % font-size trên màn hình lớn.
+
+| Level | Class | Kích thước | Khi nào dùng |
+|-------|-------|------------|-------------|
+| Page Title | `text-lg font-semibold` | 18px | Tiêu đề trang (nếu cần hiện rõ) |
+| Section Title | `text-sm font-semibold uppercase tracking-wider text-muted-foreground` | 14px | Label group, filter header |
+| Body | `text-sm` | 14px | Mọi text trong bảng, form, card, dialog |
+| Caption / Meta | `text-xs text-muted-foreground` | 12px | Timestamp, ID, helper text, nhãn phụ |
+| Badge / Tag | `text-xs font-medium` | 12px | Status badge, tag phân loại |
+| Mono | `font-mono text-xs` | 12px | Booking code, serial number |
 
 ### 3.4. Spacing
 

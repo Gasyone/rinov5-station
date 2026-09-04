@@ -73,11 +73,6 @@ export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
     { id: 'hen_nop_tien_mat', label: 'Hẹn nộp tiền mặt' },
     { id: 'da_thu_100', label: 'Đã thu 100% học phí' },
     { id: 'da_thu_coc', label: 'Đã cọc 50%' },
-    { id: 'no_show', label: 'Vắng test (No-show)' },
-    { id: 'khong_nghe_may', label: 'Không nghe máy' },
-    { id: 'sai_so', label: 'Sai số điện thoại' },
-    { id: 'nha_xa', label: 'Nhà xa cơ sở' },
-    { id: 'che_phi_cao', label: 'Chê học phí cao' },
   ],
   chua_tiep_can: [
     { id: 'all', label: 'Tất cả chưa tiếp cận' },
@@ -119,3 +114,51 @@ export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
     { id: 'che_phi_cao', label: 'Chê học phí cao' },
   ],
 }
+
+export type TimeRangeFilter = 'all' | 'today' | 'this_week' | 'this_month' | 'custom'
+
+export interface TimeRangeOption {
+  value: TimeRangeFilter
+  label: string
+}
+
+export const TIME_RANGE_OPTIONS: TimeRangeOption[] = [
+  { value: 'this_month', label: 'Tháng này (T08/2026)' },
+  { value: 'this_week', label: 'Tuần này' },
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'all', label: 'Tất cả thời gian' },
+  { value: 'custom', label: 'Tùy chỉnh khoảng ngày...' },
+]
+
+export interface LeadAllMetrics {
+  totalLeads: number
+  assignedCount: number
+  unassignedCount: number
+  assignedRate: number
+  experienceCount: number
+  experienceTotal: number
+  experienceShowUpRate: number
+  convertedCount: number
+  conversionRate: number
+  expectedRevenue: number
+  slaUnder15m: number
+  sla15mTo2h: number
+  slaOver2h: number
+  slaRate: number
+}
+
+export interface LeadMyMetrics {
+  totalLeads: number
+  todayTasksCount: number
+  overdueCount: number
+  convertedCount: number
+  conversionRate: number
+  actualRevenue: number
+  targetCount: number
+  kpiProgressRate: number
+  newCount: number
+  inProgressCount: number
+  experienceCount: number
+  closingCount: number
+}
+

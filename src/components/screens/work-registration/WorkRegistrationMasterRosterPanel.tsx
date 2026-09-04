@@ -128,7 +128,7 @@ export function WorkRegistrationMasterRosterPanel({
                   <span className="font-bold">{day.label}</span>
                   {holiday && (
                     <span
-                      className="block mt-0.5 max-w-full truncate rounded bg-amber-100 dark:bg-amber-950/80 px-1 py-0.2 text-[9px] font-semibold text-amber-800 dark:text-amber-300 border border-amber-300/50"
+                      className="block mt-0.5 max-w-full truncate rounded bg-amber-100 dark:bg-amber-950/80 px-1 py-0.2 text-xs font-semibold text-amber-800 dark:text-amber-300 border border-amber-300/50"
                       title={holiday.name}
                     >
                       🎉 {holiday.name}
@@ -158,12 +158,12 @@ export function WorkRegistrationMasterRosterPanel({
                 >
                   <div className="flex items-center gap-2">
                     <span>{sec.icon}</span>
-                    <span className="uppercase tracking-wider font-bold text-[11px]">
+                    <span className="uppercase tracking-wider font-bold text-xs">
                       {sec.label}
                     </span>
                     <span
                       className={cn(
-                        'text-[11px] font-normal',
+                        'text-xs font-normal',
                         sec.id === 'morning'
                           ? 'text-amber-700/80 dark:text-amber-400/80'
                           : sec.id === 'afternoon'
@@ -180,7 +180,7 @@ export function WorkRegistrationMasterRosterPanel({
                     )}
                   </div>
                   {isDigi && (
-                    <span className="hidden md:inline-block text-[10px] font-normal text-purple-700 dark:text-purple-300/80">
+                    <span className="hidden md:inline-block text-xs font-normal text-purple-700 dark:text-purple-300/80">
                       Gán giáo viên / Trợ giảng phụ trách
                     </span>
                   )}
@@ -216,10 +216,10 @@ export function WorkRegistrationMasterRosterPanel({
                         )}
                       >
                         <div className="space-y-1.5 flex-1 min-h-0 flex flex-col">
-                          <div className="shrink-0 flex items-center justify-between text-[11px]">
+                          <div className="shrink-0 flex items-center justify-between text-xs">
                             <span
                               className={cn(
-                                'text-[11px]',
+                                'text-xs',
                                 hasMatchingStaff
                                   ? 'text-primary font-bold'
                                   : assignedStaff.length > 0
@@ -237,7 +237,7 @@ export function WorkRegistrationMasterRosterPanel({
                             </span>
                             <span
                               className={cn(
-                                'transition-colors text-[11px] font-semibold',
+                                'transition-colors text-xs font-semibold',
                                 isDigi
                                   ? 'text-purple-600 dark:text-purple-400 group-hover:underline'
                                   : 'text-muted-foreground group-hover:text-primary'
@@ -266,7 +266,7 @@ export function WorkRegistrationMasterRosterPanel({
                                 >
                                   <span
                                     className={cn(
-                                      'truncate text-[11px] font-medium',
+                                      'truncate text-xs font-medium',
                                       isMatched ? 'text-primary-foreground font-bold' : 'text-foreground'
                                     )}
                                   >
@@ -278,7 +278,7 @@ export function WorkRegistrationMasterRosterPanel({
                                     return regTime ? (
                                       <span
                                         className={cn(
-                                          'ml-auto shrink-0 text-[10px] tabular-nums font-normal',
+                                          'ml-auto shrink-0 text-xs tabular-nums font-normal',
                                           isMatched
                                             ? 'text-primary-foreground/90'
                                             : isFull
@@ -294,7 +294,7 @@ export function WorkRegistrationMasterRosterPanel({
                               )
                             })}
                             {assignedStaff.length === 0 && (
-                              <div className="py-3 text-center text-[10px] text-muted-foreground italic">
+                              <div className="py-3 text-center text-xs text-muted-foreground italic">
                                 {isDigi ? 'Chưa gán trợ giảng / GV' : 'Chưa có người trực'}
                               </div>
                             )}

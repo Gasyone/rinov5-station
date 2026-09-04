@@ -106,7 +106,7 @@ export function ClassesSessionMediaCard({
 
           {/* Right: Type Badge */}
           <div className="shrink-0 pointer-events-auto">
-            <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] font-bold text-zinc-200 border border-white/10 uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-xs font-bold text-zinc-200 border border-white/10 uppercase tracking-wider">
               {item.type === 'image' ? 'Ảnh' : item.type === 'video' ? 'Video' : 'Tệp'}
             </span>
           </div>
@@ -186,7 +186,7 @@ export function ClassesSessionMediaCard({
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-6 flex flex-col gap-1 z-10 pointer-events-none">
           {/* Tagged Student Avatar Circles */}
           {item.taggedStudentIds.length === 0 ? (
-            <div className="flex items-center gap-1 text-[10px] text-zinc-300 font-medium">
+            <div className="flex items-center gap-1 text-xs text-zinc-300 font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Dành cho cả lớp</span>
             </div>
@@ -202,7 +202,7 @@ export function ClassesSessionMediaCard({
                       e.stopPropagation()
                       handleRemoveStudentTag(item.id, st.id, st.name)
                     }}
-                    className={`group/avatar relative flex items-center justify-center h-6 w-6 rounded-full ${bg} ${text} text-[10px] font-bold border shadow-xs transition-transform hover:scale-110 cursor-pointer`}
+                    className={`group/avatar relative flex items-center justify-center h-6 w-6 rounded-full ${bg} ${text} text-xs font-bold border shadow-xs transition-transform hover:scale-110 cursor-pointer`}
                     title={`${st.name} (Nhấp để xóa học viên)`}
                   >
                     <span>{st.initials || st.name.slice(0, 1).toUpperCase()}</span>

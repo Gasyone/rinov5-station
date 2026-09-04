@@ -11,6 +11,7 @@
     "build:turbo": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "lint:fonts": "node scripts/lint-font-sizes.mjs",
     "lint:docs": "node scripts/lint-docs.mjs",
     "lint:process": "node .agents/skills/product_process_checker/scripts/check_document.mjs",
     "typecheck": "tsc --noEmit",

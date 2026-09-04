@@ -29,6 +29,7 @@ export interface ClassSession {
   homeworkSubmitted?: number;
   digiBookingIds?: string[];
   roomCapacity?: number;
+  studentList?: { id: string; name: string; englishName?: string; status?: string }[];
 }
 
 export interface EventSession {
