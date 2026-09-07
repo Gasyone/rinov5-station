@@ -33,23 +33,23 @@ import {
   PersonnelHoverCard,
   StatusBadge,
 } from '@/components/shared'
-import { formatCurrency, formatDateTime } from '@/lib/format'
+import { formatCurrency, formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Order } from '@/mocks/orders'
 import {
-  formatPaymentTime,
+  formatPaymentDateOnly,
   formatPhoneMaskMiddle,
   getNormalizedPaymentHistory,
   getOrderCustomerInfo,
   getOrderEffectiveStatus,
-  getOrderPaymentInstallmentInfo,
   getOrderPhone,
-  getOrderSessionConversion,
   getOrderStatusLabel,
+  getOrderUpdatedAt,
   getStaffPersonnel,
   isOrderDeposit,
 } from './ordersHelpers'
 import { OrderProductsPopover } from './OrderProductsPopover'
+import { OrderFulfillmentCell } from './OrderFulfillmentCell'
 
 interface OrdersTableProps {
   orders: Order[]
@@ -66,12 +66,19 @@ export function OrdersTable({
   onAddPayment,
 }: OrdersTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedOrderNo, setCopiedOrderNo] = useState<string | null>(null)
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null)
+
+  const handleCopyOrderNo = (orderNo: string, id: string) => {
+    navigator.clipboard?.writeText(orderNo)
+    setCopiedOrderNo(id)
+    setTimeout(() => setCopiedOrderNo(null), 2000)
+  }
 
   const handleCopyPhone = (phone: string, id: string) => {
     navigator.clipboard?.writeText(phone)
-    setCopiedId(id)
-    setTimeout(() => setCopiedId(null), 2000)
+    setCopiedPhone(id)
+    setTimeout(() => setCopiedPhone(null), 2000)
   }
 
   const isAllSelected =
@@ -109,32 +116,30 @@ export function OrdersTable({
     <Table className="border-collapse">
       <TableHeader className="sticky top-0 z-10 bg-background shadow-2xs">
         <TableRow>
-          {/* CỘT 1: TÊN HỌC VIÊN */}
-          <TableHead className="w-[300px] min-w-[280px]">
+          {/* CỘT 1: ĐƠN HÀNG (TĂNG BỀ NGANG) */}
+          <TableHead className="w-[280px] min-w-[260px]">
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={isAllSelected}
                 onCheckedChange={handleSelectAll}
                 aria-label="Chọn tất cả đơn hàng"
               />
-              <span>Tên học viên</span>
+              <span>Đơn hàng</span>
             </div>
           </TableHead>
 
-          {/* CỘT 2: LIÊN HỆ */}
-          <TableHead className="min-w-[170px]">Liên hệ</TableHead>
-          {/* CỘT 3: GÓI SẢN PHẨM */}
-          <TableHead className="w-[170px] min-w-[150px] max-w-[180px]">Gói sản phẩm</TableHead>
+          {/* CỘT 2: KHÁCH HÀNG */}
+          <TableHead className="w-[160px] min-w-[150px]">Khách hàng</TableHead>
+          {/* CỘT 3: GÓI SẢN PHẨM (TĂNG BỀ NGANG) */}
+          <TableHead className="w-[290px] min-w-[270px]">Gói sản phẩm</TableHead>
           {/* CỘT 4: TỔNG TIỀN */}
-          <TableHead className="min-w-[140px]">Tổng tiền</TableHead>
-          {/* CỘT 5: LỊCH SỬ THANH TOÁN */}
-          <TableHead className="min-w-[220px]">Lịch sử thanh toán</TableHead>
-          {/* CỘT 6: SỐ BUỔI QUY ĐỔI */}
-          <TableHead className="min-w-[130px]">Số buổi quy đổi</TableHead>
+          <TableHead className="w-[130px] min-w-[120px]">Tổng tiền</TableHead>
+          {/* CỘT 5: LỊCH SỬ THANH TOÁN (THU HẸP BỀ NGANG) */}
+          <TableHead className="w-[160px] min-w-[145px] max-w-[170px]">Lịch sử thanh toán</TableHead>
+          {/* CỘT 6: CHUYỂN GIAO SP/DV */}
+          <TableHead className="w-[185px] min-w-[170px]">Chuyển giao SP/DV</TableHead>
           {/* CỘT 7: TRẠNG THÁI */}
-          <TableHead className="min-w-[130px]">Trạng thái</TableHead>
-          {/* CỘT 8: NGƯỜI LÊN ĐƠN */}
-          <TableHead className="min-w-[130px]">Người lên đơn</TableHead>
+          <TableHead className="w-[140px] min-w-[130px]">Trạng thái</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -145,10 +150,13 @@ export function OrdersTable({
           const remainingAmount = order.remainingAmount ?? Math.max(0, order.finalAmount - paidAmount)
           const history = getNormalizedPaymentHistory(order)
           const latestPayment = history.length > 0 ? history[0] : null
-          const conversion = getOrderSessionConversion(order)
           const customerInfo = getOrderCustomerInfo(order)
           const rawPhone = getOrderPhone(order)
           const maskedPhone = formatPhoneMaskMiddle(rawPhone)
+          const updatedTime = getOrderUpdatedAt(order)
+          const staffName = order.saleBy || 'Nguyễn Văn Sale'
+          const staffPersonnel = getStaffPersonnel(staffName)
+          const isDeposit = isOrderDeposit(order)
 
           return (
             <TableRow
@@ -163,7 +171,7 @@ export function OrdersTable({
                 'hover:bg-muted/60 dark:hover:bg-muted/40'
               )}
             >
-              {/* CỘT 1: CHECKBOX + TÊN HỌC VIÊN + MÃ ĐƠN & MÃ HỌC VIÊN + ACTION ICONS */}
+              {/* CỘT 1: ĐƠN HÀNG (MÃ ĐƠN HÀNG + COPY ICON, DÒNG DƯỚI: NGƯỜI TẠO, NGÀY TẠO) */}
               <TableCell className="py-3 px-3">
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -172,29 +180,49 @@ export function OrdersTable({
                     aria-label={`Chọn đơn ${order.orderNo}`}
                   />
                   <div className="min-w-0 flex-1">
-                    {/* Dòng 1: Tên học viên */}
+                    {/* Dòng 1: Mã đơn hàng có icon copy */}
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span
-                        className="truncate font-semibold text-xs text-foreground hover:text-primary cursor-pointer"
+                        className="font-mono font-bold text-xs text-foreground hover:text-primary hover:underline cursor-pointer"
                         onClick={() => onRowClick(order)}
-                        title={`Học viên: ${order.studentName}`}
-                      >
-                        {order.studentName}
-                      </span>
-                    </div>
-
-                    {/* Dòng 2: Mã đơn & Mã học viên */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono mt-0.5">
-                      <span
-                        className="font-medium text-foreground/80 hover:text-primary hover:underline cursor-pointer"
-                        onClick={() => onRowClick(order)}
-                        title={`Mã đơn: ${order.orderNo}`}
+                        title={`Mã đơn: ${order.orderNo} - Nhấp để xem chi tiết`}
                       >
                         {order.orderNo}
                       </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCopyOrderNo(order.orderNo, order.id)
+                        }}
+                        className="p-0.5 text-muted-foreground/70 hover:text-foreground rounded transition-colors cursor-pointer"
+                        title={copiedOrderNo === order.id ? 'Đã sao chép mã đơn!' : 'Sao chép mã đơn hàng'}
+                        aria-label="Sao chép mã đơn hàng"
+                      >
+                        {copiedOrderNo === order.id ? (
+                          <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Dòng 2: Người tạo, ngày tạo (bỏ giờ, chỉ để ngày gọn) */}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 truncate max-w-[240px]">
+                      <PersonnelHoverCard person={staffPersonnel} align="start">
+                        <span
+                          className="font-normal text-muted-foreground hover:text-primary hover:underline cursor-pointer truncate"
+                          title={`Người tạo: ${staffName}`}
+                        >
+                          {staffName}
+                        </span>
+                      </PersonnelHoverCard>
                       <span className="text-muted-foreground/40">•</span>
-                      <span className="uppercase" title={`Mã học viên: ${order.studentId}`}>
-                        {order.studentId}
+                      <span
+                        className="font-mono text-muted-foreground shrink-0 text-xs"
+                        title={`Ngày tạo: ${formatDate(order.createdAt)}`}
+                      >
+                        {formatDate(order.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -214,7 +242,7 @@ export function OrdersTable({
                         >
                           <CreditCard className="h-3.5 w-3.5" />
                         </Button>
-                      ) : isOrderDeposit(order) && remainingAmount > 0 ? (
+                      ) : isDeposit && remainingAmount > 0 ? (
                         <Button
                           type="button"
                           variant="ghost"
@@ -256,20 +284,22 @@ export function OrdersTable({
                 </div>
               </TableCell>
 
-              {/* CỘT 2: LIÊN HỆ (TÊN PHỤ HUYNH + SĐT MASKED & COPY) */}
+              {/* CỘT 2: KHÁCH HÀNG (TÊN KH, BÊN DƯỚI LÀ SĐT) */}
               <TableCell className="py-3 px-3">
                 <div className="min-w-0">
-                  {/* Dòng 1: Tên phụ huynh + quan hệ */}
+                  {/* Dòng 1: Tên KH */}
                   <div className="flex items-center gap-1 min-w-0">
                     <span
-                      className="truncate font-medium text-xs text-foreground"
-                      title={`${customerInfo.relationship}: ${customerInfo.name}`}
+                      className="truncate font-semibold text-xs text-foreground"
+                      title={`Khách hàng: ${customerInfo.name}`}
                     >
                       {customerInfo.name}
                     </span>
-                    <span className="text-xs text-muted-foreground shrink-0 font-normal">
-                      ({customerInfo.relationship})
-                    </span>
+                    {customerInfo.relationship && (
+                      <span className="text-xs text-muted-foreground shrink-0 font-normal">
+                        ({customerInfo.relationship})
+                      </span>
+                    )}
                   </div>
 
                   {/* Dòng 2: SĐT có icon copy */}
@@ -282,10 +312,11 @@ export function OrdersTable({
                         handleCopyPhone(rawPhone, order.id)
                       }}
                       className="p-0.5 text-muted-foreground/70 hover:text-foreground rounded transition-colors cursor-pointer"
-                      title={copiedId === order.id ? 'Đã sao chép SĐT!' : 'Sao chép số điện thoại'}
+                      title={copiedPhone === order.id ? 'Đã sao chép SĐT!' : 'Sao chép số điện thoại'}
+                      aria-label="Sao chép số điện thoại"
                     >
-                      {copiedId === order.id ? (
-                        <Check className="h-3 w-3 text-emerald-600" />
+                      {copiedPhone === order.id ? (
+                        <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                       ) : (
                         <Copy className="h-3 w-3" />
                       )}
@@ -296,7 +327,7 @@ export function OrdersTable({
 
               {/* CỘT 3: GÓI SẢN PHẨM */}
               <TableCell className="py-3 px-3">
-                <div className="max-w-[170px] truncate">
+                <div className="min-w-0 max-w-[280px]">
                   <OrderProductsPopover order={order} />
                 </div>
               </TableCell>
@@ -327,7 +358,7 @@ export function OrdersTable({
               <TableCell className="py-3 px-3">
                 {latestPayment ? (
                   <div className="flex flex-col gap-0.5 text-xs">
-                    {/* Dòng 1: Icon Check đối soát (trước) -> Số tiền -> Nút Popover lịch sử (sau) */}
+                    {/* Dòng 1: Icon Check đối soát (trước) -> Số tiền -> Nhãn Cọc (nếu là đơn cọc) -> Nút Popover lịch sử (sau) */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {latestPayment.reconciliationStatus === 'reconciled' && (
                         <span
@@ -341,6 +372,16 @@ export function OrdersTable({
                       <span className="font-mono font-medium text-foreground">
                         {formatCurrency(latestPayment.amount)}
                       </span>
+
+                      {/* Nhãn cọc đưa vào lịch sử thanh toán */}
+                      {isDeposit && (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] px-1.5 py-0 h-4.5 font-medium rounded bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300"
+                        >
+                          Cọc
+                        </Badge>
+                      )}
 
                       {history.length > 1 && (
                         <Popover>
@@ -377,9 +418,19 @@ export function OrdersTable({
                                   className="flex flex-col gap-1 p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs"
                                 >
                                   <div className="flex items-center justify-between font-bold">
-                                    <span className="text-foreground font-mono">
-                                      Lần {rec.sequenceNo} • {rec.code}
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-foreground font-mono">
+                                        Lần {rec.sequenceNo} • {rec.code}
+                                      </span>
+                                      {isDeposit && (
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[10px] py-0 px-1 font-medium rounded bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300"
+                                        >
+                                          Cọc
+                                        </Badge>
+                                      )}
+                                    </div>
                                     {rec.reconciliationStatus === 'reconciled' ? (
                                       <span
                                         title="Đã đối soát"
@@ -437,7 +488,7 @@ export function OrdersTable({
                                   size="sm"
                                   className={cn(
                                     'h-6 px-2 text-xs font-medium text-white shadow-2xs cursor-pointer',
-                                    isOrderDeposit(order)
+                                    isDeposit
                                       ? 'bg-blue-600 hover:bg-blue-700'
                                       : 'bg-emerald-600 hover:bg-emerald-700'
                                   )}
@@ -446,7 +497,7 @@ export function OrdersTable({
                                     onAddPayment(order)
                                   }}
                                 >
-                                  {isOrderDeposit(order) ? (
+                                  {isDeposit ? (
                                     <span className="inline-flex items-center gap-1">
                                       <span>Tạo đơn hoàn tất</span>
                                       <ExternalLink className="h-3 w-3" />
@@ -462,19 +513,29 @@ export function OrdersTable({
                       )}
                     </div>
 
-                    {/* Dòng 2: Phương thức • Thời gian */}
+                    {/* Dòng 2: Phương thức • Ngày gọn (bỏ giờ) */}
                     <div
-                      className="text-xs text-muted-foreground truncate max-w-[230px] flex items-center gap-1.5"
-                      title={`${latestPayment.paymentMethod} • ${formatPaymentTime(latestPayment.paidAt)}`}
+                      className="text-xs text-muted-foreground truncate max-w-[155px] flex items-center gap-1"
+                      title={`${latestPayment.paymentMethod} • ${formatPaymentDateOnly(latestPayment.paidAt)}`}
                     >
-                      <span className="text-foreground/85 font-normal">{latestPayment.paymentMethod}</span>
+                      <span className="text-foreground/85 font-normal truncate">{latestPayment.paymentMethod}</span>
                       <span className="text-muted-foreground/40">•</span>
-                      <span className="font-mono">{formatPaymentTime(latestPayment.paidAt)}</span>
+                      <span className="font-mono shrink-0">{formatPaymentDateOnly(latestPayment.paidAt)}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-start gap-1 text-xs">
-                    <span className="text-muted-foreground">Chưa có giao dịch</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground">Chưa có giao dịch</span>
+                      {isDeposit && (
+                        <Badge
+                          variant="outline"
+                          className="text-[11px] px-1.5 py-0 h-4.5 font-medium rounded bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300"
+                        >
+                          Cọc
+                        </Badge>
+                      )}
+                    </div>
                     {onAddPayment && cancellable && (
                       <Button
                         type="button"
@@ -495,31 +556,15 @@ export function OrdersTable({
                 )}
               </TableCell>
 
-              {/* CỘT 6: SỐ BUỔI QUY ĐỔI */}
+              {/* CỘT 6: CHUYỂN GIAO SP/DV (KÍCH HOẠT HỌC VIÊN & BÀN GIAO SẢN PHẨM) */}
               <TableCell className="py-3 px-3">
-                {conversion.isApplicable ? (
-                  <div className="flex flex-col gap-0.5 text-xs">
-                    {/* Dòng 1: Tổng số buổi */}
-                    <span className="font-medium text-xs font-mono text-foreground">
-                      {conversion.totalSessions} buổi
-                    </span>
-                    {/* Dòng 2: QĐ / Còn lại */}
-                    <div className="text-xs text-muted-foreground font-mono flex items-center gap-1 flex-wrap">
-                      <span>Đã QĐ: {conversion.convertedSessions}</span>
-                      <span className="text-muted-foreground/40">•</span>
-                      <span>Còn: {conversion.remainingSessions}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
+                <OrderFulfillmentCell order={order} />
               </TableCell>
 
-              {/* CỘT 7: TRẠNG THÁI & LẦN THANH TOÁN */}
+              {/* CỘT 7: TRẠNG THÁI (STATUS BADGE + NGÀY GIỜ CẬP NHẬT Ở DÒNG DƯỚI) */}
               <TableCell className="py-3 px-3">
                 {(() => {
                   const effectiveStatus = getOrderEffectiveStatus(order)
-                  const installment = getOrderPaymentInstallmentInfo(order)
                   return (
                     <div className="flex flex-col gap-1 items-start">
                       <StatusBadge
@@ -527,36 +572,14 @@ export function OrdersTable({
                         label={getOrderStatusLabel(effectiveStatus)}
                         withDot
                       />
-                      {/* Dòng 2: Lần thanh toán (Cọc / Thanh toán 1 lần / Thanh toán lần 1, 2, 3...) */}
-                      <div className="text-xs pl-0.5">
-                        <span className={installment.className}>
-                          {installment.label}
-                        </span>
-                      </div>
+                      {/* Dòng 2: Ngày giờ cập nhật */}
+                      <span
+                        className="text-xs text-muted-foreground font-mono pl-0.5"
+                        title={`Thời gian cập nhật: ${updatedTime}`}
+                      >
+                        {updatedTime}
+                      </span>
                     </div>
-                  )
-                })()}
-              </TableCell>
-
-              {/* CỘT 9: NGƯỜI LÊN ĐƠN */}
-              <TableCell className="py-3 px-3">
-                {(() => {
-                  const staffName = order.saleBy || 'Nguyễn Văn Sale'
-                  const staffPersonnel = getStaffPersonnel(staffName)
-                  return (
-                    <PersonnelHoverCard person={staffPersonnel} align="end">
-                      <div className="flex flex-col gap-0.5 text-xs cursor-pointer group/staff max-w-[140px]">
-                        <span
-                          className="font-normal text-foreground group-hover/staff:text-primary group-hover/staff:underline truncate"
-                          title={`Nhân sự: ${staffName}`}
-                        >
-                          {staffName}
-                        </span>
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {formatDateTime(order.createdAt)}
-                        </span>
-                      </div>
-                    </PersonnelHoverCard>
                   )
                 })()}
               </TableCell>

@@ -13,7 +13,8 @@ tags: [crm, lead, list]
 
 > **Tham chiếu:** BF-CRM-01 · SR-SALE-001 · Giao diện Mẫu §4.2 (Danh sách)
 > **Đường dẫn màn hình & Trạng thái liên quan:**
-> - `/app/crm_leads` -> Trạng thái: `[Tất cả, Chưa tiếp cận, Đang chăm sóc, Đánh giá & Trải nghiệm, Tiềm năng, Chuyển đổi]`
+> - `/app/crm_my_leads` (Lead của tôi) -> Trạng thái tác nghiệp: `[Tất cả, ⏰ Cần gọi hôm nay, ⚠️ Quá hạn, Đang tư vấn, Lịch trải nghiệm, Chờ chốt deal, Đã chuyển đổi, Thất bại / Tạm dừng]`
+> - `/app/crm_leads` (Quản lý Lead) -> Trạng thái phễu & điều phối: `[Tất cả, 👤 Chưa phân bổ, Mới tiếp nhận, Đang tư vấn, Đánh giá & Trải nghiệm, Chờ chốt deal, Đã chuyển đổi, Thất bại / Lưu kho]`
 
 ---
 
@@ -23,6 +24,7 @@ tags: [crm, lead, list]
 
 | Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
 |---|---|---|
+| 07/09/2026 | Chuẩn hóa hệ thống Trạng thái cho 2 màn hình Lead của tôi và Quản lý Lead. Màn Lead của tôi dùng dải thẻ trạng thái hướng tác nghiệp (Cần gọi hôm nay, Quá hạn, Đang tư vấn, Trải nghiệm, Chờ chốt deal, Đã chuyển đổi, Thất bại); Màn Quản lý Lead dùng dải thẻ phễu điều phối (Chưa phân bổ, Mới tiếp nhận, Đang tư vấn, Trải nghiệm, Chờ chốt deal, Chuyển đổi, Thất bại). Loại bỏ thanh chip lọc phụ để tối ưu diện tích bảng. | Nâng cao hiệu suất tác nghiệp cho Tư vấn viên và khả năng giám sát phân bổ của Quản lý |
 | 26/08/2026 | Bỏ thẻ "Thất bại" trên dải Tab lọc trạng thái chính (chỉ giữ các trạng thái đang xử lý/tiến trình), chuyển bộ lọc "Thất bại" và trạng thái đầy đủ vào Bảng lọc nâng cao (Filter Sheet) | Tối ưu không gian tác nghiệp và tập trung vào các Lead đang trong quy trình tư vấn thực tế |
 | 25/08/2026 | Bỏ cột Địa chỉ & Email, đưa cột Phụ huynh lên trước Tuổi & Trình độ, bổ sung cột Lịch sử chăm sóc, chuẩn hóa cột Người phụ trách (ngày bắt đầu + số ngày) và hiển thị cột Đơn hàng ở cuối cùng | Tối ưu bảng dữ liệu theo dõi tác nghiệp chăm sóc và nâng cao trải nghiệm người dùng |
 | 13/08/2026 | Gom các trạng thái phụ về Trạng thái vòng đời Lead chuẩn: Thêm "Đánh giá & Trải nghiệm", chuẩn hóa "Tiềm năng" | Chuẩn hóa bộ trạng thái chính theo đúng bản chất pipeline tuyển sinh |
@@ -87,22 +89,37 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 | Nút Tạo mới Lead | Nút màu nhấn | - | Mở hộp thoại Khởi tạo Lead mới cho Học viên | Chuyển thành nút cộng |
 
 #### B. Khối lọc nhanh theo trạng thái (Status Tiles)
+
+##### B.1. Màn hình Lead của tôi (/app/crm_my_leads - Hướng tác nghiệp cho Tư vấn viên)
 | Thẻ Trạng thái | Nhóm màu hiển thị | Điều kiện lọc | Diễn giải | Mobile Responsive |
 |----------------|-------------------|----------------|-----------|-------------------|
-| Tất cả | Mặc định | Bỏ lọc trạng thái | Tổng số Lead đang xử lý | Cuộn ngang |
-| Chưa tiếp cận | Màu xanh dương | Trạng thái = "Chưa tiếp cận" | Lead học viên mới đổ về chưa gọi | Cuộn ngang |
-| Đang chăm sóc | Màu vàng cam | Trạng thái = "Đang chăm sóc" | Đang tư vấn chương trình cho học viên | Cuộn ngang |
-| Đánh giá & Trải nghiệm | Màu tím | Trạng thái = "Đánh giá & Trải nghiệm" | Học viên trong giai đoạn làm test đầu vào hoặc học thử | Cuộn ngang |
-| Tiềm năng | Màu xanh lá | Trạng thái = "Tiềm năng" | Học viên đã chốt báo giá, giữ chỗ 24h hoặc hẹn nộp tiền | Cuộn ngang |
-| Chuyển đổi | Màu xanh ngọc | Trạng thái = "Chuyển đổi" | Học viên đã mua khóa học chính thức | Cuộn ngang |
+| Tất cả | Mặc định | Bỏ lọc trạng thái | Toàn bộ Lead do tư vấn viên đăng nhập phụ trách | Cuộn ngang |
+| Cần gọi hôm nay | Màu vàng cam | Mới chưa gọi hoặc có hẹn gọi lại hôm nay hoặc xong test | Khách hàng cần gọi điện trao đổi ngay trong ngày | Cuộn ngang |
+| Quá hạn | Màu đỏ | Mới quá hạn phản hồi hoặc trễ lịch hẹn | Các khách hàng bị quá hạn cam kết xử lý | Cuộn ngang |
+| Đang tư vấn | Màu vàng cam | Trạng thái = "Đang tư vấn" | Đang trong tiến trình liên hệ và tư vấn lộ trình học | Cuộn ngang |
+| Lịch trải nghiệm | Màu tím | Trạng thái = "Hẹn trải nghiệm" | Học viên đã có lịch kiểm tra năng lực hoặc học thử | Cuộn ngang |
+| Chờ chốt deal | Màu xanh dương | Trạng thái = "Chờ chốt deal" | Học viên đang giữ chỗ 24h, chờ chuyển khoản học phí | Cuộn ngang |
+| Đã chuyển đổi | Màu xanh ngọc | Trạng thái = "Đã chuyển đổi" | Học viên đã hoàn tất thủ tục thanh toán nhập học | Cuộn ngang |
+| Thất bại / Tạm dừng | Màu đỏ | Trạng thái = "Thất bại" | Khách hàng tạm dừng nhu cầu hoặc chưa phù hợp | Cuộn ngang |
+
+##### B.2. Màn hình Quản lý Lead (/app/crm_leads - Hướng phễu & điều phối cho Quản lý)
+| Thẻ Trạng thái | Nhóm màu hiển thị | Điều kiện lọc | Diễn giải | Mobile Responsive |
+|----------------|-------------------|----------------|-----------|-------------------|
+| Tất cả | Mặc định | Bỏ lọc trạng thái | Toàn bộ khách hàng tiềm năng trong cơ sở | Cuộn ngang |
+| Chưa phân bổ | Màu vàng cam | Chưa gán người phụ trách | Khách hàng mới đổ về cần phân bổ cho tư vấn viên | Cuộn ngang |
+| Mới tiếp nhận | Màu xanh dương | Trạng thái = "Mới tiếp nhận" | Khách hàng mới đã giao nhưng tư vấn viên chưa gọi | Cuộn ngang |
+| Đang tư vấn | Màu vàng cam | Trạng thái = "Đang tư vấn" | Khách hàng đang được tư vấn viên chăm sóc tích cực | Cuộn ngang |
+| Đánh giá & Trải nghiệm | Màu tím | Trạng thái = "Hẹn trải nghiệm" | Khách hàng trong giai đoạn làm kiểm tra hoặc học thử | Cuộn ngang |
+| Chờ chốt deal | Màu xanh dương | Trạng thái = "Chờ chốt deal" | Cơ hội bán hàng đang báo giá, giữ chỗ chờ nộp phí | Cuộn ngang |
+| Đã chuyển đổi | Màu xanh ngọc | Trạng thái = "Đã chuyển đổi" | Khách hàng mua khóa học thành công | Cuộn ngang |
+| Thất bại / Lưu kho | Màu đỏ | Trạng thái = "Thất bại" | Khách hàng không thành công, lưu kho nuôi dưỡng lại | Cuộn ngang |
 
 #### C. Bảng dữ liệu danh sách chính
 | Cột thông tin | Kiểu hiển thị | Nguồn dữ liệu | Quy tắc thị giác & Trạng thái | Mobile Responsive |
 |---------------|---------------|----------------|--------------------------------|-------------------|
-| **Học viên (Lead & Nguồn)** | Chữ đậm + Mã mờ | Thực thể Học viên | Tên Học viên in đậm làm trọng tâm chính, Mã Lead và Nguồn mờ bên dưới | Giữ nguyên |
-| **Phụ huynh / Liên hệ** | Chữ vừa + Thẻ quan hệ | Thực thể Phụ huynh | Tên Phụ huynh + Badge vai trò (Mẹ/Bố), SĐT che dạng `091****111` kèm nút Sao chép | Giữ nguyên |
-| **Tuổi & Trình độ** | 2 dòng chữ | Thực thể Học viên | Dòng 1: Tuổi và năm sinh; Dòng 2: Trình độ ban đầu khi tạo test | Giữ nguyên |
+| **Lead** | Chữ đậm + Chữ vừa | Thực thể Học viên & Phụ huynh | Dòng 1: Tên học viên in đậm và Nguồn; Dòng 2: Tên Phụ huynh, SĐT che dạng `091****111` kèm nút Sao chép | Giữ nguyên |
 | **Khóa học & Nhóm SP** | Chữ vừa + Chữ mờ | Thực thể Chương trình | Khóa học quan tâm dòng 1, Nhóm sản phẩm dòng 2 | Thu gọn |
+| **Tuổi & Trình độ** | 2 dòng chữ | Thực thể Học viên | Dòng 1: Tuổi và năm sinh; Dòng 2: Trình độ ban đầu khi tạo test | Giữ nguyên |
 | **Đánh giá & Trải nghiệm** | Chữ vừa + Liên kết | Thực thể Test / Học thử | Thông tin lịch test/học thử, kết quả đánh giá và liên kết phiếu chi tiết | Thu gọn |
 | **Lịch sử chăm sóc** | Chữ vừa + Hộp thoại nổi | Lịch sử tương tác Lead | Tiến trình CS (Chưa CS / Chăm sóc lần N), lịch hẹn gọi lại, nội dung và phản hồi | Thu gọn |
 | **Trạng thái** | Nhãn màu | Trường trạng thái | Màu chuẩn theo từng trạng thái vòng đời | Thu gọn dạng chấm |

@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Info, MessageSquare, Truck, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Info, MessageSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   PaymentReceipt,
   PaymentMethod,
-  PAYMENT_METHOD_MAP,
 } from '@/mocks/paymentReceipts'
 import { Order } from '@/mocks/orders'
 import {
@@ -17,7 +16,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -36,7 +34,7 @@ interface PaymentReceiptPayMoreDialogProps {
   order?: Order | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess?: (newReceipt?: any) => void
+  onSuccess?: (newReceipt: PaymentReceipt) => void
 }
 
 const METHOD_OPTIONS: { value: PaymentMethod | 'COD'; label: string }[] = [
@@ -67,10 +65,12 @@ export function PaymentReceiptPayMoreDialog({
   const [convertSessions, setConvertSessions] = useState<string>('0')
 
   // Ghi chú giao hàng & ghi chú vận hành
-  const [shippingNote, setShippingNote] = useState<string>(receipt?.shippingNote || (order as any)?.shippingNote || '')
+  const [shippingNote, setShippingNote] = useState<string>(receipt?.shippingNote || (order as Order & { shippingNote?: string })?.shippingNote || '')
   const [operationNote, setOperationNote] = useState<string>(receipt?.operationNote || order?.notes || '')
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
     if (open) {
       const curRemaining = receipt?.orderRemainingAmount ?? (order?.remainingAmount ?? 2000000)
       setPayAmount2(String(curRemaining > 0 ? curRemaining : 2000000))
@@ -78,7 +78,7 @@ export function PaymentReceiptPayMoreDialog({
       setIsCompleteNow(true)
       setConvertSessions('0')
     }
-  }, [receipt, order, open])
+  }
 
   if (!receipt && !order) return null
 
@@ -99,7 +99,19 @@ export function PaymentReceiptPayMoreDialog({
         code: newCode,
         orderCode,
         amount: numAmount,
-        paymentMethod: method2,
+        orderTotalAmount: totalOrderAmount,
+        orderRemainingAmount: Math.max(0, remainingAmount - numAmount),
+        isReconciled: false,
+        paymentMethod: (method2 === 'COD' ? 'cash' : method2) as PaymentMethod,
+        transactionType: 'receipt',
+        receiptType: 'tuition_full',
+        status: 'completed',
+        createdAt: new Date().toISOString(),
+        createdBy: 'Nguyễn Văn Thu',
+        studentName,
+        parentName: receipt?.parentName || 'Phụ huynh',
+        phone: receipt?.phone || '0983055652',
+        branch: receipt?.branch || 'RinoEdu Cầu Giấy',
         shippingNote,
         operationNote,
       })
@@ -108,7 +120,7 @@ export function PaymentReceiptPayMoreDialog({
   }
 
   // Gói học mẫu
-  const packageName = receipt?.items?.[0]?.packageName || (order as any)?.packageName || 'Khóa học Tiếng Anh A1 (1:6 - 48 buổi)'
+  const packageName = receipt?.items?.[0]?.packageName || (order as Order & { packageName?: string })?.packageName || 'Khóa học Tiếng Anh A1 (1:6 - 48 buổi)'
   const totalSessions = 48
   const convertedSessionsAlready = 24
   const calculatedConvertMoney = 0

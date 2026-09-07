@@ -69,6 +69,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { OrdersScreen } = await import('@/components/screens/orders/OrdersScreen')
     return { default: OrdersScreen }
   }),
+  order_fulfillment: safeLazy(async () => {
+    const { OrderFulfillmentScreen } = await import('@/components/screens/order-fulfillment/OrderFulfillmentScreen')
+    return { default: OrderFulfillmentScreen }
+  }),
   payment_receipts: safeLazy(async () => {
     const { PaymentReceiptsScreen } = await import('@/components/screens/payment-receipts/PaymentReceiptsScreen')
     return { default: PaymentReceiptsScreen }
@@ -167,6 +171,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
   system_config: safeLazy(async () => {
     const { SystemConfigScreen } = await import('@/components/screens/system-config/SystemConfigScreen')
     return { default: SystemConfigScreen }
+  }),
+  job_titles: safeLazy(async () => {
+    const { JobTitlesScreen } = await import('@/components/screens/job-titles/JobTitlesScreen')
+    return { default: JobTitlesScreen }
   }),
 }
 

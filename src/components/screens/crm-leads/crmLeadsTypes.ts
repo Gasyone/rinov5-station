@@ -8,12 +8,18 @@ export interface StatusTileOption {
 }
 
 export const STATUS_LABEL_MAP: Record<LeadStatus, string> = {
-  chua_tiep_can: 'Chưa tiếp cận',
-  dang_cham_soc: 'Đang chăm sóc',
-  danh_gia_trai_nghiem: 'Đánh giá & Trải nghiệm',
-  tiem_nang: 'Tiềm năng',
+  // Chuẩn hóa Vòng đời Lead
+  moi_tiep_nhan: 'Mới tiếp nhận',
+  dang_tu_van: 'Đang tư vấn',
+  hen_trai_nghiem: 'Hẹn trải nghiệm',
+  cho_chot: 'Chờ chốt deal',
   chuyen_doi: 'Đã chuyển đổi',
-  that_bai: 'Thất bại',
+  that_bai: 'Thất bại / Tạm dừng',
+  // Tương thích ngược với dữ liệu cũ
+  chua_tiep_can: 'Mới tiếp nhận',
+  dang_cham_soc: 'Đang tư vấn',
+  danh_gia_trai_nghiem: 'Hẹn trải nghiệm',
+  tiem_nang: 'Chờ chốt deal',
 }
 
 export const SOURCE_LABEL_MAP: Record<string, string> = {

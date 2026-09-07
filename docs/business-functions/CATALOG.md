@@ -206,10 +206,13 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
   - `US-SYS-03-01`: Danh sách Thiết bị
   - `US-SYS-03-02`: Chuyển Thiết bị
   - `US-SYS-03-03`: Đồng bộ LMS
-- `BF-SYS-04`: Entitlement & Authorization (✅ Đã chuẩn hóa)
-  - `US-SYS-04-01`: Thiết lập Topic / Nhóm quyền
-  - `US-SYS-04-02`: Gán Nhóm quyền cho Thành viên
-  - `US-SYS-04-03`: Áp dụng Data Scope
+- `BF-SYS-04`: [Nâng cấp Cơ chế Cấu hình Ma trận Quyền & Phạm vi Dữ liệu](./system-governance/BF-SYS-04-entitlement-authorization.md) (✅ Đã chuẩn hóa 35 tính năng Station & CRM)
+  - Đặc tả: [US-SYS-04-04: Cấu hình Phân quyền Vai trò (Ma trận Quyền & Phạm vi Dữ liệu)](./system-governance/US-SYS-04-04-cau-hinh-phan-quyen-vai-tro.md)
+  - Confluence: `BF-SYS-04` (Page ID `149422103`) · `US-SYS-04-04` (Page ID `149487639`)
+  - Gồm 3 cấu phần chuẩn hóa:
+    1. Biểu mẫu Ma trận phân quyền RBAC & Data Scope (Tab Tất cả & Tab Station 35 tính năng)
+    2. Hộp thoại nổi Nhân sự được gán (Assigned Employees Modal)
+    3. Hộp thoại nổi Log cập nhật hành vi hệ thống & Khôi phục phiên bản (Behavior Audit Log & Restore)
 - `BF-SYS-05`: Authentication Services (IdP) (✅ Đã chuẩn hóa)
   - `US-SYS-05-01`: Đăng nhập & Nạp quyền
   - `US-SYS-05-02`: Đổi Mật khẩu

@@ -206,7 +206,7 @@ export function CrmLeadsTable({
           />
         }
       >
-        <Table containerClassName="w-full overflow-x-auto min-h-full" className="min-w-[1750px] border-collapse">
+        <Table containerClassName="w-full overflow-x-auto min-h-full" className="min-w-[1600px] border-collapse">
           <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-xs shadow-xs [&_th]:bg-muted/95 [&_th]:backdrop-blur-xs">
             <TableRow className="border-b border-border hover:bg-transparent">
               {/* Checkbox */}
@@ -217,10 +217,9 @@ export function CrmLeadsTable({
                   aria-label="Chọn tất cả Lead"
                 />
               </TableHead>
-              <TableHead className="min-w-[260px]">Lead & Nguồn</TableHead>
-              <TableHead className="min-w-[190px]">Phụ huynh / Liên hệ</TableHead>
-              <TableHead className="min-w-[160px]">Tuổi & Trình độ</TableHead>
+              <TableHead className="min-w-[280px]">Lead</TableHead>
               <TableHead className="min-w-[210px]">Khóa học & Nhóm SP</TableHead>
+              <TableHead className="min-w-[160px]">Tuổi & Trình độ</TableHead>
               <TableHead className="min-w-[240px]">Đánh giá & Trải nghiệm</TableHead>
               <TableHead className="min-w-[290px] text-left">Lịch sử chăm sóc</TableHead>
               <TableHead className="min-w-[150px]">Trạng thái</TableHead>
@@ -268,16 +267,48 @@ export function CrmLeadsTable({
                     />
                   </TableCell>
 
-                  {/* Cột 1: Lead & Nguồn - Tên học viên (Focus chính) + Mã Lead & Nguồn */}
+                  {/* Cột 1: Lead - Dòng 1: Tên lead, nguồn; Dòng 2: Tên Phụ huynh, Sđt, có copy */}
                   <TableCell className="relative cursor-pointer" onClick={() => onViewDetail(lead)}>
-                    <div className="flex flex-col gap-0.5 pr-14">
-                      <div className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                        <span>{lead.studentName}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span className="font-mono font-medium text-foreground/80">{lead.code}</span>
+                    <div className="flex flex-col gap-1 pr-14">
+                      {/* Dòng 1: Tên lead, nguồn */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold text-foreground text-sm">
+                          {lead.studentName}
+                        </span>
                         <span className="text-muted-foreground/40">•</span>
-                        <span>{SOURCE_LABEL_MAP[lead.source] ?? lead.source}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {SOURCE_LABEL_MAP[lead.source] ?? lead.source}
+                        </span>
+                      </div>
+
+                      {/* Dòng 2: Tên Phụ huynh, Sđt, có copy */}
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                        <span className="font-medium text-foreground/85">
+                          {lead.parentName}
+                        </span>
+                        {lead.parentRole && (
+                          <span className="text-[11px] text-muted-foreground/70">
+                            ({lead.parentRole})
+                          </span>
+                        )}
+                        <span className="text-muted-foreground/40">•</span>
+                        <span className="font-mono">
+                          {maskPhoneNumber(lead.phone)}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                          title="Sao chép số điện thoại đầy đủ"
+                          onClick={(e) => handleCopyPhone(e, lead.phone, lead.id)}
+                        >
+                          {copiedId === lead.id ? (
+                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </Button>
                       </div>
                     </div>
 
@@ -307,35 +338,14 @@ export function CrmLeadsTable({
                     </div>
                   </TableCell>
 
-                  {/* Cột 2: Phụ huynh / Liên hệ (Đưa lên trước Tuổi & Trình độ) */}
+                  {/* Cột 2: Khóa học đăng ký & Nhóm sản phẩm */}
                   <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                        <span>{lead.parentName}</span>
-                        {lead.parentRole && (
-                          <Badge variant="outline" className="text-xs py-0 px-1 font-normal text-muted-foreground border-muted-foreground/30">
-                            {lead.parentRole}
-                          </Badge>
-                        )}
+                    <div className="flex flex-col gap-0.5 max-w-[200px]">
+                      <div className="font-medium text-foreground text-xs truncate">
+                        {lead.targetSubject}
                       </div>
-                      <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-                        <span>
-                          {maskPhoneNumber(lead.phone)}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                          title="Sao chép số điện thoại đầy đủ"
-                          onClick={(e) => handleCopyPhone(e, lead.phone, lead.id)}
-                        >
-                          {copiedId === lead.id ? (
-                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {getProductGroup(lead.targetSubject)}
                       </div>
                     </div>
                   </TableCell>
@@ -348,18 +358,6 @@ export function CrmLeadsTable({
                       </div>
                       <div className="text-xs text-muted-foreground font-mono">
                         {getInitialLevel(lead)}
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* Cột 4: Khóa học đăng ký & Nhóm sản phẩm */}
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5 max-w-[200px]">
-                      <div className="font-medium text-foreground text-xs truncate">
-                        {lead.targetSubject}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {getProductGroup(lead.targetSubject)}
                       </div>
                     </div>
                   </TableCell>

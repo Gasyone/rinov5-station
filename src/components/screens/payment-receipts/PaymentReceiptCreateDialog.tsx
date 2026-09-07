@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Check, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { Check, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { PaymentReceipt, ReceiptType, PaymentMethod, TransactionType } from '@/mocks/paymentReceipts'
 import {
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldLabel } from '@/components/shared'
-import { InlineSelect } from '@/components/controls'
+import { BranchSelect, InlineSelect, SYSTEM_BRANCHES } from '@/components/controls'
 
 interface PaymentReceiptCreateDialogProps {
   open: boolean
@@ -70,6 +70,7 @@ export function PaymentReceiptCreateDialog({
   const [receiptType, setReceiptType] = useState<ReceiptType>('deposit')
   const [amount, setAmount] = useState('5000000')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('qr_transfer')
+  const [branch, setBranch] = useState<string>(SYSTEM_BRANCHES[0] || 'RinoEdu Linh Đàm')
   const [notes, setNotes] = useState('Thu tiền cọc học phí giữ chỗ')
 
   const isReceipt = transactionType === 'receipt'
@@ -121,7 +122,7 @@ export function PaymentReceiptCreateDialog({
           : 'Tiền mặt tại quầy',
       status: 'completed',
       createdBy: 'Trần Thị Mai (Sales)',
-      branch: 'Chi nhánh Quận 1',
+      branch,
       createdAt: 'Vừa xong',
       notes,
     }
@@ -173,6 +174,16 @@ export function PaymentReceiptCreateDialog({
                 }
               }}
               options={ORDER_OPTIONS}
+              className="w-full"
+            />
+          </FieldLabel>
+
+          {/* Cơ sở thực hiện */}
+          <FieldLabel label="Cơ sở thực hiện" required>
+            <BranchSelect
+              value={branch}
+              onValueChange={setBranch}
+              includeAll={false}
               className="w-full"
             />
           </FieldLabel>

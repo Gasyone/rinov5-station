@@ -2,7 +2,7 @@ import type { Order } from '@/mocks/orders'
 
 export type OrderStatusFilter = 'all' | Order['status']
 export type PackageTypeFilter = 'all' | 'combo' | 'tutor' | 'single_course' | 'book_service'
-export type PaymentConditionFilter = 'all' | 'deposit' | 'partial' | 'one_time' | 'refunded'
+export type PaymentConditionFilter = 'all' | 'deposit' | 'partial' | 'one_time' | 'receivable' | 'refunded'
 export type TimeRangeFilter = 'this_month' | 'last_month' | 'this_quarter' | 'this_year' | 'custom' | 'all'
 
 export interface PackageTypeOption {
@@ -20,6 +20,7 @@ export const PAYMENT_CONDITION_OPTIONS: PaymentConditionOption[] = [
   { value: 'deposit', label: 'Cọc' },
   { value: 'partial', label: '1 phần' },
   { value: 'one_time', label: '1 lần' },
+  { value: 'receivable', label: 'Cần thu' },
   { value: 'refunded', label: 'Hoàn tiền' },
 ]
 
@@ -71,6 +72,7 @@ export const ORDER_STATUS_TABS: Array<{
   { id: 'all', label: 'Tất cả' },
   { id: 'pending', label: 'Chờ thanh toán', status: 'pending' },
   { id: 'processing', label: 'Đang xử lý', status: 'processing' },
+  { id: 'completed', label: 'Hoàn tất', status: 'completed' },
 ]
 
 export const PAYMENT_METHOD_LABELS: Record<Order['paymentMethod'], string> = {

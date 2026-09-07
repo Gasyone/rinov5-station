@@ -1,11 +1,14 @@
 import {
   SYSTEM_PERMISSION_FEATURES,
+  STATION_PERMISSION_FEATURES,
   type PermissionFeatureItem,
   type RolePermissionMatrixItem,
   type PermissionRole,
   type PermissionTopic,
   type DataScope,
 } from '@/mocks/permissions'
+import { mockEmployees, type Employee } from '@/mocks/employees'
+import type { RoleAuditLogItem } from './permissionsTypes'
 
 export interface GroupedFeatureSection {
   groupKey: string
@@ -14,13 +17,15 @@ export interface GroupedFeatureSection {
 }
 
 /**
- * Nhóm các tính năng nghiệp vụ theo Phân hệ (có hỗ trợ lọc chỉ Station)
+ * Nhóm các tính năng nghiệp vụ theo Phân hệ:
+ * - onlyStation = true: Dùng 32 tính năng chuẩn hóa của Station theo 8 phân hệ thực tế tại Station demo
+ * - onlyStation = false: Dùng 73 tính năng CRM Core nguyên bản
  */
 export function getGroupedFeatures(onlyStation?: boolean): GroupedFeatureSection[] {
   const map = new Map<string, GroupedFeatureSection>()
 
   const features = onlyStation
-    ? SYSTEM_PERMISSION_FEATURES.filter((f) => f.isStation)
+    ? STATION_PERMISSION_FEATURES
     : SYSTEM_PERMISSION_FEATURES
 
   features.forEach((item) => {
@@ -134,4 +139,145 @@ export function filterTopicsAndRoles(
  */
 export function countActivePermissions(role: PermissionRole): number {
   return role.permissions.filter((p) => p.actions.access).length
+}
+
+/**
+ * Trả về danh sách nhân sự được gán vào nhóm quyền cụ thể.
+ * Ưu tiên đối khớp theo bộ phận/chức danh phù hợp với tên role hoặc trả về danh sách theo số lượng userCount.
+ */
+export function getAssignedEmployeesForRole(role?: PermissionRole | null): Employee[] {
+  if (!role) return []
+
+  const text = (role.name + ' ' + (role.code || '') + ' ' + (role.description || '')).toLowerCase()
+
+  if (text.includes('giáo viên') || text.includes('teacher')) {
+    return mockEmployees.filter((e) => e.department === 'Teaching' && !e.position.includes('Assistant'))
+  }
+  if (text.includes('trợ giảng') || text.includes('assistant') || text.includes('ta')) {
+    return mockEmployees.filter((e) => e.position.includes('Teaching Assistant') || e.position.includes('Tutor'))
+  }
+  if (text.includes('telesale') || text.includes('sale') || text.includes('tuyển sinh')) {
+    return mockEmployees.filter((e) => e.department === 'Sales')
+  }
+  if (text.includes('cskh') || text.includes('chăm sóc') || text.includes('csm')) {
+    return mockEmployees.filter((e) => e.department === 'Customer Care')
+  }
+  if (text.includes('quản lý') || text.includes('manager') || text.includes('lead')) {
+    return mockEmployees.filter((e) => e.department === 'Management' || e.position.includes('Manager') || e.position.includes('Lead'))
+  }
+  if (text.includes('kế toán') || text.includes('accounting') || text.includes('thu ngân')) {
+    return mockEmployees.filter((e) => e.department === 'Finance' || e.department === 'Admin')
+  }
+
+  const targetCount = role.userCount > 0 ? role.userCount : 5
+  return mockEmployees.slice(0, Math.min(targetCount, mockEmployees.length))
+}
+
+/**
+ * Trả về danh sách nhật ký cập nhật hành vi của nhóm quyền.
+ * Thể hiện rõ chuẩn hành vi hệ thống: thêm quyền gì (+), bỏ quyền gì (-) tại từng tính năng cụ thể.
+ * Cho phép back lại (khôi phục) cấu hình quyền tại thời điểm tương ứng.
+ */
+export function getRoleAuditLogs(role?: PermissionRole | null): RoleAuditLogItem[] {
+  if (!role) return []
+
+  const currentPermissions = role.permissions || []
+
+  // Snapshot lần cập nhật trước (02/09/2026)
+  const prevPermissions: RolePermissionMatrixItem[] = currentPermissions.map((p) => {
+    const isStudent = p.featureKey === 'station_students'
+    const isLeave = p.featureKey === 'station_student_leaves'
+    const isSchedule = p.featureKey === 'station_classes'
+
+    return {
+      ...p,
+      actions: {
+        ...p.actions,
+        ...(isStudent ? { export: false } : {}),
+        ...(isLeave ? { create: false, edit: false } : {}),
+        ...(isSchedule ? { delete: true } : {}),
+      },
+    }
+  })
+
+  // Snapshot khởi tạo ban đầu (25/08/2026)
+  const initPermissions: RolePermissionMatrixItem[] = currentPermissions.map((p) => {
+    const isCore = ['station_students', 'station_classes', 'station_attendance'].includes(p.featureKey)
+    return {
+      ...p,
+      actions: {
+        access: isCore,
+        create: isCore,
+        edit: isCore,
+        delete: false,
+        export: false,
+        viewAll: false,
+      },
+    }
+  })
+
+  return [
+    {
+      id: `${role.id}_log_3`,
+      updatedAt: role.updatedAt || '04/09/2026 14:30',
+      updatedBy: 'Nguyễn Văn Quản Lý (Admin)',
+      isCurrent: true,
+      diffs: [
+        {
+          type: 'added',
+          featureName: 'Bảo lưu / Chuyển lớp / Nghỉ học',
+          actionLabels: ['Thêm', 'Sửa'],
+        },
+        {
+          type: 'added',
+          featureName: 'Quản lý học viên',
+          actionLabels: ['Download/Upload'],
+        },
+        {
+          type: 'removed',
+          featureName: 'Lớp học & Lịch giảng dạy',
+          actionLabels: ['Xóa'],
+        },
+      ],
+      permissionsSnapshot: currentPermissions,
+    },
+    {
+      id: `${role.id}_log_2`,
+      updatedAt: '02/09/2026 10:15',
+      updatedBy: 'Trần Trọng Nghĩa (Lead Ops)',
+      isCurrent: false,
+      diffs: [
+        {
+          type: 'added',
+          featureName: 'Chấm công & Giảng dạy',
+          actionLabels: ['Xem tất cả'],
+        },
+        {
+          type: 'removed',
+          featureName: 'Bảo lưu / Chuyển lớp / Nghỉ học',
+          actionLabels: ['Xóa'],
+        },
+        {
+          type: 'removed',
+          featureName: 'Đơn hàng & Học phí',
+          actionLabels: ['Download/Upload'],
+        },
+      ],
+      permissionsSnapshot: prevPermissions,
+    },
+    {
+      id: `${role.id}_log_1`,
+      updatedAt: '25/08/2026 09:00',
+      updatedBy: 'Hệ thống (Khởi tạo)',
+      isCurrent: false,
+      diffs: [
+        {
+          type: 'added',
+          featureName: 'Quản lý học viên, Lớp học, Điểm danh',
+          actionLabels: ['Truy cập', 'Thêm', 'Sửa'],
+        },
+      ],
+      permissionsSnapshot: initPermissions,
+    },
+  ]
 }

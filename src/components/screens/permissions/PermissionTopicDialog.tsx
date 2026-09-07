@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -32,20 +32,19 @@ export function PermissionTopicDialog({
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open)
+  const [prevTopic, setPrevTopic] = useState(topic)
+
+  if (open !== prevOpen || topic !== prevTopic) {
+    setPrevOpen(open)
+    setPrevTopic(topic)
     if (open) {
-      if (topic) {
-        setName(topic.name)
-        setCode(topic.code)
-        setDescription(topic.description || '')
-      } else {
-        setName('')
-        setCode('')
-        setDescription('')
-      }
+      setName(topic ? topic.name : '')
+      setCode(topic ? topic.code : '')
+      setDescription(topic?.description || '')
       setError('')
     }
-  }, [open, topic])
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

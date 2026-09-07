@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   MOCK_PERMISSION_TOPICS,
   MOCK_PERMISSION_ROLES,
@@ -18,13 +19,49 @@ import type {
 } from './permissionsTypes'
 
 export function PermissionsScreen() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [topics, setTopics] = useState<PermissionTopic[]>(() => [...MOCK_PERMISSION_TOPICS])
   const [roles, setRoles] = useState<PermissionRole[]>(() => [...MOCK_PERMISSION_ROLES])
 
-  // View state: 'grid' (Danh sách) vs 'edit' (Chỉnh sửa / Tạo mới)
-  const [viewMode, setViewMode] = useState<'grid' | 'edit'>('grid')
-  const [selectedRole, setSelectedRole] = useState<PermissionRole | null>(null)
-  const [targetTopicId, setTargetTopicId] = useState<string | undefined>()
+  const roleIdParam = searchParams?.get('roleId') || searchParams?.get('id')
+  const actionParam = searchParams?.get('action')
+  const topicIdParam = searchParams?.get('topicId')
+
+  const initialRole = roleIdParam ? roles.find((r) => r.id === roleIdParam) || null : null
+  const [selectedRole, setSelectedRole] = useState<PermissionRole | null>(initialRole)
+  const [targetTopicId, setTargetTopicId] = useState<string | undefined>(
+    initialRole?.topicId || (actionParam === 'create' ? topicIdParam || topics[0]?.id : undefined)
+  )
+  const [viewMode, setViewMode] = useState<'grid' | 'edit'>(
+    initialRole || actionParam === 'create' ? 'edit' : 'grid'
+  )
+  const [prevParams, setPrevParams] = useState({ roleIdParam, actionParam, topicIdParam })
+
+  // Đồng bộ viewMode và selectedRole theo URL Query Params khi params thay đổi
+  if (
+    prevParams.roleIdParam !== roleIdParam ||
+    prevParams.actionParam !== actionParam ||
+    prevParams.topicIdParam !== topicIdParam
+  ) {
+    setPrevParams({ roleIdParam, actionParam, topicIdParam })
+    if (roleIdParam) {
+      const foundRole = roles.find((r) => r.id === roleIdParam)
+      if (foundRole) {
+        setSelectedRole(foundRole)
+        setTargetTopicId(foundRole.topicId)
+        setViewMode('edit')
+      }
+    } else if (actionParam === 'create') {
+      setSelectedRole(null)
+      setTargetTopicId(topicIdParam || topics[0]?.id)
+      setViewMode('edit')
+    } else {
+      setSelectedRole(null)
+      setViewMode('grid')
+    }
+  }
 
   // Topic Dialog State
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false)
@@ -42,22 +79,26 @@ export function PermissionsScreen() {
     role?: PermissionRole
   } | null>(null)
 
-  // 1. Navigation handlers
+  // 1. Navigation handlers (Cập nhật đường dẫn tương ứng)
   const handleSelectRole = (role: PermissionRole) => {
     setSelectedRole(role)
     setTargetTopicId(role.topicId)
     setViewMode('edit')
+    router.push(`/app/permissions?roleId=${encodeURIComponent(role.id)}`)
   }
 
   const handleCreateNewRole = (topicId?: string) => {
     setSelectedRole(null)
-    setTargetTopicId(topicId || topics[0]?.id)
+    const target = topicId || topics[0]?.id
+    setTargetTopicId(target)
     setViewMode('edit')
+    router.push(`/app/permissions?action=create${target ? `&topicId=${encodeURIComponent(target)}` : ''}`)
   }
 
   const handleCancelEdit = () => {
     setSelectedRole(null)
     setViewMode('grid')
+    router.push('/app/permissions')
   }
 
   // 2. Open Roles Modal handler
@@ -109,6 +150,7 @@ export function PermissionsScreen() {
 
     setViewMode('grid')
     setSelectedRole(null)
+    router.push('/app/permissions')
   }
 
   // 4. Topic management handlers

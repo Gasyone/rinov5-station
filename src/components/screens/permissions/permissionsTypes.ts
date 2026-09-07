@@ -22,6 +22,23 @@ export interface ScopeOptionItem {
   description?: string
 }
 
+export const PERMISSION_ACTION_COLUMNS: { key: keyof PermissionActionState; label: string }[] = [
+  { key: 'access', label: 'Truy cập' },
+  { key: 'create', label: 'Thêm' },
+  { key: 'edit', label: 'Sửa' },
+  { key: 'delete', label: 'Xóa' },
+  { key: 'export', label: 'Download/Upload' },
+]
+
+export const STATION_ACTION_COLUMNS: { key: keyof PermissionActionState; label: string }[] = [
+  { key: 'access', label: 'Truy cập' },
+  { key: 'viewAll', label: 'Xem tất cả' },
+  { key: 'create', label: 'Thêm' },
+  { key: 'edit', label: 'Sửa' },
+  { key: 'delete', label: 'Xóa' },
+  { key: 'export', label: 'Xuất file' },
+]
+
 export const DATA_SCOPE_OPTIONS: ScopeOptionItem[] = [
   {
     value: '',
@@ -49,3 +66,18 @@ export const DATA_SCOPE_OPTIONS: ScopeOptionItem[] = [
     description: 'Không giới hạn cơ sở, truy cập dữ liệu trên toàn bộ hệ thống',
   },
 ]
+
+export interface RoleBehaviorDiffItem {
+  type: 'added' | 'removed'
+  featureName: string
+  actionLabels: string[]
+}
+
+export interface RoleAuditLogItem {
+  id: string
+  updatedAt: string
+  updatedBy: string
+  isCurrent?: boolean
+  diffs: RoleBehaviorDiffItem[]
+  permissionsSnapshot: RolePermissionMatrixItem[]
+}

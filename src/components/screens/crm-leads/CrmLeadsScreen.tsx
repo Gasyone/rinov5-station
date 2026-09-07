@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { getLeads, Lead } from '@/mocks/crmLeads'
 import { StatusTiles } from '@/components/shared'
-import { Button } from '@/components/ui/button'
-import { SlidersHorizontal, ChevronDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { FilterGroupSheetPanel, type FilterGroupConfig, createFilterGroup, getSchoolFilterGroup } from '@/components/filters'
+import { SYSTEM_BRANCHES } from '@/components/controls'
 import { CrmLeadsToolbar } from './CrmLeadsToolbar'
 import { CrmLeadsTable } from './CrmLeadsTable'
 import { CrmLeadsDetailDialog } from './CrmLeadsDetailDialog'
@@ -16,8 +14,18 @@ import { CrmCustomerCreateDialog } from './CrmCustomerCreateDialog'
 import { DraftOrderEditorDialog } from '@/components/screens/care/draft-order/DraftOrderEditorDialog'
 import type { DetailedOrder } from '@/components/screens/care/student-orders/studentOrdersTypes'
 import { formatCurrency } from '@/lib/format'
-import { calculateStatusTileCounts } from './crmLeadsHelpers'
-import { SUB_STATUS_MAP } from './crmLeadsTypes'
+import {
+  calculateStatusTileCounts,
+  isMoiTiepNhanStatus,
+  isDangTuVanStatus,
+  isHenTraiNghiemStatus,
+  isChoChotStatus,
+  isChuyenDoiStatus,
+  isThatBaiStatus,
+  isLeadTodayTask,
+  isLeadOverdue,
+  isLeadUnassigned,
+} from './crmLeadsHelpers'
 
 const CURRENT_USER_STAFF = 'Trần Thị Mai (Sales)'
 
@@ -25,69 +33,14 @@ interface CrmLeadsScreenProps {
   defaultViewScope?: 'my' | 'all'
 }
 
-function matchSubStatus(lead: Lead, subStatusId: string): boolean {
-  if (subStatusId === 'all') return true
-  const note = (lead.lastNote || '').toLowerCase()
-  const subj = (lead.targetSubject || '').toLowerCase()
-  const level = (lead.testResultLevel || '').toLowerCase()
-
-  switch (subStatusId) {
-    case 'chua_co_sale':
-      return !lead.assignedTo || lead.assignedTo === 'Chưa phân bổ' || lead.assignedTo.trim() === ''
-    case 'da_phan_sale':
-      return Boolean(lead.assignedTo && lead.assignedTo.trim() !== '' && lead.assignedTo !== 'Chưa phân bổ')
-    case 'goi_lan_1':
-      return note.includes('gọi lần 1')
-    case 'goi_lan_2':
-      return note.includes('gọi lần 2')
-    case 'hen_goi_lai':
-      return note.includes('hẹn gọi lại')
-    case 'test_tuan_nay':
-      return lead.testStatus === 'scheduled'
-    case 'chua_giao_gv':
-      return note.includes('chưa giao gv')
-    case 'da_xac_nhan':
-      return note.includes('xác nhận')
-    case 'dat_superkids':
-      return level.includes('superkids')
-    case 'dat_flyers':
-      return level.includes('flyers')
-    case 'dat_kindy':
-      return level.includes('kindy') || subj.includes('kindy')
-    case 'giu_cho_24h':
-      return note.includes('giữ chỗ')
-    case 'cho_chuyen_khoan':
-      return note.includes('chuyển khoản')
-    case 'hen_nop_tien_mat':
-      return note.includes('tiền mặt')
-    case 'da_thu_100':
-      return note.includes('100%')
-    case 'da_thu_coc':
-      return note.includes('cọc')
-    case 'no_show':
-      return lead.testStatus === 'no_show' || lead.trialStatus === 'no_show' || note.includes('vắng test')
-    case 'khong_nghe_may':
-      return note.includes('không nghe máy')
-    case 'sai_so':
-      return note.includes('sai số')
-    case 'nha_xa':
-      return note.includes('nhà xa')
-    case 'che_phi_cao':
-      return note.includes('chê học phí cao')
-    default:
-      return lead.status === subStatusId
-  }
-}
-
 export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps) {
   const [viewScope] = useState<'my' | 'all'>(defaultViewScope)
+  const [branch, setBranch] = useState('all')
   const [source, setSource] = useState('all')
   const [assignment, setAssignment] = useState('all')
   const [followUp, setFollowUp] = useState('all')
   const [search, setSearch] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('all')
-  const [selectedSubStatus, setSelectedSubStatus] = useState('all')
-  const [isSubStatusOpen, setIsSubStatusOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -197,8 +150,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         'Gói học tiêu chuẩn',
       paymentTerm: newOrder.paymentMethod === 'bank_transfer' ? 'Chuyển khoản' : 'Tiền mặt',
       status:
-        orderModalLead.status === 'chua_tiep_can' || orderModalLead.status === 'dang_cham_soc'
-          ? 'tiem_nang'
+        isMoiTiepNhanStatus(orderModalLead.status) || isDangTuVanStatus(orderModalLead.status)
+          ? 'cho_chot'
           : orderModalLead.status,
     }
 
@@ -216,11 +169,6 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     setEditingOrder(null)
   }
 
-  // Sub-status options according to current main status
-  const subStatusOptions = useMemo(() => {
-    return SUB_STATUS_MAP[selectedStatus] || SUB_STATUS_MAP.all
-  }, [selectedStatus])
-
   // Count active advanced filters
   const activeFilterCount =
     advancedFilters.branches.length +
@@ -229,7 +177,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     advancedFilters.assignees.length +
     advancedFilters.statuses.length
 
-  // Filter leads based on viewScope, source, assignment, followUp, search, selectedSubStatus, advancedFilters
+  // Filter leads based on viewScope, source, assignment, followUp, search, advancedFilters
   const filteredLeads = useMemo(() => {
     const baseLeads = getLeads({ source, search })
     const customIds = new Set(customLeads.map((l) => l.id))
@@ -242,25 +190,22 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       )
 
       if (followUp === 'today') {
-        result = result.filter(
-          (lead) => lead.status === 'danh_gia_trai_nghiem' || lead.status === 'dang_cham_soc'
-        )
+        result = result.filter(isLeadTodayTask)
       } else if (followUp === 'overdue') {
-        result = result.filter(
-          (lead) => lead.status === 'chua_tiep_can' || lead.testStatus === 'no_show'
-        )
+        result = result.filter(isLeadOverdue)
       }
     } else {
       // viewScope === 'all' -> Áp dụng bộ lọc phân bổ của Quản lý
       if (assignment === 'unassigned') {
-        result = result.filter(
-          (lead) => !lead.assignedTo || lead.assignedTo.trim() === '' || lead.assignedTo === 'Chưa phân bổ'
-        )
+        result = result.filter(isLeadUnassigned)
       } else if (assignment === 'assigned') {
-        result = result.filter(
-          (lead) => lead.assignedTo && lead.assignedTo.trim() !== '' && lead.assignedTo !== 'Chưa phân bổ'
-        )
+        result = result.filter((l) => !isLeadUnassigned(l))
       }
+    }
+
+    // Áp dụng bộ lọc cơ sở từ Toolbar
+    if (branch !== 'all') {
+      result = result.filter((lead) => lead.branch === branch)
     }
 
     // Áp dụng bộ lọc nâng cao (Advanced Filters)
@@ -284,19 +229,21 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       })
     }
     if (advancedFilters.statuses.length > 0) {
-      result = result.filter((lead) => advancedFilters.statuses.includes(lead.status))
-    } else {
-      // Mặc định ở màn hình chỉ hiển thị các lead đang xử lý (không hiển thị thất bại)
-      result = result.filter((lead) => lead.status !== 'that_bai')
-    }
-
-    // Lọc theo sub-status nếu người dùng chọn cụ thể
-    if (selectedSubStatus !== 'all') {
-      result = result.filter((lead) => matchSubStatus(lead, selectedSubStatus))
+      result = result.filter((lead) => {
+        return advancedFilters.statuses.some((st) => {
+          if (st === 'moi_tiep_nhan') return isMoiTiepNhanStatus(lead.status)
+          if (st === 'dang_tu_van') return isDangTuVanStatus(lead.status)
+          if (st === 'hen_trai_nghiem') return isHenTraiNghiemStatus(lead.status)
+          if (st === 'cho_chot') return isChoChotStatus(lead.status)
+          if (st === 'chuyen_doi') return isChuyenDoiStatus(lead.status)
+          if (st === 'that_bai') return isThatBaiStatus(lead.status)
+          return lead.status === st
+        })
+      })
     }
 
     return result
-  }, [customLeads, viewScope, source, assignment, followUp, search, selectedSubStatus, advancedFilters])
+  }, [customLeads, viewScope, branch, source, assignment, followUp, search, advancedFilters])
 
   // Filter group configuration for FilterGroupSheetPanel
   const filterGroups = useMemo<FilterGroupConfig[]>(() => {
@@ -304,22 +251,31 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       getSchoolFilterGroup(
         'branches',
         advancedFilters.branches,
-        (branch) => getLeads({ search }).filter((l) => l.branch === branch).length
+        (b) => getLeads({ search }).filter((l) => l.branch === b).length,
+        SYSTEM_BRANCHES
       ),
       createFilterGroup({
         id: 'statuses',
         title: 'Trạng thái Lead',
         options: [
-          { value: 'chua_tiep_can', label: 'Chưa tiếp cận' },
-          { value: 'dang_cham_soc', label: 'Đang chăm sóc' },
-          { value: 'danh_gia_trai_nghiem', label: 'Đánh giá & Trải nghiệm' },
-          { value: 'tiem_nang', label: 'Tiềm năng' },
+          { value: 'moi_tiep_nhan', label: 'Mới tiếp nhận' },
+          { value: 'dang_tu_van', label: 'Đang tư vấn' },
+          { value: 'hen_trai_nghiem', label: 'Hẹn trải nghiệm' },
+          { value: 'cho_chot', label: 'Chờ chốt deal' },
           { value: 'chuyen_doi', label: 'Đã chuyển đổi' },
-          { value: 'that_bai', label: 'Thất bại' },
+          { value: 'that_bai', label: 'Thất bại / Tạm dừng' },
         ],
         selectedValues: advancedFilters.statuses,
         getOptionCount: (val) =>
-          getLeads({ search }).filter((l) => l.status === val).length,
+          getLeads({ search }).filter((l) => {
+            if (val === 'moi_tiep_nhan') return isMoiTiepNhanStatus(l.status)
+            if (val === 'dang_tu_van') return isDangTuVanStatus(l.status)
+            if (val === 'hen_trai_nghiem') return isHenTraiNghiemStatus(l.status)
+            if (val === 'cho_chot') return isChoChotStatus(l.status)
+            if (val === 'chuyen_doi') return isChuyenDoiStatus(l.status)
+            if (val === 'that_bai') return isThatBaiStatus(l.status)
+            return l.status === val
+          }).length,
       }),
       createFilterGroup({
         id: 'sources',
@@ -396,41 +352,66 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   // Final list filtered by selected status tile
   const displayLeads = useMemo(() => {
     if (selectedStatus === 'all') return filteredLeads
+    if (selectedStatus === 'today_tasks') {
+      return filteredLeads.filter(isLeadTodayTask)
+    }
+    if (selectedStatus === 'overdue') {
+      return filteredLeads.filter(isLeadOverdue)
+    }
+    if (selectedStatus === 'unassigned') {
+      return filteredLeads.filter(isLeadUnassigned)
+    }
+    if (selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') {
+      return filteredLeads.filter((item) => isMoiTiepNhanStatus(item.status))
+    }
+    if (selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') {
+      return filteredLeads.filter((item) => isDangTuVanStatus(item.status))
+    }
+    if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') {
+      return filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status))
+    }
+    if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
+      return filteredLeads.filter((item) => isChoChotStatus(item.status))
+    }
+    if (selectedStatus === 'chuyen_doi') {
+      return filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
+    }
+    if (selectedStatus === 'that_bai') {
+      return filteredLeads.filter((item) => isThatBaiStatus(item.status))
+    }
     return filteredLeads.filter((item) => item.status === selectedStatus)
   }, [filteredLeads, selectedStatus])
 
-  // Tính toán số lượng đếm động chính xác 100% cho từng Sub-status chip
-  const subStatusCounts = useMemo(() => {
-    const counts: Record<string, number> = {}
-    const baseLeads = selectedStatus === 'all'
-      ? filteredLeads
-      : filteredLeads.filter((item) => item.status === selectedStatus)
-
-    subStatusOptions.forEach((subOpt) => {
-      if (subOpt.id === 'all') {
-        counts[subOpt.id] = baseLeads.length
-      } else {
-        counts[subOpt.id] = baseLeads.filter((lead) => matchSubStatus(lead, subOpt.id)).length
-      }
-    })
-
-    return counts
-  }, [subStatusOptions, filteredLeads, selectedStatus])
-
   const statusTilesData = useMemo(() => {
+    if (viewScope === 'my') {
+      // Dải Tab Tác nghiệp cho Tư vấn viên (Action-driven / Worklist)
+      return [
+        { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
+        { id: 'today_tasks', label: '⏰ Cần gọi hôm nay', count: tileCounts.today_tasks, status: 'today_tasks' },
+        { id: 'overdue', label: '⚠️ Quá hạn', count: tileCounts.overdue, status: 'overdue' },
+        { id: 'dang_tu_van', label: 'Đang tư vấn', count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
+        { id: 'hen_trai_nghiem', label: 'Lịch trải nghiệm', count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
+        { id: 'cho_chot', label: 'Chờ chốt deal', count: tileCounts.cho_chot, status: 'cho_chot' },
+        { id: 'chuyen_doi', label: 'Đã chuyển đổi', count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
+        { id: 'that_bai', label: 'Thất bại / Tạm dừng', count: tileCounts.that_bai, status: 'that_bai' },
+      ]
+    }
+
+    // viewScope === 'all' -> Dải Tab Phễu & Điều phối cho Quản lý (Pipeline & Allocation)
     return [
       { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
-      { id: 'chua_tiep_can', label: 'Chưa tiếp cận', count: tileCounts.chua_tiep_can, status: 'chua_tiep_can' },
-      { id: 'dang_cham_soc', label: 'Đang chăm sóc', count: tileCounts.dang_cham_soc, status: 'dang_cham_soc' },
-      { id: 'danh_gia_trai_nghiem', label: 'Đánh giá & Trải nghiệm', count: tileCounts.danh_gia_trai_nghiem, status: 'danh_gia_trai_nghiem' },
-      { id: 'tiem_nang', label: 'Tiềm năng', count: tileCounts.tiem_nang, status: 'tiem_nang' },
+      { id: 'unassigned', label: '👤 Chưa phân bổ', count: tileCounts.unassigned, status: 'unassigned' },
+      { id: 'moi_tiep_nhan', label: 'Mới tiếp nhận', count: tileCounts.moi_tiep_nhan, status: 'moi_tiep_nhan' },
+      { id: 'dang_tu_van', label: 'Đang tư vấn', count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
+      { id: 'hen_trai_nghiem', label: 'Đánh giá & Trải nghiệm', count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
+      { id: 'cho_chot', label: 'Chờ chốt deal', count: tileCounts.cho_chot, status: 'cho_chot' },
       { id: 'chuyen_doi', label: 'Đã chuyển đổi', count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
+      { id: 'that_bai', label: 'Thất bại / Lưu kho', count: tileCounts.that_bai, status: 'that_bai' },
     ]
-  }, [tileCounts])
+  }, [tileCounts, viewScope])
 
   const handleTileSelect = (tileId: string) => {
     setSelectedStatus(tileId)
-    setSelectedSubStatus('all') // Reset sub-status khi chọn trạng thái chính mới
     setCurrentPage(1)
   }
 
@@ -445,6 +426,11 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       <CrmLeadsToolbar
         leads={filteredLeads}
         viewScope={viewScope}
+        branch={branch}
+        onBranchChange={(val) => {
+          setBranch(val)
+          setCurrentPage(1)
+        }}
         source={source}
         onSourceChange={(val) => {
           setSource(val)
@@ -470,74 +456,13 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         onCreateClick={() => setIsCreateOpen(true)}
       />
 
-      {/* Dải Status Tiles + Nút Mở Rộng Trạng Thái Phụ */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <StatusTiles
-              tiles={statusTilesData}
-              activeId={selectedStatus}
-              onSelect={handleTileSelect}
-            />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-8 gap-1.5 shrink-0 text-xs font-medium cursor-pointer transition-colors",
-              isSubStatusOpen
-                ? "bg-primary/10 border-primary text-primary"
-                : "border-border text-muted-foreground hover:text-foreground"
-            )}
-            onClick={() => setIsSubStatusOpen(!isSubStatusOpen)}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            <span>Lọc phụ</span>
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isSubStatusOpen && "rotate-180")} />
-          </Button>
-        </div>
-
-        {/* Thanh Lọc Trạng Thái Phụ Mở Rộng (Sub-status Filter Chips Bar với Số Đếm Đảm Bảo > 0) */}
-        {isSubStatusOpen && (
-          <div className="flex flex-wrap items-center gap-1.5 p-2 bg-muted/40 rounded-lg border border-border/60 text-xs animate-in fade-in duration-150">
-            <span className="text-xs font-bold text-muted-foreground uppercase px-1 shrink-0">
-              Lọc phụ:
-            </span>
-            {subStatusOptions.map((subOpt) => {
-              const isActive = selectedSubStatus === subOpt.id
-              const count = subStatusCounts[subOpt.id] ?? 0
-              return (
-                <button
-                  key={subOpt.id}
-                  type="button"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer border",
-                    isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs font-semibold"
-                      : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-                  )}
-                  onClick={() => {
-                    setSelectedSubStatus(isActive ? 'all' : subOpt.id)
-                    setCurrentPage(1)
-                  }}
-                >
-                  <span>{subOpt.label}</span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center justify-center px-1.5 py-0.2 rounded-full text-xs font-mono leading-none",
-                      isActive
-                        ? "bg-primary-foreground/20 text-primary-foreground font-bold"
-                        : "bg-muted text-muted-foreground font-medium"
-                    )}
-                  >
-                    {count}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        )}
+      {/* Dải Status Tiles Chuẩn Hóa Theo Màn Hình */}
+      <div className="w-full min-w-0">
+        <StatusTiles
+          tiles={statusTilesData}
+          activeId={selectedStatus}
+          onSelect={handleTileSelect}
+        />
       </div>
 
       {/* DataTable stretching to bottom */}

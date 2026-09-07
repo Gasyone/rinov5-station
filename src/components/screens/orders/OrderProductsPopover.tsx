@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import {
   BookOpen,
+  ChevronDown,
   Clock,
   Gift,
   Hourglass,
@@ -69,7 +70,11 @@ function getItemOrderType(item: OrderItem, order: Order): string {
 
 export function OrderProductsPopover({ order, className }: OrderProductsPopoverProps) {
   const [open, setOpen] = useState(false)
-  const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0)
+  const hasMultipleProducts = order.items.length > 1
+  const distinctStudents = Array.from(
+    new Set(order.items.map((i) => i.studentName || order.studentName).filter(Boolean))
+  )
+  const studentsText = distinctStudents.join(', ')
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -81,21 +86,40 @@ export function OrderProductsPopover({ order, className }: OrderProductsPopoverP
           )}
           title="Nhấp xem chi tiết danh sách gói sản phẩm"
         >
-          {/* Dòng 1: Tên gói sản phẩm */}
-          <p className="truncate font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline">
-            {order.items[0]?.productName ?? '—'}
-          </p>
-          {/* Dòng 2: Cơ sở • Số lượng món */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-            <span className="truncate max-w-[130px]" title={order.branch}>
+          {/* Dòng 1: Icon mở rộng nếu nhiều sản phẩm + Tên sản phẩm đầu tiên */}
+          <div className="flex items-center gap-1 min-w-0">
+            {hasMultipleProducts && (
+              <ChevronDown
+                className={cn(
+                  'h-3.5 w-3.5 text-muted-foreground/80 shrink-0 transition-transform duration-200',
+                  open && 'rotate-180'
+                )}
+              />
+            )}
+            <p className="truncate font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline">
+              {order.items[0]?.productName ?? '—'}
+            </p>
+          </div>
+
+          {/* Dòng 2: Cơ sở • Học viên: <Tên học viên> */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 min-w-0 flex-wrap">
+            <span className="truncate max-w-[95px] shrink-0" title={order.branch}>
               {order.branch}
             </span>
-            <span className="text-muted-foreground/40">•</span>
-            <span>
-              {totalItems > (order.items[0]?.quantity ?? 0)
-                ? `+${totalItems - (order.items[0]?.quantity ?? 0)} món khác`
-                : `${totalItems} món`}
+            <span className="text-muted-foreground/40 shrink-0">•</span>
+            <span className="truncate max-w-[155px]" title={`Học viên: ${studentsText}`}>
+              Học viên: <span className="font-medium text-foreground">{studentsText}</span>
             </span>
+            {distinctStudents.length > 1 && (
+              <span className="text-[10px] font-medium px-1 py-0 rounded bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 shrink-0">
+                {distinctStudents.length} con
+              </span>
+            )}
+            {hasMultipleProducts && (
+              <span className="text-xs text-muted-foreground shrink-0 font-mono">
+                (+{order.items.length - 1})
+              </span>
+            )}
           </div>
         </div>
       </PopoverTrigger>
@@ -103,7 +127,7 @@ export function OrderProductsPopover({ order, className }: OrderProductsPopoverP
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="w-[370px] sm:w-[410px] max-w-[95vw] p-3 text-xs shadow-xl border bg-background z-50 rounded-xl space-y-2.5"
+        className="w-[420px] sm:w-[480px] max-w-[95vw] p-3 text-xs shadow-xl border bg-background z-50 rounded-xl space-y-2.5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header: Title Danh sách sản phẩm */}
@@ -125,6 +149,7 @@ export function OrderProductsPopover({ order, className }: OrderProductsPopoverP
             const orderType = getItemOrderType(item, order)
             const subtotal = item.subtotal || item.unitPrice * item.quantity
             const itemBranch = (item as typeof item & { branch?: string }).branch || order.branch
+            const itemStudent = item.studentName || order.studentName
 
             return (
               <div key={`${item.productId}-${idx}`} className="space-y-1 text-xs">
@@ -178,15 +203,21 @@ export function OrderProductsPopover({ order, className }: OrderProductsPopoverP
                   )}
                 </div>
 
-                {/* Dòng 3: Tên cơ sở nếu có */}
-                {itemBranch && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground pl-5.5 pt-0.5">
+                {/* Dòng 3: Tên cơ sở (trái) và Đối tượng thụ hưởng là con (phải) */}
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pl-5.5 pt-0.5">
+                  <div className="flex items-center gap-1 min-w-0">
                     <MapPin className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-                    <span>
+                    <span className="truncate">
                       Cơ sở: <span className="font-medium text-foreground">{itemBranch}</span>
                     </span>
                   </div>
-                )}
+                  <div className="flex items-center gap-1 text-xs shrink-0">
+                    <span>
+                      Học viên:{' '}
+                      <span className="font-medium text-foreground">{itemStudent}</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             )
           })}

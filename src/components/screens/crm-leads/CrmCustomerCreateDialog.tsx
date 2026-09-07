@@ -191,7 +191,7 @@ export function CrmCustomerCreateDialog({
           : 'website') as Lead['source'],
         status: 'chua_tiep_can',
         assignedTo: selectedStaff.join(', ') || 'Chưa phân bổ',
-        branch: 'Chi nhánh Quận 1',
+        branch: 'RinoEdu Linh Đàm',
         createdAt: new Date().toISOString().slice(0, 10),
         lastNote: [
           child.currentSchool ? `Trường đang học: ${child.currentSchool}.` : '',

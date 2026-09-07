@@ -69,3 +69,8 @@ next-env.d.ts
 /.codex-*.png
 /scratch/
 /artifacts/
+
+# obsidian workspace & plugins
+.obsidian/
+*.canvas
+

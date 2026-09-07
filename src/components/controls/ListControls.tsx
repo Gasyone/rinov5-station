@@ -192,8 +192,8 @@ export function InlineSelect({
 }
 
 export const SYSTEM_BRANCHES = [
-  'RinoEdu Nguyễn Tuân',
   'RinoEdu Linh Đàm',
+  'RinoEdu Nguyễn Tuân',
   'RinoEdu Smart City',
 ]
 

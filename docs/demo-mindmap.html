@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+.markmap-dark {
+  background: #27272a;
+  color: white;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
+          setTimeout(r);
+        })(() => {
+  const { markmap, mm } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute("style", "position:absolute;bottom:20px;right:20px");
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, root2, jsonOptions) => {
+              const markmap = getMarkmap();
+              window.mm = markmap.Markmap.create(
+                "svg#mindmap",
+                (getOptions || markmap.deriveOptions)(jsonOptions),
+                root2
+              );
+              if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.documentElement.classList.add("markmap-dark");
+              }
+            })(() => window.markmap,null,{"content":"","children":[{"content":"&#x1f4da; Qu&#x1ea3;n l&#xfd; &#x110;&#xe0;o t&#x1ea1;o &amp; L&#x1edb;p h&#x1ecd;c","children":[{"content":"&#x1f3eb; <strong>L&#x1edb;p h&#x1ecd;c (Classes)</strong>","children":[{"content":"Danh s&#xe1;ch l&#x1edb;p &#x111;ang m&#x1edf;","children":[],"payload":{"tag":"li","lines":"4,5"}},{"content":"X&#x1ebf;p ph&#xf2;ng &amp; Gi&#x1ea3;ng vi&#xea;n","children":[],"payload":{"tag":"li","lines":"5,6"}},{"content":"L&#x1ecb;ch h&#x1ecd;c tu&#x1ea7;n / th&#xe1;ng","children":[],"payload":{"tag":"li","lines":"6,7"}}],"payload":{"tag":"li","lines":"3,7"}},{"content":"&#x1f468;&#x200d;&#x1f393; <strong>H&#x1ecd;c vi&#xea;n (Students)</strong>","children":[{"content":"H&#x1ed3; s&#x1a1; h&#x1ecd;c vi&#xea;n","children":[],"payload":{"tag":"li","lines":"8,9"}},{"content":"L&#x1ecb;ch s&#x1eed; &#x111;i&#x1ec3;m danh","children":[],"payload":{"tag":"li","lines":"9,10"}},{"content":"K&#x1ebf;t qu&#x1ea3; ki&#x1ec3;m tra &#x111;&#x1ecb;nh k&#x1ef3;","children":[],"payload":{"tag":"li","lines":"10,11"}}],"payload":{"tag":"li","lines":"7,11"}},{"content":"&#x1f4c5; <strong>L&#x1ecb;ch &amp; Th&#x1edd;i kh&#xf3;a bi&#x1ec3;u (Schedules)</strong>","children":[{"content":"L&#x1ecb;ch gi&#xe1;o vi&#xea;n","children":[],"payload":{"tag":"li","lines":"12,13"}},{"content":"L&#x1ecb;ch ph&#xf2;ng h&#x1ecd;c","children":[],"payload":{"tag":"li","lines":"13,15"}}],"payload":{"tag":"li","lines":"11,15"}}],"payload":{"tag":"h2","lines":"2,3"}},{"content":"&#x1f465; Qu&#x1ea3;n l&#xfd; Nh&#xe2;n s&#x1ef1; &amp; Gi&#x1ea3;ng vi&#xea;n","children":[{"content":"&#x1f469;&#x200d;&#x1f3eb; <strong>Gi&#x1ea3;ng vi&#xea;n (Teachers)</strong>","children":[{"content":"H&#x1ed3; s&#x1a1; &amp; Chuy&#xea;n m&#xf4;n","children":[],"payload":{"tag":"li","lines":"17,18"}},{"content":"Ph&#xe2;n b&#x1ed5; gi&#x1edd; d&#x1ea1;y","children":[],"payload":{"tag":"li","lines":"18,19"}}],"payload":{"tag":"li","lines":"16,19"}},{"content":"&#x1f454; <strong>Nh&#xe2;n vi&#xea;n (Employees)</strong>","children":[{"content":"Ch&#x1ea5;m c&#xf4;ng","children":[],"payload":{"tag":"li","lines":"20,21"}},{"content":"&#x110;&#xe1;nh gi&#xe1; KPI","children":[],"payload":{"tag":"li","lines":"21,23"}}],"payload":{"tag":"li","lines":"19,23"}}],"payload":{"tag":"h2","lines":"15,16"}},{"content":"&#x1f4bc; T&#xe0;i ch&#xed;nh &amp; Kinh doanh","children":[{"content":"&#x1f4d1; <strong>&#x110;&#x1a1;n h&#xe0;ng &amp; H&#x1ecd;c ph&#xed; (Orders)</strong>","children":[{"content":"Thu h&#x1ecd;c ph&#xed;","children":[],"payload":{"tag":"li","lines":"25,26"}},{"content":"H&#xf3;a &#x111;&#x1a1;n &#x111;i&#x1ec7;n t&#x1eed;","children":[],"payload":{"tag":"li","lines":"26,27"}},{"content":"Ch&#xed;nh s&#xe1;ch gi&#x1ea3;m gi&#xe1; / Voucher","children":[],"payload":{"tag":"li","lines":"27,28"}}],"payload":{"tag":"li","lines":"24,28"}},{"content":"&#x1f4e6; <strong>S&#x1ea3;n ph&#x1ea9;m &amp; Kh&#xf3;a h&#x1ecd;c (Products)</strong>","children":[{"content":"G&#xf3;i h&#x1ecd;c ph&#xed;","children":[],"payload":{"tag":"li","lines":"29,30"}},{"content":"Gi&#xe1;o tr&#xec;nh &amp; H&#x1ecd;c li&#x1ec7;u","children":[],"payload":{"tag":"li","lines":"30,32"}}],"payload":{"tag":"li","lines":"28,32"}}],"payload":{"tag":"h2","lines":"23,24"}},{"content":"&#x2699;&#xfe0f; C&#x1ea5;u h&#xec;nh H&#x1ec7; th&#x1ed1;ng","children":[{"content":"&#x1f3e2; Qu&#x1ea3;n l&#xfd; C&#x1a1; s&#x1edf; / Chi nh&#xe1;nh (Branches)","children":[],"payload":{"tag":"li","lines":"33,34"}},{"content":"&#x1f510; Ph&#xe2;n quy&#x1ec1;n &amp; T&#xe0;i kho&#x1ea3;n (Roles &amp; Permissions)","children":[],"payload":{"tag":"li","lines":"34,35"}},{"content":"&#x1f4ca; B&#xe1;o c&#xe1;o th&#x1ed1;ng k&#xea; (Dashboard Analytics)","children":[],"payload":{"tag":"li","lines":"35,36"}}],"payload":{"tag":"h2","lines":"32,33"}}]},null)</script>
+</body>
+</html>

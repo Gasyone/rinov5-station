@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import {
-  BookOpen,
   Clock,
-  Hourglass,
-  MapPin,
   ExternalLink,
+  Layers,
 } from 'lucide-react'
 import {
   Popover,
@@ -27,28 +25,51 @@ function normalizeReceiptItems(receipt: PaymentReceipt): ReceiptOrderItem[] {
     return receipt.items
   }
 
+  // Check if receipt.orderCode has multiple comma-separated orders
+  if (receipt.orderCode && receipt.orderCode.includes(',')) {
+    const codes = receipt.orderCode.split(',').map((c) => c.trim()).filter(Boolean)
+    if (codes.length > 1) {
+      const students = receipt.studentName.split(',').map((s) => s.trim())
+      return codes.map((code, idx) => ({
+        orderCode: code,
+        studentName: students[idx] || students[0] || receipt.studentName,
+        packageName: 'Gói Tiếng Anh Chuẩn Quốc Tế',
+        packageType: 'Mua mới',
+        durationText: '30 buổi',
+        bonusText: '--',
+        branch: receipt.branch,
+        quantity: 1,
+        allocatedAmount: Math.round(receipt.amount / codes.length),
+        orderTotalAmount: Math.round(receipt.orderTotalAmount / codes.length),
+        orderRemainingAmount: Math.round(receipt.orderRemainingAmount / codes.length),
+      }))
+    }
+  }
+
+  const effectiveOrderCode = receipt.orderCode || 'OD832004'
+
   // Fallback 1 package item based on order code & student
-  const defaultPackageName = receipt.orderCode.includes('9230')
+  const defaultPackageName = effectiveOrderCode.includes('9230')
     ? 'Gói SuperKids 12T'
-    : receipt.orderCode.includes('9231')
+    : effectiveOrderCode.includes('9231')
       ? 'Gói Flyers Intensive'
-      : receipt.orderCode.includes('9234')
+      : effectiveOrderCode.includes('9234')
         ? 'Gói IELTS Junior 1N'
-        : receipt.orderCode.includes('9232')
+        : effectiveOrderCode.includes('9232')
           ? 'Gói Movers Bán Trú 1N'
-          : receipt.orderCode.includes('9235')
+          : effectiveOrderCode.includes('9235')
             ? 'Gói SuperKids 6T'
-            : receipt.orderCode.includes('9236')
+            : effectiveOrderCode.includes('9236')
               ? '[Gia sư] Tiếng anh 1:4 _ 30 buổi'
-              : receipt.orderCode.includes('9241')
+              : effectiveOrderCode.includes('9241')
                 ? 'Gói Kindy Mẫu Giáo 1N'
-                : receipt.orderCode.includes('9242')
+                : effectiveOrderCode.includes('9242')
                   ? 'Gói IELTS Special 1N'
                   : 'Gói Tiếng Anh Chuẩn Quốc Tế'
 
   return [
     {
-      orderCode: receipt.orderCode,
+      orderCode: effectiveOrderCode,
       studentName: receipt.studentName,
       packageName: defaultPackageName,
       packageType: receipt.receiptType === 'tuition_full' ? 'Gia Hạn' : 'Mua mới',
@@ -70,6 +91,8 @@ export function PaymentReceiptOrderPopover({
   const [open, setOpen] = useState(false)
   const items = normalizeReceiptItems(receipt)
   const hasMultipleOrders = items.length > 1
+  const primaryOrderCode = (items[0]?.orderCode || receipt.orderCode || 'OD832004').replace('OD-DRAFT-', 'OD-')
+  const extraOrdersCount = items.length - 1
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -79,15 +102,29 @@ export function PaymentReceiptOrderPopover({
             'min-w-0 text-xs cursor-pointer group/pkg hover:bg-muted/40 p-1 -m-1 rounded-md transition-colors select-none text-left',
             className
           )}
-          title="Nhấp xem chi tiết danh sách đơn hàng & số tiền"
+          title={
+            hasMultipleOrders
+              ? `Nhấp xem ${items.length} đơn hàng trong phiếu thanh toán này`
+              : 'Nhấp xem chi tiết đơn hàng & số tiền'
+          }
         >
-          {/* Dòng 1: Tên đơn hàng / Mã đơn */}
-          <div className="flex items-center gap-1 min-w-0">
-            <p className="truncate font-normal text-foreground group-hover/pkg:text-primary group-hover/pkg:underline font-mono text-[12px]">
-              {hasMultipleOrders
-                ? `${items.length} đơn hàng (${items.map((i) => i.orderCode.replace('OD-DRAFT-', 'OD-')).join(', ')})`
-                : receipt.orderCode}
-            </p>
+          {/* Dòng 1: Tên đơn hàng / Mã đơn + Icon nhiều đơn & Badge N+ nếu có */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            {hasMultipleOrders ? (
+              <>
+                <Layers className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="truncate font-mono font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline text-[12px]">
+                  {primaryOrderCode}
+                </span>
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                  +{extraOrdersCount}
+                </span>
+              </>
+            ) : (
+              <span className="truncate font-mono font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline text-[12px]">
+                {primaryOrderCode}
+              </span>
+            )}
           </div>
 
           {/* Dòng 2: Số tiền của đơn hàng */}
@@ -108,9 +145,12 @@ export function PaymentReceiptOrderPopover({
       >
         {/* Header: Title Danh sách đơn hàng */}
         <div className="flex items-center justify-between pb-1.5 border-b border-border/60">
-          <span className="font-semibold text-xs text-foreground">
-            Danh sách đơn hàng ({items.length})
-          </span>
+          <div className="flex items-center gap-1.5">
+            {hasMultipleOrders && <Layers className="h-3.5 w-3.5 text-primary shrink-0" />}
+            <span className="font-semibold text-xs text-foreground">
+              Danh sách đơn hàng ({items.length})
+            </span>
+          </div>
           <span className="text-xs font-mono text-muted-foreground">
             Tổng: {formatCurrency(receipt.orderTotalAmount)}
           </span>

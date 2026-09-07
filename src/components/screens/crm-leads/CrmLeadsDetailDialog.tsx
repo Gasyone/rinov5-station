@@ -174,7 +174,7 @@ export function CrmLeadsDetailDialog({
                   value={SOURCE_LABEL_MAP[lead.source] ?? lead.source}
                 />
                 <InfoField
-                  label="Chi nhánh tiếp nhận"
+                  label="Cơ sở tiếp nhận"
                   value={lead.branch}
                 />
                 <InfoField

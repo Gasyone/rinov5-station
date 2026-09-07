@@ -8,6 +8,9 @@ export interface Employee {
   department: string
   position: string
   branch: string
+  branches?: string[] // Danh sách cơ sở làm việc / giảng dạy
+  secondaryDepartment?: string // Phòng ban kiêm nhiệm
+  secondaryPosition?: string // Chức danh kiêm nhiệm
   status: "active" | "inactive" | "probation" | "resigned"
   salary: number
   hireDate: string
@@ -19,8 +22,8 @@ export interface Employee {
 
 export const mockEmployees: Employee[] = [
   // --- RinoEdu Smart City ---
-  { id: "e1", name: "Nguyễn Văn Quản Lý", email: "manager.sc@demo.com", phone: "0909876543", gender: "Male", dob: "1990-05-15", department: "Management", position: "Branch Manager", branch: "RinoEdu Smart City", status: "active", salary: 25000000, hireDate: "2023-01-15", contractType: "Full-time", address: "123 Smart City, Hà Nội" },
-  { id: "e4", name: "Hoàng Thị Giáo Viên", email: "teacher2@demo.com", phone: "0904445566", gender: "Female", dob: "1992-03-25", department: "Teaching", position: "English Teacher", branch: "RinoEdu Smart City", status: "active", salary: 18000000, hireDate: "2023-06-15", contractType: "Full-time", address: "321 Smart City, Hà Nội" },
+  { id: "e1", name: "Nguyễn Văn Quản Lý", email: "manager.sc@demo.com", phone: "0909876543", gender: "Male", dob: "1990-05-15", department: "Ban Giám đốc", position: "Giám đốc cơ sở", branch: "RinoEdu Smart City", branches: ["RinoEdu Smart City", "RinoEdu Linh Đàm"], status: "active", salary: 25000000, hireDate: "2023-01-15", contractType: "Full-time", address: "123 Smart City, Hà Nội" },
+  { id: "e4", name: "Hoàng Thị Giáo Viên", email: "teacher2@demo.com", phone: "0904445566", gender: "Female", dob: "1992-03-25", department: "Phòng Đào tạo", position: "Giáo viên Tiếng Anh", secondaryPosition: "Tổ phó chuyên môn", branch: "RinoEdu Smart City", branches: ["RinoEdu Smart City", "RinoEdu Nguyễn Tuân"], status: "active", salary: 18000000, hireDate: "2023-06-15", contractType: "Full-time", address: "321 Smart City, Hà Nội" },
   { id: "e5", name: "Lê Thị Chăm Sóc", email: "csm1@demo.com", phone: "0902223344", gender: "Female", dob: "1997-07-30", department: "Customer Care", position: "CSM Specialist", branch: "RinoEdu Smart City", status: "active", salary: 14000000, hireDate: "2024-01-10", contractType: "Full-time" },
   { id: "t6", name: "Coenrad Redman", email: "coenrad@demo.com", phone: "0903338811", gender: "Male", dob: "1989-11-20", department: "Teaching", position: "Native Teacher", branch: "RinoEdu Smart City", status: "active", salary: 30000000, hireDate: "2023-08-01", contractType: "Full-time" },
   { id: "tg_sc1", name: "Nguyễn Thu Hà", email: "ha.sc@demo.com", phone: "0901234567", gender: "Female", dob: "2001-04-12", department: "Teaching", position: "Teaching Assistant", branch: "RinoEdu Smart City", status: "active", salary: 8000000, hireDate: "2024-02-01", contractType: "Part-time" },
@@ -34,7 +37,7 @@ export const mockEmployees: Employee[] = [
   { id: "sc6", name: "Nguyễn Hải Đăng", email: "dang.sc@demo.com", phone: "0908901234", gender: "Male", dob: "1992-07-25", department: "Teaching", position: "Grammar Teacher", branch: "RinoEdu Smart City", status: "active", salary: 18000000, hireDate: "2023-05-10", contractType: "Full-time" },
 
   // --- RinoEdu Nguyễn Tuân ---
-  { id: "e2", name: "Trần Thị Sale", email: "sale1@demo.com", phone: "0901112233", gender: "Female", dob: "1995-08-20", department: "Sales", position: "Sales Executive", branch: "RinoEdu Nguyễn Tuân", status: "active", salary: 15000000, hireDate: "2024-03-01", contractType: "Full-time", address: "456 Đường Láng, Đống Đa, Hà Nội" },
+  { id: "e2", name: "Trần Thị Sale", email: "sale1@demo.com", phone: "0901112233", gender: "Female", dob: "1995-08-20", department: "Phòng Tuyển sinh", position: "Sales Executive", secondaryPosition: "Phụ trách Online", branch: "RinoEdu Nguyễn Tuân", branches: ["RinoEdu Nguyễn Tuân", "RinoEdu Smart City"], status: "active", salary: 15000000, hireDate: "2024-03-01", contractType: "Full-time", address: "456 Đường Láng, Đống Đa, Hà Nội" },
   { id: "e3", name: "Phạm Văn Giảng Dạy", email: "teacher1@demo.com", phone: "0903334455", gender: "Male", dob: "1988-12-10", department: "Teaching", position: "IELTS Teacher", branch: "RinoEdu Nguyễn Tuân", status: "active", salary: 20000000, hireDate: "2022-09-01", contractType: "Full-time", address: "789 Lê Văn Lương, Thanh Xuân, Hà Nội" },
   { id: "e6", name: "Đặng Văn Bắc", email: "manager.hn@demo.com", phone: "0905556677", gender: "Male", dob: "1985-11-08", department: "Management", position: "Branch Manager", branch: "RinoEdu Nguyễn Tuân", status: "active", salary: 26000000, hireDate: "2022-06-01", contractType: "Full-time", address: "159 Nguyễn Trãi, Thanh Xuân, Hà Nội" },
   { id: "e8", name: "Ngô Thị Accounting", email: "accounting@demo.com", phone: "0907778899", gender: "Female", dob: "1993-09-22", department: "Finance", position: "Accountant", branch: "RinoEdu Nguyễn Tuân", status: "active", salary: 16000000, hireDate: "2023-02-15", contractType: "Full-time" },

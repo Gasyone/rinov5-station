@@ -14,12 +14,12 @@ import {
   getSchoolFilterGroup,
 } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
+import { SYSTEM_BRANCHES } from '@/components/controls'
 import type { Order } from '@/mocks/orders'
 import {
   calculateOrderMetrics,
   filterOrders,
   getInitialOrders,
-  getOrderBranches,
   getOrderEffectiveStatus,
   getOrderPaymentMethods,
   getOrderPaymentStatuses,
@@ -56,7 +56,6 @@ export function OrdersScreen() {
   const [detail, setDetail] = useState<Order | null>(null)
   const [cancelTarget, setCancelTarget] = useState<Order | null>(null)
 
-  const branches = useMemo(() => getOrderBranches(orders), [orders])
   const paymentMethods = useMemo(() => getOrderPaymentMethods(orders), [orders])
   const paymentStatuses = useMemo(() => getOrderPaymentStatuses(orders), [orders])
 
@@ -101,7 +100,7 @@ export function OrdersScreen() {
         'branches',
         filters.branches,
         (branch) => orders.filter((o) => o.branch === branch).length,
-        branches
+        SYSTEM_BRANCHES
       ),
       createFilterGroup({
         id: 'orderStatuses',
@@ -127,7 +126,7 @@ export function OrdersScreen() {
         getOptionCount: (status) => orders.filter((o) => o.paymentStatus === status).length,
       }),
     ],
-    [branches, paymentMethods, paymentStatuses, orders, filters]
+    [paymentMethods, paymentStatuses, orders, filters]
   )
 
   const toggleArray = <K extends keyof OrderFilterState>(key: K, value: OrderFilterState[K][number]) => {
@@ -161,7 +160,7 @@ export function OrdersScreen() {
         {/* Thanh công cụ tìm kiếm, lọc gói/cơ sở và Smartcard Popover ở góc trên phải */}
         <OrdersToolbar
           orders={baseOrdersForToolbar}
-          branches={branches}
+          branches={SYSTEM_BRANCHES}
           activeBranch={activeBranch}
           activePackageType={activePackageType}
           activeStatus={activeStatus}

@@ -108,7 +108,7 @@ export function PaymentReceiptDetailDialog({
               />
 
               <InfoField
-                label="Chi nhánh thực hiện"
+                label="Cơ sở thực hiện"
                 value={receipt.branch}
               />
 

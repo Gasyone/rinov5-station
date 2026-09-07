@@ -5,7 +5,7 @@ domain: Business
 status: foundation
 tags: [traceability, dataview, obsidian]
 ---
-
+ũ
 # Bảng Truy vết Tự động (Traceability Views)
 
 > **Cách dùng:** Mở file này trong **Obsidian** với plugin `Dataview` đã cài đặt. Mỗi khối query bên dưới sẽ tự render thành bảng/danh sách live, đọc trực tiếp từ frontmatter của các file Markdown khác trong vault.

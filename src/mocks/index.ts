@@ -15,6 +15,7 @@ export * from "./lmsRoadmaps"
 export * from "./systemConfig"
 export * from "./crmLeads"
 export * from "./promotions"
+export * from "./jobTitles"
 
 
 export type { User as AuthUser } from "./users"
@@ -32,10 +33,9 @@ export type { ClassSession, EventSession } from "./calendarSchedule"
 export { getMockClassSessions, getMockEventSessions } from "./calendarSchedule"
 
 export const BRANCHES = [
+  "RinoEdu Linh Đàm",
   "RinoEdu Nguyễn Tuân",
   "RinoEdu Smart City",
-  "RinoEdu Linh Đàm",
-  "Toàn hệ thống",
 ]
 
 export const ROLES: Record<string, string> = {

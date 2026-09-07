@@ -205,21 +205,53 @@ export function formatChildLabel(child: LeadChild): string {
   return `${child.name} (${child.age}t - ${birthYear})`
 }
 
+export const isMoiTiepNhanStatus = (s: string) => s === 'moi_tiep_nhan' || s === 'chua_tiep_can'
+export const isDangTuVanStatus = (s: string) => s === 'dang_tu_van' || s === 'dang_cham_soc'
+export const isHenTraiNghiemStatus = (s: string) => s === 'hen_trai_nghiem' || s === 'danh_gia_trai_nghiem'
+export const isChoChotStatus = (s: string) => s === 'cho_chot' || s === 'tiem_nang'
+export const isChuyenDoiStatus = (s: string) => s === 'chuyen_doi'
+export const isThatBaiStatus = (s: string) => s === 'that_bai'
+
+export const isLeadTodayTask = (l: Lead) => {
+  const care = getLeadCareInfo(l)
+  return (
+    isMoiTiepNhanStatus(l.status) ||
+    care.isRescheduled ||
+    l.testStatus === 'scheduled' ||
+    l.trialStatus === 'scheduled' ||
+    l.testStatus === 'completed'
+  )
+}
+
+export const isLeadOverdue = (l: Lead) => {
+  return (
+    (isMoiTiepNhanStatus(l.status) && Boolean(l.assignedTo && l.assignedTo !== 'Chưa phân bổ')) ||
+    l.testStatus === 'no_show' ||
+    l.trialStatus === 'no_show'
+  )
+}
+
+export const isLeadUnassigned = (l: Lead) =>
+  !l.assignedTo || l.assignedTo.trim() === '' || l.assignedTo === 'Chưa phân bổ'
+
 export function calculateStatusTileCounts(leads: Lead[]) {
   const counts: Record<string, number> = {
     all: leads.length,
-    chua_tiep_can: 0,
-    dang_cham_soc: 0,
-    danh_gia_trai_nghiem: 0,
-    tiem_nang: 0,
-    chuyen_doi: 0,
+    today_tasks: leads.filter(isLeadTodayTask).length,
+    overdue: leads.filter(isLeadOverdue).length,
+    unassigned: leads.filter(isLeadUnassigned).length,
+    moi_tiep_nhan: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
+    dang_tu_van: leads.filter((l) => isDangTuVanStatus(l.status)).length,
+    hen_trai_nghiem: leads.filter((l) => isHenTraiNghiemStatus(l.status)).length,
+    cho_chot: leads.filter((l) => isChoChotStatus(l.status)).length,
+    chuyen_doi: leads.filter((l) => isChuyenDoiStatus(l.status)).length,
+    that_bai: leads.filter((l) => isThatBaiStatus(l.status)).length,
+    // Legacy aliases
+    chua_tiep_can: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
+    dang_cham_soc: leads.filter((l) => isDangTuVanStatus(l.status)).length,
+    danh_gia_trai_nghiem: leads.filter((l) => isHenTraiNghiemStatus(l.status)).length,
+    tiem_nang: leads.filter((l) => isChoChotStatus(l.status)).length,
   }
-
-  leads.forEach((lead) => {
-    if (counts[lead.status] !== undefined) {
-      counts[lead.status]++
-    }
-  })
 
   return counts
 }
@@ -278,18 +310,21 @@ export function getLeadSubStatusLabel(lead: Lead): string {
   const level = (lead.testResultLevel || '').toLowerCase()
 
   switch (lead.status) {
+    case 'moi_tiep_nhan':
     case 'chua_tiep_can':
       if (!lead.assignedTo || lead.assignedTo === 'Chưa phân bổ' || lead.assignedTo.trim() === '') {
         return 'Mới về - Chưa phân Sale'
       }
       return 'Đã giao Sale - Chưa gọi'
 
+    case 'dang_tu_van':
     case 'dang_cham_soc':
       if (note.includes('gọi lần 2')) return 'Đã gọi lần 2'
       if (note.includes('hẹn gọi lại')) return 'Hẹn gọi lại sau'
       if (note.includes('gọi lần 1')) return 'Đã gọi lần 1'
       return 'Đã gọi lần 1'
 
+    case 'hen_trai_nghiem':
     case 'danh_gia_trai_nghiem':
       if (level.includes('superkids')) return 'Đạt level SuperKids'
       if (level.includes('flyers')) return 'Đạt level Flyers'
@@ -299,6 +334,7 @@ export function getLeadSubStatusLabel(lead: Lead): string {
       if (lead.testStatus === 'scheduled') return 'Lịch test tuần này'
       return 'PH đã xác nhận'
 
+    case 'cho_chot':
     case 'tiem_nang':
       if (note.includes('giữ chỗ') || (lead.paymentTerm || '').toLowerCase().includes('giữ chỗ')) return 'Giữ chỗ 24h'
       if (note.includes('chuyển khoản')) return 'Chờ chuyển khoản'
@@ -355,8 +391,8 @@ export function getLeadCareInfo(lead: Lead): LeadCareInfo {
     : 'Trần Thị Mai (Sales)'
   const note = lead.lastNote || ''
 
-  // 1. Chưa tiếp cận -> Chưa chăm sóc
-  if (lead.status === 'chua_tiep_can') {
+  // 1. Mới tiếp nhận / Chưa tiếp cận -> Chưa chăm sóc
+  if (isMoiTiepNhanStatus(lead.status)) {
     return {
       isUncared: true,
       inProgress: false,
@@ -367,8 +403,8 @@ export function getLeadCareInfo(lead: Lead): LeadCareInfo {
     }
   }
 
-  // 2. Đang chăm sóc
-  if (lead.status === 'dang_cham_soc') {
+  // 2. Đang tư vấn / Đang chăm sóc
+  if (isDangTuVanStatus(lead.status)) {
     const isCall2 = note.includes('lần 2')
     const logs: LeadCareLog[] = [
       {
@@ -408,8 +444,8 @@ export function getLeadCareInfo(lead: Lead): LeadCareInfo {
     }
   }
 
-  // 3. Đánh giá & Trải nghiệm
-  if (lead.status === 'danh_gia_trai_nghiem') {
+  // 3. Hẹn trải nghiệm / Đánh giá & Trải nghiệm
+  if (isHenTraiNghiemStatus(lead.status)) {
     const logs: LeadCareLog[] = []
     if (lead.trialStatus === 'completed') {
       logs.push({
@@ -437,7 +473,7 @@ export function getLeadCareInfo(lead: Lead): LeadCareInfo {
       action: 'Xác nhận lịch hẹn kiểm tra / học thử',
       staff,
       date: '10/08/2026',
-      note: 'Gửi định vị chi nhánh và hướng dẫn đón tiếp tại sảnh.',
+      note: 'Gửi định vị cơ sở và hướng dẫn đón tiếp tại sảnh.',
       channel: 'zalo',
       parentFeedback: 'Phụ huynh đã nhận thông tin lịch hẹn',
     })
@@ -459,8 +495,8 @@ export function getLeadCareInfo(lead: Lead): LeadCareInfo {
     }
   }
 
-  // 4. Tiềm năng
-  if (lead.status === 'tiem_nang') {
+  // 4. Chờ chốt / Tiềm năng
+  if (isChoChotStatus(lead.status)) {
     const logs: LeadCareLog[] = [
       {
         action: 'Tư vấn đóng phí & Giữ chỗ ưu đãi',

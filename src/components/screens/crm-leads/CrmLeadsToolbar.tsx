@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Lead } from '@/mocks/crmLeads'
 import {
+  BranchSelect,
   ExpandableSearch,
   FilterIconButton,
   ToolbarSelect,
@@ -18,6 +19,8 @@ import { CrmLeadsSmartcardPopover } from './CrmLeadsSmartcardPopover'
 interface CrmLeadsToolbarProps {
   leads: Lead[]
   viewScope: 'my' | 'all'
+  branch?: string
+  onBranchChange?: (val: string) => void
   source: string
   onSourceChange: (val: string) => void
   assignment: string
@@ -34,6 +37,8 @@ interface CrmLeadsToolbarProps {
 export function CrmLeadsToolbar({
   leads,
   viewScope,
+  branch = 'all',
+  onBranchChange,
   source,
   onSourceChange,
   assignment,
@@ -48,8 +53,17 @@ export function CrmLeadsToolbar({
 }: CrmLeadsToolbarProps) {
   return (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-      {/* Bộ lọc bên trái: Nguồn Lead & Bộ lọc ngữ cảnh theo màn hình */}
+      {/* Bộ lọc bên trái: Cơ sở, Nguồn Lead & Bộ lọc ngữ cảnh theo màn hình */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* Chọn cơ sở */}
+        {onBranchChange && (
+          <BranchSelect
+            value={branch}
+            onValueChange={onBranchChange}
+            className="h-8 min-w-36 text-xs"
+          />
+        )}
+
         {/* Nguồn Lead */}
         <ToolbarSelect
           value={source}

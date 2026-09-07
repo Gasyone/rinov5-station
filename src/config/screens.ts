@@ -61,6 +61,10 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý đơn hàng',
     description: 'Quản lý đơn đăng ký học, trạng thái thanh toán và phát hành biên nhận/hóa đơn',
   },
+  order_fulfillment: {
+    label: 'Bàn giao & Giao hàng',
+    description: 'Quản lý danh sách bàn giao sách giáo trình, học liệu, quà tặng tại cơ sở và theo dõi vận đơn giao tận nơi',
+  },
   payment_receipts: {
     label: 'Thanh toán',
     description: 'Quản lý danh sách các phiếu thanh toán (phiếu thu, phiếu chi/hoàn tiền), lịch sử giao dịch và biên nhận',
@@ -113,6 +117,10 @@ export const screens: Record<string, ScreenConfig> = {
   renewal: {
     label: 'Tái phí học viên',
     description: 'Theo dõi danh sách học viên sắp hết phí và lịch sử tư vấn tái đăng ký',
+  },
+  job_titles: {
+    label: 'Chức danh',
+    description: 'Quản lý danh mục chức danh công việc, định mức và phân bổ/gán nhân sự theo vị trí',
   },
   care_conditions_config: {
     label: 'Danh mục chăm sóc',

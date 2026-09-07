@@ -1,6 +1,14 @@
 import type { Lead } from '@/mocks/crmLeads'
 import type { LeadAllMetrics, LeadMyMetrics, TimeRangeFilter } from './crmLeadsTypes'
-import { getLeadCareInfo } from './crmLeadsHelpers'
+import {
+  getLeadCareInfo,
+  isMoiTiepNhanStatus,
+  isDangTuVanStatus,
+  isHenTraiNghiemStatus,
+  isChoChotStatus,
+  isLeadTodayTask,
+  isLeadOverdue,
+} from './crmLeadsHelpers'
 
 export function formatCompactCurrency(amount: number): string {
   if (amount >= 1_000_000_000) {
@@ -106,7 +114,7 @@ export function calculateLeadAllMetrics(leads: Lead[]): LeadAllMetrics {
   const conversionRate = totalLeads > 0 ? Math.round((convertedCount / totalLeads) * 100) : 0
 
   const expectedRevenue = leads.reduce((acc, l) => {
-    if (l.status === 'chuyen_doi' || l.status === 'tiem_nang') {
+    if (l.status === 'chuyen_doi' || isChoChotStatus(l.status)) {
       const val = parseInt((l.expectedAmount || '0').replace(/[^0-9]/g, ''), 10) || 0
       return acc + val
     }
@@ -140,23 +148,9 @@ export function calculateLeadAllMetrics(leads: Lead[]): LeadAllMetrics {
 export function calculateLeadMyMetrics(leads: Lead[]): LeadMyMetrics {
   const totalLeads = leads.length
 
-  const todayTasksCount = leads.filter((l) => {
-    const care = getLeadCareInfo(l)
-    return (
-      l.status === 'chua_tiep_can' ||
-      care.isRescheduled ||
-      l.testStatus === 'scheduled' ||
-      l.trialStatus === 'scheduled'
-    )
-  }).length
+  const todayTasksCount = leads.filter(isLeadTodayTask).length
 
-  const overdueCount = leads.filter((l) => {
-    return (
-      (l.status === 'chua_tiep_can' && Boolean(l.assignedTo)) ||
-      l.testStatus === 'no_show' ||
-      l.trialStatus === 'no_show'
-    )
-  }).length
+  const overdueCount = leads.filter(isLeadOverdue).length
 
   const convertedLeads = leads.filter((l) => l.status === 'chuyen_doi')
   const convertedCount = convertedLeads.length
@@ -170,10 +164,10 @@ export function calculateLeadMyMetrics(leads: Lead[]): LeadMyMetrics {
   const targetCount = 8 // Chỉ tiêu 8 học viên / tháng
   const kpiProgressRate = Math.min(100, Math.round((convertedCount / targetCount) * 100))
 
-  const newCount = leads.filter((l) => l.status === 'chua_tiep_can').length
-  const inProgressCount = leads.filter((l) => l.status === 'dang_cham_soc').length
-  const experienceCount = leads.filter((l) => l.status === 'danh_gia_trai_nghiem').length
-  const closingCount = leads.filter((l) => l.status === 'tiem_nang').length
+  const newCount = leads.filter((l) => isMoiTiepNhanStatus(l.status)).length
+  const inProgressCount = leads.filter((l) => isDangTuVanStatus(l.status)).length
+  const experienceCount = leads.filter((l) => isHenTraiNghiemStatus(l.status)).length
+  const closingCount = leads.filter((l) => isChoChotStatus(l.status)).length
 
   return {
     totalLeads,

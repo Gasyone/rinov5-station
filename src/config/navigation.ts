@@ -79,6 +79,7 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       { id: 'booking_test', label: 'Kiểm tra/Trải nghiệm', href: '/app/booking_test' },
       { id: 'trial_class', label: 'Lớp học thử', href: '/app/trial_class' },
+      { id: 'order_fulfillment', label: 'Bàn giao & Giao hàng', href: '/app/order_fulfillment' },
       { id: 'class_placement', label: 'Xếp lớp học viên', href: '/app/class_placement' },
     ],
   },
@@ -119,6 +120,7 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Cấu hình Hệ thống',
     icon: Settings,
     items: [
+      { id: 'job_titles', label: 'Chức danh', href: '/app/job_titles' },
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
       { id: 'permissions', label: 'Nhóm quyền', href: '/app/permissions' },
     ],

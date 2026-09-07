@@ -88,6 +88,13 @@ export function matchOrderPaymentCondition(order: Order, condition: PaymentCondi
     return installment.label === 'Thanh toán 1 lần'
   }
 
+  if (condition === 'receivable') {
+    if (order.status === 'cancelled' || order.status === 'refunded') return false
+    const paid = order.paidAmount ?? (order.paymentStatus === 'paid' ? order.finalAmount : 0)
+    const remaining = order.remainingAmount ?? Math.max(0, order.finalAmount - paid)
+    return remaining > 0
+  }
+
   if (condition === 'refunded') {
     return order.status === 'refunded' || (order.paymentStatus as string) === 'refunded'
   }
@@ -139,11 +146,7 @@ export function getOrderStatusLabel(status: Order['status']): string {
 
 export function countOrdersByStatus(items: Order[], status: OrderStatusFilter): number {
   if (status === 'all') {
-    // Tất cả là đếm cho Chờ thanh toán và Đang xử lý
-    return items.filter((o) => {
-      const s = getOrderEffectiveStatus(o)
-      return s === 'pending' || s === 'processing'
-    }).length
+    return items.length
   }
   return items.filter((o) => getOrderEffectiveStatus(o) === status).length
 }
@@ -272,14 +275,8 @@ export function filterOrders(
 
     if (filters.branch !== 'all' && o.branch !== filters.branch) return false
 
-    // Tab lọc trạng thái: Tab "Tất cả" chỉ hiển thị Chờ thanh toán và Đang xử lý (không bao gồm hoàn tất, hủy)
-    if (filters.status === 'all') {
-      if (filters.extra.orderStatuses && filters.extra.orderStatuses.length > 0) {
-        if (!filters.extra.orderStatuses.includes(effStatus)) return false
-      } else {
-        if (effStatus !== 'pending' && effStatus !== 'processing') return false
-      }
-    } else {
+    // Tab lọc trạng thái
+    if (filters.status !== 'all') {
       if (effStatus !== filters.status) return false
     }
 
@@ -378,6 +375,39 @@ export function formatPaymentTime(raw?: string | null): string {
   return trimmed.replace(/:(\d{2}):\d{2}/, ':$1')
 }
 
+/**
+ * Format chuỗi thời gian thanh toán: bỏ giờ, chỉ lấy ngày gọn dạng DD/MM/YYYY
+ */
+export function formatPaymentDateOnly(raw?: string | null): string {
+  if (!raw) return '—'
+  const trimmed = raw.trim()
+
+  // Dạng DD/MM/YYYY trong chuỗi (ví dụ: 10:20 - 18/08/2026, 18/08/2026)
+  const fullDateMatch = trimmed.match(/(\d{1,2}\/\d{1,2}\/\d{4})/)
+  if (fullDateMatch) {
+    return fullDateMatch[1]
+  }
+
+  // Dạng DD/MM (ví dụ: 09/08 10:00) -> 09/08/2026
+  const shortDateMatch = trimmed.match(/(\d{1,2}\/\d{1,2})/)
+  if (shortDateMatch && !trimmed.includes('-')) {
+    return `${shortDateMatch[1]}/2026`
+  }
+
+  // Dạng ISO datetime: 2026-08-14T15:37:57Z
+  if (trimmed.includes('T') || (trimmed.length === 10 && trimmed.includes('-'))) {
+    const d = new Date(trimmed)
+    if (!Number.isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0')
+      const mo = String(d.getMonth() + 1).padStart(2, '0')
+      const yyyy = d.getFullYear()
+      return `${dd}/${mo}/${yyyy}`
+    }
+  }
+
+  return trimmed
+}
+
 export function getNormalizedPaymentHistory(order: Order): NormalizedPaymentItem[] {
   if (order.paymentHistory && order.paymentHistory.length > 0) {
     return [...order.paymentHistory].reverse().map((rec, idx): NormalizedPaymentItem => {
@@ -424,6 +454,27 @@ export function getNormalizedPaymentHistory(order: Order): NormalizedPaymentItem
 
   return []
 }
+
+/**
+ * Lấy ngày giờ cập nhật của đơn hàng:
+ * Ưu tiên order.updatedAt -> lần thanh toán gần nhất -> order.createdAt
+ */
+export function getOrderUpdatedAt(order: Order): string {
+  if (order.updatedAt) {
+    return formatPaymentTime(order.updatedAt)
+  }
+  const history = getNormalizedPaymentHistory(order)
+  if (history.length > 0 && history[0].paidAt && history[0].paidAt !== '—') {
+    return history[0].paidAt
+  }
+  if (order.createdAt) {
+    return formatPaymentTime(order.createdAt)
+  }
+  return '—'
+}
+// Re-export fulfillment helpers from dedicated module
+export * from './orderFulfillmentHelpers'
+
 
 export function getOrderSessionConversion(order: Order): OrderSessionConversion {
   const total = order.items.reduce((sum, item) => {
@@ -557,14 +608,18 @@ export function getOrderRecipientInfo(order: Order): OrderRecipientInfo {
 }
 
 /**
- * Che số điện thoại ở giữa theo chuẩn doanh nghiệp (VD: 098****652)
+ * Mã hóa số điện thoại theo định dạng *******xxx (ẩn 7 chữ số đầu, giữ lại 3 số cuối)
  */
 export function formatPhoneMaskMiddle(phone?: string | null): string {
-  if (!phone) return '091****111'
+  if (!phone) return '*******111'
   const clean = phone.replace(/\D/g, '')
-  if (clean.length < 7) return phone
-  return `${clean.slice(0, 3)}****${clean.slice(-3)}`
+  if (clean.length <= 3) return clean || phone
+  const last3 = clean.slice(-3)
+  const starCount = Math.max(clean.length - 3, 7)
+  return `${'*'.repeat(starCount)}${last3}`
 }
+
+export const maskPhoneNumber = formatPhoneMaskMiddle
 
 /**
  * Kiểm tra xem đơn hàng có phải đơn đặt cọc không

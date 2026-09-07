@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { FieldLabel } from '@/components/shared'
-import { InlineSelect } from '@/components/controls'
+import { InlineSelect, SYSTEM_BRANCHES } from '@/components/controls'
 import { cn } from '@/lib/utils'
 import { Lead, LeadChild } from '@/mocks/crmLeads'
 import { formatChildLabel } from './crmLeadsHelpers'
@@ -220,12 +220,10 @@ export function CrmLeadsBookingTestModal({
     onSuccess?.()
   }
 
-  const schoolSelectOptions = [
-    { value: 'Chi nhánh Quận 1', label: 'RinoEdu Chi nhánh Quận 1' },
-    { value: 'Chi nhánh Cầu Giấy', label: 'RinoEdu Chi nhánh Cầu Giấy' },
-    { value: 'RinoEdu Nguyễn Tuân', label: 'RinoEdu Nguyễn Tuân' },
-    { value: 'RinoEdu Smart City', label: 'RinoEdu Smart City' },
-  ]
+  const schoolSelectOptions = SYSTEM_BRANCHES.map((b) => ({
+    value: b,
+    label: b,
+  }))
 
   const programOptions = Object.keys(PROGRAM_CONFIG).map((p) => ({
     value: p,

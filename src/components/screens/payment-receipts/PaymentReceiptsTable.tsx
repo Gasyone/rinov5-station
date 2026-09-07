@@ -1,6 +1,6 @@
 'use client'
 
-import { Eye, Copy, Check, ArrowDownLeft, ArrowUpRight, User, GraduationCap, Plus } from 'lucide-react'
+import { Eye, Copy, Check, ArrowDownLeft, ArrowUpRight, User, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -23,7 +23,7 @@ import {
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
-import { formatCurrency, maskPhoneNumber } from './paymentReceiptsHelpers'
+import { formatCurrency, maskPhoneNumber, formatReceiptDate } from './paymentReceiptsHelpers'
 import { PaymentReceiptOrderPopover } from './PaymentReceiptOrderPopover'
 
 interface PaymentReceiptsTableProps {
@@ -106,20 +106,18 @@ export function PaymentReceiptsTable({
                 aria-label="Chọn tất cả phiếu thanh toán"
               />
             </TableHead>
-            <TableHead className="w-[16%] min-w-[150px]">Phiếu thanh toán</TableHead>
-            <TableHead className="w-[15%] min-w-[140px]">Học viên & Liên hệ</TableHead>
-            <TableHead className="w-[18%] min-w-[160px]">Đơn hàng</TableHead>
-            <TableHead className="w-[13%] min-w-[120px]">Số tiền giao dịch</TableHead>
-            <TableHead className="w-[13%] min-w-[130px]">Giá trị đơn & Còn lại</TableHead>
-            <TableHead className="w-[13%] min-w-[130px]">Phương thức & Tài khoản</TableHead>
+            <TableHead className="w-[22%] min-w-[180px]">Phiếu thanh toán</TableHead>
+            <TableHead className="w-[18%] min-w-[150px]">Khách hàng</TableHead>
+            <TableHead className="w-[20%] min-w-[170px]">Đơn hàng</TableHead>
+            <TableHead className="w-[15%] min-w-[130px]">Số tiền giao dịch</TableHead>
+            <TableHead className="w-[15%] min-w-[130px]">Phương thức & Tài khoản</TableHead>
             <TableHead className="w-[10%] min-w-[100px]">Trạng thái</TableHead>
-            <TableHead className="w-[12%] min-w-[120px]">Người lập & Ngày</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedReceipts.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-8 text-muted-foreground text-xs">
+              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground text-xs">
                 Không tìm thấy phiếu thanh toán nào phù hợp bộ lọc.
               </TableCell>
             </TableRow>
@@ -150,31 +148,31 @@ export function PaymentReceiptsTable({
                     />
                   </TableCell>
 
-                  {/* CỘT 1: PHIẾU THANH TOÁN (HIGHLIGHT: TÊN PHỤ HUYNH + MÃ TNX + THU/CHI) */}
+                  {/* CỘT 1: PHIẾU THANH TOÁN (MÃ TNX + ICON THU/CHI, DÒNG DƯỚI: NGƯỜI LẬP • NGÀY LẬP) */}
                   <TableCell className="relative text-xs cursor-pointer py-3" onClick={() => onViewDetail(rcpt)}>
-                    <div className="flex flex-col gap-1 pr-6">
-                      {/* Dòng 1: Tên Phụ huynh / Khách hàng thanh toán */}
-                      <div className="flex items-center gap-1.5 font-semibold text-foreground truncate" title={rcpt.parentName}>
-                        <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="truncate">{rcpt.parentName}</span>
+                    <div className="flex flex-col gap-1 pr-6 min-w-0">
+                      {/* Dòng 1: Icon Thu/Chi + Mã TNX */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span title={isReceipt ? 'Phiếu thu' : 'Phiếu chi'} className="inline-flex shrink-0">
+                          {isReceipt ? (
+                            <ArrowDownLeft className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <ArrowUpRight className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                          )}
+                        </span>
+                        <span className="font-mono font-bold text-primary hover:underline text-xs truncate">
+                          {rcpt.code}
+                        </span>
                       </div>
 
-                      {/* Dòng 2: Nhãn Thu/Chi + Mã phiếu TNX */}
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {isReceipt ? (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                            <ArrowDownLeft className="h-3 w-3 shrink-0" />
-                            <span>Thu</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                            <ArrowUpRight className="h-3 w-3 shrink-0" />
-                            <span>Chi</span>
-                          </span>
-                        )}
-
-                        <span className="font-mono font-bold text-primary hover:underline text-xs">
-                          {rcpt.code}
+                      {/* Dòng 2: Người lập • Ngày lập */}
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                        <span className="truncate max-w-[120px]" title={`Người lập: ${rcpt.createdBy}`}>
+                          {rcpt.createdBy}
+                        </span>
+                        <span className="text-muted-foreground/40 shrink-0">•</span>
+                        <span className="font-mono shrink-0 text-xs" title={`Ngày lập: ${rcpt.createdAt}`}>
+                          {formatReceiptDate(rcpt.createdAt)}
                         </span>
                       </div>
                     </div>
@@ -205,27 +203,35 @@ export function PaymentReceiptsTable({
                     </div>
                   </TableCell>
 
-                  {/* CỘT 2: HỌC VIÊN & LIÊN HỆ */}
+                  {/* CỘT 2: KHÁCH HÀNG (TÊN + SỐ ĐIỆN THOẠI MÃ HÓA *******xxx CÓ NÚT COPY) */}
                   <TableCell className="py-3">
                     <div className="flex flex-col gap-0.5 text-xs font-normal">
-                      {/* Dòng 1: Tên các bé / Học viên */}
-                      <div className="flex items-center gap-1.5 text-foreground truncate" title={rcpt.studentName}>
-                        <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        <span className="truncate">{rcpt.studentName}</span>
+                      {/* Dòng 1: Tên Khách hàng */}
+                      <div
+                        className="flex items-center gap-1.5 font-semibold text-foreground truncate"
+                        title={`Khách hàng: ${rcpt.parentName || rcpt.studentName}${rcpt.studentName && rcpt.studentName !== rcpt.parentName ? ` (Học viên: ${rcpt.studentName})` : ''}`}
+                      >
+                        <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate">{rcpt.parentName || rcpt.studentName}</span>
                       </div>
 
-                      {/* Dòng 2: SĐT bên dưới */}
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono mt-0.5">
-                        <span>{maskPhoneNumber(rcpt.phone)}</span>
+                      {/* Dòng 2: SĐT bên dưới (encoding: *******xxx, có nút copy) */}
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono mt-0.5">
+                        <span title={rcpt.phone}>{maskPhoneNumber(rcpt.phone)}</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground cursor-pointer"
                           onClick={(e) => handleCopyPhone(e, rcpt.phone, rcpt.id)}
-                          title="Sao chép SĐT"
+                          title={copiedId === rcpt.id ? 'Đã sao chép SĐT!' : 'Sao chép SĐT'}
+                          aria-label="Sao chép số điện thoại"
                         >
-                          {copiedId === rcpt.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                          {copiedId === rcpt.id ? (
+                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -256,39 +262,7 @@ export function PaymentReceiptsTable({
                     </div>
                   </TableCell>
 
-                  {/* CỘT 5: GIÁ TRỊ ĐƠN & CÒN LẠI */}
-                  <TableCell className="py-3 text-xs">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-xs text-muted-foreground font-normal truncate">
-                        Tổng: <span className="font-mono text-foreground">{formatCurrency(rcpt.orderTotalAmount)}</span>
-                      </div>
-                      {rcpt.orderRemainingAmount === 0 ? (
-                        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                          ✓ Đã tất toán
-                        </span>
-                      ) : (
-                        <div className="flex flex-col">
-                          <span className="text-xs text-amber-700 dark:text-amber-400 font-normal truncate">
-                            Còn nợ: <span className="font-mono font-medium">{formatCurrency(rcpt.orderRemainingAmount)}</span>
-                          </span>
-                          {onPayMore && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onPayMore(rcpt)
-                              }}
-                              className="text-xs text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline font-medium text-left mt-0.5 cursor-pointer"
-                            >
-                              + Thu tiếp đợt 2
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-
-                  {/* CỘT 6: PHƯƠNG THỨC & TÀI KHOẢN */}
+                  {/* CỘT 5: PHƯƠNG THỨC & TÀI KHOẢN */}
                   <TableCell className="py-3 text-xs">
                     <div className="flex flex-col gap-0.5 font-normal">
                       <span className="text-foreground truncate">{PAYMENT_METHOD_MAP[rcpt.paymentMethod]}</span>
@@ -298,7 +272,7 @@ export function PaymentReceiptsTable({
                     </div>
                   </TableCell>
 
-                  {/* CỘT 7: TRẠNG THÁI & ĐỐI SOÁT */}
+                  {/* CỘT 6: TRẠNG THÁI & ĐỐI SOÁT */}
                   <TableCell className="py-3">
                     <div className="flex flex-col gap-0.5">
                       <div>
@@ -314,16 +288,6 @@ export function PaymentReceiptsTable({
                       )}>
                         {rcpt.isReconciled ? 'Đã đối soát' : 'Chưa đối soát'}
                       </span>
-                    </div>
-                  </TableCell>
-
-                  {/* CỘT 8: NGƯỜI LẬP & NGÀY */}
-                  <TableCell className="py-3 text-xs">
-                    <div className="flex flex-col gap-0.5 font-normal">
-                      <span className="text-foreground truncate max-w-[160px]" title={rcpt.createdBy}>
-                        {rcpt.createdBy}
-                      </span>
-                      <span className="text-xs font-mono text-muted-foreground">{rcpt.createdAt}</span>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { FieldLabel } from '@/components/shared'
+import { SYSTEM_BRANCHES } from '@/components/controls'
 import { formatChildLabel } from './crmLeadsHelpers'
 import { Calendar, GraduationCap, MapPin } from 'lucide-react'
 
@@ -42,7 +43,7 @@ export function CrmLeadsTrialClassModal({
   const [startDate, setStartDate] = useState('2026-08-16')
   const [trialClass, setTrialClass] = useState('sk-01')
   const [sessionsCount, setSessionsCount] = useState('1')
-  const [branch, setBranch] = useState(lead?.branch ?? 'Chi nhánh Quận 1')
+  const [branch, setBranch] = useState(lead?.branch ?? SYSTEM_BRANCHES[0])
   const [notes, setNotes] = useState('')
 
   const [prevKey, setPrevKey] = useState({ leadId: lead?.id, childId: child?.id })
@@ -150,9 +151,9 @@ export function CrmLeadsTrialClassModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Chi nhánh Quận 1">RinoEdu Chi nhánh Quận 1</SelectItem>
-                    <SelectItem value="Chi nhánh Cầu Giấy">RinoEdu Chi nhánh Cầu Giấy</SelectItem>
-                    <SelectItem value="RinoEdu Smart City">RinoEdu Smart City</SelectItem>
+                    {SYSTEM_BRANCHES.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
