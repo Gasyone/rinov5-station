@@ -74,7 +74,13 @@ export function OperationsAlertScreen() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Detail sheet & roadmap modal states
-  const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(null)
+  const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      return params.get('studentId') || null
+    }
+    return null
+  })
   const [roadmapModalStudent, setRoadmapModalStudent] = useState<StudentCareAlert | null>(null)
 
   const exportFields = [

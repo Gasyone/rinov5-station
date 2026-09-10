@@ -110,16 +110,35 @@ export function ClassesSessionAttendanceTab({
     let list = [...rosterState]
     if (isCareOnlyFilter) {
       list = list.filter(
-        (s) => s.status === 'trial' || s.status === 'new' || !!s.sessionLabel
+        (s) => s.status === 'trial' || s.status === 'new' || !!s.sessionLabel || s.tags?.some((t) => t.tagType === 'attention')
       )
     }
-    // Sort: Care students (trial, new, or has sessionLabel) always at the top
+
+    const getCarePriority = (s: RosterStudent): number => {
+      // 1. Học thử (trial) - Ưu tiên hàng đầu để chuyển đổi
+      if (s.status === 'trial') return 1
+      // 2. Học viên mới (new) hoặc Buổi 1
+      if (s.status === 'new' || s.sessionLabel === 'buoi_1') return 2
+      // 3. Buổi 2
+      if (s.sessionLabel === 'buoi_2') return 3
+      // 4. Buổi 3
+      if (s.sessionLabel === 'buoi_3') return 4
+      // 5. Buổi cuối
+      if (s.sessionLabel === 'buoi_cuoi') return 5
+      // 6. Có tag Cần chú ý (attention)
+      if (s.tags?.some((t) => t.tagType === 'attention')) return 6
+      // 99. Học viên thông thường
+      return 99
+    }
+
+    // Sắp xếp: Học viên cần CS luôn được đưa lên đầu bảng theo thứ tự ưu tiên
     return list.sort((a, b) => {
-      const aIsCare = a.status === 'new' || a.status === 'trial' || !!a.sessionLabel
-      const bIsCare = b.status === 'new' || b.status === 'trial' || !!b.sessionLabel
-      if (aIsCare && !bIsCare) return -1
-      if (!aIsCare && bIsCare) return 1
-      return 0
+      const pA = getCarePriority(a)
+      const pB = getCarePriority(b)
+      if (pA !== pB) {
+        return pA - pB
+      }
+      return a.name.localeCompare(b.name, 'vi')
     })
   }, [rosterState, isCareOnlyFilter])
 

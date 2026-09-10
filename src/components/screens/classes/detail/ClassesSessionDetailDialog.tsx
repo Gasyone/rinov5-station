@@ -198,10 +198,24 @@ export function ClassesSessionDetailDialog({
   }, [roster, session.sessionNumber])
 
   // ── Only active students (exclude nghỉ / hết buổi / bảo lưu / chuyển) ──
-  const activeRoster = useMemo(
-    () => sessionRoster.filter((s) => !INACTIVE_STATUSES.includes(s.status)),
-    [sessionRoster]
-  )
+  const activeRoster = useMemo(() => {
+    const list = sessionRoster.filter((s) => !INACTIVE_STATUSES.includes(s.status))
+    const getCarePriority = (s: RosterStudent): number => {
+      if (s.status === 'trial') return 1
+      if (s.status === 'new' || s.sessionLabel === 'buoi_1') return 2
+      if (s.sessionLabel === 'buoi_2') return 3
+      if (s.sessionLabel === 'buoi_3') return 4
+      if (s.sessionLabel === 'buoi_cuoi') return 5
+      if (s.tags?.some((t) => t.tagType === 'attention')) return 6
+      return 99
+    }
+    return list.sort((a, b) => {
+      const pA = getCarePriority(a)
+      const pB = getCarePriority(b)
+      if (pA !== pB) return pA - pB
+      return a.name.localeCompare(b.name, 'vi')
+    })
+  }, [sessionRoster])
 
   const sessionTrialCount = useMemo(() => {
     return activeRoster.filter((s) => s.status === 'trial').length

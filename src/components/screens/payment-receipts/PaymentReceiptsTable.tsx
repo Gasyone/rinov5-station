@@ -1,6 +1,6 @@
 'use client'
 
-import { Eye, Copy, Check, ArrowDownLeft, ArrowUpRight, User, Plus } from 'lucide-react'
+import { Eye, Copy, Check, ArrowDownLeft, ArrowUpRight, User, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -25,12 +25,17 @@ import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import { formatCurrency, maskPhoneNumber, formatReceiptDate } from './paymentReceiptsHelpers'
 import { PaymentReceiptOrderPopover } from './PaymentReceiptOrderPopover'
+import type { ReceiptSortField, ReceiptSortDirection } from './paymentReceiptsTypes'
 
 interface PaymentReceiptsTableProps {
   receipts: PaymentReceipt[]
   totalItems: number
   currentPage: number
   pageSize: number
+  sortField?: ReceiptSortField
+  sortDirection?: ReceiptSortDirection
+  onSortChange?: (field: ReceiptSortField) => void
+  onSelectStaff?: (staff: string) => void
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onViewDetail: (receipt: PaymentReceipt) => void
@@ -42,6 +47,10 @@ export function PaymentReceiptsTable({
   totalItems,
   currentPage,
   pageSize,
+  sortField,
+  sortDirection,
+  onSortChange,
+  onSelectStaff,
   onPageChange,
   onPageSizeChange,
   onViewDetail,
@@ -96,22 +105,58 @@ export function PaymentReceiptsTable({
         />
       }
     >
-      <Table className="w-full table-fixed">
-        <TableHeader>
-          <TableRow className="bg-muted/50">
-            <TableHead className="w-[44px] px-3 shrink-0">
+      <Table className="w-full table-fixed" containerClassName="overflow-visible min-h-full">
+        <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-xs shadow-2xs">
+          <TableRow className="bg-muted/60 border-b border-border/80">
+            <TableHead className="w-[44px] px-3 shrink-0 sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">
               <Checkbox
                 checked={isAllSelected}
                 onCheckedChange={handleSelectAll}
                 aria-label="Chọn tất cả phiếu thanh toán"
               />
             </TableHead>
-            <TableHead className="w-[22%] min-w-[180px]">Phiếu thanh toán</TableHead>
-            <TableHead className="w-[18%] min-w-[150px]">Khách hàng</TableHead>
-            <TableHead className="w-[20%] min-w-[170px]">Đơn hàng</TableHead>
-            <TableHead className="w-[15%] min-w-[130px]">Số tiền giao dịch</TableHead>
-            <TableHead className="w-[15%] min-w-[130px]">Phương thức & Tài khoản</TableHead>
-            <TableHead className="w-[10%] min-w-[100px]">Trạng thái</TableHead>
+            <TableHead className="w-[22%] min-w-[180px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">
+              <button
+                type="button"
+                onClick={() => onSortChange?.('createdAt')}
+                className="inline-flex items-center gap-1.5 hover:text-foreground font-semibold transition-colors cursor-pointer select-none text-left"
+                title="Sắp xếp theo ngày lập phiếu"
+              >
+                <span>Phiếu thanh toán</span>
+                {sortField === 'createdAt' ? (
+                  sortDirection === 'asc' ? (
+                    <ArrowUp className="h-3.5 w-3.5 text-primary" />
+                  ) : (
+                    <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                  )
+                ) : (
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground/50" />
+                )}
+              </button>
+            </TableHead>
+            <TableHead className="w-[18%] min-w-[150px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">Khách hàng</TableHead>
+            <TableHead className="w-[20%] min-w-[170px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">Đơn hàng</TableHead>
+            <TableHead className="w-[15%] min-w-[130px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">
+              <button
+                type="button"
+                onClick={() => onSortChange?.('amount')}
+                className="inline-flex items-center gap-1.5 hover:text-foreground font-semibold transition-colors cursor-pointer select-none text-left"
+                title="Sắp xếp theo số tiền giao dịch"
+              >
+                <span>Số tiền giao dịch</span>
+                {sortField === 'amount' ? (
+                  sortDirection === 'asc' ? (
+                    <ArrowUp className="h-3.5 w-3.5 text-primary" />
+                  ) : (
+                    <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                  )
+                ) : (
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground/50" />
+                )}
+              </button>
+            </TableHead>
+            <TableHead className="w-[15%] min-w-[130px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">Phương thức & Tài khoản</TableHead>
+            <TableHead className="w-[10%] min-w-[100px] sticky top-0 z-20 bg-muted/95 backdrop-blur-xs border-b border-border/80">Trạng thái</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -167,7 +212,19 @@ export function PaymentReceiptsTable({
 
                       {/* Dòng 2: Người lập • Ngày lập */}
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
-                        <span className="truncate max-w-[120px]" title={`Người lập: ${rcpt.createdBy}`}>
+                        <span
+                          className={cn(
+                            'truncate max-w-[120px]',
+                            onSelectStaff && 'hover:text-primary hover:underline cursor-pointer'
+                          )}
+                          title={`Người lập: ${rcpt.createdBy}${onSelectStaff ? ' (Bấm để lọc)' : ''}`}
+                          onClick={(e) => {
+                            if (onSelectStaff) {
+                              e.stopPropagation()
+                              onSelectStaff(rcpt.createdBy)
+                            }
+                          }}
+                        >
                           {rcpt.createdBy}
                         </span>
                         <span className="text-muted-foreground/40 shrink-0">•</span>
@@ -272,23 +329,11 @@ export function PaymentReceiptsTable({
                     </div>
                   </TableCell>
 
-                  {/* CỘT 6: TRẠNG THÁI & ĐỐI SOÁT */}
+                  {/* CỘT 6: TRẠNG THÁI */}
                   <TableCell className="py-3">
-                    <div className="flex flex-col gap-0.5">
-                      <div>
-                        <Badge className={`text-xs py-0.5 px-1.5 font-normal ${getStatusBadgeClass(rcpt.status)}`}>
-                          {RECEIPT_STATUS_MAP[rcpt.status] || rcpt.status}
-                        </Badge>
-                      </div>
-                      <span className={cn(
-                        'text-xs font-normal',
-                        rcpt.isReconciled
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-amber-600 dark:text-amber-400'
-                      )}>
-                        {rcpt.isReconciled ? 'Đã đối soát' : 'Chưa đối soát'}
-                      </span>
-                    </div>
+                    <Badge className={`text-xs py-0.5 px-1.5 font-normal ${getStatusBadgeClass(rcpt.status)}`}>
+                      {RECEIPT_STATUS_MAP[rcpt.status] || rcpt.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               )

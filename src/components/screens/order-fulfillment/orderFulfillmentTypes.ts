@@ -1,14 +1,16 @@
 import type {
   DeliveryMethod,
   FulfillmentProductCategory,
+  FulfillmentSourceType,
   FulfillmentStatus,
   OrderFulfillmentRecord,
 } from '@/mocks/orderFulfillments'
 import type { StatusSemantic } from '@/lib/statusColors'
-export type { OrderFulfillmentRecord }
+export type { OrderFulfillmentRecord, FulfillmentSourceType }
 
 export type FilterStatus = 'all' | FulfillmentStatus
 export type FilterDeliveryMethod = 'all' | DeliveryMethod
+export type FilterSourceType = 'all' | FulfillmentSourceType
 
 export type QuickFilterId = 'all' | 'pickup' | 'shipping' | 'missing_pod' | 'today'
 
@@ -39,6 +41,7 @@ export interface AdvancedFulfillmentFilterState {
   deliveryMethods: DeliveryMethod[]
   carriers: string[]
   categories: FulfillmentProductCategory[]
+  sourceTypes: FulfillmentSourceType[]
 }
 
 export interface FulfillmentStatusTileConfig {

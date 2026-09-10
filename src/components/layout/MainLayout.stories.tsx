@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { expect } from 'storybook/test'
 import { MainLayout } from './MainLayout'
-import { DashboardScreen } from '@/components/screens/DashboardScreen'
 import { useUIStore } from '@/stores/useUIStore'
 
 const meta = {
@@ -30,13 +29,15 @@ export const DashboardShell: Story = {
     useUIStore.setState({ sidebarOpen: true })
     return (
       <MainLayout>
-        <DashboardScreen />
+        <div className="p-6">
+          <h1 className="text-xl font-semibold">Workspace</h1>
+        </div>
       </MainLayout>
     )
   },
   play: async ({ canvas }) => {
     await expect(canvas.getAllByRole('banner')[0]).toBeVisible()
-    await expect(canvas.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'Workspace' })).toBeVisible()
   },
 }
 
@@ -45,7 +46,9 @@ export const CollapsedSidebar: Story = {
     useUIStore.setState({ sidebarOpen: false })
     return (
       <MainLayout>
-        <DashboardScreen />
+        <div className="p-6">
+          <h1 className="text-xl font-semibold">Workspace</h1>
+        </div>
       </MainLayout>
     )
   },

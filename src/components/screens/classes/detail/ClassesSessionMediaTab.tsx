@@ -16,6 +16,8 @@ import {
   DEFAULT_ROSTER_STUDENTS,
   SessionMediaItem,
   SessionMediaTeacher,
+  isDateInRange,
+  formatDateToDisplay,
 } from './media/classesSessionMediaTypes'
 import { ClassesSessionMediaCard } from './media/ClassesSessionMediaCard'
 import { ClassesSessionMediaToolbar } from './media/ClassesSessionMediaToolbar'
@@ -320,12 +322,17 @@ export function ClassesSessionMediaTab({
       }
 
       if (dateFilterPreset === '7days') {
-        if (item.sessionNumber < 4) return false
+        if (customStartDate && customEndDate) {
+          if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
+        } else if (item.sessionNumber < 4) {
+          return false
+        }
       } else if (dateFilterPreset === '30days' || dateFilterPreset === 'this_month') {
-        return true
+        if (customStartDate && customEndDate) {
+          if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
+        }
       } else if (dateFilterPreset === 'custom') {
-        if (customStartDate && item.sessionDate < customStartDate) return false
-        if (customEndDate && item.sessionDate > customEndDate) return false
+        if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
       }
 
       return true
@@ -345,9 +352,11 @@ export function ClassesSessionMediaTab({
     if (dateFilterPreset === '30days') return '30 ngày qua'
     if (dateFilterPreset === 'this_month') return 'Tháng 5/2026'
     if (dateFilterPreset === 'custom') {
-      if (customStartDate && customEndDate) return `${customStartDate} -> ${customEndDate}`
-      if (customStartDate) return `Từ ${customStartDate}`
-      if (customEndDate) return `Đến ${customEndDate}`
+      if (customStartDate && customEndDate) {
+        return `${formatDateToDisplay(customStartDate)} – ${formatDateToDisplay(customEndDate)}`
+      }
+      if (customStartDate) return `Từ ${formatDateToDisplay(customStartDate)}`
+      if (customEndDate) return `Đến ${formatDateToDisplay(customEndDate)}`
       return 'Tùy chọn ngày'
     }
     return 'Khoảng thời gian'

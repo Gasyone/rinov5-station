@@ -1,10 +1,9 @@
 'use client'
 
-import { Eye, Copy, Check, ExternalLink, FileText, School, GraduationCap, Calendar, UserPlus, Plus, User } from 'lucide-react'
+import { Eye, Copy, Check, FileText, Calendar, UserPlus, Plus, User, ArrowLeftRight, ExternalLink, School, GraduationCap } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
-import { ClassRecord } from '@/mocks/classRecords'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -24,12 +23,17 @@ import {
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { ClassesDetailDialog } from '@/components/screens/classes/detail/ClassesDetailDialog'
-import { maskPhoneNumber, formatAgeAndBirthYear, getInitialLevel, getLeadSubStatusLabel, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateShort, formatDateTimeWithDayOfWeek, getClassRecord } from './crmLeadsHelpers'
+import { maskPhoneNumber, formatAgeAndBirthYear, getInitialLevel, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateTimeWithDayOfWeek, formatOrderDate } from './crmLeadsHelpers'
 import { SOURCE_LABEL_MAP, STATUS_LABEL_MAP } from './crmLeadsTypes'
 import { CrmLeadsCareHistoryPopover } from './CrmLeadsCareHistoryPopover'
 import { StaffSelect } from './CrmCustomerCreateSearchSelect'
 import { STAFF_LIST, StaffOption } from './crmCustomerCreateTypes'
+
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  draft: 'Chưa thanh toán',
+  pending_payment: 'Chờ TT',
+  paid: 'Đã thanh toán',
+}
 
 interface CrmLeadsTableProps {
   viewScope?: 'my' | 'all'
@@ -64,18 +68,6 @@ export function CrmLeadsTable({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [assignments, setAssignments] = useState<Record<string, string>>({})
 
-  // State quản lý Modal Chi tiết Lớp học có sẵn
-  const [selectedClassRecord, setSelectedClassRecord] = useState<ClassRecord | null>(null)
-  const [isClassDetailOpen, setIsClassDetailOpen] = useState<boolean>(false)
-
-  const handleOpenClassDetail = (e: React.MouseEvent, classCode?: string, subject?: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const code = classCode || 'SK-02'
-    const record = getClassRecord(code, subject)
-    setSelectedClassRecord(record)
-    setIsClassDetailOpen(true)
-  }
 
   const startIdx = (currentPage - 1) * pageSize
   const paginatedLeads = leads.slice(startIdx, startIdx + pageSize)
@@ -116,82 +108,6 @@ export function CrmLeadsTable({
     toast.success(`Đã phân bổ lead ${lead.code} (${lead.studentName}) cho ${staffName}`)
   }
 
-  // Render Nút Icon Lịch sử (N) đưa lên Dòng 1
-  const renderHistoryPopoverButton = (lead: Lead, eventCount: number) => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center gap-0.5 text-xs text-primary hover:opacity-80 p-0 bg-transparent border-0 font-mono font-bold cursor-pointer shrink-0 ml-0.5"
-          title="Xem lịch sử đánh giá & học thử"
-        >
-          <FileText className="h-3.5 w-3.5 text-primary" />
-          <span>({eventCount})</span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 p-3 shadow-lg z-50">
-        <div className="text-xs font-bold text-foreground border-b pb-1.5 mb-2 flex items-center justify-between">
-          <span>Lịch sử Đánh giá & Trải nghiệm</span>
-          <span className="font-normal text-muted-foreground">({lead.studentName})</span>
-        </div>
-        <div className="space-y-2 text-xs">
-          {/* Mục 1: Đánh giá / Phỏng vấn */}
-          {lead.testStatus && (
-            <div className="p-2 rounded bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 flex flex-col gap-1">
-              <div className="flex items-center justify-between font-semibold text-purple-900 dark:text-purple-300">
-                <span className="flex items-center gap-1">
-                  <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
-                  Đánh giá: {lead.testerTeacherName || 'Thầy Alex'}
-                </span>
-                <Badge variant="outline" className="text-xs py-0 px-1">
-                  {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Hẹn test' : 'Vắng test'}
-                </Badge>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {lead.testResultLevel ? `${lead.testResultLevel} (${lead.testScore})` : `Lịch: ${formatDateShort(lead.testDate)}`}
-              </div>
-              <a
-                href={`/app/booking_test?leadId=${lead.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline mt-0.5"
-              >
-                <ExternalLink className="h-3 w-3" />
-                <span>Phiếu kết quả</span>
-              </a>
-            </div>
-          )}
-
-          {/* Mục 2: Học thử */}
-          {lead.trialStatus && (
-            <div className="p-2 rounded bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex flex-col gap-1">
-              <div className="flex items-center justify-between font-semibold text-sky-900 dark:text-sky-300">
-                <span className="flex items-center gap-1">
-                  <School className="h-3.5 w-3.5 text-sky-600" />
-                  Học thử: {lead.trialClassName || 'SK-02'}
-                </span>
-                <Badge variant="outline" className="text-xs py-0 px-1">
-                  {lead.trialStatus === 'completed' ? 'Đã học thử' : lead.trialStatus === 'scheduled' ? 'Hẹn thử' : 'Vắng thử'}
-                </Badge>
-              </div>
-              <div className="text-xs text-muted-foreground italic line-clamp-1">
-                {lead.trialFeedback || `Ngày học: ${formatDateShort(lead.trialDate)}`}
-              </div>
-              <a
-                href={`/app/trial_class?leadId=${lead.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline mt-0.5"
-              >
-                <ExternalLink className="h-3 w-3" />
-                <span>Phiếu nhận xét</span>
-              </a>
-            </div>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
 
   return (
     <>
@@ -226,7 +142,7 @@ export function CrmLeadsTable({
               {viewScope === 'all' && (
                 <TableHead className="min-w-[180px]">Người phụ trách</TableHead>
               )}
-              <TableHead className="min-w-[250px]">Đơn hàng</TableHead>
+              <TableHead className="min-w-[160px]">Đơn hàng</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -275,15 +191,24 @@ export function CrmLeadsTable({
                         <span className="font-semibold text-foreground text-sm">
                           {lead.studentName}
                         </span>
+                        {lead.isReturningLead && (
+                          <Badge
+                            variant="outline"
+                            className="h-4.5 px-1.5 text-[10px] font-semibold bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 shadow-none"
+                            title={lead.returningReason || 'Lead quay lại'}
+                          >
+                            Quay lại
+                          </Badge>
+                        )}
                         <span className="text-muted-foreground/40">•</span>
                         <span className="text-xs text-muted-foreground">
                           {SOURCE_LABEL_MAP[lead.source] ?? lead.source}
                         </span>
                       </div>
 
-                      {/* Dòng 2: Tên Phụ huynh, Sđt, có copy */}
+                      {/* Dòng 2: Tên Phụ huynh, Sđt */}
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-                        <span className="font-medium text-foreground/85">
+                        <span className="font-normal text-foreground/85">
                           {lead.parentName}
                         </span>
                         {lead.parentRole && (
@@ -295,28 +220,27 @@ export function CrmLeadsTable({
                         <span className="font-mono">
                           {maskPhoneNumber(lead.phone)}
                         </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                          title="Sao chép số điện thoại đầy đủ"
-                          onClick={(e) => handleCopyPhone(e, lead.phone, lead.id)}
-                        >
-                          {copiedId === lead.id ? (
-                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
                       </div>
                     </div>
 
-                    {/* Icons thao tác xem chi tiết & xem hồ sơ contact - Hiển thị khi hover */}
+                    {/* Icons thao tác sao chép SĐT, xem hồ sơ contact & xem chi tiết - Hiển thị khi hover */}
                     <div
                       className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-1 bg-background/90 backdrop-blur-xs p-0.5 rounded-lg border border-border/60 shadow-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md cursor-pointer"
+                        onClick={(e) => handleCopyPhone(e, lead.phone, lead.id)}
+                        title="Sao chép số điện thoại đầy đủ"
+                      >
+                        {copiedId === lead.id ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -341,7 +265,7 @@ export function CrmLeadsTable({
                   {/* Cột 2: Khóa học đăng ký & Nhóm sản phẩm */}
                   <TableCell>
                     <div className="flex flex-col gap-0.5 max-w-[200px]">
-                      <div className="font-medium text-foreground text-xs truncate">
+                      <div className="font-normal text-foreground text-xs truncate">
                         {lead.targetSubject}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
@@ -353,7 +277,7 @@ export function CrmLeadsTable({
                   {/* Cột 3: Tuổi & Trình độ ban đầu khi tạo test */}
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
-                      <div className="text-xs font-medium text-foreground">
+                      <div className="text-xs font-normal text-foreground">
                         {formatAgeAndBirthYear(lead.studentAge, birthYear)}
                       </div>
                       <div className="text-xs text-muted-foreground font-mono">
@@ -362,7 +286,7 @@ export function CrmLeadsTable({
                     </div>
                   </TableCell>
 
-                  {/* Cột 5: Đánh giá & Trải nghiệm (Sự kiện mới nhất hiển thị chung dòng 1-2 + Icon lịch sử riêng) */}
+                  {/* Cột 5: Đánh giá & Trải nghiệm */}
                   <TableCell>
                     {eventCount === 0 ? (
                       <div className="flex items-center gap-1.5 flex-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -370,130 +294,251 @@ export function CrmLeadsTable({
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="h-6 px-2 text-xs font-medium border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 cursor-pointer shadow-2xs shrink-0"
+                          className="h-6 px-2 text-xs font-normal border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 cursor-pointer shadow-2xs shrink-0"
                           onClick={() => onOpenBookingTest?.(lead)}
                           title="Đặt lịch đánh giá năng lực (ĐK trải nghiệm)"
                         >
-                          <span>ĐK trải nghiệm</span>
+                          <span>+ TN</span>
                         </Button>
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="h-6 px-2 text-xs font-medium border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-2xs shrink-0"
+                          className="h-6 px-2 text-xs font-normal border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 cursor-pointer shadow-2xs shrink-0"
                           onClick={() => onOpenTrialClass?.(lead)}
                           title="Đăng ký ghép lớp học thử (ĐK học thử)"
                         >
-                          <span>ĐK học thử</span>
+                          <span>+ HT</span>
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-0.5 max-w-[240px]">
-                        {hasTrial ? (
-                          <>
-                            {/* Dòng 1 Học thử: "Học thử:" + Mã lớp + Icon Lịch sử */}
-                            <div className="flex items-center gap-1.5 text-xs text-foreground font-medium flex-nowrap">
-                              <span className="text-muted-foreground font-normal shrink-0">Học thử:</span>
-                              <button
-                                type="button"
-                                className="font-medium text-primary hover:underline cursor-pointer bg-transparent p-0 border-0 truncate"
-                                onClick={(e) => handleOpenClassDetail(e, lead.trialClassName, lead.targetSubject)}
-                                title="Bấm để mở chi tiết Lớp học"
-                              >
-                                {lead.trialClassName || 'SK-02'}
-                              </button>
-                              {eventCount > 1 && renderHistoryPopoverButton(lead, eventCount)}
+                      (() => {
+                        // Xác định sự kiện chính (chỉ hiện Test hoặc Học thử trong 1 thời điểm)
+                        const primary = (() => {
+                          if (hasTrial && !hasTest) {
+                            return {
+                              type: 'HT' as const,
+                              label: lead.trialStatus === 'completed'
+                                ? `HT: Đã học (${lead.trialClassName || 'SK-02'})`
+                                : lead.trialStatus === 'scheduled'
+                                ? `HT: Hẹn thử (${lead.trialClassName || 'SK-02'})`
+                                : `HT: Vắng thử (${lead.trialClassName || 'SK-02'})`,
+                              date: lead.trialDate,
+                              time: lead.trialTime,
+                              url: `/app/trial_class?leadId=${lead.id}`,
+                              colorClass: 'text-sky-700 dark:text-sky-300',
+                            }
+                          }
+                          if (hasTest && !hasTrial) {
+                            return {
+                              type: 'TN' as const,
+                              label: lead.testStatus === 'completed'
+                                ? `TN: Đã test${lead.testScore ? ` (${lead.testScore})` : ''}`
+                                : lead.testStatus === 'scheduled'
+                                ? 'TN: Hẹn test'
+                                : 'TN: Vắng test',
+                              date: lead.testDate,
+                              time: lead.testTime,
+                              url: `/app/booking_test?leadId=${lead.id}`,
+                              colorClass: 'text-purple-700 dark:text-purple-300',
+                            }
+                          }
+                          // Cả 2 đều có: ưu tiên sự kiện đang hẹn (scheduled)
+                          if (lead.trialStatus === 'scheduled' && lead.testStatus !== 'scheduled') {
+                            return {
+                              type: 'HT' as const,
+                              label: `HT: Hẹn thử (${lead.trialClassName || 'SK-02'})`,
+                              date: lead.trialDate,
+                              time: lead.trialTime,
+                              url: `/app/trial_class?leadId=${lead.id}`,
+                              colorClass: 'text-sky-700 dark:text-sky-300',
+                            }
+                          }
+                          if (lead.testStatus === 'scheduled' && lead.trialStatus !== 'scheduled') {
+                            return {
+                              type: 'TN' as const,
+                              label: 'TN: Hẹn test',
+                              date: lead.testDate,
+                              time: lead.testTime,
+                              url: `/app/booking_test?leadId=${lead.id}`,
+                              colorClass: 'text-purple-700 dark:text-purple-300',
+                            }
+                          }
+                          // Mặc định cả 2 đều completed hoặc no_show: lấy HT (sự kiện học thử gần nhất)
+                          return {
+                            type: 'HT' as const,
+                            label: `HT: Đã học (${lead.trialClassName || 'SK-02'})`,
+                            date: lead.trialDate,
+                            time: lead.trialTime,
+                            url: `/app/trial_class?leadId=${lead.id}`,
+                            colorClass: 'text-sky-700 dark:text-sky-300',
+                          }
+                        })()
+
+                        const hasMultiple = hasTest && hasTrial
+
+                        return (
+                          <div className="flex flex-col gap-0.5 max-w-[240px]">
+                            {/* Dòng 1: Chỉ hiện Test hoặc Học thử + Icon 1+ nếu có thêm sự kiện */}
+                            <div className="flex items-center gap-1.5 text-xs text-foreground font-normal">
+                              <span className={cn('truncate', primary.colorClass)}>
+                                {primary.label}
+                              </span>
+
+                              {hasMultiple && (
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[10px] font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer shrink-0 transition-colors"
+                                      title="Có thêm 1 sự kiện đánh giá/học thử - Bấm để xem"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <FileText className="h-3 w-3" />
+                                      <span>+1</span>
+                                    </button>
+                                  </PopoverTrigger>
+                                  <PopoverContent align="start" className="w-80 p-3 shadow-lg z-50 text-xs">
+                                    <div className="font-semibold text-foreground border-b pb-1.5 mb-2 flex items-center justify-between">
+                                      <span>Sự kiện Đánh giá & Học thử</span>
+                                      <span className="font-normal text-muted-foreground">({lead.studentName})</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                      {/* Mục TN */}
+                                      {lead.testStatus && (
+                                        <div className="p-2 rounded bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 flex flex-col gap-1">
+                                          <div className="flex items-center justify-between font-normal text-purple-900 dark:text-purple-300">
+                                            <span className="flex items-center gap-1 font-medium">
+                                              <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
+                                              TN: {lead.testerTeacherName || 'Thầy Alex'}
+                                            </span>
+                                            <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
+                                              {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Hẹn test' : 'Vắng test'}
+                                            </Badge>
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {lead.testDate && formatDateTimeWithDayOfWeek(lead.testDate, lead.testTime)}
+                                            {lead.testScore && ` • Điểm: ${lead.testScore}`}
+                                          </div>
+                                          <a
+                                            href={`/app/booking_test?leadId=${lead.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-primary font-normal hover:underline mt-0.5"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            <ExternalLink className="h-3 w-3" />
+                                            <span>Mở phiếu kết quả đánh giá</span>
+                                          </a>
+                                        </div>
+                                      )}
+
+                                      {/* Mục HT */}
+                                      {lead.trialStatus && (
+                                        <div className="p-2 rounded bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex flex-col gap-1">
+                                          <div className="flex items-center justify-between font-normal text-sky-900 dark:text-sky-300">
+                                            <span className="flex items-center gap-1 font-medium">
+                                              <School className="h-3.5 w-3.5 text-sky-600" />
+                                              HT: {lead.trialClassName || 'SK-02'}
+                                            </span>
+                                            <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
+                                              {lead.trialStatus === 'completed' ? 'Đã học' : lead.trialStatus === 'scheduled' ? 'Hẹn thử' : 'Vắng thử'}
+                                            </Badge>
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            {lead.trialDate && formatDateTimeWithDayOfWeek(lead.trialDate, lead.trialTime)}
+                                            {lead.trialFeedback && ` • ${lead.trialFeedback}`}
+                                          </div>
+                                          <a
+                                            href={`/app/trial_class?leadId=${lead.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-normal hover:underline mt-0.5"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            <ExternalLink className="h-3 w-3" />
+                                            <span>Mở phiếu nhận xét học thử</span>
+                                          </a>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              )}
                             </div>
 
-                            {/* Dòng 2 Học thử: Click vào link mở ra tab kết quả (Thứ, Ngày, Giờ) */}
+                            {/* Dòng 2: Ngày giờ (Không còn chữ gần nhất), có link mở tab mới sang kết quả */}
                             <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                              <a
-                                href={`/app/trial_class?leadId=${lead.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono truncate max-w-[200px]"
-                                title="Bấm để mở phiếu nhận xét / kết quả học thử"
-                              >
-                                <ExternalLink className="h-3 w-3 shrink-0" />
-                                <span>{formatDateTimeWithDayOfWeek(lead.trialDate, lead.trialTime)}</span>
-                              </a>
+                              {primary.date ? (
+                                <a
+                                  href={primary.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono font-normal truncate max-w-[220px]"
+                                  title="Bấm để mở phiếu kết quả ở tab mới"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-3 w-3 shrink-0" />
+                                  <span>{formatDateTimeWithDayOfWeek(primary.date, primary.time)}</span>
+                                </a>
+                              ) : (
+                                <span>-</span>
+                              )}
                             </div>
-                          </>
-                        ) : (
-                          <>
-                            {/* Dòng 1 Đánh giá: "Đánh giá:" + Tên Người phụ trách + Icon Lịch sử */}
-                            <div className="flex items-center gap-1.5 text-xs text-foreground font-medium flex-nowrap">
-                              <span className="text-muted-foreground font-normal shrink-0">Đánh giá:</span>
-                              <span className="text-foreground truncate font-medium">{lead.testerTeacherName || 'Thầy Alex'}</span>
-                              {eventCount > 1 && renderHistoryPopoverButton(lead, eventCount)}
-                            </div>
-
-                            {/* Dòng 2 Đánh giá: Click vào link mở ra kết quả (Thứ, Ngày, Giờ) */}
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                              <a
-                                href={`/app/booking_test?leadId=${lead.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono truncate max-w-[200px]"
-                                title="Bấm để mở phiếu kết quả đánh giá năng lực"
-                              >
-                                <ExternalLink className="h-3 w-3 shrink-0" />
-                                <span>{formatDateTimeWithDayOfWeek(lead.testDate, lead.testTime)}</span>
-                              </a>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                          </div>
+                        )
+                      })()
                     )}
                   </TableCell>
 
-                  {/* Cột 6: Lịch sử chăm sóc (Mới - Thiết kế giống màn Tái phí) */}
+                  {/* Cột 6: Lịch sử chăm sóc */}
                   <TableCell className="min-w-[290px]" onClick={(e) => e.stopPropagation()}>
                     {(() => {
                       const { isUncared, inProgress, attemptCount, isRescheduled, rescheduleDate, rescheduleTime, latestLog } = careInfo
 
                       const cellContent = (
                         <div className="flex flex-col gap-1 py-0.5 text-left max-w-[280px] cursor-pointer group/care">
-                          {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span
-                              className={cn(
-                                'text-xs font-normal transition-colors',
-                                isUncared
-                                  ? 'text-muted-foreground select-none'
-                                  : inProgress
-                                  ? 'text-sky-600 dark:text-sky-400 group-hover/care:underline'
-                                  : 'text-emerald-600 dark:text-emerald-400 group-hover/care:underline'
-                              )}
-                              title={isUncared ? undefined : 'Rê chuột hoặc bấm để xem chi tiết Lịch sử chăm sóc'}
-                            >
-                              {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
-                            </span>
-
-                            {/* Lịch hẹn gọi lại / chăm sóc */}
-                            {isRescheduled && rescheduleDate && (
+                          {/* Dòng 1: Hẹn: - nếu null, hoặc hiện ngày nếu có */}
+                          <div className="flex items-center gap-1 text-xs">
+                            {isRescheduled && rescheduleDate ? (
                               <span
-                                className="text-xs font-normal text-violet-600 dark:text-violet-400 flex items-center gap-1 whitespace-nowrap"
+                                className="font-normal text-violet-600 dark:text-violet-400 flex items-center gap-1 whitespace-nowrap"
                                 title="Lịch hẹn gọi lại / chăm sóc"
                               >
                                 <Calendar className="h-3.5 w-3.5 shrink-0 text-violet-500 dark:text-violet-400" />
-                                <span>Hẹn: {rescheduleDate} {rescheduleTime ? `(${rescheduleTime})` : ''}</span>
+                                <span>Hẹn: {rescheduleDate}{rescheduleTime ? ` (${rescheduleTime})` : ''}</span>
+                              </span>
+                            ) : (
+                              <span className="font-normal text-muted-foreground whitespace-nowrap">
+                                Hẹn: -
                               </span>
                             )}
                           </div>
 
-                          {/* Hàng 2: Nội dung ghi chú chăm sóc gần nhất (1 dòng rút gọn) */}
+                          {/* Dòng 2: (n) trước Ngày + nội dung ghi chú chăm sóc gần nhất */}
                           {isUncared ? (
-                            <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
-                              Cần liên hệ trao đổi với phụ huynh ngay
+                            <div className="text-xs italic text-amber-600 dark:text-amber-400 font-normal truncate">
+                              <span>(0) </span>
+                              <span>Cần liên hệ trao đổi với phụ huynh ngay</span>
                             </div>
                           ) : (
                             latestLog && (
                               <div
-                                className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
-                                title={`Ghi chú (${latestLog.date}): ${latestLog.note}`}
+                                className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors font-normal"
+                                title={`(${attemptCount}) Ghi chú (${latestLog.date}): ${latestLog.note}`}
                               >
-                                <span className="font-mono text-foreground/70">{latestLog.date}:</span> {latestLog.note}
+                                <span
+                                  className={cn(
+                                    'font-normal mr-1 transition-colors',
+                                    inProgress
+                                      ? 'text-sky-600 dark:text-sky-400 group-hover/care:underline'
+                                      : 'text-emerald-600 dark:text-emerald-400 group-hover/care:underline'
+                                  )}
+                                >
+                                  ({attemptCount})
+                                </span>
+                                <span className="font-mono text-foreground/70">{latestLog.date}:</span>{' '}
+                                <span>{latestLog.note}</span>
                               </div>
                             )
                           )}
@@ -514,16 +559,11 @@ export function CrmLeadsTable({
                     })()}
                   </TableCell>
 
-                  {/* Cột 7: Trạng thái phễu gộp & Trạng thái phụ */}
-                  <TableCell className="min-w-[150px]">
-                    <div className="flex flex-col gap-1 items-start">
-                      <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
-                        {STATUS_LABEL_MAP[lead.status] ?? lead.status}
-                      </Badge>
-                      <span className="text-xs font-normal text-muted-foreground/80 truncate max-w-[140px]">
-                        {getLeadSubStatusLabel(lead)}
-                      </span>
-                    </div>
+                  {/* Cột 7: Trạng thái */}
+                  <TableCell className="min-w-[140px]">
+                    <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
+                      {STATUS_LABEL_MAP[lead.status] ?? lead.status}
+                    </Badge>
                   </TableCell>
 
                   {/* Cột 8: Người phụ trách (Chỉ hiển thị trên viewScope 'all', ẩn trên viewScope 'my' vì là Lead của chính họ) */}
@@ -559,9 +599,12 @@ export function CrmLeadsTable({
                               className="flex flex-col gap-0.5 text-left bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer group"
                               title="Bấm để chuyển đổi người phụ trách"
                             >
-                              <span className="text-xs font-normal text-foreground group-hover:text-primary group-hover:underline truncate">
-                                {getCleanStaffName(assignedStaff)}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-normal text-foreground group-hover:text-primary group-hover:underline truncate">
+                                  {getCleanStaffName(assignedStaff)}
+                                </span>
+                                <ArrowLeftRight className="h-3 w-3 text-muted-foreground/60 group-hover:text-primary shrink-0 transition-colors" />
+                              </div>
                               <span
                                 className="text-xs text-muted-foreground font-mono truncate"
                                 title={`Bắt đầu phụ trách: ${staffAssignInfo.label}`}
@@ -576,76 +619,47 @@ export function CrmLeadsTable({
                   )}
 
                   {/* Cột 9: Đơn hàng (Luôn hiển thị ở cuối cùng) */}
-                  <TableCell className="min-w-[250px]">
-                    <div className="flex flex-col gap-1 max-w-[250px]">
+                  <TableCell className="min-w-[160px]">
+                    <div className="flex flex-col gap-1 max-w-[160px]">
                       {lead.orderCode ? (
                         <>
-                          {/* Dòng 1: Gói học & Số tiền (Text thường, không in đậm) */}
-                          <div className="flex items-center gap-1 text-xs font-normal text-foreground truncate">
+                          {/* Dòng 1: Mã Đơn hàng */}
+                          <div className="flex items-center text-xs font-normal text-foreground">
                             <button
                               type="button"
                               onClick={() => onOpenCreateOrder?.(lead)}
-                              className="hover:text-primary hover:underline flex items-center gap-1 font-normal text-foreground truncate text-left cursor-pointer bg-transparent border-0 p-0"
-                              title={`Mở chi tiết & Chỉnh sửa Đơn hàng (${lead.orderCode})`}
-                            >
-                              <FileText className="h-3 w-3 text-primary shrink-0" />
-                              <span className="truncate">{lead.expectedPackage || 'Gói tư vấn'}</span>
-                              {lead.expectedAmount && (
-                                <span className="font-mono text-xs font-normal text-emerald-600 dark:text-emerald-400 shrink-0 ml-1">
-                                  ({lead.expectedAmount})
-                                </span>
-                              )}
-                            </button>
-                          </div>
-
-                          {/* Dòng 2: Mã đơn nháp • Lần thanh toán */}
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-                            <button
-                              type="button"
-                              onClick={() => onOpenCreateOrder?.(lead)}
-                              className="font-mono font-medium text-muted-foreground hover:text-primary hover:underline cursor-pointer bg-transparent border-0 p-0"
-                              title={`Xem chi tiết đơn hàng nháp (${lead.orderCode})`}
+                              className="font-mono text-xs font-normal text-primary hover:underline cursor-pointer bg-transparent border-0 p-0 text-left truncate"
+                              title={`Xem chi tiết đơn hàng (${lead.orderCode})`}
                             >
                               {lead.orderCode}
                             </button>
-                            {lead.paymentTerm && (
-                              <>
-                                <span className="text-muted-foreground/40">•</span>
-                                <span className="font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded border border-emerald-200/60 dark:border-emerald-800/60 text-xs">
-                                  {lead.paymentTerm}
-                                </span>
-                              </>
+                          </div>
+
+                          {/* Dòng 2: Trạng thái đơn hàng + Ngày cập nhật phía sau */}
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                            {lead.orderStatus && (
+                              <Badge className={cn("font-normal text-[11px] py-0.5 px-1.5 leading-none shrink-0", getStatusBadgeClass(lead.orderStatus))}>
+                                {ORDER_STATUS_LABELS[lead.orderStatus] || lead.orderStatus}
+                              </Badge>
                             )}
+                            <span className="font-mono text-[11px] text-muted-foreground font-normal shrink-0">
+                              {formatOrderDate(lead.orderDate || lead.createdAt)}
+                            </span>
                           </div>
                         </>
                       ) : (
-                        <>
-                          {/* Trường hợp chưa có đơn: Nút Tạo đơn */}
-                          <div className="flex items-center gap-1 text-xs">
-                            <button
-                              type="button"
-                              onClick={() => onOpenCreateOrder?.(lead)}
-                              className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                              title="Mở Modal Lên đơn mới cho Lead"
-                            >
-                              <Plus className="h-3.5 w-3.5 text-primary" />
-                              <span>Tạo đơn</span>
-                            </button>
-                          </div>
-
-                          {/* Dòng 2: Gói dự kiến & Lần thanh toán */}
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-                            <span className="truncate">{lead.expectedPackage || 'Chưa chọn gói'}</span>
-                            {lead.paymentTerm && (
-                              <>
-                                <span className="text-muted-foreground/40">•</span>
-                                <span className="text-muted-foreground font-medium">
-                                  {lead.paymentTerm}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </>
+                        /* Trường hợp chưa có đơn: Chỉ để mỗi button Tạo đơn */
+                        <div className="flex items-center gap-1 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => onOpenCreateOrder?.(lead)}
+                            className="inline-flex items-center gap-1 text-xs font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                            title="Mở Modal Lên đơn mới cho Lead"
+                          >
+                            <Plus className="h-3.5 w-3.5 text-primary" />
+                            <span>Tạo đơn</span>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </TableCell>
@@ -655,13 +669,6 @@ export function CrmLeadsTable({
           </TableBody>
         </Table>
       </DataTableFrame>
-
-      {/* Gọi Modal Chi tiết Lớp học sẵn có (ClassesDetailDialog) */}
-      <ClassesDetailDialog
-        cls={selectedClassRecord}
-        open={isClassDetailOpen}
-        onOpenChange={setIsClassDetailOpen}
-      />
     </>
   )
 }

@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   MOCK_PERMISSION_TOPICS,
   MOCK_PERMISSION_ROLES,
 } from '@/mocks/permissions'
 import { ConfirmDialog } from '@/components/shared'
-import { PermissionsTopicGrid } from './PermissionsTopicGrid'
-import { PermissionRoleEditForm } from './PermissionRoleEditForm'
+import { PermissionRoleSidebar } from './PermissionRoleSidebar'
+import { PermissionRoleDetailView } from './PermissionRoleDetailView'
 import { PermissionTopicDialog } from './PermissionTopicDialog'
-import { PermissionsTopicRolesModal } from './PermissionsTopicRolesModal'
 import { createDefaultRolePermissions } from './permissionsHelpers'
 import type {
   PermissionTopic,
@@ -29,85 +29,44 @@ export function PermissionsScreen() {
   const actionParam = searchParams?.get('action')
   const topicIdParam = searchParams?.get('topicId')
 
-  const initialRole = roleIdParam ? roles.find((r) => r.id === roleIdParam) || null : null
-  const [selectedRole, setSelectedRole] = useState<PermissionRole | null>(initialRole)
-  const [targetTopicId, setTargetTopicId] = useState<string | undefined>(
-    initialRole?.topicId || (actionParam === 'create' ? topicIdParam || topics[0]?.id : undefined)
-  )
-  const [viewMode, setViewMode] = useState<'grid' | 'edit'>(
-    initialRole || actionParam === 'create' ? 'edit' : 'grid'
-  )
-  const [prevParams, setPrevParams] = useState({ roleIdParam, actionParam, topicIdParam })
+  const isCreating = actionParam === 'create'
 
-  // Đồng bộ viewMode và selectedRole theo URL Query Params khi params thay đổi
-  if (
-    prevParams.roleIdParam !== roleIdParam ||
-    prevParams.actionParam !== actionParam ||
-    prevParams.topicIdParam !== topicIdParam
-  ) {
-    setPrevParams({ roleIdParam, actionParam, topicIdParam })
-    if (roleIdParam) {
-      const foundRole = roles.find((r) => r.id === roleIdParam)
-      if (foundRole) {
-        setSelectedRole(foundRole)
-        setTargetTopicId(foundRole.topicId)
-        setViewMode('edit')
-      }
-    } else if (actionParam === 'create') {
-      setSelectedRole(null)
-      setTargetTopicId(topicIdParam || topics[0]?.id)
-      setViewMode('edit')
-    } else {
-      setSelectedRole(null)
-      setViewMode('grid')
-    }
-  }
+  // URL là single source of truth cho role được chọn, mặc định role đầu tiên nếu không có param
+  const selectedRoleId = isCreating
+    ? null
+    : roleIdParam || (roles[0] ? roles[0].id : null)
+
+  const selectedRole = roles.find((r) => r.id === selectedRoleId) || null
 
   // Topic Dialog State
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false)
   const [editingTopic, setEditingTopic] = useState<PermissionTopic | null>(null)
 
-  // Roles List Modal State (When clicking "Xem thêm" in topic card)
-  const [isRolesModalOpen, setIsRolesModalOpen] = useState(false)
-  const [selectedTopicForRolesModal, setSelectedTopicForRolesModal] = useState<PermissionTopic | null>(null)
+  // Confirm Delete Topic State
+  const [deleteTopicConfirmOpen, setDeleteTopicConfirmOpen] = useState(false)
+  const [topicToDelete, setTopicToDelete] = useState<PermissionTopic | null>(null)
 
-  // Confirm Delete Dialog State
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<{
-    type: 'topic' | 'role'
-    topic?: PermissionTopic
-    role?: PermissionRole
-  } | null>(null)
-
-  // 1. Navigation handlers (Cập nhật đường dẫn tương ứng)
+  // 1. Navigation handlers
   const handleSelectRole = (role: PermissionRole) => {
-    setSelectedRole(role)
-    setTargetTopicId(role.topicId)
-    setViewMode('edit')
     router.push(`/app/permissions?roleId=${encodeURIComponent(role.id)}`)
   }
 
-  const handleCreateNewRole = (topicId?: string) => {
-    setSelectedRole(null)
-    const target = topicId || topics[0]?.id
-    setTargetTopicId(target)
-    setViewMode('edit')
-    router.push(`/app/permissions?action=create${target ? `&topicId=${encodeURIComponent(target)}` : ''}`)
+  const handleCreateNewRole = (topicId: string) => {
+    router.push(`/app/permissions?action=create&topicId=${encodeURIComponent(topicId)}`)
   }
 
-  const handleCancelEdit = () => {
-    setSelectedRole(null)
-    setViewMode('grid')
-    router.push('/app/permissions')
+  const handleCancel = () => {
+    if (isCreating) {
+      const fallbackId = roles[0]?.id || null
+      if (fallbackId) {
+        router.push(`/app/permissions?roleId=${encodeURIComponent(fallbackId)}`)
+      } else {
+        router.push('/app/permissions')
+      }
+    }
   }
 
-  // 2. Open Roles Modal handler
-  const handleOpenRolesModal = (topic: PermissionTopic) => {
-    setSelectedTopicForRolesModal(topic)
-    setIsRolesModalOpen(true)
-  }
-
-  // 3. Save Role handler
+  // 2. Save Role handler
   const handleSaveRole = (roleData: {
     id?: string
     name: string
@@ -115,9 +74,10 @@ export function PermissionsScreen() {
     code: string
     description: string
     permissions: RolePermissionMatrixItem[]
+    userCount: number
   }) => {
     if (roleData.id) {
-      // Update existing role
+      // Cập nhật role hiện tại
       setRoles((prev) =>
         prev.map((r) =>
           r.id === roleData.id
@@ -128,32 +88,71 @@ export function PermissionsScreen() {
                 code: roleData.code,
                 description: roleData.description,
                 permissions: roleData.permissions,
+                userCount: roleData.userCount,
                 updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
               }
             : r
         )
       )
+      toast.success(`Đã cập nhật nhóm quyền "${roleData.name}"`)
     } else {
-      // Create new role
+      // Tạo mới role
+      const newRoleId = 'role_' + Date.now()
       const newRole: PermissionRole = {
-        id: 'role_' + Date.now(),
+        id: newRoleId,
         name: roleData.name,
         topicId: roleData.topicId,
         code: roleData.code,
         description: roleData.description,
-        userCount: 0,
+        userCount: roleData.userCount || 0,
         updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
         permissions: roleData.permissions || createDefaultRolePermissions(),
       }
       setRoles((prev) => [newRole, ...prev])
+      router.push(`/app/permissions?roleId=${encodeURIComponent(newRoleId)}`)
+      toast.success(`Đã tạo mới nhóm quyền "${roleData.name}"`)
     }
-
-    setViewMode('grid')
-    setSelectedRole(null)
-    router.push('/app/permissions')
   }
 
-  // 4. Topic management handlers
+  // 3. Delete Role handler
+  const handleDeleteRole = (role: PermissionRole) => {
+    setRoles((prev) => {
+      const remaining = prev.filter((r) => r.id !== role.id)
+      if (selectedRoleId === role.id) {
+        const nextSelected = remaining[0]?.id || null
+        if (nextSelected) {
+          router.push(`/app/permissions?roleId=${encodeURIComponent(nextSelected)}`)
+        } else {
+          router.push('/app/permissions')
+        }
+      }
+      return remaining
+    })
+    toast.success(`Đã xóa nhóm quyền "${role.name}"`)
+  }
+
+  // 4. Duplicate Role handler
+  const handleDuplicateRole = (role: PermissionRole) => {
+    const newRoleId = 'role_' + Date.now()
+    const duplicatedRole: PermissionRole = {
+      ...role,
+      id: newRoleId,
+      name: `${role.name} (Bản sao)`,
+      code: `${role.code}_COPY`,
+      userCount: 0,
+      updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      permissions: role.permissions.map((p) => ({
+        ...p,
+        actions: { ...p.actions },
+      })),
+    }
+
+    setRoles((prev) => [duplicatedRole, ...prev])
+    router.push(`/app/permissions?roleId=${encodeURIComponent(newRoleId)}`)
+    toast.success(`Đã nhân bản nhóm quyền thành "${duplicatedRole.name}"`)
+  }
+
+  // 5. Topic management handlers
   const handleOpenCreateTopic = () => {
     setEditingTopic(null)
     setIsTopicDialogOpen(true)
@@ -173,6 +172,7 @@ export function PermissionsScreen() {
             : t
         )
       )
+      toast.success(`Đã cập nhật Topic "${topicData.name}"`)
     } else {
       const newTopic: PermissionTopic = {
         id: 'topic_' + Date.now(),
@@ -181,65 +181,57 @@ export function PermissionsScreen() {
         description: topicData.description,
       }
       setTopics((prev) => [...prev, newTopic])
+      toast.success(`Đã tạo Topic mới "${topicData.name}"`)
     }
   }
 
-  // 5. Delete handlers with ConfirmDialog
   const handleDeleteTopic = (topic: PermissionTopic) => {
-    setDeleteTarget({ type: 'topic', topic })
-    setDeleteConfirmOpen(true)
+    setTopicToDelete(topic)
+    setDeleteTopicConfirmOpen(true)
   }
 
-  const handleDeleteRole = (role: PermissionRole) => {
-    setDeleteTarget({ type: 'role', role })
-    setDeleteConfirmOpen(true)
+  const handleConfirmDeleteTopic = () => {
+    if (!topicToDelete) return
+    const topicId = topicToDelete.id
+    setTopics((prev) => prev.filter((t) => t.id !== topicId))
+    setRoles((prev) => prev.filter((r) => r.topicId !== topicId))
+    toast.success(`Đã xóa Topic "${topicToDelete.name}" và các quyền trực thuộc`)
+    setDeleteTopicConfirmOpen(false)
+    setTopicToDelete(null)
   }
-
-  const handleConfirmDelete = () => {
-    if (!deleteTarget) return
-
-    if (deleteTarget.type === 'topic' && deleteTarget.topic) {
-      const topicId = deleteTarget.topic.id
-      setTopics((prev) => prev.filter((t) => t.id !== topicId))
-      setRoles((prev) => prev.filter((r) => r.topicId !== topicId))
-    } else if (deleteTarget.type === 'role' && deleteTarget.role) {
-      const roleId = deleteTarget.role.id
-      setRoles((prev) => prev.filter((r) => r.id !== roleId))
-    }
-
-    setDeleteConfirmOpen(false)
-    setDeleteTarget(null)
-  }
-
-  const modalRoles = selectedTopicForRolesModal
-    ? roles.filter((r) => r.topicId === selectedTopicForRolesModal.id)
-    : []
 
   return (
-    <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-background">
-      {viewMode === 'grid' ? (
-        <PermissionsTopicGrid
-          topics={topics}
-          roles={roles}
-          onSelectRole={handleSelectRole}
-          onCreateNewRole={handleCreateNewRole}
-          onOpenCreateTopic={handleOpenCreateTopic}
-          onOpenRolesModal={handleOpenRolesModal}
-          onEditTopic={handleEditTopic}
-          onDeleteTopic={handleDeleteTopic}
-          onDeleteRole={handleDeleteRole}
-        />
-      ) : (
-        <PermissionRoleEditForm
-          role={selectedRole}
-          defaultTopicId={targetTopicId}
-          topics={topics}
-          onSave={handleSaveRole}
-          onCancel={handleCancelEdit}
-        />
-      )}
+    <div className="flex h-full w-full min-h-0 overflow-hidden bg-background">
+      {/* CỘT TRÁI (Master Sidebar): Danh sách nhóm quyền theo Topic */}
+      <PermissionRoleSidebar
+        topics={topics}
+        roles={roles}
+        selectedRoleId={selectedRoleId}
+        isCreating={isCreating}
+        creatingTopicId={topicIdParam || undefined}
+        onSelectRole={handleSelectRole}
+        onCreateNewRole={handleCreateNewRole}
+        onOpenCreateTopic={handleOpenCreateTopic}
+        onEditTopic={handleEditTopic}
+        onDeleteTopic={handleDeleteTopic}
+        onDeleteRole={handleDeleteRole}
+        onDuplicateRole={handleDuplicateRole}
+      />
 
-      {/* Modal Thêm/Sửa Topic */}
+      {/* CỘT PHẢI (Detail Workspace): Thông tin chi tiết, Ma trận quyền, Nhân sự & Lịch sử */}
+      <PermissionRoleDetailView
+        key={isCreating ? 'creating' : selectedRoleId || 'empty'}
+        role={selectedRole}
+        isCreating={isCreating}
+        topics={topics}
+        defaultTopicId={topicIdParam || topics[0]?.id}
+        onSave={handleSaveRole}
+        onCancel={handleCancel}
+        onDeleteRole={handleDeleteRole}
+        onDuplicateRole={handleDuplicateRole}
+      />
+
+      {/* Dialog Tạo/Sửa Topic */}
       <PermissionTopicDialog
         open={isTopicDialogOpen}
         onOpenChange={setIsTopicDialogOpen}
@@ -247,37 +239,15 @@ export function PermissionsScreen() {
         onSave={handleSaveTopic}
       />
 
-      {/* Modal Xem toàn bộ danh sách Nhóm quyền trong 1 Topic khi bấm Xem thêm */}
-      <PermissionsTopicRolesModal
-        open={isRolesModalOpen}
-        onOpenChange={setIsRolesModalOpen}
-        topic={selectedTopicForRolesModal}
-        roles={modalRoles}
-        onSelectRole={handleSelectRole}
-        onAddNewRole={(tId) => {
-          setIsRolesModalOpen(false)
-          handleCreateNewRole(tId)
-        }}
-        onDeleteRole={handleDeleteRole}
-      />
-
-      {/* Dialog Xác nhận Xóa */}
+      {/* Confirm Dialog Xóa Topic */}
       <ConfirmDialog
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
-        title={
-          deleteTarget?.type === 'topic'
-            ? `Xác nhận xóa Topic "${deleteTarget.topic?.name}"?`
-            : `Xác nhận xóa Nhóm quyền "${deleteTarget?.role?.name}"?`
-        }
-        description={
-          deleteTarget?.type === 'topic'
-            ? 'Hành động này sẽ xóa vĩnh viễn Topic cùng toàn bộ các Nhóm quyền trực thuộc. Bạn có chắc chắn muốn tiếp tục?'
-            : 'Hành động này sẽ xóa vĩnh viễn Nhóm quyền khỏi hệ thống. Bạn có chắc chắn muốn tiếp tục?'
-        }
+        open={deleteTopicConfirmOpen}
+        onOpenChange={setDeleteTopicConfirmOpen}
+        title={`Xác nhận xóa Topic "${topicToDelete?.name}"?`}
+        description="Hành động này sẽ xóa vĩnh viễn Topic cùng toàn bộ các Nhóm quyền trực thuộc. Bạn có chắc chắn muốn tiếp tục?"
         confirmLabel="Xác nhận xóa"
         variant="destructive"
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleConfirmDeleteTopic}
       />
     </div>
   )

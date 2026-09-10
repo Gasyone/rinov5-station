@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, type FormEvent } from 'react'
+import { useState, useEffect, useMemo, type FormEvent } from 'react'
 import {
   X,
   User,
@@ -25,6 +25,7 @@ interface CrmCustomerCreateDialogProps {
   onOpenChange: (open: boolean) => void
   onSubmit?: (newLeads: Lead[]) => void
   initialLead?: Lead | null
+  initialAction?: 'view' | 'add_parent' | 'add_child'
   totalOrdersCount?: number
   totalOrdersAmount?: string
 }
@@ -34,17 +35,18 @@ export function CrmCustomerCreateDialog({
   onOpenChange,
   onSubmit,
   initialLead,
+  initialAction = 'view',
   totalOrdersCount = 0,
   totalOrdersAmount = '0đ',
 }: CrmCustomerCreateDialogProps) {
-  // Cột 1: Danh sách Phụ huynh & Địa chỉ (Khởi tạo theo initialLead nếu có)
-  const [parents, setParents] = useState<ParentItem[]>(() => [
+  // Cột 1: Danh sách Phụ huynh & Địa chỉ
+  const [parents, setParents] = useState<ParentItem[]>([
     {
-      id: initialLead ? `parent-${initialLead.id}` : 'parent-1',
-      name: initialLead?.parentName || '',
-      phone: initialLead?.phone || '',
-      email: initialLead?.email || '',
-      role: initialLead?.parentRole || 'Mẹ',
+      id: 'parent-1',
+      name: '',
+      phone: '',
+      email: '',
+      role: 'Mẹ',
       secondaryPhone: '',
       isCollapsed: false,
     },
@@ -52,20 +54,20 @@ export function CrmCustomerCreateDialog({
   const [province, setProvince] = useState('TP. Hồ Chí Minh')
   const [district, setDistrict] = useState('Quận 1')
   const [ward, setWard] = useState('Phường Bến Nghé')
-  const [addressDetail, setAddressDetail] = useState(() => initialLead?.address || '')
+  const [addressDetail, setAddressDetail] = useState('')
   const [mapCoordinates, setMapCoordinates] = useState('')
 
   // Cột 2: Danh sách Học viên (Con)
-  const [children, setChildren] = useState<ChildItem[]>(() => [
+  const [children, setChildren] = useState<ChildItem[]>([
     {
-      id: initialLead ? `child-${initialLead.id}` : 'child-1',
-      name: initialLead?.studentName || '',
+      id: 'child-1',
+      name: '',
       currentSchool: '',
-      birthYear: initialLead?.birthYear ? String(initialLead.birthYear) : '',
-      age: initialLead?.studentAge ? String(initialLead.studentAge) : '',
+      birthYear: '',
+      age: '',
       academicPerformance: '',
       phone: '',
-      course: initialLead?.targetSubject || '',
+      course: '',
       vuihocAccount: '',
       isCollapsed: false,
     },
@@ -74,57 +76,166 @@ export function CrmCustomerCreateDialog({
   // Cột 3: Định vị & Phân bổ
   const [customerType, setCustomerType] = useState('Tự học')
   const [industryGroup, setIndustryGroup] = useState('Tiểu học')
-  const [selectedSources, setSelectedSources] = useState<string[]>(() =>
-    initialLead?.source ? [initialLead.source] : ['Web Rinoedu']
-  )
-  const [selectedStaff, setSelectedStaff] = useState<string[]>(() =>
-    initialLead?.assignedTo ? [initialLead.assignedTo] : ['Trần Thị Mai']
-  )
+  const [selectedSources, setSelectedSources] = useState<string[]>(['Web Rinoedu'])
+  const [selectedStaff, setSelectedStaff] = useState<string[]>(['Trần Thị Mai'])
   const [marketingStaff, setMarketingStaff] = useState('Nguyễn Thị Lan (Marketing)')
   const [selectedProductGroups, setSelectedProductGroups] = useState<string[]>(['Tiếng Anh Thiếu Nhi'])
-  const [customerCode, setCustomerCode] = useState(() => initialLead?.code || '')
-
+  const [customerCode, setCustomerCode] = useState('')
   const [validationError, setValidationError] = useState('')
+
+  // Đồng bộ hóa State khi Dialog mở ra (Hỗ trợ mở mới, xem chi tiết, thêm phụ huynh, thêm con)
+  useEffect(() => {
+    if (!open) return
+
+    if (initialLead) {
+      // 1. Phụ huynh: Khởi tạo từ initialLead
+      const loadedParents: ParentItem[] = [
+        {
+          id: `parent-${initialLead.id}`,
+          name: initialLead.parentName || '',
+          phone: initialLead.phone || '',
+          email: initialLead.email || '',
+          role: initialLead.parentRole || 'Mẹ',
+          secondaryPhone: '',
+          // Theo yêu cầu: Phụ huynh thường đóng, hoặc khi thêm mới thì đóng phụ huynh trước đó
+          isCollapsed: initialAction === 'add_parent' ? true : Boolean(initialLead.parentName),
+        },
+      ]
+
+      if (initialLead.otherParents && initialLead.otherParents.length > 0) {
+        initialLead.otherParents.forEach((op, idx) => {
+          loadedParents.push({
+            id: `parent-other-${idx}-${initialLead.id}`,
+            name: op.name || '',
+            phone: op.phone || '',
+            email: op.email || '',
+            role: op.role || 'Bố',
+            secondaryPhone: '',
+            isCollapsed: true,
+          })
+        })
+      }
+
+      // Nếu action là add_parent: Đóng phụ huynh trước đó lại, mở ra phụ huynh mới
+      if (initialAction === 'add_parent') {
+        loadedParents.forEach((p) => {
+          p.isCollapsed = true
+        })
+        loadedParents.push({
+          id: `parent-new-${Date.now()}`,
+          name: '',
+          phone: '',
+          email: '',
+          role: 'Bố',
+          secondaryPhone: '',
+          isCollapsed: false,
+        })
+      }
+
+      setParents(loadedParents)
+
+      // 2. Học viên: Khởi tạo từ initialLead
+      const loadedChildren: ChildItem[] = [
+        {
+          id: `child-${initialLead.id}`,
+          name: initialLead.studentName || '',
+          currentSchool: initialLead.schoolName || '',
+          birthYear: initialLead.birthYear ? String(initialLead.birthYear) : '',
+          age: initialLead.studentAge ? String(initialLead.studentAge) : '',
+          academicPerformance: initialLead.academicAbility || '',
+          phone: initialLead.studentPhone || '',
+          course: initialLead.targetSubject || '',
+          vuihocAccount: initialLead.vuihocAccount || '',
+          // Nếu action là add_child: Đóng bé trước đó lại, mở ra bé mới
+          isCollapsed: initialAction === 'add_child',
+        },
+      ]
+
+      // Nếu action là add_child: Đóng các bé trước đó lại, mở ra bé mới
+      if (initialAction === 'add_child') {
+        loadedChildren.forEach((c) => {
+          c.isCollapsed = true
+        })
+        loadedChildren.push({
+          id: `child-new-${Date.now()}`,
+          name: '',
+          currentSchool: '',
+          birthYear: '',
+          age: '',
+          academicPerformance: '',
+          phone: '',
+          course: '',
+          vuihocAccount: '',
+          isCollapsed: false,
+        })
+      }
+
+      setChildren(loadedChildren)
+
+      // 3. Địa chỉ
+      setProvince(initialLead.province || 'TP. Hồ Chí Minh')
+      setDistrict(initialLead.district || 'Quận 1')
+      setWard(initialLead.ward || 'Phường Bến Nghé')
+      setAddressDetail(initialLead.streetAddress || initialLead.address || '')
+      setMapCoordinates(initialLead.mapLink || '')
+
+      // 4. Định vị & Phân bổ
+      setCustomerType(initialLead.trainingType || 'Tự học')
+      setIndustryGroup(initialLead.industryGroup || 'Tiểu học')
+      setSelectedSources(initialLead.source ? [initialLead.source] : ['Web Rinoedu'])
+      setSelectedStaff(initialLead.assignedTo ? [initialLead.assignedTo] : ['Trần Thị Mai'])
+      setMarketingStaff(initialLead.marketingStaff || 'Nguyễn Thị Lan (Marketing)')
+      setSelectedProductGroups(initialLead.productGroup ? [initialLead.productGroup] : ['Tiếng Anh Thiếu Nhi'])
+      setCustomerCode(initialLead.code || '')
+      setValidationError('')
+    } else {
+      // Khi tạo mới từ đầu (Create New Lead)
+      setParents([
+        {
+          id: 'parent-1',
+          name: '',
+          phone: '',
+          email: '',
+          role: 'Mẹ',
+          secondaryPhone: '',
+          isCollapsed: false,
+        },
+      ])
+      setChildren([
+        {
+          id: 'child-1',
+          name: '',
+          currentSchool: '',
+          birthYear: '',
+          age: '',
+          academicPerformance: '',
+          phone: '',
+          course: '',
+          vuihocAccount: '',
+          isCollapsed: false,
+        },
+      ])
+      setProvince('TP. Hồ Chí Minh')
+      setDistrict('Quận 1')
+      setWard('Phường Bến Nghé')
+      setAddressDetail('')
+      setMapCoordinates('')
+      setCustomerType('Tự học')
+      setIndustryGroup('Tiểu học')
+      setSelectedSources(['Web Rinoedu'])
+      setSelectedStaff(['Trần Thị Mai'])
+      setMarketingStaff('Nguyễn Thị Lan (Marketing)')
+      setSelectedProductGroups(['Tiếng Anh Thiếu Nhi'])
+      setCustomerCode('')
+      setValidationError('')
+    }
+  }, [open, initialLead, initialAction])
 
   const fullAddressSearchQuery = useMemo(() => {
     return [addressDetail, ward, district, province].filter(Boolean).join(', ')
   }, [addressDetail, ward, district, province])
 
   const handleResetForm = () => {
-    setParents([
-      {
-        id: 'parent-1',
-        name: '',
-        phone: '',
-        email: '',
-        role: 'Mẹ',
-        secondaryPhone: '',
-        isCollapsed: false,
-      },
-    ])
-    setAddressDetail('')
-    setMapCoordinates('')
-    setChildren([
-      {
-        id: 'child-1',
-        name: '',
-        currentSchool: '',
-        birthYear: '',
-        age: '',
-        academicPerformance: '',
-        phone: '',
-        course: '',
-        vuihocAccount: '',
-        isCollapsed: false,
-      },
-    ])
-    setCustomerType('Tự học')
-    setIndustryGroup('Tiểu học')
-    setSelectedSources(['Web Rinoedu'])
-    setSelectedStaff(['Trần Thị Mai'])
-    setMarketingStaff('Nguyễn Thị Lan (Marketing)')
-    setSelectedProductGroups(['Tiếng Anh Thiếu Nhi'])
-    setCustomerCode('')
     setValidationError('')
     onOpenChange(false)
   }
@@ -157,29 +268,57 @@ export function CrmCustomerCreateDialog({
 
     const siblingNames = validChildren.map((c) => c.name.trim())
 
+    const otherParentsList = parents.slice(1).map((p) => ({
+      name: p.name.trim() || 'Phụ huynh',
+      phone: p.phone.trim(),
+      role: p.role,
+      email: p.email.trim(),
+    }))
+
     const createdLeads: Lead[] = validChildren.map((child, index) => {
-      const generatedId = `LEAD-${Date.now()}-${index + 1}`
+      const isInitialLead = initialLead && index === 0
+      const generatedId = isInitialLead
+        ? initialLead.id
+        : `LEAD-${Date.now()}-${index + 1}`
+
       const finalCode = customerCode.trim()
-        ? `${customerCode.trim()}-${index + 1}`
-        : `KH-${Math.floor(100000 + Math.random() * 900000)}`
+        ? (index === 0 ? customerCode.trim() : `${customerCode.trim()}-${index + 1}`)
+        : (isInitialLead ? initialLead.code : `KH-${Math.floor(100000 + Math.random() * 900000)}`)
 
       const calculatedBirthYear = child.birthYear ? parseInt(child.birthYear, 10) : 2018
       const calculatedAge = child.age ? parseInt(child.age, 10) || 8 : 8
 
+      const base: Partial<Lead> = isInitialLead ? initialLead : {}
+
       return {
+        ...base,
         id: generatedId,
         code: finalCode,
         studentName: child.name.trim(),
         studentAge: calculatedAge,
         birthYear: calculatedBirthYear,
+        schoolName: child.currentSchool.trim() || base.schoolName,
         targetSubject: child.course || 'Tiếng Anh Thiếu Nhi',
-        parentId: `P-${Date.now()}`,
+        academicAbility: child.academicPerformance || base.academicAbility,
+        studentPhone: child.phone.trim() || base.studentPhone,
+        vuihocAccount: child.vuihocAccount.trim() || base.vuihocAccount,
+        parentId: base.parentId || `P-${Date.now()}`,
         parentName: mainParent.name.trim(),
         parentRole: mainParent.role,
         phone: mainParent.phone.trim(),
-        address: fullAddressSearchQuery || 'TP. Hồ Chí Minh',
         email: mainParent.email.trim() || 'khachhang@rinoedu.vn',
+        province,
+        district,
+        ward,
+        streetAddress: addressDetail,
+        address: fullAddressSearchQuery || 'TP. Hồ Chí Minh',
+        mapLink: mapCoordinates,
         familySiblings: siblingNames,
+        otherParents: otherParentsList,
+        trainingType: customerType,
+        industryGroup,
+        productGroup: selectedProductGroups.join(', ') || 'Tiếng Anh Thiếu Nhi',
+        marketingStaff,
         source: (selectedSources[0]?.toLowerCase().includes('facebook')
           ? 'facebook'
           : selectedSources[0]?.toLowerCase().includes('hotline')
@@ -189,27 +328,27 @@ export function CrmCustomerCreateDialog({
           : selectedSources[0]?.toLowerCase().includes('referral')
           ? 'referral'
           : 'website') as Lead['source'],
-        status: 'chua_tiep_can',
+        status: base.status || 'chua_tiep_can',
         assignedTo: selectedStaff.join(', ') || 'Chưa phân bổ',
-        branch: 'RinoEdu Linh Đàm',
-        createdAt: new Date().toISOString().slice(0, 10),
-        lastNote: [
+        branch: base.branch || 'RinoEdu Linh Đàm',
+        createdAt: base.createdAt || new Date().toISOString().slice(0, 10),
+        lastNote: base.lastNote || [
           child.currentSchool ? `Trường đang học: ${child.currentSchool}.` : '',
           selectedProductGroups.length > 0 ? `Nhóm SP: ${selectedProductGroups.join(', ')}.` : '',
           marketingStaff ? `Phụ trách MKT: ${marketingStaff}.` : '',
           `Kênh tiếp nhận: ${selectedSources.join(', ') || 'Web'}.`,
         ].filter(Boolean).join(' '),
-        expectedPackage: `Gói ${child.course || 'Tiếng Anh'} 6T`,
-        expectedAmount: '15.000.000đ',
-        winProbability: 40,
-      }
+        expectedPackage: base.expectedPackage || `Gói ${child.course || 'Tiếng Anh'} 6T`,
+        expectedAmount: base.expectedAmount || '15.000.000đ',
+        winProbability: base.winProbability || 40,
+      } as Lead
     })
 
     if (onSubmit) {
       onSubmit(createdLeads)
     }
 
-    handleResetForm()
+    onOpenChange(false)
   }
 
   return (

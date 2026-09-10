@@ -112,6 +112,16 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   inactive: 'neutral',
   probation: 'warning',
   resigned: 'neutral',
+  setup: 'info',
+  board: 'purple',
+  block: 'info',
+  region: 'success',
+  branch: 'info',
+  department: 'purple',
+  team: 'neutral',
+  standard: 'info',
+  lab: 'purple',
+  vip: 'warning',
 
   // Booking Test
   booked_assessment: 'success',

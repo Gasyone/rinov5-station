@@ -3,28 +3,15 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
-  DELIVERY_METHOD_MAP,
-  FULFILLMENT_STATUS_MAP,
-  PRODUCT_CATEGORY_MAP,
   getInitialOrderFulfillments,
-  type DeliveryMethod,
-  type FulfillmentProductCategory,
-  type FulfillmentStatus,
   type OrderFulfillmentRecord,
 } from '@/mocks/orderFulfillments'
-import {
-  FilterGroupSheetPanel,
-  createFilterGroup,
-  type FilterGroupConfig,
-  getSchoolFilterGroup,
-} from '@/components/filters'
 import {
   calculateFulfillmentCounts,
   filterOrderFulfillments,
 } from './orderFulfillmentHelpers'
 import type {
   AdvancedFulfillmentFilterState,
-  FilterDeliveryMethod,
   FilterStatus,
   OrderFulfillmentFilterState,
   QuickFilterId,
@@ -35,6 +22,9 @@ import { OrderFulfillmentStatusTiles } from './OrderFulfillmentStatusTiles'
 import { OrderFulfillmentTable } from './OrderFulfillmentTable'
 import { OrderFulfillmentActionDialog } from './OrderFulfillmentActionDialog'
 import { OrderFulfillmentDetailDialog } from './OrderFulfillmentDetailDialog'
+import { OrderFulfillmentBulkActionDialog } from './OrderFulfillmentBulkActionDialog'
+import { OrderFulfillmentCreateDialog } from './OrderFulfillmentCreateDialog'
+import { OrderFulfillmentFilterPanel } from './OrderFulfillmentFilterPanel'
 
 export function OrderFulfillmentScreen() {
   const [records, setRecords] = useState<OrderFulfillmentRecord[]>(() =>
@@ -55,6 +45,7 @@ export function OrderFulfillmentScreen() {
     deliveryMethods: [],
     carriers: [],
     categories: [],
+    sourceTypes: [],
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
@@ -66,6 +57,9 @@ export function OrderFulfillmentScreen() {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [actionRecord, setActionRecord] = useState<OrderFulfillmentRecord | null>(null)
   const [isActionOpen, setIsActionOpen] = useState(false)
+  const [isBulkOpen, setIsBulkOpen] = useState(false)
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<string[]>([])
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
   // Filtered records
   const filteredRecords = useMemo(() => {
@@ -100,67 +94,8 @@ export function OrderFulfillmentScreen() {
     advancedFilters.statuses.length +
     advancedFilters.deliveryMethods.length +
     advancedFilters.carriers.length +
-    advancedFilters.categories.length
-
-  const filterGroups = useMemo<FilterGroupConfig[]>(
-    () => [
-      getSchoolFilterGroup(
-        'branches',
-        advancedFilters.branches,
-        (branch) => records.filter((r) => r.branch === branch).length,
-        SYSTEM_BRANCHES
-      ),
-      createFilterGroup({
-        id: 'deliveryMethods',
-        title: 'Hình thức nhận hàng',
-        options: ['pickup', 'shipping'] as DeliveryMethod[],
-        selectedValues: advancedFilters.deliveryMethods,
-        getOptionLabel: (method) => DELIVERY_METHOD_MAP[method as DeliveryMethod] || method,
-        getOptionCount: (method) =>
-          records.filter((r) => r.deliveryMethod === method).length,
-      }),
-      createFilterGroup({
-        id: 'statuses',
-        title: 'Trạng thái bàn giao',
-        options: [
-          'pending_handover',
-          'shipping',
-          'handed_over',
-          'returned',
-        ] as FulfillmentStatus[],
-        selectedValues: advancedFilters.statuses,
-        getOptionLabel: (status) =>
-          FULFILLMENT_STATUS_MAP[status as FulfillmentStatus] || status,
-        getOptionCount: (status) => records.filter((r) => r.status === status).length,
-      }),
-      createFilterGroup({
-        id: 'carriers',
-        title: 'Đơn vị vận chuyển',
-        options: availableCarriers,
-        selectedValues: advancedFilters.carriers,
-        getOptionLabel: (carrier) => carrier,
-        getOptionCount: (carrier) =>
-          records.filter((r) => r.carrier === carrier).length,
-      }),
-      createFilterGroup({
-        id: 'categories',
-        title: 'Phân loại sản phẩm',
-        options: [
-          'textbook',
-          'kit',
-          'uniform',
-          'learning_material',
-          'gift',
-        ] as FulfillmentProductCategory[],
-        selectedValues: advancedFilters.categories,
-        getOptionLabel: (cat) =>
-          PRODUCT_CATEGORY_MAP[cat as FulfillmentProductCategory] || cat,
-        getOptionCount: (cat) =>
-          records.filter((r) => r.products.some((p) => p.category === cat)).length,
-      }),
-    ],
-    [availableCarriers, records, advancedFilters]
-  )
+    advancedFilters.categories.length +
+    advancedFilters.sourceTypes.length
 
   const toggleAdvancedFilter = <K extends keyof AdvancedFulfillmentFilterState>(
     key: K,
@@ -212,18 +147,56 @@ export function OrderFulfillmentScreen() {
     toast.success(`Đã cập nhật thành công phiếu bàn giao / vận đơn ${updatedRecord.id}!`)
   }
 
+  const handleOpenBulk = (ids: string[]) => {
+    setBulkSelectedIds(ids)
+    setIsBulkOpen(true)
+  }
+
+  const handleBulkConfirm = (data: {
+    handoverBy: string
+    notes: string
+    podImage?: string
+    handoverDate: string
+  }) => {
+    setRecords((prev) =>
+      prev.map((r) => {
+        if (!bulkSelectedIds.includes(r.id)) return r
+        return {
+          ...r,
+          status: 'handed_over',
+          handoverBy: data.handoverBy,
+          handoverDate: data.handoverDate,
+          completedAt: data.handoverDate,
+          notes: data.notes || r.notes,
+          podImages: data.podImage ? [data.podImage] : r.podImages,
+        }
+      })
+    )
+    toast.success(`Đã bàn giao thành công ${bulkSelectedIds.length} phiếu!`)
+    setBulkSelectedIds([])
+  }
+
+  const handleCreateSuccess = (newRecords: OrderFulfillmentRecord[]) => {
+    setRecords((prev) => [...newRecords, ...prev])
+    if (newRecords.length === 1) {
+      toast.success(`Đã tạo phiếu bàn giao ${newRecords[0].id} thành công!`)
+    } else {
+      toast.success(`Đã tạo thành công ${newRecords.length} phiếu bàn giao quà tặng!`)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full w-full px-4 py-3 lg:px-6 space-y-2">
       {/* 1. TOOLBAR BỘ LỌC */}
       <OrderFulfillmentToolbar
-        records={records}
         branches={SYSTEM_BRANCHES}
         activeBranch={filters.branch}
         searchTerm={filters.search}
         activeFilterCount={activeFilterCount}
         onBranchChange={handleBranchChange}
         onSearchChange={handleSearchChange}
-        onOpenFilters={() => setIsFilterOpen(true)}
+        onOpenFilters={() => setIsFilterOpen((prev) => !prev)}
+        onOpenCreate={() => setIsCreateOpen(true)}
       />
 
       {/* 2. THẺ ĐẾM TRẠNG THÁI STATUS TILES & CỤM TAB LỌC NHANH */}
@@ -235,18 +208,49 @@ export function OrderFulfillmentScreen() {
         onQuickFilterChange={handleQuickFilterChange}
       />
 
-      {/* 3. BẢNG DỮ LIỆU CHÍNH */}
-      <div className="flex-1 min-h-0">
-        <OrderFulfillmentTable
-          records={filteredRecords}
-          totalItems={filteredRecords.length}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
-          onViewDetail={handleViewDetail}
-          onAction={handleOpenAction}
-        />
+      {/* 3. BẢNG DỮ LIỆU CHÍNH & PANEL BỘ LỌC GHIM CẠNH PHẢI */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <OrderFulfillmentTable
+            records={filteredRecords}
+            totalItems={filteredRecords.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            onViewDetail={handleViewDetail}
+            onAction={handleOpenAction}
+            onBulkHandover={handleOpenBulk}
+          />
+        </div>
+
+        {/* Panel bộ lọc ghim ở cạnh phải (FilterAsidePanel) */}
+        {isFilterOpen && (
+          <OrderFulfillmentFilterPanel
+            filters={advancedFilters}
+            availableCarriers={availableCarriers}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={toggleAdvancedFilter}
+            onClearAll={() => {
+              setAdvancedFilters({
+                branches: [],
+                statuses: [],
+                deliveryMethods: [],
+                carriers: [],
+                categories: [],
+                sourceTypes: [],
+              })
+              setCurrentPage(1)
+            }}
+            onClearSection={(key) => {
+              setAdvancedFilters((prev) => ({
+                ...prev,
+                [key]: [],
+              }))
+              setCurrentPage(1)
+            }}
+          />
+        )}
       </div>
 
       {/* 4. MODAL XÁC NHẬN BÀN GIAO / CẬP NHẬT VẬN ĐƠN */}
@@ -265,34 +269,19 @@ export function OrderFulfillmentScreen() {
         onOpenAction={handleOpenAction}
       />
 
-      {/* 6. MODAL / DRAWER BỘ LỌC NÂNG CAO */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc nâng cao"
-        description="Kết hợp lọc theo cơ sở, hình thức nhận, trạng thái, hãng vận chuyển và loại sản phẩm."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleAdvancedFilter('branches', value)
-          if (sectionId === 'deliveryMethods')
-            toggleAdvancedFilter('deliveryMethods', value as DeliveryMethod)
-          if (sectionId === 'statuses')
-            toggleAdvancedFilter('statuses', value as FulfillmentStatus)
-          if (sectionId === 'carriers')
-            toggleAdvancedFilter('carriers', value)
-          if (sectionId === 'categories')
-            toggleAdvancedFilter('categories', value as FulfillmentProductCategory)
-        }}
-        onClearAll={() => {
-          setAdvancedFilters({
-            branches: [],
-            statuses: [],
-            deliveryMethods: [],
-            carriers: [],
-            categories: [],
-          })
-          setCurrentPage(1)
-        }}
+      {/* 6. MODAL BÀN GIAO HÀNG LOẠT */}
+      <OrderFulfillmentBulkActionDialog
+        selectedRecords={records.filter((r) => bulkSelectedIds.includes(r.id))}
+        open={isBulkOpen}
+        onOpenChange={setIsBulkOpen}
+        onConfirm={handleBulkConfirm}
+      />
+
+      {/* 7. MODAL TẠO PHIẾU BÀN GIAO QUÀ TẶNG / VẬT PHẨM */}
+      <OrderFulfillmentCreateDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onCreate={handleCreateSuccess}
       />
     </div>
   )

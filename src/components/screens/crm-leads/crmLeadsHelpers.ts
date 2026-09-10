@@ -644,3 +644,75 @@ export function mapLeadSubjectToTrialProgram(subject?: string): string {
   return 'Cambridge Starter'
 }
 
+/**
+ * Khớp trạng thái phụ (Sub-status) với dữ liệu Lead
+ */
+export function matchSubStatus(lead: Lead, subStatusId: string): boolean {
+  if (subStatusId === 'all') return true
+  const note = (lead.lastNote || '').toLowerCase()
+  const subj = (lead.targetSubject || '').toLowerCase()
+  const level = (lead.testResultLevel || '').toLowerCase()
+
+  switch (subStatusId) {
+    case 'chua_co_sale':
+      return !lead.assignedTo || lead.assignedTo === 'Chưa phân bổ' || lead.assignedTo.trim() === ''
+    case 'da_phan_sale':
+      return Boolean(lead.assignedTo && lead.assignedTo.trim() !== '' && lead.assignedTo !== 'Chưa phân bổ')
+    case 'goi_lan_1':
+      return note.includes('gọi lần 1')
+    case 'goi_lan_2':
+      return note.includes('gọi lần 2')
+    case 'hen_goi_lai':
+      return note.includes('hẹn gọi lại') || note.includes('hẹn')
+    case 'test_tuan_nay':
+      return lead.testStatus === 'scheduled' || lead.trialStatus === 'scheduled'
+    case 'chua_giao_gv':
+      return note.includes('chưa giao gv') || !lead.testerTeacherName
+    case 'da_xac_nhan':
+      return note.includes('xác nhận')
+    case 'dat_superkids':
+      return level.includes('superkids') || subj.includes('superkids')
+    case 'dat_flyers':
+      return level.includes('flyers') || subj.includes('flyers')
+    case 'dat_kindy':
+      return level.includes('kindy') || subj.includes('kindy')
+    case 'giu_cho_24h':
+      return note.includes('giữ chỗ')
+    case 'cho_chuyen_khoan':
+      return note.includes('chuyển khoản')
+    case 'hen_nop_tien_mat':
+      return note.includes('tiền mặt')
+    case 'da_thu_100':
+      return note.includes('100%')
+    case 'da_thu_coc':
+      return note.includes('cọc')
+    case 'no_show':
+      return lead.testStatus === 'no_show' || lead.trialStatus === 'no_show' || note.includes('vắng test')
+    case 'khong_nghe_may':
+      return note.includes('không nghe máy')
+    case 'sai_so':
+      return note.includes('sai số')
+    case 'nha_xa':
+      return note.includes('nhà xa')
+    case 'che_phi_cao':
+      return note.includes('chê học phí cao')
+    default:
+      return lead.status === subStatusId || lead.subStatus === subStatusId
+  }
+}
+
+/**
+ * Định dạng ngày tạo đơn hàng dạng DD/MM/YYYY
+ */
+export function formatOrderDate(dateStr?: string): string {
+  if (!dateStr) return '-'
+  if (dateStr.includes('-')) {
+    const parts = dateStr.split('-')
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`
+    }
+  }
+  return dateStr
+}
+
+

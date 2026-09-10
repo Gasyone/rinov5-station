@@ -925,445 +925,24 @@ export const SYSTEM_PERMISSION_FEATURES: PermissionFeatureItem[] = [
  * Mô tả ngắn (subtitle) chuẩn hóa cho 8 Phân hệ lớn của Station
  */
 export const STATION_MODULE_GROUP_DESCRIPTIONS: Record<string, string> = {
-  group_calendar: 'Quản lý thời khóa biểu trung tâm, lịch tự học Digi, lịch test và đăng ký ca làm việc',
-  group_crm_commercial: 'Tiếp nhận Lead, theo dõi khách hàng tiềm năng, quản lý đơn hàng và thanh toán',
-  group_products_programs: 'Danh mục khóa học đào tạo, gói học phí, chiến dịch bán hàng và chính sách khuyến mãi',
-  group_enrollment: 'Quy trình tiếp đón kiểm tra năng lực đầu vào, tổ chức lớp học thử và xếp lớp học viên',
-  group_class_management: 'Quản lý lớp học, thủ tục bảo lưu, sắp xếp học bù, chăm sóc học viên và tái phí',
-  group_tickets: 'Tiếp nhận và xử lý phản ánh, khiếu nại và yêu cầu hỗ trợ từ học viên/phụ huynh',
-  group_hr_exec: 'Bảng điều hành quản lý, phân công giảng dạy, duyệt dạy thay, tính công và nhân sự',
-  group_system_config: 'Cấu hình danh mục điều kiện chăm sóc và quản lý ma trận phân quyền hệ thống',
+  group_renewal: 'Theo dõi danh sách học viên sắp hết phí, lịch sử tư vấn tái đăng ký và phễu gia hạn',
 }
 
 /**
  * Danh mục các tính năng nghiệp vụ chuẩn hóa riêng cho Phân hệ Station (Rinov5)
- * Khớp chính xác 100% theo các menu thực tế trên thanh điều hướng Sidebar
+ * Chỉ giữ lại Phân hệ / Màn hình tác nghiệp "Tái phí học viên"
  */
 export const STATION_PERMISSION_FEATURES: PermissionFeatureItem[] = [
-  // ==========================================
-  // 1. LỊCH BIỂU (group_calendar)
-  // ==========================================
-  {
-    featureKey: 'my_schedule',
-    featureName: 'Lịch của tôi',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, edit: true },
-    defaultScope: 'personal',
-    allowedScopes: ['personal'],
-    description: 'Sổ tay tác nghiệp ca dạy cá nhân dành cho Giáo viên và Trợ giảng (Chỉ xem và thao tác dữ liệu bản thân)',
-  },
-  {
-    featureKey: 'calendar_class_schedule',
-    featureName: 'Lịch học trung tâm',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Thời khóa biểu tổng quan các lớp học tại chi nhánh',
-  },
-  {
-    featureKey: 'digi_schedule',
-    featureName: 'Lịch học digi',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Quản lý danh sách đăng ký ca tự học Digi, điều phối phòng học và thiết bị',
-  },
-  {
-    featureKey: 'calendar_event_schedule',
-    featureName: 'Lịch test',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Quản lý lịch kiểm tra trải nghiệm đầu vào và sự kiện workshop',
-  },
-  {
-    featureKey: 'work_registration',
-    featureName: 'Đăng ký lịch',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    hasChildren: true,
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Phân hệ Đăng ký ca làm việc, tổng hợp lịch rảnh nhân sự và phân ca trung tâm',
-  },
-  {
-    featureKey: 'work_registration_mine',
-    featureName: 'Lịch rảnh của tôi',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    parentKey: 'work_registration',
-    level: 2,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true },
-    defaultScope: 'personal',
-    allowedScopes: ['personal'],
-    description: 'Sổ tay đăng ký ca rảnh cá nhân dành cho Giáo viên, Trợ giảng và Nhân sự (Chỉ thao tác dữ liệu bản thân)',
-  },
-  {
-    featureKey: 'work_registration_roster',
-    featureName: 'Bảng ca tổng hợp (Master Roster)',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    parentKey: 'work_registration',
-    level: 2,
-    isStation: true,
-    supportedActions: { access: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Xem bảng phân ca tổng hợp của toàn bộ nhân sự theo tuần/tháng',
-  },
-  {
-    featureKey: 'work_registration_staff',
-    featureName: 'Lịch rảnh nhân sự',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    parentKey: 'work_registration',
-    level: 2,
-    isStation: true,
-    supportedActions: { access: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Theo dõi tiến độ và trạng thái đăng ký ca rảnh của từng nhân viên',
-  },
-  {
-    featureKey: 'work_registration_center',
-    featureName: 'Tổng quan cơ sở',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    parentKey: 'work_registration',
-    level: 2,
-    isStation: true,
-    supportedActions: { access: true, export: true },
-    defaultScope: '',
-    description: 'Báo cáo tổng hợp số giờ đăng ký và độ phủ ca theo cơ sở',
-  },
-  {
-    featureKey: 'work_registration_holidays',
-    featureName: 'Cấu hình ngày lễ / nghỉ lễ',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    parentKey: 'work_registration',
-    level: 2,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true },
-    defaultScope: '',
-    description: 'Thiết lập danh mục ngày lễ, ngày nghỉ đặc biệt của trung tâm',
-  },
-  {
-    featureKey: 'event_management_new',
-    featureName: 'Quản lý sự kiện',
-    moduleGroupKey: 'group_calendar',
-    moduleGroupName: 'LỊCH BIỂU',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Quản lý các sự kiện workshop, hội thảo và hoạt động trải nghiệm',
-  },
-
-  // ==========================================
-  // 2. CRM & THƯƠNG MẠI (group_crm_commercial)
-  // ==========================================
-  {
-    featureKey: 'crm_my_leads',
-    featureName: 'Lead của tôi',
-    moduleGroupKey: 'group_crm_commercial',
-    moduleGroupName: 'CRM & THƯƠNG MẠI',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true },
-    defaultScope: 'personal',
-    allowedScopes: ['personal'],
-    description: 'Danh sách Lead được phân bổ cho cá nhân tư vấn phụ trách (Chỉ xem lead bản thân)',
-  },
-  {
-    featureKey: 'crm_leads',
-    featureName: 'Quản lý Lead',
-    moduleGroupKey: 'group_crm_commercial',
-    moduleGroupName: 'CRM & THƯƠNG MẠI',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Tiếp nhận, phân bổ và theo dõi trạng thái tương tác với khách hàng tiềm năng',
-  },
-  {
-    featureKey: 'orders',
-    featureName: 'Quản lý đơn hàng',
-    moduleGroupKey: 'group_crm_commercial',
-    moduleGroupName: 'CRM & THƯƠNG MẠI',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Quản lý đơn đăng ký học, trạng thái thanh toán và phát hành biên nhận/hóa đơn',
-  },
-  {
-    featureKey: 'payment_receipts',
-    featureName: 'Thanh toán',
-    moduleGroupKey: 'group_crm_commercial',
-    moduleGroupName: 'CRM & THƯƠNG MẠI',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Quản lý danh sách các phiếu thanh toán (thu/chi/hoàn tiền), lịch sử giao dịch và biên nhận',
-  },
-
-  // ==========================================
-  // 3. SẢN PHẨM & CHƯƠNG TRÌNH (group_products_programs)
-  // ==========================================
-  {
-    featureKey: 'products',
-    featureName: 'Quản lý sản phẩm',
-    moduleGroupKey: 'group_products_programs',
-    moduleGroupName: 'SẢN PHẨM & CHƯƠNG TRÌNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Danh mục các khóa học, gói học phí, combo và chương trình đào tạo thương mại',
-  },
-  {
-    featureKey: 'campaigns',
-    featureName: 'Quản lý Chiến dịch',
-    moduleGroupKey: 'group_products_programs',
-    moduleGroupName: 'SẢN PHẨM & CHƯƠNG TRÌNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Thiết lập chiến dịch khuyến mại, quy tắc giảm giá, ngân sách chiết khấu',
-  },
-  {
-    featureKey: 'promotions',
-    featureName: 'Quản lý Khuyến mãi',
-    moduleGroupKey: 'group_products_programs',
-    moduleGroupName: 'SẢN PHẨM & CHƯƠNG TRÌNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Cấu hình chính sách chiết khấu, mã giảm giá/voucher và quản lý suất học bổng',
-  },
-
-  // ==========================================
-  // 4. TUYỂN SINH & XẾP LỚP (group_enrollment)
-  // ==========================================
-  {
-    featureKey: 'booking_test',
-    featureName: 'Kiểm tra/Trải nghiệm',
-    moduleGroupKey: 'group_enrollment',
-    moduleGroupName: 'TUYỂN SINH & XẾP LỚP',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Quản lý danh sách học viên đăng ký test đầu vào và lớp học trải nghiệm',
-  },
-  {
-    featureKey: 'trial_class',
-    featureName: 'Lớp học thử',
-    moduleGroupKey: 'group_enrollment',
-    moduleGroupName: 'TUYỂN SINH & XẾP LỚP',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Danh sách và lịch sắp xếp học viên tham gia lớp học thử',
-  },
-  {
-    featureKey: 'class_placement',
-    featureName: 'Xếp lớp học viên',
-    moduleGroupKey: 'group_enrollment',
-    moduleGroupName: 'TUYỂN SINH & XẾP LỚP',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Danh sách học viên chờ xếp lớp, gói học và thao tác phân bổ vào lớp học',
-  },
-
-  // ==========================================
-  // 5. VẬN HÀNH & CHĂM SÓC (group_class_management)
-  // ==========================================
-  {
-    featureKey: 'classes',
-    featureName: 'Quản lý Lớp học',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Quản lý danh sách lớp học, phân công giảng dạy và tiến độ đào tạo',
-  },
-  {
-    featureKey: 'students',
-    featureName: 'Quản lý học viên',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Hồ sơ học viên 360°, thông tin cá nhân, học lực, điểm danh và lịch sử đào tạo',
-  },
-  {
-    featureKey: 'leave_reserve',
-    featureName: 'Bảo lưu & Nghỉ phép',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Xử lý phiếu bảo lưu học phí, đơn xin nghỉ và thủ tục chuyển lớp',
-  },
-  {
-    featureKey: 'makeup_class',
-    featureName: 'Học bù học viên',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Quản lý lịch đăng ký học bù, sắp xếp ca học bù và duyệt yêu cầu học bù',
-  },
-  {
-    featureKey: 'student_operations_alert',
-    featureName: 'Chăm sóc học viên',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, export: true, viewAll: true },
-    defaultScope: '',
-    description: 'Ghi nhận và xử lý các ca cảnh báo học tập, gọi điện chăm sóc học viên',
-  },
   {
     featureKey: 'renewal',
     featureName: 'Tái phí học viên',
-    moduleGroupKey: 'group_class_management',
-    moduleGroupName: 'VẬN HÀNH & CHĂM SÓC',
+    moduleGroupKey: 'group_renewal',
+    moduleGroupName: 'TÁI PHÍ HỌC VIÊN',
     level: 1,
     isStation: true,
-    supportedActions: { access: true, edit: true, export: true, viewAll: true },
-    defaultScope: '',
+    supportedActions: { access: true, viewAll: true, create: true, edit: true, delete: false, export: true },
+    defaultScope: 'branch',
     description: 'Theo dõi danh sách học viên sắp hết phí và lịch sử tư vấn tái đăng ký',
-  },
-
-  // ==========================================
-  // 6. TICKET & CHẤT LƯỢNG (group_tickets)
-  // ==========================================
-  {
-    featureKey: 'support_tickets',
-    featureName: 'Quản lý Ticket & Hỗ trợ',
-    moduleGroupKey: 'group_tickets',
-    moduleGroupName: 'TICKET & CHẤT LƯỢNG',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Ghi nhận và xử lý phản ánh, khiếu nại và yêu cầu hỗ trợ từ học viên/phụ huynh',
-  },
-
-  // ==========================================
-  // 7. ĐỘI NGŨ & ĐIỀU HÀNH (group_hr_exec)
-  // ==========================================
-  {
-    featureKey: 'dashboard',
-    featureName: 'Executive Dashboard',
-    moduleGroupKey: 'group_hr_exec',
-    moduleGroupName: 'ĐỘI NGŨ & ĐIỀU HÀNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, export: true },
-    defaultScope: '',
-    description: 'Tổng quan chỉ số điều hành dành cho Quản lý chi nhánh',
-  },
-  {
-    featureKey: 'teacher_assignment',
-    featureName: 'Phân công Giảng dạy',
-    moduleGroupKey: 'group_hr_exec',
-    moduleGroupName: 'ĐỘI NGŨ & ĐIỀU HÀNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Gán giáo viên chính, trợ giảng và duyệt công thế ca',
-  },
-  {
-    featureKey: 'hr_employees',
-    featureName: 'Hồ sơ Nhân sự',
-    moduleGroupKey: 'group_hr_exec',
-    moduleGroupName: 'ĐỘI NGŨ & ĐIỀU HÀNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true, export: true },
-    defaultScope: '',
-    description: 'Quản lý hồ sơ giáo viên, trợ giảng và nhân viên chi nhánh',
-  },
-  {
-    featureKey: 'substitute_payroll',
-    featureName: 'Duyệt Dạy thay & Lương ca',
-    moduleGroupKey: 'group_hr_exec',
-    moduleGroupName: 'ĐỘI NGŨ & ĐIỀU HÀNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, edit: true, export: true },
-    defaultScope: '',
-    description: 'Duyệt ca thế dạy và tính toán thù lao giảng dạy theo ca',
-  },
-  {
-    featureKey: 'reports',
-    featureName: 'Báo cáo Vận hành',
-    moduleGroupKey: 'group_hr_exec',
-    moduleGroupName: 'ĐỘI NGŨ & ĐIỀU HÀNH',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, export: true },
-    defaultScope: '',
-    description: 'Thống kê tổng hợp sĩ số, giờ dạy, chuyên cần và doanh thu đào tạo',
-  },
-
-  // ==========================================
-  // 8. CẤU HÌNH HỆ THỐNG (group_system_config)
-  // ==========================================
-  {
-    featureKey: 'care_conditions_config',
-    featureName: 'Danh mục chăm sóc',
-    moduleGroupKey: 'group_system_config',
-    moduleGroupName: 'CẤU HÌNH HỆ THỐNG',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true },
-    defaultScope: '',
-    description: 'Cấu hình Quy tắc & Điều kiện Chăm sóc Học viên (Nguồn chỉ số CSDL, Tiêu chí, SLA)',
-  },
-  {
-    featureKey: 'permissions',
-    featureName: 'Nhóm quyền',
-    moduleGroupKey: 'group_system_config',
-    moduleGroupName: 'CẤU HÌNH HỆ THỐNG',
-    level: 1,
-    isStation: true,
-    supportedActions: { access: true, create: true, edit: true, delete: true },
-    defaultScope: '',
-    description: 'Quản lý Topic phân loại, Nhóm quyền và Ma trận cấp phép hành động RBAC & Data Scope',
   },
 ]
 
@@ -1381,11 +960,10 @@ export const MOCK_PERMISSION_TOPICS: PermissionTopic[] = [
 ]
 
 /**
- * Khởi tạo ma trận phân quyền Phân hệ Station (35 tính năng) chuẩn xác cho từng Role
+ * Khởi tạo ma trận phân quyền Phân hệ Station (Tái phí học viên) chuẩn xác cho từng Role
  */
 function getRoleStationPermissions(roleId: string): RolePermissionMatrixItem[] {
   return STATION_PERMISSION_FEATURES.map((feat) => {
-    const isPersonalOnly = feat.allowedScopes?.length === 1 && feat.allowedScopes[0] === 'personal'
     let actions: PermissionActionState = {
       access: false,
       create: false,
@@ -1394,117 +972,20 @@ function getRoleStationPermissions(roleId: string): RolePermissionMatrixItem[] {
       export: false,
       viewAll: false,
     }
-    let scope: DataScope = isPersonalOnly ? 'personal' : (feat.defaultScope || '')
+    let scope: DataScope = feat.defaultScope || ''
 
-    if (roleId === 'role_tu_hoc_telesale') {
-      // Phân hệ 1: LỊCH BIỂU (Không có xem tất cả, không có xuất file)
-      if (feat.featureKey === 'calendar_class_schedule' || feat.featureKey === 'calendar_event_schedule' || feat.featureKey === 'event_management_new') {
-        actions = { access: true, create: false, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'branch'
-      } else if (feat.featureKey === 'digi_schedule') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-        scope = 'branch'
-      } else if (feat.featureKey === 'work_registration') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-      } else if (feat.featureKey === 'work_registration_mine') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      }
-
-      // Phân hệ 2: CRM & THƯƠNG MẠI (Không có xem tất cả, không có xuất file)
-      else if (feat.featureKey === 'crm_my_leads') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      } else if (feat.featureKey === 'orders') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      } else if (feat.featureKey === 'payment_receipts') {
-        actions = { access: true, create: false, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      }
-
-      // Phân hệ 3: SẢN PHẨM & CHƯƠNG TRÌNH (Nâng cấp mục 3: Tra cứu bảng giá & khuyến mãi)
-      else if (feat.moduleGroupKey === 'group_products_programs') {
-        actions = { access: true, create: false, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'branch'
-      }
-
-      // Phân hệ 4: TUYỂN SINH & XẾP LỚP (Nâng cấp mục 4: Đặt lịch test & học thử)
-      else if (feat.featureKey === 'booking_test') {
-        actions = { access: true, create: true, edit: true, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      } else if (feat.featureKey === 'trial_class') {
-        actions = { access: true, create: true, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      }
-
-      // Phân hệ 5-8: Giữ nguyên (chỉ xem học viên cá nhân và tạo ticket hỗ trợ kỹ thuật app)
-      else if (feat.featureKey === 'students') {
-        actions = { access: true, create: false, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      } else if (feat.featureKey === 'support_tickets') {
-        actions = { access: true, create: true, edit: false, delete: false, export: false, viewAll: false }
-        scope = 'personal'
-      }
-    } else if (roleId === 'role_tu_hoc_s_lead') {
-      // Trưởng nhóm Tự học: Xem và duyệt trong team
-      const isLeadMgmt = feat.moduleGroupKey === 'group_crm_commercial' || feat.moduleGroupKey === 'group_enrollment'
-      actions = {
-        access: isLeadMgmt || feat.moduleGroupKey === 'group_products_programs',
-        create: isLeadMgmt,
-        edit: isLeadMgmt,
-        delete: false,
-        export: feat.featureKey === 'orders',
-        viewAll: isLeadMgmt,
-      }
-      scope = isPersonalOnly ? 'personal' : 'team'
+    if (roleId === 'role_tai_phi_hoc_vien') {
+      // Chuyên viên Tái phí học viên: Toàn quyền tác nghiệp tái phí trong chi nhánh
+      actions = { access: true, create: true, edit: true, delete: false, export: true, viewAll: true }
+      scope = 'branch'
     } else if (roleId === 'role_gia_han_telesale') {
-      // Telesale Gia hạn: Tái phí, cảnh báo chăm sóc, đơn hàng
-      const isCareOrOrder = feat.featureKey === 'renewal' || feat.featureKey === 'student_operations_alert' || feat.featureKey === 'orders'
-      actions = {
-        access: isCareOrOrder || feat.moduleGroupKey === 'group_products_programs',
-        create: feat.featureKey === 'orders' || feat.featureKey === 'student_operations_alert',
-        edit: feat.featureKey === 'renewal' || feat.featureKey === 'student_operations_alert',
-        delete: false,
-        export: false,
-        viewAll: false,
-      }
-      scope = isPersonalOnly ? 'personal' : 'personal'
-    } else if (roleId === 'role_cskh_specialist') {
-      // CSKH: Học vụ, vé hỗ trợ, bảo lưu, học bù
-      const isCSKH = feat.moduleGroupKey === 'group_tickets' || feat.moduleGroupKey === 'group_class_management'
-      actions = {
-        access: isCSKH,
-        create: feat.featureKey === 'support_tickets' || feat.featureKey === 'leave_reserve' || feat.featureKey === 'makeup_class',
-        edit: isCSKH,
-        delete: false,
-        export: false,
-        viewAll: false,
-      }
-      scope = isPersonalOnly ? 'personal' : 'branch'
-    } else if (roleId === 'role_dao_tao_gv_chinh') {
-      // Giáo viên chính: Lịch dạy, lớp học, điểm danh
-      const isTeacher = feat.featureKey === 'my_schedule' || feat.featureKey === 'work_registration_mine' || feat.featureKey === 'classes'
-      actions = {
-        access: isTeacher,
-        create: feat.featureKey === 'work_registration_mine',
-        edit: isTeacher,
-        delete: false,
-        export: false,
-        viewAll: false,
-      }
+      // Telesale Gia hạn: Xem và cập nhật trao đổi tái phí của cá nhân
+      actions = { access: true, create: false, edit: true, delete: false, export: false, viewAll: false }
       scope = 'personal'
     } else if (roleId === 'role_quan_ly_bm') {
-      // Giám đốc cơ sở: Toàn quyền trong chi nhánh
-      actions = {
-        access: true,
-        create: true,
-        edit: true,
-        delete: feat.moduleGroupKey !== 'group_system_config',
-        export: true,
-        viewAll: true,
-      }
-      scope = isPersonalOnly ? 'personal' : 'branch'
+      // Giám đốc cơ sở: Toàn quyền quản lý tái phí chi nhánh
+      actions = { access: true, create: true, edit: true, delete: true, export: true, viewAll: true }
+      scope = 'branch'
     }
 
     return {
@@ -1516,6 +997,30 @@ function getRoleStationPermissions(roleId: string): RolePermissionMatrixItem[] {
 }
 
 export const MOCK_PERMISSION_ROLES: PermissionRole[] = [
+  {
+    id: 'role_tai_phi_hoc_vien',
+    topicId: 'topic_sale_gia_han',
+    name: 'Tái phí học viên',
+    code: 'ROLE_TAI_PHI_HOC_VIEN',
+    description: 'Chuyên viên tư vấn tái phí, theo dõi danh sách học viên sắp hết phí và lịch sử tư vấn tái đăng ký',
+    userCount: 8,
+    updatedAt: '2026-08-15 10:30',
+    permissions: [
+      ...SYSTEM_PERMISSION_FEATURES.map((f) => ({
+        featureKey: f.featureKey,
+        actions: {
+          access: f.moduleGroupKey === 'care' || f.featureKey === 'ord_orders' || f.featureKey === 'care_renewal',
+          create: f.featureKey === 'ord_orders' || f.featureKey === 'care_operations_alert',
+          edit: f.featureKey === 'care_renewal' || f.featureKey === 'care_operations_alert',
+          delete: false,
+          export: f.featureKey === 'care_renewal',
+          viewAll: f.featureKey === 'care_renewal',
+        },
+        scope: f.isStation ? ('branch' as DataScope) : ('' as DataScope),
+      })),
+      ...getRoleStationPermissions('role_tai_phi_hoc_vien'),
+    ],
+  },
   {
     id: 'role_tu_hoc_telesale',
     topicId: 'topic_sale_tu_hoc',

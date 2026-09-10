@@ -1,64 +1,32 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   PaymentReceipt,
-  ReceiptType,
-  PaymentMethod,
   TransactionType,
   mockPaymentReceipts,
 } from '@/mocks/paymentReceipts'
-import { StatusTiles } from '@/components/shared'
-import {
-  ExpandableSearch,
-  BranchSelect,
-  FilterIconButton,
-  InlineSelect,
-  SYSTEM_BRANCHES,
-} from '@/components/controls'
-import {
-  FilterGroupSheetPanel,
-  createFilterGroup,
-  type FilterGroupConfig,
-  getSchoolFilterGroup,
-} from '@/components/filters'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { PaymentReceiptsToolbar } from './PaymentReceiptsToolbar'
 import { PaymentReceiptsTable } from './PaymentReceiptsTable'
+import { PaymentReceiptsFilterPanel } from './PaymentReceiptsFilterPanel'
 import { PaymentReceiptDetailDialog } from './PaymentReceiptDetailDialog'
 import { PaymentReceiptCreateDialog } from './PaymentReceiptCreateDialog'
 import { PaymentReceiptPayMoreDialog } from './PaymentReceiptPayMoreDialog'
 import {
   PaymentReceiptsFilterState,
   STATUS_TILES,
-  FilterStatus,
+  ReceiptSortField,
+  ReceiptSortDirection,
 } from './paymentReceiptsTypes'
-
-const TRANSACTION_TYPE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Tất cả loại phiếu' },
-  { value: 'receipt', label: '📥 Phiếu thu' },
-  { value: 'payment_voucher', label: '📤 Phiếu chi / Hoàn' },
-]
-
-const TYPE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Tất cả mục đích' },
-  { value: 'deposit', label: 'Cọc giữ chỗ' },
-  { value: 'tuition_full', label: 'Thu đủ học phí' },
-  { value: 'installment', label: 'Kỳ trả góp' },
-  { value: 'event_fee', label: 'Phí sự kiện' },
-  { value: 'refund', label: 'Hoàn tiền / Trả lại' },
-  { value: 'other', label: 'Khoản khác' },
-]
-
-const METHOD_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: 'Tất cả phương thức' },
-  { value: 'qr_transfer', label: 'Chuyển khoản QR' },
-  { value: 'cash', label: 'Tiền mặt' },
-  { value: 'pos_card', label: 'Cà thẻ POS' },
-  { value: 'bank_transfer', label: 'Chuyển khoản NH' },
-]
+import {
+  filterReceiptsByTimeRange,
+  filterReceiptsByDebt,
+  filterReceiptsByAmountRange,
+  getReceiptStaffList,
+  getReceiptBankAccounts,
+  sortReceipts,
+} from './paymentReceiptsHelpers'
 
 export function PaymentReceiptsScreen() {
   const [receipts, setReceipts] = useState<PaymentReceipt[]>(mockPaymentReceipts)
@@ -69,9 +37,24 @@ export function PaymentReceiptsScreen() {
     status: 'all',
     transactionType: 'all',
     receiptType: 'all',
+    receiptTypes: [],
     paymentMethod: 'all',
+    paymentMethods: [],
     quickCondition: 'all',
+    timeRange: 'this_month',
+    customStartDate: '2026-08-01',
+    customEndDate: '2026-08-25',
+    createdBy: 'all',
+    createdBys: [],
+    bankAccount: 'all',
+    bankAccounts: [],
+    debtStatus: 'all',
+    amountRange: 'all',
   })
+
+  const [sortField, setSortField] = useState<ReceiptSortField>('createdAt')
+  const [sortDirection, setSortDirection] = useState<ReceiptSortDirection>('desc')
+
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(20)
 
@@ -84,83 +67,54 @@ export function PaymentReceiptsScreen() {
   const [payMoreReceipt, setPayMoreReceipt] = useState<PaymentReceipt | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
 
-  const activeFilterCount =
-    (filters.branch !== 'all' ? 1 : 0) +
-    (filters.transactionType !== 'all' ? 1 : 0) +
-    (filters.receiptType !== 'all' ? 1 : 0) +
-    (filters.paymentMethod !== 'all' ? 1 : 0) +
-    (filters.status !== 'all' ? 1 : 0)
+  // Danh sách nhân sự và tài khoản trích xuất thực tế từ dữ liệu
+  const staffList = useMemo(() => getReceiptStaffList(receipts), [receipts])
+  const bankAccountList = useMemo(() => getReceiptBankAccounts(receipts), [receipts])
 
-  const filterGroups = useMemo<FilterGroupConfig[]>(
-    () => [
-      getSchoolFilterGroup(
-        'branches',
-        filters.branch !== 'all' ? [filters.branch] : [],
-        (b) => receipts.filter((r) => r.branch === b).length,
-        SYSTEM_BRANCHES
-      ),
-      createFilterGroup({
-        id: 'transactionType',
-        title: 'Loại phiếu giao dịch',
-        options: [
-          { value: 'receipt', label: '📥 Phiếu thu' },
-          { value: 'payment_voucher', label: '📤 Phiếu chi / Hoàn tiền' },
-        ],
-        selectedValues: filters.transactionType !== 'all' ? [filters.transactionType] : [],
-        getOptionCount: (val) => receipts.filter((r) => r.transactionType === val).length,
-      }),
-      createFilterGroup({
-        id: 'receiptType',
-        title: 'Mục đích giao dịch',
-        options: [
-          { value: 'tuition_full', label: 'Thu đủ học phí' },
-          { value: 'deposit', label: 'Cọc giữ chỗ' },
-          { value: 'installment', label: 'Kỳ trả góp' },
-          { value: 'event_fee', label: 'Phí sự kiện' },
-          { value: 'refund', label: 'Hoàn tiền / Trả lại' },
-          { value: 'other', label: 'Khoản khác' },
-        ],
-        selectedValues: filters.receiptType !== 'all' ? [filters.receiptType] : [],
-        getOptionCount: (val) => receipts.filter((r) => r.receiptType === val).length,
-      }),
-      createFilterGroup({
-        id: 'paymentMethod',
-        title: 'Phương thức thanh toán',
-        options: [
-          { value: 'qr_transfer', label: 'Chuyển khoản QR' },
-          { value: 'cash', label: 'Tiền mặt' },
-          { value: 'pos_card', label: 'Cà thẻ POS' },
-          { value: 'bank_transfer', label: 'Chuyển khoản NH' },
-        ],
-        selectedValues: filters.paymentMethod !== 'all' ? [filters.paymentMethod] : [],
-        getOptionCount: (val) => receipts.filter((r) => r.paymentMethod === val).length,
-      }),
-      createFilterGroup({
-        id: 'status',
-        title: 'Trạng thái phiếu',
-        options: [
-          { value: 'completed', label: 'Thành công' },
-          { value: 'pending', label: 'Chờ thanh toán' },
-          { value: 'cancelled', label: 'Đã hủy' },
-        ],
-        selectedValues: filters.status !== 'all' ? [filters.status] : [],
-        getOptionCount: (val) => receipts.filter((r) => r.status === val).length,
-      }),
-    ],
-    [receipts, filters]
-  )
+  const activeFilterCount =
+    (filters.timeRange !== 'this_month' && filters.timeRange !== 'all' ? 1 : 0) +
+    (filters.createdBys?.length ?? (filters.createdBy !== 'all' ? 1 : 0)) +
+    (filters.receiptTypes?.length ?? (filters.receiptType !== 'all' ? 1 : 0)) +
+    (filters.paymentMethods?.length ?? (filters.paymentMethod !== 'all' ? 1 : 0)) +
+    (filters.bankAccounts?.length ?? (filters.bankAccount !== 'all' ? 1 : 0)) +
+    (filters.debtStatus !== 'all' ? 1 : 0) +
+    (filters.amountRange !== 'all' ? 1 : 0)
 
   // Lọc danh sách Phiếu thanh toán
   const filteredReceipts = useMemo(() => {
-    return receipts.filter((r) => {
+    let list = filterReceiptsByTimeRange(receipts, filters.timeRange, {
+      startDate: filters.customStartDate,
+      endDate: filters.customEndDate,
+    })
+
+    list = list.filter((r) => {
       if (filters.branch !== 'all' && r.branch !== filters.branch) return false
       if (filters.status !== 'all' && r.status !== filters.status) return false
       if (filters.transactionType !== 'all' && r.transactionType !== filters.transactionType) return false
-      if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) return false
-      if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) return false
-      if (filters.quickCondition === 'reconciled' && !r.isReconciled) return false
-      if (filters.quickCondition === 'fully_paid' && r.orderRemainingAmount !== 0) return false
+      if (filters.receiptTypes && filters.receiptTypes.length > 0) {
+        if (!filters.receiptTypes.includes(r.receiptType)) return false
+      } else if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) {
+        return false
+      }
+      if (filters.paymentMethods && filters.paymentMethods.length > 0) {
+        if (!filters.paymentMethods.includes(r.paymentMethod)) return false
+      } else if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) {
+        return false
+      }
+      if (filters.createdBys && filters.createdBys.length > 0) {
+        if (!filters.createdBys.includes(r.createdBy)) return false
+      } else if (filters.createdBy !== 'all' && r.createdBy !== filters.createdBy) {
+        return false
+      }
+      if (filters.bankAccounts && filters.bankAccounts.length > 0) {
+        if (!r.bankAccount || !filters.bankAccounts.includes(r.bankAccount)) return false
+      } else if (filters.bankAccount !== 'all' && r.bankAccount !== filters.bankAccount) {
+        return false
+      }
+      if (filters.quickCondition === 'cash' && r.paymentMethod !== 'cash') return false
+      if (filters.quickCondition === 'transfer' && r.paymentMethod !== 'qr_transfer' && r.paymentMethod !== 'bank_transfer') return false
       if (filters.quickCondition === 'deposit' && r.receiptType !== 'deposit') return false
+      if (filters.quickCondition === 'debt' && r.orderRemainingAmount <= 0) return false
       if (filters.search.trim()) {
         const q = filters.search.toLowerCase().trim()
         const match =
@@ -174,18 +128,45 @@ export function PaymentReceiptsScreen() {
       }
       return true
     })
-  }, [receipts, filters])
 
-  // Đếm số lượng đếm theo Status Tile
+    list = filterReceiptsByDebt(list, filters.debtStatus)
+    list = filterReceiptsByAmountRange(list, filters.amountRange)
+    return sortReceipts(list, sortField, sortDirection)
+  }, [receipts, filters, sortField, sortDirection])
+
   const statusCounts = useMemo(() => {
-    const base = receipts.filter((r) => {
+    let base = filterReceiptsByTimeRange(receipts, filters.timeRange, {
+      startDate: filters.customStartDate,
+      endDate: filters.customEndDate,
+    })
+
+    base = base.filter((r) => {
       if (filters.branch !== 'all' && r.branch !== filters.branch) return false
       if (filters.transactionType !== 'all' && r.transactionType !== filters.transactionType) return false
-      if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) return false
-      if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) return false
-      if (filters.quickCondition === 'reconciled' && !r.isReconciled) return false
-      if (filters.quickCondition === 'fully_paid' && r.orderRemainingAmount !== 0) return false
+      if (filters.receiptTypes && filters.receiptTypes.length > 0) {
+        if (!filters.receiptTypes.includes(r.receiptType)) return false
+      } else if (filters.receiptType !== 'all' && r.receiptType !== filters.receiptType) {
+        return false
+      }
+      if (filters.paymentMethods && filters.paymentMethods.length > 0) {
+        if (!filters.paymentMethods.includes(r.paymentMethod)) return false
+      } else if (filters.paymentMethod !== 'all' && r.paymentMethod !== filters.paymentMethod) {
+        return false
+      }
+      if (filters.createdBys && filters.createdBys.length > 0) {
+        if (!filters.createdBys.includes(r.createdBy)) return false
+      } else if (filters.createdBy !== 'all' && r.createdBy !== filters.createdBy) {
+        return false
+      }
+      if (filters.bankAccounts && filters.bankAccounts.length > 0) {
+        if (!r.bankAccount || !filters.bankAccounts.includes(r.bankAccount)) return false
+      } else if (filters.bankAccount !== 'all' && r.bankAccount !== filters.bankAccount) {
+        return false
+      }
+      if (filters.quickCondition === 'cash' && r.paymentMethod !== 'cash') return false
+      if (filters.quickCondition === 'transfer' && r.paymentMethod !== 'qr_transfer' && r.paymentMethod !== 'bank_transfer') return false
       if (filters.quickCondition === 'deposit' && r.receiptType !== 'deposit') return false
+      if (filters.quickCondition === 'debt' && r.orderRemainingAmount <= 0) return false
       if (filters.search.trim()) {
         const q = filters.search.toLowerCase().trim()
         return (
@@ -193,11 +174,15 @@ export function PaymentReceiptsScreen() {
           r.orderCode.toLowerCase().includes(q) ||
           r.studentName.toLowerCase().includes(q) ||
           r.parentName.toLowerCase().includes(q) ||
-          r.phone.includes(q)
+          r.phone.includes(q) ||
+          r.createdBy.toLowerCase().includes(q)
         )
       }
       return true
     })
+
+    base = filterReceiptsByDebt(base, filters.debtStatus)
+    base = filterReceiptsByAmountRange(base, filters.amountRange)
 
     const counts: Record<string, number> = {
       all: base.length,
@@ -213,7 +198,7 @@ export function PaymentReceiptsScreen() {
     })
 
     return counts
-  }, [receipts, filters.branch, filters.transactionType, filters.receiptType, filters.paymentMethod, filters.quickCondition, filters.search])
+  }, [receipts, filters])
 
   const tilesWithCounts = useMemo(() => {
     return STATUS_TILES.map((t) => ({
@@ -221,6 +206,19 @@ export function PaymentReceiptsScreen() {
       count: statusCounts[t.countKey] ?? 0,
     }))
   }, [statusCounts])
+
+  const baseReceiptsForMetrics = useMemo(() => {
+    return receipts.filter((r) => {
+      if (filters.branch !== 'all' && r.branch !== filters.branch) return false
+      if (filters.createdBy !== 'all' && r.createdBy !== filters.createdBy) return false
+      return true
+    })
+  }, [receipts, filters.branch, filters.createdBy])
+
+  const handleFilterChange = (updates: Partial<PaymentReceiptsFilterState>) => {
+    setFilters((prev) => ({ ...prev, ...updates }))
+    setCurrentPage(1)
+  }
 
   const handleCreateReceipt = (newRcpt: PaymentReceipt) => {
     setReceipts((prev) => [newRcpt, ...prev])
@@ -241,208 +239,121 @@ export function PaymentReceiptsScreen() {
     setIsPayMoreOpen(true)
   }
 
+  const handleSortChange = (field: ReceiptSortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
   const handleExportExcel = () => {
     toast.success(`Đã xuất báo cáo phiếu thanh toán (${filteredReceipts.length} dòng) thành công!`)
   }
 
+  const handleToggle = (
+    key: 'createdBys' | 'receiptTypes' | 'paymentMethods' | 'bankAccounts',
+    value: string
+  ) => {
+    setCurrentPage(1)
+    setFilters((current) => {
+      const arr = (current[key] || []) as string[]
+      const exists = arr.includes(value)
+      const next = exists ? arr.filter((v) => v !== value) : [...arr, value]
+      return { ...current, [key]: next }
+    })
+  }
+
+  const handleClearSection = (key: keyof PaymentReceiptsFilterState) => {
+    setCurrentPage(1)
+    setFilters((current) => ({
+      ...current,
+      [key]: Array.isArray(current[key]) ? [] : 'all',
+    }))
+  }
+
+  const handleResetFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      timeRange: 'this_month',
+      customStartDate: '2026-08-01',
+      customEndDate: '2026-08-25',
+      createdBy: 'all',
+      createdBys: [],
+      receiptType: 'all',
+      receiptTypes: [],
+      paymentMethod: 'all',
+      paymentMethods: [],
+      bankAccount: 'all',
+      bankAccounts: [],
+      debtStatus: 'all',
+      amountRange: 'all',
+    }))
+    setCurrentPage(1)
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] gap-2.5 pl-4 pt-3 lg:pl-6 pr-0 pb-0 overflow-hidden">
-      {/* Khối Toolbar & Filters bên trên */}
-      <div className="pr-4 lg:pr-6 flex flex-col gap-2.5 shrink-0">
-        {/* HÀNG 1: Chọn cơ sở -> Lọc Thu/Chi/Loại/PTTT | Search -> Xuất Excel -> Nút Lập phiếu */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 py-0.5">
-          <div className="flex items-center gap-2 flex-nowrap shrink-0">
-            {/* 1. Chọn cơ sở */}
-            <BranchSelect
-              value={filters.branch}
-              onValueChange={(val: string) => {
-                setFilters((prev) => ({ ...prev, branch: val }))
-                setCurrentPage(1)
-              }}
-              className="w-[170px] shrink-0"
-            />
+      <PaymentReceiptsToolbar
+        filters={filters}
+        activeFilterCount={activeFilterCount}
+        isFilterOpen={isFilterOpen}
+        tilesWithCounts={tilesWithCounts}
+        baseReceiptsForMetrics={baseReceiptsForMetrics}
+        onFilterChange={handleFilterChange}
+        onToggleFilterPanel={() => setIsFilterOpen((prev) => !prev)}
+        onExportExcel={handleExportExcel}
+        onCreateReceipt={() => {
+          setCreateInitialType('receipt')
+          setIsCreateOpen(true)
+        }}
+      />
 
-            {/* 2. Lọc Thu / Chi */}
-            <InlineSelect
-              value={filters.transactionType}
-              onValueChange={(val: string) => {
-                setFilters((prev) => ({ ...prev, transactionType: val as TransactionType | 'all' }))
-                setCurrentPage(1)
-              }}
-              options={TRANSACTION_TYPE_FILTER_OPTIONS}
-              className="w-[145px] shrink-0"
-            />
-
-            {/* 3. Lọc loại mục đích giao dịch */}
-            <InlineSelect
-              value={filters.receiptType}
-              onValueChange={(val: string) => {
-                setFilters((prev) => ({ ...prev, receiptType: val as ReceiptType | 'all' }))
-                setCurrentPage(1)
-              }}
-              options={TYPE_FILTER_OPTIONS}
-              className="w-[140px] shrink-0"
-            />
-
-            {/* 4. Lọc phương thức thanh toán */}
-            <InlineSelect
-              value={filters.paymentMethod}
-              onValueChange={(val: string) => {
-                setFilters((prev) => ({ ...prev, paymentMethod: val as PaymentMethod | 'all' }))
-                setCurrentPage(1)
-              }}
-              options={METHOD_FILTER_OPTIONS}
-              className="w-[150px] shrink-0"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            {/* 5. Ô Tìm kiếm */}
-            <ExpandableSearch
-              value={filters.search}
-              onValueChange={(val: string) => {
-                setFilters((prev) => ({ ...prev, search: val }))
-                setCurrentPage(1)
-              }}
-              placeholder="Tìm Mã TNX, Đơn hàng, Tên..."
-            />
-
-            {/* Nút Mở bộ lọc nâng cao */}
-            <FilterIconButton
-              count={activeFilterCount}
-              onClick={() => setIsFilterOpen(true)}
-            />
-
-            {/* 6. Nút Xuất Excel */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs h-8 cursor-pointer"
-              onClick={handleExportExcel}
-            >
-              <Download className="h-4 w-4" />
-              <span>Xuất Excel</span>
-            </Button>
-
-            {/* 7. Nút Lập phiếu thanh toán mới */}
-            <Button
-              type="button"
-              size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-xs h-8 cursor-pointer"
-              onClick={() => {
-                setCreateInitialType('receipt')
-                setIsCreateOpen(true)
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Lập phiếu mới</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* HÀNG 2: Tab Lọc Trạng Thái (Status Tiles) ở bên trái + Lọc nhanh điều kiện ở cạnh phải */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <StatusTiles
-            tiles={tilesWithCounts}
-            activeId={filters.status}
-            noOverflowCollapse={true}
-            className="flex-1 min-w-0"
-            onSelect={(id) => {
-              setFilters((prev) => ({ ...prev, status: id as FilterStatus }))
-              setCurrentPage(1)
+      {/* Vùng hiển thị Bảng + Panel bộ lọc ghim song song */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 pr-4 lg:pr-6 pb-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <PaymentReceiptsTable
+            receipts={filteredReceipts}
+            totalItems={filteredReceipts.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+            onSelectStaff={(staff) => {
+              handleToggle('createdBys', staff)
+              setIsFilterOpen(true)
             }}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            onViewDetail={handleViewDetail}
+            onPayMore={handlePayMore}
           />
-
-          {/* Cụm Lọc nhanh ở cạnh phải */}
-          <div className="flex items-center gap-1.5 shrink-0 text-xs py-0.5">
-            <span className="text-xs text-muted-foreground mr-0.5">Lọc nhanh:</span>
-
-            {/* Nút Đã đối soát */}
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((prev) => ({
-                  ...prev,
-                  quickCondition: prev.quickCondition === 'reconciled' ? 'all' : 'reconciled',
-                }))
-                setCurrentPage(1)
-              }}
-              className={cn(
-                'px-2.5 py-1 rounded-md text-xs transition-colors border select-none cursor-pointer',
-                filters.quickCondition === 'reconciled'
-                  ? 'bg-primary/10 text-primary border-primary/40 font-medium'
-                  : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
-              )}
-            >
-              Đã đối soát
-            </button>
-
-            {/* Nút Đã tất toán */}
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((prev) => ({
-                  ...prev,
-                  quickCondition: prev.quickCondition === 'fully_paid' ? 'all' : 'fully_paid',
-                }))
-                setCurrentPage(1)
-              }}
-              className={cn(
-                'px-2.5 py-1 rounded-md text-xs transition-colors border select-none cursor-pointer',
-                filters.quickCondition === 'fully_paid'
-                  ? 'bg-primary/10 text-primary border-primary/40 font-medium'
-                  : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
-              )}
-            >
-              Đã tất toán
-            </button>
-
-            {/* Nút Cọc */}
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((prev) => ({
-                  ...prev,
-                  quickCondition: prev.quickCondition === 'deposit' ? 'all' : 'deposit',
-                }))
-                setCurrentPage(1)
-              }}
-              className={cn(
-                'px-2.5 py-1 rounded-md text-xs transition-colors border select-none cursor-pointer',
-                filters.quickCondition === 'deposit'
-                  ? 'bg-primary/10 text-primary border-primary/40 font-medium'
-                  : 'bg-background hover:bg-muted/60 text-muted-foreground border-border/80'
-              )}
-            >
-              Cọc
-            </button>
-          </div>
         </div>
+
+        {/* Panel bộ lọc nâng cao dạng ghim cố định ở cạnh phải bảng */}
+        {isFilterOpen && (
+          <PaymentReceiptsFilterPanel
+            receipts={receipts}
+            filters={filters}
+            staffList={staffList}
+            bankAccountList={bankAccountList}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={handleToggle}
+            onFilterChange={handleFilterChange}
+            onResetFilters={handleResetFilters}
+            onClearSection={handleClearSection}
+          />
+        )}
       </div>
 
-      {/* Bảng dữ liệu Phiếu thanh toán */}
-      <div className="flex-1 min-h-0 w-full pr-0 pb-0">
-        <PaymentReceiptsTable
-          receipts={filteredReceipts}
-          totalItems={filteredReceipts.length}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={setPageSize}
-          onViewDetail={handleViewDetail}
-          onPayMore={handlePayMore}
-        />
-      </div>
-
-      {/* Modal Chi tiết Phiếu thanh toán */}
       <PaymentReceiptDetailDialog
         receipt={selectedReceipt}
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
       />
 
-      {/* Modal Thanh toán nhiều lần / Thanh toán thêm */}
       <PaymentReceiptPayMoreDialog
         receipt={payMoreReceipt || selectedReceipt}
         open={isPayMoreOpen}
@@ -450,63 +361,11 @@ export function PaymentReceiptsScreen() {
         onSuccess={handlePayMoreSuccess}
       />
 
-      {/* Modal Lập Phiếu thanh toán mới */}
       <PaymentReceiptCreateDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onCreateReceipt={handleCreateReceipt}
         initialTransactionType={createInitialType}
-      />
-
-      {/* Modal / Panel Bộ lọc nâng cao */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc nâng cao phiếu thanh toán"
-        description="Lọc kết hợp theo cơ sở, loại phiếu, mục đích, phương thức thanh toán và trạng thái."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') {
-            setFilters((prev) => ({ ...prev, branch: prev.branch === value ? 'all' : value }))
-          }
-          if (sectionId === 'transactionType') {
-            setFilters((prev) => ({
-              ...prev,
-              transactionType: prev.transactionType === value ? 'all' : (value as TransactionType),
-            }))
-          }
-          if (sectionId === 'receiptType') {
-            setFilters((prev) => ({
-              ...prev,
-              receiptType: prev.receiptType === value ? 'all' : (value as ReceiptType),
-            }))
-          }
-          if (sectionId === 'paymentMethod') {
-            setFilters((prev) => ({
-              ...prev,
-              paymentMethod: prev.paymentMethod === value ? 'all' : (value as PaymentMethod),
-            }))
-          }
-          if (sectionId === 'status') {
-            setFilters((prev) => ({
-              ...prev,
-              status: prev.status === value ? 'all' : (value as FilterStatus),
-            }))
-          }
-          setCurrentPage(1)
-        }}
-        onClearAll={() => {
-          setFilters({
-            search: '',
-            branch: 'all',
-            status: 'all',
-            transactionType: 'all',
-            receiptType: 'all',
-            paymentMethod: 'all',
-            quickCondition: 'all',
-          })
-          setCurrentPage(1)
-        }}
       />
     </div>
   )

@@ -124,7 +124,7 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 | **Lịch sử chăm sóc** | Chữ vừa + Hộp thoại nổi | Lịch sử tương tác Lead | Tiến trình CS (Chưa CS / Chăm sóc lần N), lịch hẹn gọi lại, nội dung và phản hồi | Thu gọn |
 | **Trạng thái** | Nhãn màu | Trường trạng thái | Màu chuẩn theo từng trạng thái vòng đời | Thu gọn dạng chấm |
 | **Người phụ trách** | 2 dòng chữ | Trường nhân viên | Dòng 1: Tên tư vấn viên; Dòng 2: Ngày bắt đầu phụ trách và đếm số ngày (Ví dụ: `10/08/2026 (15 ngày)`) | Ẩn trên di động |
-| **Đơn hàng** | Gói học + Mã đơn nháp | Trường Đơn hàng nháp | Gói học, doanh thu dự kiến, mã đơn nháp và lần thanh toán nổi bật (đặt ở cuối cùng) | Thu gọn |
+| **Đơn hàng** | Gói học + Mã đơn hàng | Trường Đơn hàng đăng ký | Gói học, doanh thu dự kiến, mã đơn hàng và lần thanh toán nổi bật (đặt ở cuối cùng) | Thu gọn |
 | **Hành động** | Nút biểu tượng | Hệ thống | Biểu tượng mắt xem chi tiết nhanh khi rê chuột | Luôn hiện |
 
 ### 3.3. Các trạng thái giao diện mặc định

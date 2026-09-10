@@ -72,15 +72,6 @@ export function OrdersToolbar({
       {/* Hàng trên: Lọc theo gói sản phẩm, Cơ sở của gói (trái) và Tìm kiếm, Bộ lọc nâng cao, Smartcard Popover (phải) */}
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Lọc theo gói sản phẩm, gói combo... */}
-          <ToolbarSelect
-            value={activePackageType}
-            options={PACKAGE_TYPE_OPTIONS}
-            onValueChange={(val) => onPackageTypeChange(val as PackageTypeFilter)}
-            ariaLabel="Lọc theo gói sản phẩm"
-            className="h-8 min-w-36 text-xs"
-          />
-
           {/* Selection cơ sở của gói */}
           <BranchSelect
             value={activeBranch}
@@ -88,6 +79,15 @@ export function OrdersToolbar({
             allLabel="Tất cả cơ sở"
             ariaLabel="Cơ sở của gói"
             onValueChange={onBranchChange}
+            className="h-8 min-w-36 text-xs"
+          />
+
+          {/* Lọc theo gói sản phẩm, gói combo... */}
+          <ToolbarSelect
+            value={activePackageType}
+            options={PACKAGE_TYPE_OPTIONS}
+            onValueChange={(val) => onPackageTypeChange(val as PackageTypeFilter)}
+            ariaLabel="Lọc theo gói sản phẩm"
             className="h-8 min-w-36 text-xs"
           />
         </div>

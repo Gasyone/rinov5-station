@@ -16,7 +16,6 @@ import {
 } from '@/mocks/jobTitles'
 import { JobTitlesToolbar } from './JobTitlesToolbar'
 import { JobTitlesTable } from './JobTitlesTable'
-import { JobTitleAssignModal } from './JobTitleAssignModal'
 import { JobTitleFormDialog } from './JobTitleFormDialog'
 import { filterJobTitles } from './jobTitlesHelpers'
 import type { JobTitle, JobTitlesFilterState } from './jobTitlesTypes'
@@ -24,13 +23,15 @@ import type { JobTitle, JobTitlesFilterState } from './jobTitlesTypes'
 export function JobTitlesScreen() {
   const [jobTitles, setJobTitles] = useState<JobTitle[]>(() => [...mockJobTitles])
 
-  // Filter state
+  // Filter state (chỉ gồm tìm kiếm, khối phòng ban và trạng thái Áp dụng / Tạm ngưng)
   const [filters, setFilters] = useState<JobTitlesFilterState>({
     search: '',
     department: 'all',
     status: 'all',
-    capacity: 'all',
   })
+
+  // Selected row IDs for checkboxes
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Status tile active ID
   const [activeTileId, setActiveTileId] = useState<string>('all')
@@ -40,9 +41,6 @@ export function JobTitlesScreen() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
 
   // Modals state
-  const [assignModalOpen, setAssignModalOpen] = useState(false)
-  const [selectedForAssign, setSelectedForAssign] = useState<JobTitle | null>(null)
-
   const [formDialogOpen, setFormDialogOpen] = useState(false)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [selectedForEdit, setSelectedForEdit] = useState<JobTitle | null>(null)
@@ -50,11 +48,15 @@ export function JobTitlesScreen() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<JobTitle | null>(null)
 
-  // 1. Dynamic Status Tiles based on Department and Search filters (RULE-5 compliance)
+  // 1. Dynamic Status Tiles (Chỉ gồm Tất cả, Áp dụng, Tạm ngưng)
   const statusTiles: StatusTile<string>[] = useMemo(() => {
-    // Base items matching current department and search
     const baseItems = jobTitles.filter((item) => {
-      if (filters.department && filters.department !== 'all' && item.department !== filters.department) {
+      if (
+        filters.department &&
+        filters.department !== 'all' &&
+        item.department !== filters.department &&
+        item.orgUnitId !== filters.department
+      ) {
         return false
       }
       if (filters.search.trim()) {
@@ -68,15 +70,11 @@ export function JobTitlesScreen() {
 
     const total = baseItems.length
     const activeCount = baseItems.filter((i) => i.status === 'active').length
-    const filledCount = baseItems.filter((i) => i.assignedEmployeeIds.length >= i.targetHeadcount).length
-    const underCount = baseItems.filter((i) => i.assignedEmployeeIds.length < i.targetHeadcount).length
     const inactiveCount = baseItems.filter((i) => i.status === 'inactive').length
 
     return [
       { id: 'all', label: 'Tất cả chức danh', count: total, semantic: 'neutral' as const },
-      { id: 'active', label: 'Đang áp dụng', count: activeCount, semantic: 'success' as const },
-      { id: 'filled', label: 'Đạt định mức', count: filledCount, semantic: 'info' as const },
-      { id: 'under_capacity', label: 'Thiếu nhân sự', count: underCount, semantic: 'warning' as const },
+      { id: 'active', label: 'Áp dụng', count: activeCount, semantic: 'success' as const },
       { id: 'inactive', label: 'Tạm ngưng', count: inactiveCount, semantic: 'neutral' as const },
     ]
   }, [jobTitles, filters.department, filters.search])
@@ -86,21 +84,18 @@ export function JobTitlesScreen() {
     setActiveTileId(tileId)
     setPage(1)
     if (tileId === 'all') {
-      setFilters((prev) => ({ ...prev, status: 'all', capacity: 'all' }))
+      setFilters((prev) => ({ ...prev, status: 'all' }))
     } else if (tileId === 'active') {
-      setFilters((prev) => ({ ...prev, status: 'active', capacity: 'all' }))
+      setFilters((prev) => ({ ...prev, status: 'active' }))
     } else if (tileId === 'inactive') {
-      setFilters((prev) => ({ ...prev, status: 'inactive', capacity: 'all' }))
-    } else if (tileId === 'filled') {
-      setFilters((prev) => ({ ...prev, capacity: 'filled', status: 'all' }))
-    } else if (tileId === 'under_capacity') {
-      setFilters((prev) => ({ ...prev, capacity: 'under_capacity', status: 'all' }))
+      setFilters((prev) => ({ ...prev, status: 'inactive' }))
     }
   }
 
   // Filter change handler
   const handleFilterChange = (newFilters: JobTitlesFilterState) => {
     setFilters(newFilters)
+    setActiveTileId(newFilters.status)
     setPage(1)
   }
 
@@ -115,22 +110,36 @@ export function JobTitlesScreen() {
     return filteredItems.slice(start, start + pageSize)
   }, [filteredItems, page, pageSize])
 
+  // Toggle selection for individual row
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  // Toggle select all on current page
+  const handleToggleSelectAll = () => {
+    const visibleIds = paginatedItems.map((i) => i.id)
+    const isAllSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id))
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (isAllSelected) {
+        visibleIds.forEach((id) => next.delete(id))
+      } else {
+        visibleIds.forEach((id) => next.add(id))
+      }
+      return next
+    })
+  }
+
   // Actions
-  const handleOpenAssignModal = (item: JobTitle) => {
-    setSelectedForAssign(item)
-    setAssignModalOpen(true)
-  }
-
-  const handleSaveAssignments = (jobTitleId: string, assignedIds: string[]) => {
-    updateJobTitle(jobTitleId, { assignedEmployeeIds: assignedIds })
-    setJobTitles((prev) =>
-      prev.map((jt) => (jt.id === jobTitleId ? { ...jt, assignedEmployeeIds: assignedIds } : jt))
-    )
-    if (selectedForAssign?.id === jobTitleId) {
-      setSelectedForAssign((prev) => (prev ? { ...prev, assignedEmployeeIds: assignedIds } : null))
-    }
-  }
-
   const handleOpenCreateDialog = () => {
     setFormMode('create')
     setSelectedForEdit(null)
@@ -147,9 +156,11 @@ export function JobTitlesScreen() {
     code: string
     name: string
     department: string
-    targetHeadcount: number
+    orgUnitId?: string
+    targetHeadcount?: number
     description: string
     status: 'active' | 'inactive'
+    assignedEmployeeIds?: string[]
   }) => {
     if (formMode === 'create') {
       const created = addJobTitle(data)
@@ -181,57 +192,59 @@ export function JobTitlesScreen() {
 
     deleteJobTitle(itemToDelete.id)
     setJobTitles((prev) => prev.filter((jt) => jt.id !== itemToDelete.id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.delete(itemToDelete.id)
+      return next
+    })
     toast.success(`Đã xóa chức danh "${itemToDelete.name}"`)
     setItemToDelete(null)
     setDeleteConfirmOpen(false)
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 px-4 py-3 lg:px-6">
+    <div className="flex h-full min-h-0 flex-col bg-background">
       {/* 1. TOOLBAR & STATUS TILES */}
-      <JobTitlesToolbar
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        statusTiles={statusTiles}
-        activeTileId={activeTileId}
-        onTileSelect={handleTileSelect}
-        onOpenCreateDialog={handleOpenCreateDialog}
-      />
+      <div className="px-4 pt-3 lg:px-6 shrink-0">
+        <JobTitlesToolbar
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          statusTiles={statusTiles}
+          activeTileId={activeTileId}
+          onTileSelect={handleTileSelect}
+          onOpenCreateDialog={handleOpenCreateDialog}
+        />
+      </div>
 
-      {/* 2. DATA TABLE FRAME */}
-      <div className="flex-1 min-h-0 mt-2">
-        <DataTableFrame className="h-full">
+      {/* 2. DATA TABLE FRAME (Bảng sát footer màn/trình duyệt) */}
+      <div className="min-h-0 flex-1 overflow-hidden px-4 pt-2 pb-0 lg:px-6">
+        <DataTableFrame
+          className="h-full rounded-t-lg rounded-b-none border-b-0"
+          footer={
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              total={filteredItems.length}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize)
+                setPage(1)
+              }}
+            />
+          }
+        >
           <JobTitlesTable
             items={paginatedItems}
-            onOpenAssignModal={handleOpenAssignModal}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+            onToggleSelectAll={handleToggleSelectAll}
             onEdit={handleOpenEditDialog}
             onDelete={handlePromptDelete}
           />
         </DataTableFrame>
       </div>
 
-      {/* 3. PAGINATION FOOTER */}
-      <div className="shrink-0 pt-2">
-        <DataTablePagination
-          page={page}
-          pageSize={pageSize}
-          total={filteredItems.length}
-          onPageChange={setPage}
-          onPageSizeChange={(newSize) => {
-            setPageSize(newSize)
-            setPage(1)
-          }}
-        />
-      </div>
-
       {/* 4. MODALS */}
-      <JobTitleAssignModal
-        open={assignModalOpen}
-        onOpenChange={setAssignModalOpen}
-        jobTitle={selectedForAssign}
-        onSaveAssignments={handleSaveAssignments}
-      />
-
       <JobTitleFormDialog
         open={formDialogOpen}
         onOpenChange={setFormDialogOpen}

@@ -2,10 +2,13 @@ import { mockOrders } from '@/mocks/orders'
 import type { Order, PaymentRecord } from '@/mocks/orders'
 import type { PersonnelItem } from '@/components/shared'
 import { getInitials } from '@/lib/format'
+import { getOrderFulfillmentSummary } from './orderFulfillmentHelpers'
 import {
   type NormalizedPaymentItem,
+  type OrderAmountRange,
   type OrderFilterState,
   type OrderMetrics,
+  type OrderNatureFilter,
   type OrderSessionConversion,
   type OrderStatusFilter,
   type PackageTypeFilter,
@@ -27,6 +30,10 @@ export function getOrderPaymentMethods(items: Order[]) {
 
 export function getOrderPaymentStatuses(items: Order[]) {
   return Array.from(new Set(items.map((o) => o.paymentStatus))).sort()
+}
+
+export function getOrderSalesStaff(items: Order[]) {
+  return Array.from(new Set(items.map((o) => o.saleBy || 'Nguyễn Văn Sale').filter(Boolean))).sort()
 }
 
 export function matchOrderPackageType(order: Order, packageType: PackageTypeFilter): boolean {
@@ -103,44 +110,36 @@ export function matchOrderPaymentCondition(order: Order, condition: PaymentCondi
 }
 
 export function getOrderEffectiveStatus(order: Order): Order['status'] {
-  if (order.status === 'cancelled') return 'cancelled'
-  if (order.status === 'refunded') return 'refunded'
+  if (order.status === 'cancelled' || order.status === 'refunded') {
+    return 'cancelled'
+  }
   
   const paid = order.paidAmount ?? (order.paymentStatus === 'paid' ? order.finalAmount : 0)
   const remaining = order.remainingAmount ?? Math.max(0, (order.finalAmount ?? 0) - paid)
 
-  // 1. Đơn đã thanh toán đủ 100% (không còn nợ) -> Hoàn tất
-  if (paid >= order.finalAmount && order.finalAmount > 0 && remaining === 0) {
+  // 1. Đơn hoàn tất hoặc đã thanh toán đủ 100% không còn nợ -> Đã thành công
+  if (order.status === 'completed' || (paid >= order.finalAmount && order.finalAmount > 0 && remaining === 0)) {
     return 'completed'
   }
 
-  // 2. Đơn cọc hoặc mới thanh toán 1 phần (còn nợ tiền) -> Đang xử lý
-  if (paid > 0 && remaining > 0) {
-    return 'processing'
-  }
-
-  // 3. Đơn chưa thanh toán đồng nào -> Chờ thanh toán
-  if (paid === 0 || order.paymentStatus === 'unpaid' || order.status === 'pending') {
-    return 'pending'
-  }
-
-  return order.status || 'completed'
+  // 2. Tất cả các đơn còn lại (mới lên đơn, chờ thanh toán, cọc, thanh toán 1 phần, đang xử lý) -> Đã lên đơn
+  return 'pending'
 }
 
-export function getOrderStatusLabel(status: Order['status']): string {
+export function getOrderStatusLabel(status: Order['status'] | string): string {
   switch (status) {
     case 'completed':
-      return 'Hoàn tất'
-    case 'processing':
-      return 'Đang xử lý'
-    case 'pending':
-      return 'Chờ thanh toán'
+    case 'da_thanh_cong':
+      return 'Đã thành công'
     case 'cancelled':
-      return 'Đã hủy'
     case 'refunded':
-      return 'Đã hoàn tiền'
+    case 'da_huy':
+      return 'Đã hủy'
+    case 'pending':
+    case 'processing':
+    case 'da_len_don':
     default:
-      return status
+      return 'Đã lên đơn'
   }
 }
 
@@ -182,7 +181,7 @@ export function calculateOrderMetrics(items: Order[]): OrderMetrics {
   const totalValue = sumOrders(items)
   const revenue = sumOrdersPaid(items)
   const outstanding = sumOrdersOutstanding(items)
-  const completed = items.filter((o) => o.status === 'completed').length
+  const completed = items.filter((o) => getOrderEffectiveStatus(o) === 'completed').length
   const paidCount = items.filter((o) => o.paymentStatus === 'paid').length
   const partialCount = items.filter((o) => o.paymentStatus === 'partial').length
   const unpaidCount = items.filter((o) => o.paymentStatus === 'unpaid').length
@@ -258,6 +257,32 @@ export function filterOrdersByTimeRange(
   })
 }
 
+export function matchOrderAmountRange(order: Order, range?: OrderAmountRange): boolean {
+  if (!range || range === 'all') return true
+  const amt = order.finalAmount
+  if (range === 'under_5m') return amt < 5_000_000
+  if (range === '5m_to_10m') return amt >= 5_000_000 && amt <= 10_000_000
+  if (range === '10m_to_20m') return amt > 10_000_000 && amt <= 20_000_000
+  if (range === 'above_20m') return amt > 20_000_000
+  return true
+}
+
+export function matchOrderNature(order: Order, nature?: OrderNatureFilter): boolean {
+  if (!nature || nature === 'all') return true
+  const hasRenewal = order.items.some((i) => i.isRenewal === true)
+  if (nature === 'renewal') return hasRenewal
+  if (nature === 'new_student') return !hasRenewal
+  return true
+}
+
+export function matchOrderFulfillmentTypes(order: Order, types?: string[]): boolean {
+  if (!types || types.length === 0) return true
+  return order.items.some((i) => {
+    const itemType = i.fulfillmentType || (i.packageCategory === 'book_service' || i.packageCategory === 'physical' ? 'physical' : 'service')
+    return types.includes(itemType)
+  })
+}
+
 export function filterOrders(
   items: Order[],
   filters: {
@@ -269,8 +294,16 @@ export function filterOrders(
     extra: OrderFilterState
   }
 ): Order[] {
+  let list = items
+  if (filters.extra.timeRange && filters.extra.timeRange !== 'all') {
+    list = filterOrdersByTimeRange(list, filters.extra.timeRange, {
+      startDate: filters.extra.customStartDate,
+      endDate: filters.extra.customEndDate,
+    })
+  }
+
   const query = filters.search.trim().toLowerCase()
-  return items.filter((o) => {
+  return list.filter((o) => {
     const effStatus = getOrderEffectiveStatus(o)
 
     if (filters.branch !== 'all' && o.branch !== filters.branch) return false
@@ -298,6 +331,34 @@ export function filterOrders(
       filters.extra.orderStatuses &&
       filters.extra.orderStatuses.length > 0 &&
       !filters.extra.orderStatuses.includes(effStatus)
+    )
+      return false
+    if (
+      filters.extra.packageCategories &&
+      filters.extra.packageCategories.length > 0 &&
+      !filters.extra.packageCategories.some((cat) => matchOrderPackageType(o, cat as PackageTypeFilter))
+    )
+      return false
+    if (
+      filters.extra.salesStaff &&
+      filters.extra.salesStaff.length > 0 &&
+      !filters.extra.salesStaff.includes(o.saleBy || 'Nguyễn Văn Sale')
+    )
+      return false
+    if (
+      filters.extra.fulfillmentStatuses &&
+      filters.extra.fulfillmentStatuses.length > 0 &&
+      !filters.extra.fulfillmentStatuses.includes(getOrderFulfillmentSummary(o).status)
+    )
+      return false
+    if (filters.extra.amountRange && !matchOrderAmountRange(o, filters.extra.amountRange))
+      return false
+    if (filters.extra.orderNature && !matchOrderNature(o, filters.extra.orderNature))
+      return false
+    if (
+      filters.extra.fulfillmentTypes &&
+      filters.extra.fulfillmentTypes.length > 0 &&
+      !matchOrderFulfillmentTypes(o, filters.extra.fulfillmentTypes)
     )
       return false
     if (query) {

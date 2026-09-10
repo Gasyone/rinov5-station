@@ -3,6 +3,7 @@ export interface JobTitle {
   code: string
   name: string
   department: string
+  orgUnitId?: string
   targetHeadcount: number
   description: string
   status: 'active' | 'inactive'
@@ -15,7 +16,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_branch_manager',
     code: 'BM',
     name: 'Giám đốc cơ sở',
-    department: 'Ban Giám đốc',
+    department: 'Hội đồng Quản trị & Ban Tổng Giám đốc',
+    orgUnitId: 'org-bod',
     targetHeadcount: 3,
     description: 'Chịu trách nhiệm toàn diện về vận hành, chỉ tiêu doanh thu, nhân sự và chất lượng đào tạo tại cơ sở.',
     status: 'active',
@@ -26,7 +28,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_teacher_en',
     code: 'TEACHER_EN',
     name: 'Giáo viên Tiếng Anh',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 6,
     description: 'Giảng dạy các chương trình tiếng Anh tổng quát, tiếng Anh giao tiếp và ngữ pháp chuyên sâu theo giáo trình.',
     status: 'active',
@@ -37,7 +40,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_teacher_native',
     code: 'TEACHER_NATIVE',
     name: 'Giáo viên Bản ngữ',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 4,
     description: 'Chuyên gia giảng dạy phát âm, phản xạ giao tiếp quốc tế và các lớp luyện thi chứng chỉ nâng cao.',
     status: 'active',
@@ -48,7 +52,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_teacher_ielts',
     code: 'TEACHER_IELTS',
     name: 'Giáo viên IELTS',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 5,
     description: 'Giảng dạy luyện thi IELTS theo các band điểm mục tiêu, chấm sửa bài viết và luyện kỹ năng nói chuyên biệt.',
     status: 'active',
@@ -59,7 +64,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_teacher_toeic',
     code: 'TEACHER_TOEIC',
     name: 'Giáo viên TOEIC',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 3,
     description: 'Giảng dạy các lớp ôn thi chuẩn đầu ra TOEIC 2 kỹ năng và 4 kỹ năng quốc tế.',
     status: 'active',
@@ -70,7 +76,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_teaching_assistant',
     code: 'TA',
     name: 'Trợ giảng Đào tạo',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 8,
     description: 'Hỗ trợ giáo viên trong giờ dạy, theo dõi nền nếp học viên, kèm cặp học sinh yếu và hỗ trợ chấm bài tập về nhà.',
     status: 'active',
@@ -81,7 +88,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_cs_specialist',
     code: 'CS_SPECIALIST',
     name: 'Chuyên viên Chăm sóc Khách hàng',
-    department: 'Customer Care',
+    department: 'Phòng Chăm sóc Khách hàng & Học viên',
+    orgUnitId: 'org-dept-cs',
     targetHeadcount: 6,
     description: 'Tiếp nhận phản ánh, chăm sóc học viên định kỳ, tư vấn lộ trình học tập và hỗ trợ thủ tục tái ký học phí.',
     status: 'active',
@@ -92,7 +100,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_sales_executive',
     code: 'SALES_EXEC',
     name: 'Chuyên viên Tư vấn Tuyển sinh',
-    department: 'Phòng Tuyển sinh',
+    department: 'Phòng Tuyển sinh & Tư vấn Học viên',
+    orgUnitId: 'org-dept-sales-pool',
     targetHeadcount: 4,
     description: 'Tư vấn khóa học, sắp xếp lịch kiểm tra xếp lớp, giải đáp lộ trình và hướng dẫn hoàn tất thủ tục đăng ký.',
     status: 'active',
@@ -103,7 +112,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_accountant',
     code: 'ACCOUNTANT',
     name: 'Kế toán Cơ sở',
-    department: 'Kế toán & Tài chính',
+    department: 'Phòng Kế toán & Tài chính',
+    orgUnitId: 'org-dept-finance',
     targetHeadcount: 2,
     description: 'Quản lý thu chi học phí, xuất hóa đơn chứng từ, đối soát công nợ và hỗ trợ bảng kê tính thù lao dạy.',
     status: 'active',
@@ -114,7 +124,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_it_support',
     code: 'IT_SUPPORT',
     name: 'Kỹ thuật viên IT & Thiết bị',
-    department: 'IT & Kỹ thuật',
+    department: 'Phòng IT & Kỹ thuật',
+    orgUnitId: 'org-dept-it',
     targetHeadcount: 2,
     description: 'Bảo trì đường truyền mạng, máy tính phòng học Digi, thiết bị tương tác và hỗ trợ kỹ thuật tại các cơ sở.',
     status: 'active',
@@ -125,7 +136,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_receptionist',
     code: 'RECEPTIONIST',
     name: 'Lễ tân & Hành chính',
-    department: 'Hành chính & Lễ tân',
+    department: 'Phòng Hành chính & Lễ tân',
+    orgUnitId: 'org-dept-admin',
     targetHeadcount: 2,
     description: 'Đón tiếp học viên và phụ huynh tại sảnh, điều phối phòng học hàng ngày và xử lý thư tín liên lạc.',
     status: 'active',
@@ -136,7 +148,8 @@ export const mockJobTitles: JobTitle[] = [
     id: 'jt_academic_lead',
     code: 'ACADEMIC_LEAD',
     name: 'Trưởng bộ môn Tiếng Anh',
-    department: 'Phòng Đào tạo',
+    department: 'Ban Đào tạo & Quản lý Chất lượng (QA)',
+    orgUnitId: 'org-qa-academic',
     targetHeadcount: 2,
     description: 'Nghiên cứu phát triển giáo trình, đào tạo phương pháp sư phạm cho đội ngũ giáo viên và dự giờ định kỳ.',
     status: 'inactive',
@@ -157,7 +170,7 @@ export function getJobTitles(filters?: {
       const matchCode = item.code.toLowerCase().includes(q)
       if (!matchName && !matchCode) return false
     }
-    if (filters?.department && filters.department !== 'all' && item.department !== filters.department) {
+    if (filters?.department && filters.department !== 'all' && item.department !== filters.department && item.orgUnitId !== filters.department) {
       return false
     }
     if (filters?.status && filters.status !== 'all' && item.status !== filters.status) {
@@ -171,11 +184,18 @@ export function getJobTitleById(id: string): JobTitle | undefined {
   return mockJobTitles.find((item) => item.id === id)
 }
 
-export function addJobTitle(newTitle: Omit<JobTitle, 'id' | 'assignedEmployeeIds' | 'createdAt'>): JobTitle {
+export function addJobTitle(
+  newTitle: Omit<JobTitle, 'id' | 'assignedEmployeeIds' | 'createdAt' | 'targetHeadcount'> & {
+    assignedEmployeeIds?: string[]
+    targetHeadcount?: number
+  }
+): JobTitle {
+  const { targetHeadcount, assignedEmployeeIds, ...rest } = newTitle
   const created: JobTitle = {
-    ...newTitle,
+    ...rest,
+    targetHeadcount: targetHeadcount ?? (assignedEmployeeIds?.length || 0),
     id: `jt_${Date.now()}`,
-    assignedEmployeeIds: [],
+    assignedEmployeeIds: assignedEmployeeIds || [],
     createdAt: new Date().toISOString().split('T')[0],
   }
   mockJobTitles.unshift(created)

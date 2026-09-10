@@ -57,7 +57,7 @@ export interface PaymentReceipt {
   id: string
   code: string // Mã giao dịch chuẩn TNX (e.g. TNX00000273948)
   transactionType: TransactionType // 'receipt' (Thu) | 'payment_voucher' (Chi/Hoàn)
-  orderCode: string // Mã đơn hàng liên quan (e.g. OD-DRAFT-9230 hoặc nhiều đơn)
+  orderCode: string // Mã đơn hàng liên quan (e.g. OD-9230 hoặc nhiều đơn)
   studentName: string // Tên học viên
   parentName: string // Khách hàng (Người nộp/nhận tiền)
   phone: string // Số điện thoại liên hệ
@@ -104,11 +104,11 @@ export const TRANSACTION_TYPE_MAP: Record<TransactionType, string> = {
 
 export const RECEIPT_TYPE_MAP: Record<ReceiptType, string> = {
   deposit: 'Cọc giữ chỗ',
-  tuition_full: 'Thu đủ học phí',
-  installment: 'Thanh toán kỳ trả góp',
-  event_fee: 'Phí sự kiện / Khác',
-  refund: 'Hoàn tiền / Trả lại',
-  other: 'Khoản thu khác',
+  tuition_full: 'Học phí',
+  installment: 'Kỳ trả góp',
+  event_fee: 'Phí sự kiện',
+  refund: 'Hoàn tiền',
+  other: 'Khoản khác',
 }
 
 export const PAYMENT_METHOD_MAP: Record<PaymentMethod, string> = {
@@ -120,14 +120,14 @@ export const PAYMENT_METHOD_MAP: Record<PaymentMethod, string> = {
 
 export const RECEIPT_STATUS_MAP: Record<ReceiptStatus, string> = {
   completed: 'Thành công',
-  pending: 'Chờ thanh toán',
+  pending: 'Chờ xử lý',
   cancelled: 'Đã hủy',
 }
 
 export const mockReceivables: ReceivableItem[] = [
   {
     id: 'rec-001',
-    orderCode: 'OD-DRAFT-9230',
+    orderCode: 'OD-9230',
     studentName: 'Bé An',
     parentName: 'Nguyễn Thu Hà',
     phone: '0912345678',
@@ -141,7 +141,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-002',
-    orderCode: 'OD-DRAFT-9232',
+    orderCode: 'OD-9232',
     studentName: 'Bé Đức',
     parentName: 'Phạm Thị Bích',
     phone: '0933112233',
@@ -155,7 +155,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-003',
-    orderCode: 'OD-DRAFT-9235',
+    orderCode: 'OD-9235',
     studentName: 'Bé Quốc',
     parentName: 'Ngô Tấn Tài',
     phone: '0911223344',
@@ -169,7 +169,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-004',
-    orderCode: 'OD-DRAFT-9236',
+    orderCode: 'OD-9236',
     studentName: 'Bé Hà',
     parentName: 'Bùi Phương Thảo',
     phone: '0955443322',
@@ -183,7 +183,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-005',
-    orderCode: 'OD-DRAFT-9239',
+    orderCode: 'OD-9239',
     studentName: 'Bé Phúc',
     parentName: 'Nguyễn Thanh Tùng',
     phone: '0978889900',
@@ -197,7 +197,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-006',
-    orderCode: 'OD-DRAFT-9240',
+    orderCode: 'OD-9240',
     studentName: 'Bé Mai',
     parentName: 'Trịnh Kim Chi',
     phone: '0903332211',
@@ -211,7 +211,7 @@ export const mockReceivables: ReceivableItem[] = [
   },
   {
     id: 'rec-007',
-    orderCode: 'OD-DRAFT-9242',
+    orderCode: 'OD-9242',
     studentName: 'Bé Tâm',
     parentName: 'Cao Thị Dung',
     phone: '0979998877',
@@ -391,7 +391,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-001',
     code: 'TNX00000273948',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9230, OD-DRAFT-9231',
+    orderCode: 'OD-9230, OD-9231',
     studentName: 'Bé An, Bé Bình',
     parentName: 'Nguyễn Thu Hà',
     phone: '0912345678',
@@ -402,7 +402,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     isReconciled: true,
     items: [
       {
-        orderCode: 'OD-DRAFT-9230',
+        orderCode: 'OD-9230',
         studentName: 'Bé An',
         packageName: 'Gói SuperKids 12T',
         durationText: '30 buổi',
@@ -412,7 +412,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
         orderRemainingAmount: 0,
       },
       {
-        orderCode: 'OD-DRAFT-9231',
+        orderCode: 'OD-9231',
         studentName: 'Bé Bình',
         packageName: 'Gói Flyers Intensive',
         durationText: '30 buổi',
@@ -434,7 +434,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-002',
     code: 'TNX00000273949',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9231',
+    orderCode: 'OD-9231',
     studentName: 'Bé Bình',
     parentName: 'Nguyễn Thu Hà',
     phone: '0912345678',
@@ -455,7 +455,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-003',
     code: 'TNX00000273950',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9234, OD-DRAFT-9237, OD-DRAFT-9238',
+    orderCode: 'OD-9234, OD-9237, OD-9238',
     studentName: 'Bé Bảo, Bé Huy, Bé Trang',
     parentName: 'Hoàng Quốc Việt',
     phone: '0908889999',
@@ -466,7 +466,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     isReconciled: true,
     items: [
       {
-        orderCode: 'OD-DRAFT-9234',
+        orderCode: 'OD-9234',
         studentName: 'Bé Bảo',
         packageName: 'Gói IELTS Junior 1N',
         durationText: '36 buổi',
@@ -476,7 +476,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
         orderRemainingAmount: 0,
       },
       {
-        orderCode: 'OD-DRAFT-9237',
+        orderCode: 'OD-9237',
         studentName: 'Bé Huy',
         packageName: 'Gói Movers Bán Trú 1N',
         durationText: '30 buổi',
@@ -486,7 +486,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
         orderRemainingAmount: 0,
       },
       {
-        orderCode: 'OD-DRAFT-9238',
+        orderCode: 'OD-9238',
         studentName: 'Bé Trang',
         packageName: 'Khóa hè Khám phá Khoa học 3T',
         durationText: '12 buổi',
@@ -508,7 +508,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-004',
     code: 'TNX00000273951',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9232',
+    orderCode: 'OD-9232',
     studentName: 'Bé Đức',
     parentName: 'Phạm Thị Bích',
     phone: '0933112233',
@@ -529,7 +529,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-005',
     code: 'TNX00000273952',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9235',
+    orderCode: 'OD-9235',
     studentName: 'Bé Quốc',
     parentName: 'Ngô Tấn Tài',
     phone: '0911223344',
@@ -550,7 +550,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-006',
     code: 'TNX00000273953',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9236',
+    orderCode: 'OD-9236',
     studentName: 'Bé Hà',
     parentName: 'Bùi Phương Thảo',
     phone: '0955443322',
@@ -571,7 +571,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-007',
     code: 'TNX00000273954',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9241',
+    orderCode: 'OD-9241',
     studentName: 'Bé Huy',
     parentName: 'Ngô Hoàng Việt',
     phone: '0938887766',
@@ -592,7 +592,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-008',
     code: 'TNX00000273955',
     transactionType: 'payment_voucher',
-    orderCode: 'OD-DRAFT-9245',
+    orderCode: 'OD-9245',
     studentName: 'Bé Nam',
     parentName: 'Vũ Thị Thanh',
     phone: '0966554433',
@@ -613,7 +613,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-009',
     code: 'TNX00000273956',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9242',
+    orderCode: 'OD-9242',
     studentName: 'Bé Tâm',
     parentName: 'Cao Thị Dung',
     phone: '0979998877',
@@ -634,7 +634,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-010',
     code: 'TNX00000273957',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9239',
+    orderCode: 'OD-9239',
     studentName: 'Bé Phúc',
     parentName: 'Nguyễn Thanh Tùng',
     phone: '0978889900',
@@ -655,7 +655,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-011',
     code: 'TNX00000273958',
     transactionType: 'payment_voucher',
-    orderCode: 'OD-DRAFT-9248',
+    orderCode: 'OD-9248',
     studentName: 'Bé Minh',
     parentName: 'Trương Ngọc Ánh',
     phone: '0909887766',
@@ -676,7 +676,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-012',
     code: 'TNX00000273959',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9240',
+    orderCode: 'OD-9240',
     studentName: 'Bé Mai',
     parentName: 'Trịnh Kim Chi',
     phone: '0903332211',
@@ -697,7 +697,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-013',
     code: 'TNX00000273960',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9238',
+    orderCode: 'OD-9238',
     studentName: 'Bé Trang',
     parentName: 'Đỗ Thị Hương',
     phone: '0934445566',
@@ -718,7 +718,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-014',
     code: 'TNX00000273961',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9233',
+    orderCode: 'OD-9233',
     studentName: 'Bé Linh',
     parentName: 'Phạm Thị Bích',
     phone: '0933112233',
@@ -739,7 +739,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-015',
     code: 'TNX00000273962',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9246',
+    orderCode: 'OD-9246',
     studentName: 'Bé Vy',
     parentName: 'Đặng Thanh Thủy',
     phone: '0977665544',
@@ -760,7 +760,7 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     id: 'rcpt-016',
     code: 'TNX00000273963',
     transactionType: 'receipt',
-    orderCode: 'OD-DRAFT-9247',
+    orderCode: 'OD-9247',
     studentName: 'Bé Hùng',
     parentName: 'Phạm Hoàng Long',
     phone: '0919998888',
@@ -778,4 +778,9 @@ export const mockPaymentReceipts: PaymentReceipt[] = [
     notes: 'Thu trọn gói khóa giao tiếp 12 tháng',
   },
 ]
+
+export function addPaymentReceipt(receipt: PaymentReceipt) {
+  mockPaymentReceipts.unshift(receipt)
+}
+
 

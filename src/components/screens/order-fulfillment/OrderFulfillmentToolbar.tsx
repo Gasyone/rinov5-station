@@ -1,15 +1,14 @@
 'use client'
 
+import { Gift } from 'lucide-react'
 import {
   BranchSelect,
   ExpandableSearch,
   FilterIconButton,
 } from '@/components/controls'
-import type { OrderFulfillmentRecord } from '@/mocks/orderFulfillments'
-import { OrderFulfillmentSmartcardPopover } from './OrderFulfillmentSmartcardPopover'
+import { Button } from '@/components/ui/button'
 
 interface OrderFulfillmentToolbarProps {
-  records: OrderFulfillmentRecord[]
   branches: string[]
   activeBranch: string
   searchTerm: string
@@ -17,10 +16,10 @@ interface OrderFulfillmentToolbarProps {
   onBranchChange: (branch: string) => void
   onSearchChange: (value: string) => void
   onOpenFilters: () => void
+  onOpenCreate: () => void
 }
 
 export function OrderFulfillmentToolbar({
-  records,
   branches,
   activeBranch,
   searchTerm,
@@ -28,6 +27,7 @@ export function OrderFulfillmentToolbar({
   onBranchChange,
   onSearchChange,
   onOpenFilters,
+  onOpenCreate,
 }: OrderFulfillmentToolbarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2.5 bg-background py-1">
@@ -42,15 +42,22 @@ export function OrderFulfillmentToolbar({
         />
       </div>
 
-      {/* Tìm kiếm, Lọc nâng cao & Smartcard Popover bên phải */}
+      {/* Tìm kiếm, Lọc nâng cao, Nút tạo phiếu & Smartcard Popover bên phải */}
       <div className="flex items-center gap-2">
         <ExpandableSearch
           value={searchTerm}
           onValueChange={onSearchChange}
-          placeholder="Tìm theo mã đơn, DLV, khách hàng, SĐT, học viên..."
+          placeholder="Tìm theo mã đơn, DLV, căn cứ, SĐT, học viên..."
         />
         <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
-        <OrderFulfillmentSmartcardPopover records={records} />
+        <Button
+          size="sm"
+          className="h-8 text-xs font-medium gap-1.5 cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs"
+          onClick={onOpenCreate}
+        >
+          <Gift className="h-3.5 w-3.5" />
+          <span>+ Xuất quà / Bàn giao</span>
+        </Button>
       </div>
     </div>
   )

@@ -24,11 +24,11 @@ interface PaymentReceiptCreateDialogProps {
 }
 
 const ORDER_OPTIONS = [
-  { value: 'OD-DRAFT-9230', label: 'OD-DRAFT-9230 • Bé An (Gói SuperKids 12T - 18.000.000 đ)' },
-  { value: 'OD-DRAFT-9231', label: 'OD-DRAFT-9231 • Bé Bình (Flyers Intensive - 15.000.000 đ)' },
-  { value: 'OD-DRAFT-9232', label: 'OD-DRAFT-9232 • Bé Đức (Gói Movers 1N - 28.000.000 đ)' },
-  { value: 'OD-DRAFT-9235', label: 'OD-DRAFT-9235 • Bé Quốc (SuperKids 6T - 12.000.000 đ)' },
-  { value: 'OD-DRAFT-9236', label: 'OD-DRAFT-9236 • Bé Hà (Gói Kindy 12T - 20.000.000 đ)' },
+  { value: 'OD-9230', label: 'OD-9230 • Bé An (Gói SuperKids 12T - 18.000.000 đ)' },
+  { value: 'OD-9231', label: 'OD-9231 • Bé Bình (Flyers Intensive - 15.000.000 đ)' },
+  { value: 'OD-9232', label: 'OD-9232 • Bé Đức (Gói Movers 1N - 28.000.000 đ)' },
+  { value: 'OD-9235', label: 'OD-9235 • Bé Quốc (SuperKids 6T - 12.000.000 đ)' },
+  { value: 'OD-9236', label: 'OD-9236 • Bé Hà (Gói Kindy 12T - 20.000.000 đ)' },
 ]
 
 const TRANSACTION_TYPE_OPTIONS = [
@@ -38,15 +38,15 @@ const TRANSACTION_TYPE_OPTIONS = [
 
 const RECEIPT_TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
   { value: 'deposit', label: 'Cọc giữ chỗ' },
-  { value: 'tuition_full', label: 'Thu đủ học phí' },
-  { value: 'installment', label: 'Thanh toán kỳ trả góp' },
-  { value: 'event_fee', label: 'Phí sự kiện / Thi thử' },
-  { value: 'other', label: 'Khoản thu khác' },
+  { value: 'tuition_full', label: 'Học phí' },
+  { value: 'installment', label: 'Kỳ trả góp' },
+  { value: 'event_fee', label: 'Phí sự kiện' },
+  { value: 'other', label: 'Khoản khác' },
 ]
 
 const VOUCHER_TYPE_OPTIONS: { value: ReceiptType; label: string }[] = [
-  { value: 'refund', label: 'Hoàn tiền cọc / Hoàn học phí' },
-  { value: 'other', label: 'Khoản chi khác' },
+  { value: 'refund', label: 'Hoàn tiền' },
+  { value: 'other', label: 'Khoản khác' },
 ]
 
 const METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
@@ -63,7 +63,7 @@ export function PaymentReceiptCreateDialog({
   initialTransactionType = 'receipt',
 }: PaymentReceiptCreateDialogProps) {
   const [transactionType, setTransactionType] = useState<TransactionType>(initialTransactionType)
-  const [orderCode, setOrderCode] = useState('OD-DRAFT-9230')
+  const [orderCode, setOrderCode] = useState('OD-9230')
   const [studentName, setStudentName] = useState('Bé An')
   const [parentName, setParentName] = useState('Nguyễn Thu Hà')
   const [phone, setPhone] = useState('0912345678')

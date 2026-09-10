@@ -1,7 +1,7 @@
 import {
   CalendarDays,
   GraduationCap,
-  Briefcase,
+  SlidersHorizontal,
   Home,
   Ticket,
   Settings,
@@ -79,7 +79,6 @@ export const navigationGroups: NavigationGroup[] = [
     items: [
       { id: 'booking_test', label: 'Kiểm tra/Trải nghiệm', href: '/app/booking_test' },
       { id: 'trial_class', label: 'Lớp học thử', href: '/app/trial_class' },
-      { id: 'order_fulfillment', label: 'Bàn giao & Giao hàng', href: '/app/order_fulfillment' },
       { id: 'class_placement', label: 'Xếp lớp học viên', href: '/app/class_placement' },
     ],
   },
@@ -89,6 +88,7 @@ export const navigationGroups: NavigationGroup[] = [
     icon: GraduationCap,
     items: [
       { id: 'classes', label: 'Quản lý Lớp học', href: '/app/classes' },
+      { id: 'order_fulfillment', label: 'Bàn giao & Giao hàng', href: '/app/order_fulfillment' },
       { id: 'leave_reserve', label: 'Bảo lưu & Nghỉ phép', href: '/app/leave_reserve' },
       { id: 'makeup_class', label: 'Học bù học viên', href: '/app/makeup_class' },
       { id: 'student_operations_alert', label: 'Chăm sóc học viên', href: '/app/student_operations_alert' },
@@ -104,15 +104,13 @@ export const navigationGroups: NavigationGroup[] = [
     ],
   },
   {
-    id: 'group_hr_exec',
-    label: 'Đội ngũ & Điều hành',
-    icon: Briefcase,
+    id: 'group_operations_config',
+    label: 'Cấu hình Vận hành',
+    icon: SlidersHorizontal,
     items: [
-      { id: 'dashboard', label: 'Executive Dashboard', href: '/app/dashboard' },
-      { id: 'teacher_assignment', label: 'Phân công Giảng dạy', href: '/app/teacher_assignment' },
-      { id: 'hr_employees', label: 'Hồ sơ Nhân sự', href: '/app/hr_employees' },
-      { id: 'substitute_payroll', label: 'Duyệt Dạy thay & Lương ca', href: '/app/substitute_payroll' },
-      { id: 'reports', label: 'Báo cáo Vận hành', href: '/app/reports' },
+      { id: 'branches', label: 'Quản lý cơ sở', href: '/app/branches' },
+      { id: 'org_structure', label: 'Sơ đồ tổ chức', href: '/app/org_structure' },
+      { id: 'job_titles', label: 'Chức danh', href: '/app/job_titles' },
     ],
   },
   {
@@ -120,7 +118,8 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Cấu hình Hệ thống',
     icon: Settings,
     items: [
-      { id: 'job_titles', label: 'Chức danh', href: '/app/job_titles' },
+      { id: 'system_config', label: 'Cấu hình hệ thống', href: '/app/system_config' },
+      { id: 'lead_lifecycle_config', label: 'Cấu hình Phễu & Kho Lead', href: '/app/lead_lifecycle_config' },
       { id: 'care_conditions_config', label: 'Danh mục chăm sóc', href: '/app/care_conditions_config' },
       { id: 'permissions', label: 'Nhóm quyền', href: '/app/permissions' },
     ],

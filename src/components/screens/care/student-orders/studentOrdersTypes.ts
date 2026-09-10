@@ -100,6 +100,7 @@ export interface DetailedOrder extends Order {
   canConvertProduct?: boolean
   remainingSessions?: number
   isExpired?: boolean
+  isCurrentPackage?: boolean
 }
 
 export type TransferCategory = 'fee_transfer' | 'product_conversion'
@@ -153,6 +154,9 @@ export interface FeeTransferRecord {
 export interface StudentOrdersTabProps {
   studentId: string
   studentName: string
+  initialOrders?: DetailedOrder[]
+  initialTransfers?: FeeTransferRecord[]
+  onOpenCreateOrder?: () => void
 }
 
 // Re-export mock data helpers for backward compatibility

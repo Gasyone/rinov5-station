@@ -94,8 +94,8 @@ export function NotificationDropdown() {
     if (notif.targetRoute) {
       router.push(notif.targetRoute)
     } else {
-      router.push('/app/dashboard')
-      toast.info('Trang liên kết không khả dụng, đã chuyển về Tổng quan')
+      router.push('/app/calendar_class_schedule')
+      toast.info('Trang liên kết không khả dụng, đã chuyển về Lịch học')
     }
   }
 

@@ -81,13 +81,21 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { CareConditionsConfigScreen } = await import('@/components/screens/care-conditions-config/CareConditionsConfigScreen')
     return { default: CareConditionsConfigScreen }
   }),
+  lead_lifecycle_config: safeLazy(async () => {
+    const { LeadLifecycleConfigScreen } = await import('@/components/screens/lead-lifecycle-config/LeadLifecycleConfigScreen')
+    return { default: LeadLifecycleConfigScreen }
+  }),
   permissions: safeLazy(async () => {
     const { PermissionsScreen } = await import('@/components/screens/permissions/PermissionsScreen')
     return { default: PermissionsScreen }
   }),
-  hr_employees: safeLazy(async () => {
-    const { EmployeesScreen } = await import('@/components/screens/employees/EmployeesScreen')
-    return { default: EmployeesScreen }
+  branches: safeLazy(async () => {
+    const { BranchesScreen } = await import('@/components/screens/branches/BranchesScreen')
+    return { default: BranchesScreen }
+  }),
+  org_structure: safeLazy(async () => {
+    const { OrgStructureScreen } = await import('@/components/screens/org-structure/OrgStructureScreen')
+    return { default: OrgStructureScreen }
   }),
   products: safeLazy(async () => {
     const { ProductsScreen } = await import('@/components/screens/products/ProductsScreen')

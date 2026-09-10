@@ -59,6 +59,9 @@ export function OrderFulfillmentProductsPopover({
   }
 
   const totalQuantity = products.reduce((acc, p) => acc + (p.quantity || 1), 0)
+  const distinctCategories = Array.from(
+    new Set(products.map((p) => PRODUCT_CATEGORY_MAP[p.category] || p.category))
+  )
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,36 +74,56 @@ export function OrderFulfillmentProductsPopover({
           onClick={(e) => e.stopPropagation()}
           title="Nhấp xem chi tiết danh sách sản phẩm bàn giao"
         >
-          {/* Dòng 1: Icon mở rộng nếu nhiều sản phẩm + Tên sản phẩm đầu tiên */}
-          <div className="flex items-center gap-1 min-w-0">
-            {hasMultipleProducts && (
+          {/* Dòng 1: Nếu 1 SP thì hiển thị thẳng tên SP; Nếu nhiều SP thì là "[N] sản phẩm" */}
+          {hasMultipleProducts ? (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Package className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="font-semibold text-foreground group-hover/pkg:text-primary text-xs truncate">
+                {products.length} sản phẩm
+              </span>
               <ChevronDown
                 className={cn(
-                  'h-3.5 w-3.5 text-muted-foreground/80 shrink-0 transition-transform duration-200',
+                  'h-3 w-3 text-muted-foreground/80 shrink-0 transition-transform duration-200',
                   open && 'rotate-180'
                 )}
               />
-            )}
-            <p className="truncate font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline">
-              {firstProduct.name}
-            </p>
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 min-w-0">
+              <p
+                className="truncate font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline text-xs"
+                title={firstProduct.name}
+              >
+                {firstProduct.name}
+              </p>
+            </div>
+          )}
 
-          {/* Dòng 2: SL + Phân loại + (+X món khác) */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0 flex-wrap">
-            <span className="font-mono text-muted-foreground shrink-0 text-[11px]">
-              x{firstProduct.quantity} {firstProduct.unit}
-            </span>
-            <span className="text-muted-foreground/40 shrink-0 font-light">•</span>
-            <span className="text-[11px] text-muted-foreground shrink-0">
-              {PRODUCT_CATEGORY_MAP[firstProduct.category] || firstProduct.category}
-            </span>
-            {hasMultipleProducts && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border/70 shrink-0 font-mono">
-                +{products.length - 1} món khác
+          {/* Dòng 2: Số lượng hiện vật & Phân loại danh mục (xác định 100% thuộc tính sản phẩm) */}
+          {hasMultipleProducts ? (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0 truncate">
+              <span className="font-mono font-medium text-foreground text-[11px] shrink-0">
+                Tổng {totalQuantity} món
               </span>
-            )}
-          </div>
+              <span className="text-muted-foreground/40 shrink-0 font-light">•</span>
+              <span
+                className="text-[11px] text-muted-foreground truncate"
+                title={`Tổng ${totalQuantity} hiện vật thuộc các danh mục: ${distinctCategories.join(', ')}`}
+              >
+                {distinctCategories.join(', ')}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0">
+              <span className="font-mono text-foreground font-medium text-[11px] shrink-0">
+                SL: {firstProduct.quantity} {firstProduct.unit}
+              </span>
+              <span className="text-muted-foreground/40 shrink-0 font-light">•</span>
+              <span className="text-[11px] text-muted-foreground truncate">
+                {PRODUCT_CATEGORY_MAP[firstProduct.category] || firstProduct.category}
+              </span>
+            </div>
+          )}
         </div>
       </PopoverTrigger>
 

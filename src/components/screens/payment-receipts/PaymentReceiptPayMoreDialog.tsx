@@ -55,9 +55,9 @@ export function PaymentReceiptPayMoreDialog({
   // Lấy dữ liệu từ receipt hoặc order
   const orderCode = receipt?.orderCode || order?.orderNo || 'ORD-2026003'
   const studentName = receipt?.studentName || order?.studentName || 'Lê Chi'
-  const totalOrderAmount = receipt?.orderTotalAmount || order?.totalAmount || 2000000
+  const totalOrderAmount = receipt?.orderTotalAmount || order?.finalAmount || order?.totalAmount || 2000000
   const remainingAmount = receipt?.orderRemainingAmount ?? (order?.remainingAmount ?? 2000000)
-  const paidAmount1 = totalOrderAmount - remainingAmount > 0 ? (totalOrderAmount - remainingAmount) : (receipt?.amount || 0)
+  const paidAmount1 = totalOrderAmount - remainingAmount > 0 ? (totalOrderAmount - remainingAmount) : (receipt?.amount || (order?.paidAmount ?? 0))
 
   const [payAmount2, setPayAmount2] = useState<string>(String(remainingAmount > 0 ? remainingAmount : 2000000))
   const [method2, setMethod2] = useState<string>('COD')
@@ -120,7 +120,11 @@ export function PaymentReceiptPayMoreDialog({
   }
 
   // Gói học mẫu
-  const packageName = receipt?.items?.[0]?.packageName || (order as Order & { packageName?: string })?.packageName || 'Khóa học Tiếng Anh A1 (1:6 - 48 buổi)'
+  const packageName =
+    receipt?.items?.[0]?.packageName ||
+    (order as Order & { packageName?: string })?.packageName ||
+    order?.items?.[0]?.productName ||
+    'Khóa học Tiếng Anh A1 (1:6 - 48 buổi)'
   const totalSessions = 48
   const convertedSessionsAlready = 24
   const calculatedConvertMoney = 0

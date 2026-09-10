@@ -5,9 +5,7 @@ import {
   Camera,
   CheckCircle2,
   PackageCheck,
-  Paperclip,
   Truck,
-  Upload,
   User,
   X,
 } from 'lucide-react'

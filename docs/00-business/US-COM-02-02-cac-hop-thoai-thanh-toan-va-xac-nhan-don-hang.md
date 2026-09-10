@@ -13,7 +13,7 @@ tags: [commerce, order, payment, confirmation, modal, deposit, session-conversio
 
 > **Tham chiếu:** `BF-COM-02` · `SR-SALE-002` · Giao diện Mẫu §4.4 (Biểu mẫu / Hộp thoại)  
 > **Đường dẫn màn hình & Trạng thái liên quan:**  
-> - `/app/crm_my_leads` hoặc `/app/orders` (Kích hoạt từ Biểu mẫu Lên đơn hàng) -> Trạng thái phát sinh: `Đang xử lý` / `Đơn nháp (Chờ thu phí)` / `Đã cọc`  
+> - `/app/crm_my_leads` hoặc `/app/orders` (Kích hoạt từ Biểu mẫu Lên đơn hàng) -> Trạng thái phát sinh: `Đang xử lý` / `Chờ thanh toán (Chờ thu phí)` / `Đã cọc`  
 > - **Phiên bản hệ thống:** `v2026.08.27.01.prod`
 
 ---
@@ -147,7 +147,7 @@ sequenceDiagram
 #### B. Nút hành động trên Hộp thoại 2
 | Tên nút | Kiểu hiển thị | Logic xử lý nghiệp vụ | Mã Quyền Yêu Cầu (Required Capability) |
 |---|---|---|---|
-| **Hủy** | Nút màu đỏ / viền đỏ | Đóng hộp thoại xác nhận thông tin, giữ nguyên trạng thái đơn hàng nháp | `commerce.order.create` |
+| **Hủy** | Nút màu đỏ / viền đỏ | Đóng hộp thoại xác nhận thông tin, giữ nguyên trạng thái đơn hàng chờ thanh toán | `commerce.order.create` |
 | **Tạo đơn** | Nút màu xanh lá nổi bật | Kiểm tra dữ liệu giao nhận $\rightarrow$ Ghi nhận tạo đơn hàng chính thức vào cơ sở dữ liệu $\rightarrow$ Hiển thị thông báo thành công $\rightarrow$ Đóng toàn bộ hộp thoại | `commerce.order.create` |
 
 ---

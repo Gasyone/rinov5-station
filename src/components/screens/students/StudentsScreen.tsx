@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
 import { StudentsToolbar } from './StudentsToolbar'
@@ -14,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { FieldLabel } from '@/components/shared'
 
 export function StudentsScreen() {
+  const router = useRouter()
   const [activeStatus, setActiveStatus] = useState<StudentStatusId>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [branchFilter, setBranchFilter] = useState('all')
@@ -270,7 +272,7 @@ export function StudentsScreen() {
               })
             }}
             onCreateTicket={(id) => toast.info('Tính năng đang được phát triển!')}
-            onView={(id) => setActiveStudentId(id)}
+            onView={(id) => router.push(`/app/students/${id}`)}
           />
         </DataTableFrame>
       </div>

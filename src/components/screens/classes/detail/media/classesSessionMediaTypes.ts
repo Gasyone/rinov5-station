@@ -87,3 +87,81 @@ export function extractThumbnailFromUrl(
     defaultName: 'Liên kết đính kèm',
   }
 }
+
+/**
+ * Helper functions for Date parsing, formatting, and filtering in ClassesSessionMedia
+ */
+export function parseDateString(dateStr: string): Date | null {
+  if (!dateStr) return null
+  const trimmed = dateStr.trim()
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/')
+    if (parts.length === 3) {
+      const d = Number(parts[0])
+      const m = Number(parts[1]) - 1
+      const y = Number(parts[2])
+      const date = new Date(y, m, d)
+      return isNaN(date.getTime()) ? null : date
+    }
+  }
+  if (trimmed.includes('-')) {
+    const parts = trimmed.split('-')
+    if (parts.length === 3) {
+      const y = Number(parts[0])
+      const m = Number(parts[1]) - 1
+      const d = Number(parts[2])
+      const date = new Date(y, m, d)
+      return isNaN(date.getTime()) ? null : date
+    }
+  }
+  const fallback = new Date(trimmed)
+  return isNaN(fallback.getTime()) ? null : fallback
+}
+
+export function formatDateToDisplay(date: Date | string | null | undefined): string {
+  if (!date) return ''
+  const d = typeof date === 'string' ? parseDateString(date) : date
+  if (!d) return ''
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+
+export function formatDateToISO(date: Date | null | undefined): string {
+  if (!date) return ''
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+export function isDateInRange(
+  sessionDateStr: string,
+  startDateStr: string,
+  endDateStr: string
+): boolean {
+  if (!startDateStr && !endDateStr) return true
+  const itemDate = parseDateString(sessionDateStr)
+  if (!itemDate) return true
+
+  const itemTime = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate()).getTime()
+
+  if (startDateStr) {
+    const sDate = parseDateString(startDateStr)
+    if (sDate) {
+      const startTime = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate()).getTime()
+      if (itemTime < startTime) return false
+    }
+  }
+
+  if (endDateStr) {
+    const eDate = parseDateString(endDateStr)
+    if (eDate) {
+      const endTime = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate()).getTime()
+      if (itemTime > endTime) return false
+    }
+  }
+
+  return true
+}

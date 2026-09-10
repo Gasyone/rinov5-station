@@ -57,9 +57,16 @@ export function CrmCustomerChildSection({
   }
 
   const handleToggleCollapseChild = (childId: string) => {
-    setChildren((prev) =>
-      prev.map((c) => (c.id === childId ? { ...c, isCollapsed: !c.isCollapsed } : c))
-    )
+    setChildren((prev) => {
+      const target = prev.find((c) => c.id === childId)
+      const willBeOpen = target?.isCollapsed ?? false
+      return prev.map((c) => {
+        if (c.id === childId) {
+          return { ...c, isCollapsed: !c.isCollapsed }
+        }
+        return willBeOpen ? { ...c, isCollapsed: true } : c
+      })
+    })
   }
 
   const handleRemoveChild = (id: string) => {

@@ -156,8 +156,8 @@ export function getAssignedEmployeesForRole(role?: PermissionRole | null): Emplo
   if (text.includes('trợ giảng') || text.includes('assistant') || text.includes('ta')) {
     return mockEmployees.filter((e) => e.position.includes('Teaching Assistant') || e.position.includes('Tutor'))
   }
-  if (text.includes('telesale') || text.includes('sale') || text.includes('tuyển sinh')) {
-    return mockEmployees.filter((e) => e.department === 'Sales')
+  if (text.includes('telesale') || text.includes('sale') || text.includes('tuyển sinh') || text.includes('tái phí') || text.includes('gia hạn')) {
+    return mockEmployees.filter((e) => e.department === 'Sales' || e.department === 'Customer Care')
   }
   if (text.includes('cskh') || text.includes('chăm sóc') || text.includes('csm')) {
     return mockEmployees.filter((e) => e.department === 'Customer Care')

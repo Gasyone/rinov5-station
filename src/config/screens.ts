@@ -4,10 +4,6 @@ export interface ScreenConfig {
 }
 
 export const screens: Record<string, ScreenConfig> = {
-  dashboard: {
-    label: 'Executive Dashboard',
-    description: 'Tổng quan chỉ số điều hành dành cho Quản lý chi nhánh',
-  },
   my_schedule: {
     label: 'Lịch của tôi',
     description: 'Sổ tay tác nghiệp ca dạy cá nhân dành cho Giáo viên và Trợ giảng',
@@ -126,6 +122,14 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Danh mục chăm sóc',
     description: 'Cấu hình Quy tắc & Điều kiện Chăm sóc Học viên (Nguồn chỉ số CSDL, Tiêu chí, SLA & Phân công vai trò phụ trách)',
   },
+  system_config: {
+    label: 'Cấu hình hệ thống',
+    description: 'Thiết lập thông tin quyền và ma trận phân quyền Phân hệ Station',
+  },
+  lead_lifecycle_config: {
+    label: 'Cấu hình Phễu & Kho Lead',
+    description: 'Quản lý Kho dữ liệu tiếp nhận, Trạng thái phễu tuyển sinh, Mã cuộc gọi tương tác và Ma trận chuyển dịch dữ liệu',
+  },
   permissions: {
     label: 'Nhóm quyền',
     description: 'Quản lý Topic phân loại, Nhóm quyền và Ma trận cấp phép hành động RBAC & Data Scope',
@@ -134,22 +138,12 @@ export const screens: Record<string, ScreenConfig> = {
     label: 'Quản lý Ticket & Chất lượng',
     description: 'Ghi nhận và xử lý phản ánh, khiếu nại và yêu cầu hỗ trợ từ học viên/phụ huynh',
   },
-
-  teacher_assignment: {
-    label: 'Phân công Giảng dạy',
-    description: 'Gán giáo viên chính, trợ giảng và duyệt công thế ca',
+  branches: {
+    label: 'Quản lý cơ sở',
+    description: 'Quản lý danh sách cơ sở/chi nhánh, phòng học, sức chứa, giờ hoạt động và cấu hình vận hành cơ sở',
   },
-  hr_employees: {
-    label: 'Hồ sơ Nhân sự',
-    description: 'Quản lý hồ sơ giáo viên, trợ giảng và nhân viên chi nhánh',
-  },
-  substitute_payroll: {
-    label: 'Duyệt Dạy thay & Lương ca',
-    description: 'Duyệt ca thế dạy và tính toán thù lao giảng dạy theo ca',
-  },
-
-  reports: {
-    label: 'Báo cáo Vận hành',
-    description: 'Thống kê tổng hợp sĩ số, giờ dạy, chuyên cần và doanh thu đào tạo',
+  org_structure: {
+    label: 'Sơ đồ tổ chức',
+    description: 'Quản lý cây sơ đồ tổ chức, cơ cấu phòng ban và phân bổ nhân sự theo khối/vùng/chi nhánh',
   },
 }

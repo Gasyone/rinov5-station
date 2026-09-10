@@ -637,7 +637,7 @@ export function RenewalAlertRow({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-foreground hover:text-primary hover:underline cursor-pointer"
-                      title="Xem Landing Page Báo giá & Chi tiết Đơn hàng nháp"
+                      title="Xem Landing Page Báo giá & Chi tiết Đơn hàng"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {order.orderCode}

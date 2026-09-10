@@ -1223,10 +1223,11 @@ export const mockOrders: Order[] = [
     paymentHistory: [],
     paymentMethod: "bank_transfer",
     paymentStatus: "unpaid",
-    status: "pending",
+    status: "cancelled",
     branch: "RinoEdu Nguyễn Tuân",
     saleBy: "Lê Văn Hùng",
     createdAt: "2026-08-20T14:30:00Z",
+    notes: "Khách hàng hủy đơn do thay đổi kế hoạch",
   },
   {
     id: "o-new-3",

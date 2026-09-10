@@ -7,11 +7,11 @@ import {
   Pencil,
   Trash2,
   Users,
-  AlertCircle,
-  CheckCircle2,
+  Network,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Table,
   TableBody,
@@ -20,39 +20,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  EntityCell,
-  StatusBadge,
-  EmptyState,
-  AvatarStack,
-} from '@/components/shared'
+import { StatusBadge, EmptyState } from '@/components/shared'
+import { cn } from '@/lib/utils'
 import { mockEmployees } from '@/mocks/employees'
 import type { JobTitle } from './jobTitlesTypes'
-import {
-  mapEmployeesToAvatarStack,
-  getHeadcountMetrics,
-} from './jobTitlesHelpers'
+import { getAssignedEmployees } from './jobTitlesHelpers'
 
 interface JobTitlesTableProps {
   items: JobTitle[]
-  onOpenAssignModal: (item: JobTitle) => void
+  selectedIds: Set<string>
+  onToggleSelect: (id: string) => void
+  onToggleSelectAll: () => void
   onEdit: (item: JobTitle) => void
   onDelete: (item: JobTitle) => void
 }
 
-const COLUMNS = [
-  { label: 'Chức danh (Mã & Tên)', className: 'min-w-[220px]' },
-  { label: 'Khối / Phòng ban', className: 'min-w-[160px]' },
-  { label: 'Nhân sự đảm nhiệm (Gán)', className: 'min-w-[240px]' },
-  { label: 'Định mức nhân sự', className: 'min-w-[170px]' },
-  { label: 'Mô tả nhiệm vụ', className: 'min-w-[260px]' },
-  { label: 'Trạng thái', className: 'min-w-[120px]' },
-  { label: 'Thao tác', className: 'w-[120px] text-right' },
-]
-
 export const JobTitlesTable: React.FC<JobTitlesTableProps> = ({
   items,
-  onOpenAssignModal,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
   onEdit,
   onDelete,
 }) => {
@@ -62,81 +49,160 @@ export const JobTitlesTable: React.FC<JobTitlesTableProps> = ({
         <EmptyState
           icon={<Briefcase className="h-8 w-8 text-muted-foreground" />}
           title="Không tìm thấy chức danh phù hợp"
-          description="Hãy thử điều chỉnh bộ lọc phòng ban, định mức hoặc từ khóa tìm kiếm."
+          description="Hãy thử điều chỉnh bộ lọc phòng ban hoặc từ khóa tìm kiếm."
         />
       </div>
     )
   }
 
-  return (
-    <div className="h-full w-full overflow-auto">
-      <Table containerClassName="min-w-full" className="min-w-[1100px]">
-        <TableHeader>
-          <TableRow className="bg-muted/50 hover:bg-muted/50">
-            {COLUMNS.map((col) => (
-              <TableHead key={col.label} className={col.className}>
-                {col.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item) => {
-            const { items: avatarItems, employees } = mapEmployeesToAvatarStack(
-              item.assignedEmployeeIds,
-              mockEmployees
-            )
-            const metrics = getHeadcountMetrics(
-              item.assignedEmployeeIds.length,
-              item.targetHeadcount
-            )
+  const isAllSelected = items.length > 0 && items.every((i) => selectedIds.has(i.id))
+  const isSomeSelected = items.some((i) => selectedIds.has(i.id)) && !isAllSelected
 
-            return (
-              <TableRow
-                key={item.id}
-                className="hover:bg-muted/30 transition-colors group"
-              >
-                {/* 1. Mã & Tên chức danh */}
+  return (
+    <Table containerClassName="w-full min-h-full" className="min-w-[950px]">
+      <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-xs shadow-2xs">
+        <TableRow className="border-b border-border hover:bg-transparent">
+          {/* 1. Cột Chức danh có Checkbox chọn tất cả */}
+          <TableHead className="min-w-[320px]">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={isAllSelected ? true : isSomeSelected ? 'indeterminate' : false}
+                onCheckedChange={onToggleSelectAll}
+                aria-label="Chọn tất cả chức danh"
+                className="cursor-pointer"
+              />
+              <span className="font-semibold text-foreground">Chức danh</span>
+            </div>
+          </TableHead>
+
+          {/* 2. Khối / Phòng ban */}
+          <TableHead className="min-w-[160px]">Khối / Phòng ban</TableHead>
+
+          {/* 3. Nhân sự đảm nhiệm */}
+          <TableHead className="min-w-[260px]">Nhân sự đảm nhiệm</TableHead>
+
+          {/* 4. Mô tả nhiệm vụ */}
+          <TableHead className="min-w-[260px] max-w-[380px]">Mô tả nhiệm vụ</TableHead>
+
+          {/* 5. Trạng thái */}
+          <TableHead className="min-w-[120px]">Trạng thái</TableHead>
+        </TableRow>
+      </TableHeader>
+
+      <TableBody>
+        {items.map((item) => {
+          const isSelected = selectedIds.has(item.id)
+          const assignedStaff = getAssignedEmployees(item.assignedEmployeeIds, mockEmployees)
+          const staffCount = item.assignedEmployeeIds.length
+          const staffPreview = assignedStaff
+            .slice(0, 3)
+            .map((e) => e.name)
+            .join(', ')
+
+          return (
+            <TableRow
+              key={item.id}
+              className={cn(
+                'transition-colors border-b border-border/60 hover:bg-muted/30 group',
+                isSelected && 'bg-muted/40'
+              )}
+            >
+                {/* 1. CỘT CHỨC DANH: Checkbox + Tên chức danh + Mã chức danh ở dưới + Nút Thao tác ở cạnh phải */}
                 <TableCell>
-                  <EntityCell
-                    name={item.name}
-                    supporting={`MÃ: ${item.code}`}
-                    className="font-medium text-foreground"
-                  />
+                  <div className="flex items-center justify-between w-full gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleSelect(item.id)}
+                        aria-label={`Chọn chức danh ${item.name}`}
+                        className="cursor-pointer shrink-0"
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <span
+                          className="font-medium text-sm text-foreground truncate cursor-pointer hover:underline"
+                          onClick={() => onEdit(item)}
+                          title={`Bấm để chỉnh sửa ${item.name}`}
+                        >
+                          {item.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {item.code}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* CÁC NÚT THAO TÁC NẰM Ở CẠNH PHẢI DÒNG CỘT CHỨC DANH */}
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      {/* Nút Sửa (Mở Modal 2 panel chi tiết & nhân sự) */}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEdit(item)
+                        }}
+                        title="Chỉnh sửa thông tin & nhân sự chức danh"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+
+                      {/* Nút Xóa */}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(item)
+                        }}
+                        title="Xóa chức danh"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
                 </TableCell>
 
-                {/* 2. Khối / Phòng ban */}
+                {/* 2. KHỐI / PHÒNG BAN */}
                 <TableCell>
-                  <Badge variant="outline" className="text-xs font-normal bg-background">
-                    {item.department}
+                  <Badge
+                    variant="outline"
+                    className="text-xs font-normal bg-muted/30 text-foreground gap-1.5 py-1 border-border/80 inline-flex items-center"
+                    title={item.department}
+                  >
+                    <Network className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate max-w-[220px]">{item.department}</span>
                   </Badge>
                 </TableCell>
 
-                {/* 3. Cột Gán Nhân sự */}
+                {/* 3. NHÂN SỰ ĐẢM NHIỆM: Danh sách nhân sự ở dưới, không có ngoặc */}
                 <TableCell>
                   <div
-                    className="flex items-center gap-2 cursor-pointer p-1 -m-1 rounded-md hover:bg-accent/40 transition-colors"
-                    onClick={() => onOpenAssignModal(item)}
-                    title="Bấm để xem và phân bổ nhân sự"
+                    className="flex flex-col cursor-pointer p-1 -m-1 rounded-md hover:bg-accent/40 transition-colors max-w-[280px]"
+                    onClick={() => onEdit(item)}
+                    title="Bấm để xem và quản lý nhân sự đảm nhiệm"
                   >
-                    {avatarItems.length > 0 ? (
-                      <div className="flex items-center gap-2.5">
-                        <AvatarStack items={avatarItems} maxVisible={3} size="sm" />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-foreground flex items-center gap-1">
-                            <Users className="h-3 w-3 text-muted-foreground" />
-                            {item.assignedEmployeeIds.length} nhân sự
-                          </span>
-                          <span className="text-[10px] text-muted-foreground truncate max-w-[130px]">
-                            {employees.slice(0, 2).map((e) => e.name).join(', ')}
-                            {employees.length > 2 ? '...' : ''}
-                          </span>
+                    {staffCount > 0 ? (
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                          <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span>{staffCount} nhân sự</span>
                         </div>
+                        <span className="text-xs text-muted-foreground truncate line-clamp-1 max-w-[260px]">
+                          {staffPreview}{staffCount > 3 ? ', ...' : ''}
+                        </span>
                       </div>
                     ) : (
                       <button
                         type="button"
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-dashed border-primary/40 text-primary text-xs font-medium hover:bg-primary/5 transition-colors cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEdit(item)
+                        }}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-dashed border-primary/40 text-primary text-xs font-medium hover:bg-primary/5 transition-colors cursor-pointer w-fit"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
                         <span>+ Gán nhân sự</span>
@@ -145,94 +211,27 @@ export const JobTitlesTable: React.FC<JobTitlesTableProps> = ({
                   </div>
                 </TableCell>
 
-                {/* 4. Định mức nhân sự */}
-                <TableCell>
-                  <div className="flex flex-col gap-1 max-w-[150px]">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-foreground">
-                        {metrics.label} <span className="text-[11px] font-normal text-muted-foreground">người</span>
-                      </span>
-                      {metrics.isUnder ? (
-                        <span className="flex items-center gap-0.5 text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                          <AlertCircle className="h-2.5 w-2.5" />
-                          Thiếu
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                          Đạt
-                        </span>
-                      )}
-                    </div>
-                    {/* Mini capacity bar */}
-                    <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          metrics.isUnder ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${Math.min(metrics.percentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </TableCell>
-
-                {/* 5. Mô tả nhiệm vụ */}
-                <TableCell>
+                {/* 4. MÔ TẢ NHIỆM VỤ */}
+                <TableCell className="whitespace-normal max-w-[380px]">
                   <p
-                    className="text-xs text-muted-foreground line-clamp-2 max-w-[300px]"
+                    className="text-xs text-muted-foreground line-clamp-2 break-words leading-relaxed"
                     title={item.description}
                   >
                     {item.description || '—'}
                   </p>
                 </TableCell>
 
-                {/* 6. Trạng thái */}
+                {/* 5. TRẠNG THÁI (ÁP DỤNG / TẠM NGƯNG) */}
                 <TableCell>
-                  <StatusBadge status={item.status} />
-                </TableCell>
-
-                {/* 7. Thao tác */}
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {/* Gán nhân sự nhanh */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-primary cursor-pointer"
-                      onClick={() => onOpenAssignModal(item)}
-                      title="Gán nhân sự cho chức danh này"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                    </Button>
-
-                    {/* Sửa chức danh */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
-                      onClick={() => onEdit(item)}
-                      title="Chỉnh sửa thông tin chức danh"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-
-                    {/* Xóa chức danh */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
-                      onClick={() => onDelete(item)}
-                      title="Xóa chức danh"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  <StatusBadge
+                    status={item.status}
+                    label={item.status === 'active' ? 'Áp dụng' : 'Tạm ngưng'}
+                  />
                 </TableCell>
               </TableRow>
             )
           })}
         </TableBody>
       </Table>
-    </div>
-  )
-}
+    )
+  }

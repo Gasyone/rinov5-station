@@ -46,6 +46,29 @@ export const TIME_RANGE_OPTIONS: TimeRangeOption[] = [
   { value: 'all', label: 'Tất cả thời gian' },
 ]
 
+export type OrderAmountRange = 'all' | 'under_5m' | '5m_to_10m' | '10m_to_20m' | 'above_20m'
+export type OrderNatureFilter = 'all' | 'new_student' | 'renewal'
+export type FulfillmentTypeFilter = 'all' | 'service' | 'physical'
+
+export const ORDER_AMOUNT_RANGE_OPTIONS: { value: OrderAmountRange; label: string }[] = [
+  { value: 'all', label: 'Tất cả mức tiền' },
+  { value: 'under_5m', label: 'Dưới 5 triệu' },
+  { value: '5m_to_10m', label: '5 triệu - 10 triệu' },
+  { value: '10m_to_20m', label: '10 triệu - 20 triệu' },
+  { value: 'above_20m', label: 'Trên 20 triệu' },
+]
+
+export const ORDER_NATURE_OPTIONS: { value: OrderNatureFilter; label: string }[] = [
+  { value: 'all', label: 'Tất cả đơn hàng' },
+  { value: 'new_student', label: 'Đơn tuyển sinh mới' },
+  { value: 'renewal', label: 'Đơn tái phí / Gia hạn' },
+]
+
+export const FULFILLMENT_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'service', label: 'Dịch vụ đào tạo (Buổi học)' },
+  { value: 'physical', label: 'Hàng hóa vật lý (Sách / Giáo trình)' },
+]
+
 export interface OrderMetrics {
   total: number
   revenue: number
@@ -62,6 +85,15 @@ export interface OrderFilterState {
   paymentMethods: Array<Order['paymentMethod']>
   paymentStatuses: Array<Order['paymentStatus']>
   orderStatuses: Array<Order['status']>
+  packageCategories?: string[]
+  salesStaff?: string[]
+  fulfillmentStatuses?: string[]
+  timeRange?: TimeRangeFilter
+  customStartDate?: string
+  customEndDate?: string
+  amountRange?: OrderAmountRange
+  orderNature?: OrderNatureFilter
+  fulfillmentTypes?: string[]
 }
 
 export const ORDER_STATUS_TABS: Array<{
@@ -70,9 +102,9 @@ export const ORDER_STATUS_TABS: Array<{
   status?: Order['status']
 }> = [
   { id: 'all', label: 'Tất cả' },
-  { id: 'pending', label: 'Chờ thanh toán', status: 'pending' },
-  { id: 'processing', label: 'Đang xử lý', status: 'processing' },
-  { id: 'completed', label: 'Hoàn tất', status: 'completed' },
+  { id: 'pending', label: 'Đã lên đơn', status: 'pending' },
+  { id: 'cancelled', label: 'Đã hủy', status: 'cancelled' },
+  { id: 'completed', label: 'Đã thành công', status: 'completed' },
 ]
 
 export const PAYMENT_METHOD_LABELS: Record<Order['paymentMethod'], string> = {

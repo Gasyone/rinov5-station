@@ -24,14 +24,16 @@ interface StudentActiveCareCardProps {
   student?: StudentCareAlert
   chatRecipient: string
   isCaredStatus: boolean
+  defaultShowMissedCalls?: boolean
 }
 
 export function StudentActiveCareCard({
   student,
   chatRecipient,
   isCaredStatus,
+  defaultShowMissedCalls = false,
 }: StudentActiveCareCardProps) {
-  const [showMissedCalls, setShowMissedCalls] = useState(false)
+  const [showMissedCalls, setShowMissedCalls] = useState(defaultShowMissedCalls)
 
   if (isCaredStatus) return null
 

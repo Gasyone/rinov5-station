@@ -1,4 +1,5 @@
 import { LeadStatus } from '@/mocks/crmLeads'
+export type { Lead, Lead as CrmLead } from '@/mocks/crmLeads'
 
 export interface StatusTileOption {
   id: string
@@ -63,6 +64,7 @@ export interface SubStatusOption {
 
 export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
   all: [
+    { id: 'all', label: 'Tất cả trạng thái' },
     { id: 'chua_co_sale', label: 'Mới về - Chưa phân Sale' },
     { id: 'da_phan_sale', label: 'Đã giao Sale - Chưa gọi' },
     { id: 'goi_lan_1', label: 'Đã gọi lần 1' },
@@ -80,16 +82,51 @@ export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
     { id: 'da_thu_100', label: 'Đã thu 100% học phí' },
     { id: 'da_thu_coc', label: 'Đã cọc 50%' },
   ],
+  unassigned: [
+    { id: 'all', label: 'Tất cả chưa phân bổ' },
+    { id: 'chua_co_sale', label: 'Mới về - Chưa phân Sale' },
+    { id: 'chua_giao_gv', label: 'Chưa giao GV test' },
+  ],
+  today_tasks: [
+    { id: 'all', label: 'Tất cả cần gọi hôm nay' },
+    { id: 'hen_goi_lai', label: 'Hẹn gọi lại hôm nay' },
+    { id: 'test_tuan_nay', label: 'Lịch hẹn hôm nay' },
+  ],
+  overdue: [
+    { id: 'all', label: 'Tất cả quá hạn' },
+    { id: 'no_show', label: 'Vắng test (No-show)' },
+    { id: 'chua_co_sale', label: 'Chưa tiếp cận >24h' },
+  ],
+  moi_tiep_nhan: [
+    { id: 'all', label: 'Tất cả mới tiếp nhận' },
+    { id: 'chua_co_sale', label: 'Mới về - Chưa phân Sale' },
+    { id: 'da_phan_sale', label: 'Đã giao Sale - Chưa gọi' },
+  ],
   chua_tiep_can: [
     { id: 'all', label: 'Tất cả chưa tiếp cận' },
     { id: 'chua_co_sale', label: 'Mới về - Chưa phân Sale' },
     { id: 'da_phan_sale', label: 'Đã giao Sale - Chưa gọi' },
+  ],
+  dang_tu_van: [
+    { id: 'all', label: 'Tất cả đang tư vấn' },
+    { id: 'goi_lan_1', label: 'Đã gọi lần 1' },
+    { id: 'goi_lan_2', label: 'Đã gọi lần 2' },
+    { id: 'hen_goi_lai', label: 'Hẹn gọi lại sau' },
   ],
   dang_cham_soc: [
     { id: 'all', label: 'Tất cả đang chăm sóc' },
     { id: 'goi_lan_1', label: 'Đã gọi lần 1' },
     { id: 'goi_lan_2', label: 'Đã gọi lần 2' },
     { id: 'hen_goi_lai', label: 'Hẹn gọi lại sau' },
+  ],
+  hen_trai_nghiem: [
+    { id: 'all', label: 'Tất cả Đánh giá & Trải nghiệm' },
+    { id: 'test_tuan_nay', label: 'Lịch test tuần này' },
+    { id: 'chua_giao_gv', label: 'Chưa giao GV test' },
+    { id: 'da_xac_nhan', label: 'PH đã xác nhận' },
+    { id: 'dat_superkids', label: 'Đạt level SuperKids' },
+    { id: 'dat_flyers', label: 'Đạt level Flyers' },
+    { id: 'dat_kindy', label: 'Đạt level Kindy' },
   ],
   danh_gia_trai_nghiem: [
     { id: 'all', label: 'Tất cả Đánh giá & Trải nghiệm' },
@@ -99,6 +136,12 @@ export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
     { id: 'dat_superkids', label: 'Đạt level SuperKids' },
     { id: 'dat_flyers', label: 'Đạt level Flyers' },
     { id: 'dat_kindy', label: 'Đạt level Kindy' },
+  ],
+  cho_chot: [
+    { id: 'all', label: 'Tất cả chờ chốt deal' },
+    { id: 'giu_cho_24h', label: 'Giữ chỗ 24h' },
+    { id: 'cho_chuyen_khoan', label: 'Chờ chuyển khoản' },
+    { id: 'hen_nop_tien_mat', label: 'Hẹn nộp tiền mặt' },
   ],
   tiem_nang: [
     { id: 'all', label: 'Tất cả tiềm năng' },

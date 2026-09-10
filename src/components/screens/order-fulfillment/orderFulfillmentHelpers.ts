@@ -144,12 +144,21 @@ export function filterOrderFulfillments(
       return false
     }
 
+    // Source Type filter
+    if (
+      advanced?.sourceTypes.length &&
+      !advanced.sourceTypes.includes(r.sourceType)
+    ) {
+      return false
+    }
+
     // Search term
     if (filters.search.trim()) {
       const q = filters.search.toLowerCase().trim()
       const match =
         r.id.toLowerCase().includes(q) ||
-        r.orderNo.toLowerCase().includes(q) ||
+        (r.orderNo && r.orderNo.toLowerCase().includes(q)) ||
+        (r.sourceTitle && r.sourceTitle.toLowerCase().includes(q)) ||
         r.customerName.toLowerCase().includes(q) ||
         r.customerPhone.includes(q) ||
         r.studentName.toLowerCase().includes(q) ||
@@ -199,12 +208,19 @@ export function calculateFulfillmentCounts(
     ) {
       return false
     }
+    if (
+      advanced?.sourceTypes.length &&
+      !advanced.sourceTypes.includes(r.sourceType)
+    ) {
+      return false
+    }
 
     if (filters.search.trim()) {
       const q = filters.search.toLowerCase().trim()
       const match =
         r.id.toLowerCase().includes(q) ||
-        r.orderNo.toLowerCase().includes(q) ||
+        (r.orderNo && r.orderNo.toLowerCase().includes(q)) ||
+        (r.sourceTitle && r.sourceTitle.toLowerCase().includes(q)) ||
         r.customerName.toLowerCase().includes(q) ||
         r.customerPhone.includes(q) ||
         r.studentName.toLowerCase().includes(q) ||
@@ -314,6 +330,93 @@ export function calculateFulfillmentMetrics(items: OrderFulfillmentRecord[]) {
     under24hCount,
     between24And48hCount,
     overdueCount,
+  }
+}
+
+export interface RecipientDisplayInfo {
+  isMultiRecipient: boolean
+  isClassDelivery: boolean
+  recipientCount: number
+  targetClass?: string
+  recipientList: Array<{ name: string; phone?: string; parentName?: string }>
+  representativeName: string
+  representativePhone: string
+  representativeRole?: string
+  studentSummary: string
+}
+
+/**
+ * Trích xuất và định dạng thông tin người nhận: hỗ trợ phân tách chế độ Đơn lẻ vs Mode X người nhận / Phát cho cả lớp
+ */
+export function getRecipientDisplayInfo(record: OrderFulfillmentRecord): RecipientDisplayInfo {
+  const rawRecipient = (record.recipientName || record.customerName || '').trim()
+  const parsedList = rawRecipient
+    .split(/[,;&]|\s+và\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  const isExplicitClass =
+    Boolean(record.isClassDelivery) ||
+    Boolean(record.targetClass) ||
+    /lớp\s+/i.test(record.studentName) ||
+    /cả lớp/i.test(record.studentName) ||
+    /lớp\s+/i.test(rawRecipient)
+
+  let extractedCount = record.recipientCount
+  if (!extractedCount && record.recipientStudents?.length) {
+    extractedCount = record.recipientStudents.length
+  }
+  if (!extractedCount && parsedList.length > 1) {
+    extractedCount = parsedList.length
+  }
+  if (!extractedCount) {
+    const match = `${record.studentName} ${rawRecipient}`.match(/(\d+)\s*(học viên|hv|người|bé|học sinh)/i)
+    if (match) {
+      extractedCount = parseInt(match[1], 10)
+    }
+  }
+
+  const isMulti = Boolean(isExplicitClass || (extractedCount && extractedCount > 1) || parsedList.length > 1)
+  const finalCount = extractedCount || (isMulti ? (parsedList.length > 1 ? parsedList.length : 18) : 1)
+
+  // Tên lớp học nếu có
+  let targetClass = record.targetClass
+  if (!targetClass) {
+    const classMatch = `${record.studentName} ${rawRecipient}`.match(/(lớp\s+[^,()–-]+)/i)
+    if (classMatch) {
+      targetClass = classMatch[1].trim()
+    }
+  }
+
+  // Đại diện người nhận
+  const repName = record.recipientName || record.customerName || (isMulti ? 'GVCN / Đại diện' : 'Người nhận')
+  const repPhone = record.recipientPhone || record.customerPhone || ''
+  const repRole = cleanRecipientRole(record.recipientRole) || (isExplicitClass ? 'Đại diện lớp' : undefined)
+
+  // Danh sách chi tiết người nhận
+  const recipientList: Array<{ name: string; phone?: string; parentName?: string }> = []
+  if (record.recipientStudents && record.recipientStudents.length > 0) {
+    record.recipientStudents.forEach((st) =>
+      recipientList.push({
+        name: st.name,
+        phone: st.phone,
+        parentName: st.parentName,
+      })
+    )
+  } else if (parsedList.length > 1) {
+    parsedList.forEach((name) => recipientList.push({ name }))
+  }
+
+  return {
+    isMultiRecipient: isMulti,
+    isClassDelivery: Boolean(isExplicitClass),
+    recipientCount: finalCount,
+    targetClass,
+    recipientList,
+    representativeName: repName,
+    representativePhone: repPhone,
+    representativeRole: repRole,
+    studentSummary: record.studentName,
   }
 }
 

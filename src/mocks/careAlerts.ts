@@ -265,7 +265,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-4",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-4",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
     interactionNotes: "Gọi điện cho mẹ qua zalo, mẹ bày tỏ băn khoăn vì gần đây cuối tuần con hay nghỉ học. CS đã định hướng việc học lên lớp 5 sắp tới và giải thích để mẹ sắp xếp cho con.",
     interactionLogs: [
@@ -303,7 +303,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-5",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-5",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Chưa gọi",
     activeCSTP: false,
     interactionLogs: []
@@ -331,7 +331,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-6",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-6",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
     interactionNotes: "Đợt này mẹ phản hồi cho con chơi nhiều, tối nay về sẽ nhắc con làm BTVN và chuẩn bị bài học.",
     interactionLogs: [
@@ -367,7 +367,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-7",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-7",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
@@ -394,7 +394,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-8",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-8",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã nhắn Zalo",
     interactionNotes: "Trao đổi với mẹ bằng zalo trung tâm để nhắc mẹ nhắc con làm lại bài kiểm tra và làm bài tập về nhà đầy đủ.",
     interactionLogs: [
@@ -430,7 +430,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-9",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-9",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã nhắn Zalo",
     interactionNotes: "Nhờ ba mẹ nhắc nhở con làm bài tập về nhà vì tỷ lệ hoàn thành hiện tại đang rất thấp.",
     interactionLogs: [
@@ -732,7 +732,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   },
@@ -759,7 +759,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
     interactionLogs: [],
     substituteTeacher: "GV_TA_SUB"
@@ -787,7 +787,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
-    csStaff: "Nguyễn Thị Ngọc Anh",
+    csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
   }

@@ -99,8 +99,10 @@ export function CrmLeadsCareHistoryPopover({
     >
       <PopoverTrigger asChild>
         <div
+          role="button"
+          tabIndex={0}
+          className="outline-none"
           onClick={(e) => e.stopPropagation()}
-          onMouseEnter={() => setOpen(true)}
         >
           {trigger}
         </div>

@@ -102,16 +102,33 @@ export function ClassesSessionAttendanceRow({
                 <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-white dark:border-zinc-900 animate-pulse" title="Cần chăm sóc" />
               )}
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                {nameParts.hasEnglishName ? (
-                  <div className="flex flex-col min-w-0 leading-tight">
-                    <span className="font-bold text-foreground text-xs truncate">{nameParts.englishName}</span>
-                    <span className="text-xs text-muted-foreground font-normal truncate">{nameParts.vietnameseName}</span>
-                  </div>
-                ) : (
-                  <span className="font-normal text-foreground text-xs truncate">{nameParts.vietnameseName}</span>
+            <div className="min-w-0 flex flex-col justify-center">
+              {/* Dòng 1: Tên tiếng Anh (nếu có) */}
+              {nameParts.hasEnglishName && (
+                <div className="flex items-center gap-1.5 min-w-0 leading-tight mb-0.5">
+                  <span className="font-bold text-foreground text-xs truncate">
+                    {nameParts.englishName}
+                  </span>
+                  {isExcused && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
+                  )}
+                </div>
+              )}
+
+              {/* Dòng 2: Tên tiếng Việt + Nhãn buổi (1,2,3) + Nhãn học thử/mới + Icon chăm sóc + Mã học viên - Trên cùng dòng tiếng Việt, không lệch dòng */}
+              <div className="flex items-center gap-1.5 min-w-0 flex-wrap leading-tight">
+                <span className={cn(
+                  "text-xs truncate",
+                  nameParts.hasEnglishName ? "text-muted-foreground font-normal" : "text-foreground font-bold"
+                )}>
+                  {nameParts.vietnameseName}
+                </span>
+
+                {!nameParts.hasEnglishName && isExcused && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
                 )}
+
+                {/* Nhãn Buổi 1, 2, 3... text thường, nhỏ, trên dòng tiếng Việt */}
                 {student.sessionLabel && (
                   <StatusBadge
                     status={student.sessionLabel}
@@ -120,39 +137,56 @@ export function ClassesSessionAttendanceRow({
                       student.sessionLabel === 'buoi_2' ? 'Buổi 2' :
                       student.sessionLabel === 'buoi_3' ? 'Buổi 3' : 'Buổi cuối'
                     }
-                    className="rounded-md text-xs px-1 py-0 font-semibold shrink-0"
+                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
                   />
                 )}
-                {isExcused && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span className="text-xs text-muted-foreground font-mono">{student.code}</span>
-                {student.level && (
-                  <span className="text-xs text-muted-foreground font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm border border-zinc-200/60 dark:border-zinc-700/60 font-sans leading-none">
-                    {student.level}
-                  </span>
-                )}
+
+                {/* Nhãn Học thử (trial) text thường, nhỏ, trên dòng tiếng Việt */}
                 {student.status === 'trial' && (
-                  <StatusBadge status="trial" label="Học thử" className="rounded-md text-xs px-1 py-0 font-semibold" />
+                  <StatusBadge
+                    status="trial"
+                    label="Học thử"
+                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
+                  />
                 )}
+
+                {/* Nhãn Mới (new) text thường, nhỏ, trên dòng tiếng Việt */}
                 {student.status === 'new' && (
-                  <StatusBadge status="new" label="Mới" className="rounded-md text-xs px-1 py-0 font-semibold" />
+                  <StatusBadge
+                    status="new"
+                    label="Mới"
+                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
+                  />
                 )}
-                {isCareStudent && onOpenCareDetail && (
+
+                {/* Icon chăm sóc học viên: Bấm vào mở tab mới chăm sóc của học viên đó */}
+                {isCareStudent && (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      onOpenCareDetail(student)
+                      if (typeof window !== 'undefined') {
+                        window.open(`/app/student_operations_alert?studentId=${student.id}`, '_blank')
+                      }
+                      onOpenCareDetail?.(student)
                     }}
-                    className="inline-flex items-center gap-0.5 rounded-md text-xs px-1.5 py-0.5 font-bold bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-950/50 cursor-pointer transition-colors leading-none shrink-0"
-                    title="Mở chi tiết chăm sóc học viên"
+                    className="inline-flex items-center justify-center h-4 w-4 rounded text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-950/60 cursor-pointer transition-colors shrink-0"
+                    title="Mở tab mới Chăm sóc học viên này"
                   >
                     <HeartHandshake className="h-2.5 w-2.5" />
-                    <span>Cần CS</span>
                   </button>
+                )}
+
+                {/* Mã học viên */}
+                <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                  {student.code}
+                </span>
+
+                {/* Level học viên (nếu có) */}
+                {student.level && (
+                  <span className="text-[10px] text-muted-foreground font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm border border-zinc-200/60 dark:border-zinc-700/60 font-sans leading-none shrink-0">
+                    {student.level}
+                  </span>
                 )}
               </div>
             </div>

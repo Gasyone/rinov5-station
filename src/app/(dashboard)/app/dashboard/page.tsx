@@ -1,9 +1,5 @@
-import { DashboardScreen } from '@/components/screens/DashboardScreen'
+import { redirect } from 'next/navigation'
 
 export default function DashboardPage() {
-  return (
-    <div className="h-full min-h-0">
-      <DashboardScreen />
-    </div>
-  )
+  redirect('/app/calendar_class_schedule')
 }

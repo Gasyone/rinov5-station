@@ -16,6 +16,8 @@ export * from "./systemConfig"
 export * from "./crmLeads"
 export * from "./promotions"
 export * from "./jobTitles"
+export * from "./branches"
+export * from "./orgStructure"
 
 
 export type { User as AuthUser } from "./users"

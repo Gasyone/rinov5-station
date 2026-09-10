@@ -13,7 +13,6 @@ import {
   Settings,
   ShieldCheck,
   Sun,
-  MessageSquarePlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore, type DemoRole } from '@/stores/useAuthStore'
@@ -72,15 +71,18 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const customHeaderTitle = useUIStore((s) => s.customHeaderTitle)
   const router = useRouter()
 
+  const baseMenuId = currentMenuId ? currentMenuId.split('/')[0] : null
   const navMenuItem = currentMenuId
-    ? navigationGroups.flatMap((g) => g.items).find((item) => item.id === currentMenuId)
+    ? navigationGroups.flatMap((g) => g.items).find((item) => item.id === currentMenuId || item.id === baseMenuId)
     : null
-  const defaultMenuLabel = currentMenuId ? (screens[currentMenuId]?.label || navMenuItem?.label) : null
+  const defaultMenuLabel = currentMenuId
+    ? (screens[currentMenuId]?.label || (baseMenuId ? screens[baseMenuId]?.label : null) || navMenuItem?.label)
+    : null
   const menuLabel = customHeaderTitle || defaultMenuLabel
   const currentGroup = currentMenuId
-    ? navigationGroups.find((g) => g.items.some((item) => item.id === currentMenuId))
+    ? navigationGroups.find((g) => g.items.some((item) => item.id === currentMenuId || item.id === baseMenuId))
     : null
-  const GroupIcon = currentMenuId === 'dashboard' ? Home : (currentGroup?.icon || null)
+  const GroupIcon = currentGroup?.icon || Home
 
   const handleLogout = async () => {
     await logout()

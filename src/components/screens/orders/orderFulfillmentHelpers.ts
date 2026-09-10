@@ -18,17 +18,30 @@ export interface ItemFulfillmentDetail {
   note?: string
 }
 
+export type OverallFulfillmentStatus = 'delivered' | 'processing' | 'pending'
+
 export interface OrderFulfillmentSummary {
   /**
-   * Trạng thái tổng quan của việc chuyển giao SP/DV
+   * Trạng thái tổng quan của việc chuyển giao SP/DV:
+   * 'delivered' (Đã chuyển giao), 'processing' (Đang xử lý), 'pending' (Chưa giao)
+   * Xác định 'delivered' khi tất cả các sản phẩm được chuyển giao
+   */
+  status: OverallFulfillmentStatus
+  statusLabel: string
+  /**
+   * Dòng 1 tóm tắt loại sản phẩm / số buổi / số lượng
+   */
+  line1Text: string
+  /**
+   * Dòng 2 tóm tắt chi tiết tiến độ các loại sản phẩm
+   */
+  line2Text: string
+  /**
+   * Trạng thái chi tiết (legacy support)
    */
   primaryStatus: 'activated' | 'pending_activation' | 'not_activated' | 'handed_over' | 'pending_handover' | 'partial'
   badgeLabel: string
   semantic: 'success' | 'warning' | 'neutral' | 'info'
-  /**
-   * Dòng 2 tóm tắt số buổi học viên nhận / số sản phẩm bàn giao
-   */
-  line2Text: string
   /**
    * Chi tiết từng học viên và từng món
    */
@@ -318,91 +331,112 @@ export function getOrderFulfillmentSummary(order: Order): OrderFulfillmentSummar
   const distinctStudents = Array.from(studentSet)
   const hasMultipleItems = order.items.length > 1
 
-  // Tính Primary status & Badge
-  let primaryStatus: OrderFulfillmentSummary['primaryStatus'] = 'not_activated'
-  let badgeLabel = 'Chưa kích hoạt'
-  let semantic: OrderFulfillmentSummary['semantic'] = 'neutral'
-  let line2Text = ''
+  // Tính trạng thái chuyển giao theo yêu cầu:
+  // "Trạng thái là icon thôi, Đã chuyển giao, đang xử lý, chưa giao, nó xác định khi tất cả các sản phẩm được chuyển giao"
+  let status: OverallFulfillmentStatus = 'pending'
+  let statusLabel = 'Chưa giao'
+
+  const allServicesDone = serviceCount > 0 ? (activatedServiceCount === serviceCount && grantedSessions >= totalSessions) : true
+  const allPhysicalDone = physicalCount > 0 ? (handedOverProductCount >= physicalCount) : true
+  const hasItems = serviceCount > 0 || physicalCount > 0
 
   if (order.status === 'cancelled' || order.status === 'refunded') {
-    primaryStatus = 'not_activated'
-    badgeLabel = 'Đã hủy'
-    semantic = 'neutral'
-    line2Text = 'Đơn đã hủy'
-  } else if (physicalCount > 0 && serviceCount === 0) {
-    // 1. Đơn CHỈ CÓ SẢN PHẨM VẬT LÝ
-    if (handedOverProductCount >= physicalCount) {
-      primaryStatus = 'handed_over'
-      badgeLabel = 'Đã bàn giao'
-      semantic = 'success'
-      line2Text = `${physicalCount} sản phẩm`
-    } else if (handedOverProductCount > 0 || pendingActivationServiceCount > 0 || (order.paidAmount ?? 0) > 0) {
-      primaryStatus = 'pending_handover'
-      badgeLabel = 'Chờ bàn giao'
-      semantic = 'warning'
-      line2Text = `${physicalCount} sản phẩm`
-    } else {
-      primaryStatus = 'not_activated'
-      badgeLabel = 'Chưa bàn giao'
-      semantic = 'neutral'
-      line2Text = `${physicalCount} sản phẩm`
-    }
-  } else if (physicalCount === 0 && serviceCount > 0) {
-    // 2. Đơn CHỈ CÓ GÓI DỊCH VỤ HỌC
-    if (activatedServiceCount === serviceCount) {
-      primaryStatus = 'activated'
-      badgeLabel = 'Đã kích hoạt'
-      semantic = 'success'
-      line2Text = `Nhận: ${grantedSessions} buổi`
-    } else if (activatedServiceCount > 0 && pendingActivationServiceCount > 0) {
-      primaryStatus = 'partial'
-      badgeLabel = `Kích hoạt (${activatedServiceCount}/${serviceCount})`
-      semantic = 'warning'
-      line2Text = `Đã cấp ${grantedSessions} • Chờ ${pendingSessions} buổi`
-    } else if (pendingActivationServiceCount > 0 || (order.paidAmount ?? 0) > 0) {
-      primaryStatus = 'pending_activation'
-      badgeLabel = 'Chờ kích hoạt'
-      semantic = 'warning'
-      line2Text = `Chờ cấp: ${totalSessions} buổi`
-    } else {
-      primaryStatus = 'not_activated'
-      badgeLabel = 'Chưa kích hoạt'
-      semantic = 'neutral'
-      line2Text = `Dự kiến: ${totalSessions} buổi`
-    }
+    status = 'pending'
+    statusLabel = 'Chưa giao'
+  } else if (!hasItems) {
+    status = 'pending'
+    statusLabel = 'Chưa giao'
+  } else if (allServicesDone && allPhysicalDone) {
+    status = 'delivered'
+    statusLabel = 'Đã chuyển giao'
+  } else if (
+    activatedServiceCount > 0 ||
+    handedOverProductCount > 0 ||
+    pendingActivationServiceCount > 0 ||
+    (order.paidAmount ?? 0) > 0 ||
+    order.paymentStatus === 'partial'
+  ) {
+    status = 'processing'
+    statusLabel = 'Đang xử lý'
   } else {
-    // 3. ĐƠN HỖN HỢP: CẢ DỊCH VỤ VÀ SẢN PHẨM VẬT LÝ
-    const allServicesActivated = activatedServiceCount === serviceCount
-    const allProductsHandedOver = handedOverProductCount >= physicalCount
-
-    if (allServicesActivated && allProductsHandedOver) {
-      primaryStatus = 'activated'
-      badgeLabel = 'Đã chuyển giao'
-      semantic = 'success'
-      line2Text = `Nhận: ${grantedSessions} buổi • ${physicalCount} SP`
-    } else if (activatedServiceCount > 0 || handedOverProductCount > 0) {
-      primaryStatus = 'partial'
-      badgeLabel = 'Đang chuyển giao'
-      semantic = 'warning'
-      line2Text = `Nhận: ${grantedSessions} b • ${handedOverProductCount}/${physicalCount} SP`
-    } else if (pendingActivationServiceCount > 0 || (order.paidAmount ?? 0) > 0) {
-      primaryStatus = 'pending_activation'
-      badgeLabel = 'Chờ kích hoạt'
-      semantic = 'warning'
-      line2Text = `Chờ cấp: ${totalSessions} buổi • ${physicalCount} SP`
-    } else {
-      primaryStatus = 'not_activated'
-      badgeLabel = 'Chưa chuyển giao'
-      semantic = 'neutral'
-      line2Text = `Dự kiến: ${totalSessions} buổi • ${physicalCount} SP`
-    }
+    status = 'pending'
+    statusLabel = 'Chưa giao'
   }
 
+  // Dòng 1: Tóm tắt số lượng sản phẩm / dịch vụ
+  let line1Text = ''
+  if (serviceCount > 0 && physicalCount > 0) {
+    line1Text = `${totalSessions} buổi • ${physicalCount} SP`
+  } else if (serviceCount > 0) {
+    line1Text = `${totalSessions} buổi`
+  } else if (physicalCount > 0) {
+    line1Text = `${physicalCount} sản phẩm`
+  } else {
+    line1Text = '—'
+  }
+
+  // Dòng 2: Đề xuất dòng bên dưới, lưu ý chuyển giao nhiều loại sản phẩm
+  let line2Text = ''
+  if (order.status === 'cancelled') {
+    line2Text = 'Đơn đã hủy'
+  } else if (order.status === 'refunded') {
+    line2Text = 'Đã hoàn tiền'
+  } else if (serviceCount > 0 && physicalCount > 0) {
+    // Chuyển giao nhiều loại sản phẩm (cả dịch vụ khóa học và sản phẩm vật lý)
+    if (status === 'delivered') {
+      line2Text = `Đã cấp ${grantedSessions} buổi • Giao ${physicalCount} SP`
+    } else if (status === 'processing') {
+      if (grantedSessions > 0 || handedOverProductCount > 0) {
+        line2Text = `Cấp ${grantedSessions}/${totalSessions} b • Giao ${handedOverProductCount}/${physicalCount} SP`
+      } else {
+        line2Text = `Chờ cấp ${totalSessions} b • Chờ giao ${physicalCount} SP`
+      }
+    } else {
+      line2Text = `Chờ cấp ${totalSessions} b • ${physicalCount} SP chưa giao`
+    }
+  } else if (serviceCount > 0) {
+    // Chỉ có dịch vụ khóa học
+    if (status === 'delivered') {
+      line2Text = `Đã cấp đủ ${grantedSessions}/${totalSessions} buổi`
+    } else if (status === 'processing') {
+      line2Text =
+        grantedSessions > 0
+          ? `Đã cấp ${grantedSessions}/${totalSessions} buổi`
+          : `Chờ cấp ${totalSessions} buổi`
+    } else {
+      line2Text = `Chưa kích hoạt (${totalSessions} buổi)`
+    }
+  } else if (physicalCount > 0) {
+    // Chỉ có sản phẩm vật lý
+    if (status === 'delivered') {
+      line2Text = `Đã bàn giao ${physicalCount}/${physicalCount} SP`
+    } else if (status === 'processing') {
+      line2Text =
+        handedOverProductCount > 0
+          ? `Đã giao ${handedOverProductCount}/${physicalCount} SP`
+          : `Chờ bàn giao ${physicalCount} SP`
+    } else {
+      line2Text = `Chưa bàn giao (${physicalCount} SP)`
+    }
+  } else {
+    line2Text = '—'
+  }
+
+  // Legacy compatibility for primaryStatus, badgeLabel, semantic
+  const primaryStatus =
+    status === 'delivered' ? 'activated' : status === 'processing' ? 'partial' : 'not_activated'
+  const badgeLabel = statusLabel
+  const semantic =
+    status === 'delivered' ? 'success' : status === 'processing' ? 'warning' : 'neutral'
+
   return {
+    status,
+    statusLabel,
+    line1Text,
+    line2Text,
     primaryStatus,
     badgeLabel,
     semantic,
-    line2Text,
     details,
     serviceCount,
     physicalCount,

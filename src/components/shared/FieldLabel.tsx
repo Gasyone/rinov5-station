@@ -4,8 +4,8 @@ import { type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 interface FieldLabelProps {
-  label: ReactNode
-  children: ReactNode
+  label?: ReactNode
+  children?: ReactNode
   /** Optional helper text below the label */
   description?: string
   /** Mark field as required (adds red asterisk) */
@@ -31,19 +31,24 @@ export function FieldLabel({
   error,
   className,
 }: FieldLabelProps) {
+  const displayLabel = label ?? (typeof children === 'string' ? children : null)
+  const content = label ? children : (typeof children === 'string' ? null : children)
+
   return (
     <label className={cn('flex flex-col gap-1.5', className)}>
-      <span className="flex items-center justify-between w-full text-xs font-semibold text-muted-foreground">
-        {typeof label === 'string' ? (
-          <span className="flex items-center gap-1">
-            {label}
-            {required ? <span className="text-destructive">*</span> : null}
-          </span>
-        ) : (
-          label
-        )}
-      </span>
-      {children}
+      {displayLabel && (
+        <span className="flex items-center justify-between w-full text-xs font-semibold text-muted-foreground">
+          {typeof displayLabel === 'string' ? (
+            <span className="flex items-center gap-1">
+              {displayLabel}
+              {required ? <span className="text-destructive">*</span> : null}
+            </span>
+          ) : (
+            displayLabel
+          )}
+        </span>
+      )}
+      {content}
       {description && !error ? (
         <span className="text-xs text-muted-foreground">{description}</span>
       ) : null}

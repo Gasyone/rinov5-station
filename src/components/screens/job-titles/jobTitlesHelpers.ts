@@ -1,6 +1,5 @@
 import type { JobTitle, JobTitlesFilterState } from './jobTitlesTypes'
 import type { Employee } from '@/mocks/employees'
-import type { AvatarStackItem } from '@/components/shared'
 
 export function getInitials(name: string): string {
   if (!name) return '?'
@@ -18,48 +17,21 @@ export function maskPhoneNumber(phone?: string): string {
   return `${trimmed.slice(0, 3)}****${trimmed.slice(-3)}`
 }
 
-export interface HeadcountMetrics {
-  percentage: number
-  isUnder: boolean
-  isFilled: boolean
-  label: string
-}
-
-export function getHeadcountMetrics(assignedCount: number, targetCount: number): HeadcountMetrics {
-  const target = targetCount > 0 ? targetCount : 1
-  const percentage = Math.round((assignedCount / target) * 100)
-  const isUnder = assignedCount < targetCount
-  const isFilled = assignedCount >= targetCount
-  const label = `${assignedCount}/${targetCount}`
-
-  return {
-    percentage,
-    isUnder,
-    isFilled,
-    label,
-  }
-}
-
-export function mapEmployeesToAvatarStack(
+export function getAssignedEmployees(
   employeeIds: string[],
   allEmployees: Employee[]
-): { items: AvatarStackItem[]; employees: Employee[] } {
+): Employee[] {
   const employeeMap = new Map(allEmployees.map((e) => [e.id, e]))
   const matchedEmployees: Employee[] = []
-  const items: AvatarStackItem[] = []
 
   for (const id of employeeIds) {
     const emp = employeeMap.get(id)
     if (emp) {
       matchedEmployees.push(emp)
-      items.push({
-        label: emp.name,
-        initials: getInitials(emp.name),
-      })
     }
   }
 
-  return { items, employees: matchedEmployees }
+  return matchedEmployees
 }
 
 export function filterJobTitles(
@@ -68,23 +40,21 @@ export function filterJobTitles(
 ): JobTitle[] {
   return items.filter((item) => {
     // 1. Department filter
-    if (filters.department && filters.department !== 'all' && item.department !== filters.department) {
+    if (
+      filters.department &&
+      filters.department !== 'all' &&
+      item.department !== filters.department &&
+      item.orgUnitId !== filters.department
+    ) {
       return false
     }
 
-    // 2. Capacity filter
-    if (filters.capacity && filters.capacity !== 'all') {
-      const isUnder = item.assignedEmployeeIds.length < item.targetHeadcount
-      if (filters.capacity === 'under_capacity' && !isUnder) return false
-      if (filters.capacity === 'filled' && isUnder) return false
-    }
-
-    // 3. Status filter
+    // 2. Status filter (Áp dụng / Tạm ngưng)
     if (filters.status && filters.status !== 'all' && item.status !== filters.status) {
       return false
     }
 
-    // 4. Search query
+    // 3. Search query
     if (filters.search.trim()) {
       const q = filters.search.trim().toLowerCase()
       const matchName = item.name.toLowerCase().includes(q)

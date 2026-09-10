@@ -40,7 +40,7 @@ export function PermissionStationMatrixTable({
   onScopeChange,
   onToggleAllColumn,
 }: PermissionStationMatrixTableProps) {
-  // Check if all visible items are checked for a given action column
+  // Kiểm tra trạng thái đã chọn tất cả của từng cột hành động
   const getColumnCheckState = (actionKey: keyof PermissionActionState) => {
     const allFeatures = groupedSections.flatMap((s) => s.features)
     const supportedFeatures = allFeatures.filter((f) => !!f.supportedActions[actionKey])
@@ -52,7 +52,7 @@ export function PermissionStationMatrixTable({
   }
 
   return (
-    <div className="overflow-x-auto w-full mt-2 rounded-md border border-border/80 bg-card shadow-2xs">
+    <div className="overflow-x-auto w-full rounded-lg border border-border/40 bg-card">
       <table className="w-full table-fixed text-xs text-left border-collapse min-w-[860px]">
         <colgroup>
           <col className="w-[30%]" />
@@ -67,7 +67,7 @@ export function PermissionStationMatrixTable({
 
         {/* Master Header cố định ở đầu bảng Station */}
         <thead>
-          <tr className="border-b border-border/80 bg-muted/50 text-foreground font-semibold">
+          <tr className="border-b border-border/40 bg-muted/40 text-foreground font-semibold">
             <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-muted-foreground">
               Phân hệ / Màn hình tác nghiệp
             </th>
@@ -81,7 +81,7 @@ export function PermissionStationMatrixTable({
                       checked={isChecked}
                       onCheckedChange={(val) => onToggleAllColumn(col.key, val === true)}
                       aria-label={`Chọn tất cả cột ${col.label}`}
-                      className="data-[state=checked]:bg-[#e11d48] data-[state=checked]:border-[#e11d48]"
+                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                   </div>
                 </th>
@@ -101,11 +101,11 @@ export function PermissionStationMatrixTable({
             return (
               <Fragment key={section.groupKey}>
                 {/* Dòng tiêu đề Phân hệ */}
-                <tr className="sticky top-0 z-10 border-t border-b border-border/80 bg-zinc-100/90 dark:bg-zinc-800/90 shadow-2xs select-none">
+                <tr className="sticky top-0 z-10 border-t border-b border-border/40 bg-muted/70 backdrop-blur-xs select-none">
                   <td
                     colSpan={STATION_ACTION_COLUMNS.length + 2}
                     onClick={() => onToggleCollapse(section.groupKey)}
-                    className="py-2.5 px-4 font-bold text-xs uppercase tracking-wider text-foreground cursor-pointer hover:bg-zinc-200/70 dark:hover:bg-zinc-700/60 transition-colors"
+                    className="py-2.5 px-4 font-bold text-xs uppercase tracking-wider text-foreground cursor-pointer hover:bg-muted/90 transition-colors"
                   >
                     <div className="flex items-start gap-2.5">
                       {isCollapsed ? (
@@ -116,12 +116,12 @@ export function PermissionStationMatrixTable({
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-bold">{section.groupName}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10.5px] font-bold normal-case bg-background/90 border border-border/70 text-muted-foreground shrink-0">
+                          <span className="px-1.5 py-0.5 rounded text-xs font-semibold normal-case bg-background/90 border border-border/50 text-muted-foreground shrink-0">
                             {section.features.length} tính năng
                           </span>
                         </div>
                         {STATION_MODULE_GROUP_DESCRIPTIONS[section.groupKey] && (
-                          <span className="text-[11px] font-normal normal-case tracking-normal text-muted-foreground line-clamp-1 mt-0.5">
+                          <span className="text-xs font-normal normal-case tracking-normal text-muted-foreground line-clamp-1 mt-0.5">
                             {STATION_MODULE_GROUP_DESCRIPTIONS[section.groupKey]}
                           </span>
                         )}
@@ -154,7 +154,7 @@ export function PermissionStationMatrixTable({
                       <tr
                         key={feat.featureKey}
                         className={cn(
-                          'border-b border-border/30 hover:bg-muted/30 transition-colors',
+                          'border-b border-border/20 hover:bg-muted/30 transition-colors',
                           feat.hasChildren && 'bg-muted/20 font-semibold',
                           feat.level === 2 && 'bg-background/50'
                         )}
@@ -168,12 +168,12 @@ export function PermissionStationMatrixTable({
                                   <span className="text-xs font-bold text-foreground">
                                     • {feat.featureName}
                                   </span>
-                                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-primary/10 text-primary font-bold">
+                                  <span className="px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary font-semibold">
                                     Nhóm quyền
                                   </span>
                                 </div>
                                 {feat.description && (
-                                  <span className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                                  <span className="text-xs text-muted-foreground leading-snug mt-0.5">
                                     {feat.description}
                                   </span>
                                 )}
@@ -186,7 +186,7 @@ export function PermissionStationMatrixTable({
                                   └─ {feat.featureName}
                                 </span>
                                 {feat.description && (
-                                  <span className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                                  <span className="text-xs text-muted-foreground leading-snug mt-0.5">
                                     {feat.description}
                                   </span>
                                 )}
@@ -199,7 +199,7 @@ export function PermissionStationMatrixTable({
                                   • {feat.featureName}
                                 </span>
                                 {feat.description && (
-                                  <span className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                                  <span className="text-xs text-muted-foreground leading-snug mt-0.5">
                                     {feat.description}
                                   </span>
                                 )}
@@ -221,7 +221,7 @@ export function PermissionStationMatrixTable({
                                   onCheckedChange={(val) =>
                                     onToggleAction(feat.featureKey, col.key, val === true)
                                   }
-                                  className="data-[state=checked]:bg-[#e11d48] data-[state=checked]:border-[#e11d48]"
+                                  className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                 />
                               ) : (
                                 <span className="text-muted-foreground/30 font-bold select-none">-</span>
@@ -244,7 +244,7 @@ export function PermissionStationMatrixTable({
                               <span>Bản thân</span>
                             </div>
                           ) : feat.hasChildren ? (
-                            <div className="h-8 px-2 flex items-center text-[11px] text-muted-foreground italic">
+                            <div className="h-8 px-2 flex items-center text-xs text-muted-foreground italic">
                               (Theo màn hình con)
                             </div>
                           ) : (
@@ -260,7 +260,7 @@ export function PermissionStationMatrixTable({
                             >
                               <SelectTrigger
                                 className={cn(
-                                  'h-8 text-xs font-medium w-full max-w-[190px] border border-input/60 bg-background/50 hover:bg-muted/50 px-2.5 cursor-pointer',
+                                  'h-8 text-xs font-medium w-full max-w-[190px] border border-input bg-background/50 hover:bg-muted/50 px-2.5 cursor-pointer',
                                   !isAccessGranted && 'opacity-40 cursor-not-allowed hover:bg-transparent border-transparent',
                                   !item.scope && 'text-muted-foreground italic'
                                 )}
@@ -285,7 +285,7 @@ export function PermissionStationMatrixTable({
                                           {opt.label}
                                         </span>
                                         {opt.value !== '' && contextualDesc && (
-                                          <span className="text-[10.5px] text-muted-foreground line-clamp-1 font-normal">
+                                          <span className="text-xs text-muted-foreground line-clamp-1 font-normal">
                                             {contextualDesc}
                                           </span>
                                         )}
