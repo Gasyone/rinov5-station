@@ -1,313 +1,53 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Star, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { SessionHistory } from './studentCareReportHelpers'
 import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
-import { PersonnelHoverCard } from '@/components/shared'
+import { PersonnelHoverCard, AppAvatar } from '@/components/shared'
+import { getStatusBadgeClass } from '@/lib/statusColors'
+import {
+  type UnifiedSessionItem,
+  getCareSessions,
+  getDayOfWeekName,
+  getShortDayOfWeek,
+  formatDateOnly,
+  formatDateNoYear,
+  getCareSessionNotices,
+} from './careSessionTimelineHelpers'
+import type { StudentCareAlert } from '@/mocks/careAlerts'
 
 interface CareSessionTimelineListProps {
   regularSessions?: SessionHistory[]
   testSessions?: SessionHistory[]
   pkgIsEnglish: boolean
   smartCards?: React.ReactNode
-}
-
-interface UnifiedSessionItem {
-  id: string
-  sessionNumber: number
-  date: string
-  type: 'upcoming' | 'lesson' | 'test'
-  topic: string
-  time?: string
-  room?: string
-  teacher?: string
-  preparation?: string
-  attendance?: string
-  attendanceText?: string
-  homeworkCode?: string
-  homeworkSubmitted?: boolean
-  homeworkScore?: string
-  rating?: number
-  score?: number
-  comment?: string
-  skills?: Record<string, string>
+  studentId?: string
+  studentName?: string
+  studentAlert?: StudentCareAlert | null
 }
 
 export function CareSessionTimelineList({
   pkgIsEnglish,
-  smartCards
+  smartCards,
+  studentId,
+  studentAlert,
 }: CareSessionTimelineListProps) {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [showAllTests, setShowAllTests] = useState(false)
 
-  const toggleExpand = (id: string) => {
-    setExpandedComments((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
-  }
-
   // Unified sessions list - Ordered DESCENDING by session number
-  const allSessions: UnifiedSessionItem[] = [
-    // Upcoming Sessions (On Top)
-    {
-      id: 'next-2',
-      sessionNumber: 21,
-      date: '2026-07-31 (Thứ 6)',
-      time: '17:30 - 19:00',
-      type: 'upcoming' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 9: Presentation Skills & Individual Speech Project'
-        : 'Bài 20: Luyện tập tổng hợp & Thuyết trình Dự án Toán học',
-      room: 'P.102 (Tầng 1)',
-      teacher: 'Bùi Văn Anh',
-      preparation: 'Chuẩn bị slide/poster dự án thuyết trình cá nhân',
-      homeworkCode: 'BT-09',
-      homeworkSubmitted: false,
-    },
-    {
-      id: 'next-1',
-      sessionNumber: 20,
-      date: '2026-07-27 (Thứ 2)',
-      time: '17:30 - 19:00',
-      type: 'upcoming' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 8: Advanced Academic Vocabulary & Writing Strategy'
-        : 'Bài 19: Tỉ số phần trăm & Ứng dụng thực tế tính tiền lãi',
-      room: 'P.102 (Tầng 1)',
-      teacher: 'Bùi Văn Anh',
-      preparation: 'Đọc trước tài liệu Unit 8 & chuẩn bị bài tập nhóm',
-      homeworkCode: 'BT-08',
-      homeworkSubmitted: true,
-      homeworkScore: '9.0/10',
-    },
+  const allSessions = useMemo(() => getCareSessions(pkgIsEnglish), [pkgIsEnglish])
 
-    // Completed Sessions (Descending Order: 19 ➔ 15)
-    {
-      id: 'past-19',
-      sessionNumber: 19,
-      date: '2026-07-22',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 7: World Culture & Global Heritage'
-        : 'Bài 18: Phép chia Số có nhiều chữ số & Bài toán có lời văn',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-07',
-      homeworkSubmitted: true,
-      homeworkScore: '10/10',
-      rating: 5,
-      comment: `🎯 Bài học hôm nay có gì:
-- Con đã cùng cô khám phá về chủ đề hình học trong bài học Level G22: Bài 2 Tạo hình lớn hơn. 🟥
-
-🏅 Thành tích nổi bật:
-- Hôm nay con tham gia học tập rất tích cực và nắm được cách ghép hình, hoàn thành tốt các bài tập trong giờ học. ✨
-- Con biết quan sát, so sánh hình đã ghép với hình mẫu và bước đầu hình dung được cách sắp xếp các mảnh ghép. 🧩
-- Khả năng hình dung không gian con cần thêm thời gian để thử nghiệm nhiều cách ghép khác nhau, nhưng luôn có tinh thần cố gắng. 👏`,
-    },
-    {
-      id: 'past-18',
-      sessionNumber: 18,
-      date: '2026-07-20',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 6: Technology & Future Innovations'
-        : 'Bài 17: Phép nhân và Phép chia Số thập phân',
-      attendance: 'present',
-      attendanceText: 'Đi muộn 10m',
-      homeworkCode: 'BT-06',
-      homeworkSubmitted: true,
-      homeworkScore: '9.0/10',
-      rating: 5,
-      comment: `🎯 Bài học hôm nay có gì:
-- Con đã học xong bài 17 chủ đề Phép nhân và Phép chia Số thập phân nâng cao. 📐
-
-🏅 Thành tích nổi bật:
-- Con biết làm các dạng bài toán tính nhanh và vận dụng linh hoạt vào bài tập thực tế. 🌟`,
-    },
-    {
-      id: 'past-17',
-      sessionNumber: 17,
-      date: '2026-07-17',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Midterm Review & Critical Thinking Practice'
-        : 'Bài 16: Hình học Không gian & Diện tích Hình Thang',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-05',
-      homeworkSubmitted: true,
-      homeworkScore: '9.5/10',
-      rating: 5,
-      comment: `🎯 Bài học hôm nay có gì:
-- Con ôn tập kiến thức hình học diện tích hình thang và chuẩn bị bài kiểm tra logic. 📐
-
-🏅 Thành tích nổi bật:
-- Học tập rất tập trung, tương tác tích cực với thầy cô và hỗ trợ các bạn trong giờ thảo luận nhóm. ✨
-- Khả năng tư duy hình học của con rất phát triển và chính xác. 🧩`,
-    },
-    {
-      id: 'past-16',
-      sessionNumber: 16,
-      date: '2026-07-15',
-      type: 'test' as const,
-      topic: pkgIsEnglish
-        ? 'Kiểm tra Giữa kỳ (Midterm Assessment)'
-        : 'Bài kiểm tra Định kỳ tháng 7',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-04',
-      homeworkSubmitted: true,
-      homeworkScore: '8.5/10',
-      rating: 5,
-      score: 8.5,
-      comment: pkgIsEnglish
-        ? 'Kết quả bài thi giữa kỳ xuất sắc (8.5/10), con cải thiện vượt bậc ở kỹ năng Đọc hiểu và Từ vựng học thuật.'
-        : 'Đạt điểm giỏi bài kiểm tra logic định kỳ tháng 7 (8.5/10). Con có tư duy hình học không gian xuất sắc.',
-    },
-    {
-      id: 'past-15',
-      sessionNumber: 15,
-      date: '2026-07-13',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 5: Environmental Conservation & Group Debate'
-        : 'Bài 15: Phép chia Số có nhiều chữ số & Bài toán có lời văn',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-03',
-      homeworkSubmitted: true,
-      homeworkScore: '9.5/10',
-      rating: 5,
-      comment: `🎯 Bài học hôm nay có gì:
-- Con học chủ đề Phép chia Số có nhiều chữ số và giải bài toán có lời văn thực tế. 💡
-
-🏅 Thành tích nổi bật:
-- Con phản xạ nói rất tự nhiên, chủ động tham gia thảo luận hăng hái. ✨
-- Hoàn thành bài tập đúng hạn với kết quả xuất sắc 9.5/10. 👏`,
-    },
-
-    // Older Historical Sessions
-    {
-      id: 'past-14',
-      sessionNumber: 14,
-      date: '2026-07-10',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 4: Science & Space Exploration'
-        : 'Bài 14: Luyện tập Toán Tư Duy & Ôn tập Tổng hợp',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-02',
-      homeworkSubmitted: true,
-      homeworkScore: '9.0/10',
-      rating: 4,
-      comment: 'Hoàn thành bài tập khoa học đúng hạn, tư duy logic phản xạ nhanh.',
-    },
-    {
-      id: 'past-13',
-      sessionNumber: 13,
-      date: '2026-07-08',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 3: Healthy Lifestyle & Nutrition'
-        : 'Bài 13: Bài toán Tìm hai số khi biết Tổng và Tỉ số',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-01',
-      homeworkSubmitted: false,
-      rating: 4,
-      comment: 'Tham gia xây dựng bài tích cực, hiểu rõ bản chất công thức tính tỉ số.',
-    },
-    {
-      id: 'past-12',
-      sessionNumber: 12,
-      date: '2026-07-06',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Grammar Review & Vocabulary Expansion'
-        : 'Bài 12: Hình học Ôn tập Tính diện tích Tam giác & Tứ giác',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-12',
-      homeworkSubmitted: true,
-      homeworkScore: '9.5/10',
-      rating: 5,
-      comment: 'Nắm chắc kiến thức ngữ pháp cơ bản, làm bài tập thực hành nhanh và chuẩn xác.',
-    },
-    {
-      id: 'past-11',
-      sessionNumber: 11,
-      date: '2026-07-03',
-      type: 'lesson' as const,
-      topic: pkgIsEnglish
-        ? 'Unit 2: Art, Music & Cultural Diversity'
-        : 'Bài 11: Phép nhân và Phép chia Phân số Nâng cao',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-11',
-      homeworkSubmitted: true,
-      homeworkScore: '9.0/10',
-      rating: 5,
-      comment: 'Phát biểu sôi nổi, chủ động đặt nhiều câu hỏi mở rộng với giáo viên.',
-    },
-    {
-      id: 'past-10',
-      sessionNumber: 10,
-      date: '2026-07-01',
-      type: 'test' as const,
-      topic: pkgIsEnglish
-        ? 'Bài kiểm tra Đầu tháng (Monthly Placement Test)'
-        : 'Bài kiểm tra Định kỳ tháng 6',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-10',
-      homeworkSubmitted: true,
-      homeworkScore: '9.0/10',
-      rating: 5,
-      score: 9.0,
-      comment: 'Bài thi đạt 9.0/10 xuất sắc, kiến thức nền tảng rất vững vàng.',
-    },
-    {
-      id: 'past-05',
-      sessionNumber: 5,
-      date: '2026-06-15',
-      type: 'test' as const,
-      topic: pkgIsEnglish
-        ? 'Bài kiểm tra Giữa kỳ (Midterm Level Test)'
-        : 'Bài kiểm tra Định kỳ tháng 5',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-05',
-      homeworkSubmitted: true,
-      homeworkScore: '8.8/10',
-      rating: 5,
-      score: 8.8,
-      comment: 'Bài kiểm tra kiến thức tổng hợp giữa khóa đạt 8.8/10. Con làm tốt các bài toán logic.',
-    },
-    {
-      id: 'past-01',
-      sessionNumber: 1,
-      date: '2026-06-01',
-      type: 'test' as const,
-      topic: pkgIsEnglish
-        ? 'Bài kiểm tra Đầu vào (Initial Assessment)'
-        : 'Bài kiểm tra Đầu vào Level G2',
-      attendance: 'present',
-      attendanceText: 'Đã đến',
-      homeworkCode: 'BT-01',
-      homeworkSubmitted: true,
-      homeworkScore: '9.2/10',
-      rating: 5,
-      score: 9.2,
-      comment: 'Kết quả đánh giá năng lực đầu vào xuất sắc (9.2/10). Đủ điều kiện xếp lớp nâng cao.',
-    },
-  ]
+  // Cảnh báo & Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN)
+  const notices = useMemo(() => {
+    return getCareSessionNotices(allSessions, studentAlert, studentId)
+  }, [allSessions, studentAlert, studentId])
 
   const visibleSessions = showAllHistory ? allSessions : allSessions.slice(0, 7)
   const upcomingSessions = visibleSessions.filter((s) => s.type === 'upcoming')
@@ -315,38 +55,128 @@ export function CareSessionTimelineList({
   const allTestSessions = allSessions.filter((s) => s.type === 'test')
   const testCompletedSessions = showAllTests ? allTestSessions : allTestSessions.slice(0, 1)
 
-  const getDayOfWeekName = (dateStr: string) => {
-    if (dateStr.includes('Thứ')) {
-      const match = dateStr.match(/(Thứ\s*\d|Thứ\s*Bảy|Chủ\s*Nhật)/i)
-      if (match) return match[1]
+  // Buổi học đầu tiên hoàn thành (buổi trên cùng) mặc định mở rộng nhận xét học viên
+  const firstCompletedId = regularCompletedSessions[0]?.id
+
+  const isSessionExpanded = (id: string) => {
+    if (expandedComments[id] !== undefined) {
+      return expandedComments[id]
     }
-    const cleanDate = dateStr.split(' ')[0]
-    const d = new Date(cleanDate)
-    if (isNaN(d.getTime())) return 'Thứ 4'
-    const day = d.getDay()
-    const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
-    return days[day]
+    return id === firstCompletedId
   }
 
-  const formatDateOnly = (dateStr: string) => {
-    const cleanDate = dateStr.split(' ')[0]
-    if (cleanDate.includes('/')) return cleanDate
-    const d = new Date(cleanDate)
-    if (isNaN(d.getTime())) return dateStr
-    const day = String(d.getDate()).padStart(2, '0')
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const year = d.getFullYear()
-    return `${day}/${month}/${year}`
+  const toggleExpand = (id: string) => {
+    setExpandedComments((prev) => ({
+      ...prev,
+      [id]: !isSessionExpanded(id),
+    }))
+  }
+
+  const renderAttendanceBadge = (session: UnifiedSessionItem) => {
+    if (session.type === 'upcoming') {
+      return <span className="text-muted-foreground/70 text-xs">Chưa điểm danh</span>
+    }
+
+    // 0. Chưa điểm danh (buổi học đã diễn ra nhưng chưa ghi nhận điểm danh)
+    if (session.attendance === 'unmarked' || session.attendanceText === 'Chưa điểm danh') {
+      return (
+        <span
+          className={cn(
+            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            getStatusBadgeClass('pending')
+          )}
+          title="Chưa điểm danh"
+        >
+          Chưa điểm danh
+        </span>
+      )
+    }
+
+    // 1. Vắng không phép (Nổi bật nhất - Badge Đỏ chỉ để nhãn)
+    if (
+      session.attendance === 'absent_unexcused' ||
+      /không phép/i.test(session.attendanceText || '')
+    ) {
+      return (
+        <span
+          className={cn(
+            'text-[11px] font-bold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            getStatusBadgeClass('absent_unexcused')
+          )}
+          title="Vắng không phép"
+        >
+          Vắng không phép
+        </span>
+      )
+    }
+
+    // 2. Vắng có phép (Badge Cam/Vàng chỉ để nhãn)
+    if (
+      session.attendance === 'absent_excused' ||
+      session.attendance === 'excused' ||
+      /có phép|nghỉ phép/i.test(session.attendanceText || '')
+    ) {
+      return (
+        <span
+          className={cn(
+            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            getStatusBadgeClass('absent_excused')
+          )}
+          title="Vắng có phép (Phụ huynh đã xin phép)"
+        >
+          Vắng có phép
+        </span>
+      )
+    }
+
+    // 3. Vắng mặt chung
+    if (session.attendance === 'absent' || /vắng/i.test(session.attendanceText || '')) {
+      return (
+        <span
+          className={cn(
+            'text-[11px] font-bold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            getStatusBadgeClass('absent')
+          )}
+        >
+          {session.attendanceText || 'Vắng mặt'}
+        </span>
+      )
+    }
+
+    // 4. Đến muộn (Badge Vàng hổ phách cảnh báo - xóa 10m/15m chỉ để nhãn Đến muộn)
+    if (session.attendance === 'late' || /muộn/i.test(session.attendanceText || '')) {
+      return (
+        <span
+          className={cn(
+            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            getStatusBadgeClass('late')
+          )}
+        >
+          Đến muộn
+        </span>
+      )
+    }
+
+    // 5. Đã đến (Badge xanh lục trang nhã)
+    return (
+      <span
+        className={cn(
+          'text-[11px] font-medium px-2 py-0.5 rounded-full border leading-none shrink-0',
+          getStatusBadgeClass('present')
+        )}
+      >
+        Đã đến
+      </span>
+    )
   }
 
   const renderSessionCard = (session: UnifiedSessionItem) => {
     const isUpcoming = session.type === 'upcoming'
     const isTest = session.type === 'test'
-    const isExpanded = !!expandedComments[session.id]
+    const isExpanded = isSessionExpanded(session.id)
 
-    const dayOfWeek = getDayOfWeekName(session.date)
-    const formattedDate = formatDateOnly(session.date)
-    const timeSlot = session.time || '17:30 - 19:00'
+    const shortDay = getShortDayOfWeek(session.date)
+    const shortDate = formatDateNoYear(session.date)
 
     return (
       <div
@@ -356,12 +186,22 @@ export function CareSessionTimelineList({
           isUpcoming && 'bg-muted/10 border-border/40'
         )}
       >
-        {/* Row 1: Title on left | Rating 5★ + Lịch học (Thứ, ngày, giờ) on right */}
-        <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+        {/* Row 1 duy nhất: [Thứ, Ngày/Tháng] + Tên buổi học (nếu dài để ...) | GV (trợ giảng popover nếu có) • Điểm danh rõ ràng • BTVN • Điểm thi */}
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên buổi học (truncate ...) + Badge Kiểm tra */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <h4 className="font-normal text-foreground text-xs truncate leading-snug">
+            {/* Thứ viết tắt & Ngày (không có năm) đưa ra trước Tên buổi học */}
+            <span className="font-semibold text-xs shrink-0 text-sky-600 dark:text-sky-400">
+              {shortDay}, {shortDate}
+            </span>
+
+            <h4
+              className="font-normal text-foreground text-xs truncate leading-snug min-w-0"
+              title={session.topic}
+            >
               {session.topic}
             </h4>
+
             {isTest && (
               <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
                 Kiểm tra
@@ -369,33 +209,9 @@ export function CareSessionTimelineList({
             )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs flex-wrap sm:flex-nowrap">
-            {session.rating && !isTest && (
-              <span className="flex items-center gap-0.5 font-medium text-amber-500 shrink-0">
-                {session.rating}<Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              </span>
-            )}
-            {isTest && session.score && (
-              <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 px-1.5 py-0.5 rounded border border-violet-200/80 shrink-0">
-                {session.score}/10
-              </span>
-            )}
-
-            {/* Lịch học thứ, ngày (giờ) ở phía sau Rating 5 sao */}
-            <div className="flex items-center gap-1.5 shrink-0 text-xs">
-              <span className="font-normal text-xs px-1.5 py-0.5 rounded-md border shrink-0 shadow-3xs bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800">
-                {dayOfWeek}
-              </span>
-              <span className="text-muted-foreground text-xs font-normal shrink-0">
-                {formattedDate} ({timeSlot})
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2: Thông tin GV, TG, Phòng & Điểm danh / BTVN */}
-        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-          <div className="flex items-center gap-1.5 text-muted-foreground flex-wrap">
+          {/* Cụm phải ở cuối dòng: GV (+1 popover trợ giảng nếu có) trước BTVN, Điểm danh rõ ràng, BTVN, Điểm kiểm tra */}
+          <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
+            {/* GV */}
             <span className="text-muted-foreground">GV:</span>
             <PersonnelHoverCard
               person={{
@@ -413,43 +229,72 @@ export function CareSessionTimelineList({
               </span>
             </PersonnelHoverCard>
 
-            <span className="text-border/60">•</span>
+            {/* Trợ giảng: Chỉ hiển thị khi buổi đó CÓ trợ giảng, không sinh dòng, chỉ mở Popover */}
+            {session.assistant && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-0.5 text-xs font-semibold px-1 py-0.5 rounded border border-sky-200 hover:bg-sky-100 bg-sky-50/80 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900 transition-colors cursor-pointer select-none ml-0.5"
+                    title={`Trợ giảng: ${session.assistant.name}`}
+                  >
+                    <span>+1</span>
+                    <ChevronDown className="h-3 w-3 stroke-[2.5]" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  side="bottom"
+                  className="w-64 p-3 space-y-2.5 text-xs z-50 shadow-md border bg-popover text-popover-foreground rounded-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                    <span className="font-bold text-foreground text-xs">Trợ giảng buổi học</span>
+                    <span className="text-[10.5px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-200/60">
+                      Trợ giảng
+                    </span>
+                  </div>
 
-            <span className="text-muted-foreground">TG:</span>
-            <PersonnelHoverCard
-              person={{
-                id: 'EMP-TA-HA',
-                name: 'Hoàng Anh',
-                role: 'Trợ giảng (TA)',
-                phone: '0934567890',
-                email: 'honganh@rinoedu.com',
-                avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangAnh',
-              }}
-              align="start"
-            >
-              <span className="font-normal text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer transition-colors">
-                Hoàng Anh
-              </span>
-            </PersonnelHoverCard>
+                  <div className="flex items-center gap-2.5">
+                    <AppAvatar
+                      src={session.assistant.avatar}
+                      name={session.assistant.name}
+                      size="sm"
+                      className="h-9 w-9 border border-primary/10 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="font-bold text-xs text-foreground truncate">{session.assistant.name}</p>
+                      <p className="text-[10.5px] text-muted-foreground truncate">{session.assistant.role}</p>
+                    </div>
+                  </div>
 
-            <span className="text-border/60">•</span>
-
-            <span className="text-muted-foreground">Phòng:</span>
-            <span className="font-normal text-slate-700 dark:text-zinc-300">
-              {session.room || 'A101'}
-            </span>
-          </div>
-
-          {/* Status Điểm danh & BTVN */}
-          <div className="flex items-center gap-1.5 text-muted-foreground flex-wrap ml-auto">
-            {isUpcoming ? (
-              <span className="text-muted-foreground/70">Chưa điểm danh</span>
-            ) : session.attendance === 'present' ? (
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">Đã đến</span>
-            ) : (
-              <span className="text-amber-600 dark:text-amber-400 font-medium">{session.attendanceText}</span>
+                  <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
+                    {session.assistant.phone && (
+                      <div className="flex items-center justify-between text-muted-foreground">
+                        <span>Số điện thoại:</span>
+                        <span className="font-mono font-bold text-foreground">{session.assistant.phone}</span>
+                      </div>
+                    )}
+                    {session.assistant.email && (
+                      <div className="flex items-center justify-between text-muted-foreground">
+                        <span>Email:</span>
+                        <span className="font-medium text-foreground truncate max-w-[140px]" title={session.assistant.email}>
+                          {session.assistant.email}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
+
             <span className="text-border/60">•</span>
+
+            {/* Status Điểm danh (Rõ ràng: Vắng không phép, Vắng có phép, Đến muộn, Đã đến) */}
+            {renderAttendanceBadge(session)}
+
+            <span className="text-border/60">•</span>
+
+            {/* BTVN */}
             <span>
               BTVN:{' '}
               {session.homeworkSubmitted ? (
@@ -470,11 +315,21 @@ export function CareSessionTimelineList({
                 </span>
               )}
             </span>
+
+            {/* Điểm bài kiểm tra nếu có */}
+            {isTest && session.score && (
+              <>
+                <span className="text-border/60">•</span>
+                <span className="font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 px-1.5 py-0.5 rounded border border-violet-200/80 text-xs">
+                  {session.score}/10
+                </span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Optional Comments: Default 3 lines clamp + inline italic ... xem thêm on line 3 */}
-        {session.comment && (
+        {/* Nhận xét của học viên: Mặc định buổi đầu tiên mở rộng, các buổi khác thu gọn 3 dòng kèm nút xem thêm */}
+        {session.comment && session.comment.trim() ? (
           <div className="pt-1.5 border-t border-border/30">
             <div className="relative">
               <p
@@ -497,6 +352,29 @@ export function CareSessionTimelineList({
               )}
             </div>
           </div>
+        ) : (
+          /* Buổi học chưa có nhận xét (Do giáo viên chưa nhập) - Thêm dòng cảnh báo */
+          !isUpcoming && (
+            <div className="pt-1.5 border-t border-border/30">
+              <div className="flex items-center justify-between gap-2 py-1 px-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span className="font-semibold text-xs">Chưa có nhận xét học viên</span>
+                  <span className="text-[11px] text-amber-700/80 dark:text-amber-400/80 italic hidden sm:inline">
+                    (Do giáo viên chưa nhập)
+                  </span>
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] font-bold px-1.5 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+                    getStatusBadgeClass('warning')
+                  )}
+                >
+                  Chờ cập nhật
+                </span>
+              </div>
+            </div>
+          )
         )}
       </div>
     )
@@ -508,13 +386,33 @@ export function CareSessionTimelineList({
       <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden">
         {/* Streamlined Header with soft background tint */}
         <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
-          <h3 className="text-xs font-bold text-foreground tracking-tight">
+          <h3 className="text-sm font-bold text-foreground tracking-tight">
             Nhật ký Buổi học
           </h3>
           <span className="text-xs text-muted-foreground font-normal">
             Hiển thị {visibleSessions.length}/{allSessions.length} buổi
           </span>
         </div>
+
+        {/* Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN) */}
+        {notices.length > 0 && (
+          <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3.5 py-2.5 text-xs text-left animate-in fade-in-50 duration-200 mb-2.5">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0 text-amber-950 dark:text-amber-100 text-xs leading-relaxed">
+                <span className="font-bold text-amber-800 dark:text-amber-300 mr-1.5">
+                  Lưu ý:
+                </span>
+                {notices.map((notice, idx) => (
+                  <span key={notice.id} className="inline">
+                    {notice.text}
+                    {idx < notices.length - 1 ? ' ' : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
         {smartCards && <div className="mb-2">{smartCards}</div>}
@@ -562,7 +460,7 @@ export function CareSessionTimelineList({
                   side="top"
                 >
                   <span className="text-xs text-muted-foreground hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer font-medium shrink-0 ml-2 whitespace-nowrap inline-flex items-center gap-1 transition-colors">
-                    <span className="font-extrabold text-xs px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300">
+                    <span className="font-bold text-xs text-sky-600 dark:text-sky-400">
                       {dayOfWeek}
                     </span>
                     <span>{formattedDate} ({sessionTime})</span>

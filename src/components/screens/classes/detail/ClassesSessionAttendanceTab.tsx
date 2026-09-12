@@ -20,6 +20,8 @@ interface ClassesSessionAttendanceTabProps {
   sessionStatus?: string
   isTestSession?: boolean
   isMath?: boolean
+  isProjectSession?: boolean
+  projectUrl?: string
   onOpenCareDetail?: (student: RosterStudent) => void
   semesterEvalMap?: Record<string, unknown>
   testScores?: Record<string, Record<string, TestScoreData>>
@@ -39,6 +41,8 @@ export function ClassesSessionAttendanceTab({
   sessionStatus,
   isTestSession = false,
   isMath = false,
+  isProjectSession = false,
+  projectUrl,
   onOpenCareDetail,
   testScores = {},
   onOpenTestScoreDialog = () => {},
@@ -245,7 +249,7 @@ export function ClassesSessionAttendanceTab({
                     <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[35%] min-w-[280px]">Học viên</th>
                     <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[15%] min-w-[110px]">Điểm danh</th>
                     <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[15%] min-w-[100px]">
-                      {isTestSession && isMath ? 'KTĐK' : 'BTVN'}
+                      {isProjectSession ? 'Project' : isTestSession && isMath ? 'KTĐK' : 'BTVN'}
                     </th>
                     <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[35%] min-w-[300px]">Nhận xét</th>
                   </>
@@ -274,6 +278,8 @@ export function ClassesSessionAttendanceTab({
                       sessionId={sessionId}
                       isTestSession={isTestSession}
                       isMath={isMath}
+                      isProjectSession={isProjectSession}
+                      projectUrl={projectUrl}
                       isAttendanceDisabled={isAttendanceDisabled}
                       isScoreDisabled={isScoreDisabled}
                       att={att}

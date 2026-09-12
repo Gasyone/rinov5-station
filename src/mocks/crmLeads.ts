@@ -13,6 +13,7 @@ export type LeadStatus =
   | 'cho_chot'
   | 'chuyen_doi'
   | 'that_bai'
+  | 'tam_dung'
   // Backward compatibility legacy statuses
   | 'chua_tiep_can'
   | 'dang_cham_soc'
@@ -91,6 +92,7 @@ export interface Lead {
   assignedTo: string
   branch: string
   createdAt: string
+  slaDeadline?: string // Hạn SLA xử lý theo trạng thái
   lastNote?: string
 
   // Thông tin Lead quay lại (Returning Lead) & Lịch sử khảo sát trước
@@ -217,6 +219,30 @@ export const mockLeads: Lead[] = [
     address: 'Phường Bến Nghé, Quận 1, TP.HCM',
     email: 'thu.ha@gmail.com',
     familySiblings: ['Bé Bình (12t)'],
+    otherParents: [
+      {
+        name: 'Trần Văn Sơn',
+        role: 'Bố',
+        phone: '091161999',
+        email: 'vanson.tran@example.com',
+        occupation: 'Kỹ sư Xây dựng - Vinaconex',
+        preferredChannel: 'Ưu tiên Gọi điện',
+        zaloStatus: 'Chưa kết bạn Zalo',
+        address: 'Phường Bến Nghé, Quận 1, TP.HCM',
+        note: 'Bố hay đi công tác xa, chỉ gọi vào buổi tối sau 19h00 khi cần trao đổi gấp.',
+      },
+      {
+        name: 'Hoàng Thị Lan',
+        role: 'Bà ngoại',
+        phone: '0903123888',
+        email: 'lan.hoang@gmail.com',
+        occupation: 'Cán bộ hưu trí ngành Giáo dục',
+        preferredChannel: 'Ưu tiên Gọi điện',
+        zaloStatus: 'Đã kết bạn Zalo',
+        address: 'Phường Bến Nghé, Quận 1, TP.HCM',
+        note: 'Bà ngoại thường đưa đón bé vào các buổi chiều; liên hệ khi bố mẹ đang bận họp.',
+      },
+    ],
     source: 'facebook',
     status: 'danh_gia_trai_nghiem',
     subStatus: 'Đang hẹn test lại (Đợt 2)',
@@ -227,8 +253,8 @@ export const mockLeads: Lead[] = [
     isReturningLead: true,
     returningReason: 'Quay lại sau 6 tháng hoãn nhập học (Từng test đợt 1 đạt 78/100, học thử SK-01)',
     initialLevel: 'SuperKids Level 1 (Test đợt 1 đạt 78/100)',
-    schoolName: 'Tiểu học Đinh Tiên Hoàng (Quận 1)',
-    academicAbility: 'Khá / Phản xạ tốt',
+    schoolName: 'Tiểu học Lương Định Của (Quận 3)',
+    academicAbility: 'Giỏi / Tốt nghiệp loại Ưu',
     vuihocAccount: 'vh_an_2018',
 
     // Chân dung Phụ huynh (Buyer Persona)
@@ -253,7 +279,11 @@ export const mockLeads: Lead[] = [
     studentLearningStyle: 'Trực quan (Visual) & Vận động (Kinesthetic) - Thích học qua flashcard hình ảnh và minigame tương tác',
     studentLearningGoal: 'Tự tin thuyết trình tiếng Anh 3 phút trước lớp, đạt 14/15 khiên Cambridge Starters vào cuối năm học',
     ordersCount: 2,
-    totalSpend: '2.500.000đ',
+    totalSpend: '22.500.000đ',
+    trainingType: 'Tự học',
+    industryGroup: 'Tiểu học',
+    productGroup: 'Tiếng Anh Thiếu Nhi',
+    marketingStaff: 'Nguyễn Thị Lan (Marketing)',
     testStatus: 'scheduled',
     testDate: '15/08/2026',
     testTime: '18:00',
@@ -1193,11 +1223,11 @@ export const mockLeads: Lead[] = [
     phone: '0982221100',
     address: 'Phường An Phú, TP. Thủ Đức, TP.HCM',
     source: 'facebook',
-    status: 'that_bai',
+    status: 'tam_dung',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Smart City',
     createdAt: '2026-08-12',
-    lastNote: 'Sale gọi điện 3 lần không nghe máy.',
+    lastNote: 'Phụ huynh xin tạm dừng chăm sóc 2 tháng hè do cho bé về quê nghỉ hè.',
     expectedPackage: 'Gói Kindy 6T',
     expectedAmount: '11.500.000đ',
     winProbability: 0,

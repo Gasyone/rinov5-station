@@ -10,7 +10,6 @@ import {
   PipelineSubStatusConfig,
   DataPoolConfig,
 } from './leadLifecycleTypes'
-import { getStagePhase } from './leadLifecycleHelpers'
 import { LeadLifecyclePipelineTab } from './LeadLifecyclePipelineTab'
 import { LeadLifecycleDiagramView } from './LeadLifecycleDiagramView'
 import { LeadLifecyclePoolModal } from './LeadLifecyclePoolModal'
@@ -47,8 +46,6 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
   const [viewMode, setViewMode] = useState<'diagram' | 'list'>('diagram')
 
   // Filter states
-  const [phaseFilter, setPhaseFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
   const [originFilter, setOriginFilter] = useState('all')
 
   // Expanded stages state (mặc định mở 3 bước đầu)
@@ -103,19 +100,10 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
     }
   }
 
-  // Filter logic
+  // Filter logic: chỉ lọc theo loại nhãn (Hệ thống / Tùy biến) nếu chọn
   const filteredStages = useMemo(() => {
     return stages
       .filter((stage) => {
-        if (phaseFilter !== 'all') {
-          const stagePhase = getStagePhase(stage)
-          if (stagePhase !== phaseFilter) {
-            return false
-          }
-        }
-        if (typeFilter !== 'all' && stage.stageType !== typeFilter) {
-          return false
-        }
         if (originFilter !== 'all') {
           const hasMatchingSub = (stage.subStatuses || []).some(
             (sub) => sub.origin === originFilter
@@ -125,7 +113,7 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
         return true
       })
       .sort((a, b) => a.order - b.order)
-  }, [stages, phaseFilter, typeFilter, originFilter])
+  }, [stages, originFilter])
 
   // Handlers for stages
   const handleAddNewStage = () => {
@@ -347,33 +335,6 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
             </button>
           </div>
 
-          <Select value={phaseFilter} onValueChange={setPhaseFilter}>
-            <SelectTrigger className="h-8 text-xs w-[150px] bg-background">
-              <SelectValue placeholder="Nhóm giai đoạn" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả nhóm</SelectItem>
-              <SelectItem value="T0">[T0] Tiếp nhận</SelectItem>
-              <SelectItem value="T1">[T1] Tư vấn</SelectItem>
-              <SelectItem value="T2">[T2] Test &amp; Học thử</SelectItem>
-              <SelectItem value="T3">[T3] Chốt deal</SelectItem>
-              <SelectItem value="T4">[T4] Vận đơn &amp; Thu phí</SelectItem>
-              <SelectItem value="T5">[T5] Thành công</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-8 text-xs w-[140px] bg-background">
-              <SelectValue placeholder="Loại trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả loại</SelectItem>
-              <SelectItem value="in_progress">Đang tiến hành</SelectItem>
-              <SelectItem value="won">Thành công (Won)</SelectItem>
-              <SelectItem value="global_lost">Thất bại (Lost)</SelectItem>
-            </SelectContent>
-          </Select>
-
           <Select value={originFilter} onValueChange={setOriginFilter}>
             <SelectTrigger className="h-8 text-xs w-[150px] bg-background">
               <SelectValue placeholder="Loại nhãn con" />
@@ -427,14 +388,17 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
       {/* Main Screen Content: Sơ đồ quy trình (Diagram) hoặc Danh sách thẻ Accordion (List) */}
       {viewMode === 'diagram' ? (
         <LeadLifecycleDiagramView
-          stages={filteredStages}
+          stages={stages}
+          originFilter={originFilter as 'all' | 'system' | 'custom'}
           onEditStage={handleEditStage}
           onAddNewSubStatus={handleAddNewSubStatus}
           onEditSubStatus={handleEditSubStatus}
+          onDeleteSubStatus={handleDeleteSubStatus}
         />
       ) : (
         <LeadLifecyclePipelineTab
           stages={filteredStages}
+          originFilter={originFilter as 'all' | 'system' | 'custom'}
           onEditStage={handleEditStage}
           onDeleteStage={handleDeleteStage}
           onMoveStage={handleMoveStage}
@@ -475,6 +439,7 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
         stage={subStatusStage}
         initialSubStatus={editingSubStatus}
         onSaveSubStatus={handleSaveSubStatus}
+        onDeleteSubStatus={handleDeleteSubStatus}
       />
 
       {/* Confirm Delete Stage Dialog */}

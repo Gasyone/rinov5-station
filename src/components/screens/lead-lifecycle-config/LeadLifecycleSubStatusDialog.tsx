@@ -13,12 +13,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { FieldLabel } from '@/components/shared'
-import { Badge } from '@/components/ui/badge'
-import { Lock, AlertCircle, Link2 } from 'lucide-react'
+import { Lock, AlertCircle, Link2, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LeadLifecycleSubStatusDialogProps {
@@ -27,6 +27,7 @@ interface LeadLifecycleSubStatusDialogProps {
   stage: PipelineStageConfig | null
   initialSubStatus?: PipelineSubStatusConfig | null
   onSaveSubStatus: (stageId: string, subStatus: PipelineSubStatusConfig) => void
+  onDeleteSubStatus?: (stageId: string, subStatusId: string) => void
 }
 
 const COLOR_PRESETS = [
@@ -52,6 +53,7 @@ export const LeadLifecycleSubStatusDialog: React.FC<LeadLifecycleSubStatusDialog
   stage,
   initialSubStatus,
   onSaveSubStatus,
+  onDeleteSubStatus,
 }) => {
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
@@ -323,19 +325,9 @@ export const LeadLifecycleSubStatusDialog: React.FC<LeadLifecycleSubStatusDialog
           </div>
         )}
 
-        <DialogFooter className="pt-2 border-t flex items-center justify-end gap-2">
+        <DialogFooter className="pt-2 border-t flex flex-row items-center justify-between sm:justify-between gap-2 w-full">
           {isSystemLabel ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="h-8 text-xs cursor-pointer"
-            >
-              Đóng
-            </Button>
-          ) : (
-            <>
+            <div className="flex items-center justify-end w-full">
               <Button
                 type="button"
                 variant="outline"
@@ -343,16 +335,50 @@ export const LeadLifecycleSubStatusDialog: React.FC<LeadLifecycleSubStatusDialog
                 onClick={() => onOpenChange(false)}
                 className="h-8 text-xs cursor-pointer"
               >
-                Hủy bỏ
+                Đóng
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSave}
-                className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
-              >
-                {isEditing ? 'Lưu cập nhật' : 'Thêm nhãn'}
-              </Button>
+            </div>
+          ) : (
+            <>
+              <div>
+                {isEditing && !isSystemLabel && onDeleteSubStatus && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (stage && initialSubStatus) {
+                        onOpenChange(false)
+                        onDeleteSubStatus(stage.id, initialSubStatus.id)
+                      }
+                    }}
+                    className="h-8 text-xs gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Xóa nhãn</span>
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                  className="h-8 text-xs cursor-pointer"
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSave}
+                  className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
+                >
+                  {isEditing ? 'Lưu cập nhật' : 'Thêm nhãn'}
+                </Button>
+              </div>
             </>
           )}
         </DialogFooter>

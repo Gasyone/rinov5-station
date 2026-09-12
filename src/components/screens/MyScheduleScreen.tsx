@@ -105,8 +105,10 @@ export function MyScheduleScreen({
     return value
   }, [])
 
+  const allUnifiedSlots = useMemo(() => buildUnifiedSlots(allClass, allEvent), [allClass, allEvent])
+
   const slots = useMemo<UnifiedSlot[]>(() => {
-    return filterMyScheduleSlots(buildUnifiedSlots(allClass, allEvent), {
+    return filterMyScheduleSlots(allUnifiedSlots, {
       activeBranch,
       bucketFilters,
       sourceFilters,
@@ -119,7 +121,7 @@ export function MyScheduleScreen({
       conditionFilters,
     })
   }, [
-    activeBranch, allClass, allEvent, bucketFilters, search, sourceFilters, statusFilters, 
+    activeBranch, allUnifiedSlots, bucketFilters, search, sourceFilters, statusFilters, 
     typeFilters, today, subjectFilters, roomFilters, conditionFilters
   ])
 
@@ -176,6 +178,25 @@ export function MyScheduleScreen({
     ? formatLabel(selectedDate, { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
     : `${formatLabel(getScheduleWeekDays(selectedDate)[0], { day: '2-digit', month: 'long' })} - ${formatLabel(getScheduleWeekDays(selectedDate)[6], { day: '2-digit', month: 'short', year: 'numeric' })}`
 
+  const sessionTypeOptions = useMemo(() => {
+    const typeLabelMap: Record<string, string> = {
+      class_session: 'Buổi thường',
+      test_session: 'Buổi kiểm tra',
+      project: 'Buổi dự án',
+      supplementary: 'Buổi bổ trợ',
+      workshop: 'Workshop',
+      placement_test: 'Lịch trải nghiệm / Test đầu vào',
+    }
+    const standardOrder = ['class_session', 'test_session', 'project', 'supplementary', 'workshop', 'placement_test']
+    return standardOrder
+      .filter((type) => allUnifiedSlots.some((s) => s.type === type))
+      .map((type) => ({
+        value: type,
+        label: typeLabelMap[type] || type,
+        count: allUnifiedSlots.filter((s) => s.type === type).length,
+      }))
+  }, [allUnifiedSlots])
+
   const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [
       createFilterGroup({
@@ -191,6 +212,12 @@ export function MyScheduleScreen({
         selectedValues: sourceFilters,
       }),
       createFilterGroup({
+        id: 'types',
+        title: 'Loại buổi học',
+        options: sessionTypeOptions,
+        selectedValues: typeFilters,
+      }),
+      createFilterGroup({
         id: 'statuses',
         options: STATUS_OPTIONS,
         selectedValues: statusFilters,
@@ -202,18 +229,6 @@ export function MyScheduleScreen({
             return slot.status === 'cancelled' || slot.status === undefined
           }
           return slot.status === status
-        }).length,
-      }),
-      createFilterGroup({
-        id: 'types',
-        title: 'Loại lịch',
-        options: TYPE_OPTIONS,
-        selectedValues: typeFilters,
-        getOptionCount: (type) => slots.filter((slot) => {
-          if (type === 'class_session') {
-            return slot.type === 'class_session' || slot.type === 'supplementary' || slot.type === 'planned'
-          }
-          return slot.type === type
         }).length,
       }),
       createFilterGroup({
@@ -271,7 +286,7 @@ export function MyScheduleScreen({
         selectedValues: conditionFilters,
       }),
     ],
-    [bucketFilters, sourceFilters, statusFilters, typeFilters, slots, allSubjects, allRooms, subjectFilters, roomFilters, conditionFilters]
+    [bucketFilters, sourceFilters, statusFilters, typeFilters, sessionTypeOptions, slots, allSubjects, allRooms, subjectFilters, roomFilters, conditionFilters]
   )
 
   const handleCopy = (text: string, key: string) => {
@@ -320,6 +335,7 @@ export function MyScheduleScreen({
         trialStudents: slot.trialStudents || 0,
         attendedStudents: slot.attendedStudents,
         isOpeningDay: slot.isOpeningDay,
+        projectUrl: slot.projectUrl,
       }
       setSelectedClassSession(classSession)
       return

@@ -122,6 +122,21 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     auditLog: [
       { timestamp: '2026-05-17 10:00', author: 'Lan Anh', action: 'Tạo booking', detail: 'Ghi nhận nhu cầu học thử' },
     ],
+    feedback: {
+      rating: 5,
+      strengths: [
+        'Con rất tốt trong phần Từ vựng (4/5) và Phát âm (4/5) - cô khen con vì đã nhớ bài rất nhanh! 🌟',
+        'Ghi nhớ từ vựng qua hình ảnh con vật, đồ dùng nhanh chóng.',
+      ],
+      weaknesses: [
+        'Phần Ngữ pháp (2/5) và Nói (2/5) con cần luyện tập thêm để phản xạ tự nhiên hơn nhé.',
+        'Còn rụt rè khi được yêu cầu nói câu dài độc lập.',
+      ],
+      comment:
+        'Con rất tốt trong phần Từ vựng (4/5) và Phát âm (4/5) - cô khen con vì đã nhớ bài rất nhanh! Phần Ngữ pháp và Nói cần luyện tập thêm để phản xạ tự nhiên hơn.',
+      recommendedLevel: 'Cambridge Starter A1',
+      resultLink: '/app/trial_class/feedback/TR-2605-001',
+    },
   },
   {
     id: 'TR-2605-008',

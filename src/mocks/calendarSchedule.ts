@@ -13,7 +13,7 @@ export interface ClassSession {
   id: string; classCode: string; className: string; kctName?: string; subject: string; teacher: string;
   branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
-  statusLabel: string; type: 'class_session' | 'supplementary' | 'workshop' | 'planned' | 'digi_session';
+  statusLabel: string; type: 'class_session' | 'test_session' | 'supplementary' | 'workshop' | 'project' | 'planned' | 'digi_session';
   typeLabel: string; title: string; lessonSubtitle: string;
   lessonNumber?: number | string;
   lessonContent?: LessonContent;
@@ -30,6 +30,7 @@ export interface ClassSession {
   digiBookingIds?: string[];
   roomCapacity?: number;
   studentList?: { id: string; name: string; englishName?: string; status?: string }[];
+  projectUrl?: string;
 }
 
 export interface EventSession {
@@ -44,8 +45,8 @@ export interface EventSession {
 }
 
 // NOTE: Tailwind class strings for these `type` values live in
-// `src/lib/statusColors.ts` (entries: class_session, supplementary, workshop,
-// planned, event, placement_test). Screens resolve colors via
+// `src/lib/statusColors.ts` (entries: class_session, test_session, supplementary, workshop,
+// project, planned, event, placement_test). Screens resolve colors via
 // `getStatusBadgeClass(slot.type)` — do NOT re-introduce a color map here.
 
 const BRANCHES = ['RinoEdu Linh Đàm', 'RinoEdu Nguyễn Tuân', 'RinoEdu Smart City']
@@ -71,6 +72,9 @@ interface LessonItem {
   title: string
   subtitle: string
   sessionNumber: number
+  type: 'class_session' | 'test_session' | 'supplementary' | 'workshop' | 'project'
+  typeLabel: string
+  projectUrl?: string
   content: LessonContent
 }
 
@@ -80,6 +84,8 @@ const LESSONS: Record<string, LessonItem[]> = {
       title: 'Khởi động Station: Màu sắc và hình khối',
       subtitle: 'Làm quen mẫu câu hỏi đáp',
       sessionNumber: 1,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
         sessionNumber: 1,
         words: 'red, blue, yellow, green, circle, square, triangle',
@@ -91,6 +97,8 @@ const LESSONS: Record<string, LessonItem[]> = {
       title: 'Story time: My Family Adventure',
       subtitle: 'Đọc tranh theo nhóm',
       sessionNumber: 2,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
         sessionNumber: 2,
         words: 'father, mother, brother, sister, baby, grandfather',
@@ -99,9 +107,24 @@ const LESSONS: Record<string, LessonItem[]> = {
       },
     },
     {
+      title: 'Kiểm tra định kỳ: Unit 1 Review & Quiz',
+      subtitle: 'Đánh giá năng lực từ vựng & ngữ pháp',
+      sessionNumber: 3,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 3,
+        words: 'review vocabulary units 1-2',
+        sentences: 'Unit Test 1: Listening & Speaking Assessment',
+        phonics: 'Phonics test: Short vowels A, E, I, O, U',
+      },
+    },
+    {
       title: 'Phonics lab: Nguyên âm ngắn',
       subtitle: 'Luyện âm ngắn qua trò chơi',
       sessionNumber: 4,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
         sessionNumber: 4,
         words: 'hello, goodbye, sing, stand up, sit down, thank you',
@@ -109,12 +132,82 @@ const LESSONS: Record<string, LessonItem[]> = {
         phonics: 'Aa: alligator, ant, apple / Bb: bear, bird, banana',
       },
     },
+    {
+      title: 'Bổ trợ phản xạ: Luyện phát âm & Giao tiếp',
+      subtitle: 'Kèm nhóm nhỏ củng cố phản xạ',
+      sessionNumber: 5,
+      type: 'supplementary',
+      typeLabel: 'Buổi bổ trợ',
+      content: {
+        sessionNumber: 5,
+        words: 'focus words: practice & conversation drills',
+        sentences: 'Daily routines and communication practice',
+        phonics: 'Intonation and linking sounds',
+      },
+    },
+    {
+      title: 'Kiểm tra giữa kỳ: Midterm Assessment',
+      subtitle: 'Kiểm tra 4 kỹ năng chuẩn Cambridge',
+      sessionNumber: 6,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 6,
+        words: 'comprehensive midterm test review',
+        sentences: 'Midterm 4-skill evaluation',
+        phonics: 'Pronunciation and speech fluency check',
+      },
+    },
+    {
+      title: 'Workshop: Giao tiếp tiếng Anh cùng GV bản xứ',
+      subtitle: 'Hoạt động trải nghiệm chuyên đề',
+      sessionNumber: 7,
+      type: 'workshop',
+      typeLabel: 'Workshop',
+      content: {
+        sessionNumber: 7,
+        words: 'interactive games, cultural roleplay',
+        sentences: 'Ask native teacher real-world questions',
+        phonics: 'Natural accent immersion',
+      },
+    },
+    {
+      title: 'Dự án Mini: My Dream Eco-City Presentation',
+      subtitle: 'Thuyết trình sản phẩm mini project theo nhóm',
+      sessionNumber: 8,
+      type: 'project',
+      typeLabel: 'Buổi dự án',
+      projectUrl: 'https://scratch.mit.edu/projects/612048882',
+      content: {
+        sessionNumber: 8,
+        words: 'eco-friendly, solar power, green spaces, recycling, skyscraper',
+        sentences: 'Welcome to our Eco-City project. In our city, there are solar buildings and electric vehicles.',
+        phonics: 'Presentation skills and public speaking intonation',
+      },
+    },
   ],
   'Toán tư duy': [
+    {
+      title: 'Level 307 - Bài 1: Khái niệm ma trận số',
+      subtitle: 'Làm quen quy luật hàng và cột',
+      sessionNumber: 1,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
+      content: {
+        sessionNumber: 1,
+        sections: [
+          { label: 'Khái niệm', text: 'Nhận biết hàng, cột và tọa độ ô cờ' },
+          { label: 'Kỹ năng', text: 'Tư duy logic bài toán sắp xếp' },
+          { label: 'Thực hành', text: 'Điền số còn thiếu vào bảng 3x3' },
+        ],
+      },
+    },
     {
       title: 'Level 307 - Bài 2: Trò chơi cờ bàn',
       subtitle: 'Khám phá luật chơi',
       sessionNumber: 2,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
         sessionNumber: 2,
         sections: [
@@ -125,9 +218,26 @@ const LESSONS: Record<string, LessonItem[]> = {
       },
     },
     {
+      title: 'Kiểm tra định kỳ: Math Speed Challenge',
+      subtitle: 'Bài kiểm tra tư duy hình ảnh và tính nhẩm',
+      sessionNumber: 3,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 3,
+        sections: [
+          { label: 'Nội dung', text: 'Kiểm tra tư duy định lượng và quy luật số học' },
+          { label: 'Hình thức', text: 'Làm bài trắc nghiệm tính nhẩm 20 câu' },
+          { label: 'Đánh giá', text: 'Chấm điểm tốc độ và độ chính xác' },
+        ],
+      },
+    },
+    {
       title: 'C2 - Bài 2: Toto và 100 hạt sỏi',
       subtitle: 'Ôn đếm theo nhóm',
       sessionNumber: 4,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
         sessionNumber: 4,
         sections: [
@@ -137,14 +247,92 @@ const LESSONS: Record<string, LessonItem[]> = {
         ],
       },
     },
+    {
+      title: 'Bổ trợ tư duy: Luyện giải toán có lời văn',
+      subtitle: 'Hướng dẫn phương pháp tư duy sơ đồ',
+      sessionNumber: 5,
+      type: 'supplementary',
+      typeLabel: 'Buổi bổ trợ',
+      content: {
+        sessionNumber: 5,
+        sections: [
+          { label: 'Mục tiêu', text: 'Củng cố kỹ năng đọc hiểu đề toán' },
+          { label: 'Phương pháp', text: 'Vẽ sơ đồ đoạn thẳng và hình khối trực quan' },
+          { label: 'Thực hành', text: 'Giải 5 bài toán thực tế thêm bớt' },
+        ],
+      },
+    },
+    {
+      title: 'Kiểm tra giữa kỳ: Đánh giá tư duy logic',
+      subtitle: 'Bài thi chuẩn hóa năng lực toán học',
+      sessionNumber: 6,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 6,
+        sections: [
+          { label: 'Phạm vi', text: 'Kiểm tra tổng hợp chương Ma trận và Phép tính' },
+          { label: 'Thời lượng', text: '45 phút làm bài độc lập' },
+          { label: 'Nhận xét', text: 'Phiếu đánh giá chi tiết gửi phụ huynh' },
+        ],
+      },
+    },
+    {
+      title: 'Workshop: Trải nghiệm toán thông minh Board Game',
+      subtitle: 'Chuyên đề toán học thực chiến',
+      sessionNumber: 7,
+      type: 'workshop',
+      typeLabel: 'Workshop',
+      content: {
+        sessionNumber: 7,
+        sections: [
+          { label: 'Hoạt động', text: 'Đấu trường board game tư duy chiến thuật' },
+          { label: 'Kỹ năng', text: 'Làm việc nhóm và tư duy đàm phán số học' },
+          { label: 'Tổng kết', text: 'Trao huy hiệu nhà vô địch toán học' },
+        ],
+      },
+    },
+    {
+      title: 'Dự án Mini: Thành phố hình học 3D & Mê cung toán học',
+      subtitle: 'Thiết kế sa bàn hình học không gian và tính toán thể tích',
+      sessionNumber: 8,
+      type: 'project',
+      typeLabel: 'Buổi dự án',
+      projectUrl: 'https://scratch.mit.edu/projects/10128407',
+      content: {
+        sessionNumber: 8,
+        sections: [
+          { label: 'Dự án', text: 'Chế tạo mô hình công trình 3D từ các khối lăng trụ, chóp, hộp' },
+          { label: 'Ứng dụng', text: 'Tính toán diện tích mặt đáy và diện tích xung quanh' },
+          { label: 'Thuyết trình', text: 'Báo cáo giải pháp mê cung toán học tối ưu' },
+        ],
+      },
+    },
   ],
   'STEM Robotics': [
     {
+      title: 'Lắp ráp cơ cấu bánh răng và chuyển động',
+      subtitle: 'Thực hành các khớp truyền lực cơ bản',
+      sessionNumber: 1,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
+      content: {
+        sessionNumber: 1,
+        sections: [
+          { label: 'Lý thuyết', text: 'Tỷ số truyền động bánh răng và trục vít' },
+          { label: 'Thực hành', text: 'Lắp ráp hộp giảm tốc 2 cấp' },
+          { label: 'Thử nghiệm', text: 'Đo tốc độ quay của động cơ DC' },
+        ],
+      },
+    },
+    {
       title: 'Robot line follower: Cân chỉnh cảm biến',
       subtitle: 'Lắp ráp và thử đường chạy',
-      sessionNumber: 3,
+      sessionNumber: 2,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
-        sessionNumber: 3,
+        sessionNumber: 2,
         sections: [
           { label: 'Chủ đề', text: 'Lắp ráp và cân chỉnh cảm biến quang hồng ngoại' },
           { label: 'Lập trình', text: 'Vòng lặp dò line đen trắng 2 kênh' },
@@ -153,15 +341,93 @@ const LESSONS: Record<string, LessonItem[]> = {
       },
     },
     {
+      title: 'Kiểm tra thực hành: Vận hành sa bàn tự động',
+      subtitle: 'Đánh giá kỹ năng lập trình cảm biến',
+      sessionNumber: 3,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 3,
+        sections: [
+          { label: 'Thử thách', text: 'Robot tự hành vượt qua 3 trạm chướng ngại vật' },
+          { label: 'Thời gian', text: 'Tối đa 3 phút hoàn thành sa bàn' },
+          { label: 'Tiêu chí', text: 'Độ chính xác và thời gian hoàn thành' },
+        ],
+      },
+    },
+    {
       title: 'STEM Coding: Vòng lặp và điều kiện',
       subtitle: 'Lập trình nhiệm vụ theo nhóm',
-      sessionNumber: 5,
+      sessionNumber: 4,
+      type: 'class_session',
+      typeLabel: 'Buổi thường',
       content: {
-        sessionNumber: 5,
+        sessionNumber: 4,
         sections: [
           { label: 'Chủ đề', text: 'Khối lệnh điều kiện If-Else lồng nhau' },
           { label: 'Lập trình', text: 'Né vật cản kết hợp phát còi cảnh báo' },
           { label: 'Thực hành', text: 'Chạy mê cung tự hành theo nhóm' },
+        ],
+      },
+    },
+    {
+      title: 'Bổ trợ kỹ thuật: Gỡ lỗi mạch và cân chỉnh servo',
+      subtitle: 'Hỗ trợ kỹ thuật thực hành nhóm nhỏ',
+      sessionNumber: 5,
+      type: 'supplementary',
+      typeLabel: 'Buổi bổ trợ',
+      content: {
+        sessionNumber: 5,
+        sections: [
+          { label: 'Nhiệm vụ', text: 'Kiểm tra tiếp xúc dây dẫn và nguồn pin' },
+          { label: 'Cân chỉnh', text: 'Căn góc servo 0-180 độ chuẩn vị trí cân bằng' },
+          { label: 'Thực hành', text: 'Tối ưu hóa mã nguồn điều khiển' },
+        ],
+      },
+    },
+    {
+      title: 'Kiểm tra đồ án: Báo cáo sáng tạo mô hình',
+      subtitle: 'Thuyết trình sản phẩm ứng dụng thực tế',
+      sessionNumber: 6,
+      type: 'test_session',
+      typeLabel: 'Buổi kiểm tra',
+      content: {
+        sessionNumber: 6,
+        sections: [
+          { label: 'Nội dung', text: 'Demo mô hình cánh tay robot gắp sản phẩm' },
+          { label: 'Kỹ năng', text: 'Thuyết trình và trả lời câu hỏi phản biện' },
+          { label: 'Đánh giá', text: 'Chấm điểm tính năng sáng tạo và thẩm mỹ' },
+        ],
+      },
+    },
+    {
+      title: 'Workshop: Tranh tài đua robot sa bàn',
+      subtitle: 'Giải đấu giao lưu kỹ năng lập trình',
+      sessionNumber: 7,
+      type: 'workshop',
+      typeLabel: 'Workshop',
+      content: {
+        sessionNumber: 7,
+        sections: [
+          { label: 'Giải đấu', text: 'Tranh tài tốc độ và đối kháng robot' },
+          { label: 'Khen thưởng', text: 'Trao huy chương cho đội có giải pháp tối ưu' },
+          { label: 'Tổng kết', text: 'Chia sẻ kinh nghiệm thiết kế phần cứng' },
+        ],
+      },
+    },
+    {
+      title: 'Dự án Mini: Chế tạo robot phân loại rác thông minh',
+      subtitle: 'Lập trình cảm biến và cánh tay servo phân loại tự động',
+      sessionNumber: 8,
+      type: 'project',
+      typeLabel: 'Buổi dự án',
+      projectUrl: 'https://scratch.mit.edu/projects/612048882',
+      content: {
+        sessionNumber: 8,
+        sections: [
+          { label: 'Dự án', text: 'Lắp ráp hệ thống băng chuyền và cánh tay servo gắp vật thể' },
+          { label: 'Lập trình', text: 'Xử lý dữ liệu cảm biến màu sắc phân loại rác hữu cơ/vô cơ' },
+          { label: 'Demo', text: 'Vận hành liên tục và tối ưu hóa thời gian xử lý vật thể' },
         ],
       },
     },
@@ -181,12 +447,15 @@ export function getMockClassSessions(): ClassSession[] {
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const generated = CLASSES.flatMap(cls => {
     const days = parseWeekdays(cls.schedule)
-    const lesson = PICK(LESSONS[cls.subject] || LESSONS['Tiếng Anh'], HASH(cls.id))
-    const type = HASH(cls.id) % 4 === 0 ? 'supplementary' : 'class_session'
+    const lessonList = LESSONS[cls.subject] || LESSONS['Tiếng Anh']
     return Array.from({ length: 28 }, (_, i) => {
       const d = addDays(today, i - 14)
       if (!days.includes(d.getDay())) return null
       const seed = HASH(cls.id + i)
+      const lessonIndex = (Math.floor(i / 3) + HASH(cls.id)) % lessonList.length
+      const lesson = lessonList[lessonIndex]
+      const type = lesson.type || 'class_session'
+      const typeLabel = lesson.typeLabel || (type === 'class_session' ? 'Buổi thường' : type === 'test_session' ? 'Buổi kiểm tra' : type === 'supplementary' ? 'Buổi bổ trợ' : type === 'project' ? 'Buổi dự án' : 'Workshop')
       const isToday = d.getTime() === today.getTime()
       const bucket = (isToday ? 'today' : d < today ? 'past' : 'upcoming') as 'past' | 'today' | 'upcoming'
       let sts = bucket === 'today' ? 'confirmed' : bucket === 'past' ? 'completed' : seed % 3 === 0 ? 'pending' : 'confirmed'
@@ -247,10 +516,11 @@ export function getMockClassSessions(): ClassSession[] {
         date: toDateKey(d), dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
         dateBucket: bucket, timeLabel: `${PAD(sh)}:${PAD(sm)}`, endTimeLabel: `${PAD(eh)}:${PAD(em)}`,
         scheduleLabel: cls.schedule, status: sts as ClassSession['status'], statusLabel: statusLabelMap[sts],
-        type, typeLabel: type === 'class_session' ? 'Chính thức' : 'Bổ trợ',
+        type, typeLabel,
         title: lesson.title, lessonSubtitle: lesson.subtitle,
         lessonNumber: lesson.sessionNumber,
         lessonContent: lesson.content,
+        projectUrl: lesson.projectUrl,
         totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
         attendedStudents, isRecurring: true, substituteTeacher: subTeacher,
         assistantTeacher, assistantSubstitute,

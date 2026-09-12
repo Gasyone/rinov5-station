@@ -3,6 +3,9 @@ export interface MissedCallLogItem {
   status: string
   note: string
   nextCallback?: string
+  audioDuration?: string
+  audioUrl?: string
+  parentOpinion?: string
 }
 
 export interface CareInteractionLog {
@@ -16,6 +19,12 @@ export interface CareInteractionLog {
   audioDuration?: string
   audioUrl?: string
   missedCallsList?: MissedCallLogItem[]
+  linkedOrder?: {
+    orderCode: string
+    packageName: string
+    totalPaidAmount?: number
+    amountText?: string
+  }
 }
 
 export interface StudentCareAlert {
@@ -59,6 +68,15 @@ export interface StudentCareAlert {
   upsaleClassification?: string // Phân loại upsale (chọn trạng thái tương tự tái phí)
   monthlyReportLinks?: string[] // Danh sách link báo cáo tháng
   studentNote?: string // Ghi chú học viên (thói quen, sở thích, mục tiêu học tập)
+  linkedOrderCode?: string // Mã đơn hàng liên kết cho tái phí
+  linkedOrder?: {
+    orderCode: string
+    packageName: string
+    totalPaidAmount: number
+    finalAmount?: number
+    paymentTerm?: string
+  }
+  renewalClassification?: string // Phân loại trạng thái tái phí thực tế
 }
 
 export interface FamilyContact {
@@ -136,9 +154,33 @@ export const mockCareAlerts: StudentCareAlert[] = [
     csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
     completedCareTags: ['ĐK1'],
-    studentNote: 'Học viên tích cực, chăm chỉ hoàn thành bài tập toán tư duy.',
-    interactionNotes: 'Hẹn chuyển khoản hoàn tất tái phí gói Toán 1:6 (96 buổi). Phụ huynh đã nộp trước 2.8 triệu.',
-    interactionLogs: []
+    studentNote: 'Con tiếp thu nhanh qua hình ảnh và trực quan (Visual Learner), thích các câu đố tư duy logic và hoạt động nhóm. Gia đình định hướng thi Toán quốc tế SASMO, cần kèm thêm kỹ năng đọc hiểu đề bài dài.',
+    interactionNotes: '[CSTP] [Đối tượng: Lê Thu Thủy (Mẹ)] Trao đổi kế hoạch gia hạn gói Toán 1:6 (96 buổi). Phụ huynh đã nộp trước 2.8 triệu, rất hài lòng với sự tiến bộ của con và hẹn thanh toán nốt vào cuối tuần.',
+    renewalClassification: 'hen_tai',
+    linkedOrderCode: 'OD832001',
+    linkedOrder: {
+      orderCode: 'OD832001',
+      packageName: 'Toán tư duy 1:6 (96 buổi)',
+      totalPaidAmount: 2800000,
+      paymentTerm: 'Đã cọc 2.8 triệu (Hẹn tái)',
+    },
+    interactionLogs: [
+      {
+        id: 'log-baohan-1',
+        date: '2026-07-06',
+        staffName: 'Trần Thảo Anh 20',
+        callConfirmation: 'Đã gọi',
+        audioDuration: '03:15',
+        notes: '[CSTP] [Đối tượng: Lê Thu Thủy (Mẹ)] Tư vấn lộ trình nâng cao Toán tư duy 1:6 (96 buổi). Mẹ ghi nhận con tự giác làm bài hơn, đồng ý gia hạn tiếp lộ trình và đã đặt cọc giữ chỗ 2.8 triệu.',
+        parentOpinion: 'Mẹ đánh giá cao phương pháp dạy của thầy cô, con về nhà hào hứng kể chuyện học, hẹn cuối tuần này chuyển nốt số học phí còn lại.',
+        linkedOrder: {
+          orderCode: 'OD832001',
+          packageName: 'Toán tư duy 1:6 (96 buổi)',
+          totalPaidAmount: 2800000,
+          amountText: '2.800.000đ',
+        },
+      },
+    ]
   },
   {
     id: "1",
@@ -165,11 +207,31 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-1",
     csStaff: "Nguyễn Thị Ngọc Anh",
-    callConfirmation: "Chưa gọi",
+    careAlert: "Hẹn gọi lại",
+    callConfirmation: "KNM",
     activeCSTP: false,
     completedCareTags: ['ĐK1'],
-    studentNote: 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
-    interactionLogs: []
+    studentNote: 'Con thích các trò chơi ngôn ngữ tương tác, ghi nhớ từ vựng qua bài hát rất nhanh. Tính cách hòa đồng nhưng còn ngại nói trước đám đông, cần tạo cơ hội thuyết trình nhóm nhỏ để tăng tự tin.',
+    interactionNotes: '[CSĐK] [Đối tượng: Trần Văn Minh (Bố)] Check-in tiến độ học tập tháng 7. Phụ huynh hẹn gọi lại vào 15:00 ngày 24/07 để trao đổi thêm phương án xếp lớp mới.',
+    interactionLogs: [
+      {
+        id: 'log-s1-1',
+        date: '2026-07-15',
+        staffName: 'Nguyễn Thị Ngọc Anh',
+        callConfirmation: 'KNM',
+        audioDuration: '00:00',
+        notes: '[CSĐK] [Đối tượng: Bố] Bố bận họp không nghe máy. Đã gửi tin nhắn Zalo kèm báo cáo học tập, bố nhắn hẹn gọi lại lúc 15:00 ngày 24/07.',
+        parentOpinion: 'Bố mong muốn duy trì cô giáo hiện tại vì con rất yêu quý cô và có động lực học tập rõ rệt, hẹn gọi lại lúc 15:00 ngày 24/07.',
+        missedCallsList: [
+          {
+            time: '15:00 15/07/2026',
+            status: 'Hẹn gọi lại',
+            note: 'Phụ huynh bận, hẹn gọi lại sau',
+            nextCallback: '24/07/2026 15:00',
+          }
+        ]
+      }
+    ]
   },
   {
     id: "2",
@@ -196,10 +258,30 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-2",
     csStaff: "Nguyễn Thị Ngọc Anh",
-    callConfirmation: "Chưa gọi",
+    careAlert: "Hẹn gọi lại",
+    callConfirmation: "KNM",
     activeCSTP: false,
-    studentNote: '',
-    interactionLogs: []
+    studentNote: 'Khả năng tư duy logic và suy luận sắc bén, làm bài kiểm tra luôn đạt điểm tối đa (9.8 - 10.0). Con có tính cẩn thận, mục tiêu năm học tới đạt học bổng chuyển cấp chất lượng cao.',
+    interactionNotes: '[CSĐK] [Đối tượng: Vũ Lan Hương (Mẹ)] Trao đổi về kết quả học tập tháng 7 và lộ trình thi chứng chỉ quốc tế. Mẹ đang bận họp cơ quan, hẹn CS gọi lại lúc 09:30 ngày 25/07.',
+    interactionLogs: [
+      {
+        id: 'log-s2-1',
+        date: '2026-07-22',
+        staffName: 'Nguyễn Thị Ngọc Anh',
+        callConfirmation: 'KNM',
+        audioDuration: '00:00',
+        notes: '[CSĐK] [Đối tượng: Mẹ] Mẹ đang bận họp cơ quan chưa tiện trao đổi, hẹn CS gọi lại lúc 09:30 ngày 25/07 để tư vấn thêm lớp phụ đạo nâng cao.',
+        parentOpinion: 'Mẹ nhờ trung tâm gọi lại vào 09:30 ngày 25/07 sau giờ giao ban.',
+        missedCallsList: [
+          {
+            time: '14:20 22/07/2026',
+            status: 'Hẹn gọi lại',
+            note: 'Mẹ bận họp cơ quan, hẹn gọi lại lúc 09:30 ngày 25/07',
+            nextCallback: '25/07/2026 09:30',
+          }
+        ]
+      }
+    ]
   },
   {
     id: "3",
@@ -229,10 +311,33 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-3",
     csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
-    completedCareTags: ['ĐB1', 'TB1'],
+    completedCareTags: ['ĐB1', 'TB1', 'CSTP'],
+    renewalClassification: 'tai_phi',
+    linkedOrderCode: 'OD831002',
+    linkedOrder: {
+      orderCode: 'OD831002',
+      packageName: '[Gia sư] Toán tư duy 1:4 _ 60 buổi',
+      totalPaidAmount: 12500000,
+      paymentTerm: 'Thanh toán 100%',
+    },
     studentNote: 'Con tiếp thu nhanh các bài học logic, hay đặt câu hỏi phản biện trên lớp.',
-    interactionNotes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới.",
+    interactionNotes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới. Đã liên kết đơn hàng OD831002.",
     interactionLogs: [
+      {
+        id: "log-c3-2",
+        date: "2026-07-04",
+        staffName: "Nguyễn Thị Ngọc Anh",
+        callConfirmation: "Đã gọi",
+        audioDuration: "02:40",
+        notes: "[CSTP] [Đối tượng: Lê Thu Thủy (Mẹ)] Trao đổi tư vấn lộ trình tái phí khóa học mới. Phụ huynh đồng ý gia hạn tiếp tục lộ trình học.",
+        parentOpinion: "Mẹ đồng ý cho con học tiếp lộ trình mới, nhờ cô giáo và trung tâm hỗ trợ kèm con.",
+        linkedOrder: {
+          orderCode: "OD831002",
+          packageName: "[Gia sư] Toán tư duy 1:4 _ 60 buổi",
+          totalPaidAmount: 12500000,
+          amountText: "12.500.000đ",
+        }
+      },
       {
         id: "log-c3-1",
         date: "2026-05-25",
@@ -267,8 +372,31 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-4",
     csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
+    renewalClassification: 'hen_tai',
+    linkedOrderCode: 'OD832003',
+    linkedOrder: {
+      orderCode: 'OD832003',
+      packageName: 'Tiếng Anh Level 4 (48 buổi)',
+      totalPaidAmount: 4000000,
+      paymentTerm: 'Đã cọc 4.0 triệu đợt 1',
+    },
     interactionNotes: "Gọi điện cho mẹ qua zalo, mẹ bày tỏ băn khoăn vì gần đây cuối tuần con hay nghỉ học. CS đã định hướng việc học lên lớp 5 sắp tới và giải thích để mẹ sắp xếp cho con.",
     interactionLogs: [
+      {
+        id: "log-c4-2",
+        date: "2026-06-25",
+        staffName: "Trần Thảo Anh 20",
+        callConfirmation: "Đã gọi",
+        audioDuration: "02:30",
+        notes: "[CSTP] [Đối tượng: Nguyễn Thị Mai (Mẹ)] Trao đổi về kế hoạch học tiếp lên Level 5. Mẹ đã đặt cọc giữ chỗ 4.0 triệu đợt 1.",
+        parentOpinion: "Mẹ rất hài lòng và đề xuất giữ nguyên lớp và giáo viên hiện tại.",
+        linkedOrder: {
+          orderCode: "OD832003",
+          packageName: "Tiếng Anh Level 4 (48 buổi)",
+          totalPaidAmount: 4000000,
+          amountText: "4.000.000đ",
+        }
+      },
       {
         id: "log-c4-1",
         date: "2026-05-24",
@@ -304,9 +432,29 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-5",
     csStaff: "Trần Thảo Anh 20",
-    callConfirmation: "Chưa gọi",
+    callConfirmation: "KNM",
     activeCSTP: false,
-    interactionLogs: []
+    studentNote: 'Con có tư duy logic và suy luận hình học tốt (kỳ trước đạt 8.7), tuy nhiên tháng này gặp khó khăn ở phần phân số thập phân và hay quên nộp bài tập. Cần giáo viên quan sát kỹ và giao bài vừa sức để con lấy lại hứng thú.',
+    interactionNotes: '[CSCB] [Đối tượng: Nguyễn Văn Toàn (Bố)] Cảnh báo điểm kiểm tra giảm (0.7 so với 8.7). Bố bận họp, nhắn hẹn gọi lại lúc 19:30 ngày 25/07.',
+    interactionLogs: [
+      {
+        id: 'log-s5-1',
+        date: '2026-07-22',
+        staffName: 'Trần Thảo Anh 20',
+        callConfirmation: 'KNM',
+        audioDuration: '00:00',
+        notes: '[CSCB] [Đối tượng: Bố] Gọi trao đổi kết quả kiểm tra nhưng bố bận chưa bắt máy. Phụ huynh nhắn tin lại hẹn gọi sau 19:30 ngày 25/07.',
+        parentOpinion: 'Bố hẹn gọi lại sau 19:30 ngày 25/07 để có thời gian trao đổi kỹ hơn.',
+        missedCallsList: [
+          {
+            time: '11:15 22/07/2026',
+            status: 'Hẹn gọi lại',
+            note: 'KNM - Phụ huynh nhắn hẹn gọi tối 19:30 ngày 25/07',
+            nextCallback: '25/07/2026 19:30',
+          }
+        ]
+      }
+    ]
   },
   {
     id: "6",
@@ -333,8 +481,32 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-6",
     csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
-    interactionNotes: "Đợt này mẹ phản hồi cho con chơi nhiều, tối nay về sẽ nhắc con làm BTVN và chuẩn bị bài học.",
+    completedCareTags: ['CSTP'],
+    renewalClassification: 'tai_phi',
+    linkedOrderCode: 'OD790741',
+    linkedOrder: {
+      orderCode: 'OD790741',
+      packageName: 'Tiếng Anh Level 4 (59 buổi)',
+      totalPaidAmount: 7980000,
+      paymentTerm: 'Thanh toán 100%',
+    },
+    interactionNotes: "Đã liên hệ trao đổi lộ trình tái phí khóa học mới. Phụ huynh hoàn tất thanh toán 100% học phí.",
     interactionLogs: [
+      {
+        id: "log-c6-2",
+        date: "2026-06-15",
+        staffName: "Trần Thảo Anh 20",
+        callConfirmation: "Đã gọi",
+        audioDuration: "03:10",
+        notes: "[CSTP] [Đối tượng: Phụ huynh] Chăm sóc tái phí thành công. Đã hoàn tất thanh toán 100% học phí gói học tiếp theo.",
+        parentOpinion: "Gia đình tin tưởng và đăng ký tiếp khóa học mới cho con.",
+        linkedOrder: {
+          orderCode: "OD790741",
+          packageName: "Tiếng Anh Level 4 (59 buổi)",
+          totalPaidAmount: 7980000,
+          amountText: "7.980.000đ",
+        },
+      },
       {
         id: "log-c6-1",
         date: "2026-05-26",
@@ -368,8 +540,28 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-7",
     csStaff: "Trần Thảo Anh 20",
-    callConfirmation: "Chưa gọi",
-    interactionLogs: []
+    careAlert: "Hẹn gọi lại",
+    callConfirmation: "KNM",
+    interactionNotes: '[CSĐK] [Đối tượng: Lê Thị Hà (Mẹ)] Gọi kiểm tra tình trạng làm bài tập và chuyên cần. Máy bận, hẹn gọi lại lúc 14:00 ngày 26/07.',
+    interactionLogs: [
+      {
+        id: 'log-s7-1',
+        date: '2026-07-23',
+        staffName: 'Trần Thảo Anh 20',
+        callConfirmation: 'KNM',
+        audioDuration: '00:00',
+        notes: '[CSĐK] [Đối tượng: Mẹ] Gọi điện nhưng máy bận liên tục. Đã gửi tin nhắn Zalo thông báo và hẹn gọi lại lúc 14:00 ngày 26/07.',
+        parentOpinion: 'Chưa phản hồi, hẹn gọi lại lúc 14:00 ngày 26/07.',
+        missedCallsList: [
+          {
+            time: '10:00 23/07/2026',
+            status: 'Hẹn gọi lại',
+            note: 'Máy bận, hẹn gọi lại 14:00 ngày 26/07',
+            nextCallback: '26/07/2026 14:00',
+          }
+        ]
+      }
+    ]
   },
   {
     id: "8",
@@ -396,8 +588,29 @@ export const mockCareAlerts: StudentCareAlert[] = [
     learningResultsLink: "https://docs.google.com/document/d/learning-result-8",
     csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã nhắn Zalo",
-    interactionNotes: "Trao đổi với mẹ bằng zalo trung tâm để nhắc mẹ nhắc con làm lại bài kiểm tra và làm bài tập về nhà đầy đủ.",
+    renewalClassification: 'hen_tai',
+    linkedOrderCode: 'OD832005',
+    linkedOrder: {
+      orderCode: 'OD832005',
+      packageName: 'Tiếng Anh Level 4 (48 buổi)',
+      totalPaidAmount: 3500000,
+      paymentTerm: 'Đã cọc 3.5 triệu (Hẹn tái)',
+    },
+    interactionNotes: "Trao đổi với mẹ bằng zalo trung tâm để nhắc mẹ nhắc con làm lại bài kiểm tra và làm bài tập về nhà đầy đủ. Phụ huynh đã cọc 3.5 triệu hẹn tái phí.",
     interactionLogs: [
+      {
+        id: "log-c8-2",
+        date: "2026-06-20",
+        staffName: "Nguyễn Thị Ngọc Anh",
+        callConfirmation: "Đã nhắn Zalo",
+        notes: "[CSTP] [Đối tượng: Phụ huynh] Đã trao đổi biểu phí gia hạn qua Zalo. Phụ huynh đã đặt cọc 3.5 triệu và hẹn sang tuần đóng nốt.",
+        linkedOrder: {
+          orderCode: "OD832005",
+          packageName: "Tiếng Anh Level 4 (48 buổi)",
+          totalPaidAmount: 3500000,
+          amountText: "3.500.000đ",
+        },
+      },
       {
         id: "log-c8-1",
         date: "2026-05-26",
@@ -467,8 +680,33 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-10",
     csStaff: "Nguyễn Thị Ngọc Anh",
-    callConfirmation: "Chưa gọi",
-    interactionLogs: []
+    callConfirmation: "Đã gọi",
+    completedCareTags: ['CSTP'],
+    renewalClassification: 'tai_phi',
+    linkedOrderCode: 'OD832006',
+    linkedOrder: {
+      orderCode: 'OD832006',
+      packageName: 'Tiếng Anh Level 4 (138 buổi)',
+      totalPaidAmount: 14500000,
+      paymentTerm: 'Thanh toán 100%',
+    },
+    interactionNotes: "Chăm sóc tái phí thành công. Đã hoàn tất thanh toán 100% học phí cho năm học mới đơn OD832006.",
+    interactionLogs: [
+      {
+        id: 'log-c10-1',
+        date: '2026-06-18',
+        staffName: 'Nguyễn Thị Ngọc Anh',
+        callConfirmation: 'Đã gọi',
+        notes: '[CSTP] [Đối tượng: Phụ huynh] Chăm sóc tái phí thành công. Đã hoàn tất thanh toán 100% học phí cho năm học mới.',
+        parentOpinion: 'Mẹ đánh giá cao giáo viên bộ môn và mong muốn con tiếp tục học lớp này.',
+        linkedOrder: {
+          orderCode: 'OD832006',
+          packageName: 'Tiếng Anh Level 4 (138 buổi)',
+          totalPaidAmount: 14500000,
+          amountText: '14.500.000đ',
+        },
+      },
+    ]
   },
   {
     id: "11",
@@ -494,8 +732,28 @@ export const mockCareAlerts: StudentCareAlert[] = [
     realtimeStatus: "Chờ chuyển lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-11",
     csStaff: "Nguyễn Thị Ngọc Anh",
-    callConfirmation: "Chưa gọi",
-    interactionLogs: []
+    careAlert: "Hẹn gọi lại",
+    callConfirmation: "Đã gọi",
+    interactionNotes: '[CSĐK] [Đối tượng: Đặng Văn Dũng (Bố)] Tư vấn lớp chuyển cấp sang Level 2. Bố đã nghe máy và hẹn gọi lại lúc 16:30 ngày 27/07 sau khi thống nhất lịch học gia đình.',
+    interactionLogs: [
+      {
+        id: 'log-s11-1',
+        date: '2026-07-23',
+        staffName: 'Nguyễn Thị Ngọc Anh',
+        callConfirmation: 'Đã gọi',
+        audioDuration: '02:30',
+        notes: '[CSĐK] [Đối tượng: Bố] Trao đổi phương án xếp lớp mới. Bố muốn bàn thêm với mẹ về khung giờ học thứ 7 rồi hẹn gọi lại lúc 16:30 ngày 27/07.',
+        parentOpinion: 'Bố muốn thảo luận thêm với mẹ về thời khóa biểu rồi phản hồi, hẹn gọi lại lúc 16:30 ngày 27/07.',
+        missedCallsList: [
+          {
+            time: '15:30 23/07/2026',
+            status: 'Hẹn gọi lại',
+            note: 'Phụ huynh bàn với gia đình, hẹn gọi lại 16:30 ngày 27/07',
+            nextCallback: '27/07/2026 16:30',
+          }
+        ]
+      }
+    ]
   },
   {
     id: "12",
@@ -912,6 +1170,12 @@ export function completeCareTag(id: string, tagLabel: string): boolean {
         notes: isCstp
           ? `[${tagLabel}] [Hoàn thành Chăm sóc] Đã tái phí thành công lúc ${timeStr} ngày ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}.`
           : `[${tagLabel}] [Hoàn thành Chăm sóc] Đã hoàn thành chăm sóc thẻ ${tagLabel} lúc ${timeStr} ngày ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}.`,
+        linkedOrder: isCstp && item.linkedOrder ? {
+          orderCode: item.linkedOrder.orderCode,
+          packageName: item.linkedOrder.packageName,
+          totalPaidAmount: item.linkedOrder.totalPaidAmount,
+          amountText: item.linkedOrder.totalPaidAmount ? `${item.linkedOrder.totalPaidAmount.toLocaleString('vi-VN')}đ` : undefined,
+        } : undefined,
       })
     }
     return true
@@ -937,7 +1201,47 @@ export function uncompleteCareTag(id: string, tagLabel: string): boolean {
 export function updateRenewalClassification(id: string, classification: string): boolean {
   const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
   if (item) {
-    ;(item as StudentCareAlert & { renewalClassification?: string }).renewalClassification = classification
+    item.renewalClassification = classification
+    return true
+  }
+  return false
+}
+
+export function linkOrderToStudentCareAlert(
+  id: string,
+  orderCode: string,
+  orderDetails?: {
+    packageName: string
+    totalPaidAmount: number
+    finalAmount?: number
+    paymentTerm?: string
+  }
+): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    item.linkedOrderCode = orderCode
+    if (orderDetails) {
+      item.linkedOrder = {
+        orderCode,
+        packageName: orderDetails.packageName,
+        totalPaidAmount: orderDetails.totalPaidAmount,
+        finalAmount: orderDetails.finalAmount,
+        paymentTerm: orderDetails.paymentTerm,
+      }
+    }
+    return true
+  }
+  return false
+}
+
+export function unlinkOrderFromStudentCareAlert(id: string): boolean {
+  const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
+  if (item) {
+    item.linkedOrderCode = undefined
+    item.linkedOrder = undefined
+    if (item.renewalClassification === 'tai_phi') {
+      item.renewalClassification = 'can_nhac'
+    }
     return true
   }
   return false

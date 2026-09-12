@@ -69,6 +69,7 @@ export function buildUnifiedSlots(
       lessonContent: session.lessonContent,
       schoolRoom: session.schoolRoom,
       subject: session.subject,
+      projectUrl: session.projectUrl,
     })),
     ...eventSessions.map((session) => ({
       id: session.id,
@@ -131,13 +132,7 @@ export function filterMyScheduleSlots(
       }
 
       if (filters.typeFilters.length > 0) {
-        const hasMatch = filters.typeFilters.some((type) => {
-          if (type === 'class_session') {
-            return slot.type === 'class_session' || slot.type === 'supplementary' || slot.type === 'planned'
-          }
-          return slot.type === type
-        })
-        if (!hasMatch) return false
+        if (!filters.typeFilters.includes(slot.type)) return false
       }
 
       // 1. Lọc theo Môn học & Chương trình (Unified)

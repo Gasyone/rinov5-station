@@ -419,7 +419,7 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
     { topic: 'Unit 2: Length and Comparison', desc: 'So sánh độ dài ngắn, lớn nhỏ, cao thấp của các vật thể và số lượng.' },
     { topic: 'Logic & Patterns', desc: 'Tìm hiểu quy luật của các chuỗi hình vẽ, chuỗi số lượng và phát triển tư duy logic.' },
     { topic: 'Basic Word Problems', desc: 'Làm quen với cách phân tích đề bài toán có lời văn ngắn và tìm phép tính thích hợp.' },
-    { topic: 'Mid-term Assessment & Math Quiz', desc: 'Bài kiểm tra năng lực giữa kỳ đánh giá tư duy hình ảnh và tính toán của học viên.' },
+    { topic: 'Dự án Mini: Sa bàn hình học 3D & Mê cung toán học', desc: 'Thực hiện mô hình toán học không gian và thuyết trình bài mini project.' },
     { topic: 'Unit 3: Addition & Subtraction within 20', desc: 'Mở rộng phép toán cộng trừ trong phạm vi 20 và luyện tập tính nhẩm nhanh.' },
     { topic: 'Time and Calendar Basics', desc: 'Làm quen với cách xem giờ chẵn trên đồng hồ và các ngày trong tuần.' },
     { topic: 'Unit 4: Geometry & Spatial Thinking', desc: 'Xác định vị trí trên, dưới, trái, phải và xếp hình từ các mảnh ghép cơ bản.' },
@@ -432,7 +432,7 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
     { topic: 'Reading Strategies & Skimming/Scanning', desc: 'Nội dung chi tiết buổi học số 5 của lớp IELTS A1.' },
     { topic: 'Listening Practice: Everyday Conversations', desc: 'Nội dung chi tiết buổi học số 6 của lớp IELTS A1.' },
     { topic: 'Speaking Practice: Part 2 Cue Cards', desc: 'Nội dung chi tiết buổi học số 7 của lớp IELTS A1.' },
-    { topic: 'Mid-term Assessment & Review', desc: 'Bài kiểm tra giữa kỳ đánh giá 4 kỹ năng và buổi nhận xét cá nhân học viên.' },
+    { topic: 'Dự án Mini: My Dream Eco-City Presentation', desc: 'Thuyết trình sản phẩm mini project thành phố thông minh theo nhóm.' },
     { topic: 'Unit 7: Advanced Reading & Summary Skills', desc: 'Bài đọc dài chuyên ngành khoa học, cách tóm tắt và nối tiêu đề đoạn văn.' },
     { topic: 'Unit 8: Writing Task 2 Outline & Body', desc: 'Cách lập dàn ý luận điểm chặt chẽ và viết đoạn thân bài thuyết phục.' },
     { topic: 'Full Practice Mock Test', desc: 'Làm đề thi thử trọn vẹn trong áp lực phòng thi thực tế.' },
@@ -541,11 +541,17 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
       cancelBy,
       cancelReason,
       cancelDescription,
+      type: (sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')) ? 'project' : undefined,
+      projectUrl: (sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')) ? 'https://scratch.mit.edu/projects/612048882' : undefined,
       materials: (() => {
-        // Only completed sessions have post-class attached photos/materials
-        if (status !== 'completed') return []
+        const isProject = sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')
+        // Only completed sessions have post-class attached photos/materials, but project session can have materials
+        if (status !== 'completed' && !isProject) return []
         
-        const baseMaterials = [
+        const baseMaterials = isProject ? [
+          { name: `Slide hướng dẫn dự án Buổi ${sessionNum} (Slide.pdf)`, url: `https://storage.rinoedu.vn/materials/slide-buoi-${sessionNum}.pdf` },
+          { name: `Project: Link mở bài mini project`, url: `https://scratch.mit.edu/projects/612048882` }
+        ] : [
           { name: `Slide bài giảng Buổi ${sessionNum} (Slide.pdf)`, url: `https://storage.rinoedu.vn/materials/slide-buoi-${sessionNum}.pdf` },
           { name: `Bài tập về nhà Buổi ${sessionNum} (BTVN.docx)`, url: `https://storage.rinoedu.vn/homework/btvn-buoi-${sessionNum}.docx` }
         ]

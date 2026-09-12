@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import type { Lead } from '@/mocks/crmLeads'
 import { CrmCustomerCreateDialog } from '../CrmCustomerCreateDialog'
@@ -29,8 +29,6 @@ export function CrmLeadFullProfileModal({
           onSave(updatedLeads[0])
         }
       }}
-      totalOrdersCount={lead.ordersCount || 0}
-      totalOrdersAmount={lead.expectedAmount || '0đ'}
     />
   )
 }

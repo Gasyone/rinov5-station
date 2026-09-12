@@ -18,6 +18,8 @@ export type SystemLinkedModule =
   | 'payment_receipts'
   | 'call_log'
   | 'class_placement'
+  | 'care'
+  | 'order_fulfillment'
 
 export interface PipelineSubStatusConfig {
   id: string

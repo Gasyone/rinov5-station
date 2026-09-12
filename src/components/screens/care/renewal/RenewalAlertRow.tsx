@@ -6,7 +6,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { ContactCell, PersonnelHoverCard } from '@/components/shared'
 import {
   ExternalLink,
-  ArrowLeftRight,
   RefreshCw,
   Calendar,
 } from 'lucide-react'
@@ -17,9 +16,7 @@ import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
 import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getProductSku } from './renewalHelpers'
-import { RenewalHistoryPopover } from './RenewalHistoryPopover'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
-import { mockClassRecords } from '@/mocks/classRecords'
 import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
 
@@ -37,8 +34,6 @@ export function RenewalAlertRow({
   cls,
   isSelected,
   onSelectChange,
-  viewMode: _viewMode = 'service',
-  onOpenCallModal: _onOpenCallModal,
   onRefresh,
   onViewDetail,
 }: RenewalAlertRowProps) {
@@ -356,74 +351,51 @@ export function RenewalAlertRow({
       {/* Lớp học */}
       <td className="py-3 px-3 min-w-[200px]">
         {(() => {
-          const studentInfo = mockStudents.find((s) => s.id === cls.studentId);
-          const isWaitAssignment = studentInfo?.status === 'wait_for_assignment';
-          const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0;
-
-          const classRecord = mockClassRecords.find((c) => c.code === cls.classCode);
-          const className = classRecord 
-            ? classRecord.name 
-            : (cls.subject === 'Toán tư duy' ? `Toán ${cls.level}` : `Anh ${cls.level}`);
+          const studentInfo = mockStudents.find((s) => s.id === cls.studentId)
+          const isWaitAssignment = studentInfo?.status === 'wait_for_assignment'
+          const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0
+          const classCount = hasClassHistory ? 2 : 1
 
           return (
             <div className="flex flex-col gap-1 text-left">
-              {/* Hàng 1: Tên lớp & Icon chuyển lớp */}
+              {/* Hàng 1: (N) Trình độ */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className={cn(
-                  "truncate shrink-0",
-                  cls.status === 'Chờ chuyển lớp'
-                    ? "text-xs text-muted-foreground font-normal"
-                    : "text-zinc-600 dark:text-zinc-400 text-xs"
-                )} title={className}>
-                  {isWaitAssignment || studentInfo?.status === 'reserve' || cls.status === 'Hết buổi'
-                    ? 'Chưa có lớp'
-                    : cls.status === 'Chờ chuyển lớp'
-                      ? 'Đang chuyển lớp'
-                      : className
-                  }
+                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={`(${classCount}) ${cls.level}`}>
+                  <span className="font-bold mr-1 text-foreground">({classCount})</span>
+                  {cls.level}
                 </span>
-                
-                {/* Icon lịch sử chuyển lớp */}
-                {hasClassHistory && (
-                  <RenewalHistoryPopover
-                    type="class_history"
-                    studentId={cls.studentId}
-                    studentName={cls.studentName}
-                    subject={cls.subject}
-                    trigger={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        title="Lịch sử chuyển lớp & Ghép lớp"
-                        className="h-4.5 w-4.5 p-0 shrink-0 text-primary hover:bg-muted rounded-md border border-border shadow-none"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowLeftRight className="h-3 w-3" />
-                      </Button>
-                    }
-                  />
-                )}
               </div>
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {isWaitAssignment ? (
-                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
-                    Chờ ghép lớp
-                  </span>
+                  <>
+                    <span className="text-xs text-muted-foreground font-mono">Chưa có mã lớp</span>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
+                      Chờ ghép lớp
+                    </span>
+                  </>
                 ) : studentInfo?.status === 'reserve' ? (
-                  <span className="text-xs font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
-                    Bảo lưu
-                  </span>
+                  <>
+                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
+                    <span className="text-xs font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
+                      Bảo lưu
+                    </span>
+                  </>
                 ) : cls.status === 'Hết buổi' ? (
-                  <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
-                    Hết phí
-                  </span>
+                  <>
+                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
+                    <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
+                      Hết phí
+                    </span>
+                  </>
                 ) : cls.status === 'Chờ chuyển lớp' ? (
-                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
-                    Chờ ghép lớp mới
-                  </span>
+                  <>
+                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
+                    <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
+                      Chờ ghép lớp mới
+                    </span>
+                  </>
                 ) : (
                   <>
                     <span onClick={(e) => e.stopPropagation()}>
@@ -452,7 +424,7 @@ export function RenewalAlertRow({
                 )}
               </div>
             </div>
-          );
+          )
         })()}
       </td>
 
@@ -460,34 +432,18 @@ export function RenewalAlertRow({
       <td className="py-3 px-3">
         {(() => {
           const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
+          const packageCount = hasPackageHistory ? 2 : 1
           const skuName = getProductSku(cls)
           return (
             <div className="flex flex-col gap-0.5 min-w-[200px] max-w-[280px]">
+              {/* Hàng 1: (N) Tên gói học mới nhất */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[230px]" title={skuName}>
+                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[240px]" title={`(${packageCount}) ${skuName}`}>
+                  <span className="font-bold mr-1 text-foreground">({packageCount})</span>
                   {skuName}
                 </span>
-                {hasPackageHistory && (
-                  <RenewalHistoryPopover
-                    type="package_history"
-                    studentId={cls.studentId}
-                    studentName={cls.studentName}
-                    subject={cls.subject}
-                    trigger={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        title="Lịch sử chuyển đổi gói sản phẩm"
-                        className="h-4.5 w-4.5 p-0 shrink-0 text-primary hover:bg-muted rounded-md border border-border shadow-none"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowLeftRight className="h-3 w-3" />
-                      </Button>
-                    }
-                  />
-                )}
               </div>
+              {/* Hàng 2: Hạn hết hạn */}
               <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
             </div>
           )
@@ -501,71 +457,94 @@ export function RenewalAlertRow({
           const inProgress = isInProgress(cls)
           const isUncared = !isCompleted && !inProgress
 
+          const parseLogDate = (d: string) => {
+            if (!d) return 0
+            if (d.includes('-')) {
+              return new Date(d).getTime() || 0
+            }
+            const parts = d.split('/')
+            if (parts.length === 3) {
+              return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime()
+            }
+            return 0
+          }
+
           const allLogs = getHistoryLogsForStudent(cls.studentId)
-          const logs = isUncared ? [] : allLogs
+          const clsLogs = (cls.interactionLogs || []).map((l) => {
+            let formattedDate = l.date
+            if (l.date.includes('-')) {
+              const parts = l.date.split('-')
+              if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`
+            }
+            return {
+              action: l.callConfirmation === 'Đã gọi' ? 'Cuộc gọi chăm sóc' : l.callConfirmation,
+              staff: l.staffName,
+              date: formattedDate,
+              note: l.notes,
+              channel: (l.callConfirmation === 'Đã nhắn Zalo' ? 'zalo' : 'telephone') as 'zalo' | 'telephone',
+              duration: l.audioDuration,
+              tag: l.notes.includes('[CSTP]') ? 'CSTP' : 'T1',
+              semantic: 'success' as const,
+            }
+          })
+
+          const combinedLogs = [...clsLogs, ...allLogs]
+          combinedLogs.sort((a, b) => parseLogDate(b.date) - parseLogDate(a.date))
+
+          // Màn tái phí chỉ lấy các log chăm sóc tái phí (CSTP)
+          const renewalLogs = combinedLogs.filter(
+            (log) => log.tag === 'CSTP' || log.action.toLowerCase().includes('tái phí') || log.note.toLowerCase().includes('tái phí') || log.note.includes('[CSTP]')
+          )
+
+          const logs = isUncared ? [] : renewalLogs
           const latestLog = logs[0]
           const rescheduleInfo = getRescheduleInfo(cls)
           const attemptCount = logs.length
 
           const cellContent = (
             <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
-              {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span
-                  className={cn(
-                    'text-xs font-bold transition-colors',
-                    isUncared
-                      ? 'text-zinc-500 dark:text-zinc-400 select-none'
-                      : inProgress
-                      ? 'text-sky-700 dark:text-sky-400 group-hover/care:underline'
-                      : 'text-emerald-700 dark:text-emerald-400 group-hover/care:underline'
-                  )}
-                  title={isUncared ? undefined : 'Click hoặc rê chuột để xem Popover chi tiết Lịch sử chăm sóc'}
-                >
-                  {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
-                </span>
-
-                {/* Lịch hẹn gọi lại */}
-                {rescheduleInfo.isRescheduled && (
-                  <span
-                    className="text-xs font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
-                    title="Lịch hẹn gọi lại"
-                  >
-                    <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
-                    <span>Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
-                  </span>
-                )}
-              </div>
-
-              {/* Hàng 2 & 3: Nội dung chăm sóc & Phụ huynh phản hồi */}
+              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất với (n) ở trước ngày và nội dung */}
               {isUncared ? (
-                <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
-                  Cần liên hệ trao đổi với phụ huynh ngay
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="font-bold text-zinc-500 mr-1">(0)</span>
+                  <span className="italic text-amber-600 dark:text-amber-400 font-medium">Chưa chăm sóc</span>
                 </div>
               ) : (
                 latestLog && (
-                  <>
-                    <div
-                      className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
-                      title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
+                  <div
+                    className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                    title={`(${attemptCount}) ${latestLog.date}: ${latestLog.note}`}
+                  >
+                    <span
+                      className={cn(
+                        'font-bold mr-1',
+                        inProgress
+                          ? 'text-sky-700 dark:text-sky-400'
+                          : 'text-emerald-700 dark:text-emerald-400'
+                      )}
                     >
-                      <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
-                    </div>
-                    {isCompleted && (
-                      <div
-                        className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate group-hover/care:underline transition-colors"
-                        title={`Phụ huynh phản hồi: ${latestLog.note}`}
-                      >
-                        Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở'}&rdquo;
-                      </div>
-                    )}
-                  </>
+                      ({attemptCount})
+                    </span>
+                    <span className="font-mono text-zinc-500 mr-1">{latestLog.date}:</span>
+                    <span>{latestLog.note}</span>
+                  </div>
                 )
+              )}
+
+              {/* Dòng 2 (dưới): Lịch hẹn gọi lại */}
+              {rescheduleInfo.isRescheduled && (
+                <div
+                  className="text-xs text-purple-700 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap"
+                  title="Lịch hẹn gọi lại tiếp theo"
+                >
+                  <Calendar className="h-3 w-3 shrink-0 text-purple-600 dark:text-purple-400" />
+                  <span>Hẹn gọi lại: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
+                </div>
               )}
             </div>
           )
 
-          if (isUncared) {
+          if (isUncared && !rescheduleInfo.isRescheduled) {
             return cellContent
           }
 
@@ -610,8 +589,8 @@ export function RenewalAlertRow({
             <div className="flex flex-col gap-0.5 max-w-[240px] text-left">
               {order.orderCode ? (
                 <>
-                  {/* Dòng 1: Gói học & Số tiền (Điều hướng chuẩn tới Landing Page Báo Giá /quote/${order.orderCode}) */}
-                  <div className="flex items-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 truncate">
+                  {/* Dòng 1: Tên gói */}
+                  <div className="flex items-center gap-1.5 font-medium text-foreground">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
@@ -622,15 +601,10 @@ export function RenewalAlertRow({
                     >
                       <ExternalLink className="h-3 w-3 text-emerald-600 shrink-0" />
                       <span className="truncate">{order.packageName}</span>
-                      {order.packageAmount && (
-                        <span className="font-mono text-xs font-normal text-muted-foreground shrink-0">
-                          ({order.packageAmount})
-                        </span>
-                      )}
                     </a>
                   </div>
 
-                  {/* Dòng 2: Mã đơn nháp • Lần thanh toán (Ví dụ: Cọc 50%) */}
+                  {/* Dòng 2: Mã đơn • Số tiền tổng đã thanh toán */}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
                     <a
                       href={`/quote/${order.orderCode}`}
@@ -642,11 +616,11 @@ export function RenewalAlertRow({
                     >
                       {order.orderCode}
                     </a>
-                    {order.paymentTerm && (
+                    {order.packageAmount && (
                       <>
                         <span>•</span>
-                        <span className="text-amber-700 dark:text-amber-400">
-                          {order.paymentTerm}
+                        <span className="font-mono font-semibold text-emerald-700 dark:text-emerald-400">
+                          TT: {order.packageAmount}
                         </span>
                       </>
                     )}

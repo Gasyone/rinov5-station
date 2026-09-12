@@ -8,12 +8,21 @@ export const SALES_STAFF_OPTIONS = [
   'Nguyễn Văn Hùng (Sales Manager)',
 ]
 
-export function getProductGroup(subject: string): string {
-  if (!subject) return 'Nhóm Tiếng Anh Tổng Quát'
-  if (subject.includes('Kindy') || subject.includes('Mẫu giáo')) return 'Nhóm Mẫu Giáo (Kindy)'
-  if (subject.includes('SuperKids') || subject.includes('Nhi đồng') || subject.includes('Movers') || subject.includes('Starters')) return 'Nhóm Thiếu Nhi (Kids)'
-  if (subject.includes('IELTS') || subject.includes('Flyers') || subject.includes('Thiếu niên')) return 'Nhóm Luyện Thi & Chứng Chỉ'
-  return 'Nhóm Tiếng Anh Giao Tiếp'
+export function getProductGroup(leadOrSubject: Lead | string): string {
+  if (typeof leadOrSubject === 'object' && leadOrSubject !== null) {
+    if (leadOrSubject.productGroup) return leadOrSubject.productGroup
+    const subj = (leadOrSubject.targetSubject || '').toLowerCase()
+    if (subj.includes('vin')) return 'Station Tonkin'
+    if (subj.includes('toán')) return 'NL_Văn Khê'
+    if (subj.includes('ielts')) return 'Station Tonkin'
+    if (leadOrSubject.branch?.includes('Linh Đàm') || leadOrSubject.branch?.includes('Văn Khê')) return 'NL_Văn Khê'
+    return 'Station Tonkin'
+  }
+  const subject = leadOrSubject || ''
+  if (subject.includes('vin')) return 'Station Tonkin'
+  if (subject.includes('toán')) return 'NL_Văn Khê'
+  if (subject.includes('IELTS') || subject.includes('ielts')) return 'Station Tonkin'
+  return 'Station Tonkin'
 }
 
 export function getStaffTeam(staffName: string): string {
@@ -211,8 +220,11 @@ export const isHenTraiNghiemStatus = (s: string) => s === 'hen_trai_nghiem' || s
 export const isChoChotStatus = (s: string) => s === 'cho_chot' || s === 'tiem_nang'
 export const isChuyenDoiStatus = (s: string) => s === 'chuyen_doi'
 export const isThatBaiStatus = (s: string) => s === 'that_bai'
+export const isTamDungStatus = (s: string) => s === 'tam_dung'
+export const isInactiveLeadStatus = (s: string) => s === 'that_bai' || s === 'tam_dung'
 
 export const isLeadTodayTask = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
   const care = getLeadCareInfo(l)
   return (
     isMoiTiepNhanStatus(l.status) ||
@@ -224,6 +236,7 @@ export const isLeadTodayTask = (l: Lead) => {
 }
 
 export const isLeadOverdue = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
   return (
     (isMoiTiepNhanStatus(l.status) && Boolean(l.assignedTo && l.assignedTo !== 'Chưa phân bổ')) ||
     l.testStatus === 'no_show' ||
@@ -232,7 +245,7 @@ export const isLeadOverdue = (l: Lead) => {
 }
 
 export const isLeadUnassigned = (l: Lead) =>
-  !l.assignedTo || l.assignedTo.trim() === '' || l.assignedTo === 'Chưa phân bổ'
+  !isInactiveLeadStatus(l.status) && (!l.assignedTo || l.assignedTo.trim() === '' || l.assignedTo === 'Chưa phân bổ')
 
 export function calculateStatusTileCounts(leads: Lead[]) {
   const counts: Record<string, number> = {
@@ -246,6 +259,7 @@ export function calculateStatusTileCounts(leads: Lead[]) {
     cho_chot: leads.filter((l) => isChoChotStatus(l.status)).length,
     chuyen_doi: leads.filter((l) => isChuyenDoiStatus(l.status)).length,
     that_bai: leads.filter((l) => isThatBaiStatus(l.status)).length,
+    tam_dung: leads.filter((l) => isTamDungStatus(l.status)).length,
     // Legacy aliases
     chua_tiep_can: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
     dang_cham_soc: leads.filter((l) => isDangTuVanStatus(l.status)).length,
@@ -297,6 +311,269 @@ export function getInitialLevel(lead: Lead): string {
     return 'Movers'
   }
   return 'Flyers'
+}
+
+/**
+ * Làm sạch tên trình độ, loại bỏ các chuỗi "Test đợt...", "(Test đợt...)", "(Đã tốt nghiệp...)"
+ */
+export function getCleanLevel(level?: string): string {
+  if (!level) return ''
+  return level
+    .replace(/\s*\([^)]*test\s*đợt[^)]*\)/gi, '')
+    .replace(/\s*\([^)]*đã\s*tốt\s*nghiệp[^)]*\)/gi, '')
+    .replace(/\s*\([^)]*đợt[^)]*\)/gi, '')
+    .replace(/\s*-\s*test\s*đợt.*/gi, '')
+    .trim()
+}
+
+/**
+ * Định dạng ngày test dạng DD/MM (ví dụ 15/08)
+ */
+export function getLeadTestDateFormatted(lead: Lead): string {
+  const rawDate = lead.testDate || lead.previousTest?.date || ''
+  if (!rawDate) return ''
+  if (rawDate.includes('/')) {
+    const parts = rawDate.split('/')
+    if (parts.length >= 2) return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}`
+  }
+  if (rawDate.includes('-')) {
+    const parts = rawDate.split('-')
+    if (parts.length >= 3) return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}`
+  }
+  return rawDate
+}
+
+/**
+ * Định dạng hiển thị Trình độ + ngày test
+ * Ví dụ: "SuperKids Level 1 • 15/08" hoặc "Flyers Level A2 • 12/08"
+ */
+export function formatLevelAndTestDate(lead: Lead): {
+  level: string
+  date: string
+  displayText: string
+  hasTest: boolean
+} {
+  const hasBooking = Boolean(
+    (lead.testDate && lead.testDate.trim() !== '') ||
+    lead.testStatus ||
+    lead.previousTest
+  )
+
+  if (!hasBooking) {
+    return {
+      level: '',
+      date: '',
+      displayText: 'Chưa đánh giá',
+      hasTest: false,
+    }
+  }
+
+  const rawLevel = lead.testResultLevel || lead.initialLevel || getInitialLevel(lead)
+  const cleanLevel = getCleanLevel(rawLevel) || getInitialLevel(lead)
+  const dateFormatted = getLeadTestDateFormatted(lead)
+
+  if (dateFormatted) {
+    return {
+      level: cleanLevel,
+      date: dateFormatted,
+      displayText: `${cleanLevel} • ${dateFormatted}`,
+      hasTest: true,
+    }
+  }
+
+  return {
+    level: cleanLevel,
+    date: '',
+    displayText: cleanLevel || 'Chưa đánh giá',
+    hasTest: true,
+  }
+}
+
+function calculateSessionEndTime(startTime: string, durationMinutes: number = 30): string {
+  if (!startTime || !startTime.includes(':')) return '11:00'
+  const [h, m] = startTime.split(':').map(Number)
+  if (isNaN(h) || isNaN(m)) return '11:00'
+  const totalM = h * 60 + m + durationMinutes
+  const endH = Math.floor(totalM / 60) % 24
+  const endM = totalM % 60
+  return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
+}
+
+/**
+ * Chuyển đổi thông tin Lead thành cấu trúc GenericSessionData để hiển thị HoverCard lịch test
+ * tương thích 100% với màn calendar_event_schedule
+ */
+export function buildLeadTestSession(lead: Lead): GenericSessionData {
+  const levelInfo = formatLevelAndTestDate(lead)
+  const cleanLvl = levelInfo.level
+  const displayTime = lead.testTime ? `${lead.testTime} - ${calculateSessionEndTime(lead.testTime, 30)}` : '10:30 - 11:00'
+  const parentStr = lead.parentName ? `PH: ${lead.parentName} (${lead.phone})` : `PH: ${lead.phone}`
+  const branchStr = lead.testBranch || lead.branch || 'RinoEdu Linh Đàm'
+
+  return {
+    id: `EVT-LEAD-${lead.id}`,
+    title: lead.studentName,
+    className: lead.studentName,
+    subject: lead.targetSubject?.toLowerCase().includes('toán') ? 'Toán tư duy' : 'Tiếng Anh',
+    subtitle: parentStr,
+    note: parentStr,
+    kctName: lead.targetSubject || 'vin-l3',
+    level: cleanLvl,
+    lessonSubtitle: lead.testResultLevel ? getCleanLevel(lead.testResultLevel) : cleanLvl,
+    timeSlot: displayTime,
+    timeLabel: lead.testTime || '10:30',
+    date: lead.testDate || '15/08/2026',
+    status: lead.testStatus === 'completed' ? 'completed' : lead.testStatus === 'scheduled' ? 'scheduled' : 'completed',
+    type: 'placement_test',
+    typeLabel: 'Đánh giá năng lực',
+    teacher: lead.testerTeacherName || 'Sarah J.',
+    teacherName: lead.testerTeacherName || 'Sarah J.',
+    organizer: lead.testerTeacherName || 'Sarah J.',
+    branch: branchStr,
+    roomName: 'Phòng B2',
+    schoolRoom: `${branchStr} - Phòng B2`,
+    location: `${branchStr} - Phòng B2`,
+    testLink: `/app/booking_test?leadId=${lead.id}`,
+    resultLink: `/app/booking_test?leadId=${lead.id}`,
+  }
+}
+
+/**
+ * Chuyển đổi thông tin buổi học thử của Lead thành cấu trúc GenericSessionData
+ * tương thích 100% với BookingEventHoverCard
+ */
+export function buildLeadTrialSession(lead: Lead): GenericSessionData {
+  const className = lead.trialClassName || 'SK-02'
+  const parentStr = lead.parentName ? `PH: ${lead.parentName} (${lead.phone})` : `PH: ${lead.phone}`
+  const branchStr = lead.testBranch || lead.branch || 'RinoEdu Linh Đàm'
+
+  return {
+    id: `EVT-TRIAL-${lead.id}`,
+    title: lead.studentName,
+    className,
+    subject: lead.targetSubject?.toLowerCase().includes('toán') ? 'Toán tư duy' : 'Tiếng Anh',
+    subtitle: parentStr,
+    note: parentStr,
+    kctName: `Lớp trải nghiệm ${className}`,
+    level: className,
+    lessonSubtitle: lead.testResultLevel ? getCleanLevel(lead.testResultLevel) : className,
+    timeSlot: lead.trialTime ? `${lead.trialTime} - ${calculateSessionEndTime(lead.trialTime, 60)}` : '19:00 - 20:30',
+    timeLabel: lead.trialTime || '19:00',
+    date: lead.trialDate || '16/08/2026',
+    status: lead.trialStatus === 'completed' ? 'completed' : 'scheduled',
+    type: 'trial_class',
+    typeLabel: 'Trải nghiệm',
+    teacher: 'Cô Sarah',
+    teacherName: 'Cô Sarah',
+    branch: branchStr,
+    roomName: 'Phòng B2',
+    schoolRoom: `${branchStr} - Phòng B2`,
+    location: `${branchStr} - Phòng B2`,
+    testLink: `/app/trial_class?leadId=${lead.id}`,
+    resultLink: `/app/trial_class?leadId=${lead.id}`,
+  }
+}
+
+/**
+ * Lấy thông tin hiển thị Trình độ đánh giá của Lead
+ * Nếu chưa đánh giá -> isAssessed = false, levelText = 'Chưa đánh giá'
+ */
+export function getLeadAssessmentDisplay(lead: Lead): {
+  isAssessed: boolean
+  levelText: string
+} {
+  const hasAssessment = Boolean(
+    lead.testResultLevel ||
+    (lead.testStatus === 'completed') ||
+    (lead.testDate && lead.testDate.trim() !== '') ||
+    lead.previousTest
+  )
+
+  if (!hasAssessment) {
+    return {
+      isAssessed: false,
+      levelText: 'Chưa đánh giá',
+    }
+  }
+
+  const rawLevel = lead.testResultLevel || lead.initialLevel || getInitialLevel(lead)
+  const cleanLevel = getCleanLevel(rawLevel) || getInitialLevel(lead)
+
+  return {
+    isAssessed: true,
+    levelText: cleanLevel,
+  }
+}
+
+/**
+ * Xác định sự kiện gần nhất (Đánh giá TN hoặc Học thử HT) để hiển thị dòng 2
+ */
+export function getLeadNearestEvent(lead: Lead): {
+  hasEvent: boolean
+  eventCount: number
+  hasMultiple: boolean
+  displayLabel: string
+  primaryType: 'TN' | 'HT' | null
+  session: GenericSessionData | null
+} {
+  const hasTest = Boolean(lead.testDate || lead.testStatus)
+  const hasTrial = Boolean(lead.trialDate || lead.trialStatus)
+  const eventCount = (hasTest ? 1 : 0) + (hasTrial ? 1 : 0)
+
+  if (eventCount === 0) {
+    return {
+      hasEvent: false,
+      eventCount: 0,
+      hasMultiple: false,
+      displayLabel: '-',
+      primaryType: null,
+      session: null,
+    }
+  }
+
+  // Ưu tiên sự kiện đang hẹn (scheduled) trước, sau đó là sự kiện completed gần nhất
+  let primaryType: 'TN' | 'HT' = 'TN'
+  if (hasTrial && !hasTest) {
+    primaryType = 'HT'
+  } else if (hasTest && !hasTrial) {
+    primaryType = 'TN'
+  } else if (lead.trialStatus === 'scheduled' && lead.testStatus !== 'scheduled') {
+    primaryType = 'HT'
+  } else if (lead.testStatus === 'scheduled' && lead.trialStatus !== 'scheduled') {
+    primaryType = 'TN'
+  } else {
+    // Cả 2 đều completed hoặc cả 2 đều scheduled: lấy Test nếu chưa có kết quả, hoặc Trial nếu đã test xong
+    primaryType = lead.testStatus === 'completed' && hasTrial ? 'HT' : 'TN'
+  }
+
+  let displayLabel = ''
+  let session: GenericSessionData | null = null
+
+  if (primaryType === 'TN') {
+    const timeStr = lead.testTime ? ` - ${lead.testTime}` : ''
+    const dateFormatted = getLeadTestDateFormatted(lead)
+    displayLabel = `TN: ${dateFormatted}${timeStr}`
+    session = buildLeadTestSession(lead)
+  } else {
+    const classStr = lead.trialClassName ? ` (${lead.trialClassName})` : ''
+    const timeStr = lead.trialTime ? ` - ${lead.trialTime}` : ''
+    let dateFormatted = lead.trialDate || ''
+    if (dateFormatted.includes('/')) {
+      const parts = dateFormatted.split('/')
+      if (parts.length >= 2) dateFormatted = `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}`
+    }
+    displayLabel = `HT${classStr}: ${dateFormatted}${timeStr}`
+    session = buildLeadTrialSession(lead)
+  }
+
+  return {
+    hasEvent: true,
+    eventCount,
+    hasMultiple: eventCount > 1,
+    displayLabel,
+    primaryType,
+    session,
+  }
 }
 
 /**
@@ -356,6 +633,12 @@ export function getLeadSubStatusLabel(lead: Lead): string {
       if (note.includes('nhà xa')) return 'Nhà xa cơ sở'
       if (note.includes('chê học phí') || note.includes('phí cao')) return 'Chê học phí cao'
       return 'Vắng test (No-show)'
+
+    case 'tam_dung':
+      if (note.includes('về quê') || note.includes('du lịch') || note.includes('hè')) return 'Về quê / Nghỉ hè'
+      if (note.includes('thi') || note.includes('học kỳ')) return 'Bận thi học kỳ'
+      if (note.includes('tài chính') || note.includes('tiền')) return 'Chờ cân đối tài chính'
+      return 'Tất cả lý do tạm dừng'
 
     default:
       return ''
@@ -696,6 +979,12 @@ export function matchSubStatus(lead: Lead, subStatusId: string): boolean {
       return note.includes('nhà xa')
     case 'che_phi_cao':
       return note.includes('chê học phí cao')
+    case 've_que':
+      return note.includes('về quê') || note.includes('du lịch') || note.includes('hè')
+    case 'thi_hoc_ky':
+      return note.includes('thi') || note.includes('học kỳ')
+    case 'tai_chinh':
+      return note.includes('tài chính') || note.includes('tiền')
     default:
       return lead.status === subStatusId || lead.subStatus === subStatusId
   }
@@ -713,6 +1002,95 @@ export function formatOrderDate(dateStr?: string): string {
     }
   }
   return dateStr
+}
+
+/**
+ * Lấy Hạn SLA cho từng trạng thái của Lead dạng DD/MM/YYYY
+ */
+export function getLeadSlaDeadline(lead: Lead): string {
+  if (lead.slaDeadline) {
+    if (lead.slaDeadline.includes('/')) return lead.slaDeadline
+    if (lead.slaDeadline.includes('-')) {
+      const parts = lead.slaDeadline.split('-')
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
+    }
+  }
+
+  // Mốc cơ sở: createdAt hoặc ngày test
+  let baseDate = new Date(2026, 7, 10) // Mặc định 10/08/2026
+  if (lead.createdAt) {
+    if (lead.createdAt.includes('-')) {
+      const [y, m, d] = lead.createdAt.split('-').map(Number)
+      if (y && m && d) baseDate = new Date(y, m - 1, d)
+    } else if (lead.createdAt.includes('/')) {
+      const [d, m, y] = lead.createdAt.split('/').map(Number)
+      if (y && m && d) baseDate = new Date(y, m - 1, d)
+    }
+  }
+
+  const addDays = (d: Date, days: number) => {
+    const res = new Date(d)
+    res.setDate(res.getDate() + days)
+    return res
+  }
+
+  const format = (d: Date) => {
+    const day = String(d.getDate()).padStart(2, '0')
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const year = d.getFullYear()
+    return `${day}/${month}/${year}`
+  }
+
+  switch (lead.status) {
+    case 'moi_tiep_nhan':
+    case 'chua_tiep_can':
+      // SLA tiếp cận gọi điện đầu tiên: trong vòng 24h - 48h
+      return format(addDays(baseDate, 1))
+
+    case 'dang_tu_van':
+    case 'dang_cham_soc':
+      // SLA tư vấn & chốt lịch hẹn trải nghiệm: trong vòng 3 - 5 ngày
+      return format(addDays(baseDate, 4))
+
+    case 'hen_trai_nghiem':
+    case 'danh_gia_trai_nghiem':
+      // SLA hoàn tất đánh giá & trả kết quả: ưu tiên theo ngày test/học thử
+      if (lead.testDate && lead.testDate.includes('/')) {
+        const parts = lead.testDate.split('/')
+        if (parts.length >= 2) {
+          const year = parts[2] || '2026'
+          return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${year}`
+        }
+      }
+      if (lead.trialDate && lead.trialDate.includes('/')) {
+        const parts = lead.trialDate.split('/')
+        if (parts.length >= 2) {
+          const year = parts[2] || '2026'
+          return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${year}`
+        }
+      }
+      return format(addDays(baseDate, 6))
+
+    case 'cho_chot':
+    case 'tiem_nang':
+      // SLA chốt đơn & giữ chỗ ưu đãi: trong vòng 3 ngày sau tư vấn/test
+      return format(addDays(baseDate, 7))
+
+    case 'chuyen_doi':
+      // SLA hoàn tất nhập học & đóng 100% học phí: trong vòng 10 ngày
+      return format(addDays(baseDate, 10))
+
+    case 'tam_dung':
+      // SLA kết thúc tạm dừng để chăm sóc lại: sau 45 ngày
+      return format(addDays(baseDate, 45))
+
+    case 'that_bai':
+      // SLA lưu trữ hồ sơ & retargeting: sau 60 ngày
+      return format(addDays(baseDate, 60))
+
+    default:
+      return format(addDays(baseDate, 3))
+  }
 }
 
 

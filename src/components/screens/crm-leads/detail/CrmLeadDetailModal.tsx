@@ -1,29 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { STATUS_LABEL_MAP } from '../crmLeadsTypes'
 import {
   Baby,
-  Sparkles,
-  Plus,
   GraduationCap,
-  Clock,
   History,
   Receipt,
-  Building2,
-  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,10 +28,9 @@ import { CrmLeadDropDialog } from './CrmLeadDropDialog'
 import { CrmLeadProfileSidebar } from './CrmLeadProfileSidebar'
 import { CrmLeadQuickCareCard } from './CrmLeadQuickCareCard'
 import { CrmLeadTimelineTab } from './CrmLeadTimelineTab'
-import { CrmLeadOpsHandoffTab } from './CrmLeadOpsHandoffTab'
 import { CrmLeadTestTrialTab } from './CrmLeadTestTrialTab'
 import { CrmLeadOrdersTab } from './CrmLeadOrdersTab'
-import { CareInteraction, DropRecord, SalesCycle } from './crmLeadDetailTypes'
+import { CareInteraction, DropRecord } from './crmLeadDetailTypes'
 
 interface CrmLeadDetailModalProps {
   lead: Lead | null
@@ -46,7 +40,7 @@ interface CrmLeadDetailModalProps {
   onUpdateLead?: (updatedLead: Lead) => void
 }
 
-type TabKey = 'timeline' | 'test_trial' | 'orders' | 'ops_handoff'
+type TabKey = 'timeline' | 'test_trial' | 'orders'
 
 export function CrmLeadDetailModal({
   lead: initialLead,
@@ -56,21 +50,25 @@ export function CrmLeadDetailModal({
   onUpdateLead,
 }: CrmLeadDetailModalProps) {
   const router = useRouter()
+  const [prevInitialLead, setPrevInitialLead] = useState<Lead | null>(initialLead)
   const [currentLead, setCurrentLead] = useState<Lead | null>(initialLead)
   const [activeTab, setActiveTab] = useState<TabKey>('timeline')
   const [isDropOpen, setIsDropOpen] = useState(false)
-  const [activeCycleId, setActiveCycleId] = useState<string>('cycle-001')
+  const [activeCycleId, setActiveCycleId] = useState<string>(
+    initialLead?.currentCycleId || initialLead?.salesCycles?.[0]?.cycleId || 'cycle-001'
+  )
 
-  useEffect(() => {
+  if (initialLead !== prevInitialLead) {
+    setPrevInitialLead(initialLead)
+    setCurrentLead(initialLead)
     if (initialLead) {
-      setCurrentLead(initialLead)
-      const defaultCycle =
+      setActiveCycleId(
         initialLead.currentCycleId ||
-        initialLead.salesCycles?.[0]?.cycleId ||
-        'cycle-001'
-      setActiveCycleId(defaultCycle)
+          initialLead.salesCycles?.[0]?.cycleId ||
+          'cycle-001'
+      )
     }
-  }, [initialLead])
+  }
 
   if (!currentLead) return null
 
@@ -139,48 +137,6 @@ export function CrmLeadDetailModal({
     onUpdateLead?.(updated)
   }
 
-  // Xử lý Tái kích hoạt chu kỳ bán mới (Win-back)
-  const handleReactivateCycle = () => {
-    const newCycleNumber = (currentLead.salesCycles?.length || 1) + 1
-    const newCycleId = `cycle-reactivate-${Date.now()}`
-    const newCycle: SalesCycle = {
-      cycleId: newCycleId,
-      cycleNumber: newCycleNumber,
-      title: `Chu kỳ ${newCycleNumber} (Tái kích hoạt Win-back)`,
-      status: 'active',
-      startDate: '25/08/2026',
-      assignedSales: currentLead.assignedTo || 'Trần Thị Mai (Sales)',
-      outcomeNote: 'Học viên quay lại sau hơn 6 tháng không hoạt động.',
-    }
-
-    const reactivateLog: CareInteraction = {
-      id: `care-reactivate-${Date.now()}`,
-      cycleId: newCycleId,
-      timestamp: '25/08/2026 15:30',
-      staffName: currentLead.assignedTo || 'Trần Thị Mai (Sales)',
-      channel: 'call',
-      outcome: 'interested',
-      outcomeLabel: 'Kích hoạt Chu kỳ Mới',
-      note: `Học viên không hoạt động > 180 ngày. Đã mở Chu kỳ Bán thứ ${newCycleNumber} để tư vấn lộ trình tiếp nối.`,
-    }
-
-    const updated: Lead = {
-      ...currentLead,
-      status: 'moi_tiep_nhan',
-      currentCycleId: newCycleId,
-      salesCycles: [newCycle, ...(currentLead.salesCycles || [])],
-      careInteractions: [reactivateLog, ...(currentLead.careInteractions || [])],
-    }
-
-    setCurrentLead(updated)
-    setActiveCycleId(newCycleId)
-    setActiveTab('timeline')
-    onUpdateLead?.(updated)
-    toast.success(`Đã kích hoạt Chu kỳ Bán mới (#${newCycleNumber}) thành công!`)
-  }
-
-  const isInactive = (currentLead.opsHandoff?.daysInactive ?? 0) >= 180 || currentLead.opsHandoff?.canReactivate
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -199,6 +155,9 @@ export function CrmLeadDetailModal({
                       ({currentLead.studentAge} tuổi - {birthYear})
                     </span>
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Thông tin chi tiết Lead {currentLead.studentName}
+                  </DialogDescription>
                   <div className="text-xs text-muted-foreground">
                     Mã Lead: <span className="font-mono font-medium text-foreground">{currentLead.code}</span> •
                     Phụ huynh: <span className="font-semibold text-foreground">{currentLead.parentName}</span>{' '}
@@ -289,24 +248,6 @@ export function CrmLeadDetailModal({
                     <Receipt className="h-3.5 w-3.5" />
                     <span>Đơn hàng & Báo giá</span>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('ops_handoff')}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 -mb-px transition-colors cursor-pointer',
-                      activeTab === 'ops_handoff'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground',
-                      isInactive && 'text-amber-600 dark:text-amber-400'
-                    )}
-                  >
-                    <Building2 className="h-3.5 w-3.5" />
-                    <span>Bàn giao Vận hành</span>
-                    {isInactive && (
-                      <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                    )}
-                  </button>
                 </div>
 
                 {/* TAB CONTENT PANELS */}
@@ -331,13 +272,6 @@ export function CrmLeadDetailModal({
                     <CrmLeadOrdersTab
                       lead={currentLead}
                       onOpenCreateOrder={onOpenCreateOrder}
-                    />
-                  )}
-
-                  {activeTab === 'ops_handoff' && (
-                    <CrmLeadOpsHandoffTab
-                      lead={currentLead}
-                      onReactivate={handleReactivateCycle}
                     />
                   )}
                 </div>

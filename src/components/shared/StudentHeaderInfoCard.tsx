@@ -66,6 +66,7 @@ export function StudentHeaderInfoCard({
   const [isEditingEnglishName, setIsEditingEnglishName] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentEnglishName(englishName)
     setTempEnglishName(englishName)
   }, [englishName])
@@ -118,7 +119,6 @@ export function StudentHeaderInfoCard({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setNoteText(initialNote)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditingNoteText(initialNote)
   }, [initialNote])
 
@@ -128,9 +128,24 @@ export function StudentHeaderInfoCard({
   const primaryContact = contactsList.find((c) => c.isPrimary) || contactsList[0]
 
   const mockStudentNoteHistory = [
-    { id: '1', author: 'CSM Quỳnh Anh', date: '25/06/2025 10:15', content: 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.' },
-    { id: '2', author: 'CS Lan Anh', date: '10/04/2025 14:30', content: 'Học viên hay đi trễ 5-10 phút, cần nhắc nhở trước buổi học.' },
-    { id: '3', author: 'CSM Thu Hà', date: '15/01/2025 09:00', content: 'Học viên mới nhập học, cần theo dõi sát trong 2 tuần đầu.' },
+    {
+      id: '1',
+      author: 'CSM Quỳnh Anh',
+      date: '25/06/2025 10:15',
+      content: 'Học viên tiếp thu nhanh qua hình ảnh (Visual Learner), thích các bài toán tư duy logic và làm việc nhóm. Khi làm bài tập dài cần chia nhỏ nhiệm vụ để con không bị nản.',
+    },
+    {
+      id: '2',
+      author: 'Cô Mai Hương (GVCN)',
+      date: '10/04/2025 14:30',
+      content: 'Con học tập hăng hái, tính toán nhanh nhưng đôi khi còn vội vàng ở bước kiểm tra lại đáp số. Đang rèn thói quen gạch chân từ khóa trong đề bài.',
+    },
+    {
+      id: '3',
+      author: 'Phụ huynh (Mẹ Lan)',
+      date: '15/01/2025 09:00',
+      content: 'Gia đình định hướng cho con thi chuyển cấp chất lượng cao, mong muốn trung tâm chú trọng kèm thêm kỹ năng giải toán có lời văn và mở rộng từ vựng học thuật.',
+    },
   ]
 
   const handleCopyCode = async (code: string, label: string) => {

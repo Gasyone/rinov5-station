@@ -728,6 +728,7 @@ export function ClassesDetailViewV2({
               />
             ) : activeMonthlyReportStudent ? (
               <ClassesStudentMonthlyReportOverlayPanel
+                key={activeMonthlyReportStudent.id}
                 student={activeMonthlyReportStudent}
                 onClose={() => setActiveMonthlyReportStudent(null)}
               />

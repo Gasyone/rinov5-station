@@ -15,6 +15,7 @@ import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessio
 import { checkDateHoliday } from '@/mocks/holidays'
 import {
   groupConsecutiveSlots,
+  resolveClassCode,
   resolveClassSessionHoverData,
 } from './workRegistrationHelpers'
 import { WORK_REGISTRATION_GRID_SECTIONS } from './workRegistrationTypes'
@@ -130,7 +131,6 @@ export function WorkRegistrationStaffSectionGrid({
               )}
             >
               <div className="flex items-center gap-2">
-                <span>{sec.icon}</span>
                 <span className="uppercase tracking-wider font-bold text-xs">
                   {sec.label}
                 </span>
@@ -169,23 +169,88 @@ export function WorkRegistrationStaffSectionGrid({
                 // -------------------------------------------------------------
                 if (editableEmployeeId) {
                   const intervals = groupConsecutiveSlots(records, editableEmployeeId, dateKey, sec.id)
-                  const assignedClassRecord = sectionRecords.find(
-                    (r) => r.employeeId === editableEmployeeId && r.assignedClass
-                  )
-                  const hasContent = intervals.length > 0 || Boolean(assignedClassRecord)
+                  const empSectionRecords = sectionRecords.filter((r) => r.employeeId === editableEmployeeId)
+                  const assignedClassRecords = empSectionRecords.filter((r) => Boolean(r.assignedClass))
+                  const assignedClassRecord = assignedClassRecords[0]
 
-                  // Kiểm tra trường hợp đăng ký trọn vẹn cả ca (không có lớp lẻ riêng)
+                  let classTimeRange = `${sec.start} - ${sec.end}`
+                  let classCode = ''
+                  if (assignedClassRecord) {
+                    classCode = resolveClassCode(
+                      assignedClassRecord.assignedClass,
+                      assignedClassRecord.assignedClassCode
+                    )
+                    const classSlots = assignedClassRecords
+                      .map((r) => WORK_TIME_SLOTS.find((s) => s.id === r.slotId))
+                      .filter(Boolean)
+                      .sort((a, b) => a!.start.localeCompare(b!.start))
+                    if (classSlots.length > 0) {
+                      classTimeRange = `${classSlots[0]!.start} - ${classSlots[classSlots.length - 1]!.end}`
+                    }
+                  }
+
+                  const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === sec.id)
+                  const coveredSlotMap = new Map<string, WorkRegistrationRecord>()
+                  empSectionRecords.forEach((r) => coveredSlotMap.set(r.slotId, r))
+
+                  const isAllSlotsCovered =
+                    sectionSlots.length > 0 &&
+                    sectionSlots.every((slot) => coveredSlotMap.has(slot.id))
+
+                  const registeredNonClassRecords = empSectionRecords.filter((r) => !r.assignedClass)
+                  const hasRegisteredSlots = registeredNonClassRecords.length > 0
+                  const hasDraft = registeredNonClassRecords.some((r) => r.status === 'draft')
+
                   const isEntireCellFullShift =
-                    !assignedClassRecord &&
-                    intervals.length === 1 &&
-                    ((sec.id === 'morning' && intervals[0].start === '08:00' && intervals[0].end === '12:00') ||
-                      (sec.id === 'afternoon' && intervals[0].start === '13:00' && intervals[0].end === '17:30') ||
-                      (sec.id === 'evening' && intervals[0].start === '17:30' && intervals[0].end === '22:00'))
+                    isAllSlotsCovered && (hasRegisteredSlots || !assignedClassRecord)
+
+                  const removableSlotIds = registeredNonClassRecords
+                    .filter((r) => r.status !== 'locked')
+                    .map((r) => r.slotId)
+
+                  const hasContent = intervals.length > 0 || Boolean(assignedClassRecord) || isEntireCellFullShift
+
+                  const renderClassCard = (isInsideFullShift = false) => {
+                    if (!assignedClassRecord) return null
+                    return (
+                      <ClassSessionHoverCard
+                        session={resolveClassSessionHoverData(
+                          assignedClassRecord,
+                          employeeById.get(assignedClassRecord.employeeId)?.name || 'Thu Hà',
+                          classTimeRange,
+                          assignedClassRecord.branch || 'RinoEdu Linh Đàm'
+                        )}
+                      >
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn(
+                            'flex flex-col gap-0.5 rounded-md border p-1.5 cursor-pointer shadow-2xs transition-all group/class',
+                            isInsideFullShift
+                              ? 'border-amber-400/90 bg-amber-100/90 hover:bg-amber-200/80 dark:bg-amber-900/60 dark:border-amber-600/80 text-amber-950 dark:text-amber-100'
+                              : 'border-amber-300/90 bg-amber-50/90 dark:bg-amber-950/50 dark:border-amber-700/60 text-amber-950 dark:text-amber-200 hover:bg-amber-100 hover:border-amber-400 dark:hover:bg-amber-900/60'
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-1 text-xs text-amber-800 dark:text-amber-300 font-semibold tracking-wide">
+                            <span className="flex items-center gap-1 font-semibold">
+                              <BookOpen className="h-3 w-3 shrink-0 text-amber-700 dark:text-amber-400" />
+                              <span>{classTimeRange}</span>
+                            </span>
+                            <Info className="h-3 w-3 shrink-0 opacity-75 group-hover/class:opacity-100 transition-opacity text-amber-700 dark:text-amber-400" />
+                          </div>
+                          <div
+                            className="text-xs font-bold truncate leading-tight text-amber-950 dark:text-amber-100 font-mono"
+                            title={assignedClassRecord.assignedClass}
+                          >
+                            {classCode}
+                          </div>
+                        </div>
+                      </ClassSessionHoverCard>
+                    )
+                  }
 
                   // 1.1 PHỦ MÀU TOÀN BỘ Ô KHI ĐĂNG KÝ CẢ CA
                   if (isEntireCellFullShift) {
-                    const interval = intervals[0]
-                    if (interval.isDraft) {
+                    if (hasDraft) {
                       return (
                         <div
                           key={dateKey}
@@ -193,15 +258,14 @@ export function WorkRegistrationStaffSectionGrid({
                         >
                           <div className="flex items-center justify-between gap-1">
                             <span className="font-bold text-xs flex items-center gap-1.5 text-emerald-950 dark:text-emerald-100">
-                              <span>{sec.icon}</span>
                               <span>Cả {sec.label.toLowerCase()}</span>
                             </span>
-                            {!readonlyWeek && (
+                            {!readonlyWeek && removableSlotIds.length > 0 && (
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  onRemoveSlots?.(dateKey, interval.slotIds)
+                                  onRemoveSlots?.(dateKey, removableSlotIds)
                                 }}
                                 className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-emerald-700/70 dark:text-emerald-300/70 hover:bg-emerald-200/60 dark:hover:bg-emerald-900/60 hover:text-destructive transition-colors cursor-pointer"
                                 title="Hủy bỏ cả ca này"
@@ -210,6 +274,13 @@ export function WorkRegistrationStaffSectionGrid({
                               </button>
                             )}
                           </div>
+
+                          {assignedClassRecord && (
+                            <div className="my-1.5">
+                              {renderClassCard(true)}
+                            </div>
+                          )}
+
                           <div className="mt-auto pt-1 flex items-center justify-between gap-1">
                             <span className="text-xs font-semibold text-emerald-800/90 dark:text-emerald-300">
                               {sec.start} - {sec.end}
@@ -236,15 +307,14 @@ export function WorkRegistrationStaffSectionGrid({
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-bold text-xs flex items-center gap-1.5">
-                            <span>{sec.icon}</span>
                             <span>Cả {sec.label.toLowerCase()}</span>
                           </span>
-                          {!readonlyWeek && (
+                          {!readonlyWeek && removableSlotIds.length > 0 && (
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                onRemoveSlots?.(dateKey, interval.slotIds)
+                                onRemoveSlots?.(dateKey, removableSlotIds)
                               }}
                               className={cn(
                                 'flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer',
@@ -260,6 +330,13 @@ export function WorkRegistrationStaffSectionGrid({
                             </button>
                           )}
                         </div>
+
+                        {assignedClassRecord && (
+                          <div className="my-1.5">
+                            {renderClassCard(true)}
+                          </div>
+                        )}
+
                         <div className="mt-auto pt-1 flex items-center justify-between gap-1">
                           <span className="text-xs font-semibold opacity-85">
                             {sec.start} - {sec.end}
@@ -283,32 +360,7 @@ export function WorkRegistrationStaffSectionGrid({
                     >
                       <div className="space-y-1.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
                         {/* Lớp học giảng dạy phân công */}
-                        {assignedClassRecord && (
-                          <ClassSessionHoverCard
-                            session={resolveClassSessionHoverData(
-                              assignedClassRecord,
-                              employeeById.get(assignedClassRecord.employeeId)?.name || 'Thu Hà',
-                              `${sec.start} - ${sec.end}`,
-                              assignedClassRecord.branch || 'RinoEdu Linh Đàm'
-                            )}
-                          >
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col gap-0.5 rounded-md border border-amber-300/90 bg-amber-50/90 dark:bg-amber-950/50 dark:border-amber-700/60 p-1.5 text-amber-950 dark:text-amber-200 cursor-pointer shadow-2xs hover:bg-amber-100 hover:border-amber-400 dark:hover:bg-amber-900/60 transition-all group/class"
-                            >
-                              <div className="flex items-center justify-between gap-1 text-xs text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">
-                                <span className="flex items-center gap-1">
-                                  <BookOpen className="h-2.5 w-2.5" />
-                                  Lớp giảng dạy
-                                </span>
-                                <Info className="h-2.5 w-2.5 opacity-75 group-hover/class:opacity-100 transition-opacity text-amber-700 dark:text-amber-400" />
-                              </div>
-                              <div className="text-xs font-bold truncate leading-tight text-amber-950 dark:text-amber-100">
-                                {assignedClassRecord.assignedClass}
-                              </div>
-                            </div>
-                          </ClassSessionHoverCard>
-                        )}
+                        {assignedClassRecord && renderClassCard(false)}
 
                         {/* Các khung giờ đã đăng ký hoặc mới chọn */}
                         {intervals.map((interval) => {

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Loader2, ExternalLink, Sparkles, Link as LinkIcon, FileText, Pencil, Upload } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { X, Loader2, Sparkles, Pencil, Copy, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -12,15 +12,15 @@ import {
 } from '@/components/ui/select'
 import type { RosterStudent } from './classesDetailTypes'
 import { toast } from 'sonner'
-import { StudentMonthlyReportLandingDialog } from './StudentMonthlyReportLandingDialog'
+import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSection'
 import {
   MOCK_LESSONS_REVIEW,
-  getReviewContentForRange,
   getAiSynthesizedNextMonthPlan,
   getDirectLessonPlanForRange,
   WeekReviewItem,
   DEFAULT_SECTION_B2_WEEKS,
 } from './monthlyReportHelpers'
+import { getStudentMonthlyReports, saveStudentMonthlyReport } from '@/mocks/monthlyReports'
 
 interface ClassesStudentMonthlyReportOverlayPanelProps {
   student: RosterStudent
@@ -57,47 +57,84 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   onClose,
 }: ClassesStudentMonthlyReportOverlayPanelProps) {
   const [selectedMonthKey, setSelectedMonthKey] = useState('4_5_2026')
-  const [awardBadge, setAwardBadge] = useState('CHIẾN BINH BỨT PHÁ')
-  const [teacherName, setTeacherName] = useState('Ms.Chloe')
-  const [sectionA1Content, setSectionA1Content] = useState(DEFAULT_SECTION_A1_TEXT)
-  const [sectionA2Content, setSectionA2Content] = useState(DEFAULT_SECTION_A2_TEXT)
-  const [sectionB1Content, setSectionB1Content] = useState(DEFAULT_SECTION_B1_TEXT)
-  const [sectionB2StartLesson, setSectionB2StartLesson] = useState(8)
-  const [sectionB2EndLesson, setSectionB2EndLesson] = useState(10)
-  const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(DEFAULT_SECTION_B2_WEEKS)
-  const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
-  const [isSaved, setIsSaved] = useState(true)
-  const [isOpenLanding, setIsOpenLanding] = useState(false)
-
   const activeMonthConfig = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
 
-  const handleUpdateWeek = (wIdx: number, fields: Partial<WeekReviewItem>) => {
-    const updated = [...sectionB2Weeks]
-    updated[wIdx] = { ...updated[wIdx], ...fields }
-    setSectionB2Weeks(updated)
-  }
+  const initialReport = useMemo(() => {
+    return getStudentMonthlyReports(student.id || student.name).find(
+      (r) => r.monthOptionValue === '4_5_2026' || r.monthKey.includes('Tháng 4')
+    )
+  }, [student])
 
-  const handleUploadImageFile = (wIdx: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const url = URL.createObjectURL(file)
-      handleUpdateWeek(wIdx, { thumbnailUrl: url })
-      toast.success(`Đã tải ảnh lên thành công cho Tuần ${wIdx + 1}!`)
+  const [awardBadge, setAwardBadge] = useState(() => initialReport?.awardBadge || 'CHIẾN BINH BỨT PHÁ')
+  const [teacherName, setTeacherName] = useState(() => initialReport?.teacherName || 'Ms.Chloe')
+  const [sectionA1Content, setSectionA1Content] = useState(() => initialReport?.sectionA1Content || DEFAULT_SECTION_A1_TEXT)
+  const [sectionA2Content, setSectionA2Content] = useState(() => initialReport?.sectionA2Content || DEFAULT_SECTION_A2_TEXT)
+  const [sectionB1Content, setSectionB1Content] = useState(() => initialReport?.sectionB1Content || DEFAULT_SECTION_B1_TEXT)
+  const [sectionB2StartLesson, setSectionB2StartLesson] = useState(() => initialReport?.sectionB2StartLesson || 8)
+  const [sectionB2EndLesson, setSectionB2EndLesson] = useState(() => initialReport?.sectionB2EndLesson || 10)
+  const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(() => initialReport?.sectionB2Weeks || DEFAULT_SECTION_B2_WEEKS)
+  const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
+  const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
+  const [isEditing, setIsEditing] = useState(() => !initialReport)
+
+  const handleMonthChange = (newKey: string) => {
+    setSelectedMonthKey(newKey)
+    const monthConfig = MONTH_OPTIONS.find((m) => m.value === newKey) || MONTH_OPTIONS[0]
+    const report = getStudentMonthlyReports(student.id || student.name).find(
+      (r) => r.monthOptionValue === newKey || r.monthKey.includes(monthConfig.current)
+    )
+    if (report) {
+      setIsSaved(true)
+      setIsEditing(false)
+      setAwardBadge(report.awardBadge)
+      setTeacherName(report.teacherName)
+      setSectionA1Content(report.sectionA1Content)
+      setSectionA2Content(report.sectionA2Content)
+      setSectionB1Content(report.sectionB1Content)
+      setSectionB2StartLesson(report.sectionB2StartLesson)
+      setSectionB2EndLesson(report.sectionB2EndLesson)
+      setSectionB2Weeks(report.sectionB2Weeks)
+    } else {
+      setIsSaved(false)
+      setIsEditing(true)
+      setAwardBadge('CHIẾN BINH BỨT PHÁ')
+      setTeacherName('Ms.Chloe')
+      setSectionA1Content(DEFAULT_SECTION_A1_TEXT)
+      setSectionA2Content(DEFAULT_SECTION_A2_TEXT)
+      setSectionB1Content(DEFAULT_SECTION_B1_TEXT)
+      setSectionB2StartLesson(8)
+      setSectionB2EndLesson(10)
+      setSectionB2Weeks(DEFAULT_SECTION_B2_WEEKS)
     }
   }
 
-  const [editingLinkMap, setEditingLinkMap] = useState<Record<number, boolean>>({})
-
-  const handleStartEditingLink = (wIdx: number) => {
-    setEditingLinkMap((prev) => ({ ...prev, [wIdx]: true }))
-    setTimeout(() => {
-      const inputEl = document.getElementById(`doc-link-input-overlay-w${wIdx}`) as HTMLInputElement | null
-      if (inputEl) {
-        inputEl.focus()
-        inputEl.select()
-      }
-    }, 50)
+  const handleCancelEdit = () => {
+    handleMonthChange(selectedMonthKey)
+    setIsEditing(false)
+    toast.info('Đã hủy các chỉnh sửa chưa lưu.')
   }
+
+  // Lắng nghe sự kiện đồng bộ từ các màn hình khác
+  useEffect(() => {
+    const handleUpdate = () => {
+      const monthConfig = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
+      const report = getStudentMonthlyReports(student.id || student.name).find(
+        (r) => r.monthOptionValue === selectedMonthKey || r.monthKey.includes(monthConfig.current)
+      )
+      if (report) {
+        setAwardBadge(report.awardBadge)
+        setTeacherName(report.teacherName)
+        setSectionA1Content(report.sectionA1Content)
+        setSectionA2Content(report.sectionA2Content)
+        setSectionB1Content(report.sectionB1Content)
+        setSectionB2StartLesson(report.sectionB2StartLesson)
+        setSectionB2EndLesson(report.sectionB2EndLesson)
+        setSectionB2Weeks(report.sectionB2Weeks)
+      }
+    }
+    window.addEventListener('rinov5-monthly-reports-updated', handleUpdate)
+    return () => window.removeEventListener('rinov5-monthly-reports-updated', handleUpdate)
+  }, [student, selectedMonthKey])
 
   // Step 1: Start lesson change
   const handleStartLessonChange = (startNum: number) => {
@@ -126,6 +163,30 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
   const handleSave = () => {
     setIsSaved(true)
+    setIsEditing(false)
+
+    // Lưu đồng bộ vào CSDL mock chung
+    saveStudentMonthlyReport({
+      studentId: student.id,
+      studentName: student.name,
+      studentCode: student.code,
+      monthKey: activeMonthConfig.current + '/2026',
+      monthOptionValue: selectedMonthKey,
+      monthTitle: `BÁO CÁO HỌC TẬP CHUYÊN SÂU ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`,
+      dateStr: activeMonthConfig.dateStr,
+      awardBadge,
+      teacherName,
+      sectionA1Content,
+      sectionA2Content,
+      sectionAContent: `${sectionA1Content}\n\n${sectionA2Content}`,
+      sectionB1Content,
+      sectionB2StartLesson,
+      sectionB2EndLesson,
+      sectionB2Weeks,
+      sectionBContent: `${sectionB1Content}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,
+      isCurrent: selectedMonthKey === '4_5_2026',
+    })
+
     toast.success(`Đã lưu Báo cáo Chuyên sâu ${activeMonthConfig.current} cho học viên ${student.name}`)
   }
 
@@ -134,11 +195,19 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       <aside className="flex min-h-0 flex-col overflow-hidden w-full h-full bg-background relative z-10 animate-in fade-in slide-in-from-right-4 duration-200">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2.5 pt-1 mb-2 pr-1">
-          <div className="min-w-0">
+          <div className="min-w-0 flex items-center gap-2">
             <h3 className="text-xs md:text-sm font-extrabold text-foreground truncate">
-              BÁO CÁO CHUYÊN SÂU & KẾ HOẠCH HỌC TẬP
+              BÁO CÁO CHUYÊN SÂU
             </h3>
-            <p className="text-xs text-muted-foreground truncate">{student.name} ({student.code})</p>
+            {isEditing ? (
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
+                Sửa
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-muted text-muted-foreground border border-border/60">
+                Xem
+              </span>
+            )}
           </div>
           <Button
             type="button"
@@ -157,7 +226,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
           {/* Month Selector */}
           <div className="flex items-center justify-between text-xs gap-2">
             <span className="font-semibold text-muted-foreground shrink-0">Kỳ báo cáo:</span>
-            <Select value={selectedMonthKey} onValueChange={setSelectedMonthKey}>
+            <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
               <SelectTrigger className="h-8 text-xs font-bold w-full max-w-[260px] bg-background">
                 <SelectValue />
               </SelectTrigger>
@@ -172,40 +241,53 @@ export function ClassesStudentMonthlyReportOverlayPanel({
           </div>
 
           {/* Teacher Note Line with Pencil Icon */}
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-start gap-2 text-xs text-muted-foreground italic">
-            <Pencil className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 not-italic stroke-[2.5] mt-0.5" />
-            <span>
-              Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{student.name}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng bứt phá từ giáo viên phụ trách{' '}
-              <input
-                type="text"
-                value={teacherName}
-                onChange={(e) => setTeacherName(e.target.value)}
-                placeholder="Tên Giáo viên"
-                className="inline-block w-24 text-center text-xs font-bold text-primary border-b border-primary/40 bg-transparent focus:outline-none not-italic"
-              />.
-            </span>
-          </div>
+          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-400/30 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground font-semibold">Tuyên dương:</span>
+              {isEditing ? (
+                <Select value={awardBadge} onValueChange={setAwardBadge}>
+                  <SelectTrigger className="h-7 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AWARD_BADGES.map((b) => (
+                      <SelectItem key={b} value={b} className="text-xs font-bold">
+                        🏆 {b}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase">
+                  🏆 {awardBadge}
+                </span>
+              )}
+            </div>
 
-          {/* Award Badge */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-muted-foreground">Danh hiệu tuyên dương:</label>
-            <Select value={awardBadge} onValueChange={setAwardBadge}>
-              <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AWARD_BADGES.map((b) => (
-                  <SelectItem key={b} value={b} className="text-xs font-bold">
-                    🏆 {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isEditing ? (
+              <div className="pt-2 border-t border-amber-400/20 flex items-start gap-2 text-sm text-muted-foreground italic">
+                <Pencil className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 not-italic stroke-[2.5] mt-0.5" />
+                <span>
+                  Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{student.name}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết từ GV{' '}
+                  <input
+                    type="text"
+                    value={teacherName}
+                    onChange={(e) => setTeacherName(e.target.value)}
+                    placeholder="Tên Giáo viên"
+                    className="inline-block w-28 text-center text-sm font-bold text-primary border-b border-primary/40 bg-transparent focus:outline-none not-italic"
+                  />.
+                </span>
+              </div>
+            ) : (
+              <div className="pt-1.5 border-t border-amber-400/20 text-xs text-foreground/90 leading-relaxed">
+                Chúc mừng con <strong className="text-primary font-bold">{student.name}</strong> đã hoàn thành xuất sắc kỳ học từ GV <strong className="text-primary font-bold">{teacherName}</strong>.
+              </div>
+            )}
           </div>
 
           {/* Section A (Tách 2 phần A1 & A2) */}
-          <div className="space-y-3 pt-1 border-t">
-            <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
+          <div className="space-y-3 pt-2 border-t">
+            <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
               A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
             </h4>
 
@@ -215,13 +297,19 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
                 1. Nhận xét chung
               </label>
-              <textarea
-                rows={5}
-                value={sectionA1Content}
-                onChange={(e) => setSectionA1Content(e.target.value)}
-                placeholder="Nhập 'Điểm nổi bật: ...' và 'Điểm cần lưu ý: ...'"
-                className="w-full text-xs p-3 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans"
-              />
+              {isEditing ? (
+                <textarea
+                  rows={5}
+                  value={sectionA1Content}
+                  onChange={(e) => setSectionA1Content(e.target.value)}
+                  placeholder="Nhập 'Điểm nổi bật: ...' và 'Điểm cần lưu ý: ...'"
+                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
+                />
+              ) : (
+                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
+                  {sectionA1Content || <span className="italic text-muted-foreground/60">Chưa có nhận xét.</span>}
+                </div>
+              )}
             </div>
 
             {/* Sub-section A2: 2. Nhận xét về kết quả học tập */}
@@ -230,19 +318,25 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
                 2. Nhận xét về kết quả học tập
               </label>
-              <textarea
-                rows={4}
-                value={sectionA2Content}
-                onChange={(e) => setSectionA2Content(e.target.value)}
-                placeholder="Nhập 'Từ vựng & Phonics: ...' và 'Cấu trúc & Mẫu câu: ...'"
-                className="w-full text-xs p-3 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans"
-              />
+              {isEditing ? (
+                <textarea
+                  rows={4}
+                  value={sectionA2Content}
+                  onChange={(e) => setSectionA2Content(e.target.value)}
+                  placeholder="Nhập 'Từ vựng & Phonics: ...' và 'Cấu trúc & Mẫu câu: ...'"
+                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
+                />
+              ) : (
+                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
+                  {sectionA2Content || <span className="italic text-muted-foreground/60">Chưa có nhận xét.</span>}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Section B */}
           <div className="space-y-3 pt-2 border-t">
-            <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
+            <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
               B - KẾ HOẠCH HỌC TẬP CẢI THIỆN {activeMonthConfig.next.toUpperCase()}
             </h4>
 
@@ -254,231 +348,151 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                   1. Nội dung bài học tháng tới
                 </label>
 
-                {/* Step 1 & Step 2 Controls */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-xs font-bold text-muted-foreground">Bài:</span>
-                  <Select value={String(sectionB2StartLesson)} onValueChange={(v) => handleStartLessonChange(Number(v))}>
-                    <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MOCK_LESSONS_REVIEW.map((l) => (
-                        <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                          Bài {l.lessonNumber}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Step 1 & Step 2 Controls chỉ hiện khi isEditing */}
+                {isEditing && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-bold text-muted-foreground">Bài:</span>
+                    <Select value={String(sectionB2StartLesson)} onValueChange={(v) => handleStartLessonChange(Number(v))}>
+                      <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MOCK_LESSONS_REVIEW.map((l) => (
+                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
+                            Bài {l.lessonNumber}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  <span className="text-xs font-bold text-muted-foreground">→</span>
+                    <span className="text-xs font-bold text-muted-foreground">→</span>
 
-                  <Select value={String(sectionB2EndLesson)} onValueChange={(v) => handleEndLessonChange(Number(v))}>
-                    <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {MOCK_LESSONS_REVIEW.map((l) => (
-                        <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                          Bài {l.lessonNumber}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <Select value={String(sectionB2EndLesson)} onValueChange={(v) => handleEndLessonChange(Number(v))}>
+                      <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MOCK_LESSONS_REVIEW.map((l) => (
+                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
+                            Bài {l.lessonNumber}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                  {/* AI Synthesize Button */}
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleAiSynthesizeNextMonthPlan}
-                    disabled={isSynthesizingAi}
-                    className="h-7 text-xs font-bold px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1"
-                    title="Tự động biên tập nội dung ngôn ngữ tự nhiên"
-                  >
-                    {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300" />}
-                    <span>AI Tổng hợp</span>
-                  </Button>
-                </div>
-              </div>
-
-              <textarea
-                rows={6}
-                value={sectionB1Content}
-                onChange={(e) => setSectionB1Content(e.target.value)}
-                placeholder="Nhập hoặc bấm 'Cập nhật' / 'AI Tổng hợp' để biên tập nội dung..."
-                className="w-full text-xs p-3 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans"
-              />
-            </div>
-
-            {/* Sub-section 2: Nội dung ôn tập riêng (ẢNH & TEXT CÙNG HÀNG, HOVER ĐỂ UPLOAD / PASTE LINK) */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between pb-1">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
-                  2. Nội dung ôn tập riêng
-                </label>
-              </div>
-
-              <div className="space-y-3">
-                {sectionB2Weeks.map((week, wIdx) => (
-                  <div key={week.weekNum} className="p-3 rounded-xl border border-amber-400/30 bg-amber-500/5 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-black text-amber-800 dark:text-amber-300 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/30 uppercase tracking-wide">
-                        Tuần {week.weekNum}
-                      </span>
-
-                      {/* Display Mode vs Edit Mode for Link */}
-                      {week.docLink && !editingLinkMap[wIdx] ? (
-                        <div className="flex items-center gap-1 bg-primary/10 hover:bg-primary/15 text-primary px-2.5 py-0.5 rounded-lg border border-primary/20 transition-all max-w-[220px]">
-                          <a
-                            href={week.docLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-bold hover:underline inline-flex items-center gap-1 min-w-0 truncate"
-                            title={week.docLink}
-                          >
-                            <LinkIcon className="h-3 w-3 shrink-0 text-primary" />
-                            <span className="truncate">
-                              {week.docLink.includes('drive.google.com') ? 'Tài liệu Google Drive' : week.docLink}
-                            </span>
-                            <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => handleStartEditingLink(wIdx)}
-                            className="text-muted-foreground hover:text-foreground text-xs font-semibold ms-1 px-1 py-0.2 rounded hover:bg-background/80 transition-colors flex items-center gap-0.5 shrink-0"
-                            title="Dán link khác"
-                          >
-                            <Pencil className="h-2.5 w-2.5" />
-                            <span>Sửa</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <div className="relative flex items-center min-w-0 flex-1">
-                            <LinkIcon className="h-3 w-3 absolute left-2 text-amber-600 dark:text-amber-400 pointer-events-none" />
-                            <input
-                              type="text"
-                              id={`doc-link-input-overlay-w${wIdx}`}
-                              value={week.docLink || ''}
-                              onChange={(e) => handleUpdateWeek(wIdx, {
-                                docLink: e.target.value,
-                                thumbnailUrl: e.target.value.match(/\.(jpeg|jpg|gif|png|webp)/i) ? e.target.value : (week.thumbnailUrl || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400&auto=format&fit=crop')
-                              })}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && week.docLink) {
-                                  setEditingLinkMap((prev) => ({ ...prev, [wIdx]: false }))
-                                }
-                              }}
-                              placeholder="Dán link tài liệu Drive..."
-                              className="text-xs pl-7 pr-2 py-0.5 w-full rounded-lg border border-amber-400/40 bg-background focus:border-primary focus:outline-none font-mono"
-                            />
-                          </div>
-                          {week.docLink && (
-                            <button
-                              type="button"
-                              onClick={() => setEditingLinkMap((prev) => ({ ...prev, [wIdx]: false }))}
-                              className="text-xs font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-md hover:bg-primary/90 transition-colors shrink-0"
-                            >
-                              Xong
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* SAME ROW: Image box (hover upload/paste) + Textarea */}
-                    <div className="flex items-start gap-2.5">
-                      <div className="relative h-20 w-24 rounded-lg overflow-hidden border border-amber-400/30 bg-background shrink-0 group cursor-pointer">
-                        {week.thumbnailUrl ? (
-                          <img src={week.thumbnailUrl} alt={`Thumb ${week.weekNum}`} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full flex flex-col items-center justify-center text-amber-600 bg-amber-50 dark:bg-amber-950/20">
-                            <FileText className="h-5 w-5 mb-0.5" />
-                            <span className="text-xs font-bold">Thêm ảnh</span>
-                          </div>
-                        )}
-
-                        {/* Hover Mask */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1 text-white">
-                          <label className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded cursor-pointer w-full justify-center">
-                            <Upload className="h-2.5 w-2.5" />
-                            <span>Upload</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => handleUploadImageFile(wIdx, e)}
-                            />
-                          </label>
-
-                          <button
-                            type="button"
-                            onClick={() => handleStartEditingLink(wIdx)}
-                            className="flex items-center gap-1 text-xs font-bold bg-primary/80 hover:bg-primary px-1.5 py-0.5 rounded cursor-pointer w-full justify-center"
-                          >
-                            <LinkIcon className="h-2.5 w-2.5" />
-                            <span>Dán Link</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <textarea
-                        rows={3}
-                        value={week.content}
-                        onChange={(e) => handleUpdateWeek(wIdx, { content: e.target.value })}
-                        placeholder={`Nội dung ôn tập Tuần ${week.weekNum}...`}
-                        className="flex-1 text-xs p-2.5 rounded-lg border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans min-w-0"
-                      />
-                    </div>
+                    {/* AI Synthesize Button */}
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAiSynthesizeNextMonthPlan}
+                      disabled={isSynthesizingAi}
+                      className="h-7 text-xs font-bold px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1"
+                      title="Tự động biên tập nội dung ngôn ngữ tự nhiên"
+                    >
+                      {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300" />}
+                      <span>AI Tổng hợp</span>
+                    </Button>
                   </div>
-                ))}
+                )}
               </div>
+
+              {isEditing ? (
+                <textarea
+                  rows={6}
+                  value={sectionB1Content}
+                  onChange={(e) => setSectionB1Content(e.target.value)}
+                  placeholder="Nhập hoặc bấm 'Cập nhật' / 'AI Tổng hợp' để biên tập nội dung..."
+                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
+                />
+              ) : (
+                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
+                  {sectionB1Content || <span className="italic text-muted-foreground/60">Chưa có kế hoạch.</span>}
+                </div>
+              )}
             </div>
+
+            {/* Sub-section 2: Nội dung ôn tập riêng */}
+            <MonthlyReportReviewItemsSection
+              items={sectionB2Weeks}
+              onChange={(updated) => setSectionB2Weeks(updated)}
+              readOnly={!isEditing}
+            />
           </div>
         </div>
 
         {/* Overlay Bottom Footer */}
         <div className="pt-2.5 border-t mt-2 shrink-0 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-xs">
-            {isSaved ? (
-              <button
+          {isEditing ? (
+            <>
+              <Button
                 type="button"
-                onClick={() => setIsOpenLanding(true)}
-                className="flex items-center gap-1 text-primary hover:underline font-bold text-xs cursor-pointer"
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+                className="text-xs font-semibold px-3 rounded-lg"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
-                <span>Xem Landing Page</span>
-              </button>
-            ) : null}
-          </div>
+                Hủy
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSave}
+                className="text-xs font-bold px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-2xs gap-1.5"
+              >
+                <Check className="h-3.5 w-3.5" />
+                <span>Lưu thay đổi</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                    const url = `${origin}/report/${student.id}?month=${encodeURIComponent(selectedMonthKey)}`
+                    window.open(url, '_blank')
+                  }}
+                  className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs cursor-pointer"
+                  title="Mở toàn màn hình dạng Landing Page trên tab mới"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>Landing Page</span>
+                </button>
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleSave}
-            className="text-xs font-bold px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-2xs"
-          >
-            LƯU BÁO CÁO
-          </Button>
+                {isSaved ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                      const link = `${origin}/report/${student.id}?month=${encodeURIComponent(selectedMonthKey)}`
+                      navigator.clipboard
+                        .writeText(link)
+                        .then(() => toast.success(`Đã sao chép liên kết Landing Page báo cáo ${activeMonthConfig.current}!`))
+                        .catch(() => toast.error('Không thể sao chép liên kết.'))
+                    }}
+                    className="flex items-center gap-1 text-primary hover:underline font-bold text-xs cursor-pointer"
+                    title="Sao chép liên kết gửi phụ huynh"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Sao chép link</span>
+                  </button>
+                ) : null}
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="text-xs font-bold px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-2xs gap-1.5"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span>Chỉnh sửa</span>
+              </Button>
+            </>
+          )}
         </div>
       </aside>
-
-      {/* Landing Page Preview Modal */}
-      <StudentMonthlyReportLandingDialog
-        open={isOpenLanding}
-        onOpenChange={setIsOpenLanding}
-        student={student}
-        monthTitle={`BÁO CÁO HỌC TẬP CHUYÊN SÂU ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`}
-        dateStr={activeMonthConfig.dateStr}
-        awardBadge={awardBadge}
-        teacherName={teacherName}
-        sectionAContent={`${sectionA1Content}\n\n${sectionA2Content}`}
-        sectionA1Content={sectionA1Content}
-        sectionA2Content={sectionA2Content}
-        sectionB1Content={sectionB1Content}
-        sectionB2Weeks={sectionB2Weeks}
-      />
     </>
   )
 }

@@ -69,12 +69,30 @@ export function BookingEventHoverCard({
     }
     testStatusText = bookingStatusMap[booking.status] || booking.status
     testStatusSemantic = resolveStatusSemantic(booking.status)
+  } else {
+    // Graceful fallback for sessions created from Lead or other sources
+    if (session.subtitle?.startsWith('PH:')) {
+      parentInfo = session.subtitle
+    } else if (session.note?.startsWith('PH:')) {
+      parentInfo = session.note
+    }
+    const statusVal = session.status || 'completed'
+    const fallbackStatusMap: Record<string, string> = {
+      completed: 'Hoàn tất',
+      scheduled: 'Đã đặt lịch test',
+      testing: 'Đang test',
+      checkin: 'Đã check-in',
+      failed: 'Không đạt',
+      cancelled: 'Đã hủy',
+    }
+    testStatusText = fallbackStatusMap[statusVal] || statusVal
+    testStatusSemantic = resolveStatusSemantic(statusVal)
   }
 
   const displaySubject = subject || (booking ? (booking.subject === 'english' ? 'Tiếng Anh' : 'Toán tư duy') : 'Tiếng Anh')
   
   // Resolve Program (Chương trình)
-  let displayProgram = booking?.program || 'Chương trình Station'
+  let displayProgram = booking?.program || session.kctName || 'Chương trình Station'
   if (displayProgram === 'Station Program') displayProgram = 'Chương trình Station'
   else if (!displayProgram.startsWith('Chương trình')) displayProgram = `Chương trình ${displayProgram}`
 
@@ -82,7 +100,7 @@ export function BookingEventHoverCard({
   const registeredLevel = level || (booking?.program && booking.program !== 'Station Program' ? booking.program : 'Pre-Starters (<=6)')
 
   // Resolve Assessment Level & Sub-level (Trình độ đánh giá)
-  const assessedLevel = booking?.testResult?.level
+  const assessedLevel = booking?.testResult?.level || session.lessonSubtitle || (session.status === 'completed' ? level : undefined)
   const assessedSubLevel = booking?.testResult?.subLevel || booking?.testResult?.lwrLevel
   const hasAssessmentResult = Boolean(assessedLevel && assessedLevel !== '' && assessedLevel !== '-')
 
@@ -105,7 +123,8 @@ export function BookingEventHoverCard({
     (booking?.testResult?.level && booking.testResult.level !== '') ||
     (booking?.testResult?.speaking && booking.testResult.speaking !== '-') ||
     (booking?.testResult?.lwr && booking.testResult.lwr !== '-') ||
-    booking?.isTested
+    booking?.isTested ||
+    session.status === 'completed'
   )
 
   // Responsible Person for Booking/Event
@@ -116,7 +135,7 @@ export function BookingEventHoverCard({
   if (!displayResponsiblePerson || displayResponsiblePerson.includes('Phòng Tuyển sinh') || displayResponsiblePerson.startsWith('Phòng')) {
     if (booking?.teacher && !booking.teacher.startsWith('Phòng')) displayResponsiblePerson = booking.teacher
     else if (booking?.ops && !booking.ops.startsWith('Phòng')) displayResponsiblePerson = booking.ops
-    else displayResponsiblePerson = 'Robert L.'
+    else displayResponsiblePerson = primaryTeacher || 'Sarah J.'
   }
 
   const testStatusColors = getStatusColors(testStatusSemantic)

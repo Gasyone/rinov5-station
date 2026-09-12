@@ -37,6 +37,7 @@ export interface WorkRegistrationRecord {
   updatedAt: string
   note?: string
   assignedClass?: string
+  assignedClassCode?: string
 }
 
 export interface WorkRegistrationEmployee extends Employee {
@@ -181,12 +182,14 @@ const recordTemplates: Array<{
   status: WorkRegistrationStatus
   note?: string
   assignedClass?: string
+  assignedClassCode?: string
 }> = [
   // Smart City & Nguyễn Tuân & Linh Đàm records
   // Thứ 2 (dayOffset: 0)
   { employeeId: 'e4', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Cả ca sáng
   { employeeId: 'e5', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' }, // Cả ca sáng
-  { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-0800', 4), status: 'registered', assignedClass: 'IELTS Intensive' },
+  { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-0800', 4), status: 'registered', assignedClass: 'IELTS Intensive', assignedClassCode: 'CLS-IELTS-031' },
+  { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('morning-1000', 4), status: 'registered' }, // 10:00 - 12:00 hoàn thiện cả ca sáng
   { employeeId: 'e1', dayOffset: 0, slotIds: slotRange('afternoon-1330', 6), status: 'registered' }, // 13:30 - 16:30
   { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('morning-0800', 8), status: 'registered' },
   { employeeId: 'e3', dayOffset: 0, slotIds: slotRange('evening-1730', 9), status: 'registered' },
@@ -240,9 +243,9 @@ const recordTemplates: Array<{
 
   // Thứ 4 (dayOffset: 2)
   { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('morning-0800', 6), status: 'registered' }, // 08:00 - 11:00
-  { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('afternoon-1330', 4), status: 'registered', assignedClass: 'Kids Level 1' },
+  { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('afternoon-1330', 4), status: 'registered', assignedClass: 'Kids Level 1', assignedClassCode: 'CLS-KIDS-001' },
   { employeeId: 'e1', dayOffset: 2, slotIds: slotRange('evening-1800', 6), status: 'registered' }, // 18:00 - 21:00
-  { employeeId: 'e3', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered', assignedClass: 'IELTS Band 6.5' },
+  { employeeId: 'e3', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered', assignedClass: 'IELTS Band 6.5', assignedClassCode: 'CLS-IELTS-005' },
   { employeeId: 'e3', dayOffset: 2, slotIds: slotRange('evening-1730', 9), status: 'registered' },
   { employeeId: 'e4', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
   { employeeId: 't6', dayOffset: 2, slotIds: slotRange('morning-0800', 8), status: 'registered' },
@@ -351,6 +354,7 @@ export function getMockWorkRegistrations(anchor = new Date()): WorkRegistrationR
         status: template.status,
         note: template.note,
         assignedClass: template.assignedClass,
+        assignedClassCode: template.assignedClassCode,
         updatedAt: `${dateKey}T09:00:00`,
       }))
     })

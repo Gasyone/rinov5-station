@@ -3,18 +3,25 @@
 import { RefObject, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Phone, X, ChevronDown, ChevronUp, Plus, Check, Copy, Clock, Pencil, CheckCircle, ExternalLink } from 'lucide-react'
+import { Phone, ChevronDown, Check, Copy, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { isCSDBTag } from './operationsAlertHelpers'
-import type { StudentCareAlert, FamilyContact } from '@/mocks/careAlerts'
+import {
+  type StudentCareAlert,
+  linkOrderToStudentCareAlert,
+  unlinkOrderFromStudentCareAlert,
+  updateRenewalClassification,
+} from '@/mocks/careAlerts'
 import type { CareTopic } from './studentCareDetailTypes'
 import { CallConnectionBanner } from './CallConnectionBanner'
 import { StudentActiveCareCard } from './StudentActiveCareCard'
+import { StudentRenewalLinkedOrderRow } from './StudentRenewalLinkedOrderRow'
 import { ConfirmDialog } from '@/components/shared'
-import { useAuthStore } from '@/stores/useAuthStore'
-import { getRenewalClassification, getStudentOrderInfo } from './renewal/renewalHelpers'
+import { getStudentOrderInfo } from './renewal/renewalHelpers'
+import { getStudentOrders } from './StudentOrdersTab'
+import { mockOrders } from '@/mocks/orders'
 
 export function formatContactDisplayName(name: string, relationship: string): string {
   if (!name) return ''
@@ -144,7 +151,7 @@ export function getRenewalStatusLabel(status: string): string {
   }
 }
 
-export type CareMode = 'regular' | 'renewal'
+export type CareMode = 'regular' | 'renewal' | 'orders'
 
 interface StudentCareFormCardProps {
   careFormRef: RefObject<HTMLDivElement | null>
@@ -182,21 +189,22 @@ interface StudentCareFormCardProps {
   handleSendChat: () => void
   handleCompleteCare?: () => void
   studentAttitudeNote?: string
-  showParentOpinion: boolean
-  setShowParentOpinion: (val: boolean) => void
-  parentOpinionText: string
-  setParentOpinionText: (val: string) => void
+  showParentOpinion?: boolean
+  setShowParentOpinion?: (val: boolean) => void
+  parentOpinionText?: string
+  setParentOpinionText?: (val: string) => void
   displayPinnedTopics: CareTopic[]
   expandedTopic: CareTopic | null
   setExpandedTopicCode: (code: string | null) => void
   cstpStatus: string
   onCstpStatusChange?: (status: string) => void
-  isFormCollapsed: boolean
-  setIsFormCollapsed: (val: boolean) => void
+  isFormCollapsed?: boolean
+  setIsFormCollapsed?: (val: boolean) => void
   getTagColorClass: (code: string, isExpanded: boolean) => string
   isCaredStatus: boolean
   careMode: CareMode
   onCareModeChange: (mode: CareMode) => void
+  onRefresh?: () => void
 }
 
 export function StudentCareFormCard({
@@ -229,39 +237,125 @@ export function StudentCareFormCard({
   handleSendChat,
   handleCompleteCare,
   studentAttitudeNote = "Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân...",
-  showParentOpinion,
-  setShowParentOpinion,
-  parentOpinionText,
+  showParentOpinion: _showParentOpinion,
+  setShowParentOpinion: _setShowParentOpinion,
+  parentOpinionText = '',
   setParentOpinionText,
   displayPinnedTopics,
   expandedTopic,
   setExpandedTopicCode,
   cstpStatus,
   onCstpStatusChange,
-  isFormCollapsed,
-  setIsFormCollapsed,
+  isFormCollapsed: _isFormCollapsed,
+  setIsFormCollapsed: _setIsFormCollapsed,
   getTagColorClass,
   isCaredStatus,
   careMode,
   onCareModeChange,
+  onRefresh,
 }: StudentCareFormCardProps) {
   const [isCallActive, setIsCallActive] = useState(false)
   const [renewalStatus, setRenewalStatus] = useState<string>('')
+  const [regularCareStatus, setRegularCareStatus] = useState<string>('dang_xu_ly')
   const [isConfirmCompleteOpen, setIsConfirmCompleteOpen] = useState(false)
-  const { user } = useAuthStore()
   const chatRecipient = formatContactDisplayName(selectedContact.name, selectedContact.relationship)
   const isRenewalMode = careMode === 'renewal'
   const orderInfo = useMemo(() => (student ? getStudentOrderInfo(student) : null), [student])
+  const ordersCount = useMemo(() => {
+    if (!student?.studentId) return 0
+    return getStudentOrders(student.studentId, student.studentName).length
+  }, [student])
+
+  const suggestedOrders = useMemo(() => {
+    const list: Array<{ orderNo: string; packageName: string; amountText: string }> = []
+    const seen = new Set<string>()
+
+    if (student?.studentId) {
+      const studentOrders = getStudentOrders(student.studentId, student.studentName)
+      studentOrders.forEach((o) => {
+        if (o.orderNo && !seen.has(o.orderNo)) {
+          seen.add(o.orderNo)
+          const amount = o.totalPaidAmount || o.paidAmount || o.finalAmount || 0
+          list.push({
+            orderNo: o.orderNo,
+            packageName: o.detailedItems?.[0]?.productName || o.items?.[0]?.productName || 'Gói học',
+            amountText: amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : 'Chưa đóng phí',
+          })
+        }
+      })
+    }
+
+    mockOrders.slice(0, 6).forEach((o) => {
+      if (o.orderNo && !seen.has(o.orderNo)) {
+        seen.add(o.orderNo)
+        const amount = o.paidAmount || o.finalAmount || 0
+        list.push({
+          orderNo: o.orderNo,
+          packageName: o.items?.[0]?.productName || 'Gói học',
+          amountText: amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : 'Chưa đóng phí',
+        })
+      }
+    })
+
+    return list
+  }, [student])
+
+  const handleLinkOrder = (codeToLink: string) => {
+    if (!student?.id) return
+    const trimmed = codeToLink.trim()
+    if (!trimmed) return
+
+    const foundInMock = mockOrders.find(
+      (o) => o.orderNo?.toLowerCase() === trimmed.toLowerCase() || o.id?.toLowerCase() === trimmed.toLowerCase()
+    )
+    const foundInStudent = student.studentId
+      ? getStudentOrders(student.studentId, student.studentName).find(
+          (o) => o.orderNo?.toLowerCase() === trimmed.toLowerCase()
+        )
+      : null
+
+    const itemsCount = foundInMock?.items?.length || foundInStudent?.detailedItems?.length || 1
+    const rawPkgName =
+      foundInStudent?.detailedItems?.[0]?.productName ||
+      foundInMock?.items?.[0]?.productName ||
+      (student.subject === 'Toán tư duy' ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T')
+    const pkgName = itemsCount > 1 ? `${rawPkgName} (${itemsCount}+)` : rawPkgName
+
+    const paid =
+      foundInStudent?.totalPaidAmount ||
+      foundInMock?.paidAmount ||
+      foundInMock?.finalAmount ||
+      18000000
+
+    const term =
+      foundInStudent?.paymentMethodTag ||
+      foundInMock?.paymentMethodTag ||
+      'Thanh toán 100%'
+
+    linkOrderToStudentCareAlert(student.id, foundInMock?.orderNo || foundInStudent?.orderNo || trimmed, {
+      packageName: pkgName,
+      totalPaidAmount: paid,
+      paymentTerm: term,
+    })
+
+    toast.success(`Đã liên kết đơn hàng ${foundInMock?.orderNo || trimmed} thành công!`)
+    if (onRefresh) onRefresh()
+  }
+
+  const handleUnlinkOrder = () => {
+    if (!student?.id) return
+    unlinkOrderFromStudentCareAlert(student.id)
+    toast.info('Đã hủy liên kết đơn hàng.')
+    if (onRefresh) onRefresh()
+  }
 
   const handleCheckComplete = () => {
     if (student) {
-      const classification = getRenewalClassification(student)
       const orderInfo = getStudentOrderInfo(student)
-      // Check if student has a linked order from CRM / draft / deposit / completed order
-      const hasLinkedOrder = Boolean(orderInfo?.orderCode) || classification === 'tai_phi' || classification === 'hen_tai'
+      const hasLinkedOrder = Boolean(orderInfo?.orderCode)
       
       if (!hasLinkedOrder) {
-        toast.error('Chưa có đơn hàng liên kết. Vui lòng tạo đơn hàng tái phí trước khi hoàn tất ca chăm sóc!')
+        toast.error('Chưa có đơn hàng liên kết. Vui lòng liên kết đơn hàng để xác định Tái phí thành công!')
         return
       }
     }
@@ -311,8 +405,8 @@ export function StudentCareFormCard({
             type="button"
             onClick={() => onCareModeChange('regular')}
             className={cn(
-              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
-              !isRenewalMode
+              'flex-1 h-7 px-2.5 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              careMode === 'regular'
                 ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
                 : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
             )}
@@ -336,8 +430,8 @@ export function StudentCareFormCard({
             type="button"
             onClick={() => onCareModeChange('renewal')}
             className={cn(
-              'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
-              isRenewalMode
+              'flex-1 h-7 px-2.5 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              careMode === 'renewal'
                 ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
                 : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
             )}
@@ -356,9 +450,33 @@ export function StudentCareFormCard({
               )
             })()}
           </button>
+
+          <button
+            type="button"
+            onClick={() => onCareModeChange('orders')}
+            className={cn(
+              'flex-1 h-7 px-2.5 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              careMode === 'orders'
+                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
+            )}
+          >
+            <span>Đơn hàng</span>
+            <span
+              className={cn(
+                'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                careMode === 'orders'
+                  ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
+                  : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300 font-medium'
+              )}
+            >
+              {ordersCount}
+            </span>
+          </button>
         </div>
 
-        <div className="space-y-1">
+        {careMode !== 'orders' && (
+          <div className="space-y-1">
           {visibleTopics.length === 0 ? (
             <div className="py-3 text-center text-xs text-muted-foreground italic bg-white dark:bg-zinc-900 rounded-lg border border-border/40">
               {isRenewalMode
@@ -433,21 +551,23 @@ export function StudentCareFormCard({
             })
           )}
         </div>
+        )}
       </div>
 
       {/* Main Section Card: Form nhập liệu tương tác - Phủ toàn bộ màu nền Xanh Sky Light */}
-      <div className="bg-sky-50/40 dark:bg-sky-950/25 rounded-2xl border border-sky-200/80 dark:border-sky-900/60 shadow-2xs p-3.5 pt-3 space-y-2">
-        <CallConnectionBanner
-          isActive={isCallActive}
-          contactName={formatContactDisplayName(selectedContact.name, selectedContact.relationship)}
-          contactPhone={activeContactPhone}
-          onEndCall={() => setIsCallActive(false)}
-          onOutcomeSelect={(outcome) => {
-            if (setCallOutcome) setCallOutcome(outcome)
-          }}
-        />
+      {careMode !== 'orders' && (
+        <div className="bg-sky-50/40 dark:bg-sky-950/25 rounded-2xl border border-sky-200/80 dark:border-sky-900/60 shadow-2xs p-3.5 space-y-2">
+          <CallConnectionBanner
+            isActive={isCallActive}
+            contactName={formatContactDisplayName(selectedContact.name, selectedContact.relationship)}
+            contactPhone={activeContactPhone}
+            onEndCall={() => setIsCallActive(false)}
+            onOutcomeSelect={(outcome) => {
+              if (setCallOutcome) setCallOutcome(outcome)
+            }}
+          />
 
-        <div className="select-none animate-in fade-in-50 duration-150 grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-start">
+            <div className="select-none animate-in fade-in-50 duration-150 grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-start">
           {/* Left Column (~33%): Contact Info & Controls in horizontal rows */}
           <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-sky-200/60 dark:border-sky-900/50 pb-2 md:pb-0 pr-0 md:pr-3">
             {/* Box cụm người liên hệ phụ huynh (nền trắng nổi bật trên card xanh nhạt) */}
@@ -631,7 +751,7 @@ export function StudentCareFormCard({
           {/* Right Column (~67%): Resizable Textareas & Action Buttons */}
           <div className="md:col-span-8 space-y-2 flex flex-col justify-between h-full">
             <div className="space-y-1.5 w-full">
-              {/* Ô nhập ghi chú: Khung trắng nổi bật (Highlight riêng) trên nền Sky Light của card */}
+              {/* Ô nhập ghi chú trao đổi */}
               <textarea
                 ref={textareaRef}
                 rows={3}
@@ -648,20 +768,28 @@ export function StudentCareFormCard({
                     ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
                     : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
                 }
-                className="w-full min-h-[76px] max-h-[160px] py-2 px-3 text-xs rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-muted-foreground/70 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed shadow-xs transition-all"
+                className="w-full min-h-[76px] max-h-[180px] py-1.5 px-3 text-xs rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed shadow-xs transition-all"
               />
 
-              {/* Textarea Phụ huynh phản hồi: Giữ sắc Emerald xanh lá hài hòa */}
-              <textarea
-                rows={1}
-                value={parentOpinionText}
-                onChange={(e) => setParentOpinionText(e.target.value)}
-                placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
-                className="w-full min-h-[34px] h-[36px] max-h-[75px] py-1.5 px-3 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/40 focus:bg-white dark:focus:bg-zinc-900 text-emerald-950 dark:text-emerald-100 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/40 placeholder:text-emerald-700/60 placeholder:font-normal resize-y overflow-y-auto leading-normal shadow-xs transition-all"
-              />
+              {/* Input Phụ huynh phản hồi */}
+              <div className="pt-0.5">
+                <input
+                  type="text"
+                  value={parentOpinionText}
+                  onChange={(e) => setParentOpinionText && setParentOpinionText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault()
+                      handleSendChat()
+                    }
+                  }}
+                  placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
+                  className="w-full h-7 text-xs px-2.5 rounded-md border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-normal focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground/60 shadow-3xs"
+                />
+              </div>
             </div>
 
-            {/* Action Row: Selection Trạng thái Tái phí (Left - Chỉ hiển thị ở tab Tái phí) + Action Buttons (Right) */}
+            {/* Action Row: Selection Trạng thái (Left) + Action Buttons (Right) */}
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
                 {isRenewalMode ? (
@@ -672,14 +800,22 @@ export function StudentCareFormCard({
                     <select
                       value={
                         renewalStatus ||
-                        (['can_nhac', 'tiem_nang', 'hen_tai'].includes(cstpStatus) ? cstpStatus : '')
+                        (['can_nhac', 'tiem_nang', 'hen_tai', 'tai_phi'].includes(cstpStatus) ? cstpStatus : '')
                       }
                       onChange={(e) => {
                         const val = e.target.value
+                        if (val === 'tai_phi' && !orderInfo?.orderCode) {
+                          toast.error('Chưa có đơn hàng liên kết. Vui lòng liên kết đơn hàng để xác định Tái phí thành công!')
+                          return
+                        }
                         setRenewalStatus(val)
+                        if (student) {
+                          updateRenewalClassification(student.id, val)
+                        }
                         if (onCstpStatusChange) {
                           onCstpStatusChange(val)
                         }
+                        if (onRefresh) onRefresh()
                       }}
                       className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
                     >
@@ -689,6 +825,9 @@ export function StudentCareFormCard({
                       <option value="can_nhac">Cân nhắc</option>
                       <option value="tiem_nang">Tiềm năng</option>
                       <option value="hen_tai">Hẹn tái</option>
+                      <option value="tai_phi" disabled={!orderInfo?.orderCode}>
+                        Tái phí thành công {!orderInfo?.orderCode ? '(Cần liên kết đơn)' : ''}
+                      </option>
                       {(renewalStatus === 'that_bai' || cstpStatus === 'that_bai') && (
                         <option value="that_bai" disabled>
                           Thất bại (Hệ thống tự động)
@@ -697,7 +836,30 @@ export function StudentCareFormCard({
                     </select>
                   </div>
                 ) : (
-                  <div />
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10.5px] text-muted-foreground font-medium shrink-0">
+                      Trạng thái Chăm sóc:
+                    </span>
+                    <select
+                      value={regularCareStatus}
+                      onChange={(e) => {
+                        setRegularCareStatus(e.target.value)
+                        toast.success(`Đã chuyển trạng thái chăm sóc sang: ${
+                          e.target.value === 'da_cham_soc' ? 'Đã chăm sóc' :
+                          e.target.value === 'can_ho_tro' ? 'Cần hỗ trợ' :
+                          e.target.value === 'cho_phan_hoi' ? 'Chờ phản hồi' :
+                          e.target.value === 'hen_goi_lai' ? 'Hẹn gọi lại' : 'Đang xử lý'
+                        }`)
+                      }}
+                      className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
+                    >
+                      <option value="dang_xu_ly">Đang xử lý</option>
+                      <option value="da_cham_soc">Đã chăm sóc</option>
+                      <option value="can_ho_tro">Cần hỗ trợ</option>
+                      <option value="cho_phan_hoi">Chờ phản hồi</option>
+                      <option value="hen_goi_lai">Hẹn gọi lại</option>
+                    </select>
+                  </div>
                 )}
 
                 <div className="flex items-center gap-1.5 shrink-0 ml-auto">
@@ -740,65 +902,28 @@ export function StudentCareFormCard({
         </div>
 
         {/* Active Care Card / Linked Order Section */}
-        {(!isCaredStatus || (isRenewalMode && orderInfo?.orderCode)) && (
-          <div className="border-t border-border/50 pt-2 mt-2.5 space-y-1">
-            {/* Thông tin Đơn hàng liên kết: Dưới đường line, phía trên Đang xử lý, không viền, không nền */}
-            {isRenewalMode && orderInfo?.orderCode && (
-              <div className="flex items-center justify-between gap-2 text-xs select-none py-0.5">
-                <div className="flex items-center gap-1.5 flex-wrap min-w-0 text-xs">
-                  <span className="font-semibold text-muted-foreground text-xs">
-                    Đơn hàng liên kết:
-                  </span>
-                  <a
-                    href={`/quote/${orderInfo.orderCode}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono font-bold text-foreground hover:text-primary hover:underline cursor-pointer"
-                    title="Xem chi tiết đơn hàng báo giá"
-                  >
-                    {orderInfo.orderCode}
-                  </a>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="font-medium text-foreground truncate">
-                    {orderInfo.packageName}
-                  </span>
-                  {orderInfo.packageAmount && (
-                    <span className="font-mono font-semibold text-emerald-700 dark:text-emerald-400">
-                      ({orderInfo.packageAmount})
-                    </span>
-                  )}
-                  {orderInfo.paymentTerm && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-amber-700 dark:text-amber-400 font-medium text-xs">
-                        {orderInfo.paymentTerm}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <a
-                  href={`/quote/${orderInfo.orderCode}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline shrink-0"
-                  title="Mở Landing Page Báo giá & Chi tiết Đơn hàng"
-                >
-                  <span>Xem đơn</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            )}
+        <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
+          {/* Thông tin Đơn hàng liên kết ở tab Tái phí: nhập trực tiếp trên dòng, không mở modal, có thể sửa */}
+          {isRenewalMode && (
+            <StudentRenewalLinkedOrderRow
+              orderInfo={orderInfo}
+              suggestedOrders={suggestedOrders}
+              onLinkOrder={handleLinkOrder}
+              onUnlinkOrder={handleUnlinkOrder}
+            />
+          )}
 
-            {!isCaredStatus && (
-              <StudentActiveCareCard
-                student={student}
-                chatRecipient={chatRecipient}
-                isCaredStatus={isCaredStatus}
-              />
-            )}
-          </div>
-        )}
+          {/* Trạng thái & Nội dung chăm sóc gần nhất - Hiển thị cả Chăm sóc và Tái phí */}
+          <StudentActiveCareCard
+            student={student}
+            chatRecipient={chatRecipient}
+            isCaredStatus={isCaredStatus}
+            mode={careMode}
+            cstpStatus={cstpStatus || renewalStatus}
+          />
+        </div>
       </div>
+    )}
 
       {/* Modal xác nhận Lưu & Đóng ca */}
       <ConfirmDialog
@@ -806,11 +931,33 @@ export function StudentCareFormCard({
         onOpenChange={setIsConfirmCompleteOpen}
         title="Xác nhận đóng ca tái phí"
         description={
-          <div className="space-y-1.5 text-xs text-left">
+          <div className="space-y-2 text-xs text-left">
             <p>
               Bạn có chắc chắn muốn lưu thông tin và đóng ca chăm sóc tái phí cho học viên{' '}
               <strong className="text-foreground">{student?.studentName}</strong>?
             </p>
+            {orderInfo?.orderCode && (
+              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11.5px] space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Đơn hàng liên kết:</span>
+                  <strong className="font-mono text-foreground">{orderInfo.orderCode}</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Gói học:</span>
+                  <span className="font-medium text-foreground truncate max-w-[200px]" title={orderInfo.packageName}>
+                    {orderInfo.packageName}
+                  </span>
+                </div>
+                {orderInfo.packageAmount && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">TT:</span>
+                    <strong className="font-mono text-emerald-600 dark:text-emerald-400">
+                      {orderInfo.packageAmount}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            )}
             <p className="text-muted-foreground">
               Thao tác này sẽ ghi nhận trạng thái <strong>ĐÃ TÁI PHÍ THÀNH CÔNG</strong>, lưu các nội dung trao đổi và chính thức đóng ca chăm sóc.
             </p>
@@ -819,9 +966,13 @@ export function StudentCareFormCard({
         confirmLabel="Xác nhận đóng ca"
         cancelLabel="Hủy"
         onConfirm={() => {
+          if (student) {
+            updateRenewalClassification(student.id, 'tai_phi')
+          }
           if (handleCompleteCare) handleCompleteCare()
           setIsCallActive(false)
           setIsConfirmCompleteOpen(false)
+          if (onRefresh) onRefresh()
         }}
       />
       </div>

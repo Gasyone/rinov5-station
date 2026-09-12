@@ -16,27 +16,27 @@ export const WORK_REGISTRATION_GRID_SECTIONS: WorkRegistrationGridSection[] = [
   {
     id: 'morning',
     label: 'Buổi sáng',
-    icon: '☀️',
+    icon: '',
     start: '08:00',
     end: '12:00',
   },
   {
     id: 'afternoon',
     label: 'Buổi chiều',
-    icon: '🌤',
+    icon: '',
     start: '13:00',
     end: '17:30',
   },
   {
     id: 'evening',
     label: 'Buổi tối',
-    icon: '🌙',
+    icon: '',
     start: '17:30',
     end: '22:00',
   },
 ]
 
-export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center' | 'holidays'
+export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center'
 export type WorkRegistrationViewMode = 'week' | 'month'
 export type WorkRegistrationStatusFilter =
   | 'all'
@@ -91,7 +91,6 @@ export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string
   { value: 'staff', label: 'Lịch làm việc' },
   { value: 'roster', label: 'Lịch trực test' },
   { value: 'center', label: 'Trường' },
-  { value: 'holidays', label: 'Lịch nghỉ lễ' },
 ]
 
 

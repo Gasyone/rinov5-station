@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ContactCell, PersonnelHoverCard, CareTagHoverCard } from '@/components/shared'
 import {
-  ArrowLeftRight,
   Calendar,
   MapPin,
 } from 'lucide-react'
@@ -13,16 +12,11 @@ import { type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getUnassignedStaffStatus, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
-import { OperationsAlertHistoryPopover } from './OperationsAlertHistoryPopover'
-import { RenewalHistoryPopover } from './renewal/RenewalHistoryPopover'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
+import { getProductSku } from './renewal/renewalHelpers'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareItemsDialog } from './StudentCareItemsDialog'
 import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
-
-
-// Mock class records
-import { mockClassRecords } from '@/mocks/classRecords'
 
 export interface AlertRowProps {
   cls: StudentCareAlert
@@ -46,7 +40,7 @@ function getCareTagFullLabel(tag: CareTag): string {
   return `${tag.label}: ${tag.displayLabel || tag.description}`
 }
 
-export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex, onRefresh, onViewDetail, onOpenRoadmapModal }: AlertRowProps) {
+export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDetail, onOpenRoadmapModal }: AlertRowProps) {
   const showTagsInColumn = true
 
   // Family contacts
@@ -272,51 +266,16 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
           const studentInfo = mockStudents.find((s) => s.id === cls.studentId);
           const isWaitAssignment = studentInfo?.status === 'wait_for_assignment';
           const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0;
-
-          const classRecord = mockClassRecords.find((c) => c.code === cls.classCode);
-          const className = classRecord 
-            ? classRecord.name 
-            : (cls.subject === 'Toán tư duy' ? `Toán ${cls.level}` : `Anh ${cls.level}`);
+          const classCount = hasClassHistory ? 2 : 1;
 
           return (
             <div className="flex flex-col gap-1 text-left">
-              {/* Hàng 1: Tên lớp & Icon chuyển lớp */}
+              {/* Hàng 1: (N) Trình độ */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className={cn(
-                  "truncate shrink-0",
-                  cls.status === 'Chờ chuyển lớp'
-                    ? "text-xs text-muted-foreground font-normal"
-                    : "font-normal text-zinc-500 dark:text-zinc-400 text-xs"
-                )} title={className}>
-                  {isWaitAssignment || studentInfo?.status === 'reserve' || cls.status === 'Hết buổi'
-                    ? 'Chưa có lớp'
-                    : cls.status === 'Chờ chuyển lớp'
-                      ? 'Đang chuyển lớp'
-                      : className
-                  }
+                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={`(${classCount}) ${cls.level}`}>
+                  <span className="font-bold mr-1 text-foreground">({classCount})</span>
+                  {cls.level}
                 </span>
-                
-                {/* Icon lịch sử chuyển lớp */}
-                {hasClassHistory && (
-                  <OperationsAlertHistoryPopover
-                    type="class_history"
-                    studentId={cls.studentId}
-                    studentName={cls.studentName}
-                    subject={cls.subject}
-                    trigger={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        title="Lịch sử chuyển lớp & Ghép lớp"
-                        className="h-4.5 w-4.5 p-0 shrink-0 text-primary hover:bg-muted rounded-md border border-border shadow-none"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowLeftRight className="h-3 w-3" />
-                      </Button>
-                    }
-                  />
-                )}
               </div>
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
@@ -370,34 +329,21 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
       </td>
 
       {/* Gói sản phẩm */}
-      <td className="py-1.5 px-2 min-w-[140px]">
+      <td className="py-1.5 px-2 min-w-[180px]">
         {(() => {
           const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
+          const packageCount = hasPackageHistory ? 2 : 1
+          const skuName = getProductSku(cls)
           return (
-            <div className="flex flex-col gap-0.5 min-w-[135px]">
-              <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap">
-                <span className="text-zinc-500 dark:text-zinc-400 text-xs truncate shrink-0">{cls.level}</span>
-                {hasPackageHistory && (
-                  <RenewalHistoryPopover
-                    type="package_history"
-                    studentId={cls.studentId}
-                    studentName={cls.studentName}
-                    subject={cls.subject}
-                    trigger={
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        title="Lịch sử chuyển đổi gói sản phẩm"
-                        className="h-4.5 w-4.5 p-0 shrink-0 text-primary hover:bg-muted rounded-md border border-border shadow-none"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ArrowLeftRight className="h-3 w-3" />
-                      </Button>
-                    }
-                  />
-                )}
+            <div className="flex flex-col gap-0.5 min-w-[180px] max-w-[260px]">
+              {/* Hàng 1: (N) Tên gói học mới nhất */}
+              <div className="flex items-center gap-1.5 flex-nowrap">
+                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[230px]" title={`(${packageCount}) ${skuName}`}>
+                  <span className="font-bold mr-1 text-foreground">({packageCount})</span>
+                  {skuName}
+                </span>
               </div>
+              {/* Hàng 2: Hạn hết hạn */}
               <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
             </div>
           )
@@ -407,7 +353,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
       {/* Nội dung chăm sóc (Hiển thị hàng ngang flex-wrap, tối đa 2 dòng) */}
       <td className="py-1.5 px-2 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
-          const unassignedInfo = getUnassignedStaffStatus(cls)
           return (
             <div className="flex flex-col gap-1 py-0.5 max-w-[290px]">
               {showTagsInColumn && (
@@ -437,16 +382,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                 </div>
               )}
 
-              {/* Text màu cam thông báo Chưa gán CS/GV bên dưới nhãn chăm sóc */}
-              {unassignedInfo.isUnassigned && (
-                <div className="text-left pt-0.5">
-                  <span className="text-amber-600 dark:text-amber-400 text-[10.5px] font-medium leading-tight block">
-                    {unassignedInfo.unassignedText}
-                  </span>
-                </div>
-              )}
-
-              {!showTagsInColumn && !unassignedInfo.isUnassigned && (
+              {!showTagsInColumn && (
                 <span className="text-zinc-400 italic text-xs">-</span>
               )}
 
@@ -464,82 +400,104 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
         })()}
       </td>
 
-      {/* Lịch sử chăm sóc (Hiển thị log số lần liên hệ theo thời điểm & Lịch hẹn dưới dạng Popover bong bóng) */}
-      <td className="py-1.5 px-2 min-w-[220px]" onClick={(e) => e.stopPropagation()}>
+      {/* Lịch sử chăm sóc */}
+      <td className="py-1.5 px-2 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
           const inProgress = isInProgress(cls)
           const isUncared = !isCompleted && !inProgress
 
+          const parseLogDate = (d: string) => {
+            if (!d) return 0
+            if (d.includes('-')) {
+              return new Date(d).getTime() || 0
+            }
+            const parts = d.split('/')
+            if (parts.length === 3) {
+              return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime()
+            }
+            return 0
+          }
+
           const allLogs = getHistoryLogsForStudent(cls.studentId)
-          const logs = isUncared ? [] : allLogs
+          const clsLogs = (cls.interactionLogs || []).map((l) => {
+            let formattedDate = l.date
+            if (l.date.includes('-')) {
+              const parts = l.date.split('-')
+              if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`
+            }
+            return {
+              action: l.callConfirmation === 'Đã gọi' ? 'Cuộc gọi chăm sóc' : l.callConfirmation,
+              staff: l.staffName,
+              date: formattedDate,
+              note: l.notes,
+              channel: (l.callConfirmation === 'Đã nhắn Zalo' ? 'zalo' : 'telephone') as 'zalo' | 'telephone',
+              duration: l.audioDuration,
+              tag: l.notes.includes('[CSTP]') ? 'CSTP' : 'T1',
+              semantic: 'success' as const,
+            }
+          })
+
+          const combinedLogs = [...clsLogs, ...allLogs]
+          combinedLogs.sort((a, b) => parseLogDate(b.date) - parseLogDate(a.date))
+
+          // Màn vận hành chỉ hiển thị các log chăm sóc vận hành (loại trừ CSTP / tái phí)
+          const operationalLogs = combinedLogs.filter(
+            (log) => log.tag !== 'CSTP' && !log.action.toLowerCase().includes('tái phí') && !log.note.toLowerCase().includes('tái phí') && !log.note.includes('[CSTP]')
+          )
+
+          const logs = isUncared ? [] : operationalLogs
           const latestLog = logs[0]
           const rescheduleInfo = getRescheduleInfo(cls)
           const attemptCount = logs.length
 
           const cellContent = (
-            <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px]">
-              {/* Hàng 1: Text Chăm sóc (XX) / Chưa chăm sóc + Lịch hẹn gọi lại */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span
-                  className={cn(
-                    'text-xs font-bold transition-colors',
-                    isUncared
-                      ? 'text-zinc-500 dark:text-zinc-400 select-none'
-                      : inProgress
-                      ? 'text-sky-700 dark:text-sky-400 cursor-pointer hover:underline'
-                      : 'text-emerald-700 dark:text-emerald-400 cursor-pointer hover:underline'
-                  )}
-                  title={isUncared ? undefined : 'Click để xem Popover chi tiết Lịch sử chăm sóc'}
+            <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
+              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất với (n) ở trước ngày và nội dung */}
+              {isUncared && !rescheduleInfo.isRescheduled ? (
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="font-bold text-zinc-500 mr-1">(0)</span>
+                  <span className="italic text-amber-600 dark:text-amber-400 font-medium">Chưa chăm sóc</span>
+                </div>
+              ) : latestLog ? (
+                <div
+                  className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                  title={`(${attemptCount}) ${latestLog.date}: ${latestLog.note}`}
                 >
-                  {isUncared ? 'Chưa chăm sóc' : `Chăm sóc (${attemptCount})`}
-                </span>
-
-                {/* Lịch hẹn gọi lại (Cùng hàng với nút Chăm sóc, không viền) */}
-                {rescheduleInfo.isRescheduled && (
                   <span
-                    className="text-xs font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1 whitespace-nowrap"
-                    title="Lịch hẹn gọi lại"
+                    className={cn(
+                      'font-bold mr-1',
+                      inProgress
+                        ? 'text-sky-700 dark:text-sky-400'
+                        : 'text-emerald-700 dark:text-emerald-400'
+                    )}
                   >
-                    <Calendar className="h-3 w-3 shrink-0 text-violet-600 dark:text-violet-400" />
-                    <span>Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
+                    ({attemptCount})
                   </span>
-                )}
-              </div>
-
-              {/* Hàng 2 & 3: Nội dung chăm sóc (Dòng 2) và Ý kiến phụ huynh (Dòng 3) */}
-              {isUncared ? (
-                <div className="text-xs italic text-amber-600 dark:text-amber-400 font-medium">
-                  Cần liên hệ trao đổi với phụ huynh ngay
+                  <span className="font-mono text-zinc-500 mr-1">{latestLog.date}:</span>
+                  <span>{latestLog.note}</span>
                 </div>
               ) : (
-                latestLog && (
-                  <>
-                    {/* Dòng 2: Nội dung chăm sóc */}
-                    <div
-                      className="text-xs text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
-                      title={`Nội dung CS (${latestLog.date}): ${latestLog.note}`}
-                    >
-                      <span className="font-mono text-zinc-500">{latestLog.date}:</span> {latestLog.note}
-                    </div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="font-bold text-sky-700 dark:text-sky-400 mr-1">(0)</span>
+                  <span className="italic text-sky-600 dark:text-sky-400 font-medium">Đã lên lịch hẹn</span>
+                </div>
+              )}
 
-                    {/* Dòng 3: Ý kiến phản hồi của phụ huynh (Chỉ hiển thị khi Đã hoàn thành) */}
-                    {isCompleted && (
-                      <div
-                        className="text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate cursor-pointer hover:underline transition-colors"
-                        title={`Phụ huynh phản hồi: ${latestLog.note}`}
-                      >
-                        Phụ huynh phản hồi: &ldquo;{latestLog.note.includes('phụ huynh') ? latestLog.note.substring(latestLog.note.indexOf('phụ huynh') + 9).trim() || latestLog.note : 'Mẹ cảm ơn cô giáo đã nhắc nhở, sẽ cho con ôn tập thêm trong tối nay'}&rdquo;
-                      </div>
-                    )}
-                  </>
-                )
+              {/* Dòng 2 (dưới): Lịch hẹn gọi lại */}
+              {rescheduleInfo.isRescheduled && (
+                <div
+                  className="text-xs text-purple-700 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap"
+                  title="Lịch hẹn gọi lại tiếp theo"
+                >
+                  <Calendar className="h-3 w-3 shrink-0 text-purple-600 dark:text-purple-400" />
+                  <span>Hẹn gọi lại: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
+                </div>
               )}
             </div>
           )
 
-          // Chưa chăm sóc thì KHÔNG bật Popover, chỉ có Đang xử lý & Hoàn thành mới có dữ liệu Popover
-          if (isUncared) {
+          if (isUncared && !rescheduleInfo.isRescheduled) {
             return cellContent
           }
 
@@ -548,6 +506,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               cls={cls}
               onRefresh={onRefresh}
               trigger={cellContent}
+              defaultTab="operational"
             />
           )
         })()}
@@ -558,6 +517,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
         {(() => {
           const isCompleted = isCared(cls)
           const isInProgressCall = isInProgress(cls)
+          const rescheduleInfo = getRescheduleInfo(cls)
 
           // 1. Trạng thái Vòng đời chăm sóc (Main Care Lifecycle Status - khớp màu chuẩn 100% với các Tab lọc)
           const lifecycleStatus = isCompleted
@@ -566,7 +526,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
               ? { label: 'Đang xử lý', badgeClass: getStatusBadgeClass('in_progress') }
               : { label: 'Chưa chăm sóc', badgeClass: getStatusBadgeClass('info') }
 
-          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng])
+          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng], Hẹn [Tím])
           const isOverdueAlert = isOverdue(cls)
           const isDueTodayAlert = isToday(cls)
           const slaDeadline = cls.expectedEndDate || '23/09/2026'
@@ -584,7 +544,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                 </Badge>
               </div>
 
-              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) */}
+              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hẹn / Hạn) */}
               <div className="text-xs font-mono">
                 {isCompleted ? (
                   <span className="text-muted-foreground font-normal">Gần nhất: {latestDate}</span>
@@ -592,6 +552,8 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex: _rowIndex,
                   <span className="text-red-600 dark:text-red-400 font-normal">Quá hạn: {slaDeadline}</span>
                 ) : isDueTodayAlert ? (
                   <span className="text-amber-600 dark:text-amber-400 font-normal">Đến hạn: {slaDeadline}</span>
+                ) : rescheduleInfo.isRescheduled ? (
+                  <span className="text-purple-700 dark:text-purple-300 font-semibold">Hẹn: {rescheduleInfo.rescheduleDate}</span>
                 ) : (
                   <span className="text-muted-foreground font-normal">Hạn: {slaDeadline}</span>
                 )}

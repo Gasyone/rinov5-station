@@ -28,6 +28,9 @@ interface ClassesBulkFeedbackDialogProps {
   onSave: (feedbackMap: Record<string, string>) => void
   sessionTopic?: string
   classLevel?: string
+  className?: string
+  classSyllabus?: string
+  classCode?: string
   readOnly?: boolean
   initialStudentId?: string
   isTestSession?: boolean
@@ -66,6 +69,20 @@ interface StudentFormState {
   speakingImproveNotes: string
   pronGoodNotes: string
   pronImproveNotes: string
+
+  // Math thinking competencies
+  mathLogic?: number
+  mathLogicStrength?: string
+  mathLogicWeakness?: string
+  mathArithmetic?: number
+  mathArithmeticStrength?: string
+  mathArithmeticWeakness?: string
+  mathSpatial?: number
+  mathSpatialStrength?: string
+  mathSpatialWeakness?: string
+  mathModeling?: number
+  mathModelingStrength?: string
+  mathModelingWeakness?: string
 }
 
 
@@ -77,6 +94,9 @@ export function ClassesBulkFeedbackDialog({
   onSave,
   sessionTopic = 'Phonics lab: Nguyên âm ngắn',
   classLevel = 'IELTS',
+  className = '',
+  classSyllabus = '',
+  classCode = '',
   readOnly = false,
   initialStudentId,
   isTestSession = false,
@@ -89,8 +109,26 @@ export function ClassesBulkFeedbackDialog({
   const isMath = useMemo(() => {
     const levelLower = classLevel?.toLowerCase() || ''
     const topicLower = sessionTopic?.toLowerCase() || ''
-    return levelLower.includes('math') || levelLower.includes('toán') || topicLower.includes('math') || topicLower.includes('toán')
-  }, [classLevel, sessionTopic])
+    const nameLower = className?.toLowerCase() || ''
+    const syllabusLower = classSyllabus?.toLowerCase() || ''
+    const codeLower = classCode?.toLowerCase() || ''
+    return (
+      levelLower.includes('math') ||
+      levelLower.includes('toán') ||
+      levelLower.includes('toan') ||
+      topicLower.includes('math') ||
+      topicLower.includes('toán') ||
+      topicLower.includes('toan') ||
+      nameLower.includes('math') ||
+      nameLower.includes('toán') ||
+      nameLower.includes('toan') ||
+      syllabusLower.includes('math') ||
+      syllabusLower.includes('toán') ||
+      syllabusLower.includes('toan') ||
+      codeLower.includes('math') ||
+      codeLower.includes('toan')
+    )
+  }, [classLevel, sessionTopic, className, classSyllabus, classCode])
 
   // Initialize draft form states for each student
   const initialFormStates = useMemo(() => {
@@ -98,15 +136,15 @@ export function ClassesBulkFeedbackDialog({
     students.forEach(({ student, feedback }) => {
       const hasFeedback = !!feedback && feedback.trim() !== ''
       states[student.id] = {
-        homeworkApp: hasFeedback ? 'Done' : '',
-        homeworkBook: hasFeedback ? 'Done' : '',
+        homeworkApp: hasFeedback ? (isMath ? 'Hoàn thành' : 'Done') : (isMath ? 'Hoàn thành' : ''),
+        homeworkBook: hasFeedback ? (isMath ? 'Hoàn thành' : 'Done') : (isMath ? 'Hoàn thành 1 phần' : ''),
         absorption: 4,
         participation: 4,
-        evaluation: 4,
+        evaluation: isMath ? 3 : 4,
         strength: '',
         weakness: '',
         otherNotes: '',
-        reminders: [],
+        reminders: isMath ? ['Vào lớp đúng giờ (tự động cập nhật)'] : [],
         otherReminder: '',
         tone: 'friendly',
         generatedFeedback: feedback || '',
@@ -115,9 +153,9 @@ export function ClassesBulkFeedbackDialog({
         grammar: hasFeedback ? 4 : 4,
         speaking: hasFeedback ? 4 : 4,
         pronunciation: hasFeedback ? 4 : 4,
-        attitude: hasFeedback ? 4 : 4,
+        attitude: isMath ? 3 : (hasFeedback ? 4 : 4),
         internalNote: '',
-        aiUsesLeft: 3,
+        aiUsesLeft: 2,
         vocabGoodNotes: '',
         vocabImproveNotes: '',
         grammarGoodNotes: '',
@@ -126,6 +164,18 @@ export function ClassesBulkFeedbackDialog({
         speakingImproveNotes: '',
         pronGoodNotes: '',
         pronImproveNotes: '',
+        mathLogic: 3,
+        mathLogicStrength: '',
+        mathLogicWeakness: '',
+        mathArithmetic: 3,
+        mathArithmeticStrength: '',
+        mathArithmeticWeakness: '',
+        mathSpatial: 3,
+        mathSpatialStrength: '',
+        mathSpatialWeakness: '',
+        mathModeling: 3,
+        mathModelingStrength: '',
+        mathModelingWeakness: '',
       }
     })
     return states
@@ -186,53 +236,271 @@ export function ClassesBulkFeedbackDialog({
     if (!selectedStudentId || !selectedStudent || !currentFormState) return
 
     if (isMath) {
-      const isFriendly = currentFormState.tone === 'friendly' || currentFormState.tone === 'Gần gũi, thân thiện' || !currentFormState.tone
-      const RATING_MAP: Record<number, string> = {
-        1: 'Yếu',
-        2: 'Trung bình',
-        3: 'Khá',
-        4: 'Tốt',
-        5: 'Tuyệt vời',
+      const isFriendly = currentFormState.tone === 'friendly' || currentFormState.tone === 'Vui vẻ, hào hứng' || !currentFormState.tone
+
+      const topicLine = `- Luyện tập chủ đề: ${sessionTopic || (classLevel ? `${classLevel}` : 'Math Kindi — Subtraction within 10')} 📐`
+
+      // Homework bullet
+      let hwBullet = ''
+      const app = currentFormState.homeworkApp
+      const book = currentFormState.homeworkBook
+      const isAppDone = app === 'Hoàn thành' || app === 'Done'
+      const isBookDone = book === 'Hoàn thành' || book === 'Done'
+      const isAppPartly = app === 'Hoàn thành 1 phần' || app === 'Partly Done'
+      const isBookPartly = book === 'Hoàn thành 1 phần' || book === 'Partly Done'
+      const isAppNone = app === 'Không có' || app === 'No Homework'
+      const isBookNone = book === 'Không có' || book === 'No Homework'
+      const isAppNotYet = app === 'Chưa làm' || app === 'Not Yet'
+      const isBookNotYet = book === 'Chưa làm' || book === 'Not Yet'
+
+      if (isFriendly) {
+        if (isAppDone && isBookDone) {
+          hwBullet = `- Con đã hoàn thành xuất sắc bài tập trên ứng dụng và sách bài tập - rất đáng khen! 👑`
+        } else if (isAppNone && isBookNone) {
+          // No homework
+        } else if (isAppDone && isBookPartly) {
+          hwBullet = `- Con hoàn thành xuất sắc bài tập trên app và hoàn thành một phần bài tập trong sách - rất đáng khen! 🌟`
+        } else if (isAppDone) {
+          hwBullet = `- Con đã hoàn thành bài tập trên ứng dụng rất tốt! 🌟`
+        } else if (isBookDone) {
+          hwBullet = `- Con đã hoàn thành bài tập trong sách rất tốt! 🌟`
+        } else if (isAppPartly || isBookPartly) {
+          hwBullet = `- Con đã hoàn thành một phần bài tập về nhà. Con cố gắng làm đầy đủ hơn ở buổi học tới nhé! 📝`
+        } else if (isAppNotYet || isBookNotYet) {
+          hwBullet = `- Con chú ý hoàn thành bài tập về nhà trước buổi học tới nhé! ⏰`
+        }
+      } else {
+        if (isAppDone && isBookDone) {
+          hwBullet = `- Học viên hoàn thành đầy đủ bài tập trên ứng dụng và sách bài tập.`
+        } else if (isAppNone && isBookNone) {
+          // No homework
+        } else {
+          hwBullet = `- Tình hình làm bài tập: Ứng dụng (${app || 'Chưa làm'}), Sách (${book || 'Chưa làm'}).`
+        }
       }
 
-      const absLabel = RATING_MAP[currentFormState.absorption || 4] || 'Tốt'
-      const partLabel = RATING_MAP[currentFormState.participation || 4] || 'Tốt'
-      const evalLabel = RATING_MAP[currentFormState.evaluation || 4] || 'Tốt'
+      // Outstanding achievements (Thành tích nổi bật)
+      const achievements: string[] = []
+      if (hwBullet) achievements.push(hwBullet)
 
-      const welcomeText = isFriendly
-        ? `- Hôm nay con đã tham gia rất hào hứng bài học môn Toán 📐\n- Khả năng tiếp thu: ${absLabel} | Tương tác trong lớp: ${partLabel} | Giải quyết vấn đề & trình bày: ${evalLabel}`
-        : `- Học viên hoàn thành nội dung bài học môn Toán.\n- Đánh giá: Tiếp thu (${absLabel}), Tham gia hoạt động (${partLabel}), Giải quyết vấn đề (${evalLabel}).`
+      // 1. Problem Solving (Giải quyết vấn đề & trình bày)
+      const evalVal = currentFormState.evaluation || 3
+      if (evalVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Con giải quyết vấn đề và trình bày bài giải rất rõ ràng, mạch lạc (${evalVal}/5) 💡`
+            : `- Khả năng giải quyết vấn đề và trình bày đạt kết quả tốt (${evalVal}/5).`
+        )
+      } else if (evalVal === 3) {
+        achievements.push(
+          isFriendly
+            ? `- Con nắm được phương pháp giải cơ bản (${evalVal}/5) 💡`
+            : `- Nắm được phương pháp giải toán cơ bản (${evalVal}/5).`
+        )
+      }
+      if (currentFormState.strength) {
+        achievements.push(
+          isFriendly
+            ? `- Dạng bài thành thạo: ${currentFormState.strength} 🔍`
+            : `- Nắm vững và thực hiện tốt dạng bài: ${currentFormState.strength}.`
+        )
+      }
 
-      const strengthText = currentFormState.strength
-        ? `- Con hiểu và nắm vững cách trình bày dạng bài: ${currentFormState.strength} 🔍`
-        : `- Con tiếp thu bài giảng nhanh và hoàn thành tốt các bài tập.`
+      // 2. Logic Reasoning (Tư duy Logic & Suy luận)
+      const logicVal = currentFormState.mathLogic || 3
+      if (logicVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Tư duy logic và suy luận sắc bén, lập luận bài toán có căn cứ (${logicVal}/5) 🧩`
+            : `- Năng lực tư duy logic và suy luận đạt kết quả tốt (${logicVal}/5).`
+        )
+      }
+      if (currentFormState.mathLogicStrength) {
+        achievements.push(
+          isFriendly
+            ? `- Điểm tốt về tư duy logic: ${currentFormState.mathLogicStrength} 💡`
+            : `- Thế mạnh về tư duy logic: ${currentFormState.mathLogicStrength}.`
+        )
+      }
 
-      const weaknessText = currentFormState.weakness
-        ? `- Con cần rèn luyện thêm dạng bài: ${currentFormState.weakness} 🎯`
+      // 3. Arithmetic (Tư duy Số học & Tính toán)
+      const arithVal = currentFormState.mathArithmetic || 3
+      if (arithVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Tính toán và phản xạ số học nhanh nhạy, độ chính xác cao (${arithVal}/5) 🔢`
+            : `- Kỹ năng tính toán và phản xạ số học đạt yêu cầu tốt (${arithVal}/5).`
+        )
+      }
+      if (currentFormState.mathArithmeticStrength) {
+        achievements.push(
+          isFriendly
+            ? `- Điểm tốt về tính toán: ${currentFormState.mathArithmeticStrength} 💡`
+            : `- Thế mạnh về số học: ${currentFormState.mathArithmeticStrength}.`
+        )
+      }
+
+      // 4. Spatial (Tư duy Hình học & Không gian)
+      const spatialVal = currentFormState.mathSpatial || 3
+      if (spatialVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Trực quan không gian và nhận biết hình dạng rất nhanh nhạy (${spatialVal}/5) 📐`
+            : `- Khả năng tư duy hình học và không gian đạt kết quả tốt (${spatialVal}/5).`
+        )
+      }
+      if (currentFormState.mathSpatialStrength) {
+        achievements.push(
+          isFriendly
+            ? `- Điểm tốt về hình học: ${currentFormState.mathSpatialStrength} 💡`
+            : `- Thế mạnh về hình học và không gian: ${currentFormState.mathSpatialStrength}.`
+        )
+      }
+
+      // 5. Modeling (Tư duy Quy luật & Mô hình hóa)
+      const modelVal = currentFormState.mathModeling || 3
+      if (modelVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Nhạy bén trong việc phát hiện quy luật và mô hình hóa bài toán (${modelVal}/5) 📊`
+            : `- Năng lực nhận diện quy luật và mô hình hóa bài toán tốt (${modelVal}/5).`
+        )
+      }
+      if (currentFormState.mathModelingStrength) {
+        achievements.push(
+          isFriendly
+            ? `- Điểm tốt về quy luật: ${currentFormState.mathModelingStrength} 💡`
+            : `- Thế mạnh về quy luật và mô hình hóa: ${currentFormState.mathModelingStrength}.`
+        )
+      }
+
+      // Attitude (Thái độ học tập)
+      const attVal = currentFormState.attitude || 3
+      if (attVal >= 4) {
+        achievements.push(
+          isFriendly
+            ? `- Thái độ học tập tích cực, tập trung nghe giảng và hăng hái phát biểu (${attVal}/5) 🌟`
+            : `- Thái độ học tập nghiêm túc, tập trung và tích cực xây dựng bài (${attVal}/5).`
+        )
+      } else {
+        achievements.push(
+          isFriendly
+            ? `- Con có tinh thần tham gia bài học trong lớp (${attVal}/5) 🌟`
+            : `- Học viên có thái độ học tập đạt yêu cầu (${attVal}/5).`
+        )
+      }
+
+      // Improvements (Mục tiêu cần cải thiện)
+      const improvements: string[] = []
+      if (evalVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con cần luyện tập thêm để nâng cao kỹ năng phân tích và trình bày bài giải (${evalVal}/5) 🎯`
+            : `- Cần rèn luyện thêm kỹ năng phân tích và trình bày bài giải (${evalVal}/5).`
+        )
+      }
+      if (currentFormState.weakness) {
+        improvements.push(
+          isFriendly
+            ? `- Con cần luyện tập thêm về dạng bài: ${currentFormState.weakness} 🎯`
+            : `- Cần củng cố thêm về dạng bài: ${currentFormState.weakness}.`
+        )
+      }
+      if (logicVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con cần rèn luyện thêm bài tập logic để tăng cường khả năng xâu chuỗi dữ kiện (${logicVal}/5) 🎯`
+            : `- Cần củng cố thêm năng lực tư duy logic và suy luận (${logicVal}/5).`
+        )
+      }
+      if (currentFormState.mathLogicWeakness) {
+        improvements.push(
+          isFriendly
+            ? `- Cần chú ý về tư duy logic: ${currentFormState.mathLogicWeakness} 🎯`
+            : `- Phần cần cải thiện về tư duy logic: ${currentFormState.mathLogicWeakness}.`
+        )
+      }
+      if (arithVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con chú ý nháp cẩn thận hơn để tránh sai sót ở các bước tính nhẩm (${arithVal}/5) 🎯`
+            : `- Cần cẩn trọng hơn trong các bước tính toán và rèn luyện tính nhẩm (${arithVal}/5).`
+        )
+      }
+      if (currentFormState.mathArithmeticWeakness) {
+        improvements.push(
+          isFriendly
+            ? `- Cần chú ý về tính toán: ${currentFormState.mathArithmeticWeakness} 🎯`
+            : `- Phần cần cải thiện về số học: ${currentFormState.mathArithmeticWeakness}.`
+        )
+      }
+      if (spatialVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con cần quan sát kỹ hơn các đặc điểm hình khối để rèn luyện trực quan (${spatialVal}/5) 🎯`
+            : `- Cần rèn luyện thêm khả năng nhận biết và tưởng tượng hình không gian (${spatialVal}/5).`
+        )
+      }
+      if (currentFormState.mathSpatialWeakness) {
+        improvements.push(
+          isFriendly
+            ? `- Cần chú ý về hình học: ${currentFormState.mathSpatialWeakness} 🎯`
+            : `- Phần cần cải thiện về hình học: ${currentFormState.mathSpatialWeakness}.`
+        )
+      }
+      if (modelVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con cần luyện tập thêm các bài toán chuỗi quy luật và vẽ sơ đồ tóm tắt (${modelVal}/5) 🎯`
+            : `- Cần rèn luyện thêm về phương pháp mô hình hóa và tìm quy luật (${modelVal}/5).`
+        )
+      }
+      if (currentFormState.mathModelingWeakness) {
+        improvements.push(
+          isFriendly
+            ? `- Cần chú ý về quy luật: ${currentFormState.mathModelingWeakness} 🎯`
+            : `- Phần cần cải thiện về quy luật: ${currentFormState.mathModelingWeakness}.`
+        )
+      }
+      if (attVal < 4) {
+        improvements.push(
+          isFriendly
+            ? `- Con chú ý tập trung hơn trong giờ học và tương tác sôi nổi hơn cùng thầy cô (${attVal}/5) ✨`
+            : `- Cần tập trung hơn trong giờ học và tăng cường tương tác (${attVal}/5).`
+        )
+      }
+      if (improvements.length === 0) {
+        improvements.push(
+          isFriendly
+            ? `- Tiếp tục phát huy các kỹ năng và tinh thần học tập hiện tại.`
+            : `- Duy trì phong độ và tiếp tục phát huy ở các bài học tiếp theo.`
+        )
+      }
+
+      // Other notes
+      const otherNote = currentFormState.otherNotes
+        ? `\n\n📌 Ghi chú: ${currentFormState.otherNotes}`
         : ''
 
-      const otherNotesText = currentFormState.otherNotes
-        ? `- Ghi chú thêm: ${currentFormState.otherNotes}`
-        : ''
-
+      // Reminders
       const reminderLines = [...(currentFormState.reminders || [])]
       if (currentFormState.otherReminder) {
         reminderLines.push(currentFormState.otherReminder)
       }
-      const reminderText = reminderLines.length > 0
-        ? `\n\n🔔 Nhắc nhở để buổi học đạt kết quả tốt hơn:\n${reminderLines.map((r) => `- ${r}`).join('\n')}`
+      const reminderSection = reminderLines.length > 0
+        ? `\n\n🔔 Nhắc nhở:\n${reminderLines.map((r) => `- ${r}`).join('\n')}`
         : ''
 
-      const finalFeedback = `🤖 Tổng quan buổi học:
-${welcomeText}
+      const finalFeedback = `${topicLine}
 
-🏅 Điểm tốt & Năng lực:
-${strengthText}
-${weaknessText ? '\n' + weaknessText : ''}
-${otherNotesText ? '\n' + otherNotesText : ''}${reminderText}`
+🏆 Thành tích nổi bật:
+${achievements.join('\n')}
 
-      if ((currentFormState.aiUsesLeft ?? 3) > 0) {
-        handleUpdateField('aiUsesLeft', (currentFormState.aiUsesLeft ?? 3) - 1)
+🌱 Mục tiêu cần cải thiện:
+${improvements.join('\n')}${otherNote}${reminderSection}`
+
+      if ((currentFormState.aiUsesLeft ?? 2) > 0) {
+        handleUpdateField('aiUsesLeft', (currentFormState.aiUsesLeft ?? 2) - 1)
       }
 
       handleUpdateField('generatedFeedback', finalFeedback)

@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { History, ChevronDown, ChevronUp, ShoppingBag, CheckCircle } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
 import { CareTagHoverCard, PersonnelHoverCard } from '@/components/shared'
 import { formatFullStaffName } from './operationsAlertHelpers'
-import { cn } from '@/lib/utils'
 import type { CareInteractionLog } from '@/mocks/careAlerts'
 
 interface HistoryLogCardItemProps {
@@ -19,6 +18,12 @@ interface HistoryLogCardItemProps {
   channel?: string
   subject?: string
   showSubjectBadge?: boolean
+  linkedOrder?: {
+    orderCode: string
+    packageName: string
+    totalPaidAmount?: number
+    amountText?: string
+  }
 }
 
 function getStaffPerson(name: string, isGV: boolean) {
@@ -47,12 +52,26 @@ export function HistoryLogCardItem({
   staffName,
   date,
   channel,
-  subject,
+  subject: _subject,
+  linkedOrder,
 }: HistoryLogCardItemProps) {
   const [showMissedCalls, setShowMissedCalls] = useState(false)
+  const [prevLogId, setPrevLogId] = useState(log.id)
+
+  if (log.id !== prevLogId) {
+    setPrevLogId(log.id)
+    setShowMissedCalls(false)
+  }
 
   const effectiveStaffName = formatFullStaffName(staffName || log.staffName || 'Ngọc Mai')
   const effectiveDate = date || log.date || '2026-07-04'
+  const effectiveLinkedOrder = linkedOrder || log.linkedOrder
+  const effectiveParentOpinion =
+    log.parentOpinion ||
+    (() => {
+      const m = (log.notes || '').match(/\[Ý kiến PH:\s*([^\]]+)\]/i)
+      return m ? m[1].trim() : undefined
+    })()
   const isGV =
     staffRole === 'GV' ||
     effectiveStaffName.toLowerCase().includes('hoàng thị mai') ||
@@ -119,17 +138,24 @@ export function HistoryLogCardItem({
           </PersonnelHoverCard>
 
           <span className="text-xs text-muted-foreground font-normal truncate">
-            • {effectiveChannel}: {effectiveRecipient}
+            • {effectiveChannel} · Người nhận: <span className="text-foreground font-medium">{effectiveRecipient}</span>
           </span>
           <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100/70 dark:bg-zinc-800/60 px-1.5 py-0.5 rounded-md shrink-0">
             {effectiveDate}
           </span>
         </div>
 
-        {/* Care Tag Badge on Far Right of Header Row */}
+        {/* Care Tag Badge on Far Right of Header Row - CSTP đứng độc lập */}
         {topic && (
           <div className="shrink-0">
-            <CareTagHoverCard code={topic} label={topic} description="Thẻ tương tác chăm sóc" />
+            {topic === 'CSTP' || topic.includes('CSTP') ? (
+              <span className="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 shadow-3xs">
+                <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                <span>CSTP • Tái phí</span>
+              </span>
+            ) : (
+              <CareTagHoverCard code={topic} label={topic} description="Thẻ tương tác chăm sóc" />
+            )}
           </div>
         )}
       </div>
@@ -144,57 +170,108 @@ export function HistoryLogCardItem({
             </span>
           )}
           <span className="align-middle">{cleanNotes}</span>
-          {log.parentOpinion && (
+          {effectiveParentOpinion && (
             <span className="align-middle">
               {' '}
-              <span className="font-semibold text-emerald-800 dark:text-emerald-300">
+              <span className="text-emerald-800 dark:text-emerald-300 font-normal">
                 • Phụ huynh phản hồi:
               </span>{' '}
-              <span className="italic font-medium text-emerald-700 dark:text-emerald-400">
-                “{log.parentOpinion}”
+              <span className="italic font-normal text-emerald-700 dark:text-emerald-400">
+                “{effectiveParentOpinion}”
               </span>
             </span>
           )}
         </div>
 
-        {/* Missed Calls Accordion (No border/bg, light red, italic, underline) */}
+        {/* Đơn hàng liên kết trong Lịch sử chăm sóc: chỉ để icon và text, không viền, không nền xanh */}
+        {effectiveLinkedOrder && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs flex-wrap text-muted-foreground">
+            <ShoppingBag className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="font-medium text-muted-foreground">Đơn hàng liên kết:</span>
+            <a
+              href={`/quote/${effectiveLinkedOrder.orderCode}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+              title="Xem chi tiết đơn hàng báo giá"
+            >
+              {effectiveLinkedOrder.orderCode}
+            </a>
+            <span>•</span>
+            <span className="font-medium text-foreground truncate max-w-[220px]" title={effectiveLinkedOrder.packageName}>
+              {effectiveLinkedOrder.packageName}
+            </span>
+            {effectiveLinkedOrder.amountText && (
+              <>
+                <span>•</span>
+                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                  TT: {effectiveLinkedOrder.amountText}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Previous Care Records Accordion */}
         {log.missedCallsList && log.missedCallsList.length > 0 && (
           <div className="pt-0.5 select-none">
             <button
               type="button"
               onClick={() => setShowMissedCalls(!showMissedCalls)}
-              className="w-full text-left text-xs font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+              className="w-full text-left text-xs font-normal italic text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
             >
-              <span className="flex items-center gap-1.5 underline decoration-rose-300">
-                <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 no-underline" />
+              <span className="flex items-center gap-1.5 underline decoration-sky-300">
+                <History className="h-3.5 w-3.5 text-sky-500 shrink-0 no-underline" />
                 <span>
-                  Lịch sử ({log.missedCallsList.length}) lần gọi nhỡ / không liên hệ được trước đó
+                  Lịch sử ({log.missedCallsList.length}) lần ghi nhận chăm sóc trước đó
                 </span>
               </span>
               {showMissedCalls ? (
-                <ChevronUp className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                <ChevronUp className="h-3.5 w-3.5 text-sky-500 shrink-0" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                <ChevronDown className="h-3.5 w-3.5 text-sky-500 shrink-0" />
               )}
             </button>
 
             {showMissedCalls && (
-              <div className="mt-1.5 pl-2.5 border-l-2 border-rose-200 dark:border-rose-800 space-y-1 text-[10.5px] text-muted-foreground font-medium animate-in fade-in-50 duration-150">
+              <div className="mt-1.5 pl-2.5 border-l-2 border-sky-200 dark:border-sky-800 space-y-1.5 text-[10.5px] text-muted-foreground font-medium animate-in fade-in-50 duration-150">
                 {log.missedCallsList.map((mCall, mIdx) => (
-                  <div key={mIdx} className="p-1 rounded-md hover:bg-rose-50/50 space-y-0.5">
+                  <div key={mIdx} className="p-1 rounded-md hover:bg-sky-50/50 dark:hover:bg-sky-950/30 space-y-1">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="font-semibold text-foreground text-xs">
-                        • {mCall.time}: {mCall.status}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-normal text-foreground text-xs">
+                          • {mCall.time}: {mCall.status}
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-xs font-medium text-foreground">
+                          {isGV ? 'GV' : 'CS'}: <span className="font-semibold">{effectiveStaffName}</span>
+                        </span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
+                          Người nhận: <span className="text-foreground font-medium">{effectiveRecipient}</span>
+                        </span>
+                      </div>
                       {mCall.nextCallback && (
-                        <span className="text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-1.5 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                        <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
                           📅 Hẹn gọi lại: {mCall.nextCallback}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
-                      * Ghi chú: {mCall.note}
-                    </p>
+                    <div className="text-xs text-foreground/90 leading-relaxed font-normal pl-2">
+                      <span className="inline-flex items-center align-middle mr-2">
+                        <AudioPlayButton duration={mCall.audioDuration || '01:15'} />
+                      </span>
+                      <span className="align-middle text-muted-foreground/90">
+                        {mCall.note}
+                      </span>
+                      {' '}
+                      <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
+                        • Phụ huynh phản hồi:
+                      </span>{' '}
+                      <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
+                        “{mCall.parentOpinion || 'Phụ huynh chưa tiện nghe máy, hẹn gọi lại sau.'}”
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -152,7 +152,11 @@ export function MyScheduleCard({
             </h4>
 
             <div className="flex items-center gap-1 shrink-0 ml-0.5 mt-0.5">
-              {slot.type === 'placement_test' && (
+              {slot.type &&
+                slot.type !== 'class_session' &&
+                slot.type !== 'project' &&
+                slot.typeLabel &&
+                slot.typeLabel !== 'Buổi dự án' && (
                 <span className={cn('inline-block shrink-0 rounded border px-1 py-0.5 text-xs font-semibold', getStatusBadgeClass(slot.type))}>
                   {slot.typeLabel}
                 </span>

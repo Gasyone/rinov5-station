@@ -101,10 +101,28 @@ export function getModernDomainBadge(domain: LegacyMappingItem['modernDomain']):
       }
     default:
       return {
-        label: domain,
+        label: 'Khác',
         className: 'bg-muted text-muted-foreground border-border',
       }
   }
+}
+
+/**
+ * Lấy nhãn rút gọn cho phân hệ hệ thống liên kết
+ */
+export function getSystemModuleShortLabel(sub: {
+  systemModule?: string
+  systemModuleLabel?: string
+}): string {
+  if (sub.systemModule === 'care') return 'CARE'
+  if (sub.systemModule === 'booking_test') return 'Test'
+  if (sub.systemModule === 'trial_class') return 'Học thử'
+  if (sub.systemModule === 'orders') return 'Đơn hàng'
+  if (sub.systemModule === 'payment_receipts') return 'Thu phí'
+  if (sub.systemModule === 'order_fulfillment') return 'Bàn giao'
+  if (sub.systemModule === 'class_placement') return 'Xếp lớp'
+  if (sub.systemModule === 'call_log') return 'Phân bổ'
+  return sub.systemModuleLabel ? sub.systemModuleLabel.split(' ')[0] : 'Hệ thống'
 }
 
 /**

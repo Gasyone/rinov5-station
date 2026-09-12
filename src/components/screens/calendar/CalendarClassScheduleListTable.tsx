@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { Eye, Star } from 'lucide-react'
+import { Eye, Star, ExternalLink } from 'lucide-react'
+import { toast } from 'sonner'
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -180,7 +181,7 @@ export function CalendarClassScheduleListTable({
                   <th className="py-2 px-3 min-w-[180px]">Giáo viên</th>
                   <th className="py-2 px-3 min-w-[100px] text-center">Sĩ số</th>
                   <th className="py-2 px-3 min-w-[120px] text-center">Đánh giá</th>
-                  <th className="py-2 px-3 min-w-[110px] text-center">Nộp BTV</th>
+                  <th className="py-2 px-3 min-w-[110px] text-center">Nộp BTV / Project</th>
                   <th className="py-2 px-3 min-w-[120px]">Trạng thái</th>
                 </tr>
               </thead>
@@ -211,6 +212,15 @@ export function CalendarClassScheduleListTable({
                           <div className="flex flex-col gap-0.5 min-w-0">
                             <div className="flex items-center gap-1.5 font-bold text-foreground">
                               <span>{session.classCode}</span>
+                              {session.type &&
+                                session.type !== 'class_session' &&
+                                session.type !== 'project' &&
+                                session.typeLabel &&
+                                session.typeLabel !== 'Buổi dự án' && (
+                                <Badge className={cn("text-xs px-1.5 py-0 font-bold shrink-0 border", getStatusBadgeClass(session.type))}>
+                                  {session.typeLabel}
+                                </Badge>
+                              )}
                               {session.isOpeningDay && (
                                 <Badge className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-800 text-xs px-1 py-0 font-bold uppercase shrink-0">
                                   Khai giảng
@@ -345,9 +355,24 @@ export function CalendarClassScheduleListTable({
                         )}
                       </td>
 
-                      {/* NEW COLUMN 2: Nộp BTV */}
+                      {/* NEW COLUMN 2: Nộp BTV / Project */}
                       <td className="py-2 px-3 text-center">
-                        {session.homeworkSubmitted !== undefined && session.homeworkSubmitted > 0 ? (
+                        {session.type === 'project' ? (
+                          <a
+                            href={session.projectUrl || 'https://scratch.mit.edu/projects/612048882'}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toast.info(`Đang mở bài mini project: ${session.title}`)
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline"
+                            title="Mở bài mini project"
+                          >
+                            <ExternalLink className="size-3 shrink-0" />
+                            <span>Project: Link</span>
+                          </a>
+                        ) : session.homeworkSubmitted !== undefined && session.homeworkSubmitted > 0 ? (
                           <div className="flex flex-col items-center">
                             <span className="font-bold text-foreground">
                               {session.homeworkSubmitted}/{session.totalStudents}

@@ -3,7 +3,6 @@
 import React from 'react'
 import {
   ExternalLink,
-  FileEdit,
   Gift,
   ChevronUp,
   ChevronDown,
@@ -84,7 +83,7 @@ export function StudentOrderCardItem({
         {isDraft && (
           <div className="flex items-center justify-between gap-2 text-xs pb-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold text-amber-800 dark:text-amber-400">🔗 Đơn nháp tái phí từ gói:</span>
+              <span className="font-semibold text-amber-800 dark:text-amber-400">🔗 Đơn tái phí từ gói:</span>
               <button
                 type="button"
                 onClick={() => onScrollToOrder(order.sourceOrderNo || 'OD800436')}
@@ -109,7 +108,7 @@ export function StudentOrderCardItem({
                   onViewDetail(order)
                 }}
                 className="p-1 rounded text-zinc-500 hover:text-amber-700 hover:bg-amber-100/80 dark:hover:bg-amber-950/60 dark:hover:text-amber-300 transition-all cursor-pointer"
-                title="Chỉnh sửa đơn nháp"
+                title="Chỉnh sửa đơn hàng"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -167,14 +166,8 @@ export function StudentOrderCardItem({
               <span>{order.orderNo || order.id}</span>
               <ExternalLink className="h-3 w-3 text-sky-500/70" />
             </button>
-            {isDraft && (
-              <span className="px-1.5 py-0.2 rounded text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 font-sans font-medium border border-amber-200/60">
-                Nháp
-              </span>
-            )}
-
             {/* Hiển thị thêm tên con sau Mã đơn hàng khi tích xem đơn con khác */}
-            {showOtherChildren && order.studentName && (
+            {(showOtherChildren || order.isOtherChild) && order.studentName && (
               <>
                 <span className="text-muted-foreground">-</span>
                 <span className="font-semibold text-foreground font-sans">
@@ -184,22 +177,16 @@ export function StudentOrderCardItem({
             )}
 
             <span className="text-muted-foreground">/</span>
-            {isDraft ? (
-              <span className="font-medium px-1.5 py-0.2 rounded text-[10.5px] bg-amber-100/80 text-amber-800 dark:bg-amber-900/70 dark:text-amber-300 inline-flex items-center gap-1 font-sans">
-                <FileEdit className="h-3 w-3" /> Đơn hàng nháp
-              </span>
-            ) : (
-              <span
-                className={cn(
-                  'font-medium text-xs font-sans',
-                  isCancelled
-                    ? 'text-zinc-500'
-                    : 'text-foreground'
-                )}
-              >
-                {order.paymentMethodTag || 'T5-Đã nhận bank'}
-              </span>
-            )}
+            <span
+              className={cn(
+                'font-medium text-xs font-sans',
+                isCancelled
+                  ? 'text-zinc-500'
+                  : 'text-foreground'
+              )}
+            >
+              {order.paymentMethodTag || 'T5-Đã nhận bank'}
+            </span>
             {order.feeTransferSummary && (
               <Popover>
                 <PopoverTrigger asChild>

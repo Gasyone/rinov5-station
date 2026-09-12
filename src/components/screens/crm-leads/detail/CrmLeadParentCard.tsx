@@ -1,9 +1,8 @@
 'use client'
 
+import React from 'react'
 import {
   Phone,
-  Mail,
-  MapPin,
   Copy,
   PhoneCall,
   ExternalLink,
@@ -14,8 +13,9 @@ import {
   Target,
   Clock,
   Wallet,
-  AlertCircle,
-  Lightbulb,
+  User,
+  ShieldCheck,
+  HeartHandshake,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -39,12 +39,19 @@ export interface ParentContact {
   zaloStatus: string
   isPrimary: boolean
   address?: string
+  nearestBranch?: string
+  nearestBranchDistance?: string
+  nearestBranches?: { name: string; distance: string }[]
   province?: string
   district?: string
   ward?: string
   street?: string
   mapLink?: string
   note?: string
+  facebook?: string
+  instagram?: string
+  zaloPhone?: string
+  otherContact?: string
 }
 
 interface CrmLeadParentCardProps {
@@ -52,6 +59,7 @@ interface CrmLeadParentCardProps {
   onCopy: (phone: string, name: string) => void
   onCall: (phone: string, name: string) => void
   onZalo: (phone: string, name: string) => void
+  onClickProfile?: (parent: ParentContact) => void
 }
 
 export function CrmLeadParentCard({
@@ -59,86 +67,102 @@ export function CrmLeadParentCard({
   onCopy,
   onCall,
   onZalo,
+  onClickProfile,
 }: CrmLeadParentCardProps) {
+  const handleCardClick = () => {
+    onClickProfile?.(parent)
+  }
+
+  const isGrandparent =
+    parent.role.toLowerCase().includes('ông') || parent.role.toLowerCase().includes('bà')
+
+  const isGuardian = parent.role.toLowerCase().includes('giám hộ')
+
   return (
     <div
+      onClick={handleCardClick}
       className={cn(
-        'p-3.5 lg:p-4 rounded-xl border bg-card transition-all shadow-xs space-y-3',
+        'group relative rounded-xl border bg-card p-3 sm:p-3.5 transition-all flex flex-col justify-between cursor-pointer select-none text-left shadow-2xs hover:shadow-sm',
         parent.isPrimary
-          ? 'border-sky-200/90 dark:border-sky-900/60 shadow-xs'
-          : 'border-border/70'
+          ? 'border-sky-300 dark:border-sky-800 bg-sky-50/10 dark:bg-sky-950/10 hover:border-sky-400 ring-1 ring-sky-200/50 dark:ring-sky-900/30'
+          : isGrandparent
+            ? 'border-amber-200 dark:border-amber-900/60 bg-amber-50/10 dark:bg-amber-950/10 hover:border-amber-400'
+            : 'border-border/80 hover:border-sky-300'
       )}
     >
-      {/* TẦNG 1: IDENTITY & VAI TRÒ RA QUYẾT ĐỊNH (AUTHORITY & STATUS) */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      {/* HEADER & THÔNG TIN ĐỊNH DANH (THU GỌN) */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {parent.isPrimary ? (
+              <Badge className="text-[10px] font-bold bg-sky-600 text-white h-5 px-1.5">
+                Liên hệ chính
+              </Badge>
+            ) : isGrandparent ? (
+              <Badge variant="outline" className="text-[10px] font-semibold border-amber-300 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 h-5 px-1.5">
+                Ông / Bà
+              </Badge>
+            ) : isGuardian ? (
+              <Badge variant="outline" className="text-[10px] font-semibold border-purple-300 text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 h-5 px-1.5">
+                Giám hộ
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground h-5 px-1.5">
+                Phụ huynh
+              </Badge>
+            )}
+
+            <Badge variant="secondary" className="text-[10px] font-bold py-0 h-5 px-1.5">
+              {parent.role}
+            </Badge>
+          </div>
+
+          <span className="text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+            <span>Chi tiết</span>
+            <ExternalLink className="h-3 w-3" />
+          </span>
+        </div>
+
+        {/* Tên & Avatar thu gọn */}
         <div className="flex items-center gap-2.5">
           <div
             className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-full font-bold text-xs shrink-0 shadow-3xs',
+              'flex h-9 w-9 items-center justify-center rounded-xl font-bold text-xs shrink-0 shadow-2xs',
               parent.isPrimary
-                ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200/60'
-                : 'bg-muted text-muted-foreground border border-border/60'
+                ? 'bg-sky-600 text-white'
+                : isGrandparent
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-muted text-muted-foreground border border-border/80'
             )}
           >
-            {parent.name
-              .split(' ')
-              .slice(-2)
-              .map((w) => w[0])
-              .join('') || 'PH'}
+            {isGrandparent ? (
+              <HeartHandshake className="h-4.5 w-4.5" />
+            ) : (
+              <User className="h-4.5 w-4.5" />
+            )}
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-foreground text-sm leading-tight">
-                {parent.name}
-              </span>
-              <Badge variant="secondary" className="text-[11px] font-semibold py-0.5 px-2">
-                {parent.role}
-              </Badge>
-              {parent.isPrimary ? (
-                <>
-                  <Badge className="text-[10px] font-bold bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-950 dark:text-sky-300">
-                    Liên hệ chính
-                  </Badge>
-                  {parent.decisionMakerRole && (
-                    <Badge variant="outline" className="text-[10px] font-semibold border-amber-300 text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40">
-                      {parent.decisionMakerRole}
-                    </Badge>
-                  )}
-                </>
-              ) : (
-                <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
-                  Phụ huynh 2
-                </Badge>
-              )}
-            </div>
+
+          <div className="min-w-0 flex-1">
+            <h4 className="font-bold text-foreground text-sm truncate group-hover:text-primary transition-colors">
+              {parent.name}
+            </h4>
+            {parent.decisionMakerRole && (
+              <div className="flex items-center gap-1 text-[11px] text-amber-800 dark:text-amber-300 font-medium truncate pt-0.5">
+                <ShieldCheck className="h-3 w-3 text-amber-600 shrink-0" />
+                <span className="truncate">{parent.decisionMakerRole}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {parent.occupation && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-medium bg-muted/40 px-2.5 py-1 rounded-md border border-border/40">
-              <Briefcase className="h-3.5 w-3.5 text-muted-foreground/70" />
-              <span>{parent.occupation}</span>
-            </span>
-          )}
-          {parent.isPrimary && parent.budgetPerMonth && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-200/60">
-              <Wallet className="h-3.5 w-3.5 text-emerald-600" />
-              <span>{parent.budgetPerMonth}</span>
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* TẦNG 2: FOCAL ACTION ZONE (SĐT, GIỜ VÀNG & HÀNH ĐỘNG TÁC NGHIỆP 1-CHẠM) */}
-      <div className="bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80 rounded-xl p-2.5 flex items-center justify-between gap-3 flex-wrap">
-        {/* Bên trái: SĐT & Kênh ưu tiên & Giờ vàng */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300">
-              <Phone className="h-3.5 w-3.5" />
-            </div>
-            <span className="font-mono font-bold text-foreground text-sm sm:text-base tracking-wide">
+        {/* Cụm SĐT & Tác nghiệp 1-chạm (Thu gọn) */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5 flex items-center justify-between gap-2"
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Phone className="h-3 w-3 text-sky-600 shrink-0" />
+            <span className="font-mono font-bold text-foreground text-xs tracking-wide">
               {parent.phone}
             </span>
             <Button
@@ -146,136 +170,103 @@ export function CrmLeadParentCard({
               variant="ghost"
               size="icon"
               onClick={() => onCopy(parent.phone, parent.name)}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
-              title="Sao chép số điện thoại"
+              className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer rounded"
+              title="Sao chép SĐT"
             >
-              <Copy className="h-3.5 w-3.5" />
+              <Copy className="h-2.5 w-2.5" />
             </Button>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-sky-100/70 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200/50">
-              {parent.preferredChannel}
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60">
-              <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-              <span>{parent.zaloStatus}</span>
-            </span>
-            {parent.bestTimeToCall && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/60" title="Giờ vàng gọi điện / nhắn tin">
-                <Clock className="h-3 w-3 text-amber-600" />
-                <span>{parent.bestTimeToCall}</span>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onZalo(parent.phone, parent.name)}
+              className="h-6 px-2 text-[11px] font-semibold text-sky-700 border-sky-300 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 rounded cursor-pointer flex items-center gap-1"
+            >
+              <MessageSquare className="h-2.5 w-2.5 text-sky-600" />
+              <span>Zalo</span>
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onCall(parent.phone, parent.name)}
+              className="h-6 px-2.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow-2xs cursor-pointer flex items-center gap-1"
+            >
+              <PhoneCall className="h-2.5 w-2.5 fill-current" />
+              <span>Gọi</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Thông tin nghề nghiệp & ngân sách (Gọn gàng) */}
+        <div className="space-y-1 text-xs">
+          {parent.occupation && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Briefcase className="h-3 w-3 text-sky-600 shrink-0" />
+              <span className="truncate text-foreground font-medium text-[11px]">{parent.occupation}</span>
+            </div>
+          )}
+
+          {parent.budgetPerMonth && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Wallet className="h-3 w-3 text-emerald-600 shrink-0" />
+              <span className="truncate text-[11px] text-foreground font-medium">
+                Ngân sách: <strong className="text-emerald-700 dark:text-emerald-400">{parent.budgetPerMonth}</strong>
               </span>
-            )}
-          </div>
-        </div>
-
-        {/* Bên phải: Nút tác nghiệp Gọi & Zalo */}
-        <div className="flex items-center gap-2 ml-auto">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onZalo(parent.phone, parent.name)}
-            className="h-8 px-3 text-xs font-semibold text-sky-700 border-sky-300 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 dark:hover:bg-sky-950/60 cursor-pointer rounded-lg flex items-center gap-1.5 shadow-3xs"
-            title="Nhắn tin Zalo với phụ huynh"
-          >
-            <MessageSquare className="h-3.5 w-3.5 text-sky-600" />
-            <span>Zalo</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => onCall(parent.phone, parent.name)}
-            className="h-8 px-3.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer rounded-lg shadow-2xs flex items-center gap-1.5"
-            title="Gọi điện trực tiếp"
-          >
-            <PhoneCall className="h-3.5 w-3.5 fill-current" />
-            <span>Gọi ngay</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* TẦNG 3: ĐỊA CHỈ & EMAIL */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-0.5">
-        {parent.email && (
-          <div className="flex items-center gap-2 text-muted-foreground truncate">
-            <Mail className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-            <span className="truncate text-foreground font-medium">{parent.email}</span>
-          </div>
-        )}
-
-        {parent.address && (
-          <div className="flex items-center justify-between gap-1.5 text-muted-foreground truncate">
-            <div className="flex items-center gap-2 min-w-0 truncate">
-              <MapPin className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-              <span className="truncate font-medium text-foreground">{parent.address}</span>
-            </div>
-            {parent.mapLink && (
-              <a
-                href={parent.mapLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline font-semibold flex items-center gap-1 shrink-0 ml-1.5 text-[11px]"
-                title="Mở định vị trên Google Maps"
-              >
-                <span>Mở Map</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* TẦNG 4: THẤU CẢM CHÂN DUNG (KỲ VỌNG, NỖI ĐAU, LƯU Ý TƯ VẤN) - DÀNH CHO PHỤ HUYNH CHÍNH */}
-      {parent.isPrimary ? (
-        <div className="space-y-2 pt-1 border-t border-border/40">
-          {parent.parentExpectation && (
-            <div className="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/60 text-xs text-foreground flex items-start gap-2 leading-relaxed">
-              <Target className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-              <div>
-                <strong className="text-emerald-900 dark:text-emerald-300 font-semibold">
-                  Kỳ vọng số 1 với Rino:
-                </strong>{' '}
-                <span>{parent.parentExpectation}</span>
-              </div>
             </div>
           )}
 
-          {parent.parentPainPoint && (
-            <div className="p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/60 text-xs text-foreground flex items-start gap-2 leading-relaxed">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-              <div>
-                <strong className="text-amber-900 dark:text-amber-300 font-semibold">
-                  Rào cản / Nỗi lo lớn nhất:
-                </strong>{' '}
-                <span>{parent.parentPainPoint}</span>
-              </div>
-            </div>
-          )}
-
-          {parent.parentPersonalityNote && (
-            <div className="p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-900/50 text-xs text-foreground flex items-start gap-2 leading-relaxed">
-              <Lightbulb className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-              <div>
-                <strong className="text-indigo-900 dark:text-indigo-300 font-semibold">
-                  Tâm lý &amp; Lưu ý tư vấn chốt deal:
-                </strong>{' '}
-                <span className="text-muted-foreground">{parent.parentPersonalityNote}</span>
-              </div>
+          {parent.bestTimeToCall && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Clock className="h-3 w-3 text-amber-600 shrink-0" />
+              <span className="truncate text-[11px] text-foreground font-medium">
+                Giờ rảnh: {parent.bestTimeToCall}
+              </span>
             </div>
           )}
         </div>
-      ) : (
-        parent.note && (
-          <div className="p-2.5 rounded-lg bg-muted/30 border border-border/50 text-xs text-muted-foreground flex items-start gap-2 leading-relaxed">
-            <FileText className="h-3.5 w-3.5 text-muted-foreground/80 mt-0.5 shrink-0" />
-            <span>
-              <strong className="text-foreground font-semibold">Quy tắc liên hệ:</strong>{' '}
-              {parent.note}
+
+        {/* Tóm tắt kỳ vọng / ghi chú ngắn */}
+        {parent.parentExpectation ? (
+          <div className="p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 text-[11px] text-foreground flex items-start gap-1.5">
+            <Target className="h-3 w-3 text-emerald-600 mt-0.5 shrink-0" />
+            <span className="line-clamp-1">
+              <strong className="text-emerald-900 dark:text-emerald-300 font-semibold">Kỳ vọng:</strong>{' '}
+              {parent.parentExpectation}
             </span>
           </div>
-        )
-      )}
+        ) : parent.note ? (
+          <div className="p-2 rounded-lg bg-muted/40 border border-border/50 text-[11px] text-muted-foreground flex items-start gap-1.5">
+            <FileText className="h-3 w-3 text-muted-foreground/80 mt-0.5 shrink-0" />
+            <span className="line-clamp-1">
+              <strong className="text-foreground font-semibold">Lưu ý:</strong> {parent.note}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      {/* FOOTER: XEM CHÂN DUNG 360° */}
+      <div className="pt-2 mt-2.5 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-sky-700 dark:text-sky-300 font-medium">
+          <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
+          <span>{parent.zaloStatus}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onClickProfile?.(parent)
+          }}
+          className="text-primary hover:text-primary/80 font-bold text-xs flex items-center gap-1 cursor-pointer"
+        >
+          <span>Xem chân dung 360°</span>
+          <ExternalLink className="h-2.5 w-2.5" />
+        </button>
+      </div>
     </div>
   )
 }

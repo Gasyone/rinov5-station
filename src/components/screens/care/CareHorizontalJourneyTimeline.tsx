@@ -419,10 +419,10 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                               <div className="pt-1.5 border-t border-border/50 space-y-1">
                                 <div className="p-1.5 rounded-lg bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/60 space-y-1">
                                   <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                                    <span className="font-semibold text-foreground text-xs">
+                                    <span className="font-normal text-foreground text-xs">
                                       • {historyLog.date.split(' ')[0]} 09:15: Gọi KNM (Không nghe máy)
                                     </span>
-                                    <span className="text-[9.5px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                                    <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
                                       📅 Hẹn gọi lại: {historyLog.date.split(' ')[0]} 14:00
                                     </span>
                                   </div>

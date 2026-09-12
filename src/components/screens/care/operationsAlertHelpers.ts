@@ -77,30 +77,12 @@ export function filterAlertData(
     careAlert?: string
     classCode?: string
     callConfirmation?: string
-  }
-): StudentCareAlert[] {
+  }): StudentCareAlert[] {
   return data.filter((item) => {
-    // 1. Status Filter
-    if (filters.status && filters.status !== 'all' && item.status !== filters.status) {
-      return false
-    }
-
-    // 2. Alert Type Filter
-    if (filters.careAlert && filters.careAlert !== 'all' && item.careAlert !== filters.careAlert) {
-      return false
-    }
-
-    // 3. Class Code Filter
-    if (filters.classCode && filters.classCode !== 'all' && item.classCode !== filters.classCode) {
-      return false
-    }
-
-    // 4. Call Confirmation Filter
-    if (filters.callConfirmation && filters.callConfirmation !== 'all' && item.callConfirmation !== filters.callConfirmation) {
-      return false
-    }
-
-    // 5. General Search
+    if (filters.status && filters.status !== 'all' && item.status !== filters.status) return false
+    if (filters.careAlert && filters.careAlert !== 'all' && item.careAlert !== filters.careAlert) return false
+    if (filters.classCode && filters.classCode !== 'all' && item.classCode !== filters.classCode) return false
+    if (filters.callConfirmation && filters.callConfirmation !== 'all' && item.callConfirmation !== filters.callConfirmation) return false
     if (filters.search) {
       const q = filters.search.toLowerCase().trim()
       const matches =
@@ -112,7 +94,6 @@ export function filterAlertData(
         (item.customerCode && item.customerCode.toLowerCase().includes(q))
       if (!matches) return false
     }
-
     return true
   })
 }
@@ -122,17 +103,12 @@ export interface ParsedScheduleSlot {
   time: string
 }
 
-/**
- * Parses a raw schedule string like "T2 - 19:25-20:55, T5 - 19:25-20:55" into structured slots
- */
 export function parseScheduleString(scheduleStr: string): ParsedScheduleSlot[] {
   if (!scheduleStr) return []
   return scheduleStr.split(',').map((slot) => {
     const parts = slot.split('-')
     if (parts.length >= 2) {
-      const day = parts[0].trim()
-      const time = parts.slice(1).join('-').trim()
-      return { day, time }
+      return { day: parts[0].trim(), time: parts.slice(1).join('-').trim() }
     }
     return { day: slot.trim(), time: '' }
   })
@@ -224,14 +200,14 @@ export function getHistoryLogsForStudent(studentId: string): HistoryLog[] {
     return log
   })
 
-  if (hash % 2 === 0) {
-    const zaloLogIndex = logs.findIndex((l) => l.channel === 'zalo')
-    if (zaloLogIndex !== -1) {
-      const zaloLog = logs[zaloLogIndex]
-      logs.splice(zaloLogIndex, 1)
-      logs.unshift(zaloLog)
+  const parseLogDate = (d: string) => {
+    const parts = d.split('/')
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime()
     }
+    return 0
   }
+  logs.sort((a, b) => parseLogDate(b.date) - parseLogDate(a.date))
 
   return logs
 }
@@ -533,8 +509,121 @@ export function hasActiveTags(item: StudentCareAlert): boolean {
   return getStudentActiveTags(item).length > 0
 }
 
+export interface RescheduleInfo {
+  isRescheduled: boolean
+  rescheduleDate?: string
+  rescheduleTime?: string
+  rescheduleLabel?: string
+}
+
+export function getRescheduleInfo(item: StudentCareAlert): RescheduleInfo {
+  const hash = stableHash(item.studentId)
+  const customClassification = (item as StudentCareAlert & { renewalClassification?: string }).renewalClassification
+
+  // Paid renewal or definitely failed students have no pending callback appointment
+  if (customClassification === 'tai_phi' || customClassification === 'that_bai') {
+    return { isRescheduled: false }
+  }
+
+  // Not contacted yet and no pending appointment
+  if (
+    item.callConfirmation === 'Chưa gọi' &&
+    (!item.interactionLogs || item.interactionLogs.length === 0) &&
+    item.careAlert !== 'Hẹn gọi lại'
+  ) {
+    return { isRescheduled: false }
+  }
+
+  // Explicit appointment or callback state
+  const hasExplicitAppointment =
+    item.careAlert === 'Hẹn gọi lại' ||
+    item.callConfirmation === 'KNM' ||
+    customClassification === 'hen_tai' ||
+    customClassification === 'can_nhac' ||
+    Boolean(item.interactionNotes?.toLowerCase().includes('hẹn')) ||
+    Boolean(item.interactionNotes?.toLowerCase().includes('cân nhắc')) ||
+    item.interactionLogs?.some(
+      (l) =>
+        l.notes?.toLowerCase().includes('hẹn') ||
+        l.parentOpinion?.toLowerCase().includes('hẹn') ||
+        l.missedCallsList?.some((m) => Boolean(m.nextCallback) || m.status === 'Hẹn gọi lại')
+    )
+
+  // Simulation fallback for demo: students contacted who have follow-up
+  const hasSimulatedAppointment =
+    hash % 3 === 0 &&
+    (item.callConfirmation === 'Đã gọi' || item.callConfirmation === 'Đã nhắn Zalo' || item.callConfirmation === 'KNM')
+
+  const hasAppointment = Boolean(hasExplicitAppointment || hasSimulatedAppointment)
+
+  if (hasAppointment) {
+    let date = ''
+    let time = ''
+    for (const log of item.interactionLogs || []) {
+      for (const m of log.missedCallsList || []) {
+        if (m.nextCallback) {
+          const clean = m.nextCallback.trim()
+          const parts = clean.split(/\s+/)
+          if (parts.length >= 2) {
+            if (parts[0].includes(':')) {
+              time = parts[0]
+              date = parts[1]
+            } else {
+              date = parts[0]
+              time = parts[1]
+            }
+            break
+          }
+        }
+      }
+      if (date) break
+
+      const text = `${log.notes || ''} ${log.parentOpinion || ''} ${item.interactionNotes || ''}`
+      const matchTimeDate = text.match(/(?:lúc|vào)?\s*(\d{1,2}:\d{2})\s*(?:ngày)?\s*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/i)
+      if (matchTimeDate) {
+        time = matchTimeDate[1]
+        date = matchTimeDate[2]
+        break
+      }
+      const matchDateTime = text.match(/(?:ngày)?\s*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s*(?:lúc|vào)?\s*(\d{1,2}:\d{2})/i)
+      if (matchDateTime) {
+        date = matchDateTime[1]
+        time = matchDateTime[2]
+        break
+      }
+    }
+
+    if (!date || !time) {
+      const day = (hash % 5) + 24
+      date = `${day.toString().padStart(2, '0')}/07/2026`
+      time = `${14 + (hash % 4)}:00`
+    }
+
+    // Format date: remove 2026 if present for cleaner display (e.g. 24/07/2026 -> 24/07)
+    let displayDate = date
+    if (displayDate.endsWith('/2026')) {
+      displayDate = displayDate.replace('/2026', '')
+    }
+
+    return {
+      isRescheduled: true,
+      rescheduleDate: displayDate,
+      rescheduleTime: time,
+      rescheduleLabel: `Hẹn: ${displayDate} ${time}`,
+    }
+  }
+
+  return { isRescheduled: false }
+}
+
+export const isRescheduled = (item: StudentCareAlert): boolean => {
+  return getRescheduleInfo(item).isRescheduled
+}
+
 export const isCared = (item: StudentCareAlert): boolean => {
   if (!item) return false
+  // Nếu học viên đang có lịch hẹn gọi lại thì phiếu chăm sóc vẫn đang xử lý, chưa hoàn thành
+  if (isRescheduled(item) || item.careAlert === 'Hẹn gọi lại') return false
   const statusStr = (item.status || '').toLowerCase()
   return (
     item.callConfirmation === 'Đã gọi' ||
@@ -556,14 +645,14 @@ export const isOverdue = (item: StudentCareAlert): boolean => {
 
 export const isPending = (item: StudentCareAlert): boolean => {
   if (isCared(item)) return false
-  if (isRescheduled(item)) return false
+  if (isRescheduled(item) || item.careAlert === 'Hẹn gọi lại') return false
   const hash = stableHash(item.studentId)
   return hash % 3 === 0 && item.interactionLogs.length === 0
 }
 
 export const isInProgress = (item: StudentCareAlert): boolean => {
+  if (isRescheduled(item) || item.careAlert === 'Hẹn gọi lại') return true
   if (isCared(item)) return false
-  if (isRescheduled(item)) return true
   if (item.interactionLogs.length > 0 || (item.callConfirmation && item.callConfirmation !== 'Chưa gọi')) return true
   const hash = stableHash(item.studentId)
   return hash % 3 !== 0
@@ -616,42 +705,6 @@ export function getConsecutiveMissingHomework(studentId: string): number {
 export function getConsecutiveLowScores(studentId: string): number {
   const hash = stableHash(studentId)
   return (hash + 4) % 5
-}
-
-export interface RescheduleInfo {
-  isRescheduled: boolean
-  rescheduleDate?: string
-  rescheduleTime?: string
-  rescheduleLabel?: string
-}
-
-export function getRescheduleInfo(item: StudentCareAlert): RescheduleInfo {
-  const hash = stableHash(item.studentId)
-  const isCompleted = item.callConfirmation === 'Đã gọi' || item.callConfirmation === 'Đã nhắn Zalo' || item.callConfirmation === 'Đã tương tác' || item.callConfirmation === 'Đã gặp trực tiếp'
-
-  if (isCompleted) {
-    return { isRescheduled: false }
-  }
-
-  const hasAppointment = item.callConfirmation === 'KNM' || hash % 4 === 1 || item.careAlert === 'Hẹn gọi lại'
-
-  if (hasAppointment) {
-    const day = (hash % 5) + 24
-    const date = `${day.toString().padStart(2, '0')}/07/2026`
-    const time = `${14 + (hash % 4)}:00`
-    return {
-      isRescheduled: true,
-      rescheduleDate: date,
-      rescheduleTime: time,
-      rescheduleLabel: `Hẹn gọi lại: ${date} ${time}`
-    }
-  }
-
-  return { isRescheduled: false }
-}
-
-export const isRescheduled = (item: StudentCareAlert): boolean => {
-  return getRescheduleInfo(item).isRescheduled
 }
 
 /**
@@ -707,11 +760,8 @@ export function getDynamicMonthFilterOptions(referenceDate: Date = new Date(2026
     const d = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - i, 1)
     const m = (d.getMonth() + 1).toString().padStart(2, '0')
     const y = d.getFullYear()
-    const value = `${m}/${y}`
-    const label = y === currentYear ? `Tháng ${d.getMonth() + 1}` : `Tháng ${d.getMonth() + 1}/${y}`
-    options.push({ value, label })
+    options.push({ value: `${m}/${y}`, label: y === currentYear ? `Tháng ${d.getMonth() + 1}` : `Tháng ${d.getMonth() + 1}/${y}` })
   }
-
   return options
 }
 
@@ -778,25 +828,11 @@ export function calculateStaffPerformanceMetrics(alerts: StudentCareAlert[]): {
   const staffList: StaffPerformanceMetric[] = []
 
   csMap.forEach((val, name) => {
-    staffList.push({
-      staffName: name,
-      role: 'CS',
-      assignedCount: val.total,
-      caredCount: val.cared,
-      overdueCount: val.overdue,
-      inTimeRate: val.total > 0 ? Math.round(((val.total - val.overdue) / val.total) * 100) : 100
-    })
+    staffList.push({ staffName: name, role: 'CS', assignedCount: val.total, caredCount: val.cared, overdueCount: val.overdue, inTimeRate: val.total > 0 ? Math.round(((val.total - val.overdue) / val.total) * 100) : 100 })
   })
 
   gvMap.forEach((val, name) => {
-    staffList.push({
-      staffName: name,
-      role: 'GV',
-      assignedCount: val.total,
-      caredCount: val.cared,
-      overdueCount: val.overdue,
-      inTimeRate: val.total > 0 ? Math.round(((val.total - val.overdue) / val.total) * 100) : 100
-    })
+    staffList.push({ staffName: name, role: 'GV', assignedCount: val.total, caredCount: val.cared, overdueCount: val.overdue, inTimeRate: val.total > 0 ? Math.round(((val.total - val.overdue) / val.total) * 100) : 100 })
   })
 
   // Sort by overdue descending, then assigned count descending

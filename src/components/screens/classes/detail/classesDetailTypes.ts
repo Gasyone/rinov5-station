@@ -72,6 +72,8 @@ export interface RoadmapSession {
   cancelBy?: string
   cancelReason?: string
   cancelDescription?: string
+  type?: string
+  projectUrl?: string
 }
 
 export interface ClassNote {

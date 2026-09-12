@@ -39,19 +39,19 @@ export function SimpleSelect({
           variant="outline"
           size="sm"
           className={cn(
-            'h-7.5 w-full justify-between px-2.5 text-xs bg-background font-normal border-input hover:bg-muted/30 cursor-pointer',
+            'h-7.5 w-full justify-between px-2.5 text-xs bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20',
             className
           )}
         >
           <span
             className={cn(
               'truncate text-xs',
-              selectedLabel ? 'text-foreground font-normal' : 'text-muted-foreground/50 text-xs font-normal'
+              selectedLabel ? 'text-foreground font-normal' : 'text-slate-400 dark:text-zinc-500 text-xs font-normal'
             )}
           >
             {selectedLabel || placeholder}
           </span>
-          <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+          <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-48 p-1.5 space-y-1 max-h-56 overflow-y-auto z-50 shadow-md">
@@ -113,29 +113,29 @@ export function SearchSelect({
           variant="outline"
           size="sm"
           className={cn(
-            'h-7.5 w-full justify-between px-2.5 text-xs bg-background font-normal border-input hover:bg-muted/30 cursor-pointer',
+            'h-7.5 w-full justify-between px-2.5 text-xs bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20',
             className
           )}
         >
           <span
             className={cn(
               'truncate text-xs',
-              selectedLabel ? 'text-foreground font-normal' : 'text-muted-foreground/50 text-xs font-normal'
+              selectedLabel ? 'text-foreground font-normal' : 'text-slate-400 dark:text-zinc-500 text-xs font-normal'
             )}
           >
             {selectedLabel || placeholder}
           </span>
-          <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+          <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-1.5 space-y-1.5 max-h-64 flex flex-col z-50 shadow-md">
-        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/30 rounded-md border border-border/60">
-          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-slate-50 dark:bg-zinc-800/80 rounded-md border border-slate-200 dark:border-zinc-700">
+          <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm..."
-            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-muted-foreground/50"
+            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500"
           />
         </div>
         <div className="flex-1 overflow-y-auto space-y-1 max-h-48 pr-0.5">
@@ -211,29 +211,29 @@ export function CreatableSearchSelect({
           variant="outline"
           size="sm"
           className={cn(
-            'h-7.5 w-full justify-between px-2.5 text-xs bg-background font-normal border-input hover:bg-muted/30 cursor-pointer',
+            'h-7.5 w-full justify-between px-2.5 text-xs bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20',
             className
           )}
         >
           <span
             className={cn(
               'truncate text-xs',
-              value ? 'text-foreground font-normal' : 'text-muted-foreground/50 text-xs font-normal'
+              value ? 'text-foreground font-normal' : 'text-slate-400 dark:text-zinc-500 text-xs font-normal'
             )}
           >
             {value || placeholder}
           </span>
-          <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+          <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-1.5 space-y-1.5 max-h-64 flex flex-col z-50 shadow-md">
-        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/30 rounded-md border border-border/60">
-          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-slate-50 dark:bg-zinc-800/80 rounded-md border border-slate-200 dark:border-zinc-700">
+          <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm hoặc gõ tên trường mới..."
-            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-muted-foreground/50"
+            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && search.trim()) {
                 e.preventDefault()
@@ -353,31 +353,31 @@ export function StaffSelect({
             variant="outline"
             size="sm"
             className={cn(
-              'h-7.5 w-full justify-between text-xs px-2.5 bg-background font-normal border-input hover:bg-muted/30 cursor-pointer',
+              'h-7.5 w-full justify-between text-xs px-2.5 bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20',
               className
             )}
           >
             <span className="truncate text-xs text-foreground">
               {selectedStaffArray.length === 0 ? (
-                <span className="text-muted-foreground/50 text-xs font-normal">{placeholder}</span>
+                <span className="text-slate-400 dark:text-zinc-500 text-xs font-normal">{placeholder}</span>
               ) : selectedStaffArray.length === 1 ? (
                 selectedStaffArray[0]
               ) : (
                 `${selectedStaffArray.length} nhân sự phụ trách`
               )}
             </span>
-            <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+            <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
           </Button>
         )}
       </PopoverTrigger>
       <PopoverContent align={align} className="w-72 p-2 space-y-1.5 max-h-80 flex flex-col z-50 shadow-md">
-        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-muted/30 rounded-md border border-border/60">
-          <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <div className="flex items-center gap-1.5 px-2 py-1.5 bg-slate-50 dark:bg-zinc-800/80 rounded-md border border-slate-200 dark:border-zinc-700">
+          <Search className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 shrink-0" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm nhân sự..."
-            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-muted-foreground/50"
+            className="w-full bg-transparent text-xs outline-none p-0 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500"
           />
         </div>
         <div className="text-[10.5px] font-semibold text-muted-foreground uppercase px-1 pb-0.5 border-b border-border/60">
@@ -441,18 +441,18 @@ export function ProductGroupSelect({
           type="button"
           variant="outline"
           size="sm"
-          className="h-7.5 w-full justify-between text-xs px-2.5 bg-background font-normal border-input hover:bg-muted/30 cursor-pointer"
+          className="h-7.5 w-full justify-between text-xs px-2.5 bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
         >
           <span className="truncate text-xs text-foreground">
             {selectedGroups.length === 0 ? (
-              <span className="text-muted-foreground/50 text-xs font-normal">Chọn nhóm sản phẩm...</span>
+              <span className="text-slate-400 dark:text-zinc-500 text-xs font-normal">Chọn nhóm sản phẩm...</span>
             ) : selectedGroups.length <= 2 ? (
               selectedGroups.join(', ')
             ) : (
               `${selectedGroups.length} nhóm sản phẩm`
             )}
           </span>
-          <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+          <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-2 space-y-1.5 max-h-64 overflow-y-auto z-50 shadow-md">

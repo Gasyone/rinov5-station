@@ -4,9 +4,9 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useCallStore } from '@/stores/useCallStore'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { updateCareAlertInteraction, completeCareTag, type StudentCareAlert, type CareInteractionLog, type FamilyContact } from '@/mocks/careAlerts'
+import { updateCareAlertInteraction, completeCareTag, updateRenewalClassification, type StudentCareAlert, type CareInteractionLog, type FamilyContact } from '@/mocks/careAlerts'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { isCared, isOverdue, stableHash } from './operationsAlertHelpers'
+import { isCared, isOverdue } from './operationsAlertHelpers'
 import { getRenewalClassification } from './renewal/renewalHelpers'
 import { type CareTopic, type SimulatedPackage, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
 import {
@@ -16,8 +16,8 @@ import {
   getCareTopicsForStudent,
 } from './studentCareDetailHelpers'
 import { StudentCareTimeline } from './StudentCareTimeline'
-import { StudentActiveCareCard } from './StudentActiveCareCard'
 import { StudentCareFormCard, type CareMode } from './StudentCareFormCard'
+import { StudentOrdersTab } from './StudentOrdersTab'
 
 const getTagColorClass = (code: string, isExpanded: boolean) => {
   if (code.startsWith('ĐB')) {
@@ -55,6 +55,7 @@ interface StudentCareChatFeedProps {
   allLogs: CareInteractionLog[]
   selectedPackageId?: string
   selectedPackage?: SimulatedPackage | null
+  initialMode?: CareMode
 }
 
 export function StudentCareChatFeed({
@@ -66,6 +67,7 @@ export function StudentCareChatFeed({
   allLogs = [],
   selectedPackageId = 'pkg-1',
   selectedPackage,
+  initialMode,
 }: StudentCareChatFeedProps) {
   const startCall = useCallStore((state) => state.startCall)
   const currentUser = useAuthStore((state) => state.user)
@@ -116,13 +118,23 @@ export function StudentCareChatFeed({
   const [localLogs, setLocalLogs] = useState<CareInteractionLog[]>([])
   const [isFormCollapsed, setIsFormCollapsed] = useState(false)
   const [showAllTags, setShowAllTags] = useState(false)
-  const [careMode, setCareMode] = useState<CareMode>('regular')
+  const [careMode, setCareMode] = useState<CareMode>(initialMode || 'regular')
+  const [prevInitialMode, setPrevInitialMode] = useState(initialMode)
+  const [prevStudentId, setPrevStudentId] = useState(student.studentId)
+
+  if (initialMode !== prevInitialMode || student.studentId !== prevStudentId) {
+    setPrevInitialMode(initialMode)
+    setPrevStudentId(student.studentId)
+    setCareMode(initialMode || 'regular')
+  }
+
   const isCaredStatus = student ? isCared(student) : false
 
   // Sync cstpStatus with student data using the exact classification helper from renewal module
   useEffect(() => {
     if (!student) return
     const classification = getRenewalClassification(student)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCstpStatus(classification)
   }, [student])
 
@@ -206,7 +218,7 @@ export function StudentCareChatFeed({
     return rawCombinedLogs.filter((item) => {
       if (item.type === 'log') {
         const topicCode = parseLogTopic(item.data.notes)
-        if (completedTopics.length > 0 && topicCode && completedTopics.includes(topicCode)) {
+        if (completedTopics.length > 0 && topicCode && topicCode !== 'CSTP' && completedTopics.includes(topicCode)) {
           return false
         }
         if (userRole === 'teacher') {
@@ -276,6 +288,8 @@ export function StudentCareChatFeed({
     let topicPrefix = ''
     if (expandedTopicCode) {
       topicPrefix = `[Mốc/Thẻ: ${expandedTopicCode}] `
+    } else if (careMode === 'renewal') {
+      topicPrefix = `[Mốc/Thẻ: CSTP] `
     }
     
     let opinionText = ''
@@ -287,10 +301,20 @@ export function StudentCareChatFeed({
 
     const channelLabel = chatChannel === 'telephone' ? 'Đã gọi' : chatChannel === 'zalo' ? 'Đã nhắn Zalo' : 'Đã gặp trực tiếp'
 
+    const isRenewal = careMode === 'renewal' || expandedTopicCode === 'CSTP'
+    const linkedOrderData = isRenewal && student.linkedOrder ? {
+      orderCode: student.linkedOrder.orderCode,
+      packageName: student.linkedOrder.packageName,
+      totalPaidAmount: student.linkedOrder.totalPaidAmount,
+      amountText: student.linkedOrder.totalPaidAmount ? `${student.linkedOrder.totalPaidAmount.toLocaleString('vi-VN')}đ` : undefined,
+    } : undefined
+
     const updated = updateCareAlertInteraction(student.id, {
       staffName: currentUser?.name || 'CS Staff',
-      callConfirmation: channelLabel as any,
+      callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
       notes: notesWithPrefix,
+      parentOpinion: parentOpinionText.trim() || undefined,
+      linkedOrder: linkedOrderData,
     })
 
     if (updated) {
@@ -298,8 +322,10 @@ export function StudentCareChatFeed({
         id: `log-${Date.now()}`,
         date: new Date().toISOString().split('T')[0],
         staffName: currentUser?.name || 'CS Staff',
-        callConfirmation: channelLabel as any,
+        callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
         notes: notesWithPrefix,
+        parentOpinion: parentOpinionText.trim() || undefined,
+        linkedOrder: linkedOrderData,
       }
       setLocalLogs((prev) => [newLog, ...prev])
       toast.success('Đã ghi nhận chăm sóc thành công!')
@@ -319,11 +345,14 @@ export function StudentCareChatFeed({
 
   const handleCompleteCare = () => {
     if (student) {
+      if (careMode === 'renewal') {
+        updateRenewalClassification(student.id, 'tai_phi')
+      }
       completeCareTag(student.id, expandedTopicCode || 'CSTP')
       if (chatText.trim()) {
         handleSendChat()
       } else {
-        toast.success('Đã đánh dấu hoàn thành chăm sóc học viên!')
+        toast.success('Đã xác nhận Tái phí thành công và đóng ca chăm sóc!')
       }
       if (onRefresh) onRefresh()
     }
@@ -371,25 +400,41 @@ export function StudentCareChatFeed({
           expandedTopic={expandedTopic}
           setExpandedTopicCode={setExpandedTopicCode}
           cstpStatus={cstpStatus}
-          onCstpStatusChange={setCstpStatus}
+          onCstpStatusChange={(st) => {
+            setCstpStatus(st)
+            if (student) {
+              updateRenewalClassification(student.id, st)
+            }
+            if (onRefresh) onRefresh()
+          }}
           isFormCollapsed={isFormCollapsed}
           setIsFormCollapsed={setIsFormCollapsed}
           getTagColorClass={getTagColorClass}
           isCaredStatus={isCaredStatus}
           careMode={careMode}
           onCareModeChange={setCareMode}
+          onRefresh={onRefresh}
         />
 
-        {/* Message timelines & history below care form */}
-        <div className="flex flex-col">
-          <StudentCareTimeline
-            student={student}
-            filteredCombinedLogs={filteredCombinedLogs}
-            stickyTopOffset={careFormHeight}
-            selectedPackageId={selectedPackageId}
-            selectedPackage={selectedPackage}
-          />
-        </div>
+        {/* Message timelines & history below care form OR StudentOrdersTab */}
+        {careMode === 'orders' ? (
+          <div className="flex-1 min-h-0 pt-1">
+            <StudentOrdersTab
+              studentId={student.studentId}
+              studentName={student.studentName}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <StudentCareTimeline
+              student={student}
+              filteredCombinedLogs={filteredCombinedLogs}
+              stickyTopOffset={careFormHeight}
+              selectedPackageId={selectedPackageId}
+              selectedPackage={selectedPackage}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

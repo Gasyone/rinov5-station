@@ -61,7 +61,7 @@ export function filterSessions(
   filters: FilterState
 ): ClassSession[] {
   const {
-    branchFilters, levelFilters, subjectFilters, teacherFilters,
+    branchFilters, levelFilters, sessionTypeFilters, subjectFilters, teacherFilters,
     periodFilters, conditionFilters, roomFilters, trialFilters,
     attendanceFilters, capacityFilters
   } = filters
@@ -70,6 +70,7 @@ export function filterSessions(
     if (activeBranch && activeBranch !== 'all' && session.branch !== activeBranch) return false
     if (branchFilters.length > 0 && !branchFilters.includes(session.branch)) return false
     if (levelFilters.length > 0 && !levelFilters.includes(session.level)) return false
+    if (sessionTypeFilters && sessionTypeFilters.length > 0 && !sessionTypeFilters.includes(session.type)) return false
     if (subjectFilters.length > 0 && !subjectFilters.includes(session.subject)) return false
     if (teacherFilters.length > 0 && !teacherFilters.includes(session.teacher)) return false
     if (periodFilters.length > 0 && !periodFilters.includes(getSessionPeriod(session.timeLabel))) return false

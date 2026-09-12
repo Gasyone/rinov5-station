@@ -293,23 +293,32 @@ export function StudentCareHeaderClusterNote({
                     <History className="h-3.5 w-3.5" />
                     Lịch sử ghi chú học viên
                   </h5>
-                  <div className="space-y-2 text-xs">
-                    <div className="border-l-2 border-amber-500 pl-2 space-y-0.5">
-                      <div className="flex justify-between text-muted-foreground text-xs">
-                        <span>Nguyễn Văn Hùng (Bố)</span>
+                  <div className="space-y-2.5 text-xs max-h-[280px] overflow-y-auto pr-1">
+                    <div className="border-l-2 border-amber-500 pl-2 space-y-1">
+                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                        <span className="font-semibold text-foreground">Nguyễn Văn Hùng (Bố)</span>
                         <span>26/07 14:20</span>
                       </div>
-                      <p className="text-foreground italic">
-                        &quot;Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.&quot;
+                      <p className="text-foreground italic leading-relaxed">
+                        &quot;Con tiếp thu nhanh qua hình ảnh và sơ đồ tư duy, thích các trò chơi logic. Khi làm bài tập dài con dễ nản, nhờ thầy cô động viên chia nhỏ nhiệm vụ để con tự giác hoàn thành.&quot;
                       </p>
                     </div>
-                    <div className="border-l-2 border-border pl-2 space-y-0.5">
-                      <div className="flex justify-between text-muted-foreground text-xs">
-                        <span>Cô Hoàng Thị Mai (GV)</span>
+                    <div className="border-l-2 border-sky-500 pl-2 space-y-1">
+                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                        <span className="font-semibold text-foreground">Cô Hoàng Thị Mai (GVCN)</span>
                         <span>18/07 16:45</span>
                       </div>
-                      <p className="text-muted-foreground italic">
-                        &quot;Con tiếp thu kiến thức nhanh, giơ tay phát biểu nhiệt tình.&quot;
+                      <p className="text-muted-foreground italic leading-relaxed">
+                        &quot;Tư duy hình học và phản xạ từ vựng của con rất nhạy bén, hăng hái xung phong lên bảng. Đang hướng dẫn con kỹ năng trình bày vở cẩn thận hơn và rèn tính kiên nhẫn khi gặp bài toán nhiều bước.&quot;
+                      </p>
+                    </div>
+                    <div className="border-l-2 border-emerald-500 pl-2 space-y-1">
+                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                        <span className="font-semibold text-foreground">CSM Trần Quỳnh Anh</span>
+                        <span>05/07 10:15</span>
+                      </div>
+                      <p className="text-muted-foreground italic leading-relaxed">
+                        &quot;Mục tiêu năm học tới của gia đình là con đạt chứng chỉ Cambridge Flyers 14+ khiên và tham gia kỳ thi Toán SASMO. Đã cập nhật hồ sơ cá nhân để giáo viên giao thêm bài tập nâng cao định kỳ.&quot;
                       </p>
                     </div>
                   </div>

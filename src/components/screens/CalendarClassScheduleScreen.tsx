@@ -35,10 +35,6 @@ export function CalendarClassScheduleScreen() {
       .filter((session) => session.type !== 'digi_session')
       .map((session, idx) => {
         const updatedSession = { ...session }
-        if (idx % 5 === 0) {
-          updatedSession.type = 'workshop' as const
-          updatedSession.typeLabel = 'Workshop'
-        }
         if (idx % 7 === 0) {
           updatedSession.status = 'rescheduled' as const
           updatedSession.statusLabel = 'Đổi ngày'
@@ -56,6 +52,7 @@ export function CalendarClassScheduleScreen() {
   // Filter States
   const [branchFilters, setBranchFilters] = useState<string[]>([])
   const [levelFilters, setLevelFilters] = useState<string[]>([])
+  const [sessionTypeFilters, setSessionTypeFilters] = useState<string[]>([])
   const [conditionFilters, setConditionFilters] = useState<string[]>([])
   const [subjectFilters, setSubjectFilters] = useState<string[]>([])
   const [teacherFilters, setTeacherFilters] = useState<string[]>([])
@@ -70,6 +67,7 @@ export function CalendarClassScheduleScreen() {
     () => ({
       branchFilters,
       levelFilters,
+      sessionTypeFilters,
       conditionFilters,
       subjectFilters,
       teacherFilters,
@@ -82,6 +80,7 @@ export function CalendarClassScheduleScreen() {
     [
       branchFilters,
       levelFilters,
+      sessionTypeFilters,
       conditionFilters,
       subjectFilters,
       teacherFilters,
@@ -115,9 +114,28 @@ export function CalendarClassScheduleScreen() {
   const levels = useMemo(() => [...new Set(allSessions.map((session) => session.level))].sort(), [allSessions])
   const rooms = useMemo(() => [...new Set(allSessions.map((session) => session.schoolRoom))].sort(), [allSessions])
 
+  const sessionTypeOptions = useMemo(() => {
+    const typeLabelMap: Record<string, string> = {
+      class_session: 'Buổi thường',
+      test_session: 'Buổi kiểm tra',
+      project: 'Buổi dự án',
+      supplementary: 'Buổi bổ trợ',
+      workshop: 'Workshop',
+    }
+    const standardOrder = ['class_session', 'test_session', 'project', 'supplementary', 'workshop']
+    return standardOrder
+      .filter((type) => allSessions.some((s) => s.type === type))
+      .map((type) => ({
+        value: type,
+        label: typeLabelMap[type] || type,
+        count: allSessions.filter((s) => s.type === type).length,
+      }))
+  }, [allSessions])
+
   const activeFilterCount =
     branchFilters.length +
     levelFilters.length +
+    sessionTypeFilters.length +
     subjectFilters.length +
     teacherFilters.length +
     periodFilters.length +
@@ -134,6 +152,12 @@ export function CalendarClassScheduleScreen() {
         options: branches,
         selectedValues: branchFilters,
         getOptionCount: (branch) => allSessions.filter((session) => session.branch === branch).length,
+      }),
+      createFilterGroup({
+        id: 'sessionTypes',
+        title: 'Loại buổi học',
+        options: sessionTypeOptions,
+        selectedValues: sessionTypeFilters,
       }),
       createFilterGroup({
         id: 'levels',
@@ -242,9 +266,9 @@ export function CalendarClassScheduleScreen() {
       }),
     ],
     [
-      allSessions, branchFilters, levelFilters, subjectFilters, teacherFilters, periodFilters,
-      conditionFilters, branches, levels, subjects, teachers, rooms, roomFilters, trialFilters,
-      attendanceFilters, capacityFilters,
+      allSessions, branchFilters, levelFilters, sessionTypeFilters, sessionTypeOptions,
+      subjectFilters, teacherFilters, periodFilters, conditionFilters, branches, levels,
+      subjects, teachers, rooms, roomFilters, trialFilters, attendanceFilters, capacityFilters,
     ]
   )
 
@@ -345,6 +369,7 @@ export function CalendarClassScheduleScreen() {
             setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
           }
           if (sectionId === 'branches') toggleHandler(setBranchFilters)
+          else if (sectionId === 'sessionTypes') toggleHandler(setSessionTypeFilters)
           else if (sectionId === 'levels') toggleHandler(setLevelFilters)
           else if (sectionId === 'conditions') toggleHandler(setConditionFilters)
           else if (sectionId === 'periods') toggleHandler(setPeriodFilters)
@@ -357,6 +382,7 @@ export function CalendarClassScheduleScreen() {
         }}
         onClearAll={() => {
           setBranchFilters([])
+          setSessionTypeFilters([])
           setLevelFilters([])
           setConditionFilters([])
           setSubjectFilters([])

@@ -214,7 +214,7 @@ export function CrmCustomerParentSection({
                     )
                   }}
                   placeholder="Nhập họ và tên..."
-                  className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                  className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                 />
               </div>
 
@@ -231,7 +231,7 @@ export function CrmCustomerParentSection({
                       )
                     }}
                     placeholder="09xxxxxxxx"
-                    className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                   />
                 </div>
                 <div>
@@ -246,7 +246,7 @@ export function CrmCustomerParentSection({
                       )
                     }}
                     placeholder="email@example.com"
-                    className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                   />
                 </div>
               </div>
@@ -266,7 +266,7 @@ export function CrmCustomerParentSection({
                           'px-2.5 py-0.5 rounded-full text-xs transition-colors cursor-pointer border',
                           isSelected
                             ? 'bg-primary text-primary-foreground border-primary font-medium shadow-2xs'
-                            : 'bg-background text-muted-foreground border-border/80 hover:bg-muted/60 hover:text-foreground'
+                            : 'bg-white dark:bg-zinc-800 text-muted-foreground border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700/50 hover:text-foreground'
                         )}
                       >
                         {roleChip}
@@ -293,7 +293,7 @@ export function CrmCustomerParentSection({
                         )
                       }}
                       placeholder="Nhập vai trò khác (VD: Anh, Chị, Dì, Chú, Người giám hộ...)"
-                      className="h-7 text-xs bg-background flex-1 placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                      className="h-7 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 flex-1 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                     />
                   </div>
                 )}
@@ -355,7 +355,7 @@ export function CrmCustomerParentSection({
                       value={addressDetail}
                       onChange={(e) => setAddressDetail(e.target.value)}
                       placeholder="Số nhà, ngõ..."
-                      className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                      className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                     />
                   </div>
                 </div>
@@ -366,7 +366,7 @@ export function CrmCustomerParentSection({
                     value={mapCoordinates}
                     onChange={(e) => setMapCoordinates(e.target.value)}
                     placeholder="VD: 10.7769, 106.7009 hoặc link Google Map..."
-                    className="h-7.5 text-xs bg-background font-mono placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 font-mono placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                   />
                 </div>
               </div>
@@ -463,7 +463,7 @@ export function CrmCustomerParentSection({
                     )
                   }}
                   placeholder="Họ tên..."
-                  className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                  className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                 />
               </div>
 
@@ -479,7 +479,7 @@ export function CrmCustomerParentSection({
                       )
                     }}
                     placeholder="09xxxxxxxx"
-                    className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                   />
                 </div>
                 <div>
@@ -494,7 +494,7 @@ export function CrmCustomerParentSection({
                       )
                     }}
                     placeholder="email@example.com"
-                    className="h-7.5 text-xs bg-background placeholder:text-xs placeholder:text-muted-foreground/50 placeholder:font-normal"
+                    className="h-7.5 text-xs bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 shadow-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-xs placeholder:text-slate-400 dark:placeholder:text-zinc-500 placeholder:font-normal"
                   />
                 </div>
               </div>
@@ -511,7 +511,7 @@ export function CrmCustomerParentSection({
                         'px-2.5 py-0.5 rounded-full text-[10.5px] border cursor-pointer',
                         p.role === roleChip
                           ? 'bg-primary text-primary-foreground border-primary font-medium'
-                          : 'bg-background text-muted-foreground border-border/80 hover:bg-muted/60'
+                          : 'bg-white dark:bg-zinc-800 text-muted-foreground border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-700/50'
                       )}
                     >
                       {roleChip}

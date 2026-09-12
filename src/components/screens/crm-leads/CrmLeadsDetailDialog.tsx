@@ -7,6 +7,7 @@ import { Lead } from '@/mocks/crmLeads'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -60,6 +61,9 @@ export function CrmLeadsDetailDialog({
                       ({lead.studentAge} tuổi - {birthYear})
                     </span>
                   </DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Thông tin chi tiết Lead {lead.studentName}
+                  </DialogDescription>
                   <div className="text-xs text-muted-foreground">
                     Mã Lead: <span className="font-mono">{lead.code}</span> • Phụ huynh: <span className="font-semibold text-foreground">{lead.parentName}</span> {lead.parentRole ? `(${lead.parentRole})` : ''}
                   </div>

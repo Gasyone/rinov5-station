@@ -11,6 +11,22 @@ export interface ParentItem {
   isCollapsed: boolean
 }
 
+export interface HistoricalSalesCycle {
+  cycleId: string
+  cycleNumber: number
+  title: string
+  status?: 'active' | 'converted' | 'dropped' | string
+  startDate?: string
+  endDate?: string
+  assignedSales?: string
+  outcomeNote?: string
+  branch?: string
+  channel?: string
+  productInterest?: string
+  ordersCount?: number
+  totalAmount?: string
+}
+
 export interface ChildItem {
   id: string
   name: string
@@ -21,7 +37,21 @@ export interface ChildItem {
   phone: string
   course: string
   vuihocAccount: string
-  isCollapsed: boolean
+  isCollapsed?: boolean
+
+  // Định vị & Phân bổ tác nghiệp đi theo từng con:
+  customerType?: string // Loại hình đào tạo: Tự học, Gia sư, Station...
+  industryGroup?: string // Nhóm ngành: Tiểu học, THCS, THPT
+  selectedSources?: string[] // Nguồn tiếp nhận khách hàng
+  selectedStaff?: string[] // Người phụ trách (Tư vấn viên)
+  marketingStaff?: string // Nhân viên marketing
+  selectedProductGroups?: string[] // Nhóm sản phẩm
+  customerCode?: string // Mã khách hàng / Deal (tùy chỉnh)
+
+  // Thông tin chu kỳ / lịch sử cũ (Lead quay lại):
+  isReturningLead?: boolean
+  returningReason?: string
+  pastCycles?: HistoricalSalesCycle[]
 }
 
 export interface StaffOption {

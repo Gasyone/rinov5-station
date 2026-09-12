@@ -265,7 +265,7 @@ export function WorkRegistrationTimeRangePicker({
                     morningEnabled ? 'text-amber-800 dark:text-amber-300' : 'text-muted-foreground'
                   )}
                 >
-                  <span>☀️</span> Sáng
+                  Sáng
                 </span>
               </label>
 
@@ -358,7 +358,7 @@ export function WorkRegistrationTimeRangePicker({
                     afternoonEnabled ? 'text-sky-800 dark:text-sky-300' : 'text-muted-foreground'
                   )}
                 >
-                  <span>🌤</span> Chiều
+                  Chiều
                 </span>
               </label>
 
@@ -451,7 +451,7 @@ export function WorkRegistrationTimeRangePicker({
                     eveningEnabled ? 'text-purple-800 dark:text-purple-300' : 'text-muted-foreground'
                   )}
                 >
-                  <span>🌙</span> Tối
+                  Tối
                 </span>
               </label>
 

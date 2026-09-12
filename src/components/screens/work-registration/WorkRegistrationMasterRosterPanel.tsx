@@ -157,7 +157,6 @@ export function WorkRegistrationMasterRosterPanel({
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    <span>{sec.icon}</span>
                     <span className="uppercase tracking-wider font-bold text-xs">
                       {sec.label}
                     </span>

@@ -1,256 +1,272 @@
 'use client'
 
-import { useMemo } from 'react'
-import { Plus, FileText } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import React, { useState, useMemo } from 'react'
+import {
+  User,
+  Copy,
+} from 'lucide-react'
 import { toast } from 'sonner'
-import { mockLeads, type Lead } from '@/mocks/crmLeads'
-import { CrmLeadParentCard, type ParentContact } from './CrmLeadParentCard'
-import { CrmLeadChildCard, type ChildPersonaItem } from './CrmLeadChildCard'
+import { cn } from '@/lib/utils'
+import type { Lead } from '@/mocks/crmLeads'
+import { CrmLeadParentProfileView } from './CrmLeadParentProfileView'
+import { CrmLeadStudentProfileView } from './CrmLeadStudentProfileView'
+import { CrmLeadProfileModal } from './CrmLeadProfileModal'
+import type { ParentContact } from './CrmLeadParentCard'
+import type { ChildPersonaItem } from './CrmLeadChildCard'
+import {
+  buildPrimaryParent,
+  buildOtherParents,
+  buildChildContacts,
+} from './leadContactsHelper'
 
-interface CrmLeadContactsTabProps {
+export interface CrmLeadContactsTabProps {
   lead: Lead
   onAddParent?: () => void
   onAddChild?: () => void
-  onSwitchLead?: (leadId: string) => void
   onOpenFullProfile?: () => void
+  onSwitchLead?: (newLeadId: string) => void
+  onUpdateLead?: (updatedLead: Lead) => void
+  activeParentName?: string | null
+  onSwitchParentPersona?: (parentName: string) => void
 }
 
 export function CrmLeadContactsTab({
   lead,
-  onAddParent,
-  onAddChild,
   onSwitchLead,
-  onOpenFullProfile,
+  onUpdateLead,
+  activeParentName,
+  onSwitchParentPersona,
 }: CrmLeadContactsTabProps) {
-  // 1. CHÂN DUNG PHỤ HUYNH & THÔNG TIN BUYER PERSONA
-  const primaryContact: ParentContact = {
-    name: lead.parentName || 'Nguyễn Thu Hà',
-    role: lead.parentRole || 'Mẹ',
-    phone: lead.phone || '0912345678',
-    email: lead.email || 'thu.ha@gmail.com',
-    occupation: lead.parentOccupation || 'Kế toán trưởng - FPT Software',
-    financialSegment: lead.financialSegment || 'Khá giả (Thu nhập > 40 triệu/tháng)',
-    budgetPerMonth: lead.budgetPerMonth || '3.000.000đ - 5.000.000đ/tháng',
-    decisionMakerRole: lead.decisionMakerRole || 'Mẹ toàn quyền quyết định tài chính & chương trình',
-    preferredContactMethod: lead.preferredContactMethod || 'Ưu tiên Zalo trong giờ hành chính',
-    bestTimeToCall: lead.bestTimeToCall || '12h00 - 13h30 hoặc sau 18h30 (Không nghe số lạ buổi sáng)',
-    parentExpectation:
-      lead.parentExpectation ||
-      'Con tự tin phản xạ giao tiếp tự nhiên, phát âm chuẩn quốc tế và thi lấy chứng chỉ Cambridge',
-    parentPainPoint:
-      lead.parentPainPoint ||
-      'Trước đây học trung tâm cũ sĩ số đông (18-20 bé), giáo viên ít tương tác nên con bị nhút nhát và sợ nói',
-    parentPersonalityNote:
-      lead.parentPersonalityNote ||
-      'Mẹ rất kỹ tính, chu đáo; thích xem số liệu minh bạch, báo cáo tiến độ học tập hàng tuần; thích trao đổi qua Zalo có hình ảnh lớp',
-    preferredChannel: lead.preferredContactMethod || 'Ưu tiên Zalo',
-    zaloStatus: 'Đã kết bạn Zalo',
-    isPrimary: true,
-    address: lead.address || 'Phường Bến Nghé, Quận 1, TP.HCM',
-    province: lead.province || 'TP.HCM',
-    district: lead.district || 'Quận 1',
-    ward: lead.ward || 'Phường Bến Nghé',
-    street: lead.streetAddress || 'Đồng Khởi, Bến Nghé',
-    mapLink:
-      lead.mapLink ||
-      `https://maps.google.com/?q=${encodeURIComponent(
-        lead.address || 'Phường Bến Nghé, Quận 1, TP.HCM'
-      )}`,
-    note:
-      lead.parentPersonalityNote ||
-      'Mẹ là người quyết định chính về chương trình học và tài chính gia đình. Ưu tiên nhắn Zalo trong giờ hành chính.',
+  // Modal state
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [modalType, setModalType] = useState<'parent' | 'student'>('parent')
+  const [isEditingParent, setIsEditingParent] = useState(false)
+  const [isEditingStudent, setIsEditingStudent] = useState(false)
+
+  // Primary Parent Contact
+  const primaryParent: ParentContact = useMemo(() => buildPrimaryParent(lead), [lead])
+
+  const otherParents: ParentContact[] = useMemo(() => buildOtherParents(lead), [lead])
+
+  const parentContacts: ParentContact[] = useMemo(
+    () => [primaryParent, ...otherParents],
+    [primaryParent, otherParents]
+  )
+
+  // Children Contacts
+  const childContacts: ChildPersonaItem[] = useMemo(() => buildChildContacts(lead), [lead])
+
+  const [localSelectedParentName, setLocalSelectedParentName] = useState<string | null>(null)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+
+  const effectiveParentName =
+    activeParentName !== undefined && activeParentName !== null
+      ? activeParentName
+      : localSelectedParentName
+
+  const selectedParent = useMemo(() => {
+    if (effectiveParentName) {
+      const found = parentContacts.find((p) => p.name === effectiveParentName)
+      if (found) return found
+    }
+    return primaryParent
+  }, [effectiveParentName, parentContacts, primaryParent])
+
+  const selectedStudent = useMemo(() => {
+    if (selectedStudentId) {
+      const found = childContacts.find((c) => c.id === selectedStudentId)
+      if (found) return found
+    }
+    return childContacts[0]
+  }, [selectedStudentId, childContacts])
+
+  // In-place edit state
+  const [prevParentName, setPrevParentName] = useState(selectedParent.name)
+  const [prevStudentId, setPrevStudentId] = useState(selectedStudent.id)
+  const [editedParent, setEditedParent] = useState<ParentContact>(primaryParent)
+  const [editedStudent, setEditedStudent] = useState<ChildPersonaItem>(childContacts[0])
+
+  if (selectedParent.name !== prevParentName) {
+    setPrevParentName(selectedParent.name)
+    if (!isEditingParent) {
+      setEditedParent(selectedParent)
+    }
   }
 
-  const otherParents: ParentContact[] = (
-    lead.otherParents || [
-      {
-        name: 'Trần Văn Sơn',
-        role: 'Bố',
-        phone: '091161999',
-        email: 'vanson.tran@example.com',
-        occupation: 'Kỹ sư Xây dựng - Vinaconex',
-        preferredChannel: 'Ưu tiên Gọi điện',
-        zaloStatus: 'Chưa kết bạn Zalo',
-        address: lead.address || 'Phường Bến Nghé, Quận 1, TP.HCM',
-        note: 'Bố hay đi công tác xa, chỉ gọi vào buổi tối sau 19h00 khi cần trao đổi gấp.',
-      },
-    ]
-  ).map((p): ParentContact => ({
-    name: p.name,
-    role: p.role,
-    phone: p.phone,
-    email: p.email,
-    isPrimary: false,
-    occupation: p.occupation || 'Kỹ sư Xây dựng - Vinaconex',
-    financialSegment: p.financialSegment,
-    budgetPerMonth: p.budgetPerMonth,
-    decisionMakerRole: p.decisionMakerRole,
-    preferredContactMethod: p.preferredContactMethod,
-    bestTimeToCall: p.bestTimeToCall,
-    parentExpectation: p.parentExpectation,
-    parentPainPoint: p.parentPainPoint,
-    parentPersonalityNote: p.parentPersonalityNote,
-    preferredChannel: p.preferredChannel || 'Ưu tiên Gọi điện',
-    zaloStatus: p.zaloStatus || 'Chưa kết bạn Zalo',
-    address: p.address || lead.address || 'Cùng địa chỉ gia đình',
-    mapLink:
-      lead.mapLink ||
-      `https://maps.google.com/?q=${encodeURIComponent(
-        lead.address || 'Phường Bến Nghé, Quận 1, TP.HCM'
-      )}`,
-    note: p.note || 'Bố hay đi công tác, chỉ gọi vào buổi tối khi cần trao đổi gấp.',
-  }))
+  if (selectedStudent.id !== prevStudentId) {
+    setPrevStudentId(selectedStudent.id)
+    if (!isEditingStudent) {
+      setEditedStudent(selectedStudent)
+    }
+  }
 
-  const allParents: ParentContact[] = [primaryContact, ...otherParents]
+  const handleOpenZoom = (type: 'parent' | 'student') => {
+    setModalType(type)
+    setIsProfileModalOpen(true)
+  }
 
-  // 2. TÌM KIẾM TẤT CẢ HỌC VIÊN CON TRONG CÙNG GIA ĐÌNH & CHÂN DUNG HỌC TẬP
-  const familyLeads = useMemo(() => {
-    const matched = mockLeads.filter(
-      (l) =>
-        (lead.parentId && l.parentId === lead.parentId) ||
-        (lead.phone && l.phone === lead.phone)
-    )
-    if (matched.length > 0) return matched
-    return [lead]
-  }, [lead])
+  const handleStartEditParent = () => {
+    setEditedParent(selectedParent)
+    setIsEditingParent(true)
+  }
 
-  const allChildren: ChildPersonaItem[] = useMemo(() => {
-    return familyLeads
-      .map((ch, idx): ChildPersonaItem => {
-        const isCurrent = ch.id === lead.id
-        const isMain = idx === 0 || ch.id === 'lead-001'
-        const isAn = ch.studentName.includes('An')
-        const isBinh = ch.studentName.includes('Bình')
+  const handleCancelEditParent = () => {
+    setEditedParent(selectedParent)
+    setIsEditingParent(false)
+  }
 
-        const code = ch.code || (idx === 0 ? 'LD-10291-A' : 'LD-10291-B')
-        const englishName = isCurrent
-          ? lead.studentEnglishName || 'Alex'
-          : isAn
-            ? 'Alex'
-            : isBinh
-              ? 'Leo'
-              : ''
-        const birthYear = ch.birthYear || 2026 - ch.studentAge
-        const birthDate = isAn
-          ? '15/05/2018'
-          : isBinh
-            ? '20/09/2014'
-            : `10/06/${birthYear}`
-        const gender = isCurrent
-          ? lead.studentGender || 'Nam'
-          : 'Nam'
-        const grade = isCurrent
-          ? lead.studentCurrentGrade || 'Lớp 3'
-          : isAn
-            ? 'Lớp 3'
-            : isBinh
-              ? 'Lớp 7'
-              : `Lớp ${ch.studentAge - 5}`
-        const school =
-          ch.schoolName || (isAn ? 'Tiểu học Đinh Tiên Hoàng' : 'THCS Thanh Xuân')
-        const targetSubject =
-          ch.targetSubject ||
-          (isAn
-            ? 'Anh văn Nhi đồng (SuperKids)'
-            : 'Luyện thi Flyers & Toán tư duy')
+  const handleSaveParent = (targetParent: ParentContact = editedParent) => {
+    let updatedLead: Lead = { ...lead }
+    if (targetParent.isPrimary || selectedParent.isPrimary) {
+      updatedLead = {
+        ...updatedLead,
+        parentName: targetParent.name,
+        parentRole: targetParent.role,
+        phone: targetParent.phone,
+        email: targetParent.email,
+        address: targetParent.address || updatedLead.address,
+        parentOccupation: targetParent.occupation,
+        financialSegment: targetParent.financialSegment,
+        budgetPerMonth: targetParent.budgetPerMonth,
+        decisionMakerRole: targetParent.decisionMakerRole,
+        preferredContactMethod: targetParent.preferredChannel || targetParent.preferredContactMethod,
+        bestTimeToCall: targetParent.bestTimeToCall,
+        parentExpectation: targetParent.parentExpectation,
+        parentPainPoint: targetParent.parentPainPoint,
+        parentPersonalityNote: targetParent.parentPersonalityNote,
+      }
+    } else {
+      const currentOthers = lead.otherParents || otherParents
+      const updatedOthers = currentOthers.map((op) =>
+        op.name === selectedParent.name
+          ? {
+              ...op,
+              name: targetParent.name,
+              role: targetParent.role,
+              phone: targetParent.phone,
+              email: targetParent.email,
+              occupation: targetParent.occupation,
+              address: targetParent.address,
+              financialSegment: targetParent.financialSegment,
+              budgetPerMonth: targetParent.budgetPerMonth,
+              decisionMakerRole: targetParent.decisionMakerRole,
+              preferredContactMethod: targetParent.preferredChannel || targetParent.preferredContactMethod,
+              preferredChannel: targetParent.preferredChannel,
+              bestTimeToCall: targetParent.bestTimeToCall,
+              parentExpectation: targetParent.parentExpectation,
+              parentPainPoint: targetParent.parentPainPoint,
+              parentPersonalityNote: targetParent.parentPersonalityNote,
+            }
+          : op
+      )
+      updatedLead = { ...updatedLead, otherParents: updatedOthers }
+    }
+    setLocalSelectedParentName(targetParent.name)
+    onSwitchParentPersona?.(targetParent.name)
+    setEditedParent(targetParent)
+    onUpdateLead?.(updatedLead)
+    setIsEditingParent(false)
+    toast.success(`Đã lưu thông tin Chân dung Phụ huynh (${targetParent.name})!`)
+  }
 
-        let statusLabel = 'Đang tư vấn'
-        if (ch.status === 'chuyen_doi') statusLabel = 'Đã nhập học'
-        else if (ch.testStatus === 'completed') statusLabel = 'Đã test đầu vào'
-        else if (ch.testStatus === 'scheduled') statusLabel = 'Hẹn trải nghiệm'
-        else if (ch.status === 'that_bai') statusLabel = 'Dừng chăm sóc'
+  const handleStartEditStudent = () => {
+    setEditedStudent(selectedStudent)
+    setIsEditingStudent(true)
+  }
 
-        const testResultText = ch.testScore
-          ? `Đạt ${ch.testScore} • ${ch.testResultLevel || 'Level B2 (Cô Emma)'}`
-          : ch.testDate
-            ? `Lịch test: ${ch.testDate} ${ch.testTime || '18:00'} (${ch.testerTeacherName || 'Thầy Alex'})`
-            : 'Chưa xếp lịch kiểm tra đầu vào'
+  const handleCancelEditStudent = () => {
+    setEditedStudent(selectedStudent)
+    setIsEditingStudent(false)
+  }
 
-        const studentPhone =
-          ch.studentPhone && ch.studentPhone !== '--'
-            ? ch.studentPhone
-            : isAn
-              ? `${lead.phone} (Dùng SĐT Mẹ)`
-              : '0988776655 (SĐT riêng của bé)'
+  const handleSaveStudent = (targetStudent: ChildPersonaItem = editedStudent) => {
+    let updatedLead: Lead = { ...lead }
+    if (targetStudent.isCurrent) {
+      updatedLead = {
+        ...updatedLead,
+        studentName: targetStudent.name,
+        studentEnglishName: targetStudent.englishName,
+        studentAge: targetStudent.age,
+        studentGender: targetStudent.gender as 'Nam' | 'Nữ',
+        schoolName: targetStudent.school,
+        studentCurrentGrade: targetStudent.grade,
+        targetSubject: targetStudent.targetSubject,
+        status: (targetStudent.status as Lead['status']) || lead.status,
+        studentPhone: targetStudent.studentPhone,
+        studentPersonality: targetStudent.personality,
+        studentInterests: targetStudent.interests,
+        studentLearningStyle: targetStudent.learningStyle,
+        studentStrengths: targetStudent.strengths,
+        studentWeaknesses: targetStudent.weaknesses,
+        studentLearningGoal: targetStudent.learningGoal,
+        lastNote: targetStudent.notes || lead.lastNote,
+      }
+    }
+    setSelectedStudentId(targetStudent.id)
+    setEditedStudent(targetStudent)
+    onUpdateLead?.(updatedLead)
+    setIsEditingStudent(false)
+    toast.success(`Đã lưu thông tin Chân dung Học viên (${targetStudent.name})!`)
+  }
 
-        const personality = isCurrent
-          ? lead.studentPersonality ||
-            'Ngoan ngoãn, thích được khen ngợi, ban đầu hơi nhút nhát nhưng khi hòa nhập sẽ rất năng nổ'
-          : isAn
-            ? 'Ngoan ngoãn, thích được khen ngợi'
-            : 'Tự giác, ham học hỏi, tập trung tốt'
+  // Switch which parent persona is currently viewed (does NOT mutate lead or swap primary status!)
+  const handleSwitchParent = (p: ParentContact) => {
+    setLocalSelectedParentName(p.name)
+    setEditedParent(p)
+    setIsEditingParent(false)
+    onSwitchParentPersona?.(p.name)
+  }
 
-        const interests = isCurrent
-          ? lead.studentInterests ||
-            'Mê lắp ráp Lego Technic, thích vẽ truyện tranh và xem phim hoạt hình tiếng Anh Paw Patrol'
-          : isAn
-            ? 'Lego Technic, vẽ truyện tranh, xem phim hoạt hình tiếng Anh'
-            : 'Chơi cờ vua, lập trình Scratch, đọc sách khoa học'
+  // Explicitly promote a parent to be the primary contact of the Lead
+  const handleSetPrimaryParent = (p: ParentContact) => {
+    if (p.isPrimary) return
 
-        const learningStyle = isCurrent
-          ? lead.studentLearningStyle ||
-            'Trực quan (Visual) & Vận động (Kinesthetic) - Thích học qua flashcard hình ảnh và minigame tương tác'
-          : isAn
-            ? 'Trực quan & Vận động tương tác'
-            : 'Logic & Phân tích độc lập'
+    const newOtherParents = parentContacts
+      .filter((item) => item.name !== p.name)
+      .map((item) => ({
+        name: item.name,
+        role: item.role,
+        phone: item.phone,
+        email: item.email,
+        occupation: item.occupation,
+        preferredChannel: item.preferredChannel,
+        zaloStatus: item.zaloStatus,
+        address: item.address,
+        note: item.note,
+        financialSegment: item.financialSegment,
+        budgetPerMonth: item.budgetPerMonth,
+        decisionMakerRole: item.decisionMakerRole,
+        preferredContactMethod: item.preferredContactMethod,
+        bestTimeToCall: item.bestTimeToCall,
+        parentExpectation: item.parentExpectation,
+        parentPainPoint: item.parentPainPoint,
+        parentPersonalityNote: item.parentPersonalityNote,
+      }))
 
-        const strengths = isCurrent
-          ? lead.studentStrengths ||
-            'Ghi nhớ từ vựng qua hình ảnh cực nhanh, phát âm âm đuôi chuẩn, hào hứng khi chơi game thi đua'
-          : isAn
-            ? 'Ghi nhớ từ vựng nhanh, phát âm chuẩn'
-            : 'Tư duy ngữ pháp vững, phản xạ đọc hiểu nhanh'
+    const updatedLead: Lead = {
+      ...lead,
+      parentName: p.name,
+      parentRole: p.role,
+      phone: p.phone,
+      email: p.email || lead.email,
+      address: p.address || lead.address,
+      parentOccupation: p.occupation || lead.parentOccupation,
+      financialSegment: p.financialSegment || lead.financialSegment,
+      budgetPerMonth: p.budgetPerMonth || lead.budgetPerMonth,
+      decisionMakerRole: p.decisionMakerRole || lead.decisionMakerRole,
+      preferredContactMethod: p.preferredChannel || p.preferredContactMethod || lead.preferredContactMethod,
+      bestTimeToCall: p.bestTimeToCall || lead.bestTimeToCall,
+      parentExpectation: p.parentExpectation || lead.parentExpectation,
+      parentPainPoint: p.parentPainPoint || lead.parentPainPoint,
+      parentPersonalityNote: p.parentPersonalityNote || p.note || lead.parentPersonalityNote,
+      otherParents: newOtherParents,
+    }
 
-        const weaknesses = isCurrent
-          ? lead.studentWeaknesses ||
-            'Còn ngại nói câu dài khi đứng trước đám đông, viết chính tả hay quên mạo từ (a/an/the)'
-          : isAn
-            ? 'Ngại nói câu dài, dễ mất tập trung nếu bài quá dễ'
-            : 'Kỹ năng viết luận học thuật cần mài giũa thêm'
-
-        const learningGoal = isCurrent
-          ? lead.studentLearningGoal ||
-            'Tự tin thuyết trình tiếng Anh 3 phút trước lớp, đạt 14/15 khiên Cambridge Starters vào cuối năm học'
-          : isAn
-            ? 'Tự tin giao tiếp, thi chứng chỉ Cambridge'
-            : 'Đạt giải Học sinh giỏi tiếng Anh và thi chứng chỉ KET/PET'
-
-        const notes =
-          ch.lastNote ||
-          (isAn
-            ? 'Bé tiếp thu nhanh qua hình ảnh và âm thanh, yêu thích môi trường học tương tác năng động.'
-            : 'Học lực Giỏi, tự giác cao, cần rèn thêm kỹ năng viết luận tiếng Anh học thuật.')
-
-        return {
-          id: ch.id,
-          code,
-          name: ch.studentName,
-          englishName,
-          age: ch.studentAge,
-          birthYear,
-          birthDate,
-          gender,
-          school,
-          grade,
-          targetSubject,
-          status: ch.status,
-          statusLabel,
-          testResultText,
-          studentPhone,
-          personality,
-          interests,
-          learningStyle,
-          strengths,
-          weaknesses,
-          learningGoal,
-          notes,
-          isMain,
-          isCurrent,
-        }
-      })
-      .sort((a, b) => (a.isCurrent ? -1 : b.isCurrent ? 1 : 0))
-  }, [familyLeads, lead])
+    setLocalSelectedParentName(p.name)
+    onSwitchParentPersona?.(p.name)
+    onUpdateLead?.(updatedLead)
+    toast.success(`Đã đặt ${p.role} (${p.name}) làm người liên hệ chính!`)
+  }
 
   // Handlers
   const handleCopy = (phone: string, name: string) => {
@@ -271,98 +287,147 @@ export function CrmLeadContactsTab({
     window.open(`https://zalo.me/${cleanPhone}`, '_blank')
   }
 
-  const handleOpenInNewTab = (childId: string, childName: string, childCode: string) => {
-    toast.info(`Đang mở hồ sơ ${childName} (${childCode}) trong tab mới...`)
-    window.open(`/app/crm_leads/${childId}`, '_blank')
-  }
-
   return (
     <div className="space-y-4 text-xs text-left select-none">
       {/* ============================================================ */}
-      {/* 1. SECTION: CHÂN DUNG PHỤ HUYNH (BUYER PERSONA)            */}
+      {/* BỐ CỤC 2 CỘT SONG SONG: PANEL TRÁI (CHÂN DUNG LEAD & PHỤ HUYNH) | PANEL PHẢI (CHÂN DUNG HỌC VIÊN) */}
+      {/* Không giàn cả 2 cột nữa                                      */}
       {/* ============================================================ */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between pb-0.5">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-bold text-foreground">Chân dung Phụ huynh (Buyer Persona)</h3>
-            <span className="text-xs text-muted-foreground font-semibold">
-              ({allParents.length})
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {onOpenFullProfile && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={onOpenFullProfile}
-                className="h-7 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer rounded-lg flex items-center gap-1.5"
-                title="Xem toàn bộ hồ sơ chi tiết khi tạo Lead"
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 items-start">
+        {/* PANEL TRÁI: CHÂN DUNG LEAD / THÔNG TIN PHỤ HUYNH */}
+        <div className="space-y-3.5">
+          {/* Header Bối cảnh Lead: Mã Lead, Ngày tạo & Chuyển đổi Phụ huynh chăm sóc (Gom vào panel trái) */}
+          <div className="rounded-xl border border-sky-200/90 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 p-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-2xs">
+            {/* Tiêu đề + Mã Lead + Ngày tạo */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+              <span className="font-bold text-foreground text-xs">
+                Chân dung Lead
+              </span>
+              <span className="text-muted-foreground/40">•</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const code = lead.code || 'LD-10291-A'
+                  navigator.clipboard.writeText(code)
+                  toast.success(`Đã sao chép mã Lead: ${code}`)
+                }}
+                className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title="Nhấp để sao chép mã Lead"
               >
-                <FileText className="h-3.5 w-3.5" />
-                <span>Hồ sơ chi tiết</span>
-              </Button>
+                <span>Mã: {lead.code || 'LD-10291-A'}</span>
+                <Copy className="h-3 w-3 text-muted-foreground/70 hover:text-foreground" />
+              </button>
+              <span className="text-muted-foreground/40">•</span>
+              <span className="text-xs text-muted-foreground font-normal">
+                Ngày tạo: {lead.createdAt || '10/08/2026'}
+              </span>
+            </div>
+
+            {/* Cụm Đổi phụ huynh chăm sóc */}
+            {parentContacts.length > 1 && (
+              <div className="flex items-center gap-1 flex-wrap sm:justify-end">
+                <span className="text-[11px] text-muted-foreground font-medium shrink-0">
+                  Phụ huynh:
+                </span>
+                <div className="flex items-center gap-1 flex-wrap">
+                  {parentContacts.map((p) => {
+                    const isSelected = selectedParent.name === p.name
+                    return (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => handleSwitchParent(p)}
+                        className={cn(
+                          'h-6 px-2 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer border',
+                          isSelected
+                            ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
+                            : 'bg-background hover:bg-muted text-foreground border-border/70'
+                        )}
+                      >
+                        <User className="h-2.5 w-2.5" />
+                        <span>
+                          {p.role}: {p.name}
+                        </span>
+                        {p.isPrimary && (
+                          <span
+                            className={cn(
+                              'text-[8px] px-1 rounded-xs font-bold uppercase',
+                              isSelected ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'
+                            )}
+                          >
+                            Chính
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )}
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onAddParent}
-              className="h-7 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer rounded-lg flex items-center gap-1"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Thêm phụ huynh</span>
-            </Button>
           </div>
+
+          {/* Chi tiết hồ sơ phụ huynh */}
+          <CrmLeadParentProfileView
+            parent={selectedParent}
+            isEditing={isEditingParent}
+            editedParent={editedParent}
+            setEditedParent={setEditedParent}
+            allParents={parentContacts}
+            onSelectParent={handleSwitchParent}
+            onSetPrimary={handleSetPrimaryParent}
+            onCopyPhone={handleCopy}
+            onCall={handleCall}
+            onZalo={handleZalo}
+            onStartEdit={handleStartEditParent}
+            onCancelEdit={handleCancelEditParent}
+            onSave={handleSaveParent}
+            onZoom={() => handleOpenZoom('parent')}
+          />
         </div>
 
-        <div className="space-y-3">
-          {allParents.map((parent, idx) => (
-            <CrmLeadParentCard
-              key={`${parent.phone}-${idx}`}
-              parent={parent}
-              onCopy={handleCopy}
-              onCall={handleCall}
-              onZalo={handleZalo}
-            />
-          ))}
-        </div>
+        {/* PANEL PHẢI: CHÂN DUNG HỌC VIÊN */}
+        <CrmLeadStudentProfileView
+          student={selectedStudent}
+          isEditing={isEditingStudent}
+          editedStudent={editedStudent}
+          setEditedStudent={setEditedStudent}
+          onStartEdit={handleStartEditStudent}
+          onCancelEdit={handleCancelEditStudent}
+          onSave={handleSaveStudent}
+          onZoom={() => handleOpenZoom('student')}
+        />
       </div>
 
       {/* ============================================================ */}
-      {/* 2. SECTION: CHÂN DUNG HỌC VIÊN (LEARNER PROFILE 360°)       */}
+      {/* MODAL PHÓNG TO TOÀN DIỆN (NẾU CẦN XEM RỘNG HƠN)               */}
       {/* ============================================================ */}
-      <div className="space-y-2.5 pt-2">
-        <div className="flex items-center justify-between pb-0.5">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-bold text-foreground">Chân dung Học viên (Learner Profile)</h3>
-            <span className="text-xs text-muted-foreground font-semibold">
-              ({allChildren.length})
-            </span>
-          </div>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onAddChild}
-            className="h-7 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer rounded-lg flex items-center gap-1"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Thêm học viên</span>
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {allChildren.map((child, idx) => (
-            <CrmLeadChildCard
-              key={`${child.id}-${child.name}-${idx}`}
-              child={child}
-              onSwitchLead={onSwitchLead}
-              onOpenInNewTab={handleOpenInNewTab}
-            />
-          ))}
-        </div>
-      </div>
+      <CrmLeadProfileModal
+        open={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+        selectedType={modalType}
+        selectedId={modalType === 'parent' ? selectedParent.name : selectedStudent.id}
+        parents={parentContacts}
+        childList={childContacts}
+        onSelectMember={(type, id) => {
+          if (type === 'parent') {
+            setLocalSelectedParentName(id)
+            onSwitchParentPersona?.(id)
+            const found = parentContacts.find((p) => p.name === id)
+            if (found) setEditedParent(found)
+          } else {
+            setSelectedStudentId(id)
+            const found = childContacts.find((c) => c.id === id)
+            if (found) setEditedStudent(found)
+          }
+        }}
+        onSwitchLead={onSwitchLead}
+        onCopyPhone={handleCopy}
+        onCall={handleCall}
+        onZalo={handleZalo}
+        onSetPrimary={handleSetPrimaryParent}
+        onSaveParent={handleSaveParent}
+        onSaveStudent={handleSaveStudent}
+      />
     </div>
   )
 }

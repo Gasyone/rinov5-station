@@ -25,6 +25,8 @@ import {
   isChoChotStatus,
   isChuyenDoiStatus,
   isThatBaiStatus,
+  isTamDungStatus,
+  isInactiveLeadStatus,
   isLeadTodayTask,
   isLeadOverdue,
   isLeadUnassigned,
@@ -279,9 +281,13 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
           if (st === 'cho_chot') return isChoChotStatus(lead.status)
           if (st === 'chuyen_doi') return isChuyenDoiStatus(lead.status)
           if (st === 'that_bai') return isThatBaiStatus(lead.status)
+          if (st === 'tam_dung') return isTamDungStatus(lead.status)
           return lead.status === st
         })
       })
+    } else {
+      // Mặc định ở ngoài danh sách & tab Tất cả: Không hiển thị Lead Thất bại và Tạm dừng
+      result = result.filter((lead) => !isInactiveLeadStatus(lead.status))
     }
 
     return result
@@ -305,7 +311,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
           { value: 'hen_trai_nghiem', label: 'Hẹn trải nghiệm' },
           { value: 'cho_chot', label: 'Chờ chốt deal' },
           { value: 'chuyen_doi', label: 'Đã chuyển đổi' },
-          { value: 'that_bai', label: 'Thất bại / Tạm dừng' },
+          { value: 'that_bai', label: 'Thất bại' },
+          { value: 'tam_dung', label: 'Tạm dừng' },
         ],
         selectedValues: advancedFilters.statuses,
         getOptionCount: (val) =>
@@ -316,6 +323,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
             if (val === 'cho_chot') return isChoChotStatus(l.status)
             if (val === 'chuyen_doi') return isChuyenDoiStatus(l.status)
             if (val === 'that_bai') return isThatBaiStatus(l.status)
+            if (val === 'tam_dung') return isTamDungStatus(l.status)
             return l.status === val
           }).length,
       }),
@@ -370,6 +378,10 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
 
   const handleToggleFilter = (sectionId: string, value: string) => {
     setCurrentPage(1)
+    if (sectionId === 'statuses') {
+      setSelectedStatus('all')
+      setSelectedSubStatus('all')
+    }
     setAdvancedFilters((prev) => {
       const key = sectionId as keyof typeof prev
       const list = prev[key] || []
@@ -418,6 +430,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       baseLeads = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
     } else if (selectedStatus === 'that_bai') {
       baseLeads = filteredLeads.filter((item) => isThatBaiStatus(item.status))
+    } else if (selectedStatus === 'tam_dung') {
+      baseLeads = filteredLeads.filter((item) => isTamDungStatus(item.status))
     } else if (selectedStatus !== 'all') {
       baseLeads = filteredLeads.filter((item) => item.status === selectedStatus)
     }
@@ -454,6 +468,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       list = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
     } else if (selectedStatus === 'that_bai') {
       list = filteredLeads.filter((item) => isThatBaiStatus(item.status))
+    } else if (selectedStatus === 'tam_dung') {
+      list = filteredLeads.filter((item) => isTamDungStatus(item.status))
     } else if (selectedStatus !== 'all') {
       list = filteredLeads.filter((item) => item.status === selectedStatus)
     }
@@ -494,6 +510,9 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   const handleTileSelect = (tileId: string) => {
     setSelectedStatus(tileId)
     setSelectedSubStatus('all') // Reset sub-status khi chọn tab mới
+    if (advancedFilters.statuses.length > 0) {
+      setAdvancedFilters((prev) => ({ ...prev, statuses: [] }))
+    }
     setCurrentPage(1)
   }
 
@@ -649,8 +668,6 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
           if (!isOpen) setContactProfileLead(null)
         }}
         initialLead={contactProfileLead}
-        totalOrdersCount={contactProfileLead?.orderStatus === 'paid' ? 1 : 0}
-        totalOrdersAmount={contactProfileLead?.orderStatus === 'paid' ? '15.000.000đ' : '0đ'}
         onSubmit={(updatedLeads) => {
           setCustomLeads((prev) => [...updatedLeads, ...prev])
           toast.success('Đã cập nhật thông tin hồ sơ liên hệ thành công!')
@@ -681,7 +698,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       <FilterGroupSheetPanel
         open={isFilterOpen}
         title="Bộ lọc Lead nâng cao"
-        description="Lọc theo Cơ sở, Nguồn tiếp nhận, Khóa học quan tâm và Người phụ trách."
+        description="Lọc theo Cơ sở, Trạng thái (Thất bại, Tạm dừng), Nguồn tiếp nhận, Khóa học quan tâm và Người phụ trách."
         groups={filterGroups}
         onOpenChange={setIsFilterOpen}
         onToggle={handleToggleFilter}

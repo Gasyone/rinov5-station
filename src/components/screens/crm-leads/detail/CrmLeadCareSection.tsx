@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Phone, Copy, ChevronDown, Check } from 'lucide-react'
+import { Phone, Copy, ChevronDown, Check, MessageSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
@@ -22,12 +22,16 @@ interface CrmLeadCareSectionProps {
     callbackTime?: string
     closeCare?: boolean
   }) => void
+  activeContactName?: string | null
+  onContactChange?: (name: string) => void
 }
 
 export function CrmLeadCareSection({
   lead,
   studentCareAlert,
   onSaveInteraction,
+  activeContactName,
+  onContactChange,
 }: CrmLeadCareSectionProps) {
   // Contact list from lead data
   const contacts = useMemo(() => {
@@ -39,6 +43,18 @@ export function CrmLeadCareSection({
         isPrimary: true,
       },
     ]
+    if (lead.otherParents && lead.otherParents.length > 0) {
+      lead.otherParents.forEach((op) => {
+        if (op.name !== lead.parentName) {
+          list.push({
+            name: op.name,
+            relationship: op.role,
+            phone: op.phone,
+            isPrimary: false,
+          })
+        }
+      })
+    }
     if (lead.familySiblings && lead.familySiblings.length > 0) {
       lead.familySiblings.forEach((sib: string, idx: number) => {
         list.push({
@@ -50,9 +66,33 @@ export function CrmLeadCareSection({
       })
     }
     return list
-  }, [lead.parentName, lead.parentRole, lead.phone, lead.familySiblings])
+  }, [lead.parentName, lead.parentRole, lead.phone, lead.otherParents, lead.familySiblings])
 
+  const [prevLeadParentKey, setPrevLeadParentKey] = useState(
+    `${lead.id}-${lead.parentName}-${lead.phone}`
+  )
   const [selectedContactIndex, setSelectedContactIndex] = useState(0)
+
+  // Đồng bộ khi đổi phụ huynh chăm sóc từ tab bên trái hoặc props (React 19 adjust state pattern)
+  const [prevActiveContactName, setPrevActiveContactName] = useState(activeContactName)
+  if (activeContactName !== undefined && activeContactName !== prevActiveContactName) {
+    setPrevActiveContactName(activeContactName)
+    if (activeContactName) {
+      const idx = contacts.findIndex((c) => c.name === activeContactName)
+      if (idx !== -1 && idx !== selectedContactIndex) {
+        setSelectedContactIndex(idx)
+      }
+    } else {
+      setSelectedContactIndex(0)
+    }
+  }
+
+  const currentLeadParentKey = `${lead.id}-${lead.parentName}-${lead.phone}`
+  if (currentLeadParentKey !== prevLeadParentKey) {
+    setPrevLeadParentKey(currentLeadParentKey)
+    setSelectedContactIndex(0)
+  }
+
   const selectedContact = contacts[selectedContactIndex] || contacts[0]
   const activePhone = selectedContact.phone
 
@@ -96,6 +136,17 @@ export function CrmLeadCareSection({
     setCallOutcome('nghe_may')
     setIsCallActive(true)
     toast.info(`Đang kết nối cuộc gọi tới ${selectedContact.name} (${activePhone})...`)
+  }
+
+  // Handle Zalo trigger
+  const handleOpenZalo = () => {
+    if (!activePhone || activePhone === '--') {
+      toast.warning('Chưa có số điện thoại để mở Zalo!')
+      return
+    }
+    const cleanPhone = activePhone.replace(/\D/g, '')
+    toast.info(`Mở cửa sổ chat Zalo với ${selectedContact.name}...`)
+    window.open(`https://zalo.me/${cleanPhone}`, '_blank')
   }
 
   // Save note only (continue care)
@@ -185,6 +236,7 @@ export function CrmLeadCareSection({
                           onClick={() => {
                             setSelectedContactIndex(idx)
                             setIsContactPopoverOpen(false)
+                            onContactChange?.(c.name)
                           }}
                           className={cn(
                             'w-full text-left px-2 py-1.5 rounded text-[11.5px] font-medium flex items-center justify-between transition-colors cursor-pointer',
@@ -209,7 +261,7 @@ export function CrmLeadCareSection({
                 </Popover>
               </div>
 
-              {/* Row 2: SĐT + Sao chép + Nút Gọi */}
+              {/* Row 2: SĐT + Sao chép + Zalo + Nút Gọi */}
               <div className="flex items-center justify-between gap-1.5 min-w-0 w-full pt-0.5">
                 <span className="text-muted-foreground font-mono font-semibold text-xs truncate">
                   {activePhone}
@@ -222,6 +274,15 @@ export function CrmLeadCareSection({
                     title="Sao chép số điện thoại"
                   >
                     <Copy className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenZalo}
+                    className="h-6 px-2 text-[10.5px] font-bold rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0 text-sky-700 border border-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800"
+                    title={`Mở Zalo chat với ${recipientName}`}
+                  >
+                    <MessageSquare className="h-3 w-3 text-sky-600" />
+                    <span>Zalo</span>
                   </button>
                   <button
                     type="button"
@@ -368,7 +429,7 @@ export function CrmLeadCareSection({
           student={studentCareAlert}
           chatRecipient={recipientName}
           isCaredStatus={false}
-          defaultShowMissedCalls={true}
+          defaultShowMissedCalls={false}
         />
       </div>
     </div>

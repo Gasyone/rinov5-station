@@ -73,6 +73,7 @@ export function OrgPositionAssignDialog({
   // Re-sync selectedIds when dialog opens or currentAssignedStaff changes
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedIds(new Set(currentAssignedStaff.map((s) => s.id)))
       setSearch('')
       setTabFilter('all')
@@ -422,7 +423,7 @@ export function OrgPositionAssignDialog({
           <div className="text-xs text-muted-foreground">
             Đang chọn:{' '}
             <span className="font-bold text-foreground">{selectedCount}</span> nhân sự cho chức danh{' '}
-            <span className="font-semibold text-foreground">"{positionTitle}"</span>
+            <span className="font-semibold text-foreground">&ldquo;{positionTitle}&rdquo;</span>
           </div>
 
           <div className="flex items-center gap-2">

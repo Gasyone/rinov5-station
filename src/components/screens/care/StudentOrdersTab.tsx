@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type Order } from '@/mocks/orders'
@@ -75,39 +75,50 @@ export function StudentOrdersTab({
     return [...customDraftOrders, ...nonDuplicatedInitial]
   }, [customDraftOrders, initialOrders])
 
+  // Có đơn hàng của con khác trong gia đình
+  const hasOtherChildrenOrders = useMemo(() => {
+    return orders.some((o) => o.isOtherChild)
+  }, [orders])
+
+  // Tự động tích chọn nếu bé hiện tại không có đơn riêng nhưng có đơn của con khác
+  useEffect(() => {
+    const ownCount = orders.filter((o) => !o.isOtherChild).length
+    const siblingCount = orders.filter((o) => o.isOtherChild).length
+    if (ownCount === 0 && siblingCount > 0) {
+      setShowOtherChildrenOrders(true)
+    }
+  }, [orders])
+
   const filteredOrders = useMemo(() => {
     if (showOtherChildrenOrders) return orders
     return orders.filter((o) => !o.isOtherChild)
   }, [orders, showOtherChildrenOrders])
 
-  const isDraftOrder = useCallback((order: DetailedOrder): boolean => {
-    return (
-      order.id.includes('DRAFT') ||
-      order.orderNo.includes('DRAFT') ||
-      order.paymentMethodTag?.includes('Đơn nháp') ||
-      false
-    )
-  }, [])
+  // Không có đơn hàng nháp trong hệ thống Rinov5
+  const isDraftOrder = useCallback((_order: DetailedOrder): boolean => false, [])
 
   const isCurrentPackageOrder = useCallback(
     (order: DetailedOrder): boolean => {
-      if (isDraftOrder(order)) return false
       if (order.isCurrentPackage !== undefined) return order.isCurrentPackage
+      if (order.isExpired) return false
       return (
         order.orderNo === 'OD800436' ||
         order.paymentStatus === 'unpaid' ||
+        order.paymentStatus === 'partial' ||
+        order.status === 'processing' ||
+        order.status === 'pending' ||
         order.detailedItems?.some((i) => i.orderType === 'Gia Hạn') ||
         false
       )
     },
-    [isDraftOrder]
+    []
   )
 
   const isPurchasedOrder = useCallback(
     (order: DetailedOrder): boolean => {
-      return !isDraftOrder(order) && !isCurrentPackageOrder(order)
+      return !isCurrentPackageOrder(order)
     },
-    [isDraftOrder, isCurrentPackageOrder]
+    [isCurrentPackageOrder]
   )
 
   const draftOrders = useMemo(() => filteredOrders.filter(isDraftOrder), [filteredOrders, isDraftOrder])
@@ -176,13 +187,13 @@ export function StudentOrdersTab({
 
   const handleCreateDraftFromPackage = useCallback(
     (sourceOrder: DetailedOrder, item?: DetailedOrderItem) => {
-      const draftId = `OD-DRAFT-${Math.floor(1000 + Math.random() * 9000)}`
+      const orderId = `OD-${Math.floor(1000 + Math.random() * 9000)}`
       const sourceNo = sourceOrder.orderNo || sourceOrder.id
       const sourcePkg = item?.productName || sourceOrder.detailedItems?.[0]?.productName || 'Gói học tái phí'
 
-      const newDraft: DetailedOrder = {
-        id: draftId,
-        orderNo: draftId,
+      const newOrder: DetailedOrder = {
+        id: orderId,
+        orderNo: orderId,
         studentId: studentId,
         studentName: studentName,
         sourceOrderNo: sourceNo,
@@ -198,8 +209,9 @@ export function StudentOrdersTab({
         saleRep: 'Trần Nguyễn CSM',
         saleDate: new Date().toLocaleDateString('vi-VN'),
         createdAt: new Date().toISOString(),
-        paymentMethodTag: 'COD / Đơn nháp',
+        paymentMethodTag: 'Chờ thanh toán',
         totalPaidAmount: 0,
+        isCurrentPackage: true,
         detailedItems: [
           {
             productId: item?.productId || 'p-new',
@@ -224,9 +236,9 @@ export function StudentOrdersTab({
         payments: [],
       }
 
-      sourceOrder.linkedDraftOrderNo = draftId
-      setCustomDraftOrders((prev) => [newDraft, ...prev])
-      setEditingDraftOrder(newDraft)
+      sourceOrder.linkedDraftOrderNo = orderId
+      setCustomDraftOrders((prev) => [newOrder, ...prev])
+      setEditingDraftOrder(newOrder)
       setIsDraftEditorOpen(true)
     },
     [studentId, studentName]
@@ -296,16 +308,18 @@ export function StudentOrdersTab({
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Checkbox mở rộng xem đơn hàng của các con khác */}
-            <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-zinc-300 cursor-pointer select-none hover:text-foreground">
-              <input
-                type="checkbox"
-                checked={showOtherChildrenOrders}
-                onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
-                className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
-              />
-              <span>Xem đơn các con khác</span>
-            </label>
+            {/* Checkbox mở rộng xem đơn hàng của các con khác (chỉ hiện khi gia đình có con khác có đơn) */}
+            {hasOtherChildrenOrders && (
+              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-zinc-300 cursor-pointer select-none hover:text-foreground">
+                <input
+                  type="checkbox"
+                  checked={showOtherChildrenOrders}
+                  onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
+                  className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+                />
+                <span>Xem đơn các con khác</span>
+              </label>
+            )}
 
             {/* Button Tạo đơn ở trên cùng */}
             <Button
@@ -345,39 +359,6 @@ export function StudentOrdersTab({
           </div>
         )}
       </div>
-
-      {/* ── SECTION 2: ĐƠN HÀNG NHÁP ── */}
-      {draftOrders.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-              <span>Đơn hàng nháp</span>
-              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-xs font-mono font-bold">
-                {draftOrders.length}
-              </span>
-            </div>
-          </div>
-          <div className="space-y-3.5">
-            {draftOrders.map((order) => (
-              <StudentOrderCardItem
-                key={order.id}
-                order={order}
-                isDraft={true}
-                isCurrent={false}
-                isPaymentsExpanded={expandedPayments[order.id] ?? false}
-                showOtherChildren={showOtherChildrenOrders}
-                draftOrders={draftOrders}
-                onToggleExpandPayments={toggleExpandPayments}
-                onViewDetail={handleViewDetail}
-                onCreateDraftFromPackage={handleCreateDraftFromPackage}
-                onCreateCompletionOrder={handleCreateCompletionOrder}
-                onAddPayment={handleViewDetail}
-                onScrollToOrder={scrollToOrder}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── SECTION 3: GÓI ĐÃ MUA & LỊCH SỬ CHUYỂN ĐỔI (CHÈN TRỰC TIẾP) ── */}
       {historyTimelineItems.length > 0 && (

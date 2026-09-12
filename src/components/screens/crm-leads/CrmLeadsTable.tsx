@@ -1,6 +1,6 @@
 'use client'
 
-import { Eye, Copy, Check, FileText, Calendar, UserPlus, Plus, User, ArrowLeftRight, ExternalLink, School, GraduationCap } from 'lucide-react'
+import { Eye, Copy, Check, FileText, Calendar, UserPlus, Plus, User, ArrowLeftRight, ExternalLink, School, GraduationCap, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
@@ -23,9 +23,10 @@ import {
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { maskPhoneNumber, formatAgeAndBirthYear, getInitialLevel, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateTimeWithDayOfWeek, formatOrderDate } from './crmLeadsHelpers'
-import { SOURCE_LABEL_MAP, STATUS_LABEL_MAP } from './crmLeadsTypes'
+import { maskPhoneNumber, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateTimeWithDayOfWeek, formatOrderDate, getLeadAssessmentDisplay, getLeadNearestEvent, getLeadSlaDeadline } from './crmLeadsHelpers'
+import { STATUS_LABEL_MAP } from './crmLeadsTypes'
 import { CrmLeadsCareHistoryPopover } from './CrmLeadsCareHistoryPopover'
+import { BookingEventHoverCard } from '@/components/screens/calendar/BookingEventHoverCard'
 import { StaffSelect } from './CrmCustomerCreateSearchSelect'
 import { STAFF_LIST, StaffOption } from './crmCustomerCreateTypes'
 
@@ -122,7 +123,7 @@ export function CrmLeadsTable({
           />
         }
       >
-        <Table containerClassName="w-full overflow-x-auto min-h-full" className="min-w-[1600px] border-collapse">
+        <Table containerClassName="w-full overflow-x-auto min-h-full" className="min-w-[1360px] border-collapse">
           <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-xs shadow-xs [&_th]:bg-muted/95 [&_th]:backdrop-blur-xs">
             <TableRow className="border-b border-border hover:bg-transparent">
               {/* Checkbox */}
@@ -135,7 +136,6 @@ export function CrmLeadsTable({
               </TableHead>
               <TableHead className="min-w-[280px]">Lead</TableHead>
               <TableHead className="min-w-[210px]">Khóa học & Nhóm SP</TableHead>
-              <TableHead className="min-w-[160px]">Tuổi & Trình độ</TableHead>
               <TableHead className="min-w-[240px]">Đánh giá & Trải nghiệm</TableHead>
               <TableHead className="min-w-[290px] text-left">Lịch sử chăm sóc</TableHead>
               <TableHead className="min-w-[150px]">Trạng thái</TableHead>
@@ -155,10 +155,9 @@ export function CrmLeadsTable({
               const careInfo = getLeadCareInfo(lead)
               const staffAssignInfo = getStaffAssignmentInfo(lead)
 
-              // Kiểm tra sự kiện
-              const hasTest = Boolean(lead.testStatus)
-              const hasTrial = Boolean(lead.trialStatus)
-              const eventCount = (hasTest ? 1 : 0) + (hasTrial ? 1 : 0)
+              const assessment = getLeadAssessmentDisplay(lead)
+              const nearestEvent = getLeadNearestEvent(lead)
+              const slaDeadline = getLeadSlaDeadline(lead)
 
               return (
                 <TableRow
@@ -183,27 +182,25 @@ export function CrmLeadsTable({
                     />
                   </TableCell>
 
-                  {/* Cột 1: Lead - Dòng 1: Tên lead, nguồn; Dòng 2: Tên Phụ huynh, Sđt, có copy */}
+                  {/* Cột 1: Lead - Dòng 1: Tên học viên, Tuổi & Năm sinh; Dòng 2: Tên Phụ huynh, Sđt, có copy */}
                   <TableCell className="relative cursor-pointer" onClick={() => onViewDetail(lead)}>
                     <div className="flex flex-col gap-1 pr-14">
-                      {/* Dòng 1: Tên lead, nguồn */}
+                      {/* Dòng 1: Tên học viên, Tuổi & Năm sinh */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-semibold text-foreground text-sm">
                           {lead.studentName}
                         </span>
+                        <span className="text-xs text-muted-foreground font-normal">
+                          ({lead.studentAge} tuổi - {birthYear})
+                        </span>
                         {lead.isReturningLead && (
-                          <Badge
-                            variant="outline"
-                            className="h-4.5 px-1.5 text-[10px] font-semibold bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 shadow-none"
+                          <span
+                            className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-amber-100/90 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 shrink-0 cursor-help"
                             title={lead.returningReason || 'Lead quay lại'}
                           >
-                            Quay lại
-                          </Badge>
+                            <RotateCcw className="h-2.5 w-2.5" />
+                          </span>
                         )}
-                        <span className="text-muted-foreground/40">•</span>
-                        <span className="text-xs text-muted-foreground">
-                          {SOURCE_LABEL_MAP[lead.source] ?? lead.source}
-                        </span>
                       </div>
 
                       {/* Dòng 2: Tên Phụ huynh, Sđt */}
@@ -265,230 +262,157 @@ export function CrmLeadsTable({
                   {/* Cột 2: Khóa học đăng ký & Nhóm sản phẩm */}
                   <TableCell>
                     <div className="flex flex-col gap-0.5 max-w-[200px]">
-                      <div className="font-normal text-foreground text-xs truncate">
+                      <div className="font-normal text-foreground text-xs truncate" title={lead.targetSubject}>
                         {lead.targetSubject}
                       </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {getProductGroup(lead.targetSubject)}
+                      <div className="text-xs text-muted-foreground truncate" title={getProductGroup(lead)}>
+                        {getProductGroup(lead)}
                       </div>
                     </div>
                   </TableCell>
 
-                  {/* Cột 3: Tuổi & Trình độ ban đầu khi tạo test */}
+                  {/* Cột 3: Đánh giá & Trải nghiệm */}
                   <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-xs font-normal text-foreground">
-                        {formatAgeAndBirthYear(lead.studentAge, birthYear)}
-                      </div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {getInitialLevel(lead)}
-                      </div>
-                    </div>
-                  </TableCell>
+                    <div className="flex flex-col gap-0.5 max-w-[240px]">
+                      {/* Dòng 1: Trình độ (hoặc 'Chưa đánh giá' in nghiêng) + Icon +N nếu có nhiều sự kiện */}
+                      <div className="flex items-center gap-1.5 text-xs text-foreground font-normal">
+                        {assessment.isAssessed ? (
+                          <span className="font-normal text-foreground truncate max-w-[170px]" title={assessment.levelText}>
+                            {assessment.levelText}
+                          </span>
+                        ) : (
+                          <span className="italic text-muted-foreground/60 select-none">
+                            Chưa đánh giá
+                          </span>
+                        )}
 
-                  {/* Cột 5: Đánh giá & Trải nghiệm */}
-                  <TableCell>
-                    {eventCount === 0 ? (
-                      <div className="flex items-center gap-1.5 flex-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs font-normal border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 cursor-pointer shadow-2xs shrink-0"
-                          onClick={() => onOpenBookingTest?.(lead)}
-                          title="Đặt lịch đánh giá năng lực (ĐK trải nghiệm)"
-                        >
-                          <span>+ TN</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs font-normal border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 cursor-pointer shadow-2xs shrink-0"
-                          onClick={() => onOpenTrialClass?.(lead)}
-                          title="Đăng ký ghép lớp học thử (ĐK học thử)"
-                        >
-                          <span>+ HT</span>
-                        </Button>
-                      </div>
-                    ) : (
-                      (() => {
-                        // Xác định sự kiện chính (chỉ hiện Test hoặc Học thử trong 1 thời điểm)
-                        const primary = (() => {
-                          if (hasTrial && !hasTest) {
-                            return {
-                              type: 'HT' as const,
-                              label: lead.trialStatus === 'completed'
-                                ? `HT: Đã học (${lead.trialClassName || 'SK-02'})`
-                                : lead.trialStatus === 'scheduled'
-                                ? `HT: Hẹn thử (${lead.trialClassName || 'SK-02'})`
-                                : `HT: Vắng thử (${lead.trialClassName || 'SK-02'})`,
-                              date: lead.trialDate,
-                              time: lead.trialTime,
-                              url: `/app/trial_class?leadId=${lead.id}`,
-                              colorClass: 'text-sky-700 dark:text-sky-300',
-                            }
-                          }
-                          if (hasTest && !hasTrial) {
-                            return {
-                              type: 'TN' as const,
-                              label: lead.testStatus === 'completed'
-                                ? `TN: Đã test${lead.testScore ? ` (${lead.testScore})` : ''}`
-                                : lead.testStatus === 'scheduled'
-                                ? 'TN: Hẹn test'
-                                : 'TN: Vắng test',
-                              date: lead.testDate,
-                              time: lead.testTime,
-                              url: `/app/booking_test?leadId=${lead.id}`,
-                              colorClass: 'text-purple-700 dark:text-purple-300',
-                            }
-                          }
-                          // Cả 2 đều có: ưu tiên sự kiện đang hẹn (scheduled)
-                          if (lead.trialStatus === 'scheduled' && lead.testStatus !== 'scheduled') {
-                            return {
-                              type: 'HT' as const,
-                              label: `HT: Hẹn thử (${lead.trialClassName || 'SK-02'})`,
-                              date: lead.trialDate,
-                              time: lead.trialTime,
-                              url: `/app/trial_class?leadId=${lead.id}`,
-                              colorClass: 'text-sky-700 dark:text-sky-300',
-                            }
-                          }
-                          if (lead.testStatus === 'scheduled' && lead.trialStatus !== 'scheduled') {
-                            return {
-                              type: 'TN' as const,
-                              label: 'TN: Hẹn test',
-                              date: lead.testDate,
-                              time: lead.testTime,
-                              url: `/app/booking_test?leadId=${lead.id}`,
-                              colorClass: 'text-purple-700 dark:text-purple-300',
-                            }
-                          }
-                          // Mặc định cả 2 đều completed hoặc no_show: lấy HT (sự kiện học thử gần nhất)
-                          return {
-                            type: 'HT' as const,
-                            label: `HT: Đã học (${lead.trialClassName || 'SK-02'})`,
-                            date: lead.trialDate,
-                            time: lead.trialTime,
-                            url: `/app/trial_class?leadId=${lead.id}`,
-                            colorClass: 'text-sky-700 dark:text-sky-300',
-                          }
-                        })()
-
-                        const hasMultiple = hasTest && hasTrial
-
-                        return (
-                          <div className="flex flex-col gap-0.5 max-w-[240px]">
-                            {/* Dòng 1: Chỉ hiện Test hoặc Học thử + Icon 1+ nếu có thêm sự kiện */}
-                            <div className="flex items-center gap-1.5 text-xs text-foreground font-normal">
-                              <span className={cn('truncate', primary.colorClass)}>
-                                {primary.label}
-                              </span>
-
-                              {hasMultiple && (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[10px] font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer shrink-0 transition-colors"
-                                      title="Có thêm 1 sự kiện đánh giá/học thử - Bấm để xem"
+                        {nearestEvent.hasMultiple && (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[10px] font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer shrink-0 transition-colors"
+                                title={`Có thêm ${nearestEvent.eventCount - 1} sự kiện - Bấm để xem chi tiết`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <FileText className="h-3 w-3" />
+                                <span>+{nearestEvent.eventCount - 1}</span>
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" className="w-80 p-3 shadow-lg z-50 text-xs">
+                              <div className="font-semibold text-foreground border-b pb-1.5 mb-2 flex items-center justify-between">
+                                <span>Sự kiện Đánh giá & Học thử</span>
+                                <span className="font-normal text-muted-foreground">({lead.studentName})</span>
+                              </div>
+                              <div className="space-y-2">
+                                {/* Mục TN */}
+                                {lead.testStatus && (
+                                  <div className="p-2 rounded bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 flex flex-col gap-1">
+                                    <div className="flex items-center justify-between font-normal text-purple-900 dark:text-purple-300">
+                                      <span className="flex items-center gap-1 font-medium">
+                                        <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
+                                        TN: {lead.testerTeacherName || 'Thầy Alex'}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
+                                        {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Hẹn test' : 'Vắng test'}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {lead.testDate && formatDateTimeWithDayOfWeek(lead.testDate, lead.testTime)}
+                                      {lead.testScore && ` • Điểm: ${lead.testScore}`}
+                                    </div>
+                                    <a
+                                      href={`/app/booking_test?leadId=${lead.id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-xs text-primary font-normal hover:underline mt-0.5"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <FileText className="h-3 w-3" />
-                                      <span>+1</span>
-                                    </button>
-                                  </PopoverTrigger>
-                                  <PopoverContent align="start" className="w-80 p-3 shadow-lg z-50 text-xs">
-                                    <div className="font-semibold text-foreground border-b pb-1.5 mb-2 flex items-center justify-between">
-                                      <span>Sự kiện Đánh giá & Học thử</span>
-                                      <span className="font-normal text-muted-foreground">({lead.studentName})</span>
-                                    </div>
-                                    <div className="space-y-2">
-                                      {/* Mục TN */}
-                                      {lead.testStatus && (
-                                        <div className="p-2 rounded bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 flex flex-col gap-1">
-                                          <div className="flex items-center justify-between font-normal text-purple-900 dark:text-purple-300">
-                                            <span className="flex items-center gap-1 font-medium">
-                                              <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
-                                              TN: {lead.testerTeacherName || 'Thầy Alex'}
-                                            </span>
-                                            <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
-                                              {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Hẹn test' : 'Vắng test'}
-                                            </Badge>
-                                          </div>
-                                          <div className="text-xs text-muted-foreground">
-                                            {lead.testDate && formatDateTimeWithDayOfWeek(lead.testDate, lead.testTime)}
-                                            {lead.testScore && ` • Điểm: ${lead.testScore}`}
-                                          </div>
-                                          <a
-                                            href={`/app/booking_test?leadId=${lead.id}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 text-xs text-primary font-normal hover:underline mt-0.5"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
-                                            <ExternalLink className="h-3 w-3" />
-                                            <span>Mở phiếu kết quả đánh giá</span>
-                                          </a>
-                                        </div>
-                                      )}
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span>Mở phiếu kết quả đánh giá</span>
+                                    </a>
+                                  </div>
+                                )}
 
-                                      {/* Mục HT */}
-                                      {lead.trialStatus && (
-                                        <div className="p-2 rounded bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex flex-col gap-1">
-                                          <div className="flex items-center justify-between font-normal text-sky-900 dark:text-sky-300">
-                                            <span className="flex items-center gap-1 font-medium">
-                                              <School className="h-3.5 w-3.5 text-sky-600" />
-                                              HT: {lead.trialClassName || 'SK-02'}
-                                            </span>
-                                            <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
-                                              {lead.trialStatus === 'completed' ? 'Đã học' : lead.trialStatus === 'scheduled' ? 'Hẹn thử' : 'Vắng thử'}
-                                            </Badge>
-                                          </div>
-                                          <div className="text-xs text-muted-foreground">
-                                            {lead.trialDate && formatDateTimeWithDayOfWeek(lead.trialDate, lead.trialTime)}
-                                            {lead.trialFeedback && ` • ${lead.trialFeedback}`}
-                                          </div>
-                                          <a
-                                            href={`/app/trial_class?leadId=${lead.id}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-normal hover:underline mt-0.5"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
-                                            <ExternalLink className="h-3 w-3" />
-                                            <span>Mở phiếu nhận xét học thử</span>
-                                          </a>
-                                        </div>
-                                      )}
+                                {/* Mục HT */}
+                                {lead.trialStatus && (
+                                  <div className="p-2 rounded bg-sky-50/70 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex flex-col gap-1">
+                                    <div className="flex items-center justify-between font-normal text-sky-900 dark:text-sky-300">
+                                      <span className="flex items-center gap-1 font-medium">
+                                        <School className="h-3.5 w-3.5 text-sky-600" />
+                                        HT: {lead.trialClassName || 'SK-02'}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs py-0 px-1 font-normal">
+                                        {lead.trialStatus === 'completed' ? 'Đã học' : lead.trialStatus === 'scheduled' ? 'Hẹn thử' : 'Vắng thử'}
+                                      </Badge>
                                     </div>
-                                  </PopoverContent>
-                                </Popover>
-                              )}
-                            </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {lead.trialDate && formatDateTimeWithDayOfWeek(lead.trialDate, lead.trialTime)}
+                                      {lead.trialFeedback && ` • ${lead.trialFeedback}`}
+                                    </div>
+                                    <a
+                                      href={`/app/trial_class?leadId=${lead.id}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-normal hover:underline mt-0.5"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span>Mở phiếu nhận xét học thử</span>
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
 
-                            {/* Dòng 2: Ngày giờ (Không còn chữ gần nhất), có link mở tab mới sang kết quả */}
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                              {primary.date ? (
-                                <a
-                                  href={primary.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1 font-mono font-normal truncate max-w-[220px]"
-                                  title="Bấm để mở phiếu kết quả ở tab mới"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <ExternalLink className="h-3 w-3 shrink-0" />
-                                  <span>{formatDateTimeWithDayOfWeek(primary.date, primary.time)}</span>
-                                </a>
-                              ) : (
-                                <span>-</span>
-                              )}
-                            </div>
+                      {/* Dòng 2: Lịch gần nhất (hover ra Popover từ calendar_event_schedule) hoặc nút đặt lịch nhanh */}
+                      {nearestEvent.hasEvent && nearestEvent.session ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <BookingEventHoverCard session={nearestEvent.session} side="right">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                window.open(`/app/calendar_event_schedule?search=${encodeURIComponent(lead.studentName)}`, '_blank')
+                              }}
+                              className="text-xs text-muted-foreground hover:text-primary hover:underline font-mono text-left cursor-pointer transition-colors inline-flex items-center gap-1 group/evt truncate max-w-[220px]"
+                            >
+                              <span className="truncate">{nearestEvent.displayLabel}</span>
+                              <ExternalLink className="h-2.5 w-2.5 opacity-0 group-hover/evt:opacity-100 text-primary shrink-0 transition-opacity" />
+                            </button>
+                          </BookingEventHoverCard>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          <span className="text-xs text-muted-foreground/40 font-mono">-</span>
+                          <div className="hidden group-hover:inline-flex items-center gap-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-5 px-1.5 text-[11px] font-normal border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 cursor-pointer shrink-0"
+                              onClick={() => onOpenBookingTest?.(lead)}
+                              title="Đặt lịch đánh giá năng lực"
+                            >
+                              + TN
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-5 px-1.5 text-[11px] font-normal border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 cursor-pointer shrink-0"
+                              onClick={() => onOpenTrialClass?.(lead)}
+                              title="Đăng ký ghép lớp học thử"
+                            >
+                              + HT
+                            </Button>
                           </div>
-                        )
-                      })()
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
 
                   {/* Cột 6: Lịch sử chăm sóc */}
@@ -559,11 +483,16 @@ export function CrmLeadsTable({
                     })()}
                   </TableCell>
 
-                  {/* Cột 7: Trạng thái */}
-                  <TableCell className="min-w-[140px]">
-                    <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
-                      {STATUS_LABEL_MAP[lead.status] ?? lead.status}
-                    </Badge>
+                  {/* Cột: Trạng thái & Hạn SLA */}
+                  <TableCell className="min-w-[150px]">
+                    <div className="flex flex-col gap-1 items-start">
+                      <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
+                        {STATUS_LABEL_MAP[lead.status] ?? lead.status}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground whitespace-nowrap font-normal">
+                        Hạn SLA: <span className="font-mono text-foreground/85">{slaDeadline}</span>
+                      </span>
+                    </div>
                   </TableCell>
 
                   {/* Cột 8: Người phụ trách (Chỉ hiển thị trên viewScope 'all', ẩn trên viewScope 'my' vì là Lead của chính họ) */}

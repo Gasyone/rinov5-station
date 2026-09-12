@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import { 
   Users, 
-  Plus,
   Phone,
   Check,
   Copy,
@@ -15,26 +14,15 @@ import {
   ChevronDown,
   Heart,
   ExternalLink,
-  FileBarChart,
-  Pencil,
   FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import type { RosterStudent } from './classesDetailTypes'
 import { maskPhone as maskPhoneUtil } from './classesDetailHelpers'
 import { stableHash } from './classesSessionDetailHelpers'
-import { ConfirmDialog, EmptyState, StatusBadge, CareTagHoverCard } from '@/components/shared'
-import { getStatusBadgeClass } from '@/lib/statusColors'
+import { ConfirmDialog, EmptyState, CareTagHoverCard } from '@/components/shared'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { StudentCareDetailDialog } from '@/components/screens/care/StudentCareDetailDialog'
@@ -260,6 +248,7 @@ export function ClassesDetailRoster({
   const [showInactiveStudents, setShowInactiveStudents] = useState(false)
   const [careStudentId, setCareStudentId] = useState<string | null>(null)
   const [isMonthlyReportModalOpen, setIsMonthlyReportModalOpen] = useState(false)
+  const [selectedMonthlyReportStudentId, setSelectedMonthlyReportStudentId] = useState<string | undefined>(undefined)
 
   const studentsWithProgress = useMemo(() => {
     return students.map((s) => ({ ...s, progress: computeStudentProgress(s) }))
@@ -614,37 +603,20 @@ export function ClassesDetailRoster({
                         </div>
                       </td>
 
-                      {/* Báo cáo tháng (Ở sau cùng) */}
+                      {/* Báo cáo tháng (Ở sau cùng - Tự động tạo hàng tháng) */}
                       <td className="py-3.5 px-2 text-center w-[100px] min-w-[90px]">
-                        {stableHash(student.id) % 2 === 0 ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setIsMonthlyReportModalOpen(true)
-                            }}
-                            className="inline-flex items-center text-xs font-normal text-foreground hover:text-sky-600 dark:hover:text-sky-400 hover:underline hover:underline-offset-2 cursor-pointer transition-colors"
-                            title="Bấm để xem/chỉnh sửa báo cáo tháng"
-                          >
-                            <span>Tháng {new Date().getMonth() + 1}</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-center w-full">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="xs"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setIsMonthlyReportModalOpen(true)
-                              }}
-                              className="h-6 px-2 text-xs font-semibold text-primary border-primary/40 hover:bg-primary/10 hover:text-primary rounded-md cursor-pointer"
-                              title="Tạo mới báo cáo tháng (Tự động làm mới từ 25 hàng tháng)"
-                            >
-                              <span>Tạo mới</span>
-                            </Button>
-                          </div>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedMonthlyReportStudentId(student.id)
+                            setIsMonthlyReportModalOpen(true)
+                          }}
+                          className="inline-flex items-center text-xs font-medium text-primary hover:underline hover:underline-offset-2 cursor-pointer transition-colors"
+                          title="Bấm để xem báo cáo tháng"
+                        >
+                          <span>Tháng {new Date().getMonth() + 1}</span>
+                        </button>
                       </td>
                     </tr>
                   )
@@ -709,6 +681,7 @@ export function ClassesDetailRoster({
           open={isMonthlyReportModalOpen}
           onOpenChange={setIsMonthlyReportModalOpen}
           students={visibleStudents}
+          initialStudentId={selectedMonthlyReportStudentId}
         />
       )}
     </div>

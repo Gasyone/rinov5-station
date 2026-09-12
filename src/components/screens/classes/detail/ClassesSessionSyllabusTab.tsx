@@ -26,6 +26,12 @@ export function ClassesSessionSyllabusTab({
   const lessons = getLessonsForRoadmapSession(session)
   const syllabusContent = getSessionSyllabusContent(session)
 
+  const isProjectSession = Boolean(
+    session.type === 'project' ||
+    (session.topic || '').toLowerCase().includes('project') ||
+    (session.topic || '').toLowerCase().includes('dự án')
+  )
+
   return (
     <div className="space-y-4 text-xs">
       {/* ── 1. Nội dung buổi học ── */}
@@ -116,8 +122,8 @@ export function ClassesSessionSyllabusTab({
                   let line3 = 'Tài liệu tham khảo'
 
                   if (c.type === 'homework') {
-                    line2 = 'Bài luyện tập tự học ở nhà'
-                    line3 = 'Nhiệm vụ phải làm'
+                    line2 = isProjectSession ? 'Bài tập mini project thực hành' : 'Bài luyện tập tự học ở nhà'
+                    line3 = isProjectSession ? 'Nhiệm vụ dự án' : 'Nhiệm vụ phải làm'
                   } else if (c.type === 'quiz') {
                     line2 = 'Bài kiểm tra nhanh đánh giá năng lực'
                     line3 = 'Nhiệm vụ phải làm'
@@ -150,8 +156,16 @@ export function ClassesSessionSyllabusTab({
                           {c.url && c.url !== '#' && (
                             <>
                               <span>•</span>
-                              <a href={c.url} target="_blank" rel="noreferrer" className="text-rose-600 hover:underline font-semibold" onClick={(e) => e.preventDefault()}>
-                                Link bài tập
+                              <a 
+                                href={isProjectSession ? (session.projectUrl || 'https://scratch.mit.edu/projects/612048882') : c.url} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-rose-600 hover:underline font-semibold" 
+                                onClick={(e) => {
+                                  if (!isProjectSession && c.url === '#') e.preventDefault()
+                                }}
+                              >
+                                {isProjectSession ? 'Project: Link' : 'Link bài tập'}
                               </a>
                             </>
                           )}

@@ -3,15 +3,17 @@
 import React, { useState } from 'react'
 import {
   Check,
-  TrendingUp,
   UserX,
   ArrowRight,
   AlertTriangle,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { Lead, LeadStatus } from '@/mocks/crmLeads'
+import { STATUS_LABEL_MAP } from '../crmLeadsTypes'
 
 export interface VerticalPipelineStage {
   id: string
@@ -112,6 +114,7 @@ interface CrmLeadVerticalPipelineProps {
   onSelectStage?: (status: LeadStatus, subStatus?: string) => void
   onAdvanceStage?: () => void
   onOpenDropDialog?: () => void
+  onOpenHistoryModal?: () => void
 }
 
 export function CrmLeadVerticalPipeline({
@@ -119,6 +122,7 @@ export function CrmLeadVerticalPipeline({
   onSelectStage,
   onAdvanceStage,
   onOpenDropDialog,
+  onOpenHistoryModal,
 }: CrmLeadVerticalPipelineProps) {
   const [selectedSubStatus, setSelectedSubStatus] = useState<string>(
     lead.subStatus || ''
@@ -126,6 +130,17 @@ export function CrmLeadVerticalPipeline({
 
   const isFailed = lead.status === 'that_bai'
   const isConverted = lead.status === 'chuyen_doi'
+
+  const statusLabel = STATUS_LABEL_MAP[lead.status] || 'Đang tư vấn'
+  const statusBadge = getStatusBadgeClass(
+    lead.status === 'moi_tiep_nhan'
+      ? 'pending'
+      : lead.status === 'chuyen_doi'
+        ? 'active'
+        : lead.status === 'that_bai'
+          ? 'inactive'
+          : 'warning'
+  )
 
   // Tìm vị trí index của stage hiện tại
   const currentStageIndex = LIFECYCLE_STAGES.findIndex((st) =>
@@ -150,25 +165,22 @@ export function CrmLeadVerticalPipeline({
     <div className="rounded-2xl border border-border/80 bg-card p-2.5 lg:p-3 shadow-xs text-left">
       {/* 1. Header Card Phễu */}
       <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/70">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <TrendingUp className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-foreground">Phễu Vòng Đời Lead</span>
-              <span className="text-[10px] text-muted-foreground font-mono font-medium">
-                (Chu kỳ Sales)
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground line-clamp-1">
-              {isFailed
-                ? 'Lead đã dừng chuyển đổi / Lưu kho'
-                : isConverted
-                ? 'Đã chuyển đổi thành công (WON)'
-                : 'Tiến trình chăm sóc & chốt khóa học'}
-            </p>
-          </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-foreground">Phễu Vòng Đời Lead</span>
+          <Badge className={cn('h-6 px-2.5 text-xs font-semibold rounded-full inline-flex items-center shadow-none', statusBadge)}>
+            {statusLabel}
+          </Badge>
+          {lead.isReturningLead && (
+            <button
+              type="button"
+              onClick={onOpenHistoryModal}
+              className="h-6 text-[11px] font-semibold px-2 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 inline-flex items-center gap-1 shadow-none hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
+              title={lead.returningReason ? `${lead.returningReason} - Bấm để xem chi tiết lịch sử các đợt tiếp cận` : 'Bấm để xem lịch sử các đợt tiếp cận'}
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Lead quay lại ({lead.salesCycles?.length ? `Chu kỳ ${lead.salesCycles.length}` : 'Chu kỳ 2'})</span>
+            </button>
+          )}
         </div>
 
         {/* Quick Action: Báo rớt / Đã chuyển đổi */}
@@ -304,7 +316,7 @@ export function CrmLeadVerticalPipeline({
 
                     {/* Mã Code Badge */}
                     <span
-                      className="text-[9px] px-1 py-0.2 rounded font-mono font-bold tracking-tight"
+                      className="text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-tight inline-flex items-center"
                       style={{
                         backgroundColor: `${stage.color}15`,
                         color: stage.color,

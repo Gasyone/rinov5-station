@@ -131,18 +131,18 @@ export function CrmCustomerProfileSection({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7.5 w-full justify-between text-xs px-2.5 bg-background font-normal border-input hover:bg-muted/30 cursor-pointer"
+                className="h-7.5 w-full justify-between text-xs px-2.5 bg-white dark:bg-zinc-800 font-normal border-slate-200 dark:border-zinc-700 shadow-none hover:bg-slate-50 dark:hover:bg-zinc-700/50 cursor-pointer focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
               >
                 <span className="truncate text-xs text-foreground">
                   {selectedSources.length === 0 ? (
-                    <span className="text-muted-foreground/50 text-xs font-normal">Chọn nguồn tiếp cận...</span>
+                    <span className="text-slate-400 dark:text-zinc-500 text-xs font-normal">Chọn nguồn tiếp cận...</span>
                   ) : selectedSources.length <= 2 ? (
                     selectedSources.join(', ')
                   ) : (
                     `${selectedSources.length} nguồn đã chọn`
                   )}
                 </span>
-                <ChevronDown className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+                <ChevronDown className="h-3 w-3 text-slate-400 dark:text-zinc-500 shrink-0 ml-1" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-72 p-2 space-y-1.5 max-h-64 overflow-y-auto z-50 shadow-md">

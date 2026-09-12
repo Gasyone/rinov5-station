@@ -651,7 +651,7 @@ export function RenewalScreen() {
         alerts={mockCareAlerts}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
         onStudentSelect={(id) => setActiveDetailStudentId(id)}
-        initialTab="orders"
+        initialTab="renewal"
         headerTitle="Chi tiết Tái phí"
       />
     )

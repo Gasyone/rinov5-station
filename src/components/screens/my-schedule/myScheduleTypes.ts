@@ -35,6 +35,7 @@ export interface UnifiedSlot extends ScheduleGridItem {
   lessonContent?: LessonContent | string
   schoolRoom?: string
   subject?: string
+  projectUrl?: string
 }
 
 export interface MyScheduleFilters {

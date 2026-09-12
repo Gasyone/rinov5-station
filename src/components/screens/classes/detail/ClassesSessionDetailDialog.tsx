@@ -155,7 +155,18 @@ export function ClassesSessionDetailDialog({
     setCommentText(initialComment)
   }
 
-  const isMath = cls.level.toLowerCase().includes('math') || cls.level.toLowerCase().includes('toán')
+  const isMath = Boolean(
+    cls.level?.toLowerCase().includes('math') ||
+    cls.level?.toLowerCase().includes('toán') ||
+    cls.name?.toLowerCase().includes('math') ||
+    cls.name?.toLowerCase().includes('toán') ||
+    cls.syllabus?.toLowerCase().includes('math') ||
+    cls.syllabus?.toLowerCase().includes('toán') ||
+    cls.code?.toLowerCase().includes('math') ||
+    cls.code?.toLowerCase().includes('toan') ||
+    session.topic?.toLowerCase().includes('math') ||
+    session.topic?.toLowerCase().includes('toán')
+  )
 
 
   const isTestSession = (
@@ -163,6 +174,12 @@ export function ClassesSessionDetailDialog({
     (session.topic || '').toLowerCase().includes('test') ||
     (session.topic || '').toLowerCase().includes('kiểm tra') ||
     (session.topic || '').toLowerCase().includes('evaluation')
+  )
+
+  const isProjectSession = Boolean(
+    session.type === 'project' ||
+    (session.topic || '').toLowerCase().includes('project') ||
+    (session.topic || '').toLowerCase().includes('dự án')
   )
 
   const navigateTo = (index: number) => {
@@ -559,6 +576,8 @@ export function ClassesSessionDetailDialog({
                   sessionStatus={session.status}
                   isTestSession={isTestSession}
                   isMath={isMath}
+                  isProjectSession={isProjectSession}
+                  projectUrl={session.projectUrl}
                   onOpenCareDetail={(student) => {
                     setSelectedCareStudentId(student.id)
                   }}
@@ -622,6 +641,9 @@ export function ClassesSessionDetailDialog({
         onSave={(map) => setFeedbackMap(map)}
         sessionTopic={session.topic}
         classLevel={cls.level}
+        className={cls.name}
+        classSyllabus={cls.syllabus}
+        classCode={cls.code}
         isTestSession={isTestSession}
       />
 

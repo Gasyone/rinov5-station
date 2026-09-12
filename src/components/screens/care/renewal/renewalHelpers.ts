@@ -1,4 +1,5 @@
 import { StudentCareAlert } from '@/mocks/careAlerts'
+import { mockOrders } from '@/mocks/orders'
 
 /**
  * Calculates the percentage of remaining sessions
@@ -175,14 +176,14 @@ export function getHistoryLogsForStudent(studentId: string): HistoryLog[] {
     return log
   })
 
-  if (hash % 2 === 0) {
-    const zaloLogIndex = logs.findIndex((l) => l.channel === 'zalo')
-    if (zaloLogIndex !== -1) {
-      const zaloLog = logs[zaloLogIndex]
-      logs.splice(zaloLogIndex, 1)
-      logs.unshift(zaloLog)
+  const parseLogDate = (d: string) => {
+    const parts = d.split('/')
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10)).getTime()
     }
+    return 0
   }
+  logs.sort((a, b) => parseLogDate(b.date) - parseLogDate(a.date))
 
   return logs
 }
@@ -253,16 +254,35 @@ export function getOfficialStatusLabel(status: string): string {
 
 export function getRenewalClassification(item: StudentCareAlert): RenewalClassification {
   const custom = (item as StudentCareAlert & { renewalClassification?: RenewalClassification }).renewalClassification
-  if (custom) return custom
+  const orderInfo = getStudentOrderInfo(item)
+  const hasLinkedOrder = Boolean(item.linkedOrderCode || item.linkedOrder?.orderCode || orderInfo.orderCode)
+
+  if (custom) {
+    // Điều kiện bắt buộc: Phải có đơn hàng liên kết mới được xác nhận Tái phí thành công (tai_phi)
+    if (custom === 'tai_phi' && !hasLinkedOrder) {
+      return 'hen_tai'
+    }
+    return custom
+  }
 
   if (item.activeCSTP === false) {
     return 'chua_den_han'
   }
 
+  if (item.completedCareTags?.includes('CSTP')) {
+    if (hasLinkedOrder) {
+      return 'tai_phi'
+    }
+    return 'hen_tai'
+  }
+
   const hash = stableHash(item.studentId)
   
   if (item.interactionNotes?.includes('thành công') || item.interactionNotes?.includes('đóng phí')) {
-    return 'tai_phi'
+    if (hasLinkedOrder) {
+      return 'tai_phi'
+    }
+    return 'hen_tai'
   }
   if (item.interactionNotes?.includes('thất bại')) {
     return 'that_bai'
@@ -285,7 +305,12 @@ export function getRenewalClassification(item: StudentCareAlert): RenewalClassif
   if (mod === 1) return 'can_nhac'
   if (mod === 2) return 'tiem_nang'
   if (mod === 3) return 'hen_tai'
-  if (mod === 4) return 'tai_phi'
+  if (mod === 4) {
+    if (hasLinkedOrder) {
+      return 'tai_phi'
+    }
+    return 'hen_tai'
+  }
   return 'that_bai'
 }
 
@@ -404,53 +429,109 @@ export interface StudentOrderInfo {
 }
 
 export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
-  const classification = getRenewalClassification(item)
-  const hash = stableHash(item.studentId)
-
-  // 1. Học viên Mới -> Chưa có đơn hàng nháp
-  if (classification === 'moi') {
-    return {
-      orderCode: undefined,
-      packageName: 'Chưa chọn gói',
-      packageAmount: undefined,
-      paymentTerm: undefined,
-    }
-  }
-
-  // 2. Học viên Cân nhắc / Tiềm năng / Hẹn tái
-  if (classification === 'can_nhac' || classification === 'tiem_nang' || classification === 'hen_tai') {
-    if (hash % 2 === 0) {
+  // 1. Kiểm tra đơn hàng liên kết thực tế của học viên
+  const code = item.linkedOrderCode || item.linkedOrder?.orderCode
+  if (code) {
+    // Nếu đối tượng linkedOrder đã lưu chi tiết
+    if (item.linkedOrder) {
+      const amount = item.linkedOrder.totalPaidAmount || item.linkedOrder.finalAmount || 0
+      const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
       return {
-        orderCode: undefined,
-        packageName: item.subject === 'Toán tư duy' ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
-        packageAmount: undefined,
-        paymentTerm: undefined,
+        orderCode: code,
+        packageName: item.linkedOrder.packageName || 'Gói học',
+        packageAmount: formattedAmount,
+        paymentTerm: item.linkedOrder.paymentTerm || 'Đã thanh toán',
       }
     }
-    const draftOrders: StudentOrderInfo[] = [
-      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói SuperKids 12T', packageAmount: '18.000.000đ', paymentTerm: 'Chưa cọc' },
-      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói Movers Bán Trú 1N', packageAmount: '28.000.000đ', paymentTerm: 'Giữ chỗ 24h' },
-      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói Starters 6T', packageAmount: '14.000.000đ', paymentTerm: 'Hẹn nộp 100%' },
-      { orderCode: `OD-DRAFT-${9230 + (hash % 10)}`, packageName: 'Gói IELTS Junior 1N', packageAmount: '35.000.000đ', paymentTerm: 'Cọc 2 triệu' },
-    ]
-    return draftOrders[hash % draftOrders.length]
+
+    // Tra cứu trong danh sách mockOrders
+    const foundInMock = mockOrders.find(
+      (o) => o.orderNo?.toLowerCase() === code.toLowerCase() || o.id?.toLowerCase() === code.toLowerCase()
+    )
+    if (foundInMock) {
+      const firstItemName = foundInMock.items[0]?.productName || foundInMock.notes || 'Gói học'
+      const itemsCount = foundInMock.items?.length || 1
+      const pkgName = itemsCount > 1 ? `${firstItemName} (${itemsCount}+)` : firstItemName
+      const amount = foundInMock.paidAmount ?? foundInMock.finalAmount ?? foundInMock.totalAmount ?? 0
+      const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
+      const term =
+        foundInMock.paymentMethodTag ||
+        (foundInMock.paidAmount && foundInMock.paidAmount >= foundInMock.finalAmount
+          ? 'Thanh toán 100%'
+          : 'Đã cọc 1 phần')
+      return {
+        orderCode: foundInMock.orderNo,
+        packageName: pkgName,
+        packageAmount: formattedAmount,
+        paymentTerm: term,
+      }
+    }
+
+    // Trường hợp mã tùy biến người dùng nhập không có sẵn trong mockOrders
+    return {
+      orderCode: code,
+      packageName: item.subject === 'Toán tư duy' ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
+      packageAmount: '18.000.000đ',
+      paymentTerm: 'Thanh toán 100%',
+    }
   }
 
-  // 3. Học viên Đã tái phí -> Đã có đơn hàng kích hoạt / đóng phí thành công
-  if (classification === 'tai_phi') {
-    const successOrders: StudentOrderInfo[] = [
-      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói SuperKids 12T', packageAmount: '18.000.000đ', paymentTerm: 'Thanh toán 100%' },
-      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Kindy Mẫu giáo 12T', packageAmount: '20.000.000đ', paymentTerm: 'Thanh toán 100%' },
-      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Flyers Intensive 6T', packageAmount: '22.000.000đ', paymentTerm: 'Đã cọc 5 triệu' },
-      { orderCode: `OD-DRAFT-${9240 + (hash % 10)}`, packageName: 'Gói Kindy Mẫu giáo 1N', packageAmount: '18.000.000đ', paymentTerm: 'Trả góp 3 kỳ' },
-    ]
-    return successOrders[hash % successOrders.length]
+  // 2. Tra cứu theo mã học viên hoặc tên học viên trong mockOrders
+  const foundByNameOrId = mockOrders.find(
+    (o) => (item.studentId && o.studentId === item.studentId) ||
+           (item.studentName && o.studentName?.toLowerCase() === item.studentName.toLowerCase())
+  )
+  if (foundByNameOrId) {
+    const firstItemName = foundByNameOrId.items[0]?.productName || foundByNameOrId.notes || 'Gói học'
+    const itemsCount = foundByNameOrId.items?.length || 1
+    const pkgName = itemsCount > 1 ? `${firstItemName} (${itemsCount}+)` : firstItemName
+    const amount = foundByNameOrId.paidAmount ?? foundByNameOrId.finalAmount ?? foundByNameOrId.totalAmount ?? 0
+    const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
+    const term =
+      foundByNameOrId.paymentMethodTag ||
+      (foundByNameOrId.paidAmount && foundByNameOrId.paidAmount >= foundByNameOrId.finalAmount
+        ? 'Thanh toán 100%'
+        : 'Đã cọc 1 phần')
+    return {
+      orderCode: foundByNameOrId.orderNo,
+      packageName: pkgName,
+      packageAmount: formattedAmount,
+      paymentTerm: term,
+    }
   }
 
-  // 4. Các trạng thái khác (Thất bại...)
+  // 3. Tự động liên kết đơn hàng cho các ca hoàn thành (tai_phi) hoặc hẹn tái (hen_tai)
+  const isCstpCompleted = item.completedCareTags?.includes('CSTP')
+  const classification = item.renewalClassification
+  const hash = stableHash(item.studentId)
+  const isMath = item.subject === 'Toán tư duy'
+
+  if (classification === 'tai_phi' || isCstpCompleted || item.interactionNotes?.includes('thành công') || (hash % 6 === 4 && item.activeCSTP !== false)) {
+    const orderNum = 832010 + (hash % 40)
+    const paid = 18000000 - ((hash % 5) * 1000000)
+    return {
+      orderCode: `OD${orderNum}`,
+      packageName: isMath ? 'Gói Toán tư duy Archimedes 12T' : 'Gói Tiếng Anh Cambridge Level 5 12T',
+      packageAmount: `${paid.toLocaleString('vi-VN')}đ`,
+      paymentTerm: 'Thanh toán 100%',
+    }
+  }
+
+  if (classification === 'hen_tai' || item.interactionNotes?.includes('Hẹn') || item.interactionNotes?.includes('hẹn') || (hash % 6 === 3 && item.activeCSTP !== false)) {
+    const orderNum = 832050 + (hash % 40)
+    const deposit = 2500000 + ((hash % 6) * 500000)
+    return {
+      orderCode: `OD${orderNum}`,
+      packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Giao tiếp 1:4 (48 buổi)',
+      packageAmount: `${deposit.toLocaleString('vi-VN')}đ`,
+      paymentTerm: `Đã cọc ${(deposit / 1000000).toFixed(1)} triệu (Hẹn tái)`,
+    }
+  }
+
+  // 4. Mặc định ban đầu chưa có đơn hàng liên kết -> Trống
   return {
     orderCode: undefined,
-    packageName: 'Không có đơn',
+    packageName: 'Chưa có đơn hàng',
     packageAmount: undefined,
     paymentTerm: undefined,
   }

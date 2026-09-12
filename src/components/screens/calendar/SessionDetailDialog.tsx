@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import type { ClassSession } from '@/mocks/calendarSchedule'
 import { ClassesSessionDetailDialog } from '@/components/screens/classes/detail/ClassesSessionDetailDialog'
 import { generateMockRoster, generateRoadmapSessions } from '@/components/screens/classes/detail/classesDetailHelpers'
-import { mockClassRecords } from '@/mocks/classRecords'
+import { mockClassRecords, type ClassRecord } from '@/mocks/classRecords'
 import type { RoadmapSession } from '@/components/screens/classes/detail/classesDetailTypes'
 
 interface SessionDetailDialogProps {
@@ -22,12 +22,49 @@ export function SessionDetailDialog({
 }: SessionDetailDialogProps) {
   if (!session) return null
 
-  const classCode = session.classCode || 'CLS-IELTS-001'
-  const clsRecord = mockClassRecords.find(c => c.code === classCode || c.id === classCode) || mockClassRecords[0]
+  const isMathSession = Boolean(
+    session.subject?.toLowerCase().includes('toán') ||
+    session.subject?.toLowerCase().includes('math') ||
+    session.className?.toLowerCase().includes('toán') ||
+    session.className?.toLowerCase().includes('math') ||
+    session.classCode?.toLowerCase().includes('toan') ||
+    session.classCode?.toLowerCase().includes('math') ||
+    session.level?.toLowerCase().includes('toán') ||
+    session.level?.toLowerCase().includes('math')
+  )
+
+  const classCode = session.classCode || (isMathSession ? 'CLS-MATH-019' : 'CLS-IELTS-001')
+  const matchedRecord = mockClassRecords.find(c => c.code === classCode || c.id === classCode) ||
+    (isMathSession
+      ? (mockClassRecords.find(c => c.code.includes('MATH') || c.level.toLowerCase().includes('math')) || mockClassRecords[0])
+      : mockClassRecords[0])
+
+  const clsRecord: ClassRecord = {
+    ...matchedRecord,
+    id: session.classCode || matchedRecord.id,
+    code: session.classCode || matchedRecord.code,
+    name: session.className || matchedRecord.name,
+    level: isMathSession
+      ? (session.level?.toLowerCase().includes('math') || session.level?.toLowerCase().includes('toán')
+          ? session.level
+          : `Math ${session.level || 'Kindi'}`)
+      : (session.level || matchedRecord.level),
+    branch: session.branch || matchedRecord.branch,
+    teacher: session.teacher || matchedRecord.teacher,
+    room: session.schoolRoom || matchedRecord.room,
+    schedule: session.timeLabel && session.endTimeLabel ? `${session.timeLabel}–${session.endTimeLabel}` : matchedRecord.schedule,
+    syllabus: isMathSession ? (matchedRecord.syllabus || 'Station_Toán tư duy (Col 4 tuổi)') : matchedRecord.syllabus,
+  }
   const roster = generateMockRoster(clsRecord)
   const sessionsList = generateRoadmapSessions(clsRecord)
   
-  const sessionNumber = 4
+  const isProject = session.type === 'project' || 
+    (session.title || '').toLowerCase().includes('project') || 
+    (session.title || '').toLowerCase().includes('dự án')
+  const defaultProjectUrl = session.projectUrl || 'https://scratch.mit.edu/projects/612048882'
+
+  const sessionNumber = typeof session.lessonNumber === 'number' ? session.lessonNumber : 4
+
   const matchedSession: RoadmapSession = {
     id: session.id,
     sessionNumber,
@@ -41,9 +78,14 @@ export function SessionDetailDialog({
     teacherName: session.teacher || clsRecord.teacher,
     substituteTeacherName: session.substituteTeacher,
     status: session.status === 'cancelled' ? 'cancelled' : session.status === 'completed' ? 'completed' : 'upcoming',
+    type: session.type || (isProject ? 'project' : undefined),
+    projectUrl: isProject ? defaultProjectUrl : undefined,
     materials: [
-      { name: `Slide bài giảng`, url: '#' },
-      { name: `Bài tập về nhà`, url: '#' }
+      { name: isProject ? `Slide hướng dẫn dự án` : `Slide bài giảng`, url: '#' },
+      { 
+        name: isProject ? `Project: Link mở bài mini project` : `Bài tập về nhà`, 
+        url: isProject ? defaultProjectUrl : '#' 
+      }
     ],
     syllabusName: clsRecord.syllabus || 'Lộ trình mặc định'
   }

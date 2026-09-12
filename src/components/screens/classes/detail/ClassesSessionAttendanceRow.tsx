@@ -34,6 +34,8 @@ interface ClassesSessionAttendanceRowProps {
   sessionId: string
   isTestSession: boolean
   isMath: boolean
+  isProjectSession?: boolean
+  projectUrl?: string
   isAttendanceDisabled: boolean
   isScoreDisabled: boolean
   att: AttendanceStatus
@@ -56,6 +58,8 @@ export function ClassesSessionAttendanceRow({
   sessionId,
   isTestSession,
   isMath,
+  isProjectSession = false,
+  projectUrl,
   isAttendanceDisabled,
   isScoreDisabled,
   att,
@@ -383,9 +387,24 @@ export function ClassesSessionAttendanceRow({
         </>
       ) : (
         <>
-          {/* Homework link / KTĐK score */}
+          {/* Homework link / KTĐK score / Mini project link */}
           <td className="py-2.5 px-3 w-[15%] min-w-[100px]">
-            {isTestSession && isMath ? (
+            {isProjectSession ? (
+              <a
+                href={projectUrl || 'https://scratch.mit.edu/projects/612048882'}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary hover:underline text-xs font-semibold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toast.info(`Đang mở bài mini project của học viên ${student.name}`)
+                }}
+                title="Mở bài mini project"
+              >
+                <ExternalLink className="h-3 w-3 shrink-0" />
+                <span>Project: Link</span>
+              </a>
+            ) : isTestSession && isMath ? (
               <button
                 type="button"
                 className="text-primary hover:underline text-xs font-extrabold inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer font-mono"

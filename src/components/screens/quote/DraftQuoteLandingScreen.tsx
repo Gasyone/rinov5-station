@@ -275,7 +275,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
         <div className="flex items-center justify-between pb-2 flex-wrap gap-2 border-b border-slate-200/60 dark:border-zinc-800/60">
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Chi tiết Đơn hàng nháp & Báo giá
+              Chi tiết Đơn hàng & Báo giá
             </h2>
             <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
               Mã báo giá: <strong className="font-mono font-bold text-slate-800 dark:text-zinc-200">{orderDetails.quoteNo}</strong>

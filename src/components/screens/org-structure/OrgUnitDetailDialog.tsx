@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import {
   Briefcase,
   Plus,
-  UserCheck,
+  UserPlus,
   Users,
 } from 'lucide-react'
 import {
@@ -19,32 +19,43 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { StatusBadge } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import {
   ORG_TYPE_BADGE_MAP,
   type OrgStaffMember,
   type OrgUnit,
 } from './orgStructureTypes'
+import { OrgPositionAssignDialog } from './OrgPositionAssignDialog'
 
 interface OrgUnitDetailDialogProps {
   unit: OrgUnit | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onTransferStaffClick: (unit: OrgUnit, staff?: OrgStaffMember, targetTitle?: string) => void
+  onTransferStaffClick?: (unit: OrgUnit, staff?: OrgStaffMember, targetTitle?: string) => void
   onAddPosition?: (unitId: string, positionName: string) => void
+  onAssignStaffToPosition?: (unitId: string, positionTitle: string, selectedStaff: OrgStaffMember[]) => void
+}
+
+function maskPhone(phone?: string): string {
+  if (!phone) return '—'
+  const clean = phone.replace(/\s+/g, '')
+  if (clean.length >= 7) {
+    return clean.slice(0, 3) + '****' + clean.slice(-3)
+  }
+  return phone
 }
 
 export function OrgUnitDetailDialog({
   unit,
   open,
   onOpenChange,
-  onTransferStaffClick,
   onAddPosition,
+  onAssignStaffToPosition,
 }: OrgUnitDetailDialogProps) {
   const [activeTab, setActiveTab] = useState<'positions' | 'staff'>('positions')
   const [isAddPosOpen, setIsAddPosOpen] = useState(false)
   const [newPosName, setNewPosName] = useState('')
+  const [assigningPosition, setAssigningPosition] = useState<string | null>(null)
 
   const positionStats = useMemo(() => {
     if (!unit?.positions) return []
@@ -77,39 +88,16 @@ export function OrgUnitDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] sm:max-w-4xl md:max-w-5xl lg:max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-        {/* Header: Đã bỏ Mã đơn vị theo yêu cầu, chỉ giữ Tên đơn vị và trạng thái */}
+        {/* Header: Đã bỏ nhãn Ban giám đốc và bỏ nhãn Đang hoạt động, chỉ giữ Tên đơn vị */}
         <DialogHeader className="px-4 py-2.5 border-b shrink-0 bg-background/95">
           <div className="flex items-center justify-between gap-3 pr-6">
-            <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs text-muted-foreground font-normal shrink-0">
                 Chi tiết đơn vị:
               </span>
-              <DialogTitle className="text-sm font-semibold text-foreground truncate max-w-[360px] sm:max-w-[500px]">
+              <DialogTitle className="text-sm font-semibold text-foreground truncate max-w-[500px] sm:max-w-[650px]">
                 {unit.name}
               </DialogTitle>
-              <span
-                className={cn(
-                  'rounded px-1.5 py-0.5 text-[10px] font-semibold shrink-0',
-                  typeConfig.badgeVariant
-                )}
-              >
-                {typeConfig.label}
-              </span>
-              <div className="shrink-0">
-                <StatusBadge status={unit.status} label={unit.statusLabel} />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                type="button"
-                size="sm"
-                className="h-7 text-xs gap-1.5 cursor-pointer px-2.5"
-                onClick={() => onTransferStaffClick(unit)}
-              >
-                <UserCheck className="h-3.5 w-3.5" />
-                <span>Điều chuyển nhân sự</span>
-              </Button>
             </div>
           </div>
         </DialogHeader>
@@ -118,7 +106,7 @@ export function OrgUnitDetailDialog({
         <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 bg-muted/10">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
             {/* ========================================================= */}
-            {/* PANEL TRÁI: THUỘC TÍNH ĐƠN VỊ (Bỏ Người phụ trách)        */}
+            {/* PANEL TRÁI: THUỘC TÍNH ĐƠN VỊ                             */}
             {/* ========================================================= */}
             <div className="md:col-span-5 lg:col-span-4">
               <div className="rounded-lg border bg-card p-3.5 space-y-3 shadow-2xs">
@@ -136,10 +124,6 @@ export function OrgUnitDetailDialog({
                     >
                       {typeConfig.label}
                     </span>
-                  </div>
-                  <div className="flex items-center justify-between py-1 border-b border-border/40">
-                    <span className="text-muted-foreground shrink-0">Trạng thái</span>
-                    <StatusBadge status={unit.status} label={unit.statusLabel} />
                   </div>
                   <div className="flex items-center justify-between py-1 border-b border-border/40 gap-2">
                     <span className="text-muted-foreground shrink-0">Đơn vị trực thuộc</span>
@@ -200,6 +184,7 @@ export function OrgUnitDetailDialog({
                       </TabsTrigger>
                     </TabsList>
 
+                    {/* Chỉ Tab chức danh mới có nút thêm, Tab nhân sự chỉ list danh sách */}
                     {activeTab === 'positions' ? (
                       <Button
                         type="button"
@@ -214,22 +199,11 @@ export function OrgUnitDetailDialog({
                         <Plus className="h-3.5 w-3.5 text-primary" />
                         <span>Thêm chức danh</span>
                       </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs gap-1.5 px-2.5 cursor-pointer shrink-0"
-                        onClick={() => onTransferStaffClick(unit)}
-                      >
-                        <UserCheck className="h-3.5 w-3.5 text-primary" />
-                        <span>Điều chuyển nhân sự</span>
-                      </Button>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* ===================================================== */}
-                  {/* TAB 1: CƠ CẤU CHỨC DANH                               */}
+                  {/* TAB 1: CƠ CẤU CHỨC DANH (Gán nhân sự vào chức danh)   */}
                   {/* ===================================================== */}
                   <TabsContent value="positions" className="m-0 space-y-2.5 pt-1">
                     <div className="rounded-md border overflow-hidden">
@@ -317,12 +291,13 @@ export function OrgUnitDetailDialog({
                                 <td className="py-2.5 px-3 text-right">
                                   <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="outline"
                                     size="sm"
-                                    className="h-6 px-2 text-[11px] text-primary hover:text-primary cursor-pointer"
-                                    onClick={() => onTransferStaffClick(unit, undefined, pos.title)}
+                                    className="h-6.5 px-2.5 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
+                                    onClick={() => setAssigningPosition(pos.title)}
                                   >
-                                    Bổ nhiệm
+                                    <UserPlus className="h-3 w-3" />
+                                    <span>Thêm người</span>
                                   </Button>
                                 </td>
                               </tr>
@@ -334,60 +309,87 @@ export function OrgUnitDetailDialog({
                   </TabsContent>
 
                   {/* ===================================================== */}
-                  {/* TAB 2: DANH SÁCH NHÂN SỰ (Đã bỏ Liên hệ và Vai trò)  */}
+                  {/* TAB 2: DANH SÁCH NHÂN SỰ (Chỉ list danh sách thuần)  */}
                   {/* ===================================================== */}
                   <TabsContent value="staff" className="m-0 space-y-2.5 pt-1">
                     <div className="rounded-md border overflow-hidden">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead className="border-b bg-muted/40 font-medium text-muted-foreground">
                           <tr>
+                            <th className="w-10 py-2.5 px-3 font-semibold text-center">STT</th>
                             <th className="py-2.5 px-3 font-semibold">Họ tên nhân sự</th>
                             <th className="py-2.5 px-3 font-semibold">Chức danh</th>
-                            <th className="py-2.5 px-3 font-semibold text-right">Thao tác</th>
+                            <th className="py-2.5 px-3 font-semibold">Thông tin liên hệ</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
-                          {unit.members?.map((member) => (
-                            <tr
-                              key={member.id}
-                              className="hover:bg-muted/30 transition-colors"
-                            >
-                              <td className="py-2.5 px-3">
-                                <div className="font-medium text-foreground whitespace-nowrap">
-                                  {member.name}
-                                </div>
-                                <div className="text-[10px] text-muted-foreground">
-                                  Gia nhập: {member.joinedDate}
-                                </div>
-                              </td>
-                              <td className="py-2.5 px-3">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-foreground/90 font-medium">
-                                    {member.title}
-                                  </span>
-                                  {!member.isPrimary ? (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-[10px] font-normal text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-400"
-                                    >
-                                      Kiêm nhiệm
-                                    </Badge>
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 px-2 text-[11px] text-primary hover:text-primary cursor-pointer"
-                                  onClick={() => onTransferStaffClick(unit, member)}
-                                >
-                                  Chuyển
-                                </Button>
+                          {(!unit.members || unit.members.length === 0) ? (
+                            <tr>
+                              <td colSpan={4} className="py-6 text-center text-muted-foreground text-xs">
+                                Chưa có nhân sự nào trong đơn vị này.
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            unit.members.map((member, idx) => {
+                              const initial =
+                                member.name.split(' ').pop()?.charAt(0) || 'U'
+                              return (
+                                <tr
+                                  key={member.id}
+                                  className="hover:bg-muted/30 transition-colors"
+                                >
+                                  <td className="py-2.5 px-3 text-center text-muted-foreground font-mono">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="py-2.5 px-3">
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="h-6 w-6 border shrink-0">
+                                        {member.avatar ? (
+                                          <AvatarImage src={member.avatar} alt={member.name} />
+                                        ) : null}
+                                        <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
+                                          {initial}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <div className="font-medium text-foreground whitespace-nowrap">
+                                          {member.name}
+                                        </div>
+                                        <div className="text-[10px] text-muted-foreground">
+                                          Gia nhập: {member.joinedDate}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-2.5 px-3">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-foreground/90 font-medium">
+                                        {member.title}
+                                      </span>
+                                      {!member.isPrimary ? (
+                                        <Badge
+                                          variant="secondary"
+                                          className="text-[10px] font-normal text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-400"
+                                        >
+                                          Kiêm nhiệm
+                                        </Badge>
+                                      ) : null}
+                                    </div>
+                                  </td>
+                                  <td className="py-2.5 px-3">
+                                    <div className="font-mono text-foreground/80">
+                                      {maskPhone(member.phone)}
+                                    </div>
+                                    {member.email ? (
+                                      <div className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+                                        {member.email}
+                                      </div>
+                                    ) : null}
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -470,6 +472,32 @@ export function OrgUnitDetailDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog Gán nhân sự vào chức danh (Chọn người từ chức danh) */}
+      {assigningPosition ? (
+        <OrgPositionAssignDialog
+          open={Boolean(assigningPosition)}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setAssigningPosition(null)
+          }}
+          unit={unit}
+          positionTitle={assigningPosition}
+          currentAssignedStaff={
+            unit.members?.filter((m) => {
+              const mClean = m.title.trim().toLowerCase()
+              const pClean = assigningPosition.trim().toLowerCase()
+              return (
+                mClean === pClean ||
+                mClean.includes(pClean) ||
+                pClean.includes(mClean)
+              )
+            }) || []
+          }
+          onSave={(posTitle, updatedStaff) => {
+            onAssignStaffToPosition?.(unit.id, posTitle, updatedStaff)
+          }}
+        />
+      ) : null}
     </Dialog>
   )
 }

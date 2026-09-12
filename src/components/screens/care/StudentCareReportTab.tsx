@@ -1,14 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
-import {
-  ChevronDown,
-  ChevronUp,
-  Check,
-  Search,
-  History,
-} from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import React, { useMemo, useState, useEffect } from 'react'
 import { type SimulatedPackage } from './studentCareDetailTypes'
 import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
 import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
@@ -18,25 +10,25 @@ import { ClassTestsDialog } from './ClassTestsDialog'
 import { ClassAttendanceDialog } from './ClassAttendanceDialog'
 import { ClassHomeworkDialog } from './ClassHomeworkDialog'
 import { ClassEvaluationDialog } from './ClassEvaluationDialog'
-import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { generateSessionHistory, getMockMonthlyReports, getMockEvaluations, type SessionHistory, type SemesterEvaluationData } from './studentCareReportHelpers'
 import { buildMultiClassSessions } from './careModalFilterHelpers'
 import { HistoricalClassesList } from './HistoricalClassesList'
 import { CareReportSmartCards } from './CareReportSmartCards'
 import { CareSessionTimelineList } from './CareSessionTimelineList'
 import { CareProjectMediaList } from './CareProjectMediaList'
-import { MonthlyCommentsSection } from './MonthlyCommentsSection'
+import { MonthlyCommentsSection, type MonthlyCommentItem } from './MonthlyCommentsSection'
+import { getStudentMonthlyReports } from '@/mocks/monthlyReports'
 import { StudentCareReportLinkDialogs } from './StudentCareReportLinkDialogs'
-import { SyllabusProfileHoverCard } from '@/components/screens/classes/SyllabusProfileHoverCard'
-import type { ClassRecord } from '@/mocks/classRecords'
-import { EmptyState, PersonnelHoverCard, AppAvatar } from '@/components/shared'
-import { cn } from '@/lib/utils'
+import { StudentCareActiveClassCard } from './StudentCareActiveClassCard'
+import { EmptyState } from '@/components/shared'
+import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 
 export type { SessionHistory, SemesterEvaluationData }
 
 interface StudentCareReportTabProps {
   studentId: string
   studentName: string
+  studentAlert?: StudentCareAlert | null
   activePackage?: SimulatedPackage | null
   packagesList?: SimulatedPackage[]
   selectedPackageId: string
@@ -69,13 +61,12 @@ interface StudentCareReportTabProps {
 export function StudentCareReportTab({
   studentId,
   studentName,
+  studentAlert,
   activePackage,
   packagesList = [],
   selectedPackageId,
   setSelectedPackageId,
   staffInfo,
-  assignedCS,
-  onAssignedCSChange,
   branchName,
 }: StudentCareReportTabProps) {
   const isEnglish = useMemo(() => {
@@ -84,52 +75,30 @@ export function StudentCareReportTab({
     return !name.includes('toán')
   }, [activePackage])
 
-  const [internalCS, setInternalCS] = useState('Lê Thị Lan')
-  const [csSearchQuery, setCsSearchQuery] = useState('')
-
-  const currentCSName = assignedCS || internalCS
-  const handleCSChange = (name: string) => {
-    if (onAssignedCSChange) {
-      onAssignedCSChange(name)
-    }
-    setInternalCS(name)
-  }
+  const currentStudentAlert = useMemo(() => {
+    return studentAlert || mockCareAlerts.find((a) => a.studentId === studentId || a.id === studentId) || null
+  }, [studentAlert, studentId])
 
   const currentBranchName = branchName || 'RinoEdu Nguyễn Tuân'
-
-  // CS staff list filtered according to the current Branch (Cơ sở)
-  const branchCsMapping: Record<string, Array<{ id: string; name: string; code: string; avatar: string }>> = useMemo(() => ({
-    'RinoEdu Nguyễn Tuân': [
-      { id: 'cs-1', name: 'Lê Thị Lan', code: 'EMP-CS-001', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lan' },
-      { id: 'cs-2', name: 'Minh Phương', code: 'EMP-CS-002', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
-      { id: 'cs-3', name: 'Nguyễn Văn Hùng', code: 'EMP-CS-003', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hung' },
-    ],
-    'RinoEdu Linh Đàm': [
-      { id: 'cs-4', name: 'Phạm Thị Hà', code: 'EMP-CS-004', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
-      { id: 'cs-5', name: 'Hoàng Anh Tuấn', code: 'EMP-CS-005', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tuan' },
-    ],
-    'RinoEdu Cầu Giấy': [
-      { id: 'cs-6', name: 'Đỗ Mai Hương', code: 'EMP-CS-006', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Huong' },
-      { id: 'cs-7', name: 'Trần Văn Đức', code: 'EMP-CS-007', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Duc' },
-    ],
-  }), [])
-
-  const csListForBranch = useMemo(() => {
-    return branchCsMapping[currentBranchName] || branchCsMapping['RinoEdu Nguyễn Tuân']
-  }, [branchCsMapping, currentBranchName])
-
-  const filteredBranchCsList = useMemo(() => {
-    if (!csSearchQuery.trim()) return csListForBranch
-    const q = csSearchQuery.toLowerCase()
-    return csListForBranch.filter((item) =>
-      item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
-    )
-  }, [csSearchQuery, csListForBranch])
-
-  const currentCSObj = useMemo(() => {
-    return csListForBranch.find((c) => c.name === currentCSName) || csListForBranch[0]
-  }, [csListForBranch, currentCSName])
   const [showAllPrograms, setShowAllPrograms] = useState(false)
+  const [isClassInfoExpanded, setIsClassInfoExpanded] = useState(false)
+  const [reportSyncVersion, setReportSyncVersion] = useState(0)
+
+  useEffect(() => {
+    const handleReportUpdate = () => {
+      setReportSyncVersion((v) => v + 1)
+    }
+    window.addEventListener('rinov5-monthly-reports-updated', handleReportUpdate)
+    return () => {
+      window.removeEventListener('rinov5-monthly-reports-updated', handleReportUpdate)
+    }
+  }, [])
+
+  const studentMonthlyReports = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    reportSyncVersion
+    return getStudentMonthlyReports(studentId || studentName)
+  }, [studentId, studentName, reportSyncVersion])
   const activePackages = useMemo(() => packagesList.filter(p => p.status === 'active'), [packagesList])
   const otherPackages = useMemo(() => packagesList.filter(p => p.status !== 'active'), [packagesList])
   const visiblePackages = useMemo(() => showAllPrograms ? packagesList : activePackages, [packagesList, activePackages, showAllPrograms])
@@ -386,367 +355,49 @@ export function StudentCareReportTab({
             : 4.5
           const generalComment = semesterEvaluations[0]?.comment 
             || (pkgIsEnglish ? 'Học viên học tập tích cực, nghe nói tốt.' : 'Học viên tính toán logic tốt, tiếp thu nhanh.')
+          const monthlyComments: MonthlyCommentItem[] = studentMonthlyReports.map((r) => ({
+            id: r.id,
+            month: r.monthKey,
+            monthOptionValue: r.monthOptionValue,
+            monthTitle: r.monthTitle,
+            dateStr: r.dateStr,
+            awardBadge: r.awardBadge,
+            teacherName: r.teacherName,
+            comment: r.sectionA1Content
+              ? (r.sectionA1Content.split('\n')[0] || r.sectionAContent || 'Đánh giá năng lực học tập')
+              : (r.sectionAContent || 'Đánh giá năng lực học tập'),
+            sectionA1Content: r.sectionA1Content,
+            sectionA2Content: r.sectionA2Content,
+            sectionAContent: r.sectionAContent,
+            sectionB1Content: r.sectionB1Content,
+            sectionB2StartLesson: r.sectionB2StartLesson,
+            sectionB2EndLesson: r.sectionB2EndLesson,
+            sectionB2Weeks: r.sectionB2Weeks,
+            sectionB2Content: r.sectionB2Content,
+            sectionBContent: r.sectionBContent,
+            evaluator: r.teacherName,
+            date: r.updatedAt.includes('-') ? r.updatedAt.split('-').reverse().join('/') : r.updatedAt,
+            isCurrent: r.isCurrent,
+          }))
 
-          const monthlyComments = [
-            {
-              month: 'Tháng 9/2026',
-              monthTitle: pkgIsEnglish 
-                ? 'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 9 VÀ KẾ HOẠCH HỌC TẬP THÁNG 10'
-                : 'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 9 VÀ KẾ HOẠCH HỌC TẬP THÁNG 10',
-              dateStr: '01/09/2026 đến 30/09/2026',
-              awardBadge: 'CHIẾN BINH BỨT PHÁ',
-              teacherName: 'Teacher Mark & Ms.Chloe',
-              comment: pkgIsEnglish 
-                ? 'Quan sát trong quá trình học cho thấy con tiếp thu rất tốt các bài giảng. Chỉ cần kiên nhẫn hơn ở phần rèn luyện kỹ năng viết, con sẽ đạt kết quả toàn diện hơn nữa.'
-                : 'Học viên tiếp thu bài cực kỳ nhanh, phản xạ toán học nhạy bén. Kiên nhẫn trình bày đầy đủ các bước giải sẽ giúp con đạt điểm tuyệt đối.',
-              sectionAContent: pkgIsEnglish ? `ĐIỂM NỔI BẬT ĐẠT ĐƯỢC:
-Học viên rất năng nổ tương tác nhóm, hiểu bài nhanh và có ý thức tự giác cao. Con ghi nhớ từ vựng và cấu trúc câu tốt, tham gia hăng hái vào các hoạt động phản xạ nghe nói trên lớp.
-
-ĐIỂM CẦN CẢI THIỆN:
-Tuy nhiên cần chú ý rèn luyện viết từ vựng kỹ càng hơn để tránh các lỗi chính tả nhỏ. Cần cẩn thận tỉ mỉ hơn khi hoàn thành các đoạn văn ngắn.
-
-QUAN SÁT TRONG QUÁ TRÌNH HỌC CỦA GIÁO VIÊN:
-Quan sát trong quá trình học cho thấy con tiếp thu rất tốt các bài giảng. Chỉ cần kiên nhẫn hơn ở phần rèn luyện kỹ năng viết, con sẽ đạt kết quả toàn diện hơn nữa.`
-: `ĐIỂM NỔI BẬT ĐẠT ĐƯỢC:
-Học viên có tư duy phân tích đề rất tốt, làm đúng các bài toán logic phức tạp. Tự giác giải quyết các dạng toán tư duy nâng cao.
-
-ĐIỂM CẦN CẢI THIỆN:
-Cần rèn tính cẩn thận, tránh nhẩm vội ở các phép tính lớn để hạn chế các sai sót số liệu không đáng có.
-
-QUAN SÁT TRONG QUÁ TRÌNH HỌC CỦA GIÁO VIÊN:
-Học viên tiếp thu bài cực kỳ nhanh, phản xạ toán học nhạy bén. Kiên nhẫn trình bày đầy đủ các bước giải sẽ giúp con đạt điểm tuyệt đối.`,
-              sectionBContent: `MỤC TIÊU & ĐỊNH HƯỚNG HỖ TRỢ:
-Trong thời gian tới, để hỗ trợ con cải thiện đúng trọng tâm và phát triển vững vàng hơn, kế hoạch học tập sẽ tập trung vào các dạng bài củng cố kỹ năng và thực hành nâng cao.
-
-KẾ HOẠCH HỌC TẬP BÁM SÁT MỤC TIÊU:
-- Trên lớp: Tăng bài tập rèn luyện cá nhân, theo dõi sát quá trình làm bài
-- Bài tập: Dạng bài tổng hợp luyện tập hàng tuần
-- Thói quen học: Tự rà soát bài làm 5 phút trước khi nộp bài`,
-              evaluator: 'Teacher Mark & Giáo vụ Lan',
-              date: '25/09/2026'
-            },
-            {
-              month: 'Tháng 8/2026',
-              monthTitle: 'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 8 VÀ KẾ HOẠCH HỌC TẬP THÁNG 9',
-              dateStr: '01/08/2026 đến 31/08/2026',
-              awardBadge: 'HỌC VIÊN XUẤT SẮC',
-              teacherName: 'Teacher David & Ms.Chloe',
-              comment: pkgIsEnglish
-                ? 'Học viên có tố chất tốt, nắm bắt nhanh các cấu trúc ngữ pháp nâng cao. Cần thực hành phát âm chuẩn xác và tự nhiên hơn nữa.'
-                : 'Học viên tính toán logic rất xuất sắc, hiểu nhanh các dạng bài toán đố phức tạp. Cần kiên nhẫn hơn khi trình bày các bước giải.',
-              sectionAContent: `ĐIỂM NỔI BẬT ĐẠT ĐƯỢC:
-Học viên nắm bắt rất nhanh các nội dung học tập nâng cao, tư duy độc lập và hoàn thành xuất sắc các bài kiểm tra định kỳ.
-
-ĐIỂM CẦN CẢI THIỆN:
-Cần chú ý trình bày chi tiết và mạch lạc hơn trong các bài tập tổng hợp.
-
-QUAN SÁT TRONG QUÁ TRÌNH HỌC CỦA GIÁO VIÊN:
-Tích cực, tập trung cao độ trong các giờ học.`,
-              sectionBContent: `MỤC TIÊU & ĐỊNH HƯỚNG HỖ TRỢ:
-Duy trì phong độ học tập và thử thách bản thân với các dạng bài nâng cao.
-
-KẾ HOẠCH HỌC TẬP BÁM SÁT MỤC TIÊU:
-- Trên lớp: Thực hiện bài tập thách thức nâng cao
-- Bài tập: Đọc hiểu và tổng hợp kiến thức
-- Thói quen học: Rèn luyện tính tự giác 15 phút mỗi ngày`,
-              evaluator: 'Teacher David & Giáo vụ Thảo',
-              date: '28/08/2026'
-            },
-            {
-              month: 'Tháng 7/2026',
-              monthTitle: 'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 7 VÀ KẾ HOẠCH HỌC TẬP THÁNG 8',
-              dateStr: '01/07/2026 đến 31/07/2026',
-              awardBadge: 'CHIẾN BINH TIẾN BỘ',
-              teacherName: 'Teacher David & Ms.Chloe',
-              comment: pkgIsEnglish
-                ? 'Em học rất tập trung, hăng hái phát biểu xây dựng bài. Kỹ năng nghe hiểu cải thiện rõ rệt, cần tiếp tục phát huy.'
-                : 'Học viên tính toán nhanh, tiếp thu bài tốt trong suốt học kỳ và có kết quả thi cuối khóa xuất sắc.',
-              sectionAContent: `ĐIỂM NỔI BẬT ĐẠT ĐƯỢC:
-Học viên thi cuối khóa đạt điểm số ấn tượng, sự tiến bộ vượt bậc so với đầu kỳ.
-
-ĐIỂM CẦN CẢI THIỆN:
-Tiếp tục rèn luyện thói quen tự học hàng ngày.`,
-              sectionBContent: `MỤC TIÊU & ĐỊNH HƯỚNG HỖ TRỢ:
-Củng cố nền tảng vững chắc để sẵn sàng cho cấp độ học tiếp theo.`,
-              evaluator: 'Teacher David & Giáo vụ Thảo',
-              date: '27/07/2026'
-            },
-            {
-              month: 'Tháng 6/2026',
-              monthTitle: 'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 6 VÀ KẾ HOẠCH HỌC TẬP THÁNG 7',
-              dateStr: '01/06/2026 đến 30/06/2026',
-              awardBadge: 'NGÔI SAO SÁNG TẠO',
-              teacherName: 'Teacher Sarah & Ms.Chloe',
-              comment: pkgIsEnglish
-                ? 'Học viên hoàn thành xuất sắc khóa học Foundation, phản xạ nói tự nhiên, nắm vững kiến thức cấu trúc câu cơ bản của cấp độ.'
-                : 'Học viên có sự tiến bộ lớn trong tư duy giải toán, chủ động làm các bài tập mở rộng.',
-              sectionAContent: `ĐIỂM NỔI BẬT ĐẠT ĐƯỢC:
-Sáng tạo trong học tập, hoàn thành tốt các dự án học tập nhỏ.`,
-              sectionBContent: `MỤC TIÊU & ĐỊNH HƯỚNG HỖ TRỢ:
-Phát huy tinh thần chủ động sáng tạo.`,
-              evaluator: 'Teacher Sarah & Giáo vụ Mai',
-              date: '29/06/2026'
-            }
-          ]
-
-          const classRecordForHover: ClassRecord = {
-            id: pkg.id,
-            code: pkg.classCode || 'CLS-IELTS-001',
-            name: pkg.className,
-            level: pkgIsEnglish ? 'IELTS' : 'Toán tư duy',
-            syllabus: pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán Tư Duy STEM Rino',
-            learningPath: pkgIsEnglish ? 'IELTS Foundation ➔ Academic' : 'Rino Math Standard ➔ Advanced',
-            subLevel: pkg.subLevel || (pkgIsEnglish ? '5.0–5.5' : 'Archimedes 5 - A'),
-            branch: 'RinoEdu Linh Đàm',
-            teacher: staffInfo?.teachers.map((t) => t.name.replace(/^GV\.?\s*/i, '')).join(', ') || 'Giáo viên',
-            teacherPhone: '0901234567',
-            room: 'P.102 (Tầng 1)',
-            schedule: pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)',
-            scheduleSlots: [
-              { dayOfWeek: 'Thứ 2', date: '27/07', startTime: '17:30', endTime: '19:00' },
-              { dayOfWeek: 'Thứ 6', date: '31/07', startTime: '17:30', endTime: '19:00' },
-            ],
-            startDate: '2026-05-01',
-            endDate: pkg.endDate || '2027-05-13',
-            maxStudents: 15,
-            enrolledStudents: 12,
-            status: 'dang_hoc',
-            tuitionFee: 3000000,
-          }
 
           return (
             <div key={pkg.id} className="space-y-4">
               {/* Cụm thông tin Gói học & Lớp học - Giản lược thị giác & Tập trung vào thông tin chính */}
-              <div className="bg-card dark:bg-zinc-900 border border-border/70 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
-                {/* Row 1: Program Selector (Header bar with soft background tint) */}
-                <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-3 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-3">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium shrink-0">Lớp:</span>
-                    {visiblePackages.map((pItem) => {
-                      const isSelected = pItem.id === selectedPackageId
-                      const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
-                      const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
-                        ? 'Tiếng Anh'
-                        : /toán|math|LD_TOAN/i.test(text)
-                          ? 'Toán tư duy'
-                          : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Lớp học'
-                      const isPkgActive = pItem.status === 'active'
-                      return (
-                        <button
-                          key={pItem.id}
-                          type="button"
-                          onClick={() => setSelectedPackageId(pItem.id)}
-                          className={cn(
-                            "h-[40px] px-3 py-1 text-xs rounded-lg transition-all flex flex-col justify-center items-center text-center cursor-pointer select-none border",
-                            isSelected
-                              ? "bg-sky-600 text-white font-medium shadow-2xs border-sky-600"
-                              : isPkgActive
-                                ? "bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60"
-                                : "bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30"
-                          )}
-                        >
-                          <span className="font-semibold text-xs leading-none">
-                            {shortSubject}
-                          </span>
-                          {pItem.classCode && (
-                            <span
-                              className={cn(
-                                "text-[9.5px] font-mono tracking-tight leading-none mt-1",
-                                isSelected
-                                  ? "text-sky-100 opacity-90 font-normal"
-                                  : "text-muted-foreground/80 font-normal"
-                              )}
-                            >
-                              ({pItem.classCode})
-                              {!isPkgActive && (
-                                <span className="ml-0.5 opacity-70">
-                                  ({pItem.status === 'pending' ? 'Chờ' : 'Cũ'})
-                                </span>
-                              )}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                    {otherPackages.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllPrograms(!showAllPrograms)}
-                        className="h-[40px] px-2.5 text-xs text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer rounded-lg border border-border/40 hover:bg-muted/40"
-                      >
-                        <span>{showAllPrograms ? 'Thu gọn' : `Khác (${otherPackages.length})`}</span>
-                        {showAllPrograms ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* 2-Column Grid with Merged Groups */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 pt-1 text-left">
-                  {/* Group 1: Cơ sở & CS phụ trách (Đổi CS ở ngay sau tên CS, có PersonnelHoverCard) */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Cơ sở & CS phụ trách</span>
-                    <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
-                      <span>{currentBranchName}</span>
-                      <span className="text-border/60 font-normal">•</span>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <PersonnelHoverCard
-                          person={{
-                            id: currentCSObj.code || 'EMP-CS-001',
-                            name: currentCSName,
-                            role: 'Chuyên viên CSKH',
-                            phone: '0912345678',
-                            email: 'lan.lt@rinoedu.vn',
-                            avatar: currentCSObj.avatar,
-                          }}
-                        >
-                          <span className="inline-flex items-center gap-1 text-foreground font-normal hover:underline cursor-pointer">
-                            <AppAvatar
-                              src={currentCSObj.avatar}
-                              name={currentCSObj.name}
-                              size="xs"
-                              className="h-4 w-4 border border-primary/10 shrink-0"
-                            />
-                            <span>{currentCSName}</span>
-                          </span>
-                        </PersonnelHoverCard>
-
-                        {/* Text Đổi CS màu xanh ở ngay sau tên CS */}
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline cursor-pointer transition-colors ml-0.5"
-                              title={`Đổi CS phụ trách tại ${currentBranchName}`}
-                            >
-                              Đổi CS
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent align="start" className="w-64 p-2.5 space-y-2 text-xs z-50 shadow-md border bg-popover text-popover-foreground">
-                            <div className="pb-1 border-b border-border/40 space-y-0.5">
-                              <p className="font-bold text-foreground text-xs">Đổi CS phụ trách</p>
-                              <p className="text-xs text-muted-foreground italic">Danh sách thuộc {currentBranchName}</p>
-                            </div>
-                            
-                            <div className="relative flex items-center">
-                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                              <input
-                                type="text"
-                                value={csSearchQuery}
-                                onChange={(e) => setCsSearchQuery(e.target.value)}
-                                placeholder="Tìm nhân viên CS..."
-                                className="w-full pl-8 pr-2 py-1.5 bg-muted/30 border border-border/60 rounded-md text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-sky-500"
-                              />
-                            </div>
-
-                            <div className="max-h-52 overflow-y-auto space-y-1 pt-0.5">
-                              {filteredBranchCsList.length === 0 ? (
-                                <p className="text-xs text-muted-foreground italic text-center py-2">Không tìm thấy nhân viên thuộc cơ sở</p>
-                              ) : (
-                                filteredBranchCsList.map((csItem) => (
-                                  <button
-                                    key={csItem.id}
-                                    type="button"
-                                    onClick={() => {
-                                      handleCSChange(csItem.name)
-                                      toast.success(`Đã đổi CS phụ trách (${currentBranchName}) thành: ${csItem.name}`)
-                                    }}
-                                    className={cn(
-                                      'w-full text-left p-1.5 rounded-lg text-xs font-semibold hover:bg-muted transition-colors flex items-center justify-between gap-2 cursor-pointer',
-                                      currentCSName === csItem.name ? 'bg-muted text-foreground font-bold' : 'text-foreground'
-                                    )}
-                                  >
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <AppAvatar src={csItem.avatar} name={csItem.name} size="xs" className="h-6 w-6 border border-primary/10 shrink-0" />
-                                      <div className="min-w-0 space-y-0.5">
-                                        <p className="font-bold text-xs truncate leading-none">{csItem.name}</p>
-                                        <p className="font-mono text-[9.5px] text-muted-foreground font-normal leading-none">{csItem.code}</p>
-                                      </div>
-                                    </div>
-                                    {currentCSName === csItem.name && <Check className="h-3.5 w-3.5 text-foreground shrink-0" />}
-                                  </button>
-                                ))
-                              )}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Group 2: KCT & Trình độ */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">KCT & Trình độ</span>
-                    <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
-                      <SyllabusProfileHoverCard cls={classRecordForHover}>
-                        <span className="hover:underline cursor-pointer">
-                          {pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán Tư Duy STEM Rino'}
-                        </span>
-                      </SyllabusProfileHoverCard>
-                      <span className="text-border/60 font-normal">•</span>
-                      <span>
-                        {pkg.level && pkg.subLevel ? (pkg.subLevel.includes(pkg.level) ? pkg.subLevel : `${pkg.level} - ${pkg.subLevel}`) : (pkg.subLevel || pkg.level || 'Level 4 - A')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Group 3: Gói học */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Gói học</span>
-                    <span className="text-xs font-normal text-foreground block">{pkg.packageName}</span>
-                  </div>
-
-                  {/* Group 4: Lịch học */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Lịch học</span>
-                    <span className="text-xs font-normal text-foreground block">
-                      {pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
-                    </span>
-                  </div>
-
-                  {/* Group 5: Ngày bắt đầu - Hạn học */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Ngày bắt đầu - Hạn học</span>
-                    <span className="text-xs font-normal text-foreground block">
-                      {pkg.startDate ? (pkg.startDate.includes('-') ? pkg.startDate.split('-').reverse().join('/') : pkg.startDate) : '01/05/2026'} - {pkg.endDate || '25/10/2026'}
-                    </span>
-                  </div>
-
-                  {/* Group 6: Giáo viên (GV) (Lịch sử đổi GV dạng icon cam + (3) ở ngay sau tên GV) */}
-                  <div className="space-y-0.5">
-                    <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">Giáo viên (GV)</span>
-                    {staffInfo && (
-                      <div className="flex items-center gap-1 text-xs flex-wrap font-normal text-foreground">
-                        {staffInfo.teachers.map((teacher, idx) => {
-                          const cleanedTeacherName = teacher.name.replace(/^GV\.?\s*/i, '')
-                          return (
-                            <React.Fragment key={teacher.id}>
-                              <PersonnelHoverCard person={{ ...teacher, name: cleanedTeacherName }}>
-                                <span className="text-foreground font-normal hover:underline cursor-pointer text-xs">{cleanedTeacherName}</span>
-                              </PersonnelHoverCard>
-                              {idx < staffInfo.teachers.length - 1 && <span>,</span>}
-                            </React.Fragment>
-                          )
-                        })}
-
-                        {/* Icon đổi GV màu cam nhạt & số (3) ngay sau tên giáo viên */}
-                        <ClassTeacherHistoryPopover
-                          trigger={
-                            <button
-                              type="button"
-                              className="inline-flex items-center gap-0.5 text-xs text-amber-500/90 dark:text-amber-400/90 hover:text-amber-600 font-medium cursor-pointer transition-colors ml-1"
-                              title="Lịch sử đổi giáo viên (3)"
-                            >
-                              <History className="h-3.5 w-3.5 text-amber-500/80" />
-                              <span className="text-xs font-semibold text-amber-600/90 dark:text-amber-400/90">(3)</span>
-                            </button>
-                          }
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <StudentCareActiveClassCard
+                pkg={pkg}
+                visiblePackages={visiblePackages}
+                selectedPackageId={selectedPackageId}
+                setSelectedPackageId={setSelectedPackageId}
+                otherPackages={otherPackages}
+                showAllPrograms={showAllPrograms}
+                setShowAllPrograms={setShowAllPrograms}
+                isClassInfoExpanded={isClassInfoExpanded}
+                setIsClassInfoExpanded={setIsClassInfoExpanded}
+                pkgIsEnglish={pkgIsEnglish}
+                staffInfo={staffInfo}
+                currentBranchName={currentBranchName}
+              />
 
 
 
@@ -758,6 +409,9 @@ Phát huy tinh thần chủ động sáng tạo.`,
                     regularSessions={regularSessions}
                     testSessions={testSessions}
                     pkgIsEnglish={pkgIsEnglish}
+                    studentId={studentId}
+                    studentName={studentName}
+                    studentAlert={currentStudentAlert}
                     smartCards={
                       <CareReportSmartCards
                         pkg={pkg}
@@ -809,12 +463,17 @@ Phát huy tinh thần chủ động sáng tạo.`,
                   {/* Buổi Project Thực hành & Media (Ảnh/Video học viên) */}
                   <CareProjectMediaList
                     pkgIsEnglish={pkgIsEnglish}
+                    studentId={studentId}
+                    studentName={studentName}
+                    classCode={pkg.classCode}
+                    className={pkg.className}
                   />
 
                   <MonthlyCommentsSection
                     monthlyComments={monthlyComments}
                     studentId={studentId}
                     studentName={studentName}
+                    studentCode={pkg.classCode || 'HV-S4-10'}
                     onOpenEvaluationTab={() => {
                       setEvaluationModalData({
                         regularSessions,

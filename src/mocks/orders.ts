@@ -727,7 +727,10 @@ export const mockOrders: Order[] = [
     customerPhone: "0912445566",
     recipientName: "Trần Minh Đức",
     shippingAddress: "Tòa S1.02 Vinhomes Smart City, Tây Mỗ, Nam Từ Liêm, Hà Nội",
-    items: [{ productId: "p2", productName: "Khóa học TOEIC B2", quantity: 1, unitPrice: 3000000, subtotal: 3000000, packageCategory: 'single_course' }],
+    items: [
+      { productId: "p2", productName: "Khóa học TOEIC B2", quantity: 1, unitPrice: 2500000, subtotal: 2500000, packageCategory: 'single_course' },
+      { productId: "p2-sub", productName: "Bộ giáo trình luyện đề chuyên sâu", quantity: 1, unitPrice: 500000, subtotal: 500000, packageCategory: 'single_course' },
+    ],
     totalAmount: 3000000,
     discountAmount: 0,
     finalAmount: 3000000,
@@ -861,7 +864,10 @@ export const mockOrders: Order[] = [
     customerPhone: "0915334455",
     recipientName: "Đặng Quốc Bảo",
     shippingAddress: "Số 56 Nguyễn Trãi, Thanh Xuân, Hà Nội",
-    items: [{ productId: "p1", productName: "Khóa học IELTS C1", quantity: 1, unitPrice: 4500000, subtotal: 4500000, packageCategory: 'single_course' }],
+    items: [
+      { productId: "p1", productName: "Khóa học IELTS C1", quantity: 1, unitPrice: 3500000, subtotal: 3500000, packageCategory: 'single_course' },
+      { productId: "p2", productName: "Khóa Luyện đề Intensive Speaking", quantity: 1, unitPrice: 1000000, subtotal: 1000000, packageCategory: 'single_course' }
+    ],
     totalAmount: 4500000,
     discountAmount: 400000,
     finalAmount: 4100000,

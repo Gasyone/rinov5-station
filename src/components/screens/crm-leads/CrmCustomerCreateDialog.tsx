@@ -15,10 +15,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import type { Lead } from '@/mocks/crmLeads'
-import type { ParentItem, ChildItem } from './crmCustomerCreateTypes'
+import type { ParentItem, ChildItem, HistoricalSalesCycle } from './crmCustomerCreateTypes'
 import { CrmCustomerParentSection } from './CrmCustomerParentSection'
 import { CrmCustomerChildSection } from './CrmCustomerChildSection'
-import { CrmCustomerProfileSection } from './CrmCustomerProfileSection'
 
 interface CrmCustomerCreateDialogProps {
   open: boolean
@@ -36,9 +35,12 @@ export function CrmCustomerCreateDialog({
   onSubmit,
   initialLead,
   initialAction = 'view',
-  totalOrdersCount = 0,
-  totalOrdersAmount = '0đ',
+  totalOrdersCount: propTotalOrdersCount,
+  totalOrdersAmount: propTotalOrdersAmount,
 }: CrmCustomerCreateDialogProps) {
+  const effectiveOrdersCount = propTotalOrdersCount ?? initialLead?.ordersCount ?? 0
+  const effectiveOrdersAmount = propTotalOrdersAmount ?? initialLead?.totalSpend ?? '0đ'
+
   // Cột 1: Danh sách Phụ huynh & Địa chỉ
   const [parents, setParents] = useState<ParentItem[]>([
     {
@@ -57,7 +59,7 @@ export function CrmCustomerCreateDialog({
   const [addressDetail, setAddressDetail] = useState('')
   const [mapCoordinates, setMapCoordinates] = useState('')
 
-  // Cột 2: Danh sách Học viên (Con)
+  // Cột 2: Danh sách Học viên (Con) kèm Định vị & Phân bổ theo từng bé
   const [children, setChildren] = useState<ChildItem[]>([
     {
       id: 'child-1',
@@ -69,18 +71,17 @@ export function CrmCustomerCreateDialog({
       phone: '',
       course: '',
       vuihocAccount: '',
+      customerType: 'Tự học',
+      industryGroup: 'Tiểu học',
+      selectedSources: ['Web Rinoedu'],
+      selectedStaff: ['Trần Thị Mai'],
+      marketingStaff: 'Nguyễn Thị Lan (Marketing)',
+      selectedProductGroups: ['Tiếng Anh Thiếu Nhi'],
+      customerCode: '',
       isCollapsed: false,
     },
   ])
 
-  // Cột 3: Định vị & Phân bổ
-  const [customerType, setCustomerType] = useState('Tự học')
-  const [industryGroup, setIndustryGroup] = useState('Tiểu học')
-  const [selectedSources, setSelectedSources] = useState<string[]>(['Web Rinoedu'])
-  const [selectedStaff, setSelectedStaff] = useState<string[]>(['Trần Thị Mai'])
-  const [marketingStaff, setMarketingStaff] = useState('Nguyễn Thị Lan (Marketing)')
-  const [selectedProductGroups, setSelectedProductGroups] = useState<string[]>(['Tiếng Anh Thiếu Nhi'])
-  const [customerCode, setCustomerCode] = useState('')
   const [validationError, setValidationError] = useState('')
 
   // Đồng bộ hóa State khi Dialog mở ra (Hỗ trợ mở mới, xem chi tiết, thêm phụ huynh, thêm con)
@@ -97,7 +98,6 @@ export function CrmCustomerCreateDialog({
           email: initialLead.email || '',
           role: initialLead.parentRole || 'Mẹ',
           secondaryPhone: '',
-          // Theo yêu cầu: Phụ huynh thường đóng, hoặc khi thêm mới thì đóng phụ huynh trước đó
           isCollapsed: initialAction === 'add_parent' ? true : Boolean(initialLead.parentName),
         },
       ]
@@ -134,7 +134,43 @@ export function CrmCustomerCreateDialog({
 
       setParents(loadedParents)
 
-      // 2. Học viên: Khởi tạo từ initialLead
+      // 2. Học viên kèm Định vị & Phân bổ tác nghiệp: Khởi tạo từ initialLead
+      const pastSalesCycles: HistoricalSalesCycle[] = (initialLead.salesCycles || [])
+        .filter((c) => c.status !== 'active')
+        .map((c) => ({
+          cycleId: c.cycleId,
+          cycleNumber: c.cycleNumber,
+          title: c.title.replace(/chu kỳ/gi, 'Đợt'),
+          status: c.status,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          assignedSales: c.assignedSales,
+          branch: initialLead.branch || 'RinoEdu Linh Đàm',
+          channel: initialLead.source || 'Facebook',
+          productInterest: initialLead.targetSubject || 'Anh văn Nhi đồng (SuperKids)',
+          outcomeNote: c.outcomeNote,
+          ordersCount: initialLead.ordersCount || 1,
+          totalAmount: initialLead.totalSpend || '12.000.000đ',
+        }))
+
+      if (pastSalesCycles.length === 0 && initialLead.isReturningLead) {
+        pastSalesCycles.push({
+          cycleId: 'cycle-old-1',
+          cycleNumber: 1,
+          title: 'Đợt 1 (Đợt tiếp cận trước đây)',
+          status: 'converted',
+          startDate: '05/10/2025',
+          endDate: '20/01/2026',
+          assignedSales: 'Lê Hoàng Nam (Sales)',
+          branch: initialLead.branch || 'RinoEdu Linh Đàm',
+          channel: initialLead.source || 'Facebook',
+          productInterest: initialLead.targetSubject || 'Anh văn Nhi đồng (SuperKids)',
+          outcomeNote: initialLead.returningReason || 'Cựu học viên hoàn thành đợt trước.',
+          ordersCount: initialLead.ordersCount || 1,
+          totalAmount: initialLead.totalSpend || '12.000.000đ',
+        })
+      }
+
       const loadedChildren: ChildItem[] = [
         {
           id: `child-${initialLead.id}`,
@@ -146,16 +182,22 @@ export function CrmCustomerCreateDialog({
           phone: initialLead.studentPhone || '',
           course: initialLead.targetSubject || '',
           vuihocAccount: initialLead.vuihocAccount || '',
-          // Nếu action là add_child: Đóng bé trước đó lại, mở ra bé mới
+          customerType: initialLead.trainingType || 'Tự học',
+          industryGroup: initialLead.industryGroup || 'Tiểu học',
+          selectedSources: initialLead.source ? [initialLead.source] : ['Web Rinoedu'],
+          selectedStaff: initialLead.assignedTo ? [initialLead.assignedTo] : ['Trần Thị Mai'],
+          marketingStaff: initialLead.marketingStaff || 'Nguyễn Thị Lan (Marketing)',
+          selectedProductGroups: initialLead.productGroup ? [initialLead.productGroup] : ['Tiếng Anh Thiếu Nhi'],
+          customerCode: initialLead.code || '',
           isCollapsed: initialAction === 'add_child',
+          isReturningLead: Boolean(initialLead.isReturningLead),
+          returningReason: initialLead.returningReason || '',
+          pastCycles: pastSalesCycles,
         },
       ]
 
-      // Nếu action là add_child: Đóng các bé trước đó lại, mở ra bé mới
+      // Nếu action là add_child: Thêm bé mới
       if (initialAction === 'add_child') {
-        loadedChildren.forEach((c) => {
-          c.isCollapsed = true
-        })
         loadedChildren.push({
           id: `child-new-${Date.now()}`,
           name: '',
@@ -166,6 +208,13 @@ export function CrmCustomerCreateDialog({
           phone: '',
           course: '',
           vuihocAccount: '',
+          customerType: initialLead.trainingType || 'Tự học',
+          industryGroup: 'Tiểu học',
+          selectedSources: ['Web Rinoedu'],
+          selectedStaff: ['Trần Thị Mai'],
+          marketingStaff: 'Nguyễn Thị Lan (Marketing)',
+          selectedProductGroups: ['Tiếng Anh Thiếu Nhi'],
+          customerCode: '',
           isCollapsed: false,
         })
       }
@@ -178,15 +227,6 @@ export function CrmCustomerCreateDialog({
       setWard(initialLead.ward || 'Phường Bến Nghé')
       setAddressDetail(initialLead.streetAddress || initialLead.address || '')
       setMapCoordinates(initialLead.mapLink || '')
-
-      // 4. Định vị & Phân bổ
-      setCustomerType(initialLead.trainingType || 'Tự học')
-      setIndustryGroup(initialLead.industryGroup || 'Tiểu học')
-      setSelectedSources(initialLead.source ? [initialLead.source] : ['Web Rinoedu'])
-      setSelectedStaff(initialLead.assignedTo ? [initialLead.assignedTo] : ['Trần Thị Mai'])
-      setMarketingStaff(initialLead.marketingStaff || 'Nguyễn Thị Lan (Marketing)')
-      setSelectedProductGroups(initialLead.productGroup ? [initialLead.productGroup] : ['Tiếng Anh Thiếu Nhi'])
-      setCustomerCode(initialLead.code || '')
       setValidationError('')
     } else {
       // Khi tạo mới từ đầu (Create New Lead)
@@ -212,6 +252,13 @@ export function CrmCustomerCreateDialog({
           phone: '',
           course: '',
           vuihocAccount: '',
+          customerType: 'Tự học',
+          industryGroup: 'Tiểu học',
+          selectedSources: ['Web Rinoedu'],
+          selectedStaff: ['Trần Thị Mai'],
+          marketingStaff: 'Nguyễn Thị Lan (Marketing)',
+          selectedProductGroups: ['Tiếng Anh Thiếu Nhi'],
+          customerCode: '',
           isCollapsed: false,
         },
       ])
@@ -220,17 +267,11 @@ export function CrmCustomerCreateDialog({
       setWard('Phường Bến Nghé')
       setAddressDetail('')
       setMapCoordinates('')
-      setCustomerType('Tự học')
-      setIndustryGroup('Tiểu học')
-      setSelectedSources(['Web Rinoedu'])
-      setSelectedStaff(['Trần Thị Mai'])
-      setMarketingStaff('Nguyễn Thị Lan (Marketing)')
-      setSelectedProductGroups(['Tiếng Anh Thiếu Nhi'])
-      setCustomerCode('')
       setValidationError('')
     }
   }, [open, initialLead, initialAction])
 
+  // Ghép chuỗi địa chỉ đầy đủ
   const fullAddressSearchQuery = useMemo(() => {
     return [addressDetail, ward, district, province].filter(Boolean).join(', ')
   }, [addressDetail, ward, district, province])
@@ -281,8 +322,8 @@ export function CrmCustomerCreateDialog({
         ? initialLead.id
         : `LEAD-${Date.now()}-${index + 1}`
 
-      const finalCode = customerCode.trim()
-        ? (index === 0 ? customerCode.trim() : `${customerCode.trim()}-${index + 1}`)
+      const finalCode = child.customerCode?.trim()
+        ? (index === 0 ? child.customerCode.trim() : `${child.customerCode.trim()}-${index + 1}`)
         : (isInitialLead ? initialLead.code : `KH-${Math.floor(100000 + Math.random() * 900000)}`)
 
       const calculatedBirthYear = child.birthYear ? parseInt(child.birthYear, 10) : 2018
@@ -315,28 +356,28 @@ export function CrmCustomerCreateDialog({
         mapLink: mapCoordinates,
         familySiblings: siblingNames,
         otherParents: otherParentsList,
-        trainingType: customerType,
-        industryGroup,
-        productGroup: selectedProductGroups.join(', ') || 'Tiếng Anh Thiếu Nhi',
-        marketingStaff,
-        source: (selectedSources[0]?.toLowerCase().includes('facebook')
+        trainingType: child.customerType || 'Tự học',
+        industryGroup: child.industryGroup || 'Tiểu học',
+        productGroup: child.selectedProductGroups?.join(', ') || 'Tiếng Anh Thiếu Nhi',
+        marketingStaff: child.marketingStaff || 'Nguyễn Thị Lan (Marketing)',
+        source: (child.selectedSources?.[0]?.toLowerCase().includes('facebook')
           ? 'facebook'
-          : selectedSources[0]?.toLowerCase().includes('hotline')
+          : child.selectedSources?.[0]?.toLowerCase().includes('hotline')
           ? 'hotline'
-          : selectedSources[0]?.toLowerCase().includes('event')
+          : child.selectedSources?.[0]?.toLowerCase().includes('event')
           ? 'event'
-          : selectedSources[0]?.toLowerCase().includes('referral')
+          : child.selectedSources?.[0]?.toLowerCase().includes('referral')
           ? 'referral'
           : 'website') as Lead['source'],
         status: base.status || 'chua_tiep_can',
-        assignedTo: selectedStaff.join(', ') || 'Chưa phân bổ',
+        assignedTo: child.selectedStaff?.join(', ') || 'Chưa phân bổ',
         branch: base.branch || 'RinoEdu Linh Đàm',
         createdAt: base.createdAt || new Date().toISOString().slice(0, 10),
         lastNote: base.lastNote || [
           child.currentSchool ? `Trường đang học: ${child.currentSchool}.` : '',
-          selectedProductGroups.length > 0 ? `Nhóm SP: ${selectedProductGroups.join(', ')}.` : '',
-          marketingStaff ? `Phụ trách MKT: ${marketingStaff}.` : '',
-          `Kênh tiếp nhận: ${selectedSources.join(', ') || 'Web'}.`,
+          child.selectedProductGroups?.length ? `Nhóm SP: ${child.selectedProductGroups.join(', ')}.` : '',
+          child.marketingStaff ? `Phụ trách MKT: ${child.marketingStaff}.` : '',
+          `Kênh tiếp nhận: ${child.selectedSources?.join(', ') || 'Web'}.`,
         ].filter(Boolean).join(' '),
         expectedPackage: base.expectedPackage || `Gói ${child.course || 'Tiếng Anh'} 6T`,
         expectedAmount: base.expectedAmount || '15.000.000đ',
@@ -354,13 +395,13 @@ export function CrmCustomerCreateDialog({
   return (
     <Dialog open={open} onOpenChange={(val) => (!val ? handleResetForm() : onOpenChange(true))}>
       <DialogContent
-        className="w-[96vw] sm:max-w-[1380px] max-w-[1380px] max-h-[96vh] overflow-y-auto bg-slate-100 dark:bg-zinc-950 p-0 border-border shadow-2xl rounded-xl gap-0"
-        style={{ maxWidth: '1380px', width: '96vw' }}
+        className="w-[95vw] sm:max-w-[1200px] max-w-[1200px] max-h-[94vh] overflow-y-auto !bg-[#f1f5f9] dark:!bg-zinc-950 p-0 border-border shadow-2xl rounded-xl gap-0 opacity-100"
+        style={{ maxWidth: '1200px', width: '95vw', backgroundColor: '#f1f5f9' }}
       >
-        {/* Header Tinh Gọn - Khoảng cách tối thiểu */}
-        <DialogHeader className="sticky top-0 z-30 flex flex-row items-center justify-between px-3.5 py-2 bg-white dark:bg-zinc-900 border-b border-border shadow-2xs">
+        {/* Header Tinh Gọn */}
+        <DialogHeader className="sticky top-0 z-30 flex flex-row items-center justify-between px-4 py-2.5 bg-white dark:bg-zinc-900 border-b border-border shadow-2xs">
           <div className="flex items-center gap-2">
-            <div className="flex h-6.5 w-6.5 items-center justify-center rounded-md bg-pink-500/10 text-pink-600 dark:bg-pink-500/20">
+            <div className="flex h-6.5 w-6.5 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-500/20">
               <User className="h-3.5 w-3.5" />
             </div>
             <div className="flex items-center gap-1.5">
@@ -374,7 +415,7 @@ export function CrmCustomerCreateDialog({
             <button
               type="button"
               onClick={handleOpenFullDetail}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs text-primary hover:bg-primary/10 transition-colors ml-2 cursor-pointer border border-primary/20"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-xs text-primary hover:bg-primary/10 transition-colors ml-2 cursor-pointer border border-primary/20"
               title="Mở toàn màn hình chi tiết khách hàng"
             >
               <ExternalLink className="h-3 w-3" />
@@ -387,7 +428,7 @@ export function CrmCustomerCreateDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 px-2.5 text-xs font-medium text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+              className="h-7.5 px-3 text-xs font-medium text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
               onClick={handleResetForm}
             >
               <X className="mr-1 h-3 w-3" />
@@ -396,7 +437,7 @@ export function CrmCustomerCreateDialog({
             <Button
               type="button"
               size="sm"
-              className="h-7 px-3.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+              className="h-7.5 px-4 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
               onClick={handleSubmit}
             >
               <Check className="mr-1 h-3 w-3" />
@@ -407,55 +448,41 @@ export function CrmCustomerCreateDialog({
 
         {/* Thông báo lỗi validation */}
         {validationError && (
-          <div className="mx-3 mt-1.5 p-2 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
+          <div className="mx-4 mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
             ⚠️ {validationError}
           </div>
         )}
 
-        {/* Body 3 Cột Rộng Rãi Đồng Mức */}
-        <form onSubmit={handleSubmit} className="p-2.5 space-y-2">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 items-stretch">
-            {/* CỘT 1: PHỤ HUYNH & ĐỊA CHỈ MAP */}
-            <CrmCustomerParentSection
-              parents={parents}
-              setParents={setParents}
-              province={province}
-              setProvince={setProvince}
-              district={district}
-              setDistrict={setDistrict}
-              ward={ward}
-              setWard={setWard}
-              addressDetail={addressDetail}
-              setAddressDetail={setAddressDetail}
-              mapCoordinates={mapCoordinates}
-              setMapCoordinates={setMapCoordinates}
-            />
+        {/* Body 2 Cột Cân Đối: Cột Trái (Phụ huynh ~42%) + Cột Phải (Học viên & Định vị tác nghiệp ~58%) */}
+        <form onSubmit={handleSubmit} className="p-3 space-y-3 bg-[#f1f5f9] dark:bg-zinc-950">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+            {/* CỘT 1: PHỤ HUYNH & ĐỊA CHỈ MAP (5/12 CỘT) */}
+            <div className="lg:col-span-5">
+              <CrmCustomerParentSection
+                parents={parents}
+                setParents={setParents}
+                province={province}
+                setProvince={setProvince}
+                district={district}
+                setDistrict={setDistrict}
+                ward={ward}
+                setWard={setWard}
+                addressDetail={addressDetail}
+                setAddressDetail={setAddressDetail}
+                mapCoordinates={mapCoordinates}
+                setMapCoordinates={setMapCoordinates}
+              />
+            </div>
 
-            {/* CỘT 2: THÔNG TIN HỌC VIÊN (CON) */}
-            <CrmCustomerChildSection
-              childList={children}
-              setChildren={setChildren}
-            />
-
-            {/* CỘT 3: ĐỊNH VỊ & PHÂN BỔ */}
-            <CrmCustomerProfileSection
-              customerType={customerType}
-              setCustomerType={setCustomerType}
-              industryGroup={industryGroup}
-              setIndustryGroup={setIndustryGroup}
-              selectedSources={selectedSources}
-              setSelectedSources={setSelectedSources}
-              selectedStaff={selectedStaff}
-              setSelectedStaff={setSelectedStaff}
-              marketingStaff={marketingStaff}
-              setMarketingStaff={setMarketingStaff}
-              selectedProductGroups={selectedProductGroups}
-              setSelectedProductGroups={setSelectedProductGroups}
-              customerCode={customerCode}
-              setCustomerCode={setCustomerCode}
-              totalOrdersCount={totalOrdersCount}
-              totalOrdersAmount={totalOrdersAmount}
-            />
+            {/* CỘT 2: HỌC VIÊN & ĐỊNH VỊ PHÂN BỔ (7/12 CỘT) */}
+            <div className="lg:col-span-7">
+              <CrmCustomerChildSection
+                childList={children}
+                setChildren={setChildren}
+                totalOrdersCount={effectiveOrdersCount}
+                totalOrdersAmount={effectiveOrdersAmount}
+              />
+            </div>
           </div>
         </form>
       </DialogContent>

@@ -5,6 +5,7 @@ export type ViewMode = 'day' | 'week'
 export interface FilterState {
   branchFilters: string[]
   levelFilters: string[]
+  sessionTypeFilters: string[]
   conditionFilters: string[]
   subjectFilters: string[]
   teacherFilters: string[]

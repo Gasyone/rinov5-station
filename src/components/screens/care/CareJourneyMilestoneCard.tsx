@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { AlertTriangle, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatFullStaffName } from './operationsAlertHelpers'
 import { AudioPlayButton } from './AudioPlayButton'
@@ -257,7 +257,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                       </span>
                       <span className="font-medium text-foreground text-xs shrink-0">{cleanStaff}</span>
                       <span className="text-muted-foreground text-xs font-normal truncate">
-                        • {logItem.channel}
+                        • {logItem.channel} · Người nhận: <span className="text-foreground font-medium">{isTeacher ? 'Học viên' : 'Châu Mẹ Nguyễn Thị Mai (Mẹ)'}</span>
                       </span>
                       <span className="font-mono text-xs font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
                         • {logItem.date}
@@ -298,49 +298,71 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                         {logItem.quote && (
                           <span className="align-middle">
                             {' '}
-                            <span className="font-semibold text-emerald-800 dark:text-emerald-300">
+                            <span className="text-emerald-800 dark:text-emerald-300 font-normal">
                               • Phụ huynh phản hồi:
                             </span>{' '}
-                            <span className="italic font-medium text-emerald-700 dark:text-emerald-400">
+                            <span className="italic font-normal text-emerald-700 dark:text-emerald-400">
                               {logItem.quote}
                             </span>
                           </span>
                         )}
                       </div>
 
-                      {/* Missed Call History Accordion (Borderless link) */}
+                      {/* Previous Care History Accordion */}
                       {isCall && (
                         <div className="pt-0.5 select-none">
                           <button
                             type="button"
                             onClick={() => toggleMissedCall(hIdx)}
-                            className="w-full text-left text-xs font-normal italic text-rose-500 hover:text-rose-600 dark:text-rose-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+                            className="w-full text-left text-xs font-normal italic text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
                           >
-                            <span className="flex items-center gap-1.5 underline decoration-rose-300">
-                              <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0 no-underline" />
-                              <span>Lịch sử (1) lần gọi nhỡ / không liên hệ được trước đó</span>
+                            <span className="flex items-center gap-1.5 underline decoration-sky-300">
+                              <History className="h-3.5 w-3.5 text-sky-500 shrink-0 no-underline" />
+                              <span>Lịch sử (1) lần ghi nhận chăm sóc trước đó</span>
                             </span>
                             {openMissedCalls[hIdx] ? (
-                              <ChevronUp className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                              <ChevronUp className="h-3.5 w-3.5 text-sky-500 shrink-0" />
                             ) : (
-                              <ChevronDown className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                              <ChevronDown className="h-3.5 w-3.5 text-sky-500 shrink-0" />
                             )}
                           </button>
 
                           {openMissedCalls[hIdx] && (
-                            <div className="mt-1.5 pl-3 border-l-2 border-rose-200 dark:border-rose-800 space-y-1 text-[10.5px] text-muted-foreground font-normal animate-in fade-in-50 duration-150">
-                              <div className="p-1.5 rounded-md hover:bg-rose-50/40 transition-colors space-y-0.5">
+                            <div className="mt-1.5 pl-3 border-l-2 border-sky-200 dark:border-sky-800 space-y-1.5 text-[10.5px] text-muted-foreground font-normal animate-in fade-in-50 duration-150">
+                              <div className="p-1.5 rounded-md hover:bg-sky-50/40 transition-colors space-y-1">
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <span className="font-semibold text-foreground text-xs">
-                                    • {logItem.date.split(' ')[0]} 09:15: Gọi KNM (Không nghe máy)
-                                  </span>
-                                  <span className="text-[9.5px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 px-2 py-0.5 rounded border border-sky-200/60 dark:border-sky-800 shrink-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-normal text-foreground text-xs">
+                                      • {logItem.date.split(' ')[0]} 09:15: Gọi KNM
+                                    </span>
+                                    <span className="text-muted-foreground">•</span>
+                                    <span className="text-xs font-medium text-foreground">
+                                      CS: <span className="font-semibold">{cleanStaff}</span>
+                                    </span>
+                                    <span className="text-muted-foreground">•</span>
+                                    <span className="text-xs text-muted-foreground">
+                                      Người nhận: <span className="text-foreground font-medium">Châu Mẹ Nguyễn Thị Mai (Mẹ)</span>
+                                    </span>
+                                  </div>
+                                  <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
                                     📅 Hẹn gọi lại: {logItem.date.split(' ')[0]} 14:00
                                   </span>
                                 </div>
-                                <p className="text-[10.5px] text-muted-foreground/90 italic pl-2 leading-relaxed w-full">
-                                  * Ghi chú: Chuông reo 5 tiếng phụ huynh không nghe máy
-                                </p>
+                                <div className="text-xs text-foreground/90 leading-relaxed font-normal pl-2">
+                                  <span className="inline-flex items-center align-middle mr-2">
+                                    <AudioPlayButton duration="01:10" />
+                                  </span>
+                                  <span className="align-middle text-muted-foreground/90">
+                                    Chuông reo 5 tiếng phụ huynh không nghe máy
+                                  </span>
+                                  {' '}
+                                  <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
+                                    • Phụ huynh phản hồi:
+                                  </span>{' '}
+                                  <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
+                                    “Chưa nghe máy (thuê bao bận cuộc gọi khác)”
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           )}

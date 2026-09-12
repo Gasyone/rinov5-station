@@ -13,6 +13,12 @@ export function SessionCardLessonsExpand({ session }: SessionCardLessonsExpandPr
   const lessons = getLessonsForRoadmapSession(session)
   const syllabusContent = getSessionSyllabusContent(session)
 
+  const isProjectSession = Boolean(
+    session.type === 'project' ||
+    (session.topic || '').toLowerCase().includes('project') ||
+    (session.topic || '').toLowerCase().includes('dự án')
+  )
+
   return (
     <div
       className="mt-1 space-y-3 pt-2.5 border-t border-border/40"
@@ -68,8 +74,8 @@ export function SessionCardLessonsExpand({ session }: SessionCardLessonsExpandPr
           }
 
           const isHomework = c.type === 'homework' || c.type === 'quiz'
-          const line2 = isHomework ? 'Bài luyện tập' : 'File tài liệu tham khảo cho học sinh'
-          const line3 = isHomework ? 'Nhiệm vụ phải làm' : 'Tài liệu tham khảo'
+          const line2 = isProjectSession && isHomework ? 'Bài tập mini project thực hành' : isHomework ? 'Bài luyện tập' : 'File tài liệu tham khảo cho học sinh'
+          const line3 = isProjectSession && isHomework ? 'Nhiệm vụ dự án' : isHomework ? 'Nhiệm vụ phải làm' : 'Tài liệu tham khảo'
 
           return (
             <div key={cIdx} className="flex items-start gap-3 text-xs py-1 px-1.5 hover:bg-muted/30 rounded-md transition-colors">
@@ -94,17 +100,17 @@ export function SessionCardLessonsExpand({ session }: SessionCardLessonsExpandPr
                     <FileText className="h-3 w-3 shrink-0 text-muted-foreground/60" />
                   )}
                   <span>{line3}</span>
-                  {c.url && (
+                  {(c.url || isProjectSession) && (
                     <>
                       <span>•</span>
                       <a
-                        href={c.url !== '#' ? c.url : undefined}
+                        href={isProjectSession ? (session.projectUrl || 'https://scratch.mit.edu/projects/612048882') : (c.url !== '#' ? c.url : undefined)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-rose-600 dark:text-rose-400 hover:underline font-semibold"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        Link bài tập
+                        {isProjectSession ? 'Project: Link' : 'Link bài tập'}
                       </a>
                     </>
                   )}

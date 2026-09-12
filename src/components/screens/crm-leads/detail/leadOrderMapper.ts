@@ -123,56 +123,6 @@ export function mapLeadToDetailedOrders(lead: Lead, allLeads: Lead[] = []): Deta
     })
   }
 
-  // 2. Draft Orders (Đơn hàng nháp)
-  if (lead.id === 'lead-001') {
-    result.push({
-      id: 'OD-DRAFT-9232',
-      orderNo: 'OD-DRAFT-9232',
-      studentId: lead.code || lead.id,
-      studentName: lead.studentName,
-      customerName: `${lead.parentName} (${lead.phone})`,
-      customerPhone: lead.phone,
-      totalAmount: 6000000,
-      discountAmount: 0,
-      finalAmount: 6000000,
-      totalPaidAmount: 0,
-      paymentMethod: 'cash',
-      paymentStatus: 'unpaid',
-      status: 'pending',
-      branch: lead.branch,
-      saleBy: lead.assignedTo,
-      saleRep: lead.assignedTo,
-      saleDate: lead.createdAt,
-      createdAt: new Date().toISOString(),
-      paymentMethodTag: 'COD / Đơn nháp',
-      items: [
-        {
-          productId: 'p-draft-1',
-          productName: 'Gói Nâng cao Kỹ năng Cambridge Starters Plus',
-          quantity: 1,
-          unitPrice: 6000000,
-          subtotal: 6000000,
-        },
-      ],
-      detailedItems: [
-        {
-          productId: 'p-draft-1',
-          productName: 'Gói Nâng cao Kỹ năng Cambridge Starters Plus',
-          quantity: 1,
-          unitPrice: 6000000,
-          subtotal: 6000000,
-          studentName: lead.studentName,
-          orderType: 'Mua mới',
-          durationText: '30 buổi',
-          categoryName: 'Sản phẩm trung tâm',
-          programName: lead.targetSubject,
-        },
-      ],
-      payments: [],
-      isCurrentPackage: false,
-    })
-  }
-
   // 3. Historical / Previous Orders (Gói đã mua & Chu kỳ trước)
   if (lead.previousOrders && lead.previousOrders.length > 0) {
     for (const prev of lead.previousOrders) {

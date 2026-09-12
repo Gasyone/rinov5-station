@@ -396,16 +396,20 @@ export function OperationsAlertScreen() {
 
     // Care status filter from toolbar tabs (only applied when advanced filter has not explicitly set care status)
     if (selectedCareStatuses.size === 0) {
-      if (careStatusFilter === 'pending') res = res.filter(isPending)
-      else if (careStatusFilter === 'in_progress') res = res.filter(isInProgress)
-      else if (careStatusFilter === 'cared') res = res.filter(isCared)
-      else if (careStatusFilter === 'all') res = res.filter((item) => !isCared(item))
+      if (dueDateFilter === 'rescheduled') {
+        res = res.filter(isRescheduled)
+      } else {
+        if (careStatusFilter === 'pending') res = res.filter(isPending)
+        else if (careStatusFilter === 'in_progress') res = res.filter(isInProgress)
+        else if (careStatusFilter === 'cared') res = res.filter(isCared)
+        else if (careStatusFilter === 'all') res = res.filter((item) => !isCared(item))
+      }
     }
 
     // Due date filter
     if (dueDateFilter === 'overdue') res = res.filter(isOverdue)
     else if (dueDateFilter === 'today') res = res.filter(isToday)
-    else if (dueDateFilter === 'rescheduled') res = res.filter(isRescheduled)
+    else if (dueDateFilter === 'rescheduled' && selectedCareStatuses.size > 0) res = res.filter(isRescheduled)
 
     return res
   }, [baseFiltered, careStatusFilter, dueDateFilter, selectedCareStatuses])

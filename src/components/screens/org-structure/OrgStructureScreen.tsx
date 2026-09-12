@@ -157,6 +157,86 @@ export function OrgStructureScreen() {
     toast.success(`Đã thêm chức danh "${positionName}" vào đơn vị`)
   }
 
+  const handleAssignStaffToPosition = (
+    unitId: string,
+    positionTitle: string,
+    assignedStaff: OrgStaffMember[]
+  ) => {
+    setUnits((prev) =>
+      prev.map((u) => {
+        if (u.id === unitId) {
+          const assignedIds = new Set(assignedStaff.map((s) => s.id))
+          const remainingMembers = (u.members || []).filter((m) => {
+            const mClean = m.title.trim().toLowerCase()
+            const pClean = positionTitle.trim().toLowerCase()
+            const hadThisTitle =
+              mClean === pClean || mClean.includes(pClean) || pClean.includes(mClean)
+            if (hadThisTitle) {
+              return assignedIds.has(m.id)
+            }
+            return true
+          })
+
+          const existingIds = new Set(remainingMembers.map((m) => m.id))
+          const newMembers = [...remainingMembers]
+          assignedStaff.forEach((s) => {
+            if (!existingIds.has(s.id)) {
+              newMembers.push(s)
+            } else {
+              const idx = newMembers.findIndex((m) => m.id === s.id)
+              if (idx !== -1) {
+                newMembers[idx] = { ...newMembers[idx], title: positionTitle }
+              }
+            }
+          })
+
+          return {
+            ...u,
+            members: newMembers,
+            memberCount: newMembers.length,
+          }
+        }
+        return u
+      })
+    )
+
+    setSelectedUnit((prev) => {
+      if (!prev || prev.id !== unitId) return prev
+      const assignedIds = new Set(assignedStaff.map((s) => s.id))
+      const remainingMembers = (prev.members || []).filter((m) => {
+        const mClean = m.title.trim().toLowerCase()
+        const pClean = positionTitle.trim().toLowerCase()
+        const hadThisTitle =
+          mClean === pClean || mClean.includes(pClean) || pClean.includes(mClean)
+        if (hadThisTitle) {
+          return assignedIds.has(m.id)
+        }
+        return true
+      })
+
+      const existingIds = new Set(remainingMembers.map((m) => m.id))
+      const newMembers = [...remainingMembers]
+      assignedStaff.forEach((s) => {
+        if (!existingIds.has(s.id)) {
+          newMembers.push(s)
+        } else {
+          const idx = newMembers.findIndex((m) => m.id === s.id)
+          if (idx !== -1) {
+            newMembers[idx] = { ...newMembers[idx], title: positionTitle }
+          }
+        }
+      })
+
+      return {
+        ...prev,
+        members: newMembers,
+        memberCount: newMembers.length,
+      }
+    })
+
+    toast.success(`Đã cập nhật nhân sự cho chức danh "${positionTitle}"`)
+  }
+
   const handleExecuteTransfer = (params: {
     staffId: string
     fromUnitId: string
@@ -263,6 +343,7 @@ export function OrgStructureScreen() {
         onOpenChange={setIsDetailOpen}
         onTransferStaffClick={handleTransferStaffClick}
         onAddPosition={handleAddPosition}
+        onAssignStaffToPosition={handleAssignStaffToPosition}
       />
 
       {/* Staff Transfer Dialog */}

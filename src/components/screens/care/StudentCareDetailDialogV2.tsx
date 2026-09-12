@@ -19,8 +19,6 @@ import {
   Check,
   Pencil,
   Search,
-  GraduationCap,
-  Receipt,
   ChevronDown,
   ChevronUp,
   History,
@@ -34,7 +32,6 @@ import { stableHash } from './operationsAlertHelpers'
 import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
-import { StudentOrdersTab, getStudentOrders } from './StudentOrdersTab'
 import { StudentDetailDialog } from '../students/detail/StudentDetailDialog'
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import { StudentCareHeaderClusterInfo, StudentCareHeaderClusterNote } from './StudentCareHeaderCluster'
@@ -62,7 +59,6 @@ export function StudentCareDetailDialogV2({
   alerts,
   onRefresh,
 }: StudentCareDetailDialogV2Props) {
-  const [leftTab, setLeftTab] = useState<'learning' | 'orders'>('learning')
   const [closedBanners, setClosedBanners] = useState<string[]>([])
   const [assignedCS, setAssignedCS] = useState('Lê Thị Lan')
   const [csSearchQuery, setCsSearchQuery] = useState('')
@@ -495,66 +491,19 @@ export function StudentCareDetailDialogV2({
               />
             </div>
 
-            <div className="w-full pt-2.5 flex flex-col">
-              {/* Left Column Navigation Tabs */}
-              <div className="w-full bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-lg flex items-center gap-1 mb-2.5 border border-slate-200/60 dark:border-zinc-700/60 shrink-0 h-9">
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('learning')}
-                  className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
-                    leftTab === 'learning'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
-                  )}
-                >
-                  <GraduationCap className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'learning' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
-                  <span>Học tập</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('orders')}
-                  className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
-                    leftTab === 'orders'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
-                  )}
-                >
-                  <Receipt className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'orders' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
-                  <span>Đơn hàng</span>
-                  <span
-                    className={cn(
-                      'inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
-                      leftTab === 'orders'
-                        ? 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200'
-                        : 'bg-slate-200/80 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300'
-                    )}
-                  >
-                    {getStudentOrders(student.studentId, student.studentName).length}
-                  </span>
-                </button>
-              </div>
-
-              {leftTab === 'learning' ? (
-                <StudentCareReportTab
-                  studentId={student.studentId}
-                  studentName={student.studentName}
-                  activePackage={activePackage}
-                  packagesList={packagesList}
-                  selectedPackageId={selectedPackageId}
-                  setSelectedPackageId={setSelectedPackageId}
-                  staffInfo={staffInfo}
-                  assignedCS={assignedCS}
-                  onAssignedCSChange={setAssignedCS}
-                  branchName="RinoEdu Nguyễn Tuân"
-                />
-              ) : (
-                <StudentOrdersTab
-                  studentId={student.studentId}
-                  studentName={student.studentName}
-                />
-              )}
+            <div className="w-full pt-1 flex flex-col">
+              <StudentCareReportTab
+                studentId={student.studentId}
+                studentName={student.studentName}
+                activePackage={activePackage}
+                packagesList={packagesList}
+                selectedPackageId={selectedPackageId}
+                setSelectedPackageId={setSelectedPackageId}
+                staffInfo={staffInfo}
+                assignedCS={assignedCS}
+                onAssignedCSChange={setAssignedCS}
+                branchName="RinoEdu Nguyễn Tuân"
+              />
             </div>
           </main>
 

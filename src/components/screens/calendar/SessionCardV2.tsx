@@ -2,6 +2,7 @@
 
 import { ArrowLeftRight, Clock, Repeat, Users, AlertTriangle, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getStatusBadgeClass } from '@/lib/statusColors'
 import { PersonnelHoverCard } from '@/components/shared'
 import { SessionHoverCard } from './SessionHoverCard'
 import type { ClassSession } from '@/mocks/calendarSchedule'
@@ -170,14 +171,14 @@ export function SessionCard({
                   Hết chỗ
                 </span>
               )}
-              {session.typeLabel && session.typeLabel !== 'Chính thức' && session.type !== 'digi_session' && session.typeLabel !== 'Ca tự học Digi' && (
+              {session.typeLabel &&
+                session.type !== 'class_session' &&
+                session.type !== 'digi_session' &&
+                session.type !== 'project' &&
+                session.typeLabel !== 'Buổi dự án' && (
                 <span className={cn(
                   "inline-flex items-center rounded px-1 py-0.5 text-xs font-bold border shrink-0",
-                  session.type === 'workshop'
-                    ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-                    : session.type === 'supplementary'
-                    ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800"
-                    : "bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800"
+                  getStatusBadgeClass(session.type)
                 )}>
                   {session.typeLabel}
                 </span>

@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { BookOpen, Clock, Info, MapPin, UserCheck, UserPlus, Users, AlertTriangle } from 'lucide-react'
+import { BookOpen, Clock, Info, MapPin, UserCheck, UserPlus, Users, AlertTriangle, ExternalLink, FolderGit2 } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { AppAvatar } from '@/components/shared'
 import { getStatusBadgeClass } from '@/lib/statusColors'
@@ -109,7 +109,14 @@ export function ClassSessionHoverCard({
                 Khai giảng
               </span>
             )}
-            {session.typeLabel && session.typeLabel !== 'Chính thức' && !session.isOpeningDay && !subTeacher && (
+            {session.typeLabel &&
+              session.type !== 'class_session' &&
+              session.type !== 'project' &&
+              session.typeLabel !== 'Chính thức' &&
+              session.typeLabel !== 'Buổi thường' &&
+              session.typeLabel !== 'Buổi dự án' &&
+              !session.isOpeningDay &&
+              !subTeacher && (
               <span
                 className={cn(
                   'inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold',
@@ -288,10 +295,22 @@ export function ClassSessionHoverCard({
           )}
 
           {/* 8. Nội dung bài học (ở dưới sĩ số) - Chỉ cho lớp học */}
-          {!isDigi && (session.lessonContent || session.lessonSubtitle || session.note) && (
+          {!isDigi && (session.lessonContent || session.lessonSubtitle || session.note || session.type === 'project') && (
             <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                <span>Nội dung buổi học</span>
+                <div className="flex items-center gap-1.5">
+                  <span>Nội dung buổi học</span>
+                  {(session.type === 'project' || session.typeLabel === 'Buổi dự án') && (
+                    <span
+                      className={cn(
+                        'inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal',
+                        getStatusBadgeClass('project')
+                      )}
+                    >
+                      Buổi dự án
+                    </span>
+                  )}
+                </div>
                 {session.lessonNumber && (
                   <span className="font-semibold text-xs text-primary/80 lowercase">
                     (Buổi {session.lessonNumber})
@@ -338,11 +357,30 @@ export function ClassSessionHoverCard({
                     </div>
                   )
                 ) : (
-                  !session.lessonSubtitle && (
+                  !session.lessonSubtitle && session.note && (
                     <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
                       {session.note}
                     </p>
                   )
+                )}
+
+                {session.type === 'project' && session.projectUrl && (
+                  <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between bg-violet-50/60 dark:bg-violet-950/20 px-2.5 py-1.5 rounded text-xs">
+                    <span className="font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
+                      <FolderGit2 className="h-3.5 w-3.5" />
+                      Project:
+                    </span>
+                    <a
+                      href={session.projectUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 underline inline-flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Link mở bài mini project
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
                 )}
               </div>
             </div>

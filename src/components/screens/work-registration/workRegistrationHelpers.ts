@@ -293,6 +293,16 @@ export function resolveWeekActionState(
   }
 }
 
+export function resolveClassCode(className?: string, assignedCode?: string): string {
+  if (assignedCode) return assignedCode
+  if (!className) return 'CLS-001'
+  if (className.includes('IELTS Intensive')) return 'CLS-IELTS-031'
+  if (className.includes('Kids Level 1') || className.includes('Kids')) return 'CLS-KIDS-001'
+  if (className.includes('Band 6.5')) return 'CLS-IELTS-005'
+  if (className.includes('IELTS')) return 'CLS-IELTS-001'
+  return 'CLS-ENG-001'
+}
+
 export function resolveClassSessionHoverData(
   record: WorkRegistrationRecord,
   employeeName: string,
@@ -300,11 +310,7 @@ export function resolveClassSessionHoverData(
   branchName: string = 'RinoEdu Linh Đàm'
 ) {
   const className = record.assignedClass || 'Tiếng Anh Trial Level 2'
-  const classCode = className.includes('SA1')
-    ? 'SA1_TA_T03'
-    : className.includes('IELTS')
-    ? 'IELTS_INT_01'
-    : 'SA1_TA_T03'
+  const classCode = resolveClassCode(className, record.assignedClassCode)
 
   return {
     id: `session-${record.id}`,

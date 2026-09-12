@@ -14,6 +14,7 @@ import { isCared } from './operationsAlertHelpers'
 import { HistoryLogCardItem } from './HistoryLogCardItem'
 import { CareJourneyMilestoneCard } from './CareJourneyMilestoneCard'
 import type { SimulatedPackage } from './studentCareDetailTypes'
+import { getStudentOrderInfo } from './renewal/renewalHelpers'
 
 interface HistoryLogItemData {
   log: CareInteractionLog
@@ -25,6 +26,12 @@ interface HistoryLogItemData {
   date?: string
   channel?: string
   subject?: string
+  linkedOrder?: {
+    orderCode: string
+    packageName: string
+    totalPaidAmount?: number
+    amountText?: string
+  }
 }
 
 interface StudentCareTimelineProps {
@@ -90,6 +97,8 @@ export function StudentCareTimeline({
               status: 'Gọi KNM (Không nghe máy)',
               nextCallback: '18/07 09:00',
               note: 'Thuê bao không liên lạc được, thử lại sau',
+              audioDuration: '00:45',
+              parentOpinion: 'Phụ huynh gọi lại sau 15p xác nhận con chưa hoàn thành bài do bận lịch gia đình',
             },
           ],
         },
@@ -104,8 +113,13 @@ export function StudentCareTimeline({
       },
     ]
 
+    const studentOrder = student ? getStudentOrderInfo(student) : null
+
     filteredCombinedLogs.forEach((item) => {
+      if (item.type !== 'log') return
       const log = item.data as CareInteractionLog
+      if (!log || !log.notes) return
+
       const topic = parseLogTopic(log.notes)
       const rec = parseRecipient(log.notes, 'Phụ huynh')
       const cleanNotes = cleanMessageNotes(log.notes)
@@ -113,9 +127,30 @@ export function StudentCareTimeline({
         log.staffName?.toLowerCase().includes('hoàng thị mai') ||
         log.staffName?.toLowerCase().includes('gv')
 
+      const isCstpLog = topic === 'CSTP' || (log.notes || '').includes('[CSTP]') || (log.notes || '').toLowerCase().includes('tái phí')
+      
+      let effectiveLinkedOrder = log.linkedOrder
+      if (!effectiveLinkedOrder && isCstpLog) {
+        if (student?.linkedOrder) {
+          const amt = student.linkedOrder.totalPaidAmount || student.linkedOrder.finalAmount || 0
+          effectiveLinkedOrder = {
+            orderCode: student.linkedOrder.orderCode,
+            packageName: student.linkedOrder.packageName,
+            totalPaidAmount: amt,
+            amountText: amt > 0 ? `${amt.toLocaleString('vi-VN')}đ` : undefined,
+          }
+        } else if (studentOrder?.orderCode) {
+          effectiveLinkedOrder = {
+            orderCode: studentOrder.orderCode,
+            packageName: studentOrder.packageName,
+            amountText: studentOrder.packageAmount,
+          }
+        }
+      }
+
       list.push({
         log,
-        topic,
+        topic: isCstpLog ? 'CSTP' : topic,
         recipient: rec,
         cleanNotes,
         staffRole: isGV ? 'GV' : 'CS',
@@ -123,8 +158,57 @@ export function StudentCareTimeline({
         date: log.date,
         channel: log.callConfirmation,
         subject: student?.subject || subjectName,
+        linkedOrder: effectiveLinkedOrder,
       })
     })
+
+    // Đảm bảo đối với chăm sóc tái phí, nếu học viên có đơn hàng liên kết thì luôn có thẻ CSTP tương ứng trong lịch sử
+    const hasCstpLog = list.some((i) => i.topic === 'CSTP' || i.cleanNotes.toLowerCase().includes('tái phí'))
+    if (!hasCstpLog && studentOrder?.orderCode) {
+      const isCompleted = student?.completedCareTags?.includes('CSTP') || student?.renewalClassification === 'tai_phi'
+      const isDeposit = student?.renewalClassification === 'hen_tai'
+      list.unshift({
+        log: {
+          id: `cstp-auto-${student?.studentId || 'def'}`,
+          date: '2026-07-04',
+          staffName: student?.csStaff || 'Ngọc Mai (Sale)',
+          callConfirmation: 'Đã gọi',
+          audioDuration: '02:15',
+          notes: isCompleted
+            ? `[CSTP] Đã tương tác chăm sóc tái phí thành công. Đơn hàng ${studentOrder.orderCode} đã hoàn tất thanh toán.`
+            : isDeposit
+            ? `[CSTP] Đã gọi điện trao đổi gia hạn khóa học. Phụ huynh đồng ý đặt cọc đợt 1 cho đơn hàng ${studentOrder.orderCode}.`
+            : `[CSTP] Đã liên kết đơn hàng ${studentOrder.orderCode} (${studentOrder.packageName}) cho kỳ tái phí khóa học mới.`,
+          parentOpinion: isCompleted
+            ? 'Phụ huynh rất an tâm và đăng ký tiếp lộ trình mới cho con.'
+            : isDeposit
+            ? 'Phụ huynh hẹn chuyển nốt số tiền còn lại trong tuần tới.'
+            : 'Phụ huynh quan tâm và đang cân nhắc hoàn tất thanh toán.',
+          linkedOrder: {
+            orderCode: studentOrder.orderCode,
+            packageName: studentOrder.packageName,
+            amountText: studentOrder.packageAmount,
+          },
+        },
+        topic: 'CSTP',
+        recipient: 'Châu Mẹ Nguyễn Thị Mai (Mẹ)',
+        cleanNotes: isCompleted
+          ? `Đã tương tác chăm sóc tái phí thành công. Đơn hàng ${studentOrder.orderCode} đã hoàn tất thanh toán.`
+          : isDeposit
+          ? `Đã gọi điện trao đổi gia hạn khóa học. Phụ huynh đồng ý đặt cọc đợt 1 cho đơn hàng ${studentOrder.orderCode}.`
+          : `Đã liên kết đơn hàng ${studentOrder.orderCode} (${studentOrder.packageName}) cho kỳ tái phí khóa học mới.`,
+        staffRole: 'CS',
+        staffName: student?.csStaff || 'Ngọc Mai',
+        date: '2026-07-04',
+        channel: 'Cuộc gọi',
+        subject: student?.subject || subjectName,
+        linkedOrder: {
+          orderCode: studentOrder.orderCode,
+          packageName: studentOrder.packageName,
+          amountText: studentOrder.packageAmount,
+        },
+      })
+    }
 
     return list
   }, [filteredCombinedLogs, student, subjectName])
@@ -132,8 +216,39 @@ export function StudentCareTimeline({
   const pkg2Logs: HistoryLogItemData[] = useMemo(() => [
     {
       log: {
+        id: 'p2-cstp-log',
+        date: '2026-05-10',
+        staffName: 'Ngọc Mai (Sale)',
+        callConfirmation: 'Đã gọi',
+        audioDuration: '02:30',
+        notes: '[CSTP] Đã liên hệ phụ huynh trao đổi gia hạn gói học nâng cao tiếp theo. Phụ huynh xác nhận chuyển khoản hoàn tất.',
+        parentOpinion: 'Phụ huynh rất an tâm về phương pháp giảng dạy và đồng ý tái phí.',
+        linkedOrder: {
+          orderCode: 'OD831001',
+          packageName: isMath ? 'Gói Toán tư duy 1:4 (60 buổi)' : 'Gói Tiếng Anh Level 4 (60 buổi)',
+          totalPaidAmount: 12500000,
+          amountText: '12.500.000đ',
+        },
+      },
+      topic: 'CSTP',
+      recipient: 'Châu Mẹ Nguyễn Thị Mai (Mẹ)',
+      cleanNotes: 'Đã liên hệ phụ huynh trao đổi gia hạn gói học nâng cao tiếp theo. Phụ huynh xác nhận chuyển khoản hoàn tất.',
+      staffRole: 'CS',
+      staffName: 'Ngọc Mai',
+      date: '2026-05-10',
+      channel: 'Cuộc gọi',
+      subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
+      linkedOrder: {
+        orderCode: 'OD831001',
+        packageName: isMath ? 'Gói Toán tư duy 1:4 (60 buổi)' : 'Gói Tiếng Anh Level 4 (60 buổi)',
+        totalPaidAmount: 12500000,
+        amountText: '12.500.000đ',
+      },
+    },
+    {
+      log: {
         id: 'p2-gv-log',
-        date: '2026-06-28',
+        date: '2026-04-28',
         staffName: isMath ? 'GV. Phạm Thị Toán' : 'GV. Bùi Văn Anh',
         callConfirmation: 'Đã gặp trực tiếp',
         notes: isMath
@@ -148,14 +263,14 @@ export function StudentCareTimeline({
         : 'Giáo viên bộ môn nhận xét con phát âm chuẩn, phản xạ nghe nói tốt và hoàn thành xuất sắc bài thuyết trình nhỏ.',
       staffRole: 'GV',
       staffName: isMath ? 'Phạm Thị Toán' : 'Bùi Văn Anh',
-      date: '2026-06-28',
+      date: '2026-04-28',
       channel: 'Gặp trực tiếp',
       subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
     },
     {
       log: {
         id: 'p2-cs-log-1',
-        date: '2026-06-20',
+        date: '2026-04-20',
         staffName: isMath ? 'Thu Trang (CSM)' : 'Minh Phương (CSM)',
         callConfirmation: 'Đã gọi',
         notes: '[ĐK1] CSM trao đổi tiến độ học tập gói nâng cao định kỳ tháng thứ 2, học viên tiếp thu bài nhanh và tự tin phát biểu.',
@@ -167,14 +282,14 @@ export function StudentCareTimeline({
       cleanNotes: 'CSM trao đổi tiến độ học tập gói nâng cao định kỳ tháng thứ 2, học viên tiếp thu bài nhanh và tự tin phát biểu.',
       staffRole: 'CS',
       staffName: isMath ? 'Thu Trang' : 'Minh Phương',
-      date: '2026-06-20',
+      date: '2026-04-20',
       channel: 'Cuộc gọi',
       subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
     },
     {
       log: {
         id: 'p2-cs-log-2',
-        date: '2026-05-15',
+        date: '2026-03-15',
         staffName: isMath ? 'Thu Trang (CSM)' : 'Minh Phương (CSM)',
         callConfirmation: 'Đã nhắn Zalo',
         notes: '[TB1] Xác nhận lịch học bù ca cuối tuần và gửi phiếu bài tập củng cố thêm cho con qua Zalo.',
@@ -184,7 +299,7 @@ export function StudentCareTimeline({
       cleanNotes: 'Xác nhận lịch học bù ca cuối tuần và gửi phiếu bài tập củng cố thêm cho con qua Zalo.',
       staffRole: 'CS',
       staffName: isMath ? 'Thu Trang' : 'Minh Phương',
-      date: '2026-05-15',
+      date: '2026-03-15',
       channel: 'Nhắn tin Zalo',
       subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
     },
@@ -218,6 +333,12 @@ export function StudentCareTimeline({
         notes: '[CSTP] Đã tương tác trao đổi thông tin chăm sóc học viên gói trước đó và tư vấn lộ trình học lên cấp độ tiếp theo.',
         audioDuration: '02:20',
         parentOpinion: 'Phụ huynh đồng ý đăng ký gói tiếp theo cho con.',
+        linkedOrder: {
+          orderCode: 'OD790741',
+          packageName: isMath ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
+          totalPaidAmount: 18000000,
+          amountText: '18.000.000đ',
+        },
       },
       topic: 'CSTP',
       recipient: 'Châu Mẹ Nguyễn Thị Mai (Mẹ)',
@@ -227,6 +348,12 @@ export function StudentCareTimeline({
       date: '2026-01-12',
       channel: 'Cuộc gọi',
       subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
+      linkedOrder: {
+        orderCode: 'OD790741',
+        packageName: isMath ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
+        totalPaidAmount: 18000000,
+        amountText: '18.000.000đ',
+      },
     },
     {
       log: {
@@ -288,11 +415,17 @@ export function StudentCareTimeline({
         date: '2026-08-15',
         staffName: 'Ngọc Mai (Sale)',
         callConfirmation: 'Đã gọi',
-        notes: '[TV-01] Đã tư vấn chi tiết lộ trình học tập cam kết chuẩn đầu ra. Phụ huynh đã hoàn tất đăng ký giữ chỗ và nộp phí.',
+        notes: '[CSTP] Đã tư vấn chi tiết lộ trình học tập tái phí cam kết chuẩn đầu ra. Phụ huynh đã hoàn tất đăng ký giữ chỗ và nộp phí.',
         audioDuration: '03:10',
         parentOpinion: 'Mẹ rất kỳ vọng vào khóa học mới này để con bứt phá điểm số.',
+        linkedOrder: {
+          orderCode: 'OD831003',
+          packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Kindy 0 (48 buổi)',
+          totalPaidAmount: 14500000,
+          amountText: '14.500.000đ',
+        },
       },
-      topic: 'TV-01',
+      topic: 'CSTP',
       recipient: 'Châu Mẹ Nguyễn Thị Mai (Mẹ)',
       cleanNotes: 'Đã tư vấn chi tiết lộ trình học tập cam kết chuẩn đầu ra. Phụ huynh đã hoàn tất đăng ký giữ chỗ và nộp phí.',
       staffRole: 'CS',
@@ -300,6 +433,12 @@ export function StudentCareTimeline({
       date: '2026-08-15',
       channel: 'Cuộc gọi',
       subject: isMath ? 'Toán tư duy' : 'Tiếng Anh',
+      linkedOrder: {
+        orderCode: 'OD831003',
+        packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Kindy 0 (48 buổi)',
+        totalPaidAmount: 14500000,
+        amountText: '14.500.000đ',
+      },
     },
   ], [isMath])
 
@@ -620,7 +759,7 @@ export function StudentCareTimeline({
                 : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-foreground border border-border/80'
             )}
           >
-            Lịch sử ({totalHistoryCount})
+            Lịch sử chăm sóc ({totalHistoryCount})
           </Button>
 
           <Button
@@ -660,6 +799,7 @@ export function StudentCareTimeline({
                   date={item.date}
                   channel={item.channel}
                   subject={item.subject}
+                  linkedOrder={item.linkedOrder}
                 />
               ))
             )}

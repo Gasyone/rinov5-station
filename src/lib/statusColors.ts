@@ -107,6 +107,7 @@ export function getStatusColors(semantic: StatusSemantic): StatusColorSet {
 const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   // Account / User
   active: 'success',
+  current: 'success',
   locked: 'warning',
   deactivated: 'error',
   inactive: 'neutral',
@@ -157,6 +158,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
 
   // Calendar event types
   class_session: 'info',
+  test_session: 'warning',
   supplementary: 'success',
   workshop: 'purple',
   digi_session: 'purple',
@@ -254,6 +256,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   // Attendance
   present: 'success',
   absent: 'error',
+  absent_excused: 'warning',
+  absent_unexcused: 'error',
   late: 'warning',
   excused: 'info',
   no_attendance: 'neutral',
@@ -360,6 +364,10 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   online: 'purple',
   online_tutor: 'purple',
   assigned_class: 'purple',
+
+  // Session Types
+  project: 'purple',
+  project_session: 'purple',
 }
 
 export function resolveStatusSemantic(status: string): StatusSemantic {

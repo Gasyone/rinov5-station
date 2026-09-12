@@ -37,6 +37,7 @@ interface LeadLifecyclePipelineTabProps {
   onToggleSubStatusActive: (stageId: string, subStatusId: string) => void
   expandedStages: Set<string>
   onToggleExpand: (stageId: string) => void
+  originFilter?: 'all' | 'system' | 'custom'
 }
 
 const PHASE_CONFIG: Record<
@@ -63,9 +64,9 @@ const PHASE_CONFIG: Record<
   },
   T3: {
     label: 'Giai đoạn [T3]: Chốt Deal & Nhập học',
-    borderClass: 'border-l-emerald-500',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300',
-    dotClass: 'bg-emerald-500',
+    borderClass: 'border-l-teal-500',
+    badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/40 dark:text-teal-300',
+    dotClass: 'bg-teal-500',
   },
   T4: {
     label: 'Giai đoạn [T4]: Vận đơn & Thu phí',
@@ -96,6 +97,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
   onToggleSubStatusActive,
   expandedStages,
   onToggleExpand,
+  originFilter = 'all',
 }) => {
   if (stages.length === 0) {
     return (
@@ -109,7 +111,9 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
     <div className="space-y-3 pb-8">
       {stages.map((stage, idx) => {
         const isExpanded = expandedStages.has(stage.id)
-        const subs = stage.subStatuses || []
+        const subs = (stage.subStatuses || []).filter(
+          (s) => !originFilter || originFilter === 'all' || s.origin === originFilter
+        )
         const cleanName = getCleanStageName(stage.name)
         const phaseKey = getStagePhase(stage)
 
@@ -295,7 +299,11 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
 
                 {subs.length === 0 ? (
                   <div className="text-center py-6 text-xs text-muted-foreground bg-background rounded-lg border border-dashed border-border">
-                    Chưa có nhãn trạng thái con nào được gán cho bước này.
+                    {originFilter === 'system'
+                      ? 'Không có nhãn hệ thống nào trong bước này.'
+                      : originFilter === 'custom'
+                      ? 'Không có nhãn tùy biến nào trong bước này.'
+                      : 'Chưa có nhãn trạng thái con nào được gán cho bước này.'}
                   </div>
                 ) : (
                   <div className="rounded-lg border border-border/70 overflow-hidden bg-background shadow-2xs">

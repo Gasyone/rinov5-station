@@ -242,7 +242,7 @@ export function CrmLeadProfileSidebar({
           <span className="text-muted-foreground">Tư vấn phụ trách:</span>
           <span className="font-semibold text-primary flex items-center gap-1">
             <UserCheck className="h-3 w-3" />
-            {lead.assignedTo || 'Chưa phân bổ'}
+            {lead.assignedTo?.replace(/\s*\((?:Sales|Sale)\)/i, '') || 'Chưa phân bổ'}
           </span>
         </div>
         <div className="flex items-center justify-between">

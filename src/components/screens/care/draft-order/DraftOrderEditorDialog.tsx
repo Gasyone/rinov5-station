@@ -395,7 +395,7 @@ function DraftOrderEditorInner({
       return
     }
 
-    const orderNo = existingOrder?.orderNo || existingOrder?.id || `OD-DRAFT-${Math.floor(1000 + Math.random() * 9000)}`
+    const orderNo = existingOrder?.orderNo || existingOrder?.id || `OD-${Math.floor(1000 + Math.random() * 9000)}`
     const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
     const quoteUrl = `${origin}/quote/${orderNo}`
 
@@ -466,6 +466,8 @@ function DraftOrderEditorInner({
       discountAmount: totalDiscount,
       finalAmount: finalAmount,
       paymentMethod: paymentMethod === 'BANK' ? 'bank_transfer' : 'cash',
+      paymentMethodTag: 'Chờ thanh toán',
+      isCurrentPackage: true,
       paymentStatus: 'unpaid',
       status: 'pending',
       branch: 'Station',

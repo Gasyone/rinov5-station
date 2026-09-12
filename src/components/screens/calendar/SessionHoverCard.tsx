@@ -56,6 +56,7 @@ export interface GenericSessionData {
   testLink?: string
   feedbackLink?: string
   resultLink?: string
+  projectUrl?: string
 }
 
 interface SessionHoverCardProps {

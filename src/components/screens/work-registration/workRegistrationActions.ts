@@ -44,26 +44,35 @@ export function toggleWorkSection(
   date: string,
   section: ShiftSection
 ): WorkRegistrationRecord[] {
-  const isCurrentlySelected = records.some(
-    (r) => r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section)
+  const nonClassRecords = records.filter(
+    (r) => r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section) && !r.assignedClass
   )
+  const isCurrentlySelected = nonClassRecords.length > 0
 
   if (isCurrentlySelected) {
     return records.filter(
-      (r) => !(r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section) && r.status !== 'locked')
+      (r) => !(r.employeeId === employee.id && r.date === date && r.slotId.startsWith(section) && r.status !== 'locked' && !r.assignedClass)
     )
   } else {
     const sectionSlots = WORK_TIME_SLOTS.filter((s) => s.section === section)
-    const newRecords: WorkRegistrationRecord[] = sectionSlots.map((slot) => ({
-      id: `wr-local-${employee.id}-${date}-${slot.id}`,
-      employeeId: employee.id,
-      branch: employee.branch,
-      date,
-      weekStart,
-      slotId: slot.id,
-      status: 'draft' as const,
-      updatedAt: new Date().toISOString(),
-    }))
+    const newRecords: WorkRegistrationRecord[] = []
+    for (const slot of sectionSlots) {
+      const alreadyExists = records.some(
+        (r) => r.employeeId === employee.id && r.date === date && r.slotId === slot.id
+      )
+      if (!alreadyExists) {
+        newRecords.push({
+          id: `wr-local-${employee.id}-${date}-${slot.id}`,
+          employeeId: employee.id,
+          branch: employee.branch,
+          date,
+          weekStart,
+          slotId: slot.id,
+          status: 'draft' as const,
+          updatedAt: new Date().toISOString(),
+        })
+      }
+    }
     return [...records, ...newRecords]
   }
 }
@@ -140,6 +149,6 @@ export function clearWorkRegistrationWeek(
 ) {
   return records.filter((record) => {
     if (record.employeeId !== employeeId || record.weekStart !== weekStart) return true
-    return record.status === 'locked'
+    return record.status === 'locked' || Boolean(record.assignedClass)
   })
 }

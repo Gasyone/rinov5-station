@@ -15,7 +15,8 @@ export const STATUS_LABEL_MAP: Record<LeadStatus, string> = {
   hen_trai_nghiem: 'Hẹn trải nghiệm',
   cho_chot: 'Chờ chốt deal',
   chuyen_doi: 'Đã chuyển đổi',
-  that_bai: 'Thất bại / Tạm dừng',
+  that_bai: 'Thất bại',
+  tam_dung: 'Tạm dừng',
   // Tương thích ngược với dữ liệu cũ
   chua_tiep_can: 'Mới tiếp nhận',
   dang_cham_soc: 'Đang tư vấn',
@@ -161,6 +162,12 @@ export const SUB_STATUS_MAP: Record<string, SubStatusOption[]> = {
     { id: 'sai_so', label: 'Sai số điện thoại' },
     { id: 'nha_xa', label: 'Nhà xa cơ sở' },
     { id: 'che_phi_cao', label: 'Chê học phí cao' },
+  ],
+  tam_dung: [
+    { id: 'all', label: 'Tất cả lý do tạm dừng' },
+    { id: 've_que', label: 'Về quê / Nghỉ hè' },
+    { id: 'thi_hoc_ky', label: 'Bận thi học kỳ' },
+    { id: 'tai_chinh', label: 'Chờ cân đối tài chính' },
   ],
 }
 

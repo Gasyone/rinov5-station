@@ -66,6 +66,7 @@ export const navigationGroups: NavigationGroup[] = [
     id: 'group_products_programs',
     label: 'Sản phẩm & Chương trình',
     icon: Package,
+    hiddenInSidebar: true,
     items: [
       { id: 'products', label: 'Quản lý sản phẩm', href: '/app/products' },
       { id: 'campaigns', label: 'Quản lý Chiến dịch', href: '/app/campaigns' },

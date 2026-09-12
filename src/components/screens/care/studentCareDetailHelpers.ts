@@ -3,10 +3,16 @@ import { mockOrders } from '@/mocks/orders'
 import { mockStudents } from '@/mocks/students'
 import { stableHash } from './operationsAlertHelpers'
 import { type SimulatedPackage, type CareTopic, type CareTopicStatus, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
+import { getStudentOrderInfo } from './renewal/renewalHelpers'
 
 // Parse care topic prefix from notes (e.g. "[ĐB1]")
 export function parseLogTopic(notes?: string | null): string {
   if (!notes) return 'GENERAL'
+  if (notes.includes('[CSTP]') || notes.includes('[Mốc/Thẻ: CSTP]') || notes.toLowerCase().includes('tái phí')) {
+    return 'CSTP'
+  }
+  const tagMatch = notes.match(/\[Mốc\/Thẻ:\s*([^\]]+)\]/)
+  if (tagMatch) return tagMatch[1]
   const match = notes.match(/^\[([^\]]+)\]/)
   return match ? match[1] : 'GENERAL'
 }
@@ -294,8 +300,8 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
           audioDuration: '01:30',
           parentOpinion: 'Mẹ hứa sẽ nhắc con đi học bù đầy đủ vào buổi tiếp theo.',
           missedCallsList: [
-            { time: '03/07 09:30', status: 'Gọi KNM (Không nghe máy)', note: 'Chuông reo 5 tiếng phụ huynh không nghe máy, hẹn gọi lại ca chiều', nextCallback: '03/07 14:15' },
-            { time: '03/07 14:15', status: 'Máy bận / Số bận', note: 'Số điện thoại bận cuộc gọi khác, hẹn gọi lại sáng hôm sau', nextCallback: '04/07 09:00' },
+            { time: '03/07 09:30', status: 'Gọi KNM (Không nghe máy)', note: 'Chuông reo 5 tiếng phụ huynh không nghe máy, hẹn gọi lại ca chiều', nextCallback: '03/07 14:15', audioDuration: '00:35', parentOpinion: 'Không nghe máy (đổ chuông 5 hồi)' },
+            { time: '03/07 14:15', status: 'Máy bận / Số bận', note: 'Số điện thoại bận cuộc gọi khác, hẹn gọi lại sáng hôm sau', nextCallback: '04/07 09:00', audioDuration: '00:20', parentOpinion: 'Thuê bao bận máy khác' },
           ],
           notes: `[TB1] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Trao đổi về chuyên cần thấp (vắng 2 buổi liên tiếp do sốt). Đã nhờ GV hỗ trợ kèm bù 15p đầu giờ buổi tiếp theo.`,
         })
@@ -347,6 +353,16 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
           notes: `[ĐK2] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Gọi nhắc gia hạn học phí gói Toán tư duy mới. Mẹ xác nhận sẽ đóng trước ngày 15/07.`,
         })
       } else if (topic.code === 'CSTP') {
+        const orderInfo = getStudentOrderInfo(student)
+        const orderData = orderInfo?.orderCode
+          ? {
+              orderCode: orderInfo.orderCode,
+              packageName: orderInfo.packageName,
+              amountText: orderInfo.packageAmount,
+              totalPaidAmount: student.linkedOrder?.totalPaidAmount,
+            }
+          : undefined
+
         logs.push({
           id: `sim-cstp-1`,
           date: '2026-07-05',
@@ -355,9 +371,10 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
           audioDuration: '02:10',
           parentOpinion: 'Phụ huynh quan tâm gói 12 tháng nâng cao, muốn nhận ưu đãi đóng sớm.',
           missedCallsList: [
-            { time: '04/07 10:00', status: 'Gọi KNM', note: 'Phụ huynh không nghe máy, hẹn gọi lại ca chiều', nextCallback: '04/07 15:30' },
+            { time: '04/07 10:00', status: 'Gọi KNM', note: 'Phụ huynh không nghe máy, hẹn gọi lại ca chiều', nextCallback: '04/07 15:30', audioDuration: '00:45', parentOpinion: 'Phụ huynh bận họp, hẹn liên hệ lại vào buổi chiều' },
           ],
           notes: `[CSTP] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Trao đổi tái phí gói học mới. Mẹ quan tâm gói nâng cao, hẹn gọi lại tuần sau để xác nhận.`,
+          linkedOrder: orderData,
         })
         logs.push({
           id: `sim-cstp-2`,
@@ -365,6 +382,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã nhắn Zalo',
           notes: `[CSTP] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Gửi thông tin các gói học mới kèm ưu đãi đăng ký sớm qua Zalo. Mẹ đã xem và phản hồi cảm ơn.`,
+          linkedOrder: orderData,
         })
         logs.push({
           id: `sim-cstp-teacher`,
@@ -586,9 +604,14 @@ export function getCombinedLogs(
   topicsList: CareTopic[],
   completedTopics: string[]
 ): MergedTimelineItem[] {
-  // 1. Filter out completion and chong-phi logs from the regular text logs list
+  // 1. Filter out completion and chong-phi logs from the regular text logs list, BUT keep CSTP logs independent in history
   const logs = allLogs
-    .filter((log) => !(log.notes || '').includes('[Hoàn thành Chăm sóc]') && !(log.notes || '').includes('[Chồng phí]'))
+    .filter((log) => {
+      const notes = log.notes || ''
+      const isCstp = notes.includes('[CSTP]') || notes.toLowerCase().includes('tái phí')
+      if (isCstp) return true
+      return !notes.includes('[Hoàn thành Chăm sóc]') && !notes.includes('[Chồng phí]')
+    })
     .map((log) => ({
       type: 'log' as const,
       date: log.date,

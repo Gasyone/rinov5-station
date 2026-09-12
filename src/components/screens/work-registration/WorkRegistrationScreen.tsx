@@ -27,7 +27,6 @@ import {
 } from './workRegistrationActions'
 import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
-import { WorkRegistrationHolidayPanel } from './WorkRegistrationHolidayPanel'
 import { WorkRegistrationMasterRosterPanel } from './WorkRegistrationMasterRosterPanel'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
 import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
@@ -298,13 +297,6 @@ export function WorkRegistrationScreen() {
             onPageSizeChange={setCenterPageSize}
             onOpenBranch={(branch) => setBranchDetail({ branch })}
             onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
-          />
-        ) : null}
-
-        {activeTab === 'holidays' ? (
-          <WorkRegistrationHolidayPanel
-            activeBranch={activeBranch}
-            branches={branches}
           />
         ) : null}
       </div>
