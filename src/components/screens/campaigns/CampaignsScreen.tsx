@@ -7,7 +7,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   type FilterGroupConfig,
 } from '@/components/filters'
@@ -201,50 +201,52 @@ export function CampaignsScreen() {
         onCreateClick={() => setIsCreateOpen(true)}
       />
 
-      {/* Main Table container */}
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      {/* Main Table container + Aside Filter */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <CampaignsTable
+              items={paged}
+              selectedIds={selectedIds}
+              onToggleSelectAll={handleToggleSelectAll}
+              onToggleSelectRow={handleToggleSelectRow}
+              onRowClick={(item) => setViewingCampaign(item)}
+              onView={(item) => setViewingCampaign(item)}
+              onEdit={(item) => setEditingCampaign(item)}
             />
-          }
-        >
-          <CampaignsTable
-            items={paged}
-            selectedIds={selectedIds}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelectRow={handleToggleSelectRow}
-            onRowClick={(item) => setViewingCampaign(item)}
-            onView={(item) => setViewingCampaign(item)}
-            onEdit={(item) => setEditingCampaign(item)}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      {/* Bộ lọc trượt (Filter Group Sheet Panel) */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc chiến dịch"
-        description="Lọc danh sách theo hình thức áp dụng, loại giảm giá và quy tắc kết hợp."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'applyTypes') toggleArray('applyTypes', value as CampaignApplyType)
-          if (sectionId === 'campaignTypes')
-            toggleArray('campaignTypes', value as CampaignDiscountType)
-          if (sectionId === 'limitRules')
-            toggleArray('limitRules', value as 'dong_thoi' | 'duy_nhat')
-        }}
-        onClearAll={() => {
-          setFilters({ applyTypes: [], campaignTypes: [], limitRules: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc chiến dịch"
+            description="Lọc danh sách theo hình thức áp dụng, loại giảm giá và quy tắc kết hợp."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'applyTypes') toggleArray('applyTypes', value as CampaignApplyType)
+              if (sectionId === 'campaignTypes')
+                toggleArray('campaignTypes', value as CampaignDiscountType)
+              if (sectionId === 'limitRules')
+                toggleArray('limitRules', value as 'dong_thoi' | 'duy_nhat')
+            }}
+            onClearAll={() => {
+              setFilters({ applyTypes: [], campaignTypes: [], limitRules: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       {/* Dialog xem chi tiết chiến dịch */}
       <CampaignDetailDialog

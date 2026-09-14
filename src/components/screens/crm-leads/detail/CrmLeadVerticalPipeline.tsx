@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Check,
   UserX,
   ArrowRight,
   AlertTriangle,
   RotateCcw,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { Lead, LeadStatus } from '@/mocks/crmLeads'
 import { STATUS_LABEL_MAP } from '../crmLeadsTypes'
+import { useLeadLifecycleStore } from '@/stores/useLeadLifecycleStore'
 
 export interface VerticalPipelineStage {
   id: string
@@ -115,6 +117,7 @@ interface CrmLeadVerticalPipelineProps {
   onAdvanceStage?: () => void
   onOpenDropDialog?: () => void
   onOpenHistoryModal?: () => void
+  onReactivateCycle?: () => void
 }
 
 export function CrmLeadVerticalPipeline({
@@ -123,7 +126,103 @@ export function CrmLeadVerticalPipeline({
   onAdvanceStage,
   onOpenDropDialog,
   onOpenHistoryModal,
+  onReactivateCycle,
 }: CrmLeadVerticalPipelineProps) {
+  const { getStagesForPool, pools } = useLeadLifecycleStore()
+  const poolId = lead.poolId || 'pool-t'
+  const pool = pools.find((p) => p.id === poolId)
+  const poolName = lead.poolName || pool?.name || 'Kho Tổng (T)'
+
+  const pipelineStages: VerticalPipelineStage[] = useMemo(() => {
+    const rawStages = getStagesForPool(poolId)
+    const active = (rawStages || []).filter((s) => s.isActive && s.stageType !== 'global_lost')
+    if (active.length === 0) return LIFECYCLE_STAGES
+
+    return active.map((s, idx) => {
+      let status: LeadStatus = 'dang_tu_van'
+      let aliases: string[] = []
+
+      if (
+        s.id === 'stage-new' ||
+        s.code === 'NEW' ||
+        s.code === 'M0' ||
+        s.code === 'CC0' ||
+        s.code === 'G0' ||
+        s.code === 'T0'
+      ) {
+        status = 'moi_tiep_nhan'
+        aliases = ['chua_tiep_can', 'moi_tiep_nhan', s.id, s.code.toLowerCase()]
+      } else if (
+        s.id === 'stage-qt' ||
+        s.code === 'QT' ||
+        s.code === 'M1' ||
+        s.code === 'CC1' ||
+        s.code === 'G1' ||
+        s.code === 'T1'
+      ) {
+        status = 'dang_tu_van'
+        aliases = ['dang_cham_soc', 'dang_tu_van', s.id, s.code.toLowerCase()]
+      } else if (
+        s.id === 'stage-tad' ||
+        s.code === 'TAD' ||
+        s.code === 'M2' ||
+        s.code === 'G2' ||
+        s.code === 'T2'
+      ) {
+        status = 'hen_trai_nghiem'
+        aliases = ['danh_gia_trai_nghiem', 'hen_trai_nghiem', s.id, s.code.toLowerCase()]
+      } else if (
+        s.id === 'stage-tlttt' ||
+        s.code === 'TLTTT' ||
+        s.code === 'M3' ||
+        s.code === 'G3' ||
+        s.code === 'T3'
+      ) {
+        status = 'tiem_nang'
+        aliases = ['tiem_nang', s.id, s.code.toLowerCase()]
+      } else if (
+        s.id === 'stage-dentt' ||
+        s.code === 'DENTT' ||
+        s.code === 'stage-order' ||
+        s.code === 'T4' ||
+        s.code === 'CC2'
+      ) {
+        status = 'cho_chot'
+        aliases = ['cho_chot', s.id, s.code.toLowerCase()]
+      } else if (
+        s.id === 'stage-won' ||
+        s.code === 'WON' ||
+        s.code === 'T5' ||
+        s.code === 'M4' ||
+        s.code === 'CC3' ||
+        s.code === 'G4' ||
+        s.phaseGroup === 'T5' ||
+        s.phaseGroup === 'M4' ||
+        s.phaseGroup === 'CC3' ||
+        s.phaseGroup === 'G4'
+      ) {
+        status = 'chuyen_doi'
+        aliases = ['chuyen_doi', s.id, s.code.toLowerCase()]
+      } else {
+        status = 'dang_tu_van'
+        aliases = [s.id, s.code.toLowerCase()]
+      }
+
+      return {
+        id: s.id,
+        code: s.code,
+        status,
+        aliases,
+        name: `${idx + 1}. ${s.name.replace(/^\[.*?\]\s*/, '').replace(/\s*\(.*?\)/g, '').trim()}`,
+        color: s.color || '#64c8f5',
+        description: s.description || '',
+        subStatuses: (s.subStatuses || [])
+          .filter((sub) => sub.isActive !== false)
+          .map((sub) => sub.name),
+      }
+    })
+  }, [getStagesForPool, poolId])
+
   const [selectedSubStatus, setSelectedSubStatus] = useState<string>(
     lead.subStatus || ''
   )
@@ -143,7 +242,7 @@ export function CrmLeadVerticalPipeline({
   )
 
   // Tìm vị trí index của stage hiện tại
-  const currentStageIndex = LIFECYCLE_STAGES.findIndex((st) =>
+  const currentStageIndex = pipelineStages.findIndex((st) =>
     st.aliases.includes(lead.status)
   )
 
@@ -155,7 +254,7 @@ export function CrmLeadVerticalPipeline({
   const handleSubStatusClick = (sub: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setSelectedSubStatus(sub)
-    const currentStage = LIFECYCLE_STAGES[currentStageIndex]
+    const currentStage = pipelineStages[currentStageIndex]
     if (currentStage) {
       onSelectStage?.(currentStage.status, sub)
     }
@@ -167,6 +266,9 @@ export function CrmLeadVerticalPipeline({
       <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/70">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-bold text-foreground">Phễu Vòng Đời Lead</span>
+          <Badge variant="outline" className="h-6 px-2 text-[11px] font-semibold bg-muted/60 text-foreground border-border">
+            {poolName}
+          </Badge>
           <Badge className={cn('h-6 px-2.5 text-xs font-semibold rounded-full inline-flex items-center shadow-none', statusBadge)}>
             {statusLabel}
           </Badge>
@@ -213,25 +315,68 @@ export function CrmLeadVerticalPipeline({
           )}
 
           {isFailed && (
-            <Badge variant="outline" className="text-[11px] font-semibold bg-rose-50 text-rose-700 border-rose-200">
-              Đã báo rớt
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="outline" className="text-[11px] font-semibold bg-rose-50 text-rose-700 border-rose-200">
+                Đã báo rớt
+              </Badge>
+              {onReactivateCycle && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onReactivateCycle}
+                  className="h-7 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                  title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  <span>Kích hoạt lại</span>
+                </Button>
+              )}
+            </div>
           )}
 
           {isConverted && (
-            <Badge variant="outline" className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
-              Chuyển đổi (WON)
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="outline" className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
+                Chuyển đổi (WON)
+              </Badge>
+              {onReactivateCycle && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onReactivateCycle}
+                  className="h-7 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                  title="Kích hoạt Chu kỳ Bán mới (Học thêm môn / Tái ký / Tái tiếp cận)"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  <span>Chu kỳ mới</span>
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
 
       {/* 2. Banner cảnh báo nếu đã Thất bại / Báo rớt */}
       {isFailed && lead.dropRecord && (
-        <div className="mb-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 dark:bg-rose-950/30 text-xs text-rose-900 dark:text-rose-200 space-y-1">
-          <div className="flex items-center gap-1.5 font-bold">
-            <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
-            <span>Rớt tại: {lead.dropRecord.stageLabel}</span>
+        <div className="mb-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 dark:bg-rose-950/30 text-xs text-rose-900 dark:text-rose-200 space-y-1.5">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1.5 font-bold">
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
+              <span>Rớt tại: {lead.dropRecord.stageLabel}</span>
+            </div>
+            {onReactivateCycle && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onReactivateCycle}
+                className="h-6 px-2 text-[10.5px] font-semibold text-amber-700 dark:text-amber-300 border-amber-300 hover:bg-amber-100/70 dark:hover:bg-amber-950/60 shadow-3xs cursor-pointer flex items-center gap-1"
+                title="Kích hoạt lại chu kỳ bán mới"
+              >
+                <Sparkles className="h-2.5 w-2.5 text-amber-600" />
+                <span>Kích hoạt lại</span>
+              </Button>
+            )}
           </div>
           <p className="text-[11px] text-rose-700 dark:text-rose-300">
             Lý do: <span className="font-semibold">{lead.dropRecord.reasonLabel}</span>
@@ -247,11 +392,11 @@ export function CrmLeadVerticalPipeline({
 
       {/* 3. Danh sách các chặng dạng Dọc (Vertical Stepper) */}
       <div className="space-y-1 relative pl-1">
-        {LIFECYCLE_STAGES.map((stage, idx) => {
+        {pipelineStages.map((stage, idx) => {
           const isCurrent = !isFailed && currentStageIndex === idx
           const isPast = !isFailed && currentStageIndex > idx
           const isFuture = !isFailed && (currentStageIndex < idx || currentStageIndex === -1)
-          const isLast = idx === LIFECYCLE_STAGES.length - 1
+          const isLast = idx === pipelineStages.length - 1
 
           const activeSub =
             isCurrent

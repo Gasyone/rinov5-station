@@ -9,7 +9,7 @@ import { EventManagementNewDetailDialog } from './EventManagementNewDetailDialog
 import { getEvents, createEvent, updateEvent, cancelEvent, EventItem } from '@/mocks/eventManagement'
 import { EventFilters, INITIAL_FILTERS } from './eventManagementNewTypes'
 import { Input } from '@/components/ui/input'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 
 // Constants
 const BRANCH_OPTIONS = [
@@ -398,20 +398,36 @@ export function EventManagementNewScreen() {
         activeFiltersCount={activeFiltersCount}
       />
 
-      {/* Events data list */}
-      <EventManagementNewTable
-        events={filteredEvents}
-        onSelectDetail={setDetailEventId}
-        onSelectEdit={(evt) => { setEditingEvent(evt); setIsCreateOpen(true); }}
-        onSelectCancel={setCancellingEvent}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        selectedIds={selectedIds}
-        onToggleAll={handleToggleAll}
-        onToggleOne={handleToggleOne}
-      />
+      {/* Events data list + Aside filter */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <EventManagementNewTable
+            events={filteredEvents}
+            onSelectDetail={setDetailEventId}
+            onSelectEdit={(evt) => { setEditingEvent(evt); setIsCreateOpen(true); }}
+            onSelectCancel={setCancellingEvent}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            selectedIds={selectedIds}
+            onToggleAll={handleToggleAll}
+            onToggleOne={handleToggleOne}
+          />
+        </div>
+
+        {isAdvancedFiltersOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc nâng cao"
+            description="Kết hợp nhiều tiêu chí nâng cao để tìm kiếm sự kiện tuyển sinh chính xác."
+            groups={filterGroups}
+            onToggle={handleToggleFilter}
+            onClearAll={handleClearAllFilters}
+            onClearSection={handleClearSection}
+            onClose={() => setIsAdvancedFiltersOpen(false)}
+          />
+        )}
+      </div>
 
       {/* Event creation and edit dialog */}
       <EventManagementNewCreateDialog
@@ -427,18 +443,6 @@ export function EventManagementNewScreen() {
         eventId={detailEventId}
         onClose={() => setDetailEventId(null)}
         onEventUpdated={loadEvents}
-      />
-
-      {/* Standard Filter Sheet Panel with multiple criteria options */}
-      <FilterGroupSheetPanel
-        open={isAdvancedFiltersOpen}
-        onOpenChange={setIsAdvancedFiltersOpen}
-        title="Bộ lọc nâng cao"
-        description="Kết hợp nhiều tiêu chí nâng cao để tìm kiếm sự kiện tuyển sinh chính xác."
-        groups={filterGroups}
-        onToggle={handleToggleFilter}
-        onClearAll={handleClearAllFilters}
-        onClearSection={handleClearSection}
       />
 
       {/* Cancel Event Confirm dialog */}

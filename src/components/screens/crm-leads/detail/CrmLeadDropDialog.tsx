@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -25,8 +25,10 @@ import {
   DROP_STAGE_OPTIONS,
   DROP_REASONS_MAP,
   DropRecord,
+  DropReason,
 } from './crmLeadDetailTypes'
 import { Lead } from '@/mocks/crmLeads'
+import { useLeadLifecycleStore } from '@/stores/useLeadLifecycleStore'
 
 interface CrmLeadDropDialogProps {
   lead: Lead | null
@@ -41,6 +43,11 @@ export function CrmLeadDropDialog({
   onOpenChange,
   onConfirmDrop,
 }: CrmLeadDropDialogProps) {
+  const { stages } = useLeadLifecycleStore()
+  const lostStage = stages.find(
+    (s) => s.id === 'stage-lost' || s.code === 'LOST' || s.stageType === 'global_lost'
+  )
+
   // Xác định chặng rơi mặc định từ trạng thái lead
   const getDefaultStageId = (status?: string): DropStageId => {
     switch (status) {
@@ -61,7 +68,30 @@ export function CrmLeadDropDialog({
   const [selectedStage, setSelectedStage] = useState<DropStageId>(
     getDefaultStageId(lead?.status)
   )
-  const currentReasons = DROP_REASONS_MAP[selectedStage] || []
+
+  const currentReasons = useMemo(() => {
+    const baseReasons = DROP_REASONS_MAP[selectedStage] || []
+    if (!lostStage?.subStatuses || lostStage.subStatuses.length === 0) {
+      return baseReasons
+    }
+
+    const configuredReasons: DropReason[] = lostStage.subStatuses
+      .filter((s) => s.isActive !== false)
+      .map((sub) => ({
+        id: sub.code.toLowerCase(),
+        stageId: selectedStage,
+        label: sub.name,
+        suggestedAction: sub.description || 'Lưu kho chăm sóc định kỳ',
+        coolingOffDays:
+          sub.code === 'CHAN_CUOC_GOI' || sub.code === 'SO_SAI' ? 0 : 30,
+      }))
+
+    // Merge non-duplicate reasons by id
+    const existingIds = new Set(baseReasons.map((r) => r.id))
+    const extraReasons = configuredReasons.filter((r) => !existingIds.has(r.id))
+    return [...baseReasons, ...extraReasons]
+  }, [selectedStage, lostStage])
+
   const [selectedReasonId, setSelectedReasonId] = useState<string>(
     currentReasons[0]?.id || ''
   )

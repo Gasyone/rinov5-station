@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ContactCell, PersonnelHoverCard, CareTagHoverCard } from '@/components/shared'
+import { ContactCell, PersonnelHoverCard, CareTagHoverCard, StatusBadge } from '@/components/shared'
 import {
   Calendar,
   MapPin,
@@ -13,7 +13,7 @@ import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
 import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
-import { getProductSku } from './renewal/renewalHelpers'
+import { getProductSku, getExpiryTier } from './renewal/renewalHelpers'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareItemsDialog } from './StudentCareItemsDialog'
 import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
@@ -264,7 +264,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       <td className="py-1.5 px-2 min-w-[165px]">
         {(() => {
           const studentInfo = mockStudents.find((s) => s.id === cls.studentId);
-          const isWaitAssignment = studentInfo?.status === 'wait_for_assignment';
           const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0;
           const classCount = hasClassHistory ? 2 : 1;
 
@@ -280,48 +279,74 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {isWaitAssignment ? (
-                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
-                    Chờ ghép lớp
-                  </span>
-                ) : studentInfo?.status === 'reserve' ? (
-                  <span className="text-xs font-semibold text-violet-750 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
-                    Bảo lưu
-                  </span>
-                ) : cls.status === 'Hết buổi' ? (
-                  <span className="text-xs font-semibold text-zinc-655 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
-                    Hết phí
-                  </span>
-                ) : cls.status === 'Chờ chuyển lớp' ? (
-                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
-                    Chờ ghép lớp mới
-                  </span>
-                ) : (
-                  <>
-                    <span onClick={(e) => e.stopPropagation()}>
-                      <ClassCodeHoverCell
-                        classCode={cls.classCode}
-                        subject={cls.subject}
-                        level={cls.level}
-                        teacherCode={cls.teacherCode}
-                        schedule={cls.schedule}
+                {(() => {
+                  const isEnrolled = cls.status === 'Đang học'
+                  // Bảo lưu nhưng không thoát lớp (như Hoàng Bảo Nam) giữ mã lớp
+                  const isReservedHoldingClass =
+                    (cls.status === 'Bảo lưu' || studentInfo?.status === 'reserve') &&
+                    Boolean(cls.classCode) &&
+                    !cls.studentNote?.toLowerCase().includes('thoát lớp')
+
+                  if (isEnrolled || isReservedHoldingClass) {
+                    return (
+                      <>
+                        <span onClick={(e) => e.stopPropagation()}>
+                          <ClassCodeHoverCell
+                            classCode={cls.classCode}
+                            subject={cls.subject}
+                            level={cls.level}
+                            teacherCode={cls.teacherCode}
+                            schedule={cls.schedule}
+                          />
+                        </span>
+                        <StatusBadge
+                          status={isEnrolled ? 'dang_hoc' : 'reserve'}
+                          label={isEnrolled ? 'Đang học' : 'Bảo lưu'}
+                          className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                        />
+                      </>
+                    )
+                  }
+
+                  // Còn lại: chỉ hiển thị badge trạng thái (không kèm mã lớp)
+                  if (cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer') {
+                    return (
+                      <StatusBadge
+                        status="pending_transfer"
+                        label="Chờ ghép lớp mới"
+                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
                       />
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-xs px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
-                        cls.status === 'Đang học'
-                          ? getStatusBadgeClass('dang_hoc')
-                          : cls.status === 'Chờ chuyển lớp'
-                            ? getStatusBadgeClass('pending_transfer')
-                            : getStatusBadgeClass('session_ended')
-                      )}
-                    >
-                      {cls.status}
-                    </Badge>
-                  </>
-                )}
+                    )
+                  }
+
+                  if (cls.status === 'Bảo lưu' || studentInfo?.status === 'reserve') {
+                    return (
+                      <StatusBadge
+                        status="reserve"
+                        label="Bảo lưu"
+                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                      />
+                    )
+                  }
+
+                  if (cls.status === 'Hết buổi') {
+                    return (
+                      <StatusBadge
+                        status="session_ended"
+                        label="Hết buổi"
+                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                      />
+                    )
+                  }
+
+                  return (
+                    <StatusBadge
+                      status="wait_for_assignment"
+                      label="Chờ ghép lớp"
+                      className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                    />
+                  )
+                })()}
               </div>
             </div>
           );
@@ -334,6 +359,8 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
           const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
           const packageCount = hasPackageHistory ? 2 : 1
           const skuName = getProductSku(cls)
+          const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions)
+
           return (
             <div className="flex flex-col gap-0.5 min-w-[180px] max-w-[260px]">
               {/* Hàng 1: (N) Tên gói học mới nhất */}
@@ -343,8 +370,24 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
                   {skuName}
                 </span>
               </div>
-              {/* Hàng 2: Hạn hết hạn */}
-              <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
+              {/* Hàng 2: Nhãn kỳ hạn (Chỉ T1, T2 - có màu, không viền nền; bỏ T3) & Hạn học phí */}
+              <div className="flex items-center gap-1.5 flex-nowrap text-xs">
+                {expiryTier.tier !== 'T3' && (
+                  <span
+                    className={cn(
+                      'font-bold shrink-0',
+                      expiryTier.tier === 'T1'
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                    )}
+                  >
+                    {expiryTier.label}
+                  </span>
+                )}
+                <span className="text-muted-foreground whitespace-nowrap">
+                  Hạn: {cls.expectedEndDate}
+                </span>
+              </div>
             </div>
           )
         })()}
@@ -517,7 +560,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
         {(() => {
           const isCompleted = isCared(cls)
           const isInProgressCall = isInProgress(cls)
-          const rescheduleInfo = getRescheduleInfo(cls)
 
           // 1. Trạng thái Vòng đời chăm sóc (Main Care Lifecycle Status - khớp màu chuẩn 100% với các Tab lọc)
           const lifecycleStatus = isCompleted
@@ -526,7 +568,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
               ? { label: 'Đang xử lý', badgeClass: getStatusBadgeClass('in_progress') }
               : { label: 'Chưa chăm sóc', badgeClass: getStatusBadgeClass('info') }
 
-          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng], Hẹn [Tím])
+          // 2. Nhãn phụ & SLA (Auxiliary Status & Time: Quá hạn [Đỏ], Đến hạn [Vàng], Hạn)
           const isOverdueAlert = isOverdue(cls)
           const isDueTodayAlert = isToday(cls)
           const slaDeadline = cls.expectedEndDate || '23/09/2026'
@@ -544,7 +586,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
                 </Badge>
               </div>
 
-              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hẹn / Hạn) */}
+              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) */}
               <div className="text-xs font-mono">
                 {isCompleted ? (
                   <span className="text-muted-foreground font-normal">Gần nhất: {latestDate}</span>
@@ -552,8 +594,6 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
                   <span className="text-red-600 dark:text-red-400 font-normal">Quá hạn: {slaDeadline}</span>
                 ) : isDueTodayAlert ? (
                   <span className="text-amber-600 dark:text-amber-400 font-normal">Đến hạn: {slaDeadline}</span>
-                ) : rescheduleInfo.isRescheduled ? (
-                  <span className="text-purple-700 dark:text-purple-300 font-semibold">Hẹn: {rescheduleInfo.rescheduleDate}</span>
                 ) : (
                   <span className="text-muted-foreground font-normal">Hạn: {slaDeadline}</span>
                 )}

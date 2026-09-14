@@ -7,8 +7,7 @@ import { SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { getLeads, Lead } from '@/mocks/crmLeads'
 import { StatusTiles } from '@/components/shared'
 import { Button } from '@/components/ui/button'
-import { FilterGroupSheetPanel, type FilterGroupConfig, createFilterGroup, getSchoolFilterGroup } from '@/components/filters'
-import { SYSTEM_BRANCHES } from '@/components/controls'
+import { FilterGroupAsidePanel, type FilterGroupConfig } from '@/components/filters'
 import { cn } from '@/lib/utils'
 import { CrmLeadsToolbar } from './CrmLeadsToolbar'
 import { CrmLeadsTable } from './CrmLeadsTable'
@@ -16,21 +15,30 @@ import { CrmCustomerCreateDialog } from './CrmCustomerCreateDialog'
 import { DraftOrderEditorDialog } from '@/components/screens/care/draft-order/DraftOrderEditorDialog'
 import type { DetailedOrder } from '@/components/screens/care/student-orders/studentOrdersTypes'
 import { formatCurrency } from '@/lib/format'
-import { SUB_STATUS_MAP } from './crmLeadsTypes'
+import type { SalesCycle } from './detail/crmLeadDetailTypes'
+import {
+  SUB_STATUS_MAP,
+  INITIAL_ADVANCED_FILTERS,
+  type AdvancedFiltersState,
+} from './crmLeadsTypes'
+import { useLeadLifecycleStore } from '@/stores/useLeadLifecycleStore'
 import {
   calculateStatusTileCounts,
   isMoiTiepNhanStatus,
   isDangTuVanStatus,
   isHenTraiNghiemStatus,
   isChoChotStatus,
+  isThucHienDonStatus,
   isChuyenDoiStatus,
   isThatBaiStatus,
   isTamDungStatus,
-  isInactiveLeadStatus,
   isLeadTodayTask,
   isLeadOverdue,
   isLeadUnassigned,
   matchSubStatus,
+  buildEditingOrderFromLead,
+  buildCrmFilterGroups,
+  filterLeadsWithAllCriteria,
 } from './crmLeadsHelpers'
 
 const CURRENT_USER_STAFF = 'Trần Thị Mai (Sales)'
@@ -40,8 +48,10 @@ interface CrmLeadsScreenProps {
 }
 
 export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps) {
+  const { stages, pools } = useLeadLifecycleStore()
   const [viewScope] = useState<'my' | 'all'>(defaultViewScope)
   const [branch, setBranch] = useState('all')
+  const [selectedPool, setSelectedPool] = useState('all')
   const [source, setSource] = useState('all')
   const [assignment, setAssignment] = useState('all')
   const [followUp, setFollowUp] = useState('all')
@@ -54,19 +64,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
 
   // Advanced Filter Sheet State
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [advancedFilters, setAdvancedFilters] = useState<{
-    branches: string[]
-    sources: string[]
-    subjects: string[]
-    assignees: string[]
-    statuses: string[]
-  }>({
-    branches: [],
-    sources: [],
-    subjects: [],
-    assignees: [],
-    statuses: [],
-  })
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFiltersState>(INITIAL_ADVANCED_FILTERS)
 
   // Detail View: điều hướng trực tiếp sang route /app/crm_leads/[id]
   const router = useRouter()
@@ -102,81 +100,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   // Handler mở Modal Lên đơn cho Lead
   const handleOpenCreateOrder = (lead: Lead) => {
     setOrderModalLead(lead)
-    if (lead.orderCode) {
-      const parsedAmount = lead.expectedAmount
-        ? Number(lead.expectedAmount.replace(/\D/g, ''))
-        : 8400000
-
-      const orderItems = lead.packages && lead.packages.length > 0
-        ? lead.packages.map((pkg, idx) => {
-            const itemPrice = Number(pkg.amount.replace(/\D/g, '')) || 0
-            return {
-              productId: pkg.id || `P-00${idx + 1}`,
-              productName: pkg.name,
-              quantity: 1,
-              unitPrice: itemPrice,
-              subtotal: itemPrice,
-            }
-          })
-        : [
-            {
-              productId: 'P-001',
-              productName: lead.expectedPackage || 'Gói học tiêu chuẩn',
-              quantity: 1,
-              unitPrice: parsedAmount || 8400000,
-              subtotal: parsedAmount || 8400000,
-            },
-          ]
-
-      const detailedItems = lead.packages && lead.packages.length > 0
-        ? lead.packages.map((pkg, idx) => {
-            const itemPrice = Number(pkg.amount.replace(/\D/g, '')) || 0
-            return {
-              productId: pkg.id || `P-00${idx + 1}`,
-              productName: pkg.name,
-              quantity: 1,
-              unitPrice: itemPrice,
-              subtotal: itemPrice,
-              studentName: lead.studentName,
-              orderType: 'Mua mới',
-              durationText: pkg.duration || '40 buổi',
-            }
-          })
-        : [
-            {
-              productId: 'P-001',
-              productName: lead.expectedPackage || 'Gói học tiêu chuẩn',
-              quantity: 1,
-              unitPrice: parsedAmount || 8400000,
-              subtotal: parsedAmount || 8400000,
-              studentName: lead.studentName,
-              orderType: 'Mua mới',
-              durationText: lead.paymentTerm || '40 buổi',
-            },
-          ]
-
-      setEditingOrder({
-        id: lead.orderCode,
-        orderNo: lead.orderCode,
-        studentId: lead.id,
-        studentName: lead.studentName,
-        items: orderItems,
-        totalAmount: parsedAmount || 8400000,
-        discountAmount: 0,
-        finalAmount: parsedAmount || 8400000,
-        paymentMethod: 'bank_transfer',
-        paymentStatus: lead.orderStatus === 'paid' ? 'paid' : 'unpaid',
-        status: 'pending',
-        branch: lead.branch,
-        saleBy: lead.assignedTo || CURRENT_USER_STAFF,
-        createdAt: lead.createdAt || new Date().toISOString(),
-        saleDate: lead.createdAt || new Date().toISOString().split('T')[0],
-        detailedItems: detailedItems,
-        payments: [],
-      })
-    } else {
-      setEditingOrder(null)
-    }
+    setEditingOrder(buildEditingOrderFromLead(lead, CURRENT_USER_STAFF))
     setIsOrderModalOpen(true)
   }
 
@@ -213,168 +137,77 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     setEditingOrder(null)
   }
 
-  // Count active advanced filters
-  const activeFilterCount =
-    advancedFilters.branches.length +
-    advancedFilters.sources.length +
-    advancedFilters.subjects.length +
-    advancedFilters.assignees.length +
-    advancedFilters.statuses.length
+  const handleReactivateCycle = (lead: Lead) => {
+    const cycleCount = (lead.salesCycles?.length || 1) + 1
+    const newCycleId = `cycle-${Date.now()}`
+    const newCycle: SalesCycle = {
+      cycleId: newCycleId,
+      cycleNumber: cycleCount,
+      title: `Chu kỳ ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
+      status: 'active',
+      startDate: new Date().toISOString().split('T')[0],
+      assignedSales: lead.assignedTo || 'Trần Thị Mai (Sales)',
+    }
 
-  // Filter leads based on viewScope, source, assignment, followUp, search, advancedFilters
-  const filteredLeads = useMemo(() => {
-    const baseLeads = getLeads({ source, search })
+    const updatedLead: Lead = {
+      ...lead,
+      status: 'moi_tiep_nhan',
+      subStatus: 'Tái tiếp cận (Chu kỳ mới)',
+      isReturningLead: true,
+      currentCycleId: newCycleId,
+      salesCycles: [newCycle, ...(lead.salesCycles || [])],
+      createdAt: new Date().toISOString().split('T')[0],
+      lastNote: `[Tái kích hoạt Chu kỳ ${cycleCount}]: Mở chu kỳ bán mới cho học viên.`,
+    }
+
+    setCustomLeads((prev) => {
+      const exists = prev.some((l) => l.id === updatedLead.id)
+      if (exists) {
+        return prev.map((l) => (l.id === updatedLead.id ? updatedLead : l))
+      }
+      return [updatedLead, ...prev]
+    })
+
+    toast.success(`Đã kích hoạt Chu kỳ Bán mới (#${cycleCount}) cho học viên ${lead.studentName}!`)
+  }
+
+  // Tổng hợp toàn bộ Lead cơ sở trước khi áp dụng bộ lọc nâng cao
+  const allLeads = useMemo(() => {
+    const baseLeads = getLeads({ search })
     const customIds = new Set(customLeads.map((l) => l.id))
-    let result = [...customLeads, ...baseLeads.filter((l) => !customIds.has(l.id))]
+    return [...customLeads, ...baseLeads.filter((l) => !customIds.has(l.id))]
+  }, [customLeads, search])
 
-    if (viewScope === 'my') {
-      // Chỉ lấy các Lead được phân bổ cho Sale hiện tại
-      result = result.filter(
-        (lead) => lead.assignedTo === CURRENT_USER_STAFF
-      )
+  // Đếm số lượng tiêu chí lọc nâng cao đang áp dụng
+  const activeFilterCount = useMemo(() => {
+    return Object.values(advancedFilters).reduce(
+      (total, arr) => total + (Array.isArray(arr) ? arr.length : 0),
+      0
+    )
+  }, [advancedFilters])
 
-      if (followUp === 'today') {
-        result = result.filter(isLeadTodayTask)
-      } else if (followUp === 'overdue') {
-        result = result.filter(isLeadOverdue)
-      }
-    } else {
-      // viewScope === 'all' -> Áp dụng bộ lọc phân bổ của Quản lý
-      if (assignment === 'unassigned') {
-        result = result.filter(isLeadUnassigned)
-      } else if (assignment === 'assigned') {
-        result = result.filter((l) => !isLeadUnassigned(l))
-      }
-    }
+  // Lọc Leads dựa trên phạm vi, kho dữ liệu, phân bổ, và toàn bộ 13 nhóm tiêu chí nâng cao
+  const filteredLeads = useMemo(() => {
+    return filterLeadsWithAllCriteria({
+      leads: allLeads,
+      advancedFilters,
+      viewScope,
+      selectedPool,
+      source,
+      assignment,
+      followUp,
+      branch,
+    })
+  }, [allLeads, advancedFilters, viewScope, selectedPool, source, assignment, followUp, branch])
 
-    // Áp dụng bộ lọc cơ sở từ Toolbar
-    if (branch !== 'all') {
-      result = result.filter((lead) => lead.branch === branch)
-    }
-
-    // Áp dụng bộ lọc nâng cao (Advanced Filters)
-    if (advancedFilters.branches.length > 0) {
-      result = result.filter((lead) => advancedFilters.branches.includes(lead.branch))
-    }
-    if (advancedFilters.sources.length > 0) {
-      result = result.filter((lead) => advancedFilters.sources.includes(lead.source))
-    }
-    if (advancedFilters.subjects.length > 0) {
-      result = result.filter((lead) =>
-        advancedFilters.subjects.some((subj) =>
-          (lead.targetSubject || '').toLowerCase().includes(subj.toLowerCase())
-        )
-      )
-    }
-    if (advancedFilters.assignees.length > 0) {
-      result = result.filter((lead) => {
-        const staff = lead.assignedTo?.trim() || 'Chưa phân bổ'
-        return advancedFilters.assignees.includes(staff)
-      })
-    }
-    if (advancedFilters.statuses.length > 0) {
-      result = result.filter((lead) => {
-        return advancedFilters.statuses.some((st) => {
-          if (st === 'moi_tiep_nhan') return isMoiTiepNhanStatus(lead.status)
-          if (st === 'dang_tu_van') return isDangTuVanStatus(lead.status)
-          if (st === 'hen_trai_nghiem') return isHenTraiNghiemStatus(lead.status)
-          if (st === 'cho_chot') return isChoChotStatus(lead.status)
-          if (st === 'chuyen_doi') return isChuyenDoiStatus(lead.status)
-          if (st === 'that_bai') return isThatBaiStatus(lead.status)
-          if (st === 'tam_dung') return isTamDungStatus(lead.status)
-          return lead.status === st
-        })
-      })
-    } else {
-      // Mặc định ở ngoài danh sách & tab Tất cả: Không hiển thị Lead Thất bại và Tạm dừng
-      result = result.filter((lead) => !isInactiveLeadStatus(lead.status))
-    }
-
-    return result
-  }, [customLeads, viewScope, branch, source, assignment, followUp, search, advancedFilters])
-
-  // Filter group configuration for FilterGroupSheetPanel
+  // Cấu hình các nhóm bộ lọc cho FilterGroupAsidePanel
   const filterGroups = useMemo<FilterGroupConfig[]>(() => {
-    return [
-      getSchoolFilterGroup(
-        'branches',
-        advancedFilters.branches,
-        (b) => getLeads({ search }).filter((l) => l.branch === b).length,
-        SYSTEM_BRANCHES
-      ),
-      createFilterGroup({
-        id: 'statuses',
-        title: 'Trạng thái Lead',
-        options: [
-          { value: 'moi_tiep_nhan', label: 'Mới tiếp nhận' },
-          { value: 'dang_tu_van', label: 'Đang tư vấn' },
-          { value: 'hen_trai_nghiem', label: 'Hẹn trải nghiệm' },
-          { value: 'cho_chot', label: 'Chờ chốt deal' },
-          { value: 'chuyen_doi', label: 'Đã chuyển đổi' },
-          { value: 'that_bai', label: 'Thất bại' },
-          { value: 'tam_dung', label: 'Tạm dừng' },
-        ],
-        selectedValues: advancedFilters.statuses,
-        getOptionCount: (val) =>
-          getLeads({ search }).filter((l) => {
-            if (val === 'moi_tiep_nhan') return isMoiTiepNhanStatus(l.status)
-            if (val === 'dang_tu_van') return isDangTuVanStatus(l.status)
-            if (val === 'hen_trai_nghiem') return isHenTraiNghiemStatus(l.status)
-            if (val === 'cho_chot') return isChoChotStatus(l.status)
-            if (val === 'chuyen_doi') return isChuyenDoiStatus(l.status)
-            if (val === 'that_bai') return isThatBaiStatus(l.status)
-            if (val === 'tam_dung') return isTamDungStatus(l.status)
-            return l.status === val
-          }).length,
-      }),
-      createFilterGroup({
-        id: 'sources',
-        title: 'Nguồn Lead',
-        options: [
-          { value: 'facebook', label: 'Facebook Ads' },
-          { value: 'hotline', label: 'Hotline/Tổng đài' },
-          { value: 'event', label: 'Sự kiện / Workshop' },
-          { value: 'referral', label: 'Giới thiệu (Referral)' },
-          { value: 'website', label: 'Website / Form' },
-        ],
-        selectedValues: advancedFilters.sources,
-        getOptionCount: (val) => getLeads({ search }).filter((l) => l.source === val).length,
-      }),
-      createFilterGroup({
-        id: 'subjects',
-        title: 'Khóa học quan tâm',
-        options: [
-          { value: 'superkids', label: 'SuperKids (Tiếng Anh thiếu nhi)' },
-          { value: 'kindy', label: 'Kindy (Tiếng Anh mẫu giáo)' },
-          { value: 'flyers', label: 'Luyện thi Flyers' },
-          { value: 'starters', label: 'Luyện thi Starters' },
-          { value: 'movers', label: 'Luyện thi Movers' },
-          { value: 'ielts', label: 'Luyện thi IELTS' },
-          { value: 'toán', label: 'Toán Tư Duy' },
-        ],
-        selectedValues: advancedFilters.subjects,
-        getOptionCount: (val) =>
-          getLeads({ search }).filter((l) =>
-            (l.targetSubject || '').toLowerCase().includes(val.toLowerCase())
-          ).length,
-      }),
-      createFilterGroup({
-        id: 'assignees',
-        title: 'Người phụ trách',
-        options: [
-          { value: 'Trần Thị Mai (Sales)', label: 'Trần Thị Mai (Sales)' },
-          { value: 'Lê Hoàng Nam (Sales)', label: 'Lê Hoàng Nam (Sales)' },
-          { value: 'Nguyễn Văn Hùng (Sales Manager)', label: 'Nguyễn Văn Hùng (Sales Manager)' },
-          { value: 'Chưa phân bổ', label: 'Chưa phân bổ' },
-        ],
-        selectedValues: advancedFilters.assignees,
-        getOptionCount: (val) =>
-          getLeads({ search }).filter(
-            (l) => (l.assignedTo?.trim() || 'Chưa phân bổ') === val
-          ).length,
-      }),
-    ]
-  }, [advancedFilters, search])
+    return buildCrmFilterGroups({
+      advancedFilters,
+      viewScope,
+      baseLeads: allLeads,
+    })
+  }, [advancedFilters, viewScope, allLeads])
 
   const handleToggleFilter = (sectionId: string, value: string) => {
     setCurrentPage(1)
@@ -383,8 +216,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       setSelectedSubStatus('all')
     }
     setAdvancedFilters((prev) => {
-      const key = sectionId as keyof typeof prev
-      const list = prev[key] || []
+      const key = sectionId as keyof AdvancedFiltersState
+      const list = (prev[key] as string[]) || []
       const exists = list.includes(value)
       return {
         ...prev,
@@ -394,7 +227,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   }
 
   const handleClearAllFilters = () => {
-    setAdvancedFilters({ branches: [], sources: [], subjects: [], assignees: [], statuses: [] })
+    setAdvancedFilters(INITIAL_ADVANCED_FILTERS)
     setCurrentPage(1)
   }
 
@@ -403,10 +236,34 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     return calculateStatusTileCounts(filteredLeads)
   }, [filteredLeads])
 
-  // Sub-status options according to current main status
+  // Sub-status options according to current main status and stages in store
   const subStatusOptions = useMemo(() => {
+    // Tìm stage tương ứng trong store
+    const matchedStage = stages.find((s) => {
+      if (selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') return s.id === 'stage-new' || s.code === 'NEW'
+      if (selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') return s.id === 'stage-qt' || s.code === 'QT'
+      if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') return s.id === 'stage-tad' || s.code === 'TAD'
+      if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') return s.id === 'stage-dentt' || s.code === 'DENTT'
+      if (selectedStatus === 'thuc_hien_don') return s.id === 'stage-order' || s.code === 'T4'
+      if (selectedStatus === 'chuyen_doi') return s.id === 'stage-won' || s.code === 'T5' || s.code === 'WON'
+      if (selectedStatus === 'that_bai') return s.id === 'stage-lost' || s.code === 'LOST'
+      return s.id === selectedStatus || s.code.toLowerCase() === selectedStatus.toLowerCase()
+    })
+
+    if (matchedStage && matchedStage.subStatuses && matchedStage.subStatuses.length > 0) {
+      return [
+        { id: 'all', label: 'Tất cả' },
+        ...matchedStage.subStatuses
+          .filter((sub) => sub.isActive !== false)
+          .map((sub) => ({
+            id: sub.code.toLowerCase(),
+            label: sub.name.replace(/\s*\(.*?\)/g, '').trim(),
+          })),
+      ]
+    }
+
     return SUB_STATUS_MAP[selectedStatus] || SUB_STATUS_MAP.all
-  }, [selectedStatus])
+  }, [selectedStatus, stages])
 
   // Count sub-status leads dynamically for current status tab
   const subStatusCounts = useMemo(() => {
@@ -426,6 +283,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       baseLeads = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status))
     } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
       baseLeads = filteredLeads.filter((item) => isChoChotStatus(item.status))
+    } else if (selectedStatus === 'thuc_hien_don') {
+      baseLeads = filteredLeads.filter(isThucHienDonStatus)
     } else if (selectedStatus === 'chuyen_doi') {
       baseLeads = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
     } else if (selectedStatus === 'that_bai') {
@@ -464,6 +323,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       list = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status))
     } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
       list = filteredLeads.filter((item) => isChoChotStatus(item.status))
+    } else if (selectedStatus === 'thuc_hien_don') {
+      list = filteredLeads.filter(isThucHienDonStatus)
     } else if (selectedStatus === 'chuyen_doi') {
       list = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
     } else if (selectedStatus === 'that_bai') {
@@ -482,16 +343,45 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   }, [filteredLeads, selectedStatus, selectedSubStatus])
 
   const statusTilesData = useMemo(() => {
+    // Xác định tiền tố hiển thị theo Kho đang chọn: Kho T -> T, Kho M -> M, Kho CC -> C, Kho G -> G. Mặc định 'T'
+    const activePool = pools.find((p) => p.id === selectedPool)
+    const poolPrefix = activePool ? activePool.code.toUpperCase() : 'T'
+
+    const getStageName = (stageIdOrCode: string, fallback: string) => {
+      const found = stages.find(
+        (s) =>
+          s.id === stageIdOrCode ||
+          s.code.toLowerCase() === stageIdOrCode.toLowerCase()
+      )
+      if (!found) return fallback
+
+      // Bỏ hoàn toàn các tiền tố ngoặc vuông [T0], [T1]... và hậu tố ngoặc đơn (...)
+      const cleaned = found.name
+        .replace(/^\[.*?\]\s*/, '')
+        .replace(/\s*\(.*?\)/g, '')
+        .trim()
+
+      if (stageIdOrCode === 'stage-new' && (cleaned === 'Tiếp nhận Lead' || !cleaned)) return 'Tiếp nhận'
+      if (stageIdOrCode === 'stage-qt' && (cleaned === 'Đang tư vấn & Chăm sóc' || !cleaned)) return 'Đang tư vấn'
+      if (stageIdOrCode === 'stage-tad' && (cleaned === 'Đánh giá & Học thử' || !cleaned)) return fallback
+      if (stageIdOrCode === 'stage-dentt' && (cleaned === 'Xác nhận nhập học' || found.name.includes('Chờ chốt deal'))) return 'Chờ chốt deal'
+      if (stageIdOrCode === 'stage-order' && (cleaned === 'Thực hiện đơn & Bàn giao' || found.name.includes('Thực hiện đơn'))) return 'Thực hiện đơn'
+      if (stageIdOrCode === 'stage-won' && (cleaned === 'Hoàn tất & Thành công' || found.name.includes('Won'))) return 'Đã chuyển đổi'
+
+      return cleaned || fallback
+    }
+
     if (viewScope === 'my') {
       // Dải Tab Tác nghiệp cho Tư vấn viên (Action-driven / Worklist)
       return [
         { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
         { id: 'today_tasks', label: '⏰ Cần gọi hôm nay', count: tileCounts.today_tasks, status: 'today_tasks' },
         { id: 'overdue', label: '⚠️ Quá hạn', count: tileCounts.overdue, status: 'overdue' },
-        { id: 'dang_tu_van', label: 'Đang tư vấn', count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
-        { id: 'hen_trai_nghiem', label: 'Lịch trải nghiệm', count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
-        { id: 'cho_chot', label: 'Chờ chốt deal', count: tileCounts.cho_chot, status: 'cho_chot' },
-        { id: 'chuyen_doi', label: 'Đã chuyển đổi', count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
+        { id: 'dang_tu_van', label: `${poolPrefix}1 · ${getStageName('stage-qt', 'Đang tư vấn')}`, count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
+        { id: 'hen_trai_nghiem', label: `${poolPrefix}2 · ${getStageName('stage-tad', 'Lịch trải nghiệm')}`, count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
+        { id: 'cho_chot', label: `${poolPrefix}3 · ${getStageName('stage-dentt', 'Chờ chốt deal')}`, count: tileCounts.cho_chot, status: 'cho_chot' },
+        { id: 'thuc_hien_don', label: `${poolPrefix}4 · ${getStageName('stage-order', 'Thực hiện đơn')}`, count: tileCounts.thuc_hien_don, status: 'thuc_hien_don' },
+        { id: 'chuyen_doi', label: `${poolPrefix}5 · ${getStageName('stage-won', 'Đã chuyển đổi')}`, count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
       ]
     }
 
@@ -499,13 +389,14 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     return [
       { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
       { id: 'unassigned', label: '👤 Chưa phân bổ', count: tileCounts.unassigned, status: 'unassigned' },
-      { id: 'moi_tiep_nhan', label: 'Mới tiếp nhận', count: tileCounts.moi_tiep_nhan, status: 'moi_tiep_nhan' },
-      { id: 'dang_tu_van', label: 'Đang tư vấn', count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
-      { id: 'hen_trai_nghiem', label: 'Đánh giá & Trải nghiệm', count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
-      { id: 'cho_chot', label: 'Chờ chốt deal', count: tileCounts.cho_chot, status: 'cho_chot' },
-      { id: 'chuyen_doi', label: 'Đã chuyển đổi', count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
+      { id: 'moi_tiep_nhan', label: `${poolPrefix}0 · ${getStageName('stage-new', 'Tiếp nhận')}`, count: tileCounts.moi_tiep_nhan, status: 'moi_tiep_nhan' },
+      { id: 'dang_tu_van', label: `${poolPrefix}1 · ${getStageName('stage-qt', 'Đang tư vấn')}`, count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
+      { id: 'hen_trai_nghiem', label: `${poolPrefix}2 · ${getStageName('stage-tad', 'Đánh giá & Học thử')}`, count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
+      { id: 'cho_chot', label: `${poolPrefix}3 · ${getStageName('stage-dentt', 'Chờ chốt deal')}`, count: tileCounts.cho_chot, status: 'cho_chot' },
+      { id: 'thuc_hien_don', label: `${poolPrefix}4 · ${getStageName('stage-order', 'Thực hiện đơn')}`, count: tileCounts.thuc_hien_don, status: 'thuc_hien_don' },
+      { id: 'chuyen_doi', label: `${poolPrefix}5 · ${getStageName('stage-won', 'Đã chuyển đổi')}`, count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
     ]
-  }, [tileCounts, viewScope])
+  }, [tileCounts, viewScope, stages, pools, selectedPool])
 
   const handleTileSelect = (tileId: string) => {
     setSelectedStatus(tileId)
@@ -526,6 +417,12 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       <CrmLeadsToolbar
         leads={filteredLeads}
         viewScope={viewScope}
+        pools={pools}
+        pool={selectedPool}
+        onPoolChange={(val) => {
+          setSelectedPool(val)
+          setCurrentPage(1)
+        }}
         branch={branch}
         onBranchChange={(val) => {
           setBranch(val)
@@ -625,28 +522,49 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         </div>
       )}
 
-      {/* DataTable stretching to bottom */}
-      <div className="min-h-0 flex-1 overflow-hidden">
-        <CrmLeadsTable
-          viewScope={viewScope}
-          leads={displayLeads}
-          totalItems={displayLeads.length}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size)
-            setCurrentPage(1)
-          }}
-          onViewDetail={handleViewDetail}
-          onOpenContactProfile={(lead) => {
-            setContactProfileLead(lead)
-            setIsContactProfileOpen(true)
-          }}
-          onOpenBookingTest={handleOpenBookingTest}
-          onOpenTrialClass={handleOpenTrialClass}
-          onOpenCreateOrder={handleOpenCreateOrder}
-        />
+      {/* DataTable stretching to bottom & Panel Bộ Lọc Ghim Cạnh Phải */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <CrmLeadsTable
+            viewScope={viewScope}
+            leads={displayLeads}
+            totalItems={displayLeads.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setCurrentPage(1)
+            }}
+            onViewDetail={handleViewDetail}
+            onOpenContactProfile={(lead) => {
+              setContactProfileLead(lead)
+              setIsContactProfileOpen(true)
+            }}
+            onOpenBookingTest={handleOpenBookingTest}
+            onOpenTrialClass={handleOpenTrialClass}
+            onOpenCreateOrder={handleOpenCreateOrder}
+            onReactivateCycle={handleReactivateCycle}
+          />
+        </div>
+
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc Lead"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={handleToggleFilter}
+            onClearAll={handleClearAllFilters}
+            onClearSection={(sectionId) => {
+              setAdvancedFilters((prev) => ({
+                ...prev,
+                [sectionId]: [],
+              }))
+              setCurrentPage(1)
+            }}
+          />
+        )}
       </div>
 
       {/* Create Customer Dialog */}
@@ -690,19 +608,6 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         studentAddress={orderModalLead?.address || 'Hà Nội'}
         existingOrder={editingOrder}
         onSaveSuccess={handleSaveOrderSuccess}
-      />
-
-
-
-      {/* Advanced Filter Sheet Panel */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc Lead nâng cao"
-        description="Lọc theo Cơ sở, Trạng thái (Thất bại, Tạm dừng), Nguồn tiếp nhận, Khóa học quan tâm và Người phụ trách."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={handleToggleFilter}
-        onClearAll={handleClearAllFilters}
       />
     </div>
   )

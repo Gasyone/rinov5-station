@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   getSchoolFilterGroup,
   getLevelFilterGroup,
@@ -325,124 +325,133 @@ export function ClassesScreen() {
         onCreateClass={() => setIsCreateOpen(true)}
       />
 
-      {viewMode === 'timetable' ? (
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ClassesTimetableView
-            classes={filteredClasses}
-            onView={(id) => handleOpenDetail(id, { editMode: false })}
-            onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
-          />
-        </div>
-      ) : viewMode === 'grid' ? (
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 lg:px-3">
-            <MyClassesGrid
-              classes={pagedClasses}
-              onOpenDetail={(cls, tab) => handleOpenDetail(cls.id, { initialTab: tab || 'overview' })}
-            />
-          </div>
-          <div className="border-t bg-background px-3 py-2 shrink-0">
-            <DataTablePagination
-              page={currentPage}
-              total={filteredClasses.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          </div>
-        </div>
-      ) : viewMode === 'list' ? (
-        <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-          <DataTableFrame
-            footer={
-              <DataTablePagination
-                page={currentPage}
-                total={filteredClasses.length}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
+      {/* Container Nội dung Lớp học & Panel Bộ Lọc Ghim Cạnh Phải */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          {viewMode === 'timetable' ? (
+            <div className="h-full overflow-hidden">
+              <ClassesTimetableView
+                classes={filteredClasses}
+                onView={(id) => handleOpenDetail(id, { editMode: false })}
+                onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
               />
-            }
-          >
-            <ClassesTable
-              classes={pagedClasses}
-              selectedIds={selectedIds}
-              onToggleAll={toggleSelectAll}
-              onToggleOne={toggleSelectOne}
-              onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
-              onView={(id) => handleOpenDetail(id, { editMode: false })}
-              onEdit={(id) => handleOpenDetail(id, { editMode: true })}
-              onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
-              onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
-              onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
-            />
-          </DataTableFrame>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 lg:px-3">
+                <MyClassesGrid
+                  classes={pagedClasses}
+                  onOpenDetail={(cls, tab) => handleOpenDetail(cls.id, { initialTab: tab || 'overview' })}
+                />
+              </div>
+              <div className="border-t bg-background px-3 py-2 shrink-0">
+                <DataTablePagination
+                  page={currentPage}
+                  total={filteredClasses.length}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            </div>
+          ) : viewMode === 'list' ? (
+            <div className="min-h-0 h-full overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+              <DataTableFrame
+                footer={
+                  <DataTablePagination
+                    page={currentPage}
+                    total={filteredClasses.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={setPageSize}
+                  />
+                }
+              >
+                <ClassesTable
+                  classes={pagedClasses}
+                  selectedIds={selectedIds}
+                  onToggleAll={toggleSelectAll}
+                  onToggleOne={toggleSelectOne}
+                  onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
+                  onView={(id) => handleOpenDetail(id, { editMode: false })}
+                  onEdit={(id) => handleOpenDetail(id, { editMode: true })}
+                  onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
+                  onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
+                  onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
+                />
+              </DataTableFrame>
+            </div>
+          ) : (
+            <div className="min-h-0 h-full overflow-hidden">
+              <ClassesStatsView classes={filteredClasses} />
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <ClassesStatsView classes={filteredClasses} />
-        </div>
-      )}
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc để tìm kiếm lớp học chính xác."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleFilterValue('branches', value)
-          if (sectionId === 'levels') toggleFilterValue('levels', value)
-          if (sectionId === 'teachers') toggleFilterValue('teachers', value)
-          if (sectionId === 'rooms') toggleFilterValue('rooms', value)
-          if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
-          if (sectionId === 'times') toggleFilterValue('times', value)
-          if (sectionId === 'subjects') toggleFilterValue('subjects', value)
-          if (sectionId === 'programs') toggleFilterValue('programs', value)
-          if (sectionId === 'learningPaths') toggleFilterValue('learningPaths', value)
-          if (sectionId === 'syllabuses') toggleFilterValue('syllabuses', value)
-          if (sectionId === 'packages') toggleFilterValue('packages', value)
-          if (sectionId === 'statuses') toggleFilterValue('statuses', value)
-          if (sectionId === 'dateRanges') toggleFilterValue('dateRanges', value)
-        }}
-        onClearAll={() => {
-          setFilters({
-            branches: [],
-            levels: [],
-            teachers: [],
-            rooms: [],
-            weekdays: [],
-            times: [],
-            subjects: [],
-            programs: [],
-            learningPaths: [],
-            syllabuses: [],
-            packages: [],
-            statuses: [],
-            dateRanges: [],
-            studentSearch: '',
-          })
-          setPage(1)
-        }}
-        onClearSection={(sectionId) => {
-          setFilters((current) => ({
-            ...current,
-            [sectionId]: [],
-          }))
-          setPage(1)
-        }}
-      >
-        <div className="border-b border-border pb-4">
-          <FieldLabel label="Tìm theo học viên">
-            <Input
-              id="student-search-input"
-              placeholder="Nhập tên, SĐT hoặc mã học viên..."
-              value={filters.studentSearch}
-              onChange={(e) => handleStudentSearchChange(e.target.value)}
-              className="mt-1"
-            />
-          </FieldLabel>
-        </div>
-      </FilterGroupSheetPanel>
+        {/* Panel bộ lọc ghim cạnh phải chuẩn màn Đơn hàng */}
+        {isFilterOpen && (
+          <div className="pr-3 pb-3 pt-2 shrink-0 h-full">
+            <FilterGroupAsidePanel
+              title="Bộ lọc lớp học"
+              groups={filterGroups}
+              onClose={() => setIsFilterOpen(false)}
+              onToggle={(sectionId, value) => {
+                if (sectionId === 'branches') toggleFilterValue('branches', value)
+                if (sectionId === 'levels') toggleFilterValue('levels', value)
+                if (sectionId === 'teachers') toggleFilterValue('teachers', value)
+                if (sectionId === 'rooms') toggleFilterValue('rooms', value)
+                if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
+                if (sectionId === 'times') toggleFilterValue('times', value)
+                if (sectionId === 'subjects') toggleFilterValue('subjects', value)
+                if (sectionId === 'programs') toggleFilterValue('programs', value)
+                if (sectionId === 'learningPaths') toggleFilterValue('learningPaths', value)
+                if (sectionId === 'syllabuses') toggleFilterValue('syllabuses', value)
+                if (sectionId === 'packages') toggleFilterValue('packages', value)
+                if (sectionId === 'statuses') toggleFilterValue('statuses', value)
+                if (sectionId === 'dateRanges') toggleFilterValue('dateRanges', value)
+              }}
+              onClearAll={() => {
+                setFilters({
+                  branches: [],
+                  levels: [],
+                  teachers: [],
+                  rooms: [],
+                  weekdays: [],
+                  times: [],
+                  subjects: [],
+                  programs: [],
+                  learningPaths: [],
+                  syllabuses: [],
+                  packages: [],
+                  statuses: [],
+                  dateRanges: [],
+                  studentSearch: '',
+                })
+                setPage(1)
+              }}
+              onClearSection={(sectionId) => {
+                setFilters((current) => ({
+                  ...current,
+                  [sectionId]: [],
+                }))
+                setPage(1)
+              }}
+            >
+              <div className="border-b border-border/40 pb-3 pt-1">
+                <FieldLabel label="Tìm theo học viên">
+                  <Input
+                    id="student-search-input"
+                    placeholder="Nhập tên, SĐT hoặc mã học viên..."
+                    value={filters.studentSearch}
+                    onChange={(e) => handleStudentSearchChange(e.target.value)}
+                    className="mt-1 h-7 text-xs"
+                  />
+                </FieldLabel>
+              </div>
+            </FilterGroupAsidePanel>
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         open={!!deleteDialog}

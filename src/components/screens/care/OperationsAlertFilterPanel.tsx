@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { FilterGroupSheetPanel, createFilterGroup } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup } from '@/components/filters'
 import { getDynamicMonthFilterOptions } from './operationsAlertHelpers'
 
 export interface FilterState {
@@ -572,16 +572,17 @@ export function OperationsAlertFilterPanel({
     actions,
   ])
 
+  if (!open) return null
+
   return (
-    <FilterGroupSheetPanel
-      open={open}
-      onOpenChange={onOpenChange}
+    <FilterGroupAsidePanel
       title="Bộ lọc nâng cao"
       description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
       groups={filterGroups}
       onToggle={handleFilterToggle}
       onClearAll={handleClearAllFilters}
       onClearSection={handleClearSection}
+      onClose={() => onOpenChange(false)}
     >
       <div className="mb-4">
         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
@@ -598,6 +599,6 @@ export function OperationsAlertFilterPanel({
           className="w-full h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
-    </FilterGroupSheetPanel>
+    </FilterGroupAsidePanel>
   )
 }

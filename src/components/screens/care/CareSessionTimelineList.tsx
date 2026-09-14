@@ -396,7 +396,7 @@ export function CareSessionTimelineList({
 
         {/* Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN) */}
         {notices.length > 0 && (
-          <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3.5 py-2.5 text-xs text-left animate-in fade-in-50 duration-200 mb-2.5">
+          <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3 py-2 text-xs text-left animate-in fade-in-50 duration-200 mb-2">
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0 text-amber-950 dark:text-amber-100 text-xs leading-relaxed">

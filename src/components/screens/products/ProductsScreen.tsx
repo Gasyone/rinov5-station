@@ -7,7 +7,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   type FilterGroupConfig,
 } from '@/components/filters'
@@ -148,47 +148,50 @@ export function ProductsScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <ProductsTable
+              items={paged}
+              selectedIds={selectedIds}
+              onToggleSelectAll={handleToggleSelectAll}
+              onToggleSelectRow={handleToggleSelectRow}
+              onRowClick={(item) => setSelectedProduct(item)}
+              onView={(item) => setSelectedProduct(item)}
+              onOpenVouchers={handleOpenVouchers}
             />
-          }
-        >
-          <ProductsTable
-            items={paged}
-            selectedIds={selectedIds}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelectRow={handleToggleSelectRow}
-            onRowClick={(item) => setSelectedProduct(item)}
-            onView={(item) => setSelectedProduct(item)}
-            onOpenVouchers={handleOpenVouchers}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc sản phẩm"
-        description="Lọc danh sách theo loại sản phẩm và nhóm sản phẩm."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'categories')
-            toggleArray('categories', value as ProductCategory)
-          if (sectionId === 'groups')
-            toggleArray('groups', value)
-        }}
-        onClearAll={() => {
-          setFilters({ categories: [], groups: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc sản phẩm"
+            description="Lọc danh sách theo loại sản phẩm và nhóm sản phẩm."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'categories')
+                toggleArray('categories', value as ProductCategory)
+              if (sectionId === 'groups')
+                toggleArray('groups', value)
+            }}
+            onClearAll={() => {
+              setFilters({ categories: [], groups: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       {/* Chi tiết sản phẩm / Combo */}
       <ProductsFormDialog

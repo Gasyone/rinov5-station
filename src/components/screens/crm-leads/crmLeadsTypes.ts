@@ -218,3 +218,114 @@ export interface LeadMyMetrics {
   closingCount: number
 }
 
+// ========================================================
+// BỘ LỌC TOÀN DIỆN: PHÂN BỔ ĐỊA BÀN & LÀM SẠCH DATA
+// ========================================================
+
+export interface AdvancedFiltersState {
+  // Trụ cột 1: Phân bổ & Địa bàn
+  regions: string[]
+  provinces: string[]
+  districts: string[]
+  branches: string[]
+  assignees: string[]
+  teams: string[]
+  // Trụ cột 2: Làm sạch Data & Chất lượng
+  dataQualities: string[]
+  slaStatuses: string[]
+  financialSegments: string[]
+  ageGroups: string[]
+  customerTypes: string[]
+  // Phễu, Nguồn & Chương trình
+  sources: string[]
+  subjects: string[]
+  statuses: string[]
+}
+
+export const INITIAL_ADVANCED_FILTERS: AdvancedFiltersState = {
+  regions: [],
+  provinces: [],
+  districts: [],
+  branches: [],
+  assignees: [],
+  teams: [],
+  dataQualities: [],
+  slaStatuses: [],
+  financialSegments: [],
+  ageGroups: [],
+  customerTypes: [],
+  sources: [],
+  subjects: [],
+  statuses: [],
+}
+
+export const REGION_OPTIONS = [
+  { value: 'mien_bac', label: 'Miền Bắc' },
+  { value: 'mien_nam', label: 'Miền Nam' },
+  { value: 'mien_trung', label: 'Miền Trung' },
+]
+
+export const PROVINCE_OPTIONS = [
+  { value: 'Hà Nội', label: 'Hà Nội' },
+  { value: 'TP. Hồ Chí Minh', label: 'TP. Hồ Chí Minh' },
+  { value: 'Đà Nẵng', label: 'Đà Nẵng' },
+  { value: 'Hải Phòng', label: 'Hải Phòng' },
+  { value: 'Khác', label: 'Tỉnh / Thành phố khác' },
+]
+
+export const DISTRICT_OPTIONS = [
+  // Hà Nội
+  { value: 'Hoàng Mai', label: 'Quận Hoàng Mai (HN)' },
+  { value: 'Cầu Giấy', label: 'Quận Cầu Giấy (HN)' },
+  { value: 'Thanh Xuân', label: 'Quận Thanh Xuân (HN)' },
+  { value: 'Hà Đông', label: 'Quận Hà Đông (HN)' },
+  { value: 'Nam Từ Liêm', label: 'Quận Nam Từ Liêm (HN)' },
+  { value: 'Đống Đa', label: 'Quận Đống Đa (HN)' },
+  { value: 'Hai Bà Trưng', label: 'Quận Hai Bà Trưng (HN)' },
+  // TP.HCM
+  { value: 'Quận 1', label: 'Quận 1 (TP.HCM)' },
+  { value: 'Quận 3', label: 'Quận 3 (TP.HCM)' },
+  { value: 'Quận 7', label: 'Quận 7 (TP.HCM)' },
+  { value: 'Bình Thạnh', label: 'Quận Bình Thạnh (TP.HCM)' },
+  { value: 'Thủ Đức', label: 'TP. Thủ Đức (TP.HCM)' },
+]
+
+export const DATA_QUALITY_OPTIONS = [
+  { value: 'chua_goi', label: 'Chưa liên hệ (Chưa gọi)' },
+  { value: 'da_ket_noi', label: 'Đã kết nối trao đổi' },
+  { value: 'khong_nghe_may', label: 'Không nghe máy / Máy bận' },
+  { value: 'hen_goi_lai', label: 'Có hẹn gọi lại (Callback)' },
+  { value: 'so_sai_rac', label: 'Số sai / Spam / Rác (Cần dọn)' },
+]
+
+export const SLA_STATUS_OPTIONS = [
+  { value: 'can_goi_hom_nay', label: '⏰ Cần gọi hôm nay' },
+  { value: 'trong_han', label: '✅ Trong hạn cam kết SLA' },
+  { value: 'qua_han', label: '⚠️ Quá hạn xử lý SLA' },
+]
+
+export const FINANCIAL_SEGMENT_OPTIONS = [
+  { value: 'vip', label: 'VIP cao cấp (> 40tr)' },
+  { value: 'kha_gia', label: 'Khá giả (3 - 5tr/tháng)' },
+  { value: 'tieu_chuan', label: 'Tiêu chuẩn (1 - 3tr/tháng)' },
+  { value: 'chua_xac_dinh', label: 'Chưa xác định ngân sách' },
+]
+
+export const AGE_GROUP_OPTIONS = [
+  { value: 'kindy', label: 'Mầm non (Dưới 6 tuổi)' },
+  { value: 'tieu_hoc', label: 'Tiểu học (6 - 10 tuổi / Lớp 1-5)' },
+  { value: 'thcs', label: 'THCS (11 - 15 tuổi / Lớp 6-9)' },
+  { value: 'thpt', label: 'THPT & Người lớn (16+ tuổi)' },
+]
+
+export const CUSTOMER_TYPE_OPTIONS = [
+  { value: 'new', label: 'Lead mới tinh' },
+  { value: 'returning', label: 'Lead quay lại (Tái tiếp cận)' },
+]
+
+export const SALES_TEAM_OPTIONS = [
+  { value: 'Team Sale 01', label: 'Team Sale 01 (Cơ sở Linh Đàm)' },
+  { value: 'Team Sale 02', label: 'Team Sale 02 (Cơ sở Nguyễn Tuân)' },
+  { value: 'Team Sales Manager', label: 'Team Sales Manager (Điều phối chung)' },
+]
+

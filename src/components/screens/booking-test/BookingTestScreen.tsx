@@ -6,7 +6,7 @@ import {
   DataTablePagination,
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
-import { FilterGroupSheetPanel } from '@/components/filters'
+import { FilterGroupAsidePanel } from '@/components/filters'
 import {
   getBookingTests,
   type BookingStatus,
@@ -134,62 +134,70 @@ export function BookingTestScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filteredBookings.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filteredBookings.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <BookingTestTable
+              bookings={pagedBookings}
+              selectedIds={selectedIds}
+              copiedKey={copiedKey}
+              onToggleAll={actions.toggleSelectAll}
+              onToggleOne={actions.toggleSelectOne}
+              onRowClick={setDetailBookingId}
+              onOpenAssessment={actions.openAssessmentDialog}
+              onUpdateBooking={actions.updateBooking}
+              onCopy={actions.copyToClipboard}
+              onCall={actions.triggerDeskCall}
             />
-          }
-        >
-          <BookingTestTable
-            bookings={pagedBookings}
-            selectedIds={selectedIds}
-            copiedKey={copiedKey}
-            onToggleAll={actions.toggleSelectAll}
-            onToggleOne={actions.toggleSelectOne}
-            onRowClick={setDetailBookingId}
-            onOpenAssessment={actions.openAssessmentDialog}
-            onUpdateBooking={actions.updateBooking}
-            onCopy={actions.copyToClipboard}
-            onCall={actions.triggerDeskCall}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc theo trường, trạng thái, điều kiện, giáo viên và nhiều tiêu chí nâng cao khác."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'schools') toggleFilterValue('schools', value)
-          if (sectionId === 'statuses') toggleFilterValue('statuses', value as BookingStatus)
-          if (sectionId === 'conditions') toggleFilterValue('conditions', value as ConditionFilter)
-          if (sectionId === 'teachers') toggleFilterValue('teachers', value)
-          if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
-          if (sectionId === 'programs') toggleFilterValue('programs', value)
-          if (sectionId === 'subjects') toggleFilterValue('subjects', value)
-          if (sectionId === 'sales') toggleFilterValue('sales', value)
-        }}
-        onClearAll={() => {
-          setFilters({
-            schools: [],
-            statuses: [],
-            conditions: [],
-            teachers: [],
-            weekdays: [],
-            programs: [],
-            subjects: [],
-            sales: [],
-          })
-          setPage(1)
-        }}
-      />
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc lịch test"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'schools') toggleFilterValue('schools', value)
+              if (sectionId === 'statuses') toggleFilterValue('statuses', value as BookingStatus)
+              if (sectionId === 'conditions') toggleFilterValue('conditions', value as ConditionFilter)
+              if (sectionId === 'teachers') toggleFilterValue('teachers', value)
+              if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
+              if (sectionId === 'programs') toggleFilterValue('programs', value)
+              if (sectionId === 'subjects') toggleFilterValue('subjects', value)
+              if (sectionId === 'sales') toggleFilterValue('sales', value)
+            }}
+            onClearAll={() => {
+              setFilters({
+                schools: [],
+                statuses: [],
+                conditions: [],
+                teachers: [],
+                weekdays: [],
+                programs: [],
+                subjects: [],
+                sales: [],
+              })
+              setPage(1)
+            }}
+            onClearSection={(sectionId) => {
+              setFilters((prev) => ({ ...prev, [sectionId]: [] }))
+              setPage(1)
+            }}
+          />
+        )}
+      </div>
 
 
       <BookingTestDetailDialog

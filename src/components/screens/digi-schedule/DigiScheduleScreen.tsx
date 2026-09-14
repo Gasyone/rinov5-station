@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { ModuleLoadingSkeleton } from '@/components/shared'
 import { SYSTEM_BRANCHES } from '@/components/controls'
 import { INITIAL_DIGI_BOOKINGS, type DigiStudentBooking } from '@/mocks/digiSchedule'
@@ -144,39 +144,41 @@ export function DigiScheduleScreen() {
         onAddStudent={() => setIsAddStudentOpen(true)}
       />
 
-      {/* 2. Main Week Timeline Calendar with 18h - 21h Time Column */}
-      <DigiScheduleWeekView
-        weekDays={weekDays}
-        today={today}
-        filteredSessions={filteredSessions}
-        onSelectSession={handleSelectSession}
-        hideBranch={activeBranch !== 'all' || branchFilters.length === 1}
-      />
+      {/* 2. Main Week Timeline Calendar + Aside Filter */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          <DigiScheduleWeekView
+            weekDays={weekDays}
+            today={today}
+            filteredSessions={filteredSessions}
+            onSelectSession={handleSelectSession}
+            hideBranch={activeBranch !== 'all' || branchFilters.length === 1}
+          />
+          <DigiScheduleFooter />
+        </div>
 
-      {/* 3. Footer Color Legend */}
-      <DigiScheduleFooter />
-
-      {/* 4. Filter Sheet */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc ca học Digi"
-        description="Lọc ca tự học Digi theo chi nhánh, trợ giảng và trạng thái ca."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          const toggleHandler = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-            setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
-          }
-          if (sectionId === 'branches') toggleHandler(setBranchFilters)
-          else if (sectionId === 'assistants') toggleHandler(setAssistantFilters)
-          else if (sectionId === 'statuses') toggleHandler(setStatusFilters)
-        }}
-        onClearAll={() => {
-          setBranchFilters([])
-          setAssistantFilters([])
-          setStatusFilters([])
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc ca học Digi"
+            description="Lọc ca tự học Digi theo chi nhánh, trợ giảng và trạng thái ca."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              const toggleHandler = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+                setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
+              }
+              if (sectionId === 'branches') toggleHandler(setBranchFilters)
+              else if (sectionId === 'assistants') toggleHandler(setAssistantFilters)
+              else if (sectionId === 'statuses') toggleHandler(setStatusFilters)
+            }}
+            onClearAll={() => {
+              setBranchFilters([])
+              setAssistantFilters([])
+              setStatusFilters([])
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       {/* 5. Session Detail Dialog */}
       <DigiSessionDetailDialog

@@ -9,7 +9,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   type FilterGroupConfig,
 } from '@/components/filters'
@@ -184,43 +184,46 @@ export function ContactsScreen() {
         />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <ContactsTable
+              contacts={paged}
+              onRowClick={(contact) => setDialog({ mode: 'edit', contact })}
+              onEdit={(contact) => setDialog({ mode: 'edit', contact })}
+              onDelete={setDeleteTarget}
             />
-          }
-        >
-          <ContactsTable
-            contacts={paged}
-            onRowClick={(contact) => setDialog({ mode: 'edit', contact })}
-            onEdit={(contact) => setDialog({ mode: 'edit', contact })}
-            onDelete={setDeleteTarget}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Contact filters"
-        description="Filter by branch, source, and assigned sales rep."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleArray('branches', value)
-          if (sectionId === 'sources') toggleArray('sources', value as Contact['source'])
-          if (sectionId === 'assignees') toggleArray('assignees', value)
-        }}
-        onClearAll={() => {
-          setFilters({ branches: [], sources: [], assignees: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Contact filters"
+            description="Filter by branch, source, and assigned sales rep."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'branches') toggleArray('branches', value)
+              if (sectionId === 'sources') toggleArray('sources', value as Contact['source'])
+              if (sectionId === 'assignees') toggleArray('assignees', value)
+            }}
+            onClearAll={() => {
+              setFilters({ branches: [], sources: [], assignees: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <ContactsFormDialog
         key={dialog.mode === 'edit' ? `edit-${dialog.contact.id}` : `create-${dialog.mode}`}

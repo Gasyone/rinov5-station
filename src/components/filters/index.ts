@@ -24,6 +24,10 @@ export {
   type FilterRadioOptionProps,
 } from './FilterAsidePanel'
 export {
+  FilterGroupAsidePanel,
+  type FilterGroupAsidePanelProps,
+} from './FilterGroupAsidePanel'
+export {
   DateRangePicker,
   type DateRangePickerProps,
   type DateRangePresetOption,

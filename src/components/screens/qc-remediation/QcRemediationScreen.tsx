@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import {
   mockQcCheckEvents,
 } from '@/mocks/qcChecks'
@@ -242,55 +242,59 @@ export function QcRemediationScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          className="border-none bg-transparent shadow-none"
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={sortedErrors.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            className="border-none bg-transparent shadow-none"
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={sortedErrors.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <QcRemediationTable
+              errors={pagedErrors}
+              selectedIds={selectedIds}
+              onToggleAll={toggleSelectAll}
+              onToggleOne={toggleSelectOne}
+              onRowClick={setDetailErrorId}
+              onAssign={handleAssign}
             />
-          }
-        >
-          <QcRemediationTable
-            errors={pagedErrors}
-            selectedIds={selectedIds}
-            onToggleAll={toggleSelectAll}
-            onToggleOne={toggleSelectOne}
-            onRowClick={setDetailErrorId}
-            onAssign={handleAssign}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc theo chi nhánh, loại lỗi và mức độ nghiêm trọng."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleFilterValue('branches', value)
-          if (sectionId === 'types') toggleFilterValue('types', value as QcErrorType)
-          if (sectionId === 'severities') toggleFilterValue('severities', value as QcErrorSeverity)
-        }}
-        onClearAll={() => {
-          setFilters({ branches: [], types: [], severities: [] })
-          setPage(1)
-        }}
-        onClearSection={(sectionId) => {
-          setFilters((current) => {
-            const next = { ...current }
-            if (sectionId === 'branches') next.branches = []
-            if (sectionId === 'types') next.types = []
-            if (sectionId === 'severities') next.severities = []
-            return next
-          })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc khắc phục QC"
+            groups={filterGroups}
+            description="Kết hợp bộ lọc theo chi nhánh, loại lỗi và mức độ nghiêm trọng."
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'branches') toggleFilterValue('branches', value)
+              if (sectionId === 'types') toggleFilterValue('types', value as QcErrorType)
+              if (sectionId === 'severities') toggleFilterValue('severities', value as QcErrorSeverity)
+            }}
+            onClearAll={() => {
+              setFilters({ branches: [], types: [], severities: [] })
+              setPage(1)
+            }}
+            onClearSection={(sectionId) => {
+              setFilters((current) => {
+                const next = { ...current }
+                if (sectionId === 'branches') next.branches = []
+                if (sectionId === 'types') next.types = []
+                if (sectionId === 'severities') next.severities = []
+                return next
+              })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <QcRemediationDetailDialog
         error={detailError}

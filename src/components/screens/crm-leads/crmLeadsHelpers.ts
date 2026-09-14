@@ -1,6 +1,22 @@
 import { Lead, LeadChild } from '@/mocks/crmLeads'
 import { mockClassRecords, ClassRecord } from '@/mocks/classRecords'
 import type { GenericSessionData } from '@/components/screens/calendar/SessionHoverCard'
+import type { DetailedOrder } from '@/components/screens/care/student-orders/studentOrdersTypes'
+import type { FilterGroupConfig } from '@/components/filters'
+import { createFilterGroup, getSchoolFilterGroup } from '@/components/filters'
+import { SYSTEM_BRANCHES } from '@/components/controls'
+import {
+  type AdvancedFiltersState,
+  REGION_OPTIONS,
+  PROVINCE_OPTIONS,
+  DISTRICT_OPTIONS,
+  DATA_QUALITY_OPTIONS,
+  SLA_STATUS_OPTIONS,
+  FINANCIAL_SEGMENT_OPTIONS,
+  AGE_GROUP_OPTIONS,
+  CUSTOMER_TYPE_OPTIONS,
+  SALES_TEAM_OPTIONS,
+} from './crmLeadsTypes'
 
 export const SALES_STAFF_OPTIONS = [
   'Trần Thị Mai (Sales)',
@@ -39,7 +55,7 @@ export function getCleanStaffName(staffName: string): string {
 
 /**
  * Lấy ngày bắt đầu phụ trách và tính số ngày đã phụ trách
- * Ví dụ: "10/08/2026 (15 ngày)"
+ * Ví dụ: "10/08 - 15 ngày"
  */
 export function getStaffAssignmentInfo(lead: Lead): { dateStr: string; daysElapsed: number; label: string } {
   let createdDate: Date | null = null
@@ -59,8 +75,7 @@ export function getStaffAssignmentInfo(lead: Lead): { dateStr: string; daysElaps
 
   const d = String(createdDate.getDate()).padStart(2, '0')
   const m = String(createdDate.getMonth() + 1).padStart(2, '0')
-  const y = createdDate.getFullYear()
-  const dateStr = `${d}/${m}/${y}`
+  const dateStr = `${d}/${m}`
 
   const now = new Date(2026, 7, 25) // Reference date: 25/08/2026
   const diffTime = Math.max(0, now.getTime() - createdDate.getTime())
@@ -69,7 +84,7 @@ export function getStaffAssignmentInfo(lead: Lead): { dateStr: string; daysElaps
   return {
     dateStr,
     daysElapsed,
-    label: `${dateStr} (${daysElapsed} ngày)`,
+    label: `${dateStr} - ${daysElapsed} ngày`,
   }
 }
 
@@ -223,6 +238,59 @@ export const isThatBaiStatus = (s: string) => s === 'that_bai'
 export const isTamDungStatus = (s: string) => s === 'tam_dung'
 export const isInactiveLeadStatus = (s: string) => s === 'that_bai' || s === 'tam_dung'
 
+/**
+ * Kiểm tra trạng thái Thực hiện đơn (Stage 4 / T4 / M4 / C4 / G4)
+ * Bao gồm các hồ sơ đã có đơn hàng chưa thanh toán đủ hoặc đang trong quy trình bàn giao giáo trình/xếp lớp
+ */
+export const isThucHienDonStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if ((l.status as string) === 'thuc_hien_don') return true
+  if (l.orderCode && l.orderStatus && l.orderStatus !== 'paid') return true
+  if (l.subStatus) {
+    const sub = l.subStatus.toLowerCase()
+    if (
+      sub.includes('bàn giao') ||
+      sub.includes('xếp lớp') ||
+      sub.includes('giao hàng') ||
+      sub.includes('thực hiện')
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * Nhận diện Kho dữ liệu (Data Pool) của Lead
+ * Kho T: Inbound/Telesales
+ * Kho M: Marketing / Ads / Web
+ * Kho CC: CSKH / Tái phí / Khách quay lại
+ * Kho G: Giới thiệu (Referral) / Sự kiện Workshop
+ */
+export function getLeadPool(lead: Lead): { id: string; code: string; name: string } {
+  if (lead.poolId) {
+    const pId = lead.poolId.toLowerCase()
+    if (pId.includes('pool-m') || pId === 'm') return { id: 'pool-m', code: 'M', name: 'Kho M' }
+    if (pId.includes('pool-g') || pId === 'g') return { id: 'pool-g', code: 'G', name: 'Kho G' }
+    if (pId.includes('pool-c') || pId === 'c' || pId === 'cc') return { id: 'pool-c', code: 'C', name: 'Kho CC' }
+    if (pId.includes('pool-t') || pId === 't') return { id: 'pool-t', code: 'T', name: 'Kho T' }
+  }
+  if (lead.isReturningLead) {
+    return { id: 'pool-c', code: 'C', name: 'Kho CC' }
+  }
+  const src = (lead.source || '').toLowerCase()
+  if (src === 'facebook' || src === 'website' || src === 'ads') {
+    return { id: 'pool-m', code: 'M', name: 'Kho M' }
+  }
+  if (src === 'referral' || src === 'event' || src === 'workshop') {
+    return { id: 'pool-g', code: 'G', name: 'Kho G' }
+  }
+  if (src === 'c' || src === 'cc' || src === 'cskh' || src === 'tai_phi') {
+    return { id: 'pool-c', code: 'C', name: 'Kho CC' }
+  }
+  return { id: 'pool-t', code: 'T', name: 'Kho T' }
+}
+
 export const isLeadTodayTask = (l: Lead) => {
   if (isInactiveLeadStatus(l.status)) return false
   const care = getLeadCareInfo(l)
@@ -257,6 +325,7 @@ export function calculateStatusTileCounts(leads: Lead[]) {
     dang_tu_van: leads.filter((l) => isDangTuVanStatus(l.status)).length,
     hen_trai_nghiem: leads.filter((l) => isHenTraiNghiemStatus(l.status)).length,
     cho_chot: leads.filter((l) => isChoChotStatus(l.status)).length,
+    thuc_hien_don: leads.filter(isThucHienDonStatus).length,
     chuyen_doi: leads.filter((l) => isChuyenDoiStatus(l.status)).length,
     that_bai: leads.filter((l) => isThatBaiStatus(l.status)).length,
     tam_dung: leads.filter((l) => isTamDungStatus(l.status)).length,
@@ -268,6 +337,654 @@ export function calculateStatusTileCounts(leads: Lead[]) {
   }
 
   return counts
+}
+
+/**
+ * Xây dựng dữ liệu đơn hàng phục vụ Modal chỉnh sửa đơn hàng từ Lead
+ */
+export function buildEditingOrderFromLead(
+  lead: Lead,
+  currentUserStaff: string = 'Trần Thị Mai (Sales)'
+): DetailedOrder | null {
+  if (!lead.orderCode) return null
+
+  const parsedAmount = lead.expectedAmount
+    ? Number(lead.expectedAmount.replace(/\D/g, ''))
+    : 8400000
+
+  const orderItems =
+    lead.packages && lead.packages.length > 0
+      ? lead.packages.map((pkg, idx) => {
+          const itemPrice = Number(pkg.amount.replace(/\D/g, '')) || 0
+          return {
+            productId: pkg.id || `P-00${idx + 1}`,
+            productName: pkg.name,
+            quantity: 1,
+            unitPrice: itemPrice,
+            subtotal: itemPrice,
+          }
+        })
+      : [
+          {
+            productId: 'P-001',
+            productName: lead.expectedPackage || 'Gói học tiêu chuẩn',
+            quantity: 1,
+            unitPrice: parsedAmount || 8400000,
+            subtotal: parsedAmount || 8400000,
+          },
+        ]
+
+  const detailedItems =
+    lead.packages && lead.packages.length > 0
+      ? lead.packages.map((pkg, idx) => {
+          const itemPrice = Number(pkg.amount.replace(/\D/g, '')) || 0
+          return {
+            productId: pkg.id || `P-00${idx + 1}`,
+            productName: pkg.name,
+            quantity: 1,
+            unitPrice: itemPrice,
+            subtotal: itemPrice,
+            studentName: lead.studentName,
+            orderType: 'Mua mới',
+            durationText: pkg.duration || '40 buổi',
+          }
+        })
+      : [
+          {
+            productId: 'P-001',
+            productName: lead.expectedPackage || 'Gói học tiêu chuẩn',
+            quantity: 1,
+            unitPrice: parsedAmount || 8400000,
+            subtotal: parsedAmount || 8400000,
+            studentName: lead.studentName,
+            orderType: 'Mua mới',
+            durationText: lead.paymentTerm || '40 buổi',
+          },
+        ]
+
+  return {
+    id: lead.orderCode,
+    orderNo: lead.orderCode,
+    studentId: lead.id,
+    studentName: lead.studentName,
+    items: orderItems,
+    totalAmount: parsedAmount || 8400000,
+    discountAmount: 0,
+    finalAmount: parsedAmount || 8400000,
+    paymentMethod: 'bank_transfer',
+    paymentStatus: lead.orderStatus === 'paid' ? 'paid' : 'unpaid',
+    status: 'pending',
+    branch: lead.branch,
+    saleBy: lead.assignedTo || currentUserStaff,
+    createdAt: lead.createdAt || new Date().toISOString(),
+    saleDate: lead.createdAt || new Date().toISOString().split('T')[0],
+    detailedItems: detailedItems,
+    payments: [],
+  }
+}
+
+/**
+ * Trích xuất và chuẩn hóa thông tin Địa bàn: Vùng miền, Tỉnh/TP, Quận/Huyện của Lead
+ */
+export function getLeadLocationInfo(lead: Lead): {
+  region: 'mien_bac' | 'mien_nam' | 'mien_trung'
+  regionName: string
+  province: string
+  district: string
+} {
+  const addr = (lead.address || '').toLowerCase()
+  const prov = (lead.province || '').toLowerCase()
+  const dist = (lead.district || '').toLowerCase()
+
+  // 1. Xác định Tỉnh / Thành phố & Vùng miền
+  let province = 'Hà Nội'
+  let region: 'mien_bac' | 'mien_nam' | 'mien_trung' = 'mien_bac'
+
+  if (
+    prov.includes('hồ chí minh') ||
+    prov.includes('hcm') ||
+    addr.includes('tp.hcm') ||
+    addr.includes('hồ chí minh') ||
+    addr.includes('quận 1') ||
+    addr.includes('quận 3') ||
+    addr.includes('quận 7')
+  ) {
+    province = 'TP. Hồ Chí Minh'
+    region = 'mien_nam'
+  } else if (prov.includes('đà nẵng') || addr.includes('đà nẵng')) {
+    province = 'Đà Nẵng'
+    region = 'mien_trung'
+  } else if (prov.includes('hải phòng') || addr.includes('hải phòng')) {
+    province = 'Hải Phòng'
+    region = 'mien_bac'
+  } else if (
+    prov.includes('hà nội') ||
+    addr.includes('hà nội') ||
+    addr.includes('hoàng mai') ||
+    addr.includes('cầu giấy') ||
+    addr.includes('hà đông') ||
+    addr.includes('thanh xuân') ||
+    addr.includes('linh đàm')
+  ) {
+    province = 'Hà Nội'
+    region = 'mien_bac'
+  }
+
+  // 2. Xác định Quận / Huyện
+  let district = ''
+  if (dist) {
+    district = lead.district!
+  } else if (addr.includes('hoàng mai') || addr.includes('linh đàm')) {
+    district = 'Hoàng Mai'
+  } else if (addr.includes('cầu giấy') || addr.includes('dịch vọng')) {
+    district = 'Cầu Giấy'
+  } else if (addr.includes('hà đông') || addr.includes('văn khê')) {
+    district = 'Hà Đông'
+  } else if (addr.includes('thanh xuân') || addr.includes('nguyễn tuân')) {
+    district = 'Thanh Xuân'
+  } else if (addr.includes('nam từ liêm') || addr.includes('smart city')) {
+    district = 'Nam Từ Liêm'
+  } else if (addr.includes('đống đa')) {
+    district = 'Đống Đa'
+  } else if (addr.includes('hai bà trưng')) {
+    district = 'Hai Bà Trưng'
+  } else if (
+    addr.includes('quận 1') ||
+    addr.includes('bến nghé') ||
+    addr.includes('đa kao') ||
+    addr.includes('tân định')
+  ) {
+    district = 'Quận 1'
+  } else if (addr.includes('quận 3')) {
+    district = 'Quận 3'
+  } else if (addr.includes('quận 7')) {
+    district = 'Quận 7'
+  } else if (addr.includes('bình thạnh')) {
+    district = 'Bình Thạnh'
+  } else if (addr.includes('thủ đức')) {
+    district = 'Thủ Đức'
+  } else {
+    // Dự phòng theo cơ sở
+    if (lead.branch?.includes('Linh Đàm')) district = 'Hoàng Mai'
+    else if (lead.branch?.includes('Nguyễn Tuân')) district = 'Thanh Xuân'
+    else if (lead.branch?.includes('Smart City')) district = 'Nam Từ Liêm'
+    else district = 'Cầu Giấy'
+  }
+
+  const regionNames: Record<string, string> = {
+    mien_bac: 'Miền Bắc',
+    mien_nam: 'Miền Nam',
+    mien_trung: 'Miền Trung',
+  }
+
+  return {
+    region,
+    regionName: regionNames[region],
+    province,
+    district,
+  }
+}
+
+/**
+ * Phân loại Chất lượng Data & Tình trạng liên hệ phục vụ làm sạch data
+ */
+export function getLeadQualityStatus(lead: Lead): string {
+  const note = (lead.lastNote || '').toLowerCase()
+  const sub = (lead.subStatus || '').toLowerCase()
+
+  if (
+    sub.includes('số sai') ||
+    sub.includes('spam') ||
+    note.includes('sai số') ||
+    note.includes('rác') ||
+    note.includes('số ảo') ||
+    note.includes('spam')
+  ) {
+    return 'so_sai_rac'
+  }
+  if (
+    sub.includes('hẹn gọi lại') ||
+    note.includes('hẹn gọi lại') ||
+    note.includes('callback') ||
+    note.includes('hẹn gọi')
+  ) {
+    return 'hen_goi_lai'
+  }
+  if (
+    sub.includes('không nghe') ||
+    note.includes('không nghe máy') ||
+    note.includes('thuê bao') ||
+    note.includes('máy bận') ||
+    note.includes('bận')
+  ) {
+    return 'khong_nghe_may'
+  }
+  if (
+    sub.includes('gọi lần') ||
+    note.includes('đã gọi') ||
+    note.includes('tư vấn') ||
+    isDangTuVanStatus(lead.status) ||
+    isHenTraiNghiemStatus(lead.status) ||
+    isChoChotStatus(lead.status)
+  ) {
+    return 'da_ket_noi'
+  }
+  return 'chua_goi'
+}
+
+/**
+ * Xác định trạng thái SLA & Nhắc việc
+ */
+export function getLeadSlaStatus(lead: Lead): string {
+  if (isLeadTodayTask(lead)) return 'can_goi_hom_nay'
+  if (isLeadOverdue(lead)) return 'qua_han'
+  return 'trong_han'
+}
+
+/**
+ * Phân loại Phân khúc tài chính của Phụ huynh
+ */
+export function getLeadFinancialSegment(lead: Lead): string {
+  if (lead.financialSegment) {
+    const seg = lead.financialSegment.toLowerCase()
+    if (seg.includes('vip') || seg.includes('cao cấp')) return 'vip'
+    if (seg.includes('khá') || seg.includes('khá giả')) return 'kha_gia'
+    if (seg.includes('tiêu chuẩn')) return 'tieu_chuan'
+  }
+  const expAmt = lead.expectedAmount ? Number(lead.expectedAmount.replace(/\D/g, '')) : 0
+  const spend = lead.totalSpend ? Number(lead.totalSpend.replace(/\D/g, '')) : 0
+  const total = Math.max(expAmt, spend)
+
+  if (total >= 30000000) return 'vip'
+  if (total >= 15000000) return 'kha_gia'
+  if (total > 0) return 'tieu_chuan'
+  return 'chua_xac_dinh'
+}
+
+/**
+ * Phân loại Khối học viên theo độ tuổi
+ */
+export function getLeadAgeGroup(lead: Lead): string {
+  const age = lead.studentAge || 8
+  if (age <= 5) return 'kindy'
+  if (age <= 10) return 'tieu_hoc'
+  if (age <= 15) return 'thcs'
+  return 'thpt'
+}
+
+/**
+ * Phân loại Lead mới tinh vs. Lead quay lại (Returning Lead)
+ */
+export function getLeadCustomerType(lead: Lead): string {
+  return lead.isReturningLead ? 'returning' : 'new'
+}
+
+/**
+ * Hàm lọc tổng thể đa tiêu chí cho Lead
+ */
+export function filterLeadsWithAllCriteria({
+  leads,
+  advancedFilters,
+  viewScope,
+  selectedPool,
+  source,
+  assignment,
+  followUp,
+  branch,
+}: {
+  leads: Lead[]
+  advancedFilters: AdvancedFiltersState
+  viewScope: 'my' | 'all'
+  selectedPool: string
+  source: string
+  assignment: string
+  followUp: string
+  branch: string
+}): Lead[] {
+  let result = leads
+
+  // 1. Lọc Kho Dữ Liệu
+  if (selectedPool !== 'all') {
+    result = result.filter((lead) => getLeadPool(lead).id === selectedPool)
+  }
+
+  // 2. Lọc Nguồn Lead
+  if (source !== 'all') {
+    result = result.filter((lead) => lead.source === source)
+  }
+
+  // 3. Lọc theo viewScope (my vs all)
+  if (viewScope === 'my') {
+    result = result.filter((lead) => lead.assignedTo === 'Trần Thị Mai (Sales)')
+    if (followUp === 'today') {
+      result = result.filter(isLeadTodayTask)
+    } else if (followUp === 'overdue') {
+      result = result.filter(isLeadOverdue)
+    }
+  } else {
+    if (assignment === 'unassigned') {
+      result = result.filter(isLeadUnassigned)
+    } else if (assignment === 'assigned') {
+      result = result.filter((l) => !isLeadUnassigned(l))
+    }
+  }
+
+  // 4. Lọc Cơ sở nhanh từ Toolbar
+  if (branch !== 'all') {
+    result = result.filter((lead) => lead.branch === branch)
+  }
+
+  // 5. Bộ lọc nâng cao: Vùng miền & Tỉnh/TP
+  if (advancedFilters.regions.length > 0) {
+    result = result.filter((l) => advancedFilters.regions.includes(getLeadLocationInfo(l).region))
+  }
+  if (advancedFilters.provinces.length > 0) {
+    result = result.filter((l) => advancedFilters.provinces.includes(getLeadLocationInfo(l).province))
+  }
+  if (advancedFilters.districts.length > 0) {
+    result = result.filter((l) => advancedFilters.districts.includes(getLeadLocationInfo(l).district))
+  }
+
+  // 6. Cơ sở nâng cao
+  if (advancedFilters.branches.length > 0) {
+    result = result.filter((l) => advancedFilters.branches.includes(l.branch))
+  }
+
+  // 7. Nhân sự & Team phụ trách
+  if (advancedFilters.assignees.length > 0) {
+    result = result.filter((l) => {
+      const staff = l.assignedTo?.trim() || 'Chưa phân bổ'
+      return advancedFilters.assignees.includes(staff)
+    })
+  }
+  if (advancedFilters.teams.length > 0) {
+    result = result.filter((l) => {
+      const team = getStaffTeam(l.assignedTo || '')
+      return advancedFilters.teams.includes(team)
+    })
+  }
+
+  // 8. Làm sạch Data & SLA
+  if (advancedFilters.dataQualities.length > 0) {
+    result = result.filter((l) => advancedFilters.dataQualities.includes(getLeadQualityStatus(l)))
+  }
+  if (advancedFilters.slaStatuses.length > 0) {
+    result = result.filter((l) => advancedFilters.slaStatuses.includes(getLeadSlaStatus(l)))
+  }
+
+  // 9. Phân khúc & Khối tuổi
+  if (advancedFilters.financialSegments.length > 0) {
+    result = result.filter((l) => advancedFilters.financialSegments.includes(getLeadFinancialSegment(l)))
+  }
+  if (advancedFilters.ageGroups.length > 0) {
+    result = result.filter((l) => advancedFilters.ageGroups.includes(getLeadAgeGroup(l)))
+  }
+  if (advancedFilters.customerTypes.length > 0) {
+    result = result.filter((l) => advancedFilters.customerTypes.includes(getLeadCustomerType(l)))
+  }
+
+  // 10. Nguồn & Môn học
+  if (advancedFilters.sources.length > 0) {
+    result = result.filter((l) => advancedFilters.sources.includes(l.source))
+  }
+  if (advancedFilters.subjects.length > 0) {
+    result = result.filter((l) =>
+      advancedFilters.subjects.some((subj) =>
+        (l.targetSubject || '').toLowerCase().includes(subj.toLowerCase())
+      )
+    )
+  }
+
+  // 11. Trạng thái vòng đời Lead
+  if (advancedFilters.statuses.length > 0) {
+    result = result.filter((l) => {
+      return advancedFilters.statuses.some((st) => {
+        if (st === 'moi_tiep_nhan') return isMoiTiepNhanStatus(l.status)
+        if (st === 'dang_tu_van') return isDangTuVanStatus(l.status)
+        if (st === 'hen_trai_nghiem') return isHenTraiNghiemStatus(l.status)
+        if (st === 'cho_chot') return isChoChotStatus(l.status)
+        if (st === 'thuc_hien_don') return isThucHienDonStatus(l)
+        if (st === 'chuyen_doi') return isChuyenDoiStatus(l.status)
+        if (st === 'that_bai') return isThatBaiStatus(l.status)
+        if (st === 'tam_dung') return isTamDungStatus(l.status)
+        return l.status === st
+      })
+    })
+  } else {
+    // Mặc định ở ngoài danh sách: Không hiển thị Lead Thất bại và Tạm dừng trừ khi có filter trạng thái
+    result = result.filter((lead) => !isInactiveLeadStatus(lead.status))
+  }
+
+  return result
+}
+
+/**
+ * Xây dựng danh sách nhóm bộ lọc nâng cao toàn diện cho màn hình Lead
+ */
+export function buildCrmFilterGroups({
+  advancedFilters,
+  viewScope = 'all',
+  baseLeads,
+}: {
+  advancedFilters: AdvancedFiltersState
+  viewScope?: 'my' | 'all'
+  baseLeads: Lead[]
+}): FilterGroupConfig[] {
+  const groups: FilterGroupConfig[] = []
+
+  // 1. Nhóm Vùng / Miền
+  groups.push(
+    createFilterGroup({
+      id: 'regions',
+      title: 'Vùng / Miền',
+      options: REGION_OPTIONS,
+      selectedValues: advancedFilters.regions,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadLocationInfo(l).region === val).length,
+    })
+  )
+
+  // 2. Nhóm Tỉnh / Thành phố
+  groups.push(
+    createFilterGroup({
+      id: 'provinces',
+      title: 'Tỉnh / Thành phố',
+      options: PROVINCE_OPTIONS,
+      selectedValues: advancedFilters.provinces,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => {
+          const p = getLeadLocationInfo(l).province
+          if (val === 'Khác') {
+            return !['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng'].includes(p)
+          }
+          return p === val
+        }).length,
+    })
+  )
+
+  // 3. Nhóm Quận / Huyện / Địa bàn
+  groups.push(
+    createFilterGroup({
+      id: 'districts',
+      title: 'Quận / Huyện / Địa bàn',
+      options: DISTRICT_OPTIONS,
+      selectedValues: advancedFilters.districts,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadLocationInfo(l).district === val).length,
+    })
+  )
+
+  // 4. Nhóm Cơ sở đào tạo
+  groups.push(
+    getSchoolFilterGroup(
+      'branches',
+      advancedFilters.branches,
+      (b) => baseLeads.filter((l) => l.branch === b).length,
+      SYSTEM_BRANCHES
+    )
+  )
+
+  // 5. Nhóm Phân bổ & Team Sales (Chỉ hiển thị cho Quản lý / viewScope = all)
+  if (viewScope === 'all') {
+    groups.push(
+      createFilterGroup({
+        id: 'assignees',
+        title: 'Người phụ trách',
+        options: [
+          { value: 'Trần Thị Mai (Sales)', label: 'Trần Thị Mai (Sales)' },
+          { value: 'Lê Hoàng Nam (Sales)', label: 'Lê Hoàng Nam (Sales)' },
+          { value: 'Nguyễn Văn Hùng (Sales Manager)', label: 'Nguyễn Văn Hùng (Sales Manager)' },
+          { value: 'Chưa phân bổ', label: 'Chưa phân bổ' },
+        ],
+        selectedValues: advancedFilters.assignees,
+        getOptionCount: (val) =>
+          baseLeads.filter((l) => (l.assignedTo?.trim() || 'Chưa phân bổ') === val).length,
+      })
+    )
+
+    groups.push(
+      createFilterGroup({
+        id: 'teams',
+        title: 'Team kinh doanh',
+        options: SALES_TEAM_OPTIONS,
+        selectedValues: advancedFilters.teams,
+        getOptionCount: (val) =>
+          baseLeads.filter((l) => getStaffTeam(l.assignedTo || '') === val).length,
+      })
+    )
+  }
+
+  // 6. Nhóm Làm sạch Data & Tình trạng liên hệ
+  groups.push(
+    createFilterGroup({
+      id: 'dataQualities',
+      title: 'Làm sạch Data & Liên hệ',
+      options: DATA_QUALITY_OPTIONS,
+      selectedValues: advancedFilters.dataQualities,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadQualityStatus(l) === val).length,
+    })
+  )
+
+  // 7. Nhóm Cam kết SLA & Nhắc việc
+  groups.push(
+    createFilterGroup({
+      id: 'slaStatuses',
+      title: 'Cam kết SLA & Nhắc việc',
+      options: SLA_STATUS_OPTIONS,
+      selectedValues: advancedFilters.slaStatuses,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadSlaStatus(l) === val).length,
+    })
+  )
+
+  // 8. Nhóm Phân khúc tài chính Phụ huynh
+  groups.push(
+    createFilterGroup({
+      id: 'financialSegments',
+      title: 'Phân khúc Phụ huynh',
+      options: FINANCIAL_SEGMENT_OPTIONS,
+      selectedValues: advancedFilters.financialSegments,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadFinancialSegment(l) === val).length,
+    })
+  )
+
+  // 9. Nhóm Khối học viên & Độ tuổi
+  groups.push(
+    createFilterGroup({
+      id: 'ageGroups',
+      title: 'Khối học viên & Độ tuổi',
+      options: AGE_GROUP_OPTIONS,
+      selectedValues: advancedFilters.ageGroups,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadAgeGroup(l) === val).length,
+    })
+  )
+
+  // 10. Nhóm Loại hồ sơ khách hàng
+  groups.push(
+    createFilterGroup({
+      id: 'customerTypes',
+      title: 'Loại hồ sơ khách hàng',
+      options: CUSTOMER_TYPE_OPTIONS,
+      selectedValues: advancedFilters.customerTypes,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => getLeadCustomerType(l) === val).length,
+    })
+  )
+
+  // 11. Nhóm Nguồn Lead
+  groups.push(
+    createFilterGroup({
+      id: 'sources',
+      title: 'Nguồn tiếp nhận',
+      options: [
+        { value: 'facebook', label: 'Facebook Ads' },
+        { value: 'hotline', label: 'Hotline/Tổng đài' },
+        { value: 'event', label: 'Sự kiện / Workshop' },
+        { value: 'referral', label: 'Giới thiệu (Referral)' },
+        { value: 'website', label: 'Website / Form' },
+      ],
+      selectedValues: advancedFilters.sources,
+      getOptionCount: (val) => baseLeads.filter((l) => l.source === val).length,
+    })
+  )
+
+  // 12. Nhóm Khóa học quan tâm
+  groups.push(
+    createFilterGroup({
+      id: 'subjects',
+      title: 'Khóa học quan tâm',
+      options: [
+        { value: 'superkids', label: 'SuperKids (Tiếng Anh thiếu nhi)' },
+        { value: 'kindy', label: 'Kindy (Tiếng Anh mẫu giáo)' },
+        { value: 'flyers', label: 'Luyện thi Flyers' },
+        { value: 'starters', label: 'Luyện thi Starters' },
+        { value: 'movers', label: 'Luyện thi Movers' },
+        { value: 'ielts', label: 'Luyện thi IELTS' },
+        { value: 'toán', label: 'Toán Tư Duy' },
+      ],
+      selectedValues: advancedFilters.subjects,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) =>
+          (l.targetSubject || '').toLowerCase().includes(val.toLowerCase())
+        ).length,
+    })
+  )
+
+  // 13. Nhóm Trạng thái vòng đời Lead
+  groups.push(
+    createFilterGroup({
+      id: 'statuses',
+      title: 'Trạng thái Lead',
+      options: [
+        { value: 'moi_tiep_nhan', label: 'Mới tiếp nhận' },
+        { value: 'dang_tu_van', label: 'Đang tư vấn' },
+        { value: 'hen_trai_nghiem', label: 'Hẹn trải nghiệm' },
+        { value: 'cho_chot', label: 'Chờ chốt deal' },
+        { value: 'thuc_hien_don', label: 'Thực hiện đơn' },
+        { value: 'chuyen_doi', label: 'Đã chuyển đổi' },
+        { value: 'that_bai', label: 'Thất bại' },
+        { value: 'tam_dung', label: 'Tạm dừng' },
+      ],
+      selectedValues: advancedFilters.statuses,
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => {
+          if (val === 'moi_tiep_nhan') return isMoiTiepNhanStatus(l.status)
+          if (val === 'dang_tu_van') return isDangTuVanStatus(l.status)
+          if (val === 'hen_trai_nghiem') return isHenTraiNghiemStatus(l.status)
+          if (val === 'cho_chot') return isChoChotStatus(l.status)
+          if (val === 'thuc_hien_don') return isThucHienDonStatus(l)
+          if (val === 'chuyen_doi') return isChuyenDoiStatus(l.status)
+          if (val === 'that_bai') return isThatBaiStatus(l.status)
+          if (val === 'tam_dung') return isTamDungStatus(l.status)
+          return l.status === val
+        }).length,
+    })
+  )
+
+  return groups
 }
 
 /**
@@ -970,23 +1687,65 @@ export function matchSubStatus(lead: Lead, subStatusId: string): boolean {
     case 'da_thu_coc':
       return note.includes('cọc')
     case 'no_show':
+    case 'vang_test':
       return lead.testStatus === 'no_show' || lead.trialStatus === 'no_show' || note.includes('vắng test')
+    case 'da_dat_test':
+      return lead.testStatus === 'scheduled' || note.includes('đặt lịch') || note.includes('lịch test')
+    case 'da_dang_ky_thu':
+      return lead.trialStatus === 'scheduled' || note.includes('học thử')
+    case 'cho_gv_cham':
+      return note.includes('chờ gv') || note.includes('chấm')
+    case 'hoan_tat_thu':
+      return lead.trialStatus === 'completed' || note.includes('hoàn tất học thử')
+    case 'cho_ph_xac_nhan':
+      return note.includes('ph xác nhận') || note.includes('lộ trình')
+    case 'cho_ban_giao':
+      return note.includes('bàn giao')
+    case 'dang_giao_hang':
+      return note.includes('giao hàng')
+    case 'da_ban_giao':
+      return note.includes('đã bàn giao')
+    case 'cho_xep_lop':
+      return note.includes('xếp lớp')
+    case 'da_xep_lop':
+      return note.includes('đã xếp lớp')
+    case 't_datt1p':
+      return note.includes('1 phần') || note.includes('công nợ')
+    case 'da_thu_du':
+      return note.includes('100%') || note.includes('thu đủ')
+    case 'dang_hoc_chinh_thuc':
+      return note.includes('chính thức')
     case 'khong_nghe_may':
       return note.includes('không nghe máy')
     case 'sai_so':
-      return note.includes('sai số')
+      return note.includes('sai số') || note.includes('spam')
     case 'nha_xa':
       return note.includes('nhà xa')
     case 'che_phi_cao':
-      return note.includes('chê học phí cao')
+      return note.includes('chê học phí cao') || note.includes('học phí cao')
+    case 'hoc_cho_khac':
+    case 'dtt_gia_re':
+    case 'dtt_gan_nha':
+      return note.includes('trung tâm khác') || note.includes('đối thủ')
+    case 'khong_lien_lac_duoc':
+      return note.includes('không liên lạc') || note.includes('không nghe máy')
     case 've_que':
       return note.includes('về quê') || note.includes('du lịch') || note.includes('hè')
     case 'thi_hoc_ky':
       return note.includes('thi') || note.includes('học kỳ')
     case 'tai_chinh':
       return note.includes('tài chính') || note.includes('tiền')
-    default:
-      return lead.status === subStatusId || lead.subStatus === subStatusId
+    default: {
+      const normSub = (lead.subStatus || '').toLowerCase()
+      const targetSub = subStatusId.toLowerCase().replace(/_/g, ' ')
+      return (
+        lead.status === subStatusId ||
+        lead.subStatus === subStatusId ||
+        normSub === subStatusId.toLowerCase() ||
+        normSub.includes(targetSub) ||
+        note.includes(targetSub)
+      )
+    }
   }
 }
 

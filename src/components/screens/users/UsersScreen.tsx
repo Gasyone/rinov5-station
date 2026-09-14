@@ -8,7 +8,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   type FilterGroupConfig,
 } from '@/components/filters'
@@ -174,43 +174,46 @@ export function UsersScreen() {
         onCreate={() => setDialog({ mode: 'create' })}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <UsersTable
+              users={paged}
+              onRowClick={(user) => setDialog({ mode: 'edit', user })}
+              onEdit={(user) => setDialog({ mode: 'edit', user })}
+              onToggleLock={(user) => setConfirmation({ kind: 'toggle-lock', user })}
+              onDelete={(user) => setConfirmation({ kind: 'delete', user })}
             />
-          }
-        >
-          <UsersTable
-            users={paged}
-            onRowClick={(user) => setDialog({ mode: 'edit', user })}
-            onEdit={(user) => setDialog({ mode: 'edit', user })}
-            onToggleLock={(user) => setConfirmation({ kind: 'toggle-lock', user })}
-            onDelete={(user) => setConfirmation({ kind: 'delete', user })}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="User filters"
-        description="Filter by branch and role."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleArray('branches', value)
-          if (sectionId === 'roles') toggleArray('roles', value as User['role'])
-        }}
-        onClearAll={() => {
-          setFilters({ branches: [], roles: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="User filters"
+            description="Filter by branch and role."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'branches') toggleArray('branches', value)
+              if (sectionId === 'roles') toggleArray('roles', value as User['role'])
+            }}
+            onClearAll={() => {
+              setFilters({ branches: [], roles: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <UsersFormDialog
         key={dialog.mode === 'edit' ? `edit-${dialog.user.id}` : `create-${dialog.mode}`}

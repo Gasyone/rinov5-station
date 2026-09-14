@@ -15,7 +15,7 @@ import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getProductSku } from './renewalHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getProductSku, getExpiryTier } from './renewalHelpers'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
@@ -368,14 +368,14 @@ export function RenewalAlertRow({
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {isWaitAssignment ? (
+                {isWaitAssignment || cls.status === 'Chưa ghép lớp' ? (
                   <>
                     <span className="text-xs text-muted-foreground font-mono">Chưa có mã lớp</span>
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 uppercase tracking-wide">
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50">
                       Chờ ghép lớp
                     </span>
                   </>
-                ) : studentInfo?.status === 'reserve' ? (
+                ) : studentInfo?.status === 'reserve' || cls.status === 'Bảo lưu' ? (
                   <>
                     <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
                     <span className="text-xs font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
@@ -410,15 +410,11 @@ export function RenewalAlertRow({
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-xs px-1.5 py-0 h-3.5 font-semibold uppercase tracking-wide shrink-0',
-                        cls.status === 'Đang học'
-                          ? getStatusBadgeClass('dang_hoc')
-                          : cls.status === 'Chờ chuyển lớp'
-                            ? getStatusBadgeClass('pending_transfer')
-                            : getStatusBadgeClass('session_ended')
+                        'text-xs px-1.5 py-0 h-3.5 font-semibold shrink-0',
+                        getStatusBadgeClass('dang_hoc')
                       )}
                     >
-                      {cls.status}
+                      Đang học
                     </Badge>
                   </>
                 )}
@@ -434,6 +430,8 @@ export function RenewalAlertRow({
           const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
           const packageCount = hasPackageHistory ? 2 : 1
           const skuName = getProductSku(cls)
+          const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions)
+
           return (
             <div className="flex flex-col gap-0.5 min-w-[200px] max-w-[280px]">
               {/* Hàng 1: (N) Tên gói học mới nhất */}
@@ -443,8 +441,21 @@ export function RenewalAlertRow({
                   {skuName}
                 </span>
               </div>
-              {/* Hàng 2: Hạn hết hạn */}
-              <span className="text-xs text-muted-foreground whitespace-nowrap">Hết hạn: {cls.expectedEndDate}</span>
+              {/* Hàng 2: Nhãn kỳ hạn (T1, T2, T3) & Hạn học phí */}
+              <div className="flex items-center gap-1.5 flex-nowrap">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] px-1 py-0 h-4 font-bold shrink-0 leading-none',
+                    expiryTier.badgeClass
+                  )}
+                >
+                  {expiryTier.label}
+                </Badge>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  Hạn: {cls.expectedEndDate}
+                </span>
+              </div>
             </div>
           )
         })()}
@@ -570,7 +581,7 @@ export function RenewalAlertRow({
               <Badge
                 variant="outline"
                 className={cn(
-                  'text-xs px-2 py-0.5 font-bold uppercase tracking-wide',
+                  'text-xs px-2 py-0.5 font-semibold',
                   getStatusBadgeClass(classification)
                 )}
               >

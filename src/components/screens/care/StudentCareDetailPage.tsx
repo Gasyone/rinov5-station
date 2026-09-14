@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge'
 
 import {
   ArrowLeft,
-  ExternalLink,
+  ShieldCheck,
+  ChevronDown,
+  Copy,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/useUIStore'
@@ -19,6 +22,8 @@ import { stableHash } from './operationsAlertHelpers'
 import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
+import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
+import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
 import { CareJourneyModal } from './CareJourneyModal'
 import { StudentDetailDialog } from '../students/detail/StudentDetailDialog'
 import {
@@ -59,6 +64,7 @@ export function StudentCareDetailPage({
 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
+  const [showCodes, setShowCodes] = useState(false)
 
   // Find student in care alerts
   const student = useMemo(() => {
@@ -315,6 +321,16 @@ export function StudentCareDetailPage({
   const [isEditingStudentNote, setIsEditingStudentNote] = useState(false)
   const [editingStudentNoteText, setEditingStudentNoteText] = useState('')
   const [isParentsExpanded, setIsParentsExpanded] = useState(false)
+  const [isLeaveReserveOpen, setIsLeaveReserveOpen] = useState(false)
+
+  const leaveRequest = useMemo(() => {
+    if (!student) return null
+    return (
+      mockLeaveReserveRequests.find(
+        (r) => r.studentId === student.studentId || r.studentName === student.studentName
+      ) || mockLeaveReserveRequests[0]
+    )
+  }, [student])
 
   useEffect(() => {
     if (student) {
@@ -341,6 +357,15 @@ export function StudentCareDetailPage({
   }
 
   if (!student) return null
+
+  const cid = student.customerCode || (student.studentId ? `VH${student.studentId.replace(/\D/g, '') || '230994'}` : 'VH230994')
+  const uid = String(100000 + (stableHash(student.studentId) % 900000))
+  const sid = student.studentId || '193060'
+
+  const handleCopyCode = (code: string, label: string) => {
+    navigator.clipboard.writeText(code)
+    toast.success(`Đã sao chép ${label}!`)
+  }
 
   const studentAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${student.studentName}`
   const formattedPhone = selectedContactPhone || primaryContact?.phone || '0901234567'
@@ -432,28 +457,64 @@ export function StudentCareDetailPage({
                       <span className="text-base font-bold text-foreground">
                         {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
                       </span>
-                      <Badge className={cn('text-xs font-semibold py-0.5 px-2 rounded-full leading-none shadow-none', 
-                        student.status === 'Đang học'
-                          ? getStatusBadgeClass('dang_hoc')
-                          : student.status === 'Chờ chuyển lớp'
-                            ? getStatusBadgeClass('pending_transfer')
-                            : getStatusBadgeClass('session_ended')
-                      )}>
-                        {student.status}
-                      </Badge>
 
-                      {/* Nút Xem chi tiết hồ sơ đặt ngay cạnh tên học viên như ảnh 1 */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsProfileOpen(true)}
-                        className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md"
-                        title="Xem chi tiết hồ sơ học viên"
+                      <button
+                        type="button"
+                        onClick={() => setShowCodes((prev) => !prev)}
+                        className={cn(
+                          "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1.5 rounded-md hover:bg-muted",
+                          showCodes
+                            ? "text-primary font-bold bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground font-medium"
+                        )}
+                        title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
                       >
-                        <span>Xem chi tiết hồ sơ</span>
-                        <ExternalLink className="h-2.5 w-2.5 opacity-80" />
-                      </Button>
+                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                        <span>Mã ID</span>
+                        <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
+                      </button>
                     </div>
+
+                    {/* Dải hiển thị mã hệ thống khi mở rộng */}
+                    {showCodes && (
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1 px-2 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <span className="flex items-center gap-1 font-mono text-xs">
+                          <ShieldCheck className="h-3 w-3 text-primary" /> CID: <strong className="text-foreground font-semibold">{cid}</strong>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(cid, 'Mã CID')}
+                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                            title="Sao chép CID"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </span>
+                        <span className="text-muted-foreground/30">•</span>
+                        <span className="flex items-center gap-1 font-mono text-xs">
+                          UID: <strong className="text-foreground font-semibold">{uid}</strong>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(uid, 'Mã UID')}
+                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                            title="Sao chép UID"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </span>
+                        <span className="text-muted-foreground/30">•</span>
+                        <span className="flex items-center gap-1 font-mono text-xs">
+                          SID: <strong className="text-foreground font-semibold">{sid}</strong>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCode(sid, 'Mã SID')}
+                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                            title="Sao chép SID"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </span>
+                      </div>
+                    )}
 
                     <StudentCareHeaderClusterInfo
                       birthYear={birthYear}
@@ -501,6 +562,7 @@ export function StudentCareDetailPage({
                 onAssignedCSChange={setAssignedCS}
                 branchName="RinoEdu Nguyễn Tuân"
                 studentAlert={student}
+                onOpenLeaveReserveDialog={() => setIsLeaveReserveOpen(true)}
               />
             </div>
           </main>
@@ -530,6 +592,15 @@ export function StudentCareDetailPage({
         open={isProfileOpen}
         onOpenChange={setIsProfileOpen}
       />
+
+      {leaveRequest && (
+        <LeaveReserveDetailDialog
+          open={isLeaveReserveOpen}
+          onOpenChange={setIsLeaveReserveOpen}
+          request={leaveRequest}
+          readOnly={true}
+        />
+      )}
 
       <CareJourneyModal
         isOpen={isRoadmapOpen}

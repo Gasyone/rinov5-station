@@ -11,7 +11,7 @@ import {
   SegmentedControl,
   SYSTEM_BRANCHES,
 } from '@/components/controls'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { EmptyState, ModuleLoadingSkeleton } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { getMockEventSessions, type EventSession } from '@/mocks/calendarSchedule'
@@ -351,7 +351,9 @@ export function CalendarEventScheduleScreen() {
         </div>
       </div>
 
-      {viewMode === 'day' ? (
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          {viewMode === 'day' ? (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <WeekHeader days={[selectedDate]} today={today} hasSpacer sessions={filtered} now={now} />
           <CalendarEventDayTimeline
@@ -558,54 +560,57 @@ export function CalendarEventScheduleScreen() {
           </div>
         )
       )}
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc lịch test"
-        description="Lọc lịch test theo môn học, khoảng thời gian và trạng thái."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'periods') {
-            setPeriodFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'statuses') {
-            setStatusFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'subjects') {
-            setSubjectFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'programs') {
-            setProgramFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'sales') {
-            setSaleFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'teachers') {
-            setTeacherFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          } else if (sectionId === 'bookingStatuses') {
-            setBookingStatusFilters((current) =>
-              current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
-            )
-          }
-        }}
-        onClearAll={() => {
-          setPeriodFilters([])
-          setStatusFilters([])
-          setSubjectFilters([])
-          setProgramFilters([])
-          setSaleFilters([])
-          setTeacherFilters([])
-          setBookingStatusFilters([])
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc lịch test"
+            description="Lọc lịch test theo môn học, khoảng thời gian và trạng thái."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'periods') {
+                setPeriodFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'statuses') {
+                setStatusFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'subjects') {
+                setSubjectFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'programs') {
+                setProgramFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'sales') {
+                setSaleFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'teachers') {
+                setTeacherFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              } else if (sectionId === 'bookingStatuses') {
+                setBookingStatusFilters((current) =>
+                  current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+                )
+              }
+            }}
+            onClearAll={() => {
+              setPeriodFilters([])
+              setStatusFilters([])
+              setSubjectFilters([])
+              setProgramFilters([])
+              setSaleFilters([])
+              setTeacherFilters([])
+              setBookingStatusFilters([])
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       {bookingTestOpen && selectedEvent?.type === 'placement_test' && (
         <BookingTestDetailDialog

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import {
   mockQcCheckEvents,
   QC_CHECK_STATUS_LABELS,
@@ -513,49 +513,53 @@ export function QcCheckScreen() {
         onCreate={() => setIsCreateOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filteredEvents.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filteredEvents.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <QcCheckTable
+              events={pagedEvents}
+              selectedIds={selectedIds}
+              onToggleAll={toggleSelectAll}
+              onToggleOne={toggleSelectOne}
+              onRowClick={setDetailEventId}
             />
-          }
-        >
-          <QcCheckTable
-            events={pagedEvents}
-            selectedIds={selectedIds}
-            onToggleAll={toggleSelectAll}
-            onToggleOne={toggleSelectOne}
-            onRowClick={setDetailEventId}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc theo chi nhánh và trạng thái."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'branches') toggleFilterValue('branches', value)
-          if (sectionId === 'statuses') toggleFilterValue('statuses', value)
-        }}
-        onClearSection={(sectionId) => {
-          setPage(1)
-          setFilters((current) => ({
-            ...current,
-            [sectionId]: [],
-          }))
-        }}
-        onClearAll={() => {
-          setFilters({ branches: [], statuses: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc kiểm tra QC"
+            groups={filterGroups}
+            description="Kết hợp bộ lọc theo chi nhánh và trạng thái."
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'branches') toggleFilterValue('branches', value)
+              if (sectionId === 'statuses') toggleFilterValue('statuses', value)
+            }}
+            onClearSection={(sectionId) => {
+              setPage(1)
+              setFilters((current) => ({
+                ...current,
+                [sectionId]: [],
+              }))
+            }}
+            onClearAll={() => {
+              setFilters({ branches: [], statuses: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <QcCheckCreateDialog
         open={isCreateOpen}

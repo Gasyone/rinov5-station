@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { SYSTEM_BRANCHES } from '@/components/controls'
 import { getMockClassSessions, type ClassSession } from '@/mocks/calendarSchedule'
 import { ModuleLoadingSkeleton } from '@/components/shared'
@@ -336,64 +336,69 @@ export function CalendarClassScheduleScreen() {
         onOpenFilter={() => setIsFilterOpen(true)}
       />
 
-      {viewMode === 'day' ? (
-        <>
-          <CalendarClassScheduleDayView
-            selectedDate={selectedDate}
-            today={today}
-            filteredSessions={filtered}
-            onSelectSession={handleSelectSession}
-          />
-          <CalendarClassScheduleFooter />
-        </>
-      ) : (
-        <>
-          <CalendarClassScheduleWeekView
-            weekDays={weekDays}
-            today={today}
-            filteredSessions={filtered}
-            onSelectSession={handleSelectSession}
-          />
-          <CalendarClassScheduleFooter />
-        </>
-      )}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          {viewMode === 'day' ? (
+            <>
+              <CalendarClassScheduleDayView
+                selectedDate={selectedDate}
+                today={today}
+                filteredSessions={filtered}
+                onSelectSession={handleSelectSession}
+              />
+              <CalendarClassScheduleFooter />
+            </>
+          ) : (
+            <>
+              <CalendarClassScheduleWeekView
+                weekDays={weekDays}
+                today={today}
+                filteredSessions={filtered}
+                onSelectSession={handleSelectSession}
+              />
+              <CalendarClassScheduleFooter />
+            </>
+          )}
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc lịch học trung tâm"
-        description="Lọc buổi học theo chi nhánh, trình độ, môn học và khoảng thời gian."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          const toggleHandler = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-            setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
-          }
-          if (sectionId === 'branches') toggleHandler(setBranchFilters)
-          else if (sectionId === 'sessionTypes') toggleHandler(setSessionTypeFilters)
-          else if (sectionId === 'levels') toggleHandler(setLevelFilters)
-          else if (sectionId === 'conditions') toggleHandler(setConditionFilters)
-          else if (sectionId === 'periods') toggleHandler(setPeriodFilters)
-          else if (sectionId === 'subjects') toggleHandler(setSubjectFilters)
-          else if (sectionId === 'teachers') toggleHandler(setTeacherFilters)
-          else if (sectionId === 'rooms') toggleHandler(setRoomFilters)
-          else if (sectionId === 'trial_students') toggleHandler(setTrialFilters)
-          else if (sectionId === 'attendance') toggleHandler(setAttendanceFilters)
-          else if (sectionId === 'capacity') toggleHandler(setCapacityFilters)
-        }}
-        onClearAll={() => {
-          setBranchFilters([])
-          setSessionTypeFilters([])
-          setLevelFilters([])
-          setConditionFilters([])
-          setSubjectFilters([])
-          setTeacherFilters([])
-          setPeriodFilters([])
-          setRoomFilters([])
-          setTrialFilters([])
-          setAttendanceFilters([])
-          setCapacityFilters([])
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc lịch học trung tâm"
+            description="Lọc buổi học theo chi nhánh, trình độ, môn học và khoảng thời gian."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              const toggleHandler = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
+                setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
+              }
+              if (sectionId === 'branches') toggleHandler(setBranchFilters)
+              else if (sectionId === 'sessionTypes') toggleHandler(setSessionTypeFilters)
+              else if (sectionId === 'levels') toggleHandler(setLevelFilters)
+              else if (sectionId === 'conditions') toggleHandler(setConditionFilters)
+              else if (sectionId === 'periods') toggleHandler(setPeriodFilters)
+              else if (sectionId === 'subjects') toggleHandler(setSubjectFilters)
+              else if (sectionId === 'teachers') toggleHandler(setTeacherFilters)
+              else if (sectionId === 'rooms') toggleHandler(setRoomFilters)
+              else if (sectionId === 'trial_students') toggleHandler(setTrialFilters)
+              else if (sectionId === 'attendance') toggleHandler(setAttendanceFilters)
+              else if (sectionId === 'capacity') toggleHandler(setCapacityFilters)
+            }}
+            onClearAll={() => {
+              setBranchFilters([])
+              setSessionTypeFilters([])
+              setLevelFilters([])
+              setConditionFilters([])
+              setSubjectFilters([])
+              setTeacherFilters([])
+              setPeriodFilters([])
+              setRoomFilters([])
+              setTrialFilters([])
+              setAttendanceFilters([])
+              setCapacityFilters([])
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <SessionDetailDialog
         session={selectedSession}

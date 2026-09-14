@@ -1,8 +1,10 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Lead } from '@/mocks/crmLeads'
+import type { DataPoolConfig } from '@/components/screens/lead-lifecycle-config/leadLifecycleTypes'
 import {
   BranchSelect,
   ExpandableSearch,
@@ -19,6 +21,9 @@ import { CrmLeadsSmartcardPopover } from './CrmLeadsSmartcardPopover'
 interface CrmLeadsToolbarProps {
   leads: Lead[]
   viewScope: 'my' | 'all'
+  pools?: DataPoolConfig[]
+  pool?: string
+  onPoolChange?: (val: string) => void
   branch?: string
   onBranchChange?: (val: string) => void
   source: string
@@ -37,6 +42,9 @@ interface CrmLeadsToolbarProps {
 export function CrmLeadsToolbar({
   leads,
   viewScope,
+  pools = [],
+  pool = 'all',
+  onPoolChange,
   branch = 'all',
   onBranchChange,
   source,
@@ -51,9 +59,29 @@ export function CrmLeadsToolbar({
   onOpenFilters,
   onCreateClick,
 }: CrmLeadsToolbarProps) {
+  const dynamicPoolOptions = useMemo(() => {
+    const baseOptions = [
+      { value: 'all', label: 'Tất cả kho' },
+      { value: 'pool-t', label: 'Kho T (Telesales)' },
+      { value: 'pool-m', label: 'Kho M (Marketing)' },
+      { value: 'pool-c', label: 'Kho CC (CSKH / Tái phí)' },
+      { value: 'pool-g', label: 'Kho G (Giới thiệu)' },
+    ]
+    if (pools && pools.length > 0) {
+      const activePools = pools
+        .filter((p) => p.isActive !== false)
+        .map((p) => ({
+          value: p.id,
+          label: `${p.name} (${p.code})`,
+        }))
+      return [{ value: 'all', label: 'Tất cả kho' }, ...activePools]
+    }
+    return baseOptions
+  }, [pools])
+
   return (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-      {/* Bộ lọc bên trái: Cơ sở, Nguồn Lead & Bộ lọc ngữ cảnh theo màn hình */}
+      {/* Bộ lọc bên trái: Cơ sở, Kho Dữ liệu, Nguồn Lead & Bộ lọc ngữ cảnh */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Chọn cơ sở */}
         {onBranchChange && (
@@ -64,7 +92,17 @@ export function CrmLeadsToolbar({
           />
         )}
 
-        {/* Nguồn Lead */}
+        {/* Kho Dữ Liệu (Pool Selector: Kho T, Kho M, Kho CC, Kho G) */}
+        {onPoolChange && (
+          <ToolbarSelect
+            value={pool}
+            onValueChange={onPoolChange}
+            options={dynamicPoolOptions}
+            className="h-8 min-w-36 text-xs font-medium"
+          />
+        )}
+
+        {/* Nguồn Lead (Facebook Ads, Hotline, Sự kiện, Referral...) */}
         <ToolbarSelect
           value={source}
           onValueChange={onSourceChange}

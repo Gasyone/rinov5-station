@@ -38,47 +38,41 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
   onDeleteSubStatus,
   originFilter = 'all',
 }) => {
-  // Trục chính Happy Path (T0 -> T5): Luôn sắp xếp cố định theo thứ tự giai đoạn tiến trình
-  const PHASE_ORDER: Record<string, number> = {
-    T0: 0,
-    T1: 1,
-    T2: 2,
-    T3: 3,
-    T4: 4,
-    T5: 5,
-  }
-
+  // Trục chính Happy Path (sắp xếp theo thứ tự order của từng kho)
   const happyPathStages = stages
     .filter((s) => s.stageType !== 'global_lost')
-    .sort((a, b) => {
-      const phaseA = PHASE_ORDER[a.phaseGroup || ''] ?? 99
-      const phaseB = PHASE_ORDER[b.phaseGroup || ''] ?? 99
-      if (phaseA !== phaseB) return phaseA - phaseB
-      return a.order - b.order
-    })
+    .slice()
+    .sort((a, b) => a.order - b.order)
 
   const lostStage = stages.find((s) => s.stageType === 'global_lost')
   const t4Stage = stages.find((s) => s.phaseGroup === 'T4')
 
-  // Các nhãn hoàn trả & sự cố từ T4 tách riêng cho nhánh ngoại lệ bên dưới
+  // Các nhãn hoàn trả & sự cố từ T4 tách riêng cho nhánh ngoại lệ bên dưới (nếu kho có T4)
   const t4ExceptionCodes = ['CDH', 'DANG_HOAN', 'DA_HOAN_TRA', 'HUY_DON_HANG']
   const t4ExceptionSubs = (t4Stage?.subStatuses || [])
     .filter((sub) => t4ExceptionCodes.includes(sub.code))
     .filter((sub) => originFilter === 'all' || sub.origin === originFilter)
+
+  const hasT4Exception = Boolean(t4Stage && t4ExceptionSubs.length > 0)
 
   const lostSubs = (lostStage?.subStatuses || []).filter(
     (sub) => originFilter === 'all' || sub.origin === originFilter
   )
 
   const getCleanStageName = (name: string) => {
-    return name.replace(/^\[T\d\]\s*/, '')
+    return name.replace(/^\[[A-Za-z0-9_]+\]\s*/, '')
   }
+
+  const numCols = Math.max(happyPathStages.length, 1)
 
   return (
     <div className="w-full overflow-x-auto custom-scrollbar pb-3 select-none">
-      <div className="min-w-[960px] xl:min-w-0 w-full max-w-[90%] mx-auto flex flex-col gap-1">
-        {/* HÀNG 1: 6 KHỐI CẤU HÌNH GIAI ĐOẠN TIẾN TRÌNH CHÍNH (T0 ➔ T5) */}
-        <div className="grid grid-cols-6 gap-4 w-full">
+      <div className="min-w-[960px] xl:min-w-0 w-full max-w-[95%] mx-auto flex flex-col gap-1">
+        {/* HÀNG 1: CÁC KHỐI CẤU HÌNH GIAI ĐOẠN TIẾN TRÌNH CHÍNH (ĐỘNG THEO KHO) */}
+        <div
+          className="grid gap-4 w-full"
+          style={{ gridTemplateColumns: `repeat(${numCols}, minmax(0, 1fr))` }}
+        >
           {happyPathStages.map((stage, idx) => {
             const displayedSubs = (
               stage.phaseGroup === 'T4'
@@ -241,53 +235,55 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
           })}
         </div>
 
-        {/* HÀNG 2: CÁC ĐƯỜNG LINE DỌC KẾT NỐI XUỐNG (CÙNG TỶ LỆ GRID 6 CỘT - THẲNG TẮP 100%) */}
-        <div className="grid grid-cols-6 gap-4 w-full h-9">
-          {/* Cột 0 [T0]: Không có nhánh rẽ */}
-          <div />
-
-          {/* Cột 1 [T1]: Đường line thẳng đứng rớt xuống Lost */}
-          <div className="flex flex-col items-center justify-end h-full">
-            <div className="w-0.5 h-full bg-slate-400 dark:bg-slate-500" />
-            <ArrowDown className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 -mt-1 stroke-[3]" />
-          </div>
-
-          {/* Cột 2 [T2]: Đường line thẳng đứng rớt xuống Lost */}
-          <div className="flex flex-col items-center justify-end h-full">
-            <div className="w-0.5 h-full bg-slate-400 dark:bg-slate-500" />
-            <ArrowDown className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 -mt-1 stroke-[3]" />
-          </div>
-
-          {/* Cột 3 [T3]: Đường line thẳng đứng rớt xuống Lost */}
-          <div className="flex flex-col items-center justify-end h-full">
-            <div className="w-0.5 h-full bg-slate-400 dark:bg-slate-500" />
-            <ArrowDown className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 -mt-1 stroke-[3]" />
-          </div>
-
-          {/* Cột 4 [T4]: Đường line ĐỎ thẳng đứng rẽ xuống Hoàn hàng */}
-          <div className="flex flex-col items-center justify-end h-full">
-            <div className="w-0.5 h-full bg-red-500" />
-            <ArrowDown className="h-3.5 w-3.5 text-red-500 -mt-1 stroke-[3]" />
-          </div>
-
-          {/* Cột 5 [T5]: Không có nhánh rẽ */}
-          <div />
+        {/* HÀNG 2: CÁC ĐƯỜNG LINE DỌC KẾT NỐI XUỐNG (CÙNG TỶ LỆ GRID ĐỘNG THEO SỐ BƯỚC) */}
+        <div
+          className="grid gap-4 w-full h-9"
+          style={{ gridTemplateColumns: `repeat(${numCols}, minmax(0, 1fr))` }}
+        >
+          {happyPathStages.map((stg, idx) => {
+            if (idx === 0 || idx === numCols - 1) {
+              return <div key={`arrow-spacer-${stg.id}`} />
+            }
+            if (stg.phaseGroup === 'T4' && hasT4Exception) {
+              return (
+                <div key={`arrow-${stg.id}`} className="flex flex-col items-center justify-end h-full">
+                  <div className="w-0.5 h-full bg-red-500" />
+                  <ArrowDown className="h-3.5 w-3.5 text-red-500 -mt-1 stroke-[3]" />
+                </div>
+              )
+            }
+            return (
+              <div key={`arrow-${stg.id}`} className="flex flex-col items-center justify-end h-full">
+                <div className="w-0.5 h-full bg-slate-400 dark:bg-slate-500" />
+                <ArrowDown className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400 -mt-1 stroke-[3]" />
+              </div>
+            )
+          })}
         </div>
 
-        {/* HÀNG 3: CÁC KHỐI NHẬN LUỒNG (GRID 6 CỘT: LOST CHIẾM CỘT 1-3, HOÀN HÀNG CHIẾM CỘT 4-5) */}
-        <div className="grid grid-cols-6 gap-4 w-full">
+        {/* HÀNG 3: CÁC KHỐI NHẬN LUỒNG (GRID ĐỘNG) */}
+        <div
+          className="grid gap-4 w-full"
+          style={{ gridTemplateColumns: `repeat(${numCols}, minmax(0, 1fr))` }}
+        >
           {/* Khoảng trống Cột 0 */}
           <div />
 
-          {/* Cột 1, 2, 3 (col-span-3): Nhánh Dừng Chăm sóc / Thất bại Toàn cục */}
-          <div className="col-span-3">
+          {/* Nhánh Dừng Chăm sóc / Thất bại Toàn cục */}
+          <div
+            style={{
+              gridColumn: hasT4Exception
+                ? `span ${Math.max(numCols - 3, 1)} / span ${Math.max(numCols - 3, 1)}`
+                : `span ${Math.max(numCols - 1, 1)} / span ${Math.max(numCols - 1, 1)}`,
+            }}
+          >
             {lostStage && (
               <div className="p-3 rounded-xl border border-slate-300/90 bg-slate-50/50 dark:bg-slate-900/30 dark:border-slate-700 shadow-2xs border-t-2 border-t-slate-400 dark:border-t-slate-500">
                 <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-border/50">
                   <div className="flex items-center gap-1.5">
                     <CornerDownRight className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-200">
-                      Nhánh Dừng Chăm sóc / Thất bại (Global Lost từ T1, T2, T3)
+                      Nhánh Dừng Chăm sóc / Thất bại (Global Lost)
                     </span>
                   </div>
 
@@ -341,77 +337,85 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
             )}
           </div>
 
-          {/* Cột 4, 5 (col-span-2): Nhánh Hoàn hàng & Sự cố Vận đơn */}
-          <div className="col-span-2">
-            <div className="p-3 rounded-xl border border-red-200/90 bg-red-50/30 dark:bg-red-950/20 dark:border-red-900/50 shadow-2xs border-t-2 border-t-red-500">
-              <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-red-200/50 dark:border-red-900/30">
-                <div className="flex items-center gap-1.5">
-                  <CornerDownRight className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                  <span className="text-xs font-bold text-red-900 dark:text-red-300">
-                    Nhánh Trả lại Giáo trình &amp; Hoàn hủy Đơn (Rẽ nhánh từ [T4])
+          {/* Cột Ngoại lệ Hoàn hàng & Sự cố Vận đơn (Chỉ render khi kho có T4 và có nhãn exception) */}
+          {hasT4Exception && (
+            <div
+              style={{
+                gridColumn: `span ${Math.min(2, numCols - 1)} / span ${Math.min(2, numCols - 1)}`,
+              }}
+            >
+              <div className="p-3 rounded-xl border border-red-200/90 bg-red-50/30 dark:bg-red-950/20 dark:border-red-900/50 shadow-2xs border-t-2 border-t-red-500">
+                <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-red-200/50 dark:border-red-900/30">
+                  <div className="flex items-center gap-1.5">
+                    <CornerDownRight className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                    <span className="text-xs font-bold text-red-900 dark:text-red-300">
+                      Nhánh Trả lại Giáo trình &amp; Hoàn hủy Đơn (Rẽ nhánh từ [T4])
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-red-600/80 dark:text-red-400 font-mono">
+                    {t4ExceptionSubs.length} trạng thái con
                   </span>
                 </div>
-                <span className="text-[10px] text-red-600/80 dark:text-red-400 font-mono">
-                  {t4ExceptionSubs.length} trạng thái con
-                </span>
-              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {t4ExceptionSubs.length === 0 ? (
-                  <div className="col-span-4 text-center py-4 text-[11px] text-muted-foreground/70 italic">
-                    Không có trạng thái ngoại lệ phù hợp bộ lọc
-                  </div>
-                ) : (
-                  t4ExceptionSubs.map((sub) => (
-                    <div
-                      key={sub.id}
-                      onClick={() => t4Stage && onEditSubStatus(t4Stage, sub)}
-                      className={cn(
-                        'group/except p-2 rounded-lg border text-xs cursor-pointer transition-colors flex flex-col justify-between gap-1',
-                        sub.origin === 'system'
-                          ? 'bg-blue-50/25 border-blue-200/80 dark:bg-blue-950/20 dark:border-blue-900/50 hover:border-blue-400'
-                          : 'bg-background border-red-200/70 dark:border-red-900/50 hover:border-red-400'
-                      )}
-                      title={
-                        sub.origin === 'system'
-                          ? `⚙️ Nhãn Hệ thống: ${sub.name} (${sub.code}) | Liên kết: ${sub.systemModuleLabel}`
-                          : `✏️ Sửa nhãn: ${sub.name} (${sub.code})`
-                      }
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <div className="font-medium text-foreground truncate text-[11px]" title={sub.name}>
-                          {sub.name}
-                        </div>
-                        {sub.origin === 'custom' && onDeleteSubStatus && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              t4Stage && onDeleteSubStatus(t4Stage.id, sub.id)
-                            }}
-                            className="opacity-0 group-hover/except:opacity-100 p-0.5 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded transition-all cursor-pointer shrink-0"
-                            title={`Xóa nhãn: ${sub.name}`}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between mt-0.5">
-                        {sub.origin === 'system' ? (
-                          <span className="text-[8.5px] px-1.5 py-0.2 rounded font-medium bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 flex items-center gap-0.5">
-                            <span className="text-[7.5px]">⚙️</span>
-                            <span>{getSystemModuleShortLabel(sub)}</span>
-                          </span>
-                        ) : (
-                          <span className="text-[8.5px] text-muted-foreground/70">Tùy biến</span>
-                        )}
-                      </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {t4ExceptionSubs.length === 0 ? (
+                    <div className="col-span-4 text-center py-4 text-[11px] text-muted-foreground/70 italic">
+                      Không có trạng thái ngoại lệ phù hợp bộ lọc
                     </div>
-                  ))
-                )}
+                  ) : (
+                    t4ExceptionSubs.map((sub) => (
+                      <div
+                        key={sub.id}
+                        onClick={() => t4Stage && onEditSubStatus(t4Stage, sub)}
+                        className={cn(
+                          'group/except p-2 rounded-lg border text-xs cursor-pointer transition-colors flex flex-col justify-between gap-1',
+                          sub.origin === 'system'
+                            ? 'bg-blue-50/25 border-blue-200/80 dark:bg-blue-950/20 dark:border-blue-900/50 hover:border-blue-400'
+                            : 'bg-background border-red-200/70 dark:border-red-900/50 hover:border-red-400'
+                        )}
+                        title={
+                          sub.origin === 'system'
+                            ? `⚙️ Nhãn Hệ thống: ${sub.name} (${sub.code}) | Liên kết: ${sub.systemModuleLabel}`
+                            : `✏️ Sửa nhãn: ${sub.name} (${sub.code})`
+                        }
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="font-medium text-foreground truncate text-[11px]" title={sub.name}>
+                            {sub.name}
+                          </div>
+                          {sub.origin === 'custom' && onDeleteSubStatus && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (t4Stage && onDeleteSubStatus) {
+                                  onDeleteSubStatus(t4Stage.id, sub.id)
+                                }
+                              }}
+                              className="opacity-0 group-hover/except:opacity-100 p-0.5 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded transition-all cursor-pointer shrink-0"
+                              title={`Xóa nhãn: ${sub.name}`}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-0.5">
+                          {sub.origin === 'system' ? (
+                            <span className="text-[8.5px] px-1.5 py-0.2 rounded font-medium bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 flex items-center gap-0.5">
+                              <span className="text-[7.5px]">⚙️</span>
+                              <span>{getSystemModuleShortLabel(sub)}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[8.5px] text-muted-foreground/70">Tùy biến</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

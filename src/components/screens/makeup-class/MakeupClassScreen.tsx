@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import type { MakeupClassRequest } from '@/mocks/makeupClasses'
 import { MakeupClassToolbar } from './MakeupClassToolbar'
 import { MakeupClassTableFrame } from './MakeupClassTableFrame'
@@ -329,51 +329,55 @@ export function MakeupClassScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <MakeupClassTableFrame
-          loading={isLoading}
-          error={error?.message ?? null}
-          requests={paged}
-          selectedIds={selectedIds}
-          currentPage={currentPage}
-          total={filtered.length}
-          pageSize={pageSize}
-          onRetry={reloadRequests}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          onToggleAll={(checked, ids) => {
-            setSelectedIds(checked ? new Set(ids) : new Set())
-          }}
-          onToggleOne={(id, checked) => {
-            setSelectedIds((current) => {
-              const next = new Set(current)
-              if (checked) {
-                next.add(id)
-              } else {
-                next.delete(id)
-              }
-              return next
-            })
-          }}
-          onRowClick={setDetailId}
-          onApprove={handleApprove}
-          onReject={handleReject}
-        />
-      </div>
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <MakeupClassTableFrame
+            loading={isLoading}
+            error={error?.message ?? null}
+            requests={paged}
+            selectedIds={selectedIds}
+            currentPage={currentPage}
+            total={filtered.length}
+            pageSize={pageSize}
+            onRetry={reloadRequests}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            onToggleAll={(checked, ids) => {
+              setSelectedIds(checked ? new Set(ids) : new Set())
+            }}
+            onToggleOne={(id, checked) => {
+              setSelectedIds((current) => {
+                const next = new Set(current)
+                if (checked) {
+                  next.add(id)
+                } else {
+                  next.delete(id)
+                }
+                return next
+              })
+            }}
+            onRowClick={setDetailId}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc theo trường, trạng thái, môn học, chương trình, người phụ trách và nguồn tạo."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          toggleArrayFilter(sectionId as keyof MakeupClassFilterState, value)
-        }}
-        onClearAll={() => {
-          setFilters(EMPTY_FILTERS)
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc học bù"
+            groups={filterGroups}
+            description="Kết hợp bộ lọc theo trường, trạng thái, môn học, chương trình, người phụ trách và nguồn tạo."
+            onToggle={(sectionId, value) => {
+              toggleArrayFilter(sectionId as keyof MakeupClassFilterState, value)
+            }}
+            onClearAll={() => {
+              setFilters(EMPTY_FILTERS)
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <MakeupClassDetailDialog
         request={detailRequest}

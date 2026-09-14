@@ -30,6 +30,7 @@ interface ClassAttendanceDialogProps {
   multiClassSessions?: MultiClassSession[]
   classList?: ClassPackageSummary[]
   initialPackageId?: string
+  isHistoricalClass?: boolean
   onOpenLeave?: (date: string) => void
 }
 
@@ -87,6 +88,49 @@ export function AttendanceStatusBadge({
   )
 }
 
+export function HomeworkStatusBadge({ status }: { status?: SessionHistory['homework'] }) {
+  if (status === 'submitted') {
+    return (
+      <span className="inline-flex items-center rounded-md bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 text-xs font-normal text-emerald-600 border border-emerald-200/50 select-none">
+        ✓ Đã nộp
+      </span>
+    )
+  }
+  if (status === 'late') {
+    return (
+      <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 text-xs font-normal text-amber-600 border border-amber-200/50 select-none">
+        Nộp muộn
+      </span>
+    )
+  }
+  if (status === 'not_submitted') {
+    return (
+      <span className="inline-flex items-center rounded-md bg-rose-50 dark:bg-rose-950/20 px-2 py-0.5 text-xs font-normal text-rose-600 border border-rose-200/50 select-none">
+        Chưa nộp
+      </span>
+    )
+  }
+  return <span className="text-muted-foreground/50 text-xs">—</span>
+}
+
+export function SessionScoreBadge({ score, overall }: { score?: number | null; overall?: string }) {
+  if (score != null) {
+    return (
+      <span className="inline-flex items-center justify-center font-bold text-xs text-foreground bg-muted/60 px-2 py-0.5 rounded min-w-[32px]">
+        {score}
+      </span>
+    )
+  }
+  if (overall) {
+    return (
+      <span className="inline-flex items-center justify-center font-bold text-xs text-foreground bg-muted/60 px-2 py-0.5 rounded min-w-[32px]">
+        {overall}
+      </span>
+    )
+  }
+  return <span className="text-muted-foreground/50 text-xs">—</span>
+}
+
 function AttendanceTable({
   sessions,
   defaultTeachers,
@@ -103,10 +147,11 @@ function AttendanceTable({
       <table className="w-full text-xs border-collapse bg-transparent table-fixed">
         <thead>
           <tr className="border-b border-border/85 text-muted-foreground bg-muted/20 dark:bg-zinc-900/40">
-            <th className="py-2.5 px-3 text-left font-bold w-[45px]">#</th>
-            <th className="py-2.5 px-3 text-left font-bold w-[300px]">Nội dung bài học & Thời gian</th>
-            <th className="py-2.5 px-3 text-left font-bold w-[200px]">Giáo viên & Phòng học</th>
-            <th className="py-2.5 px-3 text-center font-bold w-[120px]">Điểm danh</th>
+            <th className="py-2.5 px-3 text-left font-bold w-[280px]">Nội dung bài học & Thời gian</th>
+            <th className="py-2.5 px-3 text-left font-bold w-[180px]">Giáo viên & Phòng học</th>
+            <th className="py-2.5 px-3 text-center font-bold w-[110px]">Điểm danh</th>
+            <th className="py-2.5 px-3 text-center font-bold w-[100px]">BTVN</th>
+            <th className="py-2.5 px-3 text-center font-bold w-[80px]">Điểm</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">
@@ -116,9 +161,7 @@ function AttendanceTable({
 
             return (
               <tr key={s.id || `att-row-${idx}`} className="hover:bg-muted/30 transition-colors bg-transparent">
-                <td className="py-2.5 px-3 font-mono text-muted-foreground font-normal w-[45px]">{s.sessionNumber}</td>
-
-                <td className="py-2.5 px-3 w-[300px]">
+                <td className="py-2.5 px-3 w-[280px]">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="font-semibold text-foreground">{s.topic}</span>
                     {s.type === 'test' && (
@@ -132,16 +175,24 @@ function AttendanceTable({
                   </div>
                 </td>
 
-                <td className="py-2.5 px-3 w-[200px] text-left leading-normal">
+                <td className="py-2.5 px-3 w-[180px] text-left leading-normal">
                   <span className="font-medium text-foreground text-xs block">{sessionTeacher}</span>
                   <span className="text-xs text-muted-foreground block mt-0.5">Phòng {sessionRoom}</span>
                 </td>
 
-                <td className="py-2.5 px-3 text-center w-[120px]">
+                <td className="py-2.5 px-3 text-center w-[110px]">
                   <AttendanceStatusBadge 
                     status={s.attendance} 
                     onOpenLeave={onOpenLeave ? () => onOpenLeave(s.date) : undefined} 
                   />
+                </td>
+
+                <td className="py-2.5 px-3 text-center w-[100px]">
+                  <HomeworkStatusBadge status={s.homework} />
+                </td>
+
+                <td className="py-2.5 px-3 text-center w-[80px]">
+                  <SessionScoreBadge score={s.score} overall={s.overall} />
                 </td>
               </tr>
             )
@@ -162,10 +213,11 @@ export function ClassAttendanceDialog({
   multiClassSessions,
   classList = [],
   initialPackageId,
+  isHistoricalClass = false,
   onOpenLeave
 }: ClassAttendanceDialogProps) {
-  // Filter States: Default is 30 days
-  const [timeRange, setTimeRange] = useState<TimeRangeKey>('last_30_days')
+  // Filter States: Default is 'all' for historical classes, 'last_30_days' for active classes
+  const [timeRange, setTimeRange] = useState<TimeRangeKey>(isHistoricalClass ? 'all' : 'last_30_days')
   const [customStart, setCustomStart] = useState<string>('')
   const [customEnd, setCustomEnd] = useState<string>('')
 
@@ -181,7 +233,7 @@ export function ClassAttendanceDialog({
 
   // Merge sessions source
   const rawSessions: MultiClassSession[] = useMemo(() => {
-    if (multiClassSessions && multiClassSessions.length > 0) {
+    if (!isHistoricalClass && multiClassSessions && multiClassSessions.length > 0) {
       return multiClassSessions
     }
     const combined = [...regularSessions, ...testSessions]
@@ -189,9 +241,9 @@ export function ClassAttendanceDialog({
       ...s,
       className,
       classCode,
-      isCurrentClass: true,
+      isCurrentClass: !isHistoricalClass,
     }))
-  }, [multiClassSessions, regularSessions, testSessions, className, classCode])
+  }, [isHistoricalClass, multiClassSessions, regularSessions, testSessions, className, classCode])
 
   // Filter by Time Range
   const filteredSessions = useMemo(() => {
@@ -201,8 +253,15 @@ export function ClassAttendanceDialog({
 
   // Group by current class vs historical classes
   const { currentClass, currentSessions, historicalClasses } = useMemo(() => {
+    if (isHistoricalClass) {
+      return {
+        currentClass: null,
+        currentSessions: filteredSessions,
+        historicalClasses: []
+      }
+    }
     return groupFilteredSessionsByClass(filteredSessions, classList, initialPackageId)
-  }, [filteredSessions, classList, initialPackageId])
+  }, [isHistoricalClass, filteredSessions, classList, initialPackageId])
 
   // Default class details fallback
   const classRecord = useMemo(() => {
@@ -218,17 +277,22 @@ export function ClassAttendanceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col max-h-[85vh] gap-0 overflow-hidden p-0 sm:max-w-[90vw] lg:max-w-[850px] select-none text-left">
+      <DialogContent className="flex flex-col max-h-[85vh] gap-0 overflow-hidden p-0 sm:max-w-[90vw] lg:max-w-[900px] select-none text-left">
         <DialogHeader className="p-3.5 sm:p-4 border-b border-border/50 shrink-0 flex flex-row items-center justify-between gap-3 pr-10">
           <div className="min-w-0">
             <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-              Chi tiết chuyên cần học viên
+              <span className={cn("w-2 h-2 rounded-full shrink-0", isHistoricalClass ? "bg-sky-500" : "bg-rose-500")} />
+              Chi tiết chuyên cần {isHistoricalClass ? 'lớp học cũ' : 'học viên'}
             </DialogTitle>
             <p className="text-xs text-muted-foreground mt-1 font-semibold leading-none">
-              Lớp hiện tại: <span className="text-zinc-800 dark:text-zinc-200">{currentClass?.className || className}</span>
-              {(currentClass?.classCode || classCode) && (
-                <span className="font-mono ml-1 text-muted-foreground">({currentClass?.classCode || classCode})</span>
+              {isHistoricalClass ? 'Lớp học cũ: ' : 'Lớp hiện tại: '}
+              <span className="text-zinc-800 dark:text-zinc-200">
+                {isHistoricalClass ? className : (currentClass?.className || className)}
+              </span>
+              {(isHistoricalClass ? classCode : (currentClass?.classCode || classCode)) && (
+                <span className="font-mono ml-1 text-muted-foreground">
+                  ({isHistoricalClass ? classCode : (currentClass?.classCode || classCode)})
+                </span>
               )}
             </p>
           </div>
@@ -249,7 +313,7 @@ export function ClassAttendanceDialog({
           </div>
         </DialogHeader>
 
-        {/* Modal Body: Flattened Layout with Current Class on top & Expandable Historical Classes below */}
+        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 min-h-0 space-y-5">
           {filteredSessions.length === 0 ? (
             <div className="py-12 text-center text-xs text-muted-foreground italic space-y-2">
@@ -264,7 +328,34 @@ export function ClassAttendanceDialog({
                 Xem tất cả thời gian
               </button>
             </div>
+          ) : isHistoricalClass ? (
+            /* TRƯỜNG HỢP MỞ TỪ LỚP CŨ: CHỈ HIỂN THỊ DUY NHẤT LỚP CŨ NÀY, TUYỆT ĐỐI KHÔNG CÓ LỚP HIỆN TẠI */
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground">
+                    {className}
+                  </span>
+                  {classCode && (
+                    <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
+                      {classCode}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {filteredSessions.length} buổi học
+                </span>
+              </div>
+
+              <AttendanceTable
+                sessions={filteredSessions}
+                defaultTeachers={defaultTeachers}
+                defaultRoom={defaultRoom}
+                onOpenLeave={onOpenLeave}
+              />
+            </div>
           ) : (
+            /* TRƯỜNG HỢP MỞ TỪ LỚP HIỆN TẠI: HIỂN THỊ LỚP HIỆN TẠI VÀ LỊCH SỬ CÁC LỚP CŨ BÊN DƯỚI */
             <>
               {/* 1. Lớp hiện tại (Primary Section) */}
               <div className="space-y-2">

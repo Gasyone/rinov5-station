@@ -19,7 +19,7 @@ import { CrmLeadHeaderCard } from './CrmLeadHeaderCard'
 import { CrmLeadContactsTab } from './CrmLeadContactsTab'
 import { CrmLeadFullProfileModal } from './CrmLeadFullProfileModal'
 import { CrmLeadReturningHistoryModal } from './CrmLeadReturningHistoryModal'
-import { DropRecord, CareInteraction } from './crmLeadDetailTypes'
+import { DropRecord, CareInteraction, SalesCycle } from './crmLeadDetailTypes'
 import { STATUS_LABEL_MAP } from '../crmLeadsTypes'
 
 interface CrmLeadDetailPageProps {
@@ -62,7 +62,7 @@ export function CrmLeadDetailPage({
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false)
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
   const [fullProfileInitialAction, setFullProfileInitialAction] = useState<'view' | 'add_parent' | 'add_child'>('view')
-  const [activeCycleId, setActiveCycleId] = useState<string>(
+  const [_activeCycleId, setActiveCycleId] = useState<string>(
     foundLead.currentCycleId || foundLead.salesCycles?.[0]?.cycleId || 'cycle-001'
   )
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -270,6 +270,38 @@ export function CrmLeadDetailPage({
     onUpdateLead?.(updated)
   }
 
+  const handleReactivateCycle = () => {
+    const cycleCount = (currentLead.salesCycles?.length || 1) + 1
+    const newCycleId = `cycle-${Date.now()}`
+    const newCycle: SalesCycle = {
+      cycleId: newCycleId,
+      cycleNumber: cycleCount,
+      title: `Chu kỳ ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
+      status: 'active',
+      startDate: new Date().toISOString().split('T')[0],
+      assignedSales: currentLead.assignedTo || 'Trần Thị Mai (Sales)',
+    }
+
+    const updatedLead: Lead = {
+      ...currentLead,
+      status: 'moi_tiep_nhan',
+      subStatus: 'Tái tiếp cận (Chu kỳ mới)',
+      isReturningLead: true,
+      currentCycleId: newCycleId,
+      salesCycles: [newCycle, ...(currentLead.salesCycles || [])],
+      createdAt: new Date().toISOString().split('T')[0],
+      lastNote: `[Tái kích hoạt Chu kỳ ${cycleCount}]: Mở chu kỳ bán mới cho học viên.`,
+    }
+
+    setCurrentLead(updatedLead)
+    onUpdateLead?.(updatedLead)
+    toast.success(`Đã kích hoạt Chu kỳ Bán mới (#${cycleCount}) cho học viên ${currentLead.studentName}!`)
+  }
+
+  const basePath = useMemo(() => {
+    return pathname?.includes('crm_my_leads') ? '/app/crm_my_leads' : '/app/crm_leads'
+  }, [pathname])
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
       {/* DIRECT SPLIT 2-PANEL WORKSTATION LAYOUT (BỎ 2 DÒNG TRÊN CÙNG) */}
@@ -285,6 +317,8 @@ export function CrmLeadDetailPage({
               onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
               onUpdateNote={handleUpdateNote}
               onUpdateLead={handleSaveFullProfile}
+              onReactivateCycle={handleReactivateCycle}
+              basePath={basePath}
             />
 
             {/* 2. THANH TABS (CHÂN DUNG LEAD & HỌC VIÊN / ĐƠN HÀNG) */}
@@ -323,6 +357,7 @@ export function CrmLeadDetailPage({
               {activeTab === 'contacts' && (
                 <CrmLeadContactsTab
                   lead={currentLead}
+                  basePath={basePath}
                   activeParentName={activeParentPersona}
                   onSwitchParentPersona={setActiveParentPersona}
                   onAddParent={() => {
@@ -339,9 +374,6 @@ export function CrmLeadDetailPage({
                   }}
                   onSwitchLead={(newLeadId) => {
                     setActiveLeadId(newLeadId)
-                    const basePath = pathname?.includes('crm_my_leads')
-                      ? '/app/crm_my_leads'
-                      : '/app/crm_leads'
                     router.push(`${basePath}/${newLeadId}`)
                   }}
                   onUpdateLead={handleSaveFullProfile}
@@ -363,6 +395,7 @@ export function CrmLeadDetailPage({
               onAdvanceStage={handleAdvanceStage}
               onOpenDropDialog={() => setIsDropOpen(true)}
               onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
+              onReactivateCycle={handleReactivateCycle}
             />
 
             {/* 2. CỤM CHĂM SÓC (LIÊN HỆ, GHI CHÚ NHANH, ĐANG XỬ LÝ) */}

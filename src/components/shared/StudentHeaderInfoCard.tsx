@@ -230,6 +230,23 @@ export function StudentHeaderInfoCard({
               </PopoverContent>
             </Popover>
 
+            {/* Toggle Icon Button Mở rộng Mã ID đưa lên cạnh tên học viên */}
+            <button
+              type="button"
+              onClick={() => setShowCodes((prev) => !prev)}
+              className={cn(
+                "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1.5 rounded-md hover:bg-muted",
+                showCodes
+                  ? "text-primary font-bold bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground font-medium"
+              )}
+              title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              <span>Mã ID</span>
+              <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
+            </button>
+
             <StatusBadge
               status={statusKey || status}
               label={statusLabel || (status.includes('_') ? undefined : status)}
@@ -237,36 +254,7 @@ export function StudentHeaderInfoCard({
             />
           </div>
 
-          {/* Row 1: NS, Giới tính, ĐC + Toggle Icon Button Mở rộng Mã */}
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground font-medium flex-wrap pt-0.5">
-            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-              <span>
-                <strong className="text-foreground/90 font-bold">NS:</strong> {birthDate} &bull; {gender}
-              </span>
-              <span className="text-border">•</span>
-              <span className="truncate max-w-[280px]" title={address}>
-                <strong className="text-foreground/90 font-bold">ĐC:</strong> {address}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowCodes((prev) => !prev)}
-              className={cn(
-                "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5",
-                showCodes
-                  ? "text-primary font-bold"
-                  : "text-muted-foreground hover:text-foreground font-medium"
-              )}
-              title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
-            >
-              <ShieldCheck className="h-3 w-3 text-primary" />
-              <span>Mã ID</span>
-              <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
-            </button>
-          </div>
-
-          {/* Row 2: Codes CID, UID, SID */}
+          {/* Row Codes CID, UID, SID (khi mở rộng) */}
           {showCodes && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1.5 px-2.5 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200">
               <span className="flex items-center gap-1 font-mono text-xs">
@@ -306,6 +294,19 @@ export function StudentHeaderInfoCard({
               </span>
             </div>
           )}
+
+          {/* Row 1: NS, Giới tính, ĐC */}
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground font-medium flex-wrap pt-0.5">
+            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+              <span>
+                <strong className="text-foreground/90 font-bold">NS:</strong> {birthDate} &bull; {gender}
+              </span>
+              <span className="text-border">•</span>
+              <span className="truncate max-w-[280px]" title={address}>
+                <strong className="text-foreground/90 font-bold">ĐC:</strong> {address}
+              </span>
+            </div>
+          </div>
 
           {/* ── Section: Phụ huynh (Chỉ thông tin liên hệ, không ghi chú) ── */}
           <div className="group/parent pt-0.5 text-xs text-muted-foreground font-medium">

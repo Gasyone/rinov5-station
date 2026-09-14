@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
 import { StudentsToolbar } from './StudentsToolbar'
 import { StudentsTable } from './StudentsTable'
 import { StudentDetailDialog } from './detail/StudentDetailDialog'
@@ -247,45 +247,49 @@ export function StudentsScreen() {
         onFilterOpen={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <StudentsTable
+              students={paged}
+              selectedIds={selectedIds}
+              onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
+              onToggleOne={(id, checked) => {
+                setSelectedIds((cur) => {
+                  const next = new Set(cur)
+                  if (checked) next.add(id)
+                  else next.delete(id)
+                  return next
+                })
+              }}
+              onCreateTicket={(id) => toast.info('Tính năng đang được phát triển!')}
+              onView={(id) => router.push(`/app/students/${id}`)}
             />
-          }
-        >
-          <StudentsTable
-            students={paged}
-            selectedIds={selectedIds}
-            onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
-            onToggleOne={(id, checked) => {
-              setSelectedIds((cur) => {
-                const next = new Set(cur)
-                if (checked) next.add(id)
-                else next.delete(id)
-                return next
-              })
-            }}
-            onCreateTicket={(id) => toast.info('Tính năng đang được phát triển!')}
-            onView={(id) => router.push(`/app/students/${id}`)}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      {/* Advanced Filter Sheet */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        onOpenChange={setIsFilterOpen}
-        groups={filterGroups}
-        onToggle={handleToggleFilter}
-        onClearAll={handleClearAll}
-        onClearSection={handleClearSection}
-      />
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc học viên"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={handleToggleFilter}
+            onClearAll={handleClearAll}
+            onClearSection={handleClearSection}
+          />
+        )}
+      </div>
 
       <StudentDetailDialog
         studentId={activeStudentId}

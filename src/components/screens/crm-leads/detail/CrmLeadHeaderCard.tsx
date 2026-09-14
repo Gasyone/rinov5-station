@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Headset,
   ArrowLeftRight,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -24,15 +25,19 @@ interface CrmLeadHeaderCardProps {
   onOpenHistoryModal?: () => void
   onUpdateNote?: (newNote: string) => void
   onUpdateLead?: (updatedLead: Lead) => void
+  onReactivateCycle?: () => void
+  basePath?: string
 }
 
 export function CrmLeadHeaderCard({
   lead,
   onBack,
   onOpenDetailModal,
-  onOpenHistoryModal,
+  onOpenHistoryModal: _onOpenHistoryModal,
   onUpdateNote,
   onUpdateLead,
+  onReactivateCycle,
+  basePath: _basePath,
 }: CrmLeadHeaderCardProps) {
   const [isEditingNote, setIsEditingNote] = useState(false)
   const [noteText, setNoteText] = useState(
@@ -67,8 +72,6 @@ export function CrmLeadHeaderCard({
     email: `${emailSlug || 'tuvan'}@rinoedu.vn`,
   }
 
-  const historyCount = lead.salesCycles?.length || 2
-
   const handleAssignStaff = (staffName: string) => {
     const cleanNewStaff = staffName.replace(/\s*\((?:Sales|Sale)\)/gi, '').trim()
     const updatedLead: Lead = {
@@ -97,7 +100,7 @@ export function CrmLeadHeaderCard({
   return (
     <div className="bg-card border border-border/80 rounded-2xl p-2.5 lg:p-3 shadow-xs space-y-2 text-left select-none">
       {/* Top row: Back Button + Avatar + Học viên + Bên phải: Phụ trách & Phân bổ RinoEdu */}
-      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3">
+      <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center justify-between gap-3">
         {/* Bên trái: Nút Back + Avatar + Thông tin học viên */}
         <div className="flex items-start sm:items-center gap-3 min-w-0">
           {/* Nút Back tròn */}
@@ -131,32 +134,45 @@ export function CrmLeadHeaderCard({
             <div className="flex items-center gap-2 flex-wrap leading-tight">
               <span
                 onClick={onOpenDetailModal}
-                className="text-base font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
+                className="text-base font-bold text-foreground hover:text-primary cursor-pointer transition-colors shrink-0"
                 title="Nhấp để mở chi tiết hồ sơ"
               >
                 {lead.studentName}
               </span>
 
-              {/* Nút Xem chi tiết hồ sơ đặt ngay cạnh tên bé An */}
+              {/* Nút Xem chi tiết hồ sơ đặt ngay cạnh tên bé */}
               {onOpenDetailModal && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={onOpenDetailModal}
-                  className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md"
+                  className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
                   title="Mở toàn bộ biểu mẫu hồ sơ khách hàng để xem hoặc cập nhật chi tiết"
                 >
                   <span>Xem chi tiết hồ sơ</span>
                   <ExternalLink className="h-2.5 w-2.5 opacity-80" />
                 </Button>
               )}
+
+              {/* Nút Kích hoạt Chu kỳ Bán mới nếu Lead đã Chuyển đổi hoặc Thất bại */}
+              {(lead.status === 'that_bai' || lead.status === 'chuyen_doi' || lead.status === 'tam_dung') && onReactivateCycle && (
+                <Button
+                  size="sm"
+                  onClick={onReactivateCycle}
+                  className="h-6 px-2 text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
+                  title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  <span>Kích hoạt chu kỳ mới</span>
+                </Button>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
-              <span>{birthDate}</span>
-              <span className="text-border">•</span>
-              <span>{lead.studentGender || 'Nữ'}</span>
-              <span className="text-border">•</span>
+              <span className="shrink-0">{birthDate}</span>
+              <span className="text-muted-foreground/40 shrink-0">•</span>
+              <span className="shrink-0">{lead.studentGender || 'Nữ'}</span>
+              <span className="text-muted-foreground/40 shrink-0">•</span>
               <span className="truncate max-w-[280px]" title={address}>
                 📍 {address}
               </span>
@@ -165,7 +181,7 @@ export function CrmLeadHeaderCard({
         </div>
 
         {/* Bên phải: Cụm thông tin người phụ trách & Phân bổ (Làm phẳng hoàn toàn, không viền hộp lồng nhau) */}
-        <div className="shrink-0 flex flex-col items-start xl:items-end justify-center gap-1 select-none">
+        <div className="shrink-0 flex flex-col items-start 2xl:items-end justify-center gap-1 select-none">
           {/* Hàng 1: Người phụ trách + Popover Profile khi Hover + Nút đổi người tách riêng */}
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">

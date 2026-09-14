@@ -164,9 +164,14 @@ export function OperationsAlertScreen() {
         const itemStatusMatch = selectedStatuses.has(item.status)
         const studentStatusMatch = Boolean(student && selectedStatuses.has(student.status))
         const mappedMatch =
-          (selectedStatuses.has('active') && item.status === 'Đang học') ||
-          (selectedStatuses.has('session_ended') && item.status === 'Hết buổi') ||
-          (selectedStatuses.has('pending_transfer') && item.status === 'Chờ chuyển lớp')
+          (selectedStatuses.has('active') && (item.status === 'Đang học' || student?.status === 'active')) ||
+          (selectedStatuses.has('session_ended') && (item.status === 'Hết buổi' || student?.status === 'session_ended')) ||
+          (selectedStatuses.has('reserve') && (item.status === 'Bảo lưu' || student?.status === 'reserve')) ||
+          (selectedStatuses.has('wait_for_assignment') && (item.status === 'Chưa ghép lớp' || student?.status === 'wait_for_assignment')) ||
+          (selectedStatuses.has('pending_transfer') && (item.status === 'Chờ chuyển lớp' || student?.status === 'pending_transfer')) ||
+          (selectedStatuses.has('Bảo lưu') && (item.status === 'Bảo lưu' || student?.status === 'reserve')) ||
+          (selectedStatuses.has('Chờ chuyển lớp') && (item.status === 'Chờ chuyển lớp' || student?.status === 'pending_transfer')) ||
+          (selectedStatuses.has('Chưa ghép lớp') && (item.status === 'Chưa ghép lớp' || student?.status === 'wait_for_assignment'))
 
         return itemStatusMatch || studentStatusMatch || mappedMatch
       })
@@ -584,8 +589,8 @@ export function OperationsAlertScreen() {
         onCsdbFilterChange={(val) => { setCsdbFilter(val); resetPagination() }}
       />
 
-      <div className="min-h-0 flex-1 px-2 py-1.5 lg:px-3 pb-3 flex flex-col overflow-hidden">
-        <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-1.5 lg:px-3 pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           <OperationsAlertTable
             alerts={paginatedAlerts}
             selectedIds={selectedIds}
@@ -614,19 +619,19 @@ export function OperationsAlertScreen() {
             }}
           />
         </div>
-      </div>
 
-      {/* Advanced Filters Sheet Panel */}
-      <OperationsAlertFilterPanel
-        open={isFilterOpen}
-        onOpenChange={setIsFilterOpen}
-        branchOptions={branchOptions}
-        classList={classList}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        state={filterState}
-        actions={filterActions}
-      />
+        {/* Advanced Filters Aside Panel */}
+        <OperationsAlertFilterPanel
+          open={isFilterOpen}
+          onOpenChange={setIsFilterOpen}
+          branchOptions={branchOptions}
+          classList={classList}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          state={filterState}
+          actions={filterActions}
+        />
+      </div>
 
       {/* Care Journey / Roadmap Modal */}
       <CareJourneyModal

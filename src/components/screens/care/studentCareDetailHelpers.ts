@@ -408,7 +408,9 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     totalSessions: student.totalSessions,
     remainingSessions: student.remainingSessions,
     classCode: student.classCode,
-    className: isMath ? `Lớp Toán Tư Duy ${student.classCode.slice(-5)}` : `Lớp Tiếng Anh Giao Tiếp ${student.classCode.slice(-5)}`,
+    className: student.classCode
+      ? (isMath ? `Lớp Toán Tư Duy ${student.classCode.slice(-5)}` : `Lớp Tiếng Anh Giao Tiếp ${student.classCode.slice(-5)}`)
+      : (isMath ? 'Lớp Toán Tư Duy (Chờ xếp)' : 'Lớp Tiếng Anh (Chờ xếp)'),
     teacherCode: student.teacherCode,
     schedule: student.schedule,
     attendanceRatio: student.attendanceRatio,
@@ -419,7 +421,7 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     endDate: student.expectedEndDate,
     level: student.level,
     subLevel: student.subLevel,
-    status: student.remainingSessions > 0 ? 'active' : 'expired',
+    status: !student.classCode || student.status === 'Chưa ghép lớp' ? 'pending' : (student.remainingSessions > 0 ? 'active' : 'expired'),
   }
 
   const pkg2: SimulatedPackage = {

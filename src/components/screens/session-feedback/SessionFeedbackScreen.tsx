@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/shared'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { mockSessionFeedback, getSessionFeedback } from '@/mocks/sessionFeedback'
 import { SessionFeedbackToolbar } from './SessionFeedbackToolbar'
 import { SessionFeedbackTable } from './SessionFeedbackTable'
@@ -123,28 +123,30 @@ export function SessionFeedbackScreen() {
         onFilterOpen={() => setFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        {groups.length > 0 ? (
-          <SessionFeedbackTable
-            groups={groups}
-            onOpenFeedbackForm={handleOpenForm}
-          />
-        ) : (
-          <EmptyState
-            title="Không có nhận xét nào"
-            description="Không có feedback nào phù hợp với bộ lọc hiện tại."
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          {groups.length > 0 ? (
+            <SessionFeedbackTable
+              groups={groups}
+              onOpenFeedbackForm={handleOpenForm}
+            />
+          ) : (
+            <EmptyState
+              title="Không có nhận xét nào"
+              description="Không có feedback nào phù hợp với bộ lọc hiện tại."
+            />
+          )}
+        </div>
+
+        {filterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc nhận xét"
+            groups={filterGroups}
+            onToggle={handleFilterToggle}
+            onClearAll={handleFilterClear}
+            onClose={() => setFilterOpen(false)}
           />
         )}
-
-        <FilterGroupSheetPanel
-          open={filterOpen}
-          onOpenChange={setFilterOpen}
-          title="Bộ lọc nhận xét"
-          groups={filterGroups}
-          onToggle={handleFilterToggle}
-          onClearAll={handleFilterClear}
-          onApply={handleFilterApply}
-        />
       </div>
 
       <FeedbackFormDialog

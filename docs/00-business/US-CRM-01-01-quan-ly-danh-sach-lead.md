@@ -24,6 +24,7 @@ tags: [crm, lead, list]
 
 | Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
 |---|---|---|
+| 12/09/2026 | Bổ sung hệ thống Bộ lọc nâng cao toàn diện (13 nhóm tiêu chí) gồm 2 Trụ cột: Phân bổ & Địa bàn (Vùng/Miền, Tỉnh/TP, Quận/Huyện, Cơ sở, Sales, Team) và Làm sạch Data (Tình trạng liên hệ, SLA, Phân khúc tài chính, Khối tuổi, Mới/Quay lại). Đồng thời hỗ trợ chọn Kho dữ liệu (T, M, CC, G) linh hoạt. | Tối ưu điều phối dữ liệu và sàng lọc dữ liệu chất lượng cao cho phễu bán hàng |
 | 07/09/2026 | Chuẩn hóa hệ thống Trạng thái cho 2 màn hình Lead của tôi và Quản lý Lead. Màn Lead của tôi dùng dải thẻ trạng thái hướng tác nghiệp (Cần gọi hôm nay, Quá hạn, Đang tư vấn, Trải nghiệm, Chờ chốt deal, Đã chuyển đổi, Thất bại); Màn Quản lý Lead dùng dải thẻ phễu điều phối (Chưa phân bổ, Mới tiếp nhận, Đang tư vấn, Trải nghiệm, Chờ chốt deal, Chuyển đổi, Thất bại). Loại bỏ thanh chip lọc phụ để tối ưu diện tích bảng. | Nâng cao hiệu suất tác nghiệp cho Tư vấn viên và khả năng giám sát phân bổ của Quản lý |
 | 26/08/2026 | Bỏ thẻ "Thất bại" trên dải Tab lọc trạng thái chính (chỉ giữ các trạng thái đang xử lý/tiến trình), chuyển bộ lọc "Thất bại" và trạng thái đầy đủ vào Bảng lọc nâng cao (Filter Sheet) | Tối ưu không gian tác nghiệp và tập trung vào các Lead đang trong quy trình tư vấn thực tế |
 | 25/08/2026 | Bỏ cột Địa chỉ & Email, đưa cột Phụ huynh lên trước Tuổi & Trình độ, bổ sung cột Lịch sử chăm sóc, chuẩn hóa cột Người phụ trách (ngày bắt đầu + số ngày) và hiển thị cột Đơn hàng ở cuối cùng | Tối ưu bảng dữ liệu theo dõi tác nghiệp chăm sóc và nâng cao trải nghiệm người dùng |
@@ -83,9 +84,11 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 #### A. Thanh công cụ & Bộ lọc nhanh
 | Thành phần | Loại hiển thị | Giá trị mặc định | Logic xử lý / Điều kiện hiển thị | Mobile Responsive |
 |------------|---------------|------------------|----------------------------------|-------------------|
+| Ô chọn Kho dữ liệu | Ô chọn danh sách | Tất cả kho | Lọc theo kho dữ liệu tiếp nhận (Kho T, Kho M, Kho CC, Kho G) | Thu gọn |
 | Ô chọn Chi nhánh | Ô chọn danh sách | Chi nhánh hiện tại | Lọc dữ liệu theo cơ sở phụ trách | Thu gọn |
 | Bộ lọc Nguồn Lead | Ô chọn danh sách | Tất cả nguồn | Lọc theo nguồn (Facebook, Hotline, Event, Referral) | Thu gọn vào bảng nổi |
 | Ô tìm kiếm nhanh | Ô nhập chữ | Trống | Tìm theo Tên Học viên, Tên Phụ huynh, SĐT, Mã Lead | Đầy đủ |
+| Nút Bộ lọc nâng cao | Nút biểu tượng kèm số lượng | Ẩn bảng | Mở bảng điều khiển bộ lọc 13 nhóm tiêu chí ghim cạnh phải | Thu gọn |
 | Nút Tạo mới Lead | Nút màu nhấn | - | Mở hộp thoại Khởi tạo Lead mới cho Học viên | Chuyển thành nút cộng |
 
 #### B. Khối lọc nhanh theo trạng thái (Status Tiles)
@@ -123,23 +126,46 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 | **Đánh giá & Trải nghiệm** | Chữ vừa + Liên kết | Thực thể Test / Học thử | Thông tin lịch test/học thử, kết quả đánh giá và liên kết phiếu chi tiết | Thu gọn |
 | **Lịch sử chăm sóc** | Chữ vừa + Hộp thoại nổi | Lịch sử tương tác Lead | Tiến trình CS (Chưa CS / Chăm sóc lần N), lịch hẹn gọi lại, nội dung và phản hồi | Thu gọn |
 | **Trạng thái** | Nhãn màu | Trường trạng thái | Màu chuẩn theo từng trạng thái vòng đời | Thu gọn dạng chấm |
-| **Người phụ trách** | 2 dòng chữ | Trường nhân viên | Dòng 1: Tên tư vấn viên; Dòng 2: Ngày bắt đầu phụ trách và đếm số ngày (Ví dụ: `10/08/2026 (15 ngày)`) | Ẩn trên di động |
+| **Người phụ trách** | 2 dòng chữ | Trường nhân viên | Dòng 1: Tên tư vấn viên; Dòng 2: Ngày bắt đầu phụ trách và đếm số ngày (Ví dụ: `10/08 - 15 ngày`) | Ẩn trên di động |
 | **Đơn hàng** | Gói học + Mã đơn hàng | Trường Đơn hàng đăng ký | Gói học, doanh thu dự kiến, mã đơn hàng và lần thanh toán nổi bật (đặt ở cuối cùng) | Thu gọn |
 | **Hành động** | Nút biểu tượng | Hệ thống | Biểu tượng mắt xem chi tiết nhanh khi rê chuột | Luôn hiện |
+
+#### D. Bảng điều khiển bộ lọc nâng cao ghim cạnh phải (FilterGroupAsidePanel)
+
+Bảng lọc nâng cao hỗ trợ 13 nhóm tiêu chí chuyên sâu, chia thành 2 trụ cột nghiệp vụ cốt lõi:
+
+* **Trụ cột 1: Phân bổ & Địa bàn (Geographical & Capacity Allocation):**
+  1. *Vùng / Miền:* Miền Bắc, Miền Trung, Miền Nam (nhận diện theo Tỉnh/Cơ sở).
+  2. *Tỉnh / Thành phố:* Hà Nội, TP. Hồ Chí Minh, Đà Nẵng, Hải Phòng, Cần Thơ, Bình Dương, Đồng Nai, Khác.
+  3. *Quận / Huyện / Địa bàn:* Hoàng Mai, Cầu Giấy, Hà Đông, Thanh Xuân, Nam Từ Liêm, Quận 1, Quận 3, Quận 7, Bình Thạnh, Thủ Đức...
+  4. *Cơ sở đào tạo:* Danh sách cơ sở thuộc hệ thống (RinoEdu Linh Đàm, Nguyễn Tuân, Smart City...).
+  5. *Người phụ trách:* Nhân sự phụ trách hoặc Chưa phân bổ (chỉ hiển thị ở màn Quản lý Lead).
+  6. *Team kinh doanh:* Team 01 (Hà Nội), Team 02 (Hồ Chí Minh), Ban Giám đốc Sales (chỉ hiển thị ở màn Quản lý Lead).
+
+* **Trụ cột 2: Làm sạch Data & Chất lượng (Data Hygiene & Quality Triage):**
+  7. *Làm sạch Data & Liên hệ:* Chưa gọi điện, Đã kết nối, Không nghe máy/Thuê bao, Hẹn gọi lại, Số sai/Rác/Spam.
+  8. *Cam kết hạn xử lý & Nhắc việc:* Trong hạn, Quá hạn cam kết, Cần gọi hôm nay.
+  9. *Phân khúc Phụ huynh:* VIP cao cấp, Khá giả, Tiêu chuẩn.
+  10. *Khối học viên & Độ tuổi:* Mẫu giáo / Kindy (3-5 tuổi), Tiểu học (6-10 tuổi), THCS (11-14 tuổi), THPT (15-18 tuổi).
+  11. *Loại hồ sơ khách hàng:* Khách hàng mới tinh, Khách hàng quay lại (tái tiếp cận).
+  12. *Nguồn tiếp nhận:* Facebook Ads, Hotline/Tổng đài, Sự kiện / Workshop, Giới thiệu (Referral), Website / Biểu mẫu.
+  13. *Khóa học quan tâm:* SuperKids, Kindy, Flyers, Starters, Movers, IELTS, Toán Tư Duy.
 
 ### 3.3. Các trạng thái giao diện mặc định
 1. **Trạng thái đang tải (Loading state):** Hiển thị hiệu ứng chờ tải dữ liệu giả lập (Skeleton).
 2. **Trạng thái chưa có dữ liệu (Trống - Empty state):** Hiển thị hình ảnh minh họa mờ kèm thông điệp "Chưa có dữ liệu Lead học viên".
 3. **Trạng thái lỗi tải dữ liệu (Error state):** Hiển thị cảnh báo kết nối hệ thống và nút tải lại trang.
 
-### 3.4. Ma trận phân quyền (Permission Matrix)
+### 3.4. Bảng năng lực nguyên tử & Phân quyền động (Atomic Capability Gating)
 
-| Vai trò người dùng | Xem danh sách | Lọc & Tìm kiếm | Xem chi tiết (Số đầy đủ) | Tạo mới Lead |
-|---|:---:|:---:|:---:|:---:|
-| **Quản trị viên (Admin)** | ✅ | ✅ | ✅ | ✅ |
-| **Quản lý chi nhánh (Manager)** | ✅ | ✅ | ✅ | ✅ |
-| **Tư vấn viên (Sales)** | ✅ | ✅ | ✅ | ✅ |
-| **Giáo viên (Teacher)** | ❌ | ❌ | ❌ | ❌ |
+| Mã Quyền (Atomic Key) | Tên Quyền Hạn | Diễn Giải Nghiệp Vụ |
+|---|---|---|
+| `crm.lead.view` | Xem danh sách Lead | Quyền truy cập màn hình danh sách Lead cá nhân hoặc toàn chi nhánh |
+| `crm.lead.filter` | Sử dụng bộ lọc nâng cao | Quyền tra cứu và sử dụng 13 nhóm tiêu chí phân bổ & làm sạch data |
+| `crm.lead.view_masked_phone` | Xem số điện thoại che | Quyền xem danh sách với số điện thoại dạng bảo mật `091****111` |
+| `crm.lead.view_full_phone` | Xem số điện thoại đầy đủ | Quyền mở hộp thoại chi tiết để xem và liên hệ số điện thoại đầy đủ |
+| `crm.lead.create` | Khởi tạo Lead mới | Quyền nhập hồ sơ khách hàng tiềm năng thủ công vào hệ thống |
+| `crm.lead.assign` | Phân bổ Lead | Quyền điều phối và gán người phụ trách hoặc chuyển cơ sở đào tạo |
 
 ---
 
@@ -163,6 +189,24 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
     - **Khi:** Nhập từ khóa "XYZ999" không có trong dữ liệu.
     - **Thì:** Bảng hiển thị khung trống thông báo không tìm thấy kết quả.
 
+### Khối chức năng 2: Bộ lọc nâng cao đa chiều (Phân bổ & Làm sạch data)
+
+#### Action 2.1: Lọc kết hợp địa bàn và tình trạng liên hệ
+* **Luồng kích hoạt:** Người dùng mở bảng lọc nâng cao ghim cạnh phải và chọn các tiêu chí phân bổ địa bàn và làm sạch dữ liệu.
+* **Tiêu chí nghiệm thu (Acceptance Criteria):**
+  - **AC-4 (Happy Path - Lọc làm sạch số rác và spam):**
+    - **Giả sử:** Bảng danh sách đang hiển thị dữ liệu hỗn hợp gồm cả số rác/spam và số có nhu cầu thật.
+    - **Khi:** Người dùng mở bảng lọc nâng cao, tại nhóm "Làm sạch Data & Liên hệ" chọn tiêu chí "Số sai / Rác / Spam".
+    - **Thì:** Bảng lập tức chỉ hiển thị các hồ sơ có ghi chú số sai, số rác hoặc spam để người dùng xử lý dọn dẹp kho dữ liệu.
+  - **AC-5 (Happy Path - Lọc phân bổ theo quận huyện và chi nhánh):**
+    - **Giả sử:** Quản lý đang ở màn hình Quản lý Lead cần phân bổ data cho cơ sở Hà Đông.
+    - **Khi:** Người dùng chọn nhóm "Quận / Huyện / Địa bàn" là "Hà Đông" và nhóm "Người phụ trách" là "Chưa phân bổ".
+    - **Thì:** Bảng hiển thị chính xác các Lead chưa có nhân sự phụ trách thuộc địa bàn Hà Đông, đồng thời các thẻ trạng thái đếm lại số lượng tương ứng.
+  - **AC-6 (Happy Path - Đặt lại toàn bộ bộ lọc):**
+    - **Giả sử:** Đang áp dụng nhiều tiêu chí lọc nâng cao và dải thẻ trạng thái đang hiển thị số lượng tương ứng.
+    - **Khi:** Người dùng nhấn nút "Đặt lại" trên bảng lọc nâng cao.
+    - **Thì:** Tất cả các nhóm tiêu chí được hoàn nguyên về trạng thái ban đầu và bảng tải lại toàn bộ danh sách khách hàng tiềm năng.
+
 ---
 
 ## 5. CÁC TRƯỜNG HỢP GÓC CẠNH (CORNER CASES)
@@ -176,5 +220,11 @@ Màn hình danh sách tuân thủ bố cục chuẩn gồm: Thanh công cụ b�
 - **[CASE-03] Không đủ quyền xem số điện thoại đầy đủ:**
   - *Tình huống:* Người dùng không thuộc phân quyền tư vấn mở xem chi tiết.
   - *Cách xử lý:* Màn hình chi tiết vẫn giữ nguyên dạng che số `091****111` và ẩn nút sao chép SĐT.
+- **[CASE-04] Áp dụng đồng thời nhiều bộ lọc dẫn đến không có dữ liệu phù hợp:**
+  - *Tình huống:* Người dùng chọn cùng lúc nhiều tiêu chí quá hẹp (ví dụ: Miền Nam, Quận 1 nhưng lại chọn Cơ sở Linh Đàm ở Hà Nội).
+  - *Cách xử lý:* Hệ thống hiển thị trạng thái bảng trống kèm thông báo gợi ý nới lỏng bộ lọc hoặc nhấn nút đặt lại bộ lọc.
+- **[CASE-05] Thay đổi kho dữ liệu khi đang áp dụng bộ lọc nâng cao:**
+  - *Tình huống:* Người dùng đang lọc theo Quận Cầu Giấy và chuyển đổi từ Kho T sang Kho M.
+  - *Cách xử lý:* Hệ thống giữ nguyên các tiêu chí lọc nâng cao đang chọn, cập nhật lại số lượng đếm trên từng thẻ trạng thái của Kho M và tải danh sách dòng thỏa mãn đồng thời cả 2 điều kiện.
 
 

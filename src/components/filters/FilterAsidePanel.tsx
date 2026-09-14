@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 
 export interface FilterAsidePanelProps {
   title?: string
+  description?: string
   activeCount?: number
   onReset?: () => void
   resetLabel?: string
@@ -31,6 +32,7 @@ export interface FilterAsidePanelProps {
  */
 export function FilterAsidePanel({
   title = 'Bộ lọc nâng cao',
+  description,
   activeCount = 0,
   onReset,
   resetLabel = 'Đặt lại',
@@ -53,15 +55,22 @@ export function FilterAsidePanel({
     >
       {/* 1. Header panel: Tên bộ lọc, badge số lượng, nút Đặt lại và nút đóng X */}
       <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-muted/20 shrink-0">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="font-semibold text-xs text-foreground truncate">{title}</span>
-          {activeCount > 0 && (
-            <Badge
-              variant="secondary"
-              className="h-4.5 rounded-full px-1.5 text-[10px] font-medium bg-primary/10 text-primary border-primary/20 shrink-0"
-            >
-              {activeCount}
-            </Badge>
+        <div className="flex flex-col min-w-0 pr-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-semibold text-xs text-foreground truncate">{title}</span>
+            {activeCount > 0 && (
+              <Badge
+                variant="secondary"
+                className="h-4.5 rounded-full px-1.5 text-[10px] font-medium bg-primary/10 text-primary border-primary/20 shrink-0"
+              >
+                {activeCount}
+              </Badge>
+            )}
+          </div>
+          {description && (
+            <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5" title={description}>
+              {description}
+            </p>
           )}
         </div>
 

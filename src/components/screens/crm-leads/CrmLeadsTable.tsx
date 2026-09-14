@@ -1,6 +1,6 @@
 'use client'
 
-import { Eye, Copy, Check, FileText, Calendar, UserPlus, Plus, User, ArrowLeftRight, ExternalLink, School, GraduationCap, RotateCcw } from 'lucide-react'
+import { Eye, Copy, Check, FileText, Calendar, UserPlus, Plus, User, ArrowLeftRight, ExternalLink, School, GraduationCap, RotateCcw, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Lead } from '@/mocks/crmLeads'
@@ -23,7 +23,7 @@ import {
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { maskPhoneNumber, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateTimeWithDayOfWeek, formatOrderDate, getLeadAssessmentDisplay, getLeadNearestEvent, getLeadSlaDeadline } from './crmLeadsHelpers'
+import { maskPhoneNumber, getLeadCareInfo, getStaffAssignmentInfo, getProductGroup, getCleanStaffName, formatDateTimeWithDayOfWeek, formatOrderDate, getLeadAssessmentDisplay, getLeadNearestEvent } from './crmLeadsHelpers'
 import { STATUS_LABEL_MAP } from './crmLeadsTypes'
 import { CrmLeadsCareHistoryPopover } from './CrmLeadsCareHistoryPopover'
 import { BookingEventHoverCard } from '@/components/screens/calendar/BookingEventHoverCard'
@@ -49,6 +49,7 @@ interface CrmLeadsTableProps {
   onOpenBookingTest?: (lead: Lead) => void
   onOpenTrialClass?: (lead: Lead) => void
   onOpenCreateOrder?: (lead: Lead) => void
+  onReactivateCycle?: (lead: Lead) => void
 }
 
 export function CrmLeadsTable({
@@ -64,6 +65,7 @@ export function CrmLeadsTable({
   onOpenBookingTest,
   onOpenTrialClass,
   onOpenCreateOrder,
+  onReactivateCycle,
 }: CrmLeadsTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -157,7 +159,6 @@ export function CrmLeadsTable({
 
               const assessment = getLeadAssessmentDisplay(lead)
               const nearestEvent = getLeadNearestEvent(lead)
-              const slaDeadline = getLeadSlaDeadline(lead)
 
               return (
                 <TableRow
@@ -247,6 +248,17 @@ export function CrmLeadsTable({
                       >
                         <User className="h-4 w-4" />
                       </Button>
+                      {(lead.status === 'that_bai' || lead.status === 'chuyen_doi' || lead.status === 'tam_dung') && onReactivateCycle && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md cursor-pointer"
+                          onClick={() => onReactivateCycle(lead)}
+                          title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"
@@ -422,7 +434,37 @@ export function CrmLeadsTable({
 
                       const cellContent = (
                         <div className="flex flex-col gap-1 py-0.5 text-left max-w-[280px] cursor-pointer group/care">
-                          {/* Dòng 1: Hẹn: - nếu null, hoặc hiện ngày nếu có */}
+                          {/* Dòng 1: (n) trước Ngày + nội dung ghi chú chăm sóc gần nhất */}
+                          {isUncared ? (
+                            <div className="text-xs italic text-amber-600 dark:text-amber-400 font-normal truncate">
+                              <span>(0) </span>
+                              <span>Cần liên hệ trao đổi với phụ huynh ngay</span>
+                            </div>
+                          ) : latestLog ? (
+                            <div
+                              className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors font-normal"
+                              title={`(${attemptCount}) Ghi chú (${latestLog.date}): ${latestLog.note}`}
+                            >
+                              <span
+                                className={cn(
+                                  'font-normal mr-1 transition-colors',
+                                  inProgress
+                                    ? 'text-sky-600 dark:text-sky-400 group-hover/care:underline'
+                                    : 'text-emerald-600 dark:text-emerald-400 group-hover/care:underline'
+                                )}
+                              >
+                                ({attemptCount})
+                              </span>
+                              <span className="font-mono text-foreground/70">{latestLog.date}:</span>{' '}
+                              <span>{latestLog.note}</span>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground italic font-normal">
+                              <span>(0) Chưa có lịch sử chăm sóc</span>
+                            </div>
+                          )}
+
+                          {/* Dòng 2: Hẹn: - nếu null, hoặc hiện ngày nếu có */}
                           <div className="flex items-center gap-1 text-xs">
                             {isRescheduled && rescheduleDate ? (
                               <span
@@ -438,34 +480,6 @@ export function CrmLeadsTable({
                               </span>
                             )}
                           </div>
-
-                          {/* Dòng 2: (n) trước Ngày + nội dung ghi chú chăm sóc gần nhất */}
-                          {isUncared ? (
-                            <div className="text-xs italic text-amber-600 dark:text-amber-400 font-normal truncate">
-                              <span>(0) </span>
-                              <span>Cần liên hệ trao đổi với phụ huynh ngay</span>
-                            </div>
-                          ) : (
-                            latestLog && (
-                              <div
-                                className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors font-normal"
-                                title={`(${attemptCount}) Ghi chú (${latestLog.date}): ${latestLog.note}`}
-                              >
-                                <span
-                                  className={cn(
-                                    'font-normal mr-1 transition-colors',
-                                    inProgress
-                                      ? 'text-sky-600 dark:text-sky-400 group-hover/care:underline'
-                                      : 'text-emerald-600 dark:text-emerald-400 group-hover/care:underline'
-                                  )}
-                                >
-                                  ({attemptCount})
-                                </span>
-                                <span className="font-mono text-foreground/70">{latestLog.date}:</span>{' '}
-                                <span>{latestLog.note}</span>
-                              </div>
-                            )
-                          )}
                         </div>
                       )
 
@@ -483,16 +497,11 @@ export function CrmLeadsTable({
                     })()}
                   </TableCell>
 
-                  {/* Cột: Trạng thái & Hạn SLA */}
+                  {/* Cột: Trạng thái */}
                   <TableCell className="min-w-[150px]">
-                    <div className="flex flex-col gap-1 items-start">
-                      <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
-                        {STATUS_LABEL_MAP[lead.status] ?? lead.status}
-                      </Badge>
-                      <span className="text-[11px] text-muted-foreground whitespace-nowrap font-normal">
-                        Hạn SLA: <span className="font-mono text-foreground/85">{slaDeadline}</span>
-                      </span>
-                    </div>
+                    <Badge className={cn("font-normal text-xs py-0.5 px-2", getStatusBadgeClass(lead.status))}>
+                      {STATUS_LABEL_MAP[lead.status] ?? lead.status}
+                    </Badge>
                   </TableCell>
 
                   {/* Cột 8: Người phụ trách (Chỉ hiển thị trên viewScope 'all', ẩn trên viewScope 'my' vì là Lead của chính họ) */}
@@ -535,7 +544,7 @@ export function CrmLeadsTable({
                                 <ArrowLeftRight className="h-3 w-3 text-muted-foreground/60 group-hover:text-primary shrink-0 transition-colors" />
                               </div>
                               <span
-                                className="text-xs text-muted-foreground font-mono truncate"
+                                className="text-[11px] text-muted-foreground font-mono truncate"
                                 title={`Bắt đầu phụ trách: ${staffAssignInfo.label}`}
                               >
                                 {staffAssignInfo.label}

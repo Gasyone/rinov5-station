@@ -3,7 +3,9 @@
 import React, { useState, useMemo } from 'react'
 import {
   User,
+  UserCheck,
   Copy,
+  ExternalLink,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -18,6 +20,7 @@ import {
   buildOtherParents,
   buildChildContacts,
 } from './leadContactsHelper'
+import { getSiblingLeads } from './leadSiblingsHelper'
 
 export interface CrmLeadContactsTabProps {
   lead: Lead
@@ -28,6 +31,7 @@ export interface CrmLeadContactsTabProps {
   onUpdateLead?: (updatedLead: Lead) => void
   activeParentName?: string | null
   onSwitchParentPersona?: (parentName: string) => void
+  basePath?: string
 }
 
 export function CrmLeadContactsTab({
@@ -36,6 +40,7 @@ export function CrmLeadContactsTab({
   onUpdateLead,
   activeParentName,
   onSwitchParentPersona,
+  basePath,
 }: CrmLeadContactsTabProps) {
   // Modal state
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
@@ -55,6 +60,11 @@ export function CrmLeadContactsTab({
 
   // Children Contacts
   const childContacts: ChildPersonaItem[] = useMemo(() => buildChildContacts(lead), [lead])
+
+  const siblingLeads = useMemo(
+    () => getSiblingLeads(lead, undefined, basePath || '/app/crm_my_leads'),
+    [lead, basePath]
+  )
 
   const [localSelectedParentName, setLocalSelectedParentName] = useState<string | null>(null)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
@@ -296,14 +306,15 @@ export function CrmLeadContactsTab({
       <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 items-start">
         {/* PANEL TRÁI: CHÂN DUNG LEAD / THÔNG TIN PHỤ HUYNH */}
         <div className="space-y-3.5">
-          {/* Header Bối cảnh Lead: Mã Lead, Ngày tạo & Chuyển đổi Phụ huynh chăm sóc (Gom vào panel trái) */}
-          <div className="rounded-xl border border-sky-200/90 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 p-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-2xs">
-            {/* Tiêu đề + Mã Lead + Ngày tạo */}
+          {/* Header Bối cảnh Lead: Mã Lead, Ngày tạo & Chuyển đổi Phụ huynh chăm sóc */}
+          <div className="rounded-xl border border-sky-200/90 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 p-3 space-y-2.5 shadow-2xs">
+            {/* HÀNG 1: Tiêu đề + Mã Lead + Ngày tạo */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-              <span className="font-bold text-foreground text-xs">
+              <span className="font-bold text-foreground text-xs flex items-center gap-1.5 shrink-0">
+                <UserCheck className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                 Chân dung Lead
               </span>
-              <span className="text-muted-foreground/40">•</span>
+              <span className="text-muted-foreground/40 shrink-0">•</span>
               <button
                 type="button"
                 onClick={() => {
@@ -311,57 +322,88 @@ export function CrmLeadContactsTab({
                   navigator.clipboard.writeText(code)
                   toast.success(`Đã sao chép mã Lead: ${code}`)
                 }}
-                className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
                 title="Nhấp để sao chép mã Lead"
               >
                 <span>Mã: {lead.code || 'LD-10291-A'}</span>
                 <Copy className="h-3 w-3 text-muted-foreground/70 hover:text-foreground" />
               </button>
-              <span className="text-muted-foreground/40">•</span>
-              <span className="text-xs text-muted-foreground font-normal">
+              <span className="text-muted-foreground/40 shrink-0">•</span>
+              <span className="text-xs text-muted-foreground font-normal shrink-0">
                 Ngày tạo: {lead.createdAt || '10/08/2026'}
               </span>
             </div>
 
-            {/* Cụm Đổi phụ huynh chăm sóc */}
-            {parentContacts.length > 1 && (
-              <div className="flex items-center gap-1 flex-wrap sm:justify-end">
-                <span className="text-[11px] text-muted-foreground font-medium shrink-0">
-                  Phụ huynh:
-                </span>
-                <div className="flex items-center gap-1 flex-wrap">
-                  {parentContacts.map((p) => {
-                    const isSelected = selectedParent.name === p.name
-                    return (
-                      <button
-                        key={p.name}
-                        type="button"
-                        onClick={() => handleSwitchParent(p)}
-                        className={cn(
-                          'h-6 px-2 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer border',
-                          isSelected
-                            ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
-                            : 'bg-background hover:bg-muted text-foreground border-border/70'
-                        )}
-                      >
-                        <User className="h-2.5 w-2.5" />
-                        <span>
-                          {p.role}: {p.name}
-                        </span>
-                        {p.isPrimary && (
-                          <span
+            {/* HÀNG 2: Section Chọn Phụ Huynh & Thẻ các con khác của Phụ huynh */}
+            {(parentContacts.length > 1 || siblingLeads.length > 0) && (
+              <div className="pt-2 border-t border-sky-200/70 dark:border-sky-800/60 space-y-2">
+                {/* Chọn phụ huynh */}
+                {parentContacts.length > 1 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-muted-foreground font-medium shrink-0">
+                      Phụ huynh:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {parentContacts.map((p) => {
+                        const isSelected = selectedParent.name === p.name
+                        return (
+                          <button
+                            key={p.name}
+                            type="button"
+                            onClick={() => handleSwitchParent(p)}
                             className={cn(
-                              'text-[8px] px-1 rounded-xs font-bold uppercase',
-                              isSelected ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-800'
+                              'h-6.5 px-2.5 rounded-md text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer border shrink-0',
+                              isSelected
+                                ? 'bg-sky-600 text-white border-sky-600 shadow-xs'
+                                : 'bg-background hover:bg-muted text-foreground border-border/70'
                             )}
                           >
-                            Chính
-                          </span>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
+                            <User className="h-2.5 w-2.5" />
+                            <span>
+                              {p.role}: {p.name}
+                            </span>
+                            {p.isPrimary && (
+                              <span
+                                className={cn(
+                                  'text-[8px] px-1 rounded-xs font-bold uppercase',
+                                  isSelected
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200'
+                                )}
+                              >
+                                Chính
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Thẻ các con khác của phụ huynh / gia đình */}
+                {siblingLeads.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                    <span className="text-[11px] text-muted-foreground font-medium shrink-0">
+                      Con khác:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {siblingLeads.map((sib) => (
+                        <a
+                          key={sib.id}
+                          href={sib.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-md text-[11px] font-medium text-sky-700 dark:text-sky-300 bg-white dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/90 dark:border-sky-800 transition-colors shadow-3xs cursor-pointer select-none group/sib shrink-0"
+                          title={`Mở hồ sơ Lead của ${sib.name} trong tab mới`}
+                        >
+                          <span>{sib.name}</span>
+                          <ExternalLink className="h-2.5 w-2.5 opacity-60 group-hover/sib:opacity-100 group-hover/sib:translate-x-0.5 transition-transform" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/shared'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { mockClassSessions, getClassSessions, getTeachers } from '@/mocks/classSessions'
 import { ClassSessionsToolbar } from './ClassSessionsToolbar'
 import { SessionTable } from './SessionTable'
@@ -116,30 +116,32 @@ export function ClassSessionsScreen() {
         onFilterOpen={() => setFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        {filteredSessions.length > 0 ? (
-          <SessionTable
-            groups={groups}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onAction={handleAction}
-          />
-        ) : (
-          <EmptyState
-            title="Không có buổi học nào"
-            description="Không có session nào phù hợp với bộ lọc hiện tại."
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          {filteredSessions.length > 0 ? (
+            <SessionTable
+              groups={groups}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onAction={handleAction}
+            />
+          ) : (
+            <EmptyState
+              title="Không có buổi học nào"
+              description="Không có session nào phù hợp với bộ lọc hiện tại."
+            />
+          )}
+        </div>
+
+        {filterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc buổi học"
+            groups={filterGroups}
+            onToggle={handleFilterToggle}
+            onClearAll={handleFilterClear}
+            onClose={() => setFilterOpen(false)}
           />
         )}
-
-        <FilterGroupSheetPanel
-          open={filterOpen}
-          onOpenChange={setFilterOpen}
-          title="Bộ lọc buổi học"
-          groups={filterGroups}
-          onToggle={handleFilterToggle}
-          onClearAll={handleFilterClear}
-          onApply={handleFilterApply}
-        />
       </div>
     </div>
   )

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel } from '@/components/filters'
+import { FilterGroupAsidePanel } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import {
   DEFAULT_WORK_PRIORITY_RULES,
@@ -224,8 +224,9 @@ export function WorkRegistrationScreen() {
         onOpenWarnings={() => setWarningsOpen(true)}
       />
 
-      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        {activeTab === 'mine' ? (
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          {activeTab === 'mine' ? (
           <WorkRegistrationEditablePanel
             weekDays={weekDays}
             records={activeEmployeeRecords}
@@ -299,33 +300,35 @@ export function WorkRegistrationScreen() {
             onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
           />
         ) : null}
-      </div>
+        </div>
 
-      <FilterGroupSheetPanel
-        open={filterOpen}
-        title="Bộ lọc đăng ký nhân viên"
-        description="Lọc nhân viên theo chức danh và trạng thái đăng ký."
-        groups={filterGroups}
-        onOpenChange={setFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'jobTitles') {
-            setJobTitles((current) => current.includes(value) ? current.filter((item) => item !== value) : [...current, value])
-          }
-          if (sectionId === 'statuses') {
-            setStatusFilter((current) => current === value ? 'all' : value as WorkRegistrationStatusFilter)
-          }
-          if (sectionId === 'subjects') {
-            setSubjectFilter((current) => current === value ? 'all' : value)
-          }
-          setStaffPage(1)
-        }}
-        onClearAll={() => {
-          setJobTitles([])
-          setStatusFilter('all')
-          setSubjectFilter('all')
-          setStaffPage(1)
-        }}
-      />
+        {filterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc đăng ký nhân viên"
+            description="Lọc nhân viên theo chức danh và trạng thái đăng ký."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'jobTitles') {
+                setJobTitles((current) => current.includes(value) ? current.filter((item) => item !== value) : [...current, value])
+              }
+              if (sectionId === 'statuses') {
+                setStatusFilter((current) => current === value ? 'all' : value as WorkRegistrationStatusFilter)
+              }
+              if (sectionId === 'subjects') {
+                setSubjectFilter((current) => current === value ? 'all' : value)
+              }
+              setStaffPage(1)
+            }}
+            onClearAll={() => {
+              setJobTitles([])
+              setStatusFilter('all')
+              setSubjectFilter('all')
+              setStaffPage(1)
+            }}
+            onClose={() => setFilterOpen(false)}
+          />
+        )}
+      </div>
       <WorkRegistrationWarningDialog open={warningsOpen} onOpenChange={setWarningsOpen} />
       <WorkRegistrationSlotDetailDialog
         open={Boolean(slotDetail || branchDetail)}

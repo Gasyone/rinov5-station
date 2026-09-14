@@ -7,7 +7,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from '@/components/data-table'
 import {
-  FilterGroupSheetPanel,
+  FilterGroupAsidePanel,
   createFilterGroup,
   type FilterGroupConfig,
 } from '@/components/filters'
@@ -176,48 +176,50 @@ export function PromotionsScreen() {
         onCreateClick={() => setIsCreateOpen(true)}
       />
 
-      {/* Main Table container */}
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
+      {/* Main Table container + Aside Filter */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+              />
+            }
+          >
+            <PromotionsTable
+              items={paged}
+              selectedIds={selectedIds}
+              onToggleSelectAll={handleToggleSelectAll}
+              onToggleSelectRow={handleToggleSelectRow}
+              onRowClick={(item) => setSelectedPromotion(item)}
+              onView={(item) => setSelectedPromotion(item)}
             />
-          }
-        >
-          <PromotionsTable
-            items={paged}
-            selectedIds={selectedIds}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelectRow={handleToggleSelectRow}
-            onRowClick={(item) => setSelectedPromotion(item)}
-            onView={(item) => setSelectedPromotion(item)}
-          />
-        </DataTableFrame>
-      </div>
+          </DataTableFrame>
+        </div>
 
-      {/* Bộ lọc trượt (Filter Group Sheet Panel) */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc mã khuyến mãi"
-        description="Lọc danh sách theo loại mã, hình thức giảm và cơ sở áp dụng."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'types') toggleArray('types', value as PromotionType)
-          if (sectionId === 'discountTypes')
-            toggleArray('discountTypes', value as PromotionDiscountType)
-          if (sectionId === 'branches') toggleArray('branches', value)
-        }}
-        onClearAll={() => {
-          setFilters({ types: [], discountTypes: [], branches: [] })
-          setPage(1)
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc mã khuyến mãi"
+            description="Lọc danh sách theo loại mã, hình thức giảm và cơ sở áp dụng."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'types') toggleArray('types', value as PromotionType)
+              if (sectionId === 'discountTypes')
+                toggleArray('discountTypes', value as PromotionDiscountType)
+              if (sectionId === 'branches') toggleArray('branches', value)
+            }}
+            onClearAll={() => {
+              setFilters({ types: [], discountTypes: [], branches: [] })
+              setPage(1)
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       {/* Dialog xem chi tiết mã khuyến mãi */}
       <PromotionsDetailDialog

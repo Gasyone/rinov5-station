@@ -1,5 +1,6 @@
 import { StudentCareAlert } from '@/mocks/careAlerts'
 import { mockOrders } from '@/mocks/orders'
+import { getStatusColors } from '@/lib/statusColors'
 
 /**
  * Calculates the percentage of remaining sessions
@@ -211,6 +212,68 @@ export function getExpirationCategory(expectedEndDateStr: string): 'T' | 'T1' | 
     return 'T2T3' // September, October, or later in 2026
   }
   return 'T2T3' // 2027 or later
+}
+
+export interface ExpiryTierInfo {
+  tier: 'T1' | 'T2' | 'T3'
+  label: string
+  badgeClass: string
+}
+
+/**
+ * Categorizes a student alert into Expiry Tier (T1, T2, T3) based on expectedEndDate and remainingSessions
+ */
+export function getExpiryTier(expectedEndDate?: string, remainingSessions?: number): ExpiryTierInfo {
+  if (!expectedEndDate) {
+    return {
+      tier: 'T1',
+      label: 'T1',
+      badgeClass: getStatusColors('error').badge,
+    }
+  }
+
+  const parts = expectedEndDate.split('/')
+  if (parts.length < 3) {
+    return {
+      tier: 'T1',
+      label: 'T1',
+      badgeClass: getStatusColors('error').badge,
+    }
+  }
+
+  const day = parseInt(parts[0], 10)
+  const month = parseInt(parts[1], 10)
+  const year = parseInt(parts[2], 10)
+  const itemDate = new Date(year, month - 1, day)
+
+  // Simulated base date for demo (2026-07-15)
+  const baseDate = new Date(2026, 6, 15)
+  const diffDays = Math.round((itemDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  // Hạn T1 (≤ 1T): hết hạn trong vòng 30 ngày tới hoặc đã quá hạn, hoặc cận buổi (<= 5 buổi)
+  if (diffDays <= 30 || (remainingSessions !== undefined && remainingSessions <= 5)) {
+    return {
+      tier: 'T1',
+      label: 'T1',
+      badgeClass: getStatusColors('error').badge,
+    }
+  }
+
+  // Hạn T2 (1-2T): 31 - 60 ngày
+  if (diffDays <= 60) {
+    return {
+      tier: 'T2',
+      label: 'T2',
+      badgeClass: getStatusColors('warning').badge,
+    }
+  }
+
+  // Hạn T3 (2-3T): > 60 ngày
+  return {
+    tier: 'T3',
+    label: 'T3',
+    badgeClass: getStatusColors('success').badge,
+  }
 }
 
 export type RenewalClassification =

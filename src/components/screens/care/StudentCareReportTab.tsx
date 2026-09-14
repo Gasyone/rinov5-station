@@ -54,6 +54,7 @@ interface StudentCareReportTabProps {
   assignedCS?: string
   onAssignedCSChange?: (csName: string) => void
   branchName?: string
+  onOpenLeaveReserveDialog?: () => void
 }
 
 // ── Main Component ──────────────────────────────────────────────────────
@@ -68,6 +69,7 @@ export function StudentCareReportTab({
   setSelectedPackageId,
   staffInfo,
   branchName,
+  onOpenLeaveReserveDialog,
 }: StudentCareReportTabProps) {
   const isEnglish = useMemo(() => {
     if (!activePackage) return true
@@ -80,8 +82,6 @@ export function StudentCareReportTab({
   }, [studentAlert, studentId])
 
   const currentBranchName = branchName || 'RinoEdu Nguyễn Tuân'
-  const [showAllPrograms, setShowAllPrograms] = useState(false)
-  const [isClassInfoExpanded, setIsClassInfoExpanded] = useState(false)
   const [reportSyncVersion, setReportSyncVersion] = useState(0)
 
   useEffect(() => {
@@ -99,9 +99,7 @@ export function StudentCareReportTab({
     reportSyncVersion
     return getStudentMonthlyReports(studentId || studentName)
   }, [studentId, studentName, reportSyncVersion])
-  const activePackages = useMemo(() => packagesList.filter(p => p.status === 'active'), [packagesList])
-  const otherPackages = useMemo(() => packagesList.filter(p => p.status !== 'active'), [packagesList])
-  const visiblePackages = useMemo(() => showAllPrograms ? packagesList : activePackages, [packagesList, activePackages, showAllPrograms])
+  const visiblePackages = packagesList
   const selectedMonth = 'all'
   const [customReports, setCustomReports] = useState<{ title: string; date: string; url: string; packageId: string }[]>([])
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
@@ -120,6 +118,7 @@ export function StudentCareReportTab({
     className: string
     classCode: string
     packageId?: string
+    isHistorical?: boolean
   } | null>(null)
 
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false)
@@ -383,20 +382,17 @@ export function StudentCareReportTab({
 
           return (
             <div key={pkg.id} className="space-y-4">
-              {/* Cụm thông tin Gói học & Lớp học - Giản lược thị giác & Tập trung vào thông tin chính */}
+              {/* Cụm thông tin Chương trình hiện tại & Lớp học */}
               <StudentCareActiveClassCard
                 pkg={pkg}
                 visiblePackages={visiblePackages}
                 selectedPackageId={selectedPackageId}
                 setSelectedPackageId={setSelectedPackageId}
-                otherPackages={otherPackages}
-                showAllPrograms={showAllPrograms}
-                setShowAllPrograms={setShowAllPrograms}
-                isClassInfoExpanded={isClassInfoExpanded}
-                setIsClassInfoExpanded={setIsClassInfoExpanded}
-                pkgIsEnglish={pkgIsEnglish}
                 staffInfo={staffInfo}
                 currentBranchName={currentBranchName}
+                pkgIsEnglish={pkgIsEnglish}
+                student={currentStudentAlert}
+                onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
               />
 
 
@@ -498,7 +494,6 @@ export function StudentCareReportTab({
         })}
 
       {/* 2. LỊCH SỬ CÁC LỚP CŨ (Collapsible cards with borders) */}
-      {/* 2. LỊCH SỬ CÁC LỚP CŨ (Collapsible cards with borders) */}
       <HistoricalClassesList
         classDataForPackages={classDataForPackages}
         activePackageId={activePackage?.id || ''}
@@ -510,6 +505,13 @@ export function StudentCareReportTab({
         setSelectedEvalPkgId={setSelectedEvalPkgId}
         setIsEvalOpen={setIsEvalOpen}
         selectedMonth={selectedMonth}
+        branchName={currentBranchName}
+        studentAlert={currentStudentAlert}
+        onOpenAttendance={(data) => {
+          setAttendanceModalData(data)
+          setIsAttendanceModalOpen(true)
+        }}
+        onOpenLeaveReserveDialog={() => setLeaveDialogOpen(true)}
       />
 
       {/* 3. DIALOGS */}
@@ -582,8 +584,22 @@ export function StudentCareReportTab({
           testSessions={attendanceModalData.testSessions}
           className={attendanceModalData.className}
           classCode={attendanceModalData.classCode}
-          multiClassSessions={multiClassData.allAttendanceSessions}
-          classList={multiClassData.classList}
+          isHistoricalClass={Boolean(
+            attendanceModalData.isHistorical ||
+            (attendanceModalData.packageId && attendanceModalData.packageId !== activePackage?.id)
+          )}
+          multiClassSessions={
+            attendanceModalData.isHistorical ||
+            (attendanceModalData.packageId && attendanceModalData.packageId !== activePackage?.id)
+              ? undefined
+              : multiClassData.allAttendanceSessions
+          }
+          classList={
+            attendanceModalData.isHistorical ||
+            (attendanceModalData.packageId && attendanceModalData.packageId !== activePackage?.id)
+              ? []
+              : multiClassData.classList
+          }
           initialPackageId={attendanceModalData.packageId || 'all'}
           onOpenLeave={(date) => { setSelectedLeaveDate(date); setLeaveDialogOpen(true); }}
         />

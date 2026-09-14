@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import type { TrialClass } from '@/mocks/trialClasses'
 import { TrialClassToolbar } from './TrialClassToolbar'
 import { TrialClassTableFrame } from './TrialClassTableFrame'
@@ -268,64 +268,72 @@ export function TrialClassScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-0 lg:px-3 lg:pb-3">
-        <TrialClassTableFrame
-          loading={isLoading}
-          error={error?.message ?? null}
-          trials={paged}
-          selectedIds={selectedIds}
-          copiedKey={copiedKey}
-          currentPage={currentPage}
-          total={filtered.length}
-          pageSize={pageSize}
-          onRetry={reloadTrials}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          onToggleAll={(checked, ids) => {
-            setSelectedIds(checked ? new Set(ids) : new Set())
-          }}
-          onToggleOne={(id, checked) => {
-            setSelectedIds((current) => {
-              const next = new Set(current)
-              if (checked) {
-                next.add(id)
-              } else {
-                next.delete(id)
-              }
-              return next
-            })
-          }}
-          onRowClick={setDetailTrialId}
-          onCopy={handleCopy}
-          onOpenAssignReschedule={(id) => {
-            setAssignMode({ mode: 'reschedule', trialId: id })
-          }}
-          onApprove={handleApprove}
-          onReject={handleReject}
-        />
-      </div>
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-0 lg:px-3 lg:pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <TrialClassTableFrame
+            loading={isLoading}
+            error={error?.message ?? null}
+            trials={paged}
+            selectedIds={selectedIds}
+            copiedKey={copiedKey}
+            currentPage={currentPage}
+            total={filtered.length}
+            pageSize={pageSize}
+            onRetry={reloadTrials}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            onToggleAll={(checked, ids) => {
+              setSelectedIds(checked ? new Set(ids) : new Set())
+            }}
+            onToggleOne={(id, checked) => {
+              setSelectedIds((current) => {
+                const next = new Set(current)
+                if (checked) {
+                  next.add(id)
+                } else {
+                  next.delete(id)
+                }
+                return next
+              })
+            }}
+            onRowClick={setDetailTrialId}
+            onCopy={handleCopy}
+            onOpenAssignReschedule={(id) => {
+              setAssignMode({ mode: 'reschedule', trialId: id })
+            }}
+            onApprove={handleApprove}
+            onReject={handleReject}
+          />
+        </div>
 
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        groups={filterGroups}
-        description="Kết hợp bộ lọc theo trường, trạng thái, ngày trong tuần, môn học, chương trình, người phụ trách và sale."
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          toggleArrayFilter(sectionId as keyof TrialClassFilterState, value)
-        }}
-        onClearAll={() => {
-          setFilters({
-            programs: [],
-            creators: [],
-            statuses: [],
-            subjects: [],
-            owners: [],
-            schools: [],
-            weekdays: [],
-          })
-          setPage(1)
-        }}
-      />
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc lớp học thử"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={(sectionId, value) => {
+              toggleArrayFilter(sectionId as keyof TrialClassFilterState, value)
+            }}
+            onClearAll={() => {
+              setFilters({
+                programs: [],
+                creators: [],
+                statuses: [],
+                subjects: [],
+                owners: [],
+                schools: [],
+                weekdays: [],
+              })
+              setPage(1)
+            }}
+            onClearSection={(sectionId) => {
+              setFilters((prev) => ({ ...prev, [sectionId]: [] }))
+              setPage(1)
+            }}
+          />
+        )}
+      </div>
 
       <TrialClassDetailDialog
         trial={detailTrial}

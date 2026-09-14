@@ -86,7 +86,9 @@ export interface Lead {
   address: string
   email?: string
   familySiblings?: string[] // Danh sách các anh chị em khác cùng Phụ huynh
-  source: 'facebook' | 'hotline' | 'event' | 'referral' | 'website'
+  source: 'facebook' | 'hotline' | 'event' | 'referral' | 'website' | string
+  poolId?: string // Mã kho dữ liệu tiếp nhận (từ lead_lifecycle_config)
+  poolName?: string // Tên kho dữ liệu (Kho M, Kho G, Kho CC, Kho T...)
   status: LeadStatus
   subStatus?: string // Trạng thái phụ
   assignedTo: string

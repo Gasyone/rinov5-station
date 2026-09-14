@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { toast } from 'sonner'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
 import { TrialClassDetailDialog } from '@/components/screens/trial-class/TrialClassDetailDialog'
 import { readTrialClasses } from '@/components/screens/trial-class/trialClassHelpers'
@@ -391,54 +391,58 @@ export function MyScheduleScreen({
         onFilterOpen={() => setIsFilterOpen(true)}
       />
 
-      {layoutType === 'matrix' ? (
-        <MyScheduleMatrixView
-          slots={slots}
-          days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
-          today={today}
-          viewMode={viewMode}
-          activeBranch={activeBranch}
-          hideBranch={hideBranch}
-          onSlotClick={handleSlotClick}
-        />
-      ) : (
-        <MySchedule1DView
-          slots={slots}
-          days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
-          today={today}
-          viewMode={viewMode}
-          activeBranch={activeBranch}
-          hideBranch={hideBranch}
-          onSlotClick={handleSlotClick}
-        />
-      )}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          {layoutType === 'matrix' ? (
+            <MyScheduleMatrixView
+              slots={slots}
+              days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
+              today={today}
+              viewMode={viewMode}
+              activeBranch={activeBranch}
+              hideBranch={hideBranch}
+              onSlotClick={handleSlotClick}
+            />
+          ) : (
+            <MySchedule1DView
+              slots={slots}
+              days={viewMode === 'day' ? [selectedDate] : getScheduleWeekDays(selectedDate)}
+              today={today}
+              viewMode={viewMode}
+              activeBranch={activeBranch}
+              hideBranch={hideBranch}
+              onSlotClick={handleSlotClick}
+            />
+          )}
+        </div>
 
-
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc lịch của tôi"
-        description="Lọc lịch theo thời gian và nguồn lịch."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'buckets') toggleFilterValue(value, setBucketFilters)
-          if (sectionId === 'sources') toggleFilterValue(value, setSourceFilters)
-          if (sectionId === 'statuses') toggleFilterValue(value, setStatusFilters)
-          if (sectionId === 'types') toggleFilterValue(value, setTypeFilters)
-          if (sectionId === 'subjectFilters') toggleFilterValue(value, setSubjectFilters)
-          if (sectionId === 'roomFilters') toggleFilterValue(value, setRoomFilters)
-          if (sectionId === 'conditionFilters') toggleFilterValue(value, setConditionFilters)
-        }}
-        onClearAll={() => {
-          setBucketFilters([])
-          setSourceFilters([])
-          setStatusFilters([])
-          setTypeFilters([])
-          setSubjectFilters([])
-          setRoomFilters([])
-          setConditionFilters([])
-        }}
-      />
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc lịch của tôi"
+            description="Lọc lịch theo thời gian và nguồn lịch."
+            groups={filterGroups}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'buckets') toggleFilterValue(value, setBucketFilters)
+              if (sectionId === 'sources') toggleFilterValue(value, setSourceFilters)
+              if (sectionId === 'statuses') toggleFilterValue(value, setStatusFilters)
+              if (sectionId === 'types') toggleFilterValue(value, setTypeFilters)
+              if (sectionId === 'subjectFilters') toggleFilterValue(value, setSubjectFilters)
+              if (sectionId === 'roomFilters') toggleFilterValue(value, setRoomFilters)
+              if (sectionId === 'conditionFilters') toggleFilterValue(value, setConditionFilters)
+            }}
+            onClearAll={() => {
+              setBucketFilters([])
+              setSourceFilters([])
+              setStatusFilters([])
+              setTypeFilters([])
+              setSubjectFilters([])
+              setRoomFilters([])
+              setConditionFilters([])
+            }}
+            onClose={() => setIsFilterOpen(false)}
+          />
+        )}
+      </div>
 
       <BookingTestDetailDialog
         booking={detailBooking}

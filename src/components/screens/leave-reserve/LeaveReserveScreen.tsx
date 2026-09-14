@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
-import { FilterGroupSheetPanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { getLeaveReserveRequests, updateLeaveReserveStatus, createLeaveReserveRequest, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 import { LeaveReserveToolbar } from './LeaveReserveToolbar'
 import { LeaveReserveTable } from './LeaveReserveTable'
@@ -225,58 +225,65 @@ export function LeaveReserveScreen() {
         onCreateClick={handleOpenCreate}
       />
 
-      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <DataTableFrame
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              total={filtered.length}
-              pageSize={pageSize}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-4 lg:px-6 pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden">
+          <DataTableFrame
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                total={filtered.length}
+                pageSize={pageSize}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            }
+          >
+            <LeaveReserveTable
+              requests={paged}
+              selectedIds={selectedIds}
+              onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
+              onToggleOne={(id, checked) => {
+                setSelectedIds((cur) => {
+                  const next = new Set(cur)
+                  if (checked) next.add(id)
+                  else next.delete(id)
+                  return next
+                })
+              }}
+              onAction={handleAction}
+              onRowClick={(req) => {
+                setSelectedDetailRequest(req)
+                setIsDetailOpen(true)
+              }}
             />
-          }
-        >
-          <LeaveReserveTable
-            requests={paged}
-            selectedIds={selectedIds}
-            onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
-            onToggleOne={(id, checked) => {
-              setSelectedIds((cur) => {
-                const next = new Set(cur)
-                if (checked) next.add(id)
-                else next.delete(id)
-                return next
-              })
+          </DataTableFrame>
+        </div>
+
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc đơn yêu cầu"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'types') toggleArray('types', value as LeaveReserveRequest['type'])
+              if (sectionId === 'schools') toggleArray('schools', value as string)
+              if (sectionId === 'classes') toggleArray('classes', value as string)
+              if (sectionId === 'packages') toggleArray('packages', value as string)
+              if (sectionId === 'staff') toggleArray('staff', value as string)
+              if (sectionId === 'dateRanges') toggleArray('dateRanges', value as LeaveReserveFilterState['dateRanges'][number])
             }}
-            onAction={handleAction}
-            onRowClick={(req) => {
-              setSelectedDetailRequest(req)
-              setIsDetailOpen(true)
+            onClearAll={() => {
+              setFilters({ types: [], dateRanges: [], schools: [], packages: [], staff: [], classes: [] })
+              setPage(1)
+            }}
+            onClearSection={(sectionId) => {
+              setFilters((prev) => ({ ...prev, [sectionId]: [] }))
+              setPage(1)
             }}
           />
-        </DataTableFrame>
+        )}
       </div>
-
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        title="Bộ lọc đơn yêu cầu"
-        description="Lọc theo loại đơn, trường học và khoảng thời gian."
-        groups={filterGroups}
-        onOpenChange={setIsFilterOpen}
-        onToggle={(sectionId, value) => {
-          if (sectionId === 'types') toggleArray('types', value as LeaveReserveRequest['type'])
-          if (sectionId === 'schools') toggleArray('schools', value as string)
-          if (sectionId === 'classes') toggleArray('classes', value as string)
-          if (sectionId === 'packages') toggleArray('packages', value as string)
-          if (sectionId === 'staff') toggleArray('staff', value as string)
-          if (sectionId === 'dateRanges') toggleArray('dateRanges', value as LeaveReserveFilterState['dateRanges'][number])
-        }}
-        onClearAll={() => {
-          setFilters({ types: [], dateRanges: [], schools: [], packages: [], staff: [], classes: [] })
-          setPage(1)
-        }}
-      />
 
       <LeaveReserveCreateDialog
         open={createOpen}

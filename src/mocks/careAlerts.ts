@@ -35,7 +35,7 @@ export interface StudentCareAlert {
   englishName?: string    // Tên tiếng Anh
   startDate: string       // Ngày bắt đầu học
   subject: 'Toán tư duy' | 'Tiếng Anh' // Môn học
-  status: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' // Trạng thái
+  status: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' | 'Bảo lưu' | 'Chưa ghép lớp' // Trạng thái
   level: string           // Level
   subLevel: string        // Sub-Level
   classCode: string       // Mã lớp
@@ -50,7 +50,7 @@ export interface StudentCareAlert {
   priorTestScore: number  // Điểm kiểm tra (Trước lần gần nhất)
   careAlert?: string // Cảnh báo CSKH
   studentFolderLink: string // Link folder thông tin HS (ảnh, video)
-  realtimeStatus: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' // Trạng thái (Real-time)
+  realtimeStatus: 'Đang học' | 'Chờ chuyển lớp' | 'Hết buổi' | 'Bảo lưu' | 'Chưa ghép lớp' // Trạng thái (Real-time)
   teacherEvaluation?: string // CSSR GV đánh giá
   learningResultsLink: string // Link KQHT của HS
   teacherFeedbackMonth5?: string // Nhận xét của Giáo viên (Tháng 5)
@@ -234,6 +234,130 @@ export const mockCareAlerts: StudentCareAlert[] = [
     ]
   },
   {
+    id: "bao-nam",
+    studentId: "s-baonam",
+    customerCode: "10700512",
+    studentName: "Hoàng Bảo Nam",
+    englishName: "Leo",
+    startDate: "15/01/2026",
+    subject: "Toán tư duy",
+    status: "Bảo lưu",
+    level: "Toán 1:6",
+    subLevel: "Archimedes 5 - A",
+    classCode: "LD_TOAN_00010",
+    teacherCode: "GV_HuiLT20",
+    schedule: "T2 - 17:30-19:00, T6 - 17:30-19:00",
+    totalSessions: 48,
+    remainingSessions: 14,
+    expectedEndDate: "15/10/2026",
+    attendanceRatio: "34/48",
+    homeworkCompletion: 85.0,
+    lastTestScore: 8.0,
+    priorTestScore: 8.5,
+    careAlert: "Đang bảo lưu",
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-baonam",
+    realtimeStatus: "Bảo lưu",
+    learningResultsLink: "https://docs.google.com/document/d/learning-result-baonam",
+    csStaff: "Trần Thảo Anh 20",
+    callConfirmation: "Đã gọi",
+    completedCareTags: ['ĐK1'],
+    studentNote: "Học viên xin tạm dừng khóa học 3 tháng (15/06/2026 ➔ 15/09/2026) theo đơn #BL002 do gia đình đi công tác nước ngoài. Ngày học lại dự kiến: 16/09/2026.",
+    interactionNotes: "[CSĐK] [Đối tượng: Hoàng Văn Đức (Bố)] Check-in định kỳ học viên đang bảo lưu khóa học. Bố báo gia đình sẽ về nước vào đầu tháng 9 và sẵn sàng cho con quay lại lớp từ 16/09.",
+    interactionLogs: [
+      {
+        id: "log-baonam-1",
+        date: "2026-07-10",
+        staffName: "Trần Thảo Anh 20",
+        callConfirmation: "Đã gọi",
+        audioDuration: "02:30",
+        notes: "[CSĐK] Gọi điện hỏi thăm tình hình gia đình trong kỳ công tác, nhắc nhở hạn bảo lưu dự kiến kết thúc vào 15/09/2026.",
+        parentOpinion: "Gia đình dự kiến về trước 1 tuần và con sẽ đi học lại đúng lịch."
+      }
+    ]
+  },
+  {
+    id: "minh-quan",
+    studentId: "s-minhquan",
+    customerCode: "10700889",
+    studentName: "Đỗ Minh Quân",
+    englishName: "Marcus",
+    startDate: "20/02/2026",
+    subject: "Tiếng Anh",
+    status: "Bảo lưu",
+    level: "IELTS Junior",
+    subLevel: "5.0–5.5",
+    classCode: "",
+    teacherCode: "",
+    schedule: "",
+    totalSessions: 72,
+    remainingSessions: 28,
+    expectedEndDate: "20/12/2026",
+    attendanceRatio: "44/72",
+    homeworkCompletion: 90.0,
+    lastTestScore: 7.5,
+    priorTestScore: 8.0,
+    careAlert: "Đang bảo lưu",
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-minhquan",
+    realtimeStatus: "Bảo lưu",
+    learningResultsLink: "https://docs.google.com/document/d/learning-result-minhquan",
+    csStaff: "Nguyễn Thị Ngọc Anh",
+    callConfirmation: "Đã nhắn Zalo",
+    completedCareTags: ['ĐK1'],
+    studentNote: "Học viên bảo lưu 2 tháng ôn thi học kỳ tại trường phổ thông (01/06/2026 ➔ 31/07/2026). Đã làm thủ tục thoát lớp cũ LD_TA_00019 để bảo lưu 28 buổi. Ngày học lại dự kiến: 01/08/2026 sẽ được xếp lớp mới.",
+    interactionNotes: "[CSĐK] Gửi tài liệu tự ôn tập tại nhà qua Zalo trong thời gian bảo lưu.",
+    interactionLogs: [
+      {
+        id: "log-minhquan-1",
+        date: "2026-07-05",
+        staffName: "Nguyễn Thị Ngọc Anh",
+        callConfirmation: "Đã nhắn Zalo",
+        notes: "[CSĐK] Nhắn Zalo gửi bộ đề thi thử IELTS Reading & Listening cho phụ huynh tải cho con luyện tại nhà."
+      }
+    ]
+  },
+  {
+    id: "thao-nhi",
+    studentId: "s-thaonhi",
+    customerCode: "10701024",
+    studentName: "Vũ Thảo Nhi",
+    englishName: "Chloe",
+    startDate: "25/07/2026",
+    subject: "Tiếng Anh",
+    status: "Chưa ghép lớp",
+    level: "Level 4",
+    subLevel: "A",
+    classCode: "",
+    teacherCode: "",
+    schedule: "",
+    totalSessions: 48,
+    remainingSessions: 48,
+    expectedEndDate: "25/07/2027",
+    attendanceRatio: "0/0",
+    homeworkCompletion: 0,
+    lastTestScore: 8.5,
+    priorTestScore: 8.0,
+    careAlert: "Chờ xếp lớp",
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-thaonhi",
+    realtimeStatus: "Chưa ghép lớp",
+    learningResultsLink: "https://docs.google.com/document/d/learning-result-thaonhi",
+    csStaff: "Trần Thảo Anh 20",
+    callConfirmation: "Đã gọi",
+    completedCareTags: ['ĐK1'],
+    studentNote: "Học viên mới đóng phí gói Tiếng Anh Standard 48 buổi, yêu cầu học ca tối thứ 3, 5 sau 18h tại cơ sở Nguyễn Tuân. Đang chờ ghép lớp mới dự kiến khai giảng trước 01/08/2026.",
+    interactionNotes: "[CSĐK] [Đối tượng: Vũ Văn Nam (Bố)] Xác nhận tiếp nhận nhu cầu ca học. Đã chuyển yêu cầu sang Quản lý học thuật xếp phòng và phân công giáo viên.",
+    interactionLogs: [
+      {
+        id: "log-thaonhi-1",
+        date: "2026-07-16",
+        staffName: "Trần Thảo Anh 20",
+        callConfirmation: "Đã gọi",
+        audioDuration: "03:00",
+        notes: "[CSĐK] Gọi điện chào đón học viên mới, kiểm tra lại thông tin phụ huynh và lịch học mong muốn.",
+        parentOpinion: "Bố hy vọng sớm có thông tin lớp và giáo viên chủ nhiệm trước ngày 28/07."
+      }
+    ]
+  },
+  {
     id: "2",
     studentId: "s14",
     customerCode: "10210078",
@@ -291,7 +415,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     englishName: "Fiona",
     startDate: "17/08/2023",
     subject: "Tiếng Anh",
-    status: "Chờ chuyển lớp",
+    status: "Đang học",
     level: "Level 5",
     subLevel: "B",
     classCode: "LD_TA_00008",
@@ -307,7 +431,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     careAlert: "C90B",
     confirmC90B: "ĐÃ CSDB",
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-3",
-    realtimeStatus: "Chờ chuyển lớp",
+    realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-3",
     csStaff: "Nguyễn Thị Ngọc Anh",
     callConfirmation: "Đã gọi",
@@ -321,7 +445,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
       paymentTerm: 'Thanh toán 100%',
     },
     studentNote: 'Con tiếp thu nhanh các bài học logic, hay đặt câu hỏi phản biện trên lớp.',
-    interactionNotes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập chuẩn bị chuyển lớp mới. Đã liên kết đơn hàng OD831002.",
+    interactionNotes: "Đã nhắn tin Zalo trao đổi với mẹ nhắc con làm bài tập ôn thi học kỳ. Đã liên kết đơn hàng OD831002.",
     interactionLogs: [
       {
         id: "log-c3-2",
@@ -715,12 +839,12 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentName: "Đặng Thiên An",
     startDate: "23/11/2023",
     subject: "Tiếng Anh",
-    status: "Chờ chuyển lớp",
+    status: "Bảo lưu",
     level: "Level 1",
     subLevel: "B",
-    classCode: "LD_TA_00004",
-    teacherCode: "GV_DTX",
-    schedule: "T2 - 17:30-19:00, T5 - 17:30-19:00",
+    classCode: "",
+    teacherCode: "",
+    schedule: "",
     totalSessions: 96,
     remainingSessions: 22,
     expectedEndDate: "07/08/2025",
@@ -728,13 +852,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     homeworkCompletion: 0.0,
     lastTestScore: 0.0,
     priorTestScore: 0.0,
+    careAlert: "Đang bảo lưu",
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-11",
-    realtimeStatus: "Chờ chuyển lớp",
+    realtimeStatus: "Bảo lưu",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-11",
     csStaff: "Nguyễn Thị Ngọc Anh",
-    careAlert: "Hẹn gọi lại",
     callConfirmation: "Đã gọi",
-    interactionNotes: '[CSĐK] [Đối tượng: Đặng Văn Dũng (Bố)] Tư vấn lớp chuyển cấp sang Level 2. Bố đã nghe máy và hẹn gọi lại lúc 16:30 ngày 27/07 sau khi thống nhất lịch học gia đình.',
+    studentNote: "Học viên bảo lưu 3 tháng ôn thi chuyển cấp (01/06/2026 ➔ 31/08/2026). Đã làm thủ tục thoát lớp cũ LD_TA_00004 để bảo lưu 22 buổi. Ngày học lại dự kiến: 01/09/2026 sẽ được xếp lớp mới.",
+    interactionNotes: '[CSĐK] [Đối tượng: Đặng Văn Dũng (Bố)] Check-in định kỳ học viên bảo lưu. Bố báo con đang tập trung ôn thi, dự kiến đầu tháng 9 sẽ quay lại xếp lớp Level 2.',
     interactionLogs: [
       {
         id: 'log-s11-1',
@@ -1048,7 +1173,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
     interactionLogs: []
-  }
+  },
 ]
 
 export function getCareAlerts(filters?: {

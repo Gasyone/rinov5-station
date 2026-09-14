@@ -42,7 +42,7 @@ export interface PipelineStageConfig {
   id: string
   code: string
   name: string
-  phaseGroup: 'T0' | 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'intake' | 'active_sales' | 'terminal'
+  phaseGroup: 'T0' | 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'intake' | 'active_sales' | 'terminal' | string
   phaseGroupLabel: string
   color: string
   order: number

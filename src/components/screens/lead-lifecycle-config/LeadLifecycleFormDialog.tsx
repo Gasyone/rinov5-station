@@ -27,6 +27,7 @@ interface LeadLifecycleFormDialogProps {
   type: 'stage' | 'pool'
   initialStage?: PipelineStageConfig | null
   initialPool?: DataPoolConfig | null
+  poolName?: string
   onSaveStage?: (stage: PipelineStageConfig) => void
   onSavePool?: (pool: DataPoolConfig) => void
 }
@@ -35,6 +36,7 @@ interface LeadLifecycleFormInnerProps {
   type: 'stage' | 'pool'
   initialStage?: PipelineStageConfig | null
   initialPool?: DataPoolConfig | null
+  poolName?: string
   onSaveStage?: (stage: PipelineStageConfig) => void
   onSavePool?: (pool: DataPoolConfig) => void
   onClose: () => void
@@ -44,6 +46,7 @@ const LeadLifecycleFormInner: React.FC<LeadLifecycleFormInnerProps> = ({
   type,
   initialStage,
   initialPool,
+  poolName,
   onSaveStage,
   onSavePool,
   onClose,
@@ -65,7 +68,7 @@ const LeadLifecycleFormInner: React.FC<LeadLifecycleFormInnerProps> = ({
   const [stageDesc, setStageDesc] = useState(initialStage?.description ?? '')
 
   // Pool form state
-  const [poolName, setPoolName] = useState(initialPool?.name ?? '')
+  const [poolNameField, setPoolNameField] = useState(initialPool?.name ?? '')
   const [poolCode, setPoolCode] = useState(initialPool?.code ?? '')
   const [poolUrl, setPoolUrl] = useState(initialPool?.url ?? '')
 
@@ -98,10 +101,10 @@ const LeadLifecycleFormInner: React.FC<LeadLifecycleFormInnerProps> = ({
       }
       onSaveStage?.(updatedStage)
     } else {
-      if (!poolName.trim() || !poolCode.trim()) return
+      if (!poolNameField.trim() || !poolCode.trim()) return
       const updatedPool: DataPoolConfig = {
         id: initialPool ? initialPool.id : `pool-${Date.now()}`,
-        name: poolName.trim(),
+        name: poolNameField.trim(),
         code: poolCode.trim().toUpperCase(),
         url: poolUrl.trim(),
         leadCount: initialPool ? initialPool.leadCount : 0,
@@ -124,6 +127,11 @@ const LeadLifecycleFormInner: React.FC<LeadLifecycleFormInnerProps> = ({
             ? 'Chỉnh sửa Kho Dữ liệu'
             : 'Thêm mới Kho Dữ liệu'}
         </DialogTitle>
+        {type === 'stage' && poolName && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Áp dụng cho: <span className="font-semibold text-foreground">{poolName}</span>
+          </p>
+        )}
       </DialogHeader>
 
       {type === 'stage' ? (
@@ -253,8 +261,8 @@ const LeadLifecycleFormInner: React.FC<LeadLifecycleFormInnerProps> = ({
           <div>
             <FieldLabel label="Tên kho" required>
               <Input
-                value={poolName}
-                onChange={(e) => setPoolName(e.target.value)}
+                value={poolNameField}
+                onChange={(e) => setPoolNameField(e.target.value)}
                 placeholder="Ví dụ: Kho M, Kho T, Kho CC..."
                 className="h-9 text-xs"
               />
@@ -315,6 +323,7 @@ export const LeadLifecycleFormDialog: React.FC<LeadLifecycleFormDialogProps> = (
   type,
   initialStage,
   initialPool,
+  poolName,
   onSaveStage,
   onSavePool,
 }) => {
@@ -327,6 +336,7 @@ export const LeadLifecycleFormDialog: React.FC<LeadLifecycleFormDialogProps> = (
             type={type}
             initialStage={initialStage}
             initialPool={initialPool}
+            poolName={poolName}
             onSaveStage={onSaveStage}
             onSavePool={onSavePool}
             onClose={() => onOpenChange(false)}

@@ -13,7 +13,7 @@ import {
   useSystemConfigStore,
   SIMULATED_TEAM_LIST,
 } from '@/stores/useSystemConfigStore'
-import { FilterGroupSheetPanel } from '@/components/filters'
+import { FilterGroupAsidePanel } from '@/components/filters'
 import type { StatusTile } from '@/components/shared'
 import {
   getRenewalClassification,
@@ -331,8 +331,8 @@ export function RenewalScreen() {
           return diffDays > 30 && diffDays <= 60
         }
         if (selectedExpiryPeriod === '3') {
-          // Hạn T3 (2-3T): 61 - 90 ngày
-          return diffDays > 60 && diffDays <= 90
+          // Hạn T3 (2-3T): > 60 ngày
+          return diffDays > 60
         }
         return true
       })
@@ -711,8 +711,8 @@ export function RenewalScreen() {
         </Link>
       </div>
 
-      <div className="min-h-0 flex-1 px-2 py-1.5 lg:px-3 pb-3 flex flex-col overflow-hidden">
-        <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-1.5 lg:px-3 pb-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           <RenewalTable
             alerts={paginatedSingle}
             selectedIds={selectedIds}
@@ -739,38 +739,36 @@ export function RenewalScreen() {
             }}
           />
         </div>
+
+        {isFilterOpen && (
+          <FilterGroupAsidePanel
+            title="Bộ lọc nâng cao"
+            description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
+            groups={filterGroups}
+            onToggle={handleFilterToggle}
+            onClearAll={handleClearAllFilters}
+            onClearSection={handleClearSection}
+            onClose={() => setIsFilterOpen(false)}
+          >
+            {/* Search inside filter panel as requested */}
+            <div className="mb-4">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
+                Tìm theo học viên
+              </label>
+              <input
+                type="text"
+                placeholder="Nhập tên, SĐT hoặc mã học viên..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  resetPagination()
+                }}
+                className="w-full h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+          </FilterGroupAsidePanel>
+        )}
       </div>
-
-
-
-      {/* Advanced Filters Sheet Panel */}
-      <FilterGroupSheetPanel
-        open={isFilterOpen}
-        onOpenChange={setIsFilterOpen}
-        title="Bộ lọc nâng cao"
-        description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
-        groups={filterGroups}
-        onToggle={handleFilterToggle}
-        onClearAll={handleClearAllFilters}
-        onClearSection={handleClearSection}
-      >
-        {/* Search inside filter panel as requested */}
-        <div className="mb-4">
-          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
-            Tìm theo học viên
-          </label>
-          <input
-            type="text"
-            placeholder="Nhập tên, SĐT hoặc mã học viên..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-              resetPagination()
-            }}
-            className="w-full h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-background text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          />
-        </div>
-      </FilterGroupSheetPanel>
 
       {/* Student Care Detail Dialog (Temporarily Disabled)
       <StudentCareDetailDialog
