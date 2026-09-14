@@ -8,7 +8,6 @@ import {
   Share2,
   Users,
   UserCheck,
-  FolderGit2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -51,13 +50,10 @@ export function CareProjectMediaList({
   pkgIsEnglish,
   studentId = 'HV-S4-10',
   studentName = 'Học viên',
-  classCode,
-  className,
 }: CareProjectMediaListProps) {
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaItem | null>(null)
   const [showAllProjects, setShowAllProjects] = useState(false)
   const [expandedProjectComments, setExpandedProjectComments] = useState<Record<string, boolean>>({})
-  const [mediaFilterScope, setMediaFilterScope] = useState<'all' | 'student_only' | 'class_only'>('all')
 
   const toggleExpandProjectComment = (id: string) => {
     setExpandedProjectComments((prev) => ({
@@ -283,10 +279,6 @@ export function CareProjectMediaList({
 
         // Only include if it's class-wide OR tagged for this student
         if (isClassWide || isTagged) {
-          // Check scope filter tab
-          if (mediaFilterScope === 'student_only' && !isTagged) return
-          if (mediaFilterScope === 'class_only' && isTagged) return
-
           allowedMedia.push({
             ...item,
             isTaggedForStudent: isTagged,
@@ -300,32 +292,7 @@ export function CareProjectMediaList({
         media: allowedMedia,
       }
     })
-  }, [rawProjectSessions, studentId, mediaFilterScope])
-
-  const totalMediaCount = useMemo(() => {
-    return filteredProjectSessions.reduce((acc, s) => acc + s.media.length, 0)
-  }, [filteredProjectSessions])
-
-  const studentTaggedCount = useMemo(() => {
-    return rawProjectSessions.reduce((acc, s) => {
-      return (
-        acc +
-        s.media.filter(
-          (m) =>
-            m.taggedStudentIds &&
-            m.taggedStudentIds.length > 0 &&
-            (m.taggedStudentIds.includes(studentId) ||
-              m.taggedStudentIds.some((id) => id.includes(studentId) || studentId.includes(id)))
-        ).length
-      )
-    }, 0)
   }, [rawProjectSessions, studentId])
-
-  const classWideCount = useMemo(() => {
-    return rawProjectSessions.reduce((acc, s) => {
-      return acc + s.media.filter((m) => !m.taggedStudentIds || m.taggedStudentIds.length === 0).length
-    }, 0)
-  }, [rawProjectSessions])
 
   const visibleProjects = showAllProjects
     ? filteredProjectSessions
@@ -335,62 +302,10 @@ export function CareProjectMediaList({
     <>
       <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 select-none text-left overflow-hidden">
         {/* Header with soft background tint */}
-        <div className="-mx-4 -mt-4 py-2.5 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400">
-              <FolderGit2 className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-foreground tracking-tight">
-                Buổi Học Dự Án & Media Thực Hành
-              </h3>
-              <p className="text-[11px] text-muted-foreground font-normal">
-                {classCode ? `Lớp ${classCode}` : ''} {className ? `• ${className}` : ''} • Lọc ảnh riêng & hoạt động chung của con
-              </p>
-            </div>
-          </div>
-
-          {/* Filter Scope Pills */}
-          <div className="flex items-center gap-1.5 bg-muted/50 p-0.5 rounded-lg border border-border/60 text-xs">
-            <button
-              type="button"
-              onClick={() => setMediaFilterScope('all')}
-              className={cn(
-                'px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer',
-                mediaFilterScope === 'all'
-                  ? 'bg-background text-foreground shadow-3xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Tất cả ({totalMediaCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setMediaFilterScope('student_only')}
-              className={cn(
-                'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer',
-                mediaFilterScope === 'student_only'
-                  ? 'bg-emerald-600 text-white shadow-3xs'
-                  : 'text-muted-foreground hover:text-emerald-600'
-              )}
-            >
-              <UserCheck className="h-3 w-3" />
-              <span>Ảnh riêng của con ({studentTaggedCount})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMediaFilterScope('class_only')}
-              className={cn(
-                'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer',
-                mediaFilterScope === 'class_only'
-                  ? 'bg-background text-foreground shadow-3xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Users className="h-3 w-3" />
-              <span>Chung cả lớp ({classWideCount})</span>
-            </button>
-          </div>
+        <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
+          <h3 className="text-xs font-bold text-foreground tracking-tight">
+            Buổi Học Dự Án & Media Thực Hành
+          </h3>
         </div>
 
         {/* List of Project Sessions */}

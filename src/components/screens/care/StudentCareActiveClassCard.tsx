@@ -219,40 +219,25 @@ export function StudentCareActiveClassCard({
 
       {/* THÔNG TIN LỚP DẠNG THÔNG TIN PHẲNG (Khi không ở trạng thái đang ghép lớp bình thường) */}
       {classStatus === 'chuyen_lop' && (
-        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 text-left">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400">
-                <ArrowRightLeft className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wide text-xs">
-                Tiến trình chuyển lớp đang diễn ra
-              </span>
-              <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
-            </div>
-            <span className="text-xs text-muted-foreground">
-              Dự kiến vào lớp: <strong className="font-semibold text-foreground">01/08/2026</strong>
+        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="p-1 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400">
+              <ArrowRightLeft className="h-3.5 w-3.5" />
             </span>
+            <span className="font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wide text-xs">
+              Tiến trình chuyển lớp đang diễn ra
+            </span>
+            <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
           </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap pt-0.5">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground flex-wrap pt-0.5 text-center">
             <div>
               <span>Lớp nguồn: </span>
               <strong className="font-semibold text-foreground">{student?.classCode || classCode}</strong>
               <span className="mx-1.5 text-sky-500">➔</span>
               <span>Lớp đích: </span>
               <strong className="font-semibold text-foreground">
-                {(student?.classCode || classCode) === 'LD_TA_00008'
-                  ? 'LD_TA_00020 (Tiếng Anh Level 5)'
-                  : (student?.classCode || classCode) === 'LD_TOAN_00010'
-                    ? 'LD_TOAN_00032 (Toán STEM)'
-                    : pkgIsEnglish
-                      ? 'LD_TA_00019 (Tiếng Anh Level 4)'
-                      : 'LD_TOAN_00032 (Toán STEM)'}
+                {student?.targetClass || student?.destinationClass || 'Chưa ghép lớp'}
               </strong>
-              <span className="mx-2 text-muted-foreground/40">•</span>
-              <span>Kết chuyển: </span>
-              <strong className="font-semibold text-foreground">{pkg.remainingSessions || 68} buổi</strong>
-              <span className="ml-1">(Bảo toàn học phí)</span>
             </div>
           </div>
         </div>
@@ -266,13 +251,15 @@ export function StudentCareActiveClassCard({
                 <Snowflake className="h-3.5 w-3.5" />
               </span>
               <span className="font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">
-                Khóa học đang tạm dừng (Đang bảo lưu)
+                Khóa học đang bảo lưu
               </span>
-              <StatusBadge
-                status="reserve"
-                label={isHoldingClass ? "Bảo lưu giữ lớp" : "Bảo lưu đã thoát lớp"}
-                className="text-xs py-0 px-1.5"
-              />
+              {isHoldingClass && (
+                <StatusBadge
+                  status="reserve"
+                  label="Bảo lưu giữ lớp"
+                  className="text-xs py-0 px-1.5"
+                />
+              )}
             </div>
             <span className="text-xs text-muted-foreground">
               Ngày học lại dự kiến: <strong className="font-semibold text-foreground">{isHoldingClass ? '16/09/2026' : '01/08/2026'}</strong>
@@ -281,13 +268,6 @@ export function StudentCareActiveClassCard({
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap pt-0.5">
             <span>
               Thời gian: <strong className="font-semibold text-foreground">{isHoldingClass ? '15/06/2026 ➔ 15/09/2026' : '01/06/2026 ➔ 31/07/2026'}</strong> ({isHoldingClass ? '3 tháng' : '2 tháng'})
-              <span className="mx-1.5 text-muted-foreground/40">•</span>
-              Số buổi đóng băng: <strong className="font-semibold text-foreground">{pkg.remainingSessions || (isHoldingClass ? 14 : 28)} buổi</strong>
-              {!isHoldingClass && (
-                <span className="ml-1">
-                  • Đã trả chỗ lớp cũ, bảo toàn quyền lợi xếp lớp mới khi quay lại
-                </span>
-              )}
             </span>
             {onOpenLeaveReserveDialog && (
               <button
@@ -304,31 +284,21 @@ export function StudentCareActiveClassCard({
       )}
 
       {classStatus === 'chua_ghep' && (
-        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 text-left">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                <UserX className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wide text-xs">
-                Học viên chưa ghép lớp
-              </span>
-              <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
-            </div>
-            <span className="text-xs text-muted-foreground">
-              Dự kiến xếp lớp: <strong className="font-semibold text-foreground">Trước 01/08/2026</strong>
+        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+              <UserX className="h-3.5 w-3.5" />
             </span>
+            <span className="font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wide text-xs">
+              Học viên chưa ghép lớp
+            </span>
+            <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
           </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap pt-0.5">
-            <div>
-              <span>Gói đăng ký: </span>
-              <strong className="font-semibold text-foreground">
-                {pkg.packageName || 'Gói Tiếng Anh Standard 48 buổi'}
-              </strong>
-              <span className="ml-1">
-                • Đã ghi nhận nguyện vọng xếp lớp ca tối T3, T5 (sau 18h) tại cơ sở {currentBranchName}
-              </span>
-            </div>
+          <div className="text-xs text-muted-foreground pt-0.5 text-center">
+            <span>Gói đăng ký: </span>
+            <strong className="font-semibold text-foreground">
+              {pkg.packageName || 'Gói Tiếng Anh Standard 48 buổi'}
+            </strong>
           </div>
         </div>
       )}

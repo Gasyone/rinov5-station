@@ -69,6 +69,8 @@ export interface StudentCareAlert {
   monthlyReportLinks?: string[] // Danh sách link báo cáo tháng
   studentNote?: string // Ghi chú học viên (thói quen, sở thích, mục tiêu học tập)
   linkedOrderCode?: string // Mã đơn hàng liên kết cho tái phí
+  targetClass?: string // Lớp đích khi chuyển lớp
+  destinationClass?: string // Lớp đích khi chuyển lớp
   linkedOrder?: {
     orderCode: string
     packageName: string

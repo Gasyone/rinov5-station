@@ -334,7 +334,7 @@ export function CareSessionTimelineList({
             <div className="relative">
               <p
                 className={cn(
-                  'text-xs text-muted-foreground font-normal leading-relaxed whitespace-pre-line cursor-pointer',
+                  'text-xs text-foreground/90 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
                   !isExpanded && 'line-clamp-3 pr-20'
                 )}
                 onClick={() => toggleExpand(session.id)}
@@ -431,9 +431,8 @@ export function CareSessionTimelineList({
             <div className="pt-0.5 pb-1">
               <div className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50">
                 <div className="flex items-center gap-2 min-w-0 pr-3">
-                  <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0 animate-pulse" />
                   <span className="text-xs font-normal text-sky-600 dark:text-sky-400 shrink-0">
-                    Buổi tiếp theo:
+                    Buổi tiếp:
                   </span>
                   <span className="font-normal text-foreground truncate text-xs">
                     {nextSession.topic}
@@ -474,8 +473,7 @@ export function CareSessionTimelineList({
         {/* Completed Regular Lessons */}
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <div className="text-xs font-normal text-muted-foreground">
               <span>Các buổi học chính ({regularCompletedSessions.length})</span>
             </div>
             <div className="space-y-2">
