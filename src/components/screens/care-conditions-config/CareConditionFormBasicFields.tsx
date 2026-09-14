@@ -36,8 +36,8 @@ const ALL_ROLES: { id: PrimaryStaffRole; label: string; subLabel: string }[] = [
 ]
 
 export const CareConditionFormBasicFields: React.FC<BasicFieldsProps> = ({
-  code,
-  setCode,
+  code: _code,
+  setCode: _setCode,
   name,
   setName,
   priority,
@@ -69,12 +69,11 @@ export const CareConditionFormBasicFields: React.FC<BasicFieldsProps> = ({
           <InlineSelect
             value={nature || 'dac_biet'}
             options={[
-              { value: 'dac_biet', label: 'CSĐB — Chăm sóc đặc biệt' },
-              { value: 'tai_phi', label: 'TP — Tái phí' },
-              { value: 'dinh_ky', label: 'ĐK — Định kỳ' },
-              { value: 'theo_hanh_trinh', label: 'THT — Theo hành trình' },
-              { value: 'theo_moc', label: 'TM — Theo mốc học tập' },
-              { value: 'theo_yeu_cau', label: 'TYC — Theo yêu cầu' },
+              { value: 'dac_biet', label: 'CĐB — Chăm sóc đặc biệt' },
+              { value: 'tai_phi', label: 'CGH — Chăm sóc gia hạn' },
+              { value: 'dinh_ky', label: 'CĐK — Chăm sóc định kỳ' },
+              { value: 'theo_hanh_trinh', label: 'CBH — Chăm sóc theo buổi học' },
+              { value: 'theo_yeu_cau', label: 'CYC — Chăm sóc theo yêu cầu' },
             ]}
             onValueChange={(val: string) => setNature(val as ConditionNature)}
             className="w-full h-8 text-xs font-bold"

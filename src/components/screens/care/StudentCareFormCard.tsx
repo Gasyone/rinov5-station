@@ -41,21 +41,20 @@ export function getCleanContactName(name: string): string {
 }
 
 export function getCareNatureAbbrev(code: string): string {
-  if (code.startsWith('ĐB') || code === 'CSĐB') return 'CSĐB'
-  if (code === 'CSTP' || code === 'TP') return 'TP'
-  if (code.startsWith('ĐK')) return 'ĐK'
-  if (code === 'TB1') return 'THT'
-  if (code === 'TB2') return 'TM'
-  return 'TYC'
+  if (code.startsWith('ĐB') || code === 'CSĐB' || code === 'CĐB') return 'CĐB'
+  if (code === 'CSTP' || code === 'TP' || code === 'CGH' || code === 'CSGH') return 'CGH'
+  if (code.startsWith('ĐK') || code.startsWith('CĐK')) return 'CĐK'
+  if (code === 'TB1' || code === 'CBH' || code === 'THT' || code === 'CSBH') return 'CBH'
+  if (code === 'TB2' || code === 'TM') return 'CBH'
+  return 'CYC'
 }
 
 export function getCareNatureTextColor(code: string): string {
   const abbrev = getCareNatureAbbrev(code)
-  if (abbrev === 'CSĐB') return 'text-red-700 dark:text-red-400'
-  if (abbrev === 'TP') return 'text-emerald-700 dark:text-emerald-400'
-  if (abbrev === 'ĐK') return 'text-violet-700 dark:text-violet-400'
-  if (abbrev === 'THT') return 'text-sky-700 dark:text-sky-400'
-  if (abbrev === 'TM') return 'text-indigo-700 dark:text-indigo-400'
+  if (abbrev === 'CĐB' || abbrev === 'CSĐB') return 'text-red-700 dark:text-red-400'
+  if (abbrev === 'CGH' || abbrev === 'TP') return 'text-emerald-700 dark:text-emerald-400'
+  if (abbrev === 'CĐK' || abbrev === 'ĐK') return 'text-violet-700 dark:text-violet-400'
+  if (abbrev === 'CBH' || abbrev === 'THT' || abbrev === 'TM') return 'text-sky-700 dark:text-sky-400'
   return 'text-amber-700 dark:text-amber-400'
 }
 
@@ -95,22 +94,22 @@ export function getCareDueDate(code: string): string {
 
 export function getCareNatureBgStyle(code: string, isExpanded: boolean): string {
   const abbrev = getCareNatureAbbrev(code)
-  if (abbrev === 'CSĐB') {
+  if (abbrev === 'CĐB' || abbrev === 'CSĐB') {
     return isExpanded
       ? "bg-red-100/90 dark:bg-red-950/60 border-red-300 dark:border-red-800 text-red-950 dark:text-red-100 shadow-2xs font-semibold"
       : "bg-red-50/80 dark:bg-red-950/30 border-red-200/80 dark:border-red-900/40 text-red-900 dark:text-red-200 hover:bg-red-100/80"
   }
-  if (abbrev === 'TP') {
+  if (abbrev === 'CGH' || abbrev === 'TP') {
     return isExpanded
       ? "bg-emerald-100/90 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-950 dark:text-emerald-100 shadow-2xs font-semibold"
       : "bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100/80"
   }
-  if (abbrev === 'ĐK') {
+  if (abbrev === 'CĐK' || abbrev === 'ĐK') {
     return isExpanded
       ? "bg-violet-100/90 dark:bg-violet-950/60 border-violet-300 dark:border-violet-800 text-violet-950 dark:text-violet-100 shadow-2xs font-semibold"
       : "bg-violet-50/80 dark:bg-violet-950/30 border-violet-200/80 dark:border-violet-900/40 text-violet-900 dark:text-violet-200 hover:bg-violet-100/80"
   }
-  if (abbrev === 'THT') {
+  if (abbrev === 'CBH' || abbrev === 'THT') {
     return isExpanded
       ? "bg-sky-100/90 dark:bg-sky-950/60 border-sky-300 dark:border-sky-800 text-sky-950 dark:text-sky-100 shadow-2xs font-semibold"
       : "bg-sky-50/80 dark:bg-sky-950/30 border-sky-200/80 dark:border-sky-900/40 text-sky-900 dark:text-sky-200 hover:bg-sky-100/80"

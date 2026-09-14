@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 
@@ -37,28 +36,28 @@ function resolveTagDefaults(
   let resolvedRealDataIssue = realDataIssue
   let resolvedSla = slaText
 
-  if (c.includes('ĐB') || c === 'CSĐB' || c === 'ĐB1') {
-    resolvedFullLabel = resolvedFullLabel || 'CS Đặc biệt'
+  if (c.includes('ĐB') || c === 'CSĐB' || c === 'CĐB' || c === 'ĐB1') {
+    resolvedFullLabel = resolvedFullLabel || 'CĐB - Chăm sóc đặc biệt'
     resolvedConfigRule = resolvedConfigRule || 'Chuyên cần < 85% hoặc Điểm kiểm tra < 5.5'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Cần chăm sóc khẩn cấp do có cảnh báo vận hành hoặc học thuật'
     resolvedSla = resolvedSla || '23/07/2026'
-  } else if (c.includes('ĐK1') || c === 'CSĐK1') {
-    resolvedFullLabel = resolvedFullLabel || 'CS học tập Định kỳ'
+  } else if (c.includes('ĐK1') || c === 'CSĐK1' || c.includes('CĐK') || c === 'ĐK') {
+    resolvedFullLabel = resolvedFullLabel || 'CĐK - Chăm sóc định kỳ'
     resolvedConfigRule = resolvedConfigRule || 'Điểm chạm kiểm tra tiến độ học tập hàng tháng'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Trao đổi học tập hàng tháng và cập nhật kết quả'
     resolvedSla = resolvedSla || '28/07/2026'
   } else if (c.includes('ĐK2') || c === 'CSĐK2') {
-    resolvedFullLabel = resolvedFullLabel || 'CS học phí Định kỳ'
+    resolvedFullLabel = resolvedFullLabel || 'CGH - Chăm sóc gia hạn'
     resolvedConfigRule = resolvedConfigRule || 'Nhắc tái phí theo số buổi học còn lại'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Còn 2 buổi học trong khóa hiện tại'
     resolvedSla = resolvedSla || '30/07/2026'
-  } else if (c.includes('TB') || c === 'CSBH') {
-    resolvedFullLabel = resolvedFullLabel || 'CS chuyên cần & BTVN'
+  } else if (c.includes('TB') || c === 'CSBH' || c === 'CBH' || c === 'THT') {
+    resolvedFullLabel = resolvedFullLabel || 'CBH - Chăm sóc theo buổi học'
     resolvedConfigRule = resolvedConfigRule || 'Thiếu bài tập về nhà từ 2 buổi liên tiếp'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Nhắc nhở chuyên cần & nộp bổ sung BTVN'
     resolvedSla = resolvedSla || '26/07/2026'
-  } else if (c === 'CSTP') {
-    resolvedFullLabel = resolvedFullLabel || 'Chăm sóc Tái phí'
+  } else if (c === 'CSTP' || c === 'TP' || c === 'CGH' || c === 'CSGH') {
+    resolvedFullLabel = resolvedFullLabel || 'CGH - Chăm sóc gia hạn'
     resolvedConfigRule = resolvedConfigRule || 'Cảnh báo hạn gia hạn và đóng học phí khóa mới'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Hạn đóng phí dự kiến: 30/07/2026'
     resolvedSla = resolvedSla || '30/07/2026'
@@ -67,6 +66,11 @@ function resolveTagDefaults(
     resolvedConfigRule = resolvedConfigRule || 'Điểm kiểm tra định kỳ thấp hơn mức chuẩn 6.0'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Cần tư vấn hỗ trợ lộ trình phụ đạo bổ sung'
     resolvedSla = resolvedSla || '24/07/2026'
+  } else if (c === 'CYC' || c === 'TYC') {
+    resolvedFullLabel = resolvedFullLabel || 'CYC - Chăm sóc theo yêu cầu'
+    resolvedConfigRule = resolvedConfigRule || 'Phát sinh yêu cầu chăm sóc từ phụ huynh / học viên'
+    resolvedRealDataIssue = resolvedRealDataIssue || 'Hỗ trợ giải đáp và xử lý các yêu cầu phát sinh'
+    resolvedSla = resolvedSla || '25/07/2026'
   } else {
     resolvedFullLabel = resolvedFullLabel || `${code}: ${description || 'CS'}`
     resolvedConfigRule = resolvedConfigRule || description || 'Cấu hình quy tắc cảnh báo tự động'

@@ -444,51 +444,12 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     status: 'active',
   }
 
-  const pkg3: SimulatedPackage = {
-    id: 'pkg-3',
-    packageName: isMath ? 'Gói Toán tư duy Basic (3 tháng - Đã hết)' : 'Gói Tiếng Anh Level 3 (6 tháng - Đã hết)',
-    totalSessions: 24,
-    remainingSessions: 0,
-    classCode: isMath ? 'LD_TOAN_00002' : 'LD_ANH_00095',
-    className: isMath ? 'Lớp Toán Tư Duy Khởi Động A0' : 'Lớp Tiếng Anh Giao Tiếp Level 3',
-    teacherCode: 'GV_MinhHue',
-    schedule: 'T2 - 17:30-19:00, T6 - 17:30-19:00',
-    attendanceRatio: '24/24',
-    homeworkCompletion: 88,
-    lastTestScore: 8.0,
-    priorTestScore: 7.5,
-    startDate: '15/10/2025',
-    endDate: '15/01/2026',
-    level: isMath ? 'Kiddie' : 'Starters',
-    subLevel: 'A',
-    status: 'expired',
-  }
-
-  const pkg4: SimulatedPackage = {
-    id: 'pkg-4',
-    packageName: isMath ? 'Gói Toán tư duy Chuyên sâu (12 tháng - Chờ kích hoạt)' : 'Gói Tiếng Anh IELTS Standard (12 tháng - Chờ kích hoạt)',
-    totalSessions: 96,
-    remainingSessions: 96,
-    classCode: isMath ? 'LD_TOAN_00888' : 'LD_ANH_00999',
-    className: isMath ? 'Lớp Toán Tư Duy Chuyên Sâu T1' : 'Lớp Tiếng Anh Giao Tiếp Cam Kết Đầu Ra',
-    teacherCode: 'GV_DavidSmith',
-    schedule: 'T7 - 14:00-15:30, CN - 14:00-15:30',
-    attendanceRatio: '0/0',
-    homeworkCompletion: 0,
-    lastTestScore: 0,
-    priorTestScore: 0,
-    startDate: '01/10/2026',
-    endDate: '01/10/2027',
-    level: isMath ? 'Newton' : 'Movers',
-    subLevel: 'C',
-    status: 'pending',
-  }
-
   const hash = stableHash(student.studentId)
-  if (hash % 2 === 0) {
-    return [pkg1, pkg2, pkg3, pkg4]
+  // Chỉ hiển thị các chương trình khác nhau (Tiếng Anh, Toán tư duy), không lặp lại môn học
+  if (hash % 3 === 0) {
+    return [pkg1]
   } else {
-    return [pkg1, pkg2, pkg3]
+    return [pkg1, pkg2]
   }
 }
 

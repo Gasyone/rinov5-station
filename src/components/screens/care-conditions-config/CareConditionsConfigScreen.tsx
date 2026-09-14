@@ -34,8 +34,12 @@ export const CareConditionsConfigScreen: React.FC = () => {
   const filteredConditions = useMemo(() => {
     return conditions.filter((item) => {
       // 1. Nature filter (from status tiles)
-      if (filters.nature && filters.nature !== 'all' && item.nature !== filters.nature) {
-        return false
+      if (filters.nature && filters.nature !== 'all') {
+        if (filters.nature === 'theo_hanh_trinh') {
+          if (item.nature !== 'theo_hanh_trinh' && item.nature !== 'theo_moc') return false
+        } else if (item.nature !== filters.nature) {
+          return false
+        }
       }
 
       // 2. Primary Role filter
@@ -80,25 +84,50 @@ export const CareConditionsConfigScreen: React.FC = () => {
     return filteredConditions.slice(start, start + pageSize)
   }, [filteredConditions, page, pageSize])
 
-  // Status tiles computation
+  // Status tiles computation (reactive to other filters per rule 5)
   const statusTiles: StatusTile<string>[] = useMemo(() => {
-    const total = conditions.length
-    const dacBiet = conditions.filter((c) => c.nature === 'dac_biet').length
-    const taiPhi = conditions.filter((c) => c.nature === 'tai_phi').length
-    const hanhTrinh = conditions.filter((c) => c.nature === 'theo_hanh_trinh' || c.nature === 'theo_moc').length
-    const dinhKy = conditions.filter((c) => c.nature === 'dinh_ky').length
-    const yeuCau = conditions.filter((c) => c.nature === 'theo_yeu_cau').length
-    const activeCount = conditions.filter((c) => c.isActive).length
+    const baseList = conditions.filter((item) => {
+      if (filters.primaryRole && filters.primaryRole !== 'all') {
+        const itemRoles = item.assignedRoles && item.assignedRoles.length > 0 ? item.assignedRoles : [item.primaryRole]
+        if (!itemRoles.includes(filters.primaryRole as PrimaryStaffRole) && item.primaryRole !== filters.primaryRole) {
+          return false
+        }
+      }
+      if (filters.priority && filters.priority !== 'all' && item.priority !== filters.priority) {
+        return false
+      }
+      if (filters.status === 'active' && !item.isActive) return false
+      if (filters.status === 'inactive' && item.isActive) return false
+      if (filters.metricSource && filters.metricSource !== 'all') {
+        const itemSource = item.triggerRule?.source || 'curriculum_path'
+        if (itemSource !== filters.metricSource) return false
+      }
+      if (filters.search.trim()) {
+        const q = filters.search.toLowerCase()
+        const matchCode = item.code.toLowerCase().includes(q)
+        const matchName = item.name.toLowerCase().includes(q)
+        const matchRole = item.primaryRoleLabel.toLowerCase().includes(q)
+        if (!matchCode && !matchName && !matchRole) return false
+      }
+      return true
+    })
+
+    const total = baseList.length
+    const dacBiet = baseList.filter((c) => c.nature === 'dac_biet').length
+    const taiPhi = baseList.filter((c) => c.nature === 'tai_phi').length
+    const hanhTrinh = baseList.filter((c) => c.nature === 'theo_hanh_trinh' || c.nature === 'theo_moc').length
+    const dinhKy = baseList.filter((c) => c.nature === 'dinh_ky').length
+    const yeuCau = baseList.filter((c) => c.nature === 'theo_yeu_cau').length
 
     return [
       { id: 'all', label: 'Tất cả danh mục', count: total, semantic: 'neutral' as const },
-      { id: 'dac_biet', label: 'CSĐB · Chăm sóc đặc biệt', count: dacBiet, semantic: 'error' as const },
-      { id: 'tai_phi', label: 'TP · Tái phí', count: taiPhi, semantic: 'success' as const },
-      { id: 'theo_hanh_trinh', label: 'THT · Theo hành trình học', count: hanhTrinh, semantic: 'info' as const },
-      { id: 'dinh_ky', label: 'ĐK · Định kỳ', count: dinhKy, semantic: 'purple' as const },
-      { id: 'theo_yeu_cau', label: 'TYC · Theo yêu cầu', count: yeuCau, semantic: 'warning' as const },
+      { id: 'dac_biet', label: 'CĐB · Chăm sóc đặc biệt', count: dacBiet, semantic: 'error' as const },
+      { id: 'tai_phi', label: 'CGH · Chăm sóc gia hạn', count: taiPhi, semantic: 'success' as const },
+      { id: 'theo_hanh_trinh', label: 'CBH · Chăm sóc theo buổi học', count: hanhTrinh, semantic: 'info' as const },
+      { id: 'dinh_ky', label: 'CĐK · Chăm sóc định kỳ', count: dinhKy, semantic: 'purple' as const },
+      { id: 'theo_yeu_cau', label: 'CYC · Chăm sóc theo yêu cầu', count: yeuCau, semantic: 'warning' as const },
     ]
-  }, [conditions])
+  }, [conditions, filters.primaryRole, filters.priority, filters.status, filters.metricSource, filters.search])
 
   // Handlers
   const handleToggleStatus = (id: string, newActive: boolean) => {

@@ -8,6 +8,8 @@ import {
   History,
   ChevronDown,
   ChevronUp,
+  Calendar,
+  MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -41,14 +43,16 @@ export function StudentCareHeaderClusterInfo({
 
   return (
     <div className="space-y-1 pt-0.5">
-      {/* Abbreviated NS & ĐC directly under name */}
+      {/* Thông tin NS & ĐC với icon */}
       <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium flex-wrap">
-        <span>
-          <strong className="text-foreground/90 font-bold">NS:</strong> {birthYear}
+        <span className="inline-flex items-center gap-1.5" title={`Ngày sinh: ${birthYear}`}>
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <span>{birthYear}</span>
         </span>
         <span className="text-border">•</span>
-        <span className="truncate max-w-[280px]" title={address}>
-          <strong className="text-foreground/90 font-bold">ĐC:</strong> {address}
+        <span className="inline-flex items-center gap-1.5 truncate max-w-sm sm:max-w-md lg:max-w-xl" title={`Địa chỉ: ${address}`}>
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <span className="truncate">{address}</span>
         </span>
       </div>
 
@@ -226,7 +230,7 @@ export function StudentCareHeaderClusterNote({
             <div className="relative flex-1 min-w-0">
               <p
                 className={cn(
-                  'text-xs leading-relaxed font-semibold italic text-amber-600 dark:text-amber-400 cursor-pointer',
+                  'text-xs leading-relaxed font-normal text-amber-600 dark:text-amber-400 cursor-pointer',
                   !isExpanded && 'line-clamp-2 pr-16'
                 )}
                 onClick={() => {
@@ -248,14 +252,14 @@ export function StudentCareHeaderClusterNote({
                           e.stopPropagation()
                           setIsExpanded(false)
                         }}
-                        className="ml-1.5 text-xs font-normal not-italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                        className="ml-1.5 text-xs font-normal text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
                       >
                         Thu gọn
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="italic text-muted-foreground font-normal">
+                  <span className="text-muted-foreground font-normal">
                     Thói quen, sở thích và mục tiêu học tập
                   </span>
                 )}
@@ -268,7 +272,7 @@ export function StudentCareHeaderClusterNote({
                     e.stopPropagation()
                     setIsExpanded(true)
                   }}
-                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-xs font-normal italic text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-xs font-normal text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
                 >
                   ... xem thêm
                 </button>

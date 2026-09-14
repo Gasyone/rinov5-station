@@ -293,10 +293,16 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
             {/* Sub-section A1: 1. Nhận xét chung */}
             <div className="space-y-1.5 pt-1">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
-                1. Nhận xét chung
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
+                  1. Nhận xét chung
+                </label>
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
+                  <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
+                  Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
+                </span>
+              </div>
               {isEditing ? (
                 <textarea
                   rows={5}
@@ -314,10 +320,16 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
             {/* Sub-section A2: 2. Nhận xét về kết quả học tập */}
             <div className="space-y-1.5 pt-2">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                2. Nhận xét về kết quả học tập
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                  2. Nhận xét về kết quả học tập
+                </label>
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
+                  <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
+                  Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
+                </span>
+              </div>
               {isEditing ? (
                 <textarea
                   rows={4}

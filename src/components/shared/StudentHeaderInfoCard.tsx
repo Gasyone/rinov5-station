@@ -11,6 +11,8 @@ import {
   History,
   Eye,
   X,
+  Calendar,
+  MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AppAvatar } from './AppAvatar'
@@ -235,9 +237,9 @@ export function StudentHeaderInfoCard({
               type="button"
               onClick={() => setShowCodes((prev) => !prev)}
               className={cn(
-                "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1.5 rounded-md hover:bg-muted",
+                "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1 rounded-md",
                 showCodes
-                  ? "text-primary font-bold bg-primary/10"
+                  ? "text-primary font-bold"
                   : "text-muted-foreground hover:text-foreground font-medium"
               )}
               title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
@@ -298,12 +300,14 @@ export function StudentHeaderInfoCard({
           {/* Row 1: NS, Giới tính, ĐC */}
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground font-medium flex-wrap pt-0.5">
             <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-              <span>
-                <strong className="text-foreground/90 font-bold">NS:</strong> {birthDate} &bull; {gender}
+              <span className="inline-flex items-center gap-1.5" title={`Ngày sinh: ${birthDate}`}>
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                <span>{birthDate} &bull; {gender}</span>
               </span>
               <span className="text-border">•</span>
-              <span className="truncate max-w-[280px]" title={address}>
-                <strong className="text-foreground/90 font-bold">ĐC:</strong> {address}
+              <span className="inline-flex items-center gap-1.5 truncate max-w-[280px]" title={`Địa chỉ: ${address}`}>
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+                <span className="truncate">{address}</span>
               </span>
             </div>
           </div>

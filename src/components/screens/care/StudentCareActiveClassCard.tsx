@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   History,
   ChevronDown,
@@ -48,12 +48,6 @@ interface StudentCareActiveClassCardProps {
   }
 }
 
-function getPackageSubtext(packageName: string, shortSubject: string): string {
-  let cleaned = packageName.replace(/^Gói\s*/i, '').trim()
-  cleaned = cleaned.replace(new RegExp(`^${shortSubject}\\s*`, 'i'), '').trim() || cleaned
-  return cleaned || 'Gói hiện tại'
-}
-
 export function StudentCareActiveClassCard({
   pkg,
   visiblePackages,
@@ -67,11 +61,13 @@ export function StudentCareActiveClassCard({
 }: StudentCareActiveClassCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const completedSessions = Math.max(0, pkg.totalSessions - pkg.remainingSessions)
   const startDateDisplay = pkg.startDate
     ? (pkg.startDate.includes('-') ? pkg.startDate.split('-').reverse().join('/') : pkg.startDate)
     : '14/08/2024'
   const endDateDisplay = pkg.endDate || '14/08/2027'
+  const totalSessions = pkg.totalSessions || 48
+  const remainingSessions = pkg.remainingSessions ?? 30
+  const attendedSessions = Math.max(0, totalSessions - remainingSessions)
 
   // Xác định trạng thái tự động dựa trên dữ liệu mẫu học viên
   const classStatus: 'da_ghep' | 'chua_ghep' | 'bao_luu' | 'chuyen_lop' = (() => {
@@ -149,15 +145,34 @@ export function StudentCareActiveClassCard({
 
   const classCode = pkg.classCode || (pkgIsEnglish ? 'LD_TA_00019' : 'LD_TOAN_00010')
 
+  // Lọc chỉ hiển thị các chương trình khác nhau, không lặp lại cùng môn (Tiếng Anh / Toán tư duy)
+  const displayPackages = useMemo(() => {
+    const seenSubjects = new Set<string>()
+    const list: SimulatedPackage[] = []
+
+    for (const pItem of visiblePackages) {
+      const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
+      const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
+        ? 'Tiếng Anh'
+        : /toán|math|LD_TOAN/i.test(text)
+          ? 'Toán tư duy'
+          : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
+
+      if (!seenSubjects.has(shortSubject)) {
+        seenSubjects.add(shortSubject)
+        list.push(pItem)
+      }
+    }
+
+    return list
+  }, [visiblePackages])
+
   return (
     <div className="bg-card dark:bg-zinc-900 border border-border/70 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
       {/* Header bar: Chương trình selector + Nút Thu gọn/Mở rộng */}
       <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-2.5">
-        <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          <span className="text-xs text-muted-foreground/80 dark:text-zinc-400 font-medium shrink-0">
-            Chương trình:
-          </span>
-          {visiblePackages.map((pItem) => {
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          {displayPackages.map((pItem) => {
             const isSelected = pItem.id === selectedPackageId
             const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
             const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
@@ -166,11 +181,6 @@ export function StudentCareActiveClassCard({
                 ? 'Toán tư duy'
                 : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
             const isPkgActive = pItem.status === 'active'
-            const packageSubtext = pItem.status === 'pending'
-              ? 'Chờ kích hoạt'
-              : pItem.status === 'expired'
-                ? 'Đã kết thúc'
-                : getPackageSubtext(pItem.packageName, shortSubject)
 
             return (
               <button
@@ -178,28 +188,16 @@ export function StudentCareActiveClassCard({
                 type="button"
                 onClick={() => setSelectedPackageId(pItem.id)}
                 className={cn(
-                  'h-[42px] px-3.5 py-1 text-xs rounded-lg transition-all flex flex-col justify-center items-center text-center cursor-pointer select-none border min-w-[110px] max-w-[170px]',
+                  'h-8 px-3.5 py-1 text-xs font-semibold rounded-lg transition-all inline-flex justify-center items-center text-center cursor-pointer select-none border shrink-0',
                   isSelected
-                    ? 'bg-sky-600 text-white font-medium shadow-2xs border-sky-600'
+                    ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
                     : isPkgActive
                       ? 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
                       : 'bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30'
                 )}
                 title={pItem.packageName}
               >
-                <span className="font-semibold text-xs leading-none">
-                  {shortSubject}
-                </span>
-                <span
-                  className={cn(
-                    'text-[10px] tracking-tight leading-none mt-1 truncate max-w-[150px]',
-                    isSelected
-                      ? 'text-sky-100 opacity-90 font-normal'
-                      : 'text-muted-foreground/80 font-normal'
-                  )}
-                >
-                  {packageSubtext}
-                </span>
+                <span>{shortSubject}</span>
               </button>
             )
           })}
@@ -395,14 +393,16 @@ export function StudentCareActiveClassCard({
 
           {/* Cột 2: Thời hạn */}
           <div className="space-y-0.5 min-w-0">
-            <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium block">
-              Thời hạn
-            </span>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium">
+                Thời hạn
+              </span>
+              <span className="text-xs text-muted-foreground font-normal">
+                {attendedSessions}/{totalSessions} buổi
+              </span>
+            </div>
             <p className="text-xs font-medium text-foreground truncate">
               <span>{startDateDisplay} - {endDateDisplay}</span>
-              <span className="text-muted-foreground ml-1.5 font-normal">
-                ({completedSessions}/{pkg.totalSessions} buổi)
-              </span>
             </p>
           </div>
 

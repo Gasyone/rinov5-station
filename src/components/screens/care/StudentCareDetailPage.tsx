@@ -457,64 +457,7 @@ export function StudentCareDetailPage({
                       <span className="text-base font-bold text-foreground">
                         {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
                       </span>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowCodes((prev) => !prev)}
-                        className={cn(
-                          "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1.5 rounded-md hover:bg-muted",
-                          showCodes
-                            ? "text-primary font-bold bg-primary/10"
-                            : "text-muted-foreground hover:text-foreground font-medium"
-                        )}
-                        title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
-                      >
-                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                        <span>Mã ID</span>
-                        <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
-                      </button>
                     </div>
-
-                    {/* Dải hiển thị mã hệ thống khi mở rộng */}
-                    {showCodes && (
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1 px-2 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <span className="flex items-center gap-1 font-mono text-xs">
-                          <ShieldCheck className="h-3 w-3 text-primary" /> CID: <strong className="text-foreground font-semibold">{cid}</strong>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyCode(cid, 'Mã CID')}
-                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                            title="Sao chép CID"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
-                        </span>
-                        <span className="text-muted-foreground/30">•</span>
-                        <span className="flex items-center gap-1 font-mono text-xs">
-                          UID: <strong className="text-foreground font-semibold">{uid}</strong>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyCode(uid, 'Mã UID')}
-                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                            title="Sao chép UID"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
-                        </span>
-                        <span className="text-muted-foreground/30">•</span>
-                        <span className="flex items-center gap-1 font-mono text-xs">
-                          SID: <strong className="text-foreground font-semibold">{sid}</strong>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyCode(sid, 'Mã SID')}
-                            className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                            title="Sao chép SID"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
-                        </span>
-                      </div>
-                    )}
 
                     <StudentCareHeaderClusterInfo
                       birthYear={birthYear}
@@ -527,16 +470,82 @@ export function StudentCareDetailPage({
                   </div>
                 </div>
 
-                {/* Right side: Phụ trách CS & GV Phụ trách (+N Trợ giảng) */}
-                <StudentCarePersonnelCluster
-                  assignedCS={assignedCS}
-                  onAssignedCSChange={setAssignedCS}
-                  csStaffList={csStaffList}
-                  mainTeacher={mainTeacher}
-                  assistants={assistants}
-                  className="pt-0.5 shrink-0"
-                />
+                {/* Right side: Nút Mã ID (Tạm ẩn Phụ trách CS & Giáo viên) */}
+                <div className="shrink-0 pt-0.5 self-start">
+                  <button
+                    type="button"
+                    onClick={() => setShowCodes((prev) => !prev)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs transition-colors cursor-pointer select-none shrink-0 py-1 px-1 rounded-md",
+                      showCodes
+                        ? "text-primary font-bold"
+                        : "text-muted-foreground hover:text-foreground font-medium"
+                    )}
+                    title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    <span>Mã ID</span>
+                    <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
+                  </button>
+
+                  {/* Tạm ẩn Phụ trách CS & GV Phụ trách */}
+                  {false && (
+                    <StudentCarePersonnelCluster
+                      assignedCS={assignedCS}
+                      onAssignedCSChange={setAssignedCS}
+                      csStaffList={csStaffList}
+                      mainTeacher={mainTeacher}
+                      assistants={assistants}
+                      className="pt-0.5 shrink-0"
+                    />
+                  )}
+                </div>
               </div>
+
+              {/* Dải hiển thị mã hệ thống khi mở rộng - Tách thành 1 dòng riêng biệt */}
+              {showCodes && (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/40 rounded-xl border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200 w-full">
+                  <span className="flex items-center gap-1 font-mono text-xs">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>CID:</span>
+                    <strong className="text-foreground font-semibold">{cid}</strong>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCode(cid, 'Mã CID')}
+                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                      title="Sao chép CID"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </span>
+                  <span className="text-muted-foreground/30">•</span>
+                  <span className="flex items-center gap-1 font-mono text-xs">
+                    <span>UID:</span>
+                    <strong className="text-foreground font-semibold">{uid}</strong>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCode(uid, 'Mã UID')}
+                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                      title="Sao chép UID"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </span>
+                  <span className="text-muted-foreground/30">•</span>
+                  <span className="flex items-center gap-1 font-mono text-xs">
+                    <span>SID:</span>
+                    <strong className="text-foreground font-semibold">{sid}</strong>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCode(sid, 'Mã SID')}
+                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
+                      title="Sao chép SID"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </span>
+                </div>
+              )}
 
               {/* Student Note Row: Full Width underneath Avatar */}
               <StudentCareHeaderClusterNote

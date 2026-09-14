@@ -231,11 +231,11 @@ const CareConditionFormInner: React.FC<FormInnerProps> = ({ condition, onSave, o
 
     const natureLabelMap: Record<ConditionNature, string> = {
       dac_biet: 'Chăm sóc đặc biệt',
-      tai_phi: 'Tái phí',
-      dinh_ky: 'Định kỳ',
-      theo_hanh_trinh: 'Theo hành trình học',
-      theo_moc: 'Theo mốc học tập',
-      theo_yeu_cau: 'Theo yêu cầu',
+      tai_phi: 'Chăm sóc gia hạn',
+      dinh_ky: 'Chăm sóc định kỳ',
+      theo_hanh_trinh: 'Chăm sóc theo buổi học',
+      theo_moc: 'Chăm sóc theo buổi học',
+      theo_yeu_cau: 'Chăm sóc theo yêu cầu',
     }
 
     const primaryRole = assignedRoles[0] || 'CS'

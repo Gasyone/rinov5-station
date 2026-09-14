@@ -32,23 +32,23 @@ interface CareJourneyMilestoneCardProps {
 
 export function getMilestoneTagAbbrev(code: string): { label: string; badgeClass: string; textColor: string } {
   const upper = (code || '').toUpperCase()
-  if (upper.startsWith('ĐB') || upper.includes('CSĐB')) {
+  if (upper.startsWith('ĐB') || upper.includes('CSĐB') || upper.includes('CĐB')) {
     return {
-      label: upper.includes('-') ? upper : 'CSĐB',
+      label: upper.includes('-') ? upper : 'CĐB',
       badgeClass: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900',
       textColor: 'text-red-700 dark:text-red-400',
     }
   }
-  if (upper.startsWith('CSTP') || upper.startsWith('TP')) {
+  if (upper.startsWith('CSTP') || upper.startsWith('TP') || upper.includes('CGH') || upper.includes('CSGH')) {
     return {
-      label: upper.includes('-') ? upper : 'CSTP',
+      label: upper.includes('-') ? upper : 'CGH',
       badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
       textColor: 'text-emerald-700 dark:text-emerald-400',
     }
   }
-  if (upper.startsWith('ĐK') || upper.includes('CSĐK')) {
+  if (upper.startsWith('ĐK') || upper.includes('CSĐK') || upper.includes('CĐK')) {
     return {
-      label: upper.includes('-') ? upper : 'CSĐK',
+      label: upper.includes('-') ? upper : 'CĐK',
       badgeClass: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900',
       textColor: 'text-violet-700 dark:text-violet-400',
     }
@@ -62,16 +62,23 @@ export function getMilestoneTagAbbrev(code: string): { label: string; badgeClass
   }
   if (upper.startsWith('TH') || upper.includes('CSTH')) {
     return {
-      label: upper.includes('-') ? upper : 'CSTH',
+      label: upper.includes('-') ? upper : 'CBH',
       badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900',
       textColor: 'text-sky-700 dark:text-sky-400',
     }
   }
-  if (upper.startsWith('TB') || upper.includes('CSBH')) {
+  if (upper.startsWith('TB') || upper.includes('CSBH') || upper.includes('CBH')) {
     return {
-      label: upper.includes('-') ? upper : 'CSBH',
-      badgeClass: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-900',
-      textColor: 'text-orange-700 dark:text-orange-400',
+      label: upper.includes('-') ? upper : 'CBH',
+      badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900',
+      textColor: 'text-sky-700 dark:text-sky-400',
+    }
+  }
+  if (upper.startsWith('TYC') || upper.startsWith('CYC')) {
+    return {
+      label: upper.includes('-') ? upper : 'CYC',
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900',
+      textColor: 'text-amber-700 dark:text-amber-400',
     }
   }
   if (upper.startsWith('HT')) {

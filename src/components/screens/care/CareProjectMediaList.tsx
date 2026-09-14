@@ -11,7 +11,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { MediaPreviewModal } from '@/components/shared'
+import { Badge } from '@/components/ui/badge'
+import { MediaPreviewModal, PersonnelHoverCard } from '@/components/shared'
+import { getShortDayOfWeek, formatDateNoYear } from './careSessionTimelineHelpers'
 
 interface ProjectMediaItem {
   id: string
@@ -55,10 +57,17 @@ export function CareProjectMediaList({
   const [showAllProjects, setShowAllProjects] = useState(false)
   const [expandedProjectComments, setExpandedProjectComments] = useState<Record<string, boolean>>({})
 
+  const isProjectCommentExpanded = (id: string) => {
+    if (expandedProjectComments[id] !== undefined) {
+      return expandedProjectComments[id]
+    }
+    return id === 'proj-math-1' || id === 'proj-eng-1'
+  }
+
   const toggleExpandProjectComment = (id: string) => {
     setExpandedProjectComments((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [id]: !isProjectCommentExpanded(id),
     }))
   }
 
@@ -310,59 +319,74 @@ export function CareProjectMediaList({
 
         {/* List of Project Sessions */}
         <div className="space-y-4 pt-1">
-          {visibleProjects.map((project, idx) => (
-            <div
-              key={project.id}
-              className={cn(
-                'space-y-2.5 text-xs',
-                idx > 0 && 'pt-3 border-t border-border/30'
-              )}
-            >
-              {/* Row 1: Tên dự án & Date header */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sky-700 dark:text-sky-400 bg-sky-100 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded text-[11px]">
-                    Buổi {project.sessionNumber}
-                  </span>
-                  <h4 className="font-bold text-foreground text-xs leading-snug">
-                    {project.title}
-                  </h4>
-                </div>
+          {visibleProjects.map((project, idx) => {
+            const shortDay = project.dayOfWeek ? getShortDayOfWeek(project.dayOfWeek) : getShortDayOfWeek(project.date)
+            const shortDate = formatDateNoYear(project.date)
 
-                <div className="flex items-center gap-1.5 flex-wrap text-xs shrink-0">
-                  {project.dayOfWeek && (
-                    <span className="font-extrabold text-[11px] px-1.5 py-0.5 rounded-md bg-muted text-foreground border border-border/60 shrink-0">
-                      {project.dayOfWeek}
+            return (
+              <div
+                key={project.id}
+                className={cn(
+                  'space-y-2.5 text-xs',
+                  idx > 0 && 'pt-3 border-t border-border/30'
+                )}
+              >
+                {/* Row 1: [Thứ, Ngày/Tháng] + Tên dự án | GV: [Tên] • Project */}
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên buổi dự án */}
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-semibold text-xs shrink-0 text-sky-600 dark:text-sky-400">
+                      {shortDay}, {shortDate}
                     </span>
-                  )}
-                  <span className="font-semibold text-foreground">
-                    {project.date}
-                  </span>
-                  {project.timeStr && (
-                    <>
-                      <span className="text-border/80">•</span>
-                      <span className="font-mono text-[10.5px] font-medium text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded border border-border/50">
-                        {project.timeStr}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Row 1.5: Nhận xét đánh giá dự án */}
-              {project.description && (
-                <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40 space-y-1">
-                  <div className="text-[10.5px] text-muted-foreground font-medium flex items-center justify-between">
-                    <span>Đánh giá từ giáo viên: <strong>{project.evaluator}</strong></span>
+                    <h4
+                      className="font-normal text-foreground text-xs truncate leading-snug min-w-0"
+                      title={project.title}
+                    >
+                      {project.title}
+                    </h4>
                   </div>
-                  <p
-                    className={cn(
-                      'text-xs text-foreground/90 font-normal leading-relaxed',
-                      !expandedProjectComments[project.id] && 'line-clamp-2'
-                    )}
-                  >
-                    {project.description}
-                  </p>
+
+                  {/* Cụm phải: GV (+hover card) • Project */}
+                  <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
+                    <span className="text-muted-foreground">GV:</span>
+                    <PersonnelHoverCard
+                      person={{
+                        id: `EMP-${project.id}`,
+                        name: project.evaluator || 'Teacher Mark',
+                        role: 'Giáo viên phụ trách',
+                        phone: '0901234567',
+                        email: 'teacher@rinoedu.com',
+                        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=TeacherMark',
+                      }}
+                      align="end"
+                    >
+                      <span className="font-normal text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer transition-colors">
+                        {project.evaluator}
+                      </span>
+                    </PersonnelHoverCard>
+
+                    <span className="text-border/60">•</span>
+
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0"
+                    >
+                      Project
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Row 1.5: Nhận xét đánh giá dự án */}
+                {project.description && (
+                  <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40 space-y-1">
+                    <p
+                      className={cn(
+                        'text-xs text-foreground/90 font-normal leading-relaxed',
+                        !isProjectCommentExpanded(project.id) && 'line-clamp-2'
+                      )}
+                    >
+                      {project.description}
+                    </p>
                   {project.description.length > 80 && (
                     <div className="flex justify-end pt-0.5">
                       <button
@@ -370,8 +394,8 @@ export function CareProjectMediaList({
                         onClick={() => toggleExpandProjectComment(project.id)}
                         className="text-[10.5px] text-primary hover:underline flex items-center gap-0.5 cursor-pointer font-semibold transition-colors"
                       >
-                        <span>{expandedProjectComments[project.id] ? 'Thu gọn' : 'Xem thêm nhận xét'}</span>
-                        {expandedProjectComments[project.id] ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        <span>{isProjectCommentExpanded(project.id) ? 'Thu gọn' : 'Xem thêm nhận xét'}</span>
+                        {isProjectCommentExpanded(project.id) ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </button>
                     </div>
                   )}
@@ -463,7 +487,8 @@ export function CareProjectMediaList({
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Button xem thêm lịch sử các dự án khác */}

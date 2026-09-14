@@ -132,7 +132,7 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
     name: 'Prestudy chuẩn bị khai giảng lớp học mới',
     category: 'hanh_trinh',
     nature: 'theo_hanh_trinh',
-    natureLabel: 'Theo hành trình học',
+    natureLabel: 'Chăm sóc theo buổi học',
     primaryRole: 'CS',
     primaryRoleLabel: 'Chuyên viên CS',
     slaHours: 48,
@@ -171,7 +171,7 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
     name: 'Hoàn thành buổi học đầu tiên (First Class Care)',
     category: 'hanh_trinh',
     nature: 'theo_hanh_trinh',
-    natureLabel: 'Theo hành trình học',
+    natureLabel: 'Chăm sóc theo buổi học',
     primaryRole: 'CS',
     primaryRoleLabel: 'Chuyên viên CS',
     slaHours: 24,
@@ -209,8 +209,8 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
     code: 'TH-03',
     name: 'Báo cáo mốc Mini Project / Kiểm tra học tập',
     category: 'hoc_tap',
-    nature: 'theo_moc',
-    natureLabel: 'Theo mốc học tập',
+    nature: 'theo_hanh_trinh',
+    natureLabel: 'Chăm sóc theo buổi học',
     primaryRole: 'GV',
     primaryRoleLabel: 'Giáo viên Chủ nhiệm',
     slaHours: 24,
@@ -249,7 +249,7 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
     name: 'Kỳ rà soát báo cáo chăm sóc định kỳ hằng tháng',
     category: 'hoc_tap',
     nature: 'dinh_ky',
-    natureLabel: 'Định kỳ',
+    natureLabel: 'Chăm sóc định kỳ',
     primaryRole: 'GV',
     primaryRoleLabel: 'Giáo viên Chủ nhiệm',
     slaHours: 72,
@@ -286,7 +286,7 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
     name: 'Cảnh báo Gói học sắp hết hạn / còn ≤ 5 buổi học',
     category: 'dich_vu',
     nature: 'tai_phi',
-    natureLabel: 'Tái phí',
+    natureLabel: 'Chăm sóc gia hạn',
     primaryRole: 'CS',
     primaryRoleLabel: 'Chuyên viên CS',
     slaHours: 24,
@@ -404,17 +404,16 @@ export const MOCK_CARE_CONDITIONS: CareConditionConfig[] = [
 export function getConditionNatureBadge(nature: string): { label: string; badgeClass: string } {
   switch (nature) {
     case 'dac_biet':
-      return { label: 'Chăm sóc đặc biệt', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 font-medium' }
+      return { label: 'CĐB - Chăm sóc đặc biệt', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 font-medium' }
     case 'tai_phi':
-      return { label: 'Tái phí', badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950 dark:text-teal-300 font-medium' }
+      return { label: 'CGH - Chăm sóc gia hạn', badgeClass: 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950 dark:text-teal-300 font-medium' }
     case 'dinh_ky':
-      return { label: 'Định kỳ', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 font-medium' }
+      return { label: 'CĐK - Chăm sóc định kỳ', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 font-medium' }
     case 'theo_hanh_trinh':
-      return { label: 'Theo hành trình', badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300 font-medium' }
     case 'theo_moc':
-      return { label: 'Theo mốc', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 font-medium' }
+      return { label: 'CBH - Chăm sóc theo buổi học', badgeClass: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300 font-medium' }
     case 'theo_yeu_cau':
-      return { label: 'Theo yêu cầu', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 font-medium' }
+      return { label: 'CYC - Chăm sóc theo yêu cầu', badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 font-medium' }
     default:
       return { label: nature, badgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 font-medium' }
   }

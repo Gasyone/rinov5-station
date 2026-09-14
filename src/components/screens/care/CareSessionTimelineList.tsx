@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { SessionHistory } from './studentCareReportHelpers'
-import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
 import { PersonnelHoverCard, AppAvatar } from '@/components/shared'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import {
@@ -15,7 +14,6 @@ import {
   getCareSessions,
   getDayOfWeekName,
   getShortDayOfWeek,
-  formatDateOnly,
   formatDateNoYear,
   getCareSessionNotices,
 } from './careSessionTimelineHelpers'
@@ -37,7 +35,6 @@ export function CareSessionTimelineList({
   studentId,
   studentAlert,
 }: CareSessionTimelineListProps) {
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [showAllTests, setShowAllTests] = useState(false)
 
@@ -58,11 +55,16 @@ export function CareSessionTimelineList({
   // Buổi học đầu tiên hoàn thành (buổi trên cùng) mặc định mở rộng nhận xét học viên
   const firstCompletedId = regularCompletedSessions[0]?.id
 
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>(() => {
+    const firstId = getCareSessions(pkgIsEnglish).filter((s) => s.type === 'lesson')[0]?.id || 'past-19'
+    return { [firstId]: true }
+  })
+
   const isSessionExpanded = (id: string) => {
     if (expandedComments[id] !== undefined) {
       return expandedComments[id]
     }
-    return id === firstCompletedId
+    return id === firstCompletedId || id === 'past-19'
   }
 
   const toggleExpand = (id: string) => {
@@ -382,6 +384,26 @@ export function CareSessionTimelineList({
 
   return (
     <div className="space-y-4">
+      {/* Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN) - Đặt bên ngoài, phía trên Nhật ký */}
+      {notices.length > 0 && (
+        <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3 py-2 text-xs text-left animate-in fade-in-50 duration-200">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0 text-amber-950 dark:text-amber-100 text-xs leading-relaxed">
+              <span className="font-bold text-amber-800 dark:text-amber-300 mr-1.5">
+                Lưu ý:
+              </span>
+              {notices.map((notice, idx) => (
+                <span key={notice.id} className="inline">
+                  {notice.text}
+                  {idx < notices.length - 1 ? ' ' : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Card Section 1: Nhật ký Buổi học */}
       <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden">
         {/* Streamlined Header with soft background tint */}
@@ -390,29 +412,9 @@ export function CareSessionTimelineList({
             Nhật ký Buổi học
           </h3>
           <span className="text-xs text-muted-foreground font-normal">
-            Hiển thị {visibleSessions.length}/{allSessions.length} buổi
+            30 ngày gần nhất
           </span>
         </div>
-
-        {/* Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN) */}
-        {notices.length > 0 && (
-          <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3 py-2 text-xs text-left animate-in fade-in-50 duration-200 mb-2">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0 text-amber-950 dark:text-amber-100 text-xs leading-relaxed">
-                <span className="font-bold text-amber-800 dark:text-amber-300 mr-1.5">
-                  Lưu ý:
-                </span>
-                {notices.map((notice, idx) => (
-                  <span key={notice.id} className="inline">
-                    {notice.text}
-                    {idx < notices.length - 1 ? ' ' : ''}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
         {smartCards && <div className="mb-2">{smartCards}</div>}
@@ -425,47 +427,81 @@ export function CareSessionTimelineList({
 
           const sessionTime = nextSession.time || '17:30 - 19:00'
           const dayOfWeek = getDayOfWeekName(nextSession.date)
-          const formattedDate = formatDateOnly(nextSession.date)
+          const shortDate = formatDateNoYear(nextSession.date)
 
           return (
             <div className="pt-0.5 pb-1">
-              <div className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50">
-                <div className="flex items-center gap-2 min-w-0 pr-3">
-                  <span className="text-xs font-normal text-sky-600 dark:text-sky-400 shrink-0">
-                    Buổi tiếp:
-                  </span>
-                  <span className="font-normal text-foreground truncate text-xs">
-                    {nextSession.topic}
-                  </span>
-                </div>
-
-                <ClassSessionHoverCard
-                  session={{
-                    id: nextSession.id,
-                    className: pkgIsEnglish ? 'IELTS Junior 1A' : 'Toán Tư Duy STEM Rino',
-                    classCode: pkgIsEnglish ? 'CLS-IELTS-001' : 'LD_TOAN_00010',
-                    subject: pkgIsEnglish ? 'Tiếng Anh - IELTS' : 'Toán tư duy - STEM',
-                    level: pkgIsEnglish ? 'IELTS Junior' : 'Einstein 0 - A',
-                    timeSlot: sessionTime,
-                    schoolRoom: nextSession.room || 'P.102 • RinoEdu Nguyễn Tuân',
-                    branch: 'RinoEdu Nguyễn Tuân',
-                    teacherName: nextSession.teacher || 'Nguyễn Minh Trí, Bùi Văn Anh',
-                    taName: 'Trần Văn Hoàng',
-                    totalStudents: 20,
-                    trialStudents: 2,
-                    status: 'scheduled',
-                    title: nextSession.topic,
-                  }}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
+                        {dayOfWeek}, {shortDate} ({sessionTime})
+                      </span>
+                      <span className="text-border">•</span>
+                      <span
+                        className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
+                        title={nextSession.topic}
+                      >
+                        {nextSession.topic}
+                      </span>
+                    </div>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
                   side="top"
+                  className="w-80 p-3.5 space-y-3 text-xs z-50 shadow-lg border bg-popover text-popover-foreground rounded-2xl animate-in fade-in zoom-in-95 duration-150 text-left"
                 >
-                  <span className="text-xs text-muted-foreground hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer font-medium shrink-0 ml-2 whitespace-nowrap inline-flex items-center gap-1 transition-colors">
-                    <span className="font-bold text-xs text-sky-600 dark:text-sky-400">
-                      {dayOfWeek}
+                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                    <span className="font-bold text-foreground text-xs uppercase tracking-wide">
+                      Thông tin buổi học tiếp theo
                     </span>
-                    <span>{formattedDate} ({sessionTime})</span>
-                  </span>
-                </ClassSessionHoverCard>
-              </div>
+                    <span className="text-[10px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/80 dark:bg-sky-950 px-1.5 py-0.5 rounded border border-sky-200/60">
+                      Sắp tới
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <p className="font-bold text-sm text-foreground leading-snug">{nextSession.topic}</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        {pkgIsEnglish ? 'IELTS Junior 1A • CLS-IELTS-001' : 'Toán Tư Duy STEM Rino • LD_TOAN_00010'}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
+                      <div>
+                        <span className="text-muted-foreground block text-[11px]">Thời gian:</span>
+                        <span className="font-semibold text-foreground">{dayOfWeek}, {shortDate}</span>
+                        <span className="text-muted-foreground block text-[11px] font-mono">{sessionTime}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[11px]">Phòng học:</span>
+                        <span className="font-semibold text-foreground">{nextSession.room || 'P.102 (Tầng 1)'}</span>
+                        <span className="text-muted-foreground block text-[11px] truncate">RinoEdu Nguyễn Tuân</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-1.5 border-t border-border/40 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Giáo viên:</span>
+                        <span className="font-semibold text-foreground">{nextSession.teacher || 'Sarah Smith'}</span>
+                      </div>
+                      {nextSession.assistant && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Trợ giảng:</span>
+                          <span className="font-semibold text-foreground">{nextSession.assistant.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           )
         })()}
