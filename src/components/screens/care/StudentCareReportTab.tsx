@@ -68,6 +68,8 @@ export function StudentCareReportTab({
   selectedPackageId,
   setSelectedPackageId,
   staffInfo,
+  assignedCS,
+  onAssignedCSChange,
   branchName,
   onOpenLeaveReserveDialog,
 }: StudentCareReportTabProps) {
@@ -389,6 +391,8 @@ export function StudentCareReportTab({
                 selectedPackageId={selectedPackageId}
                 setSelectedPackageId={setSelectedPackageId}
                 staffInfo={staffInfo}
+                assignedCS={assignedCS}
+                onAssignedCSChange={onAssignedCSChange}
                 currentBranchName={currentBranchName}
                 pkgIsEnglish={pkgIsEnglish}
                 student={currentStudentAlert}

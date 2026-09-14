@@ -40,8 +40,8 @@ export function CareReportSmartCards({
           <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 leading-none shrink-0">
             {pkg.attendanceRatio}
           </span>
-          <span className="text-xs font-medium text-amber-600 dark:text-amber-400 truncate leading-tight ml-auto text-right">
-            Muộn: 1 buổi
+          <span className="text-xs font-normal text-amber-600 dark:text-amber-400 truncate leading-tight ml-auto text-right">
+            muộn: 1
           </span>
         </div>
       </div>
@@ -61,7 +61,7 @@ export function CareReportSmartCards({
             {Math.round(7 * (pkg.homeworkCompletion / 100))}/7
           </span>
           <span className="text-xs text-muted-foreground truncate leading-tight ml-auto text-right">
-            Điểm TB: 7.5
+            Trung bình: 7.5
           </span>
         </div>
       </div>
