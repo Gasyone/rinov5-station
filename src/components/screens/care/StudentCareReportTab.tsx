@@ -55,6 +55,7 @@ interface StudentCareReportTabProps {
   onAssignedCSChange?: (csName: string) => void
   branchName?: string
   onOpenLeaveReserveDialog?: () => void
+  onCreateLeaveReserve?: (type: 'off' | 'reservation') => void
 }
 
 // ── Main Component ──────────────────────────────────────────────────────
@@ -72,6 +73,7 @@ export function StudentCareReportTab({
   onAssignedCSChange,
   branchName,
   onOpenLeaveReserveDialog,
+  onCreateLeaveReserve,
 }: StudentCareReportTabProps) {
   const isEnglish = useMemo(() => {
     if (!activePackage) return true
@@ -397,6 +399,7 @@ export function StudentCareReportTab({
                 pkgIsEnglish={pkgIsEnglish}
                 student={currentStudentAlert}
                 onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
+                onCreateLeaveReserve={onCreateLeaveReserve}
               />
 
 
@@ -497,7 +500,7 @@ export function StudentCareReportTab({
           );
         })}
 
-      {/* 2. LỊCH SỬ CÁC LỚP CŨ (Collapsible cards with borders) */}
+      {/* 2. LỊCH SỬ HỌC TẬP (Placement Test, Trial Class & Lớp cũ) */}
       <HistoricalClassesList
         classDataForPackages={classDataForPackages}
         activePackageId={activePackage?.id || ''}
@@ -511,6 +514,9 @@ export function StudentCareReportTab({
         selectedMonth={selectedMonth}
         branchName={currentBranchName}
         studentAlert={currentStudentAlert}
+        studentId={studentId}
+        studentName={studentName}
+        isEnglish={isEnglish}
         onOpenAttendance={(data) => {
           setAttendanceModalData(data)
           setIsAttendanceModalOpen(true)

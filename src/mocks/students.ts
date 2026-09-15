@@ -20,7 +20,21 @@ export interface EnrolledClass {
   curriculumCode?: string  // Mã chương trình
   nextLessonName?: string  // Tên bài học tiếp theo
   nextLessonDate?: string  // Lịch học buổi tiếp theo
+  startSessionDate?: string // Buổi học bắt đầu ghép vào lớp
   packageId?: string       // Mã gói đăng ký liên kết
+  totalSessions?: number   // Tổng số buổi của lớp
+  usedSessions?: number    // Số buổi học viên đã học
+  attendanceRate?: string  // Tỷ lệ chuyên cần (ví dụ '95.8%')
+  presentSessions?: number // Số buổi có mặt
+  excusedAbsences?: number // Số buổi nghỉ có phép
+  unexcusedAbsences?: number // Số buổi nghỉ không phép
+  homeworkRate?: string    // Tỷ lệ hoàn thành BTVN (ví dụ '92%')
+  homeworkScore?: number   // Điểm TB BTVN (ví dụ 8.5)
+  finalScore?: number      // Điểm kiểm tra tổng kết (ví dụ 8.8)
+  finalOutcome?: string    // Kết quả đầu ra (ví dụ 'Đạt chuẩn đầu ra Level A')
+  teacherFinalFeedback?: string // Nhận xét tổng kết của GV
+  linkedPackageName?: string    // Gói học liên kết
+  finishReason?: string    // Lý do kết thúc (Hoàn thành, Chuyển lớp, Bảo lưu)
 }
 
 export interface Student {

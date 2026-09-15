@@ -385,6 +385,8 @@ export interface CareSessionNotice {
   id: string
   title: string
   text: string
+  issue: string
+  action: string
   type: 'uncommented' | 'unmarked' | 'absent' | 'homework' | 'special_care'
   actionHint?: string
 }
@@ -413,7 +415,9 @@ export function getCareSessionNotices(
     notices.push({
       id: 'uncommented',
       title: 'Chưa có nhận xét',
-      text: `${sessionNumbers} chưa có nhận xét của giáo viên.`,
+      issue: `${sessionNumbers} đã hoàn thành nhưng giáo viên chưa cập nhật nhận xét đánh giá.`,
+      action: 'Cần đôn đốc GV hoàn thiện báo cáo học tập của học viên.',
+      text: `${sessionNumbers} đã hoàn thành nhưng giáo viên chưa cập nhật nhận xét đánh giá, cần đôn đốc GV hoàn thiện báo cáo học tập của học viên.`,
       actionHint: 'Cần đôn đốc GV hoàn thiện nhận xét buổi học',
       type: 'uncommented',
     })
@@ -430,7 +434,9 @@ export function getCareSessionNotices(
     notices.push({
       id: 'unmarked',
       title: 'Chưa điểm danh',
-      text: `${sessionDetails} đã kết thúc nhưng chưa được chốt điểm danh trên hệ thống.`,
+      issue: `${sessionDetails} đã kết thúc nhưng chưa được chốt điểm danh trên hệ thống.`,
+      action: 'Cần xác minh sĩ số thực tế với giáo viên phụ trách để cập nhật trạng thái chuyên cần.',
+      text: `${sessionDetails} đã kết thúc nhưng chưa được chốt điểm danh trên hệ thống, cần xác minh sĩ số thực tế với giáo viên phụ trách để cập nhật trạng thái chuyên cần.`,
       actionHint: 'Cần liên hệ GV/TA chốt danh sách điểm danh',
       type: 'unmarked',
     })
@@ -487,7 +493,9 @@ export function getCareSessionNotices(
     notices.push({
       id: 'absent',
       title: 'Nghỉ học liên tiếp',
-      text: `Học viên đang nghỉ liên tiếp ${finalAbsences} buổi, chưa có lịch học bù.`,
+      issue: `Học viên đang nghỉ liên tiếp ${finalAbsences} buổi (chưa có đơn xin phép), chưa có lịch học bù.`,
+      action: 'Cần liên hệ phụ huynh xác minh lý do và sắp xếp buổi học bổ trợ sớm.',
+      text: `Học viên đang nghỉ liên tiếp ${finalAbsences} buổi (chưa có đơn xin phép), chưa có lịch học bù, cần liên hệ phụ huynh xác minh lý do và sắp xếp buổi học bổ trợ sớm.`,
       actionHint: 'Cần liên hệ phụ huynh xác minh lý do và xếp lịch học bù',
       type: 'absent',
     })
@@ -500,7 +508,9 @@ export function getCareSessionNotices(
       notices.push({
         id: 'absent_ratio',
         title: 'Cảnh báo chuyên cần',
-        text: `Học viên đã nghỉ ${absentCount} buổi trong ${total} buổi gần nhất, chuyên cần đạt ${rate}%.`,
+        issue: `Học viên đã nghỉ ${absentCount} buổi trong ${total} buổi gần nhất (tỷ lệ chuyên cần ${rate}%).`,
+        action: 'Cần theo dõi sát sao tiến độ đi học và hỗ trợ kịp thời trước các buổi tới.',
+        text: `Học viên đã nghỉ ${absentCount} buổi trong ${total} buổi gần nhất (tỷ lệ chuyên cần ${rate}%), cần theo dõi sát sao tiến độ đi học và hỗ trợ kịp thời trước các buổi tới.`,
         actionHint: 'Cần theo dõi sát chuyên cần các buổi tới',
         type: 'absent',
       })
@@ -510,10 +520,18 @@ export function getCareSessionNotices(
   // 4. Chưa làm bài tập về nhà
   const missingHwList = completedSessions.filter((s) => s.homeworkSubmitted === false)
   if (missingHwList.length > 0) {
+    const hwCodes = missingHwList
+      .map((s) => s.homeworkCode)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(', ')
+    const hwDetail = hwCodes ? ` (${hwCodes})` : ''
     notices.push({
       id: 'homework',
       title: 'Chưa làm bài tập',
-      text: `Học viên đang chưa hoàn thành ${missingHwList.length} bài tập về nhà, cần đôn đốc nộp bù.`,
+      issue: `Học viên chưa hoàn thành ${missingHwList.length} bài tập về nhà gần nhất${hwDetail}.`,
+      action: 'Cần liên hệ đôn đốc phụ huynh hỗ trợ con làm bài và nộp bù trước buổi học tiếp theo.',
+      text: `Học viên chưa hoàn thành ${missingHwList.length} bài tập về nhà gần nhất${hwDetail}, cần liên hệ đôn đốc phụ huynh hỗ trợ con làm bài và nộp bù trước buổi học tiếp theo.`,
       actionHint: 'Nhắn Zalo phụ huynh hỗ trợ đôn đốc con làm bài',
       type: 'homework',
     })
@@ -529,7 +547,9 @@ export function getCareSessionNotices(
       notices.push({
         id: 'csdb_c90b',
         title: 'Cảnh báo CSĐB',
-        text: 'Học viên thuộc diện Chăm sóc Đặc biệt có nguy cơ thôi học cao C90B, cần liên hệ chăm sóc ưu tiên trong 24 giờ.',
+        issue: 'Học viên thuộc danh sách Chăm sóc Đặc biệt (C90B) có nguy cơ gián đoạn học tập cao.',
+        action: 'Cần ưu tiên liên hệ phụ huynh và phối hợp quản lý cơ sở can thiệp trong 24 giờ.',
+        text: 'Học viên thuộc danh sách Chăm sóc Đặc biệt (C90B) có nguy cơ gián đoạn học tập cao, cần ưu tiên liên hệ phụ huynh và phối hợp quản lý cơ sở can thiệp trong 24 giờ.',
         actionHint: 'Chuyên viên CS phối hợp Quản lý can thiệp trực tiếp',
         type: 'special_care',
       })
@@ -537,7 +557,9 @@ export function getCareSessionNotices(
       notices.push({
         id: 'csdb_score',
         title: 'Học lực sút giảm',
-        text: `Bài kiểm tra gần nhất chỉ đạt ${studentAlert.lastTestScore}/10, kiến thức bị hổng.`,
+        issue: `Bài kiểm tra gần nhất chỉ đạt ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), kiến thức nền tảng bị hổng.`,
+        action: 'Cần giáo viên bộ môn lên kế hoạch phụ đạo bổ trợ tăng cường 1-1.',
+        text: `Bài kiểm tra gần nhất chỉ đạt ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), kiến thức nền tảng bị hổng, cần giáo viên bộ môn lên kế hoạch phụ đạo bổ trợ tăng cường 1-1.`,
         actionHint: 'Giáo viên phụ trách cần lên kế hoạch phụ đạo kiến thức',
         type: 'special_care',
       })
@@ -545,7 +567,9 @@ export function getCareSessionNotices(
       notices.push({
         id: 'csdb_custom',
         title: 'Cảnh báo CSKH',
-        text: `Phát sinh yêu cầu chăm sóc: ${studentAlert.careAlert}, cần cập nhật tiến độ tương tác.`,
+        issue: `Phát sinh yêu cầu chăm sóc nghiệp vụ: ${studentAlert.careAlert}.`,
+        action: 'Chuyên viên CS cần liên hệ phụ huynh để nắm bắt tình hình và ghi nhận tiến độ tương tác.',
+        text: `Phát sinh yêu cầu chăm sóc nghiệp vụ: ${studentAlert.careAlert}, chuyên viên CS cần liên hệ phụ huynh để nắm bắt tình hình và ghi nhận tiến độ tương tác.`,
         actionHint: 'Ghi nhận nhật ký chăm sóc sau khi liên hệ',
         type: 'special_care',
       })

@@ -5,11 +5,20 @@ import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/useUIStore'
-import { Lead, mockLeads } from '@/mocks/crmLeads'
+import { Lead, mockLeads, updateLead } from '@/mocks/crmLeads'
 import {
   mockCareAlerts,
   type StudentCareAlert,
 } from '@/mocks/careAlerts'
+
+import { Headset, ShoppingCart } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { BookingTestCreateDialog, type BookingTestInitialData } from '@/components/screens/booking-test/BookingTestCreateDialog'
+import type { BookingTest } from '@/mocks/bookingTests'
+import { TrialClassCreateDialog } from '@/components/screens/trial-class/TrialClassCreateDialog'
+import type { CreateTrialClassForm } from '@/components/screens/trial-class/trialClassTypes'
+import { checkLeadHasBooking } from './leadContactsHelper'
+import { mapLeadToDetailedOrders } from './leadOrderMapper'
 
 import { CrmLeadVerticalPipeline } from './CrmLeadVerticalPipeline'
 import { CrmLeadDropDialog } from './CrmLeadDropDialog'
@@ -29,7 +38,7 @@ interface CrmLeadDetailPageProps {
   onUpdateLead?: (updatedLead: Lead) => void
 }
 
-type LeftTabKey = 'contacts' | 'orders'
+type RightTabKey = 'care' | 'orders'
 
 export function CrmLeadDetailPage({
   leadId,
@@ -57,16 +66,30 @@ export function CrmLeadDetailPage({
 
   const [prevFoundLead, setPrevFoundLead] = useState<Lead>(foundLead)
   const [currentLead, setCurrentLead] = useState<Lead>(foundLead)
-  const [activeTab, setActiveTab] = useState<LeftTabKey>('contacts')
+  const [rightTab, setRightTab] = useState<RightTabKey>('care')
   const [isDropOpen, setIsDropOpen] = useState(false)
   const [isFullProfileOpen, setIsFullProfileOpen] = useState(false)
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
   const [fullProfileInitialAction, setFullProfileInitialAction] = useState<'view' | 'add_parent' | 'add_child'>('view')
-  const [_activeCycleId, setActiveCycleId] = useState<string>(
+  const [, setActiveCycleId] = useState<string>(
     foundLead.currentCycleId || foundLead.salesCycles?.[0]?.cycleId || 'cycle-001'
   )
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [activeParentPersona, setActiveParentPersona] = useState<string | null>(null)
+
+  // Booking Dialogs state
+  const [isBookingTestOpen, setIsBookingTestOpen] = useState(false)
+  const [isTrialClassOpen, setIsTrialClassOpen] = useState(false)
+
+  const [trialForm, setTrialForm] = useState<CreateTrialClassForm>({
+    studentId: foundLead.id,
+    studentName: foundLead.studentName,
+    school: foundLead.branch || 'RinoEdu Linh Đàm',
+    program: foundLead.targetSubject || 'Tiếng Anh',
+    subject: foundLead.targetSubject.toLowerCase().includes('toán') ? 'Toán' : 'Tiếng Anh',
+    notes: foundLead.lastNote || '',
+    selectedSessions: [],
+  })
 
   if (foundLead !== prevFoundLead) {
     setPrevFoundLead(foundLead)
@@ -75,15 +98,34 @@ export function CrmLeadDetailPage({
       foundLead.currentCycleId || foundLead.salesCycles?.[0]?.cycleId || 'cycle-001'
     )
     setActiveParentPersona(null)
+    setTrialForm((prev) => ({
+      ...prev,
+      studentId: foundLead.id,
+      studentName: foundLead.studentName,
+      school: foundLead.branch || 'RinoEdu Linh Đàm',
+      program: foundLead.targetSubject || 'Tiếng Anh',
+      subject: foundLead.targetSubject.toLowerCase().includes('toán') ? 'Toán' : 'Tiếng Anh',
+      notes: foundLead.lastNote || '',
+    }))
   }
+
+  const hasBooking = useMemo(() => checkLeadHasBooking(currentLead), [currentLead])
+  const orders = useMemo(() => {
+    return mapLeadToDetailedOrders(currentLead, mockLeads)
+  }, [currentLead])
+  const ordersCount = orders.length
 
   // Set header title
   useEffect(() => {
-    setCustomHeaderTitle(`Chi tiết Lead: ${currentLead.studentName} (${currentLead.code})`)
+    if (hasBooking) {
+      setCustomHeaderTitle(`Chi tiết Lead: ${currentLead.studentName} (${currentLead.code})`)
+    } else {
+      setCustomHeaderTitle(`Chi tiết Lead: ${currentLead.parentName || currentLead.code} (${currentLead.code})`)
+    }
     return () => {
       setCustomHeaderTitle(null)
     }
-  }, [setCustomHeaderTitle, currentLead])
+  }, [setCustomHeaderTitle, currentLead, hasBooking])
 
   // Sync / Register Lead into mockCareAlerts so StudentCareChatFeed's updateCareAlertInteraction works seamlessly
   const studentCareAlert = useMemo<StudentCareAlert>(() => {
@@ -276,7 +318,7 @@ export function CrmLeadDetailPage({
     const newCycle: SalesCycle = {
       cycleId: newCycleId,
       cycleNumber: cycleCount,
-      title: `Chu kỳ ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
+      title: `Đợt ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
       status: 'active',
       startDate: new Date().toISOString().split('T')[0],
       assignedSales: currentLead.assignedTo || 'Trần Thị Mai (Sales)',
@@ -285,17 +327,69 @@ export function CrmLeadDetailPage({
     const updatedLead: Lead = {
       ...currentLead,
       status: 'moi_tiep_nhan',
-      subStatus: 'Tái tiếp cận (Chu kỳ mới)',
+      subStatus: 'Tái tiếp cận',
       isReturningLead: true,
       currentCycleId: newCycleId,
       salesCycles: [newCycle, ...(currentLead.salesCycles || [])],
       createdAt: new Date().toISOString().split('T')[0],
-      lastNote: `[Tái kích hoạt Chu kỳ ${cycleCount}]: Mở chu kỳ bán mới cho học viên.`,
+      lastNote: `[Tái kích hoạt #${cycleCount}]: Mở chăm sóc tiếp cận mới cho học viên.`,
     }
 
     setCurrentLead(updatedLead)
     onUpdateLead?.(updatedLead)
-    toast.success(`Đã kích hoạt Chu kỳ Bán mới (#${cycleCount}) cho học viên ${currentLead.studentName}!`)
+    toast.success(`Đã kích hoạt tái tiếp cận cho học viên ${currentLead.studentName}!`)
+  }
+
+  const bookingInitialData: BookingTestInitialData = useMemo(() => ({
+    parentName: currentLead.parentName,
+    phone: currentLead.phone,
+    childName: currentLead.studentName,
+    school: currentLead.branch || 'RinoEdu Linh Đàm',
+    program: currentLead.targetSubject,
+    notes: currentLead.lastNote,
+  }), [currentLead])
+
+  const handleBookingTestSubmit = (newBooking: BookingTest) => {
+    const updatedLead: Lead = {
+      ...currentLead,
+      studentName: newBooking.childName || currentLead.studentName,
+      testStatus: 'scheduled',
+      testDate: newBooking.testTime.split(' ')[0] || new Date().toISOString().split('T')[0],
+      testTime: newBooking.testTime.split(' ')[1] || '18:00',
+      testerTeacherName: newBooking.teacher || 'Thầy Alex',
+      branch: newBooking.school || currentLead.branch,
+      status:
+        currentLead.status === 'moi_tiep_nhan' || currentLead.status === 'chua_tiep_can'
+          ? 'danh_gia_trai_nghiem'
+          : currentLead.status,
+    }
+    setCurrentLead(updatedLead)
+    updateLead(currentLead.id, updatedLead)
+    onUpdateLead?.(updatedLead)
+    setIsBookingTestOpen(false)
+    toast.success(`Đã đặt lịch đánh giá thành công cho học viên ${updatedLead.studentName}!`)
+  }
+
+  const handleTrialClassSubmit = () => {
+    const session = trialForm.selectedSessions[0]
+    const updatedLead: Lead = {
+      ...currentLead,
+      studentName: trialForm.studentName || currentLead.studentName,
+      trialStatus: 'scheduled',
+      trialClassName: session?.className || 'Lớp chờ ghép',
+      trialDate: session?.trialDate || new Date().toISOString().split('T')[0],
+      trialTime: session?.sessionName || '18:00',
+      branch: trialForm.school || currentLead.branch,
+      status:
+        currentLead.status === 'moi_tiep_nhan' || currentLead.status === 'chua_tiep_can'
+          ? 'danh_gia_trai_nghiem'
+          : currentLead.status,
+    }
+    setCurrentLead(updatedLead)
+    updateLead(currentLead.id, updatedLead)
+    onUpdateLead?.(updatedLead)
+    setIsTrialClassOpen(false)
+    toast.success(`Đã đặt lịch học thử thành công cho học viên ${updatedLead.studentName}!`)
   }
 
   const basePath = useMemo(() => {
@@ -307,8 +401,8 @@ export function CrmLeadDetailPage({
       {/* DIRECT SPLIT 2-PANEL WORKSTATION LAYOUT (BỎ 2 DÒNG TRÊN CÙNG) */}
       <div className="flex-1 min-h-0 pt-2 pb-2 pl-2.5 lg:pl-3 pr-0 flex flex-col">
         <div className="flex-1 flex flex-col lg:flex-row gap-2.5 min-h-0 overflow-hidden">
-          {/* PANEL TRÁI: (Hồ sơ học viên & Các Tab thông tin chuyên sâu) */}
-          <main className="flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto pr-1 scrollbar-thin space-y-2.5">
+          {/* PANEL TRÁI: (Hồ sơ học viên & Các Tab thông tin chuyên sâu) - 50% bề ngang */}
+          <main className="w-full lg:w-1/2 lg:flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto pr-1 scrollbar-thin space-y-2.5">
             {/* 1. SECTION THÔNG TIN HỌC VIÊN */}
             <CrmLeadHeaderCard
               lead={currentLead}
@@ -321,93 +415,111 @@ export function CrmLeadDetailPage({
               basePath={basePath}
             />
 
-            {/* 2. THANH TABS (CHÂN DUNG LEAD & HỌC VIÊN / ĐƠN HÀNG) */}
-            <div className="shrink-0">
-              <div className="w-full bg-slate-100 dark:bg-zinc-800/90 p-1 rounded-xl flex items-center gap-1 border border-slate-200 dark:border-zinc-700 select-none">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('contacts')}
-                  className={cn(
-                    'flex-1 h-8 px-2.5 rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1 font-semibold whitespace-nowrap',
-                    activeTab === 'contacts'
-                      ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200/80 dark:border-zinc-700 font-bold'
-                      : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-200/70'
-                  )}
-                >
-                  <span>Chân dung Lead &amp; Học viên</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('orders')}
-                  className={cn(
-                    'flex-1 h-8 px-2.5 rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1 font-semibold whitespace-nowrap',
-                    activeTab === 'orders'
-                      ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200/80 dark:border-zinc-700 font-bold'
-                      : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-200/70'
-                  )}
-                >
-                  <span>Đơn hàng</span>
-                </button>
-              </div>
-            </div>
-
-            {/* 3. NỘI DUNG TAB ĐANG CHỌN */}
-            <div className="flex-1 min-h-0 pt-1">
-              {activeTab === 'contacts' && (
-                <CrmLeadContactsTab
-                  lead={currentLead}
-                  basePath={basePath}
-                  activeParentName={activeParentPersona}
-                  onSwitchParentPersona={setActiveParentPersona}
-                  onAddParent={() => {
-                    setFullProfileInitialAction('add_parent')
-                    setIsFullProfileOpen(true)
-                  }}
-                  onAddChild={() => {
-                    setFullProfileInitialAction('add_child')
-                    setIsFullProfileOpen(true)
-                  }}
-                  onOpenFullProfile={() => {
-                    setFullProfileInitialAction('view')
-                    setIsFullProfileOpen(true)
-                  }}
-                  onSwitchLead={(newLeadId) => {
-                    setActiveLeadId(newLeadId)
-                    router.push(`${basePath}/${newLeadId}`)
-                  }}
-                  onUpdateLead={handleSaveFullProfile}
-                />
-              )}
-
-              {activeTab === 'orders' && (
-                <CrmLeadOrdersTab lead={currentLead} onOpenCreateOrder={onOpenCreateOrder} />
-              )}
+            {/* 2. NỘI DUNG CHÂN DUNG LEAD & HỌC VIÊN */}
+            <div className="flex-1 min-h-0 pt-0.5">
+              <CrmLeadContactsTab
+                lead={currentLead}
+                basePath={basePath}
+                activeParentName={activeParentPersona}
+                onSwitchParentPersona={setActiveParentPersona}
+                onAddParent={() => {
+                  setFullProfileInitialAction('add_parent')
+                  setIsFullProfileOpen(true)
+                }}
+                onAddChild={() => {
+                  setFullProfileInitialAction('add_child')
+                  setIsFullProfileOpen(true)
+                }}
+                onOpenFullProfile={() => {
+                  setFullProfileInitialAction('view')
+                  setIsFullProfileOpen(true)
+                }}
+                onSwitchLead={(newLeadId) => {
+                  setActiveLeadId(newLeadId)
+                  router.push(`${basePath}/${newLeadId}`)
+                }}
+                onUpdateLead={handleSaveFullProfile}
+                onOpenBookingTest={() => setIsBookingTestOpen(true)}
+                onOpenTrialClass={() => setIsTrialClassOpen(true)}
+              />
             </div>
           </main>
 
-          {/* PANEL PHẢI: (Phễu Vòng đời & Cụm Chăm sóc) */}
-          <aside className="w-full lg:w-[650px] xl:w-[700px] 2xl:w-[750px] shrink-0 flex flex-col min-h-0 overflow-y-auto pr-1.5 scrollbar-thin space-y-2.5">
-            {/* 1. PHỄU VÒNG ĐỜI DẠNG DỌC (Đồng bộ chuẩn lead_lifecycle_config) */}
-            <CrmLeadVerticalPipeline
-              lead={currentLead}
-              onSelectStage={handleSelectStage}
-              onAdvanceStage={handleAdvanceStage}
-              onOpenDropDialog={() => setIsDropOpen(true)}
-              onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
-              onReactivateCycle={handleReactivateCycle}
-            />
+          {/* PANEL PHẢI: (Tab Chăm sóc bán hàng & Tab Đơn hàng) - 50% bề ngang */}
+          <aside className="w-full lg:w-1/2 lg:flex-1 min-w-0 flex flex-col min-h-0 overflow-y-auto pr-1.5 scrollbar-thin space-y-2.5">
+            {/* THANH TABS PANEL PHẢI: CHĂM SÓC BÁN HÀNG / ĐƠN HÀNG */}
+            <div className="shrink-0 bg-slate-100 dark:bg-zinc-800/90 p-1 rounded-xl flex items-center gap-1 border border-slate-200 dark:border-zinc-700 select-none">
+              <button
+                type="button"
+                onClick={() => setRightTab('care')}
+                className={cn(
+                  'flex-1 h-8 px-2.5 rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 font-medium whitespace-nowrap',
+                  rightTab === 'care'
+                    ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200/80 dark:border-zinc-700 font-bold'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-foreground hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
+                )}
+              >
+                <Headset className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <span>Chăm sóc bán hàng</span>
+              </button>
 
-            {/* 2. CỤM CHĂM SÓC (LIÊN HỆ, GHI CHÚ NHANH, ĐANG XỬ LÝ) */}
-            <div className="rounded-2xl border border-sky-200/80 dark:border-sky-900/60 bg-card p-3 shadow-xs text-left">
-              <CrmLeadCareSection
-                lead={currentLead}
-                studentCareAlert={studentCareAlert}
-                activeContactName={activeParentPersona || undefined}
-                onContactChange={setActiveParentPersona}
-                onSaveInteraction={handleSaveInteraction}
-              />
+              <button
+                type="button"
+                onClick={() => setRightTab('orders')}
+                className={cn(
+                  'flex-1 h-8 px-2.5 rounded-lg text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 font-medium whitespace-nowrap',
+                  rightTab === 'orders'
+                    ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200/80 dark:border-zinc-700 font-bold'
+                    : 'text-slate-600 dark:text-zinc-400 hover:text-foreground hover:bg-slate-200/60 dark:hover:bg-zinc-700/60'
+                )}
+              >
+                <ShoppingCart className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Đơn hàng</span>
+                {ordersCount > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="h-4.5 min-w-4.5 px-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-0"
+                  >
+                    {ordersCount}
+                  </Badge>
+                )}
+              </button>
             </div>
+
+            {rightTab === 'care' && (
+              <>
+                {/* 1. PHỄU VÒNG ĐỜI DẠNG DỌC (Đồng bộ chuẩn lead_lifecycle_config) */}
+                <CrmLeadVerticalPipeline
+                  lead={currentLead}
+                  onSelectStage={handleSelectStage}
+                  onAdvanceStage={handleAdvanceStage}
+                  onOpenDropDialog={() => setIsDropOpen(true)}
+                  onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
+                  onReactivateCycle={handleReactivateCycle}
+                  onUpdateLead={(updated) => {
+                    setCurrentLead(updated)
+                    onUpdateLead?.(updated)
+                  }}
+                />
+
+                {/* 2. CỤM CHĂM SÓC (LIÊN HỆ, GHI CHÚ NHANH, ĐANG XỬ LÝ) */}
+                <div className="rounded-2xl border border-sky-200/80 dark:border-sky-900/60 bg-card p-3 shadow-xs text-left">
+                  <CrmLeadCareSection
+                    lead={currentLead}
+                    studentCareAlert={studentCareAlert}
+                    activeContactName={activeParentPersona || undefined}
+                    onContactChange={setActiveParentPersona}
+                    onSaveInteraction={handleSaveInteraction}
+                  />
+                </div>
+              </>
+            )}
+
+            {rightTab === 'orders' && (
+              <div className="flex-1 min-h-0">
+                <CrmLeadOrdersTab lead={currentLead} onOpenCreateOrder={onOpenCreateOrder} />
+              </div>
+            )}
           </aside>
         </div>
       </div>
@@ -437,6 +549,23 @@ export function CrmLeadDetailPage({
           onOpenChange={setIsHistoryModalOpen}
         />
       )}
+
+      {/* MODAL ĐẶT LỊCH ĐÁNH GIÁ (TEST) TRỰC TIẾP */}
+      <BookingTestCreateDialog
+        open={isBookingTestOpen}
+        onOpenChange={setIsBookingTestOpen}
+        initialData={bookingInitialData}
+        onSubmit={handleBookingTestSubmit}
+      />
+
+      {/* MODAL ĐẶT LỊCH HỌC THỬ (TRIAL) TRỰC TIẾP */}
+      <TrialClassCreateDialog
+        open={isTrialClassOpen}
+        onOpenChange={setIsTrialClassOpen}
+        form={trialForm}
+        onFormChange={setTrialForm}
+        onSubmit={handleTrialClassSubmit}
+      />
     </div>
   )
 }

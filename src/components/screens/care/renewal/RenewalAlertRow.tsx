@@ -353,15 +353,12 @@ export function RenewalAlertRow({
         {(() => {
           const studentInfo = mockStudents.find((s) => s.id === cls.studentId)
           const isWaitAssignment = studentInfo?.status === 'wait_for_assignment'
-          const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0
-          const classCount = hasClassHistory ? 2 : 1
 
           return (
             <div className="flex flex-col gap-1 text-left">
-              {/* Hàng 1: (N) Trình độ */}
+              {/* Hàng 1: Trình độ */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={`(${classCount}) ${cls.level}`}>
-                  <span className="font-bold mr-1 text-foreground">({classCount})</span>
+                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={cls.level}>
                   {cls.level}
                 </span>
               </div>
@@ -427,32 +424,23 @@ export function RenewalAlertRow({
       {/* Gói sản phẩm */}
       <td className="py-3 px-3">
         {(() => {
-          const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
-          const packageCount = hasPackageHistory ? 2 : 1
           const skuName = getProductSku(cls)
           const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions)
 
           return (
             <div className="flex flex-col gap-0.5 min-w-[200px] max-w-[280px]">
-              {/* Hàng 1: (N) Tên gói học mới nhất */}
+              {/* Hàng 1: Tên gói học mới nhất */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[240px]" title={`(${packageCount}) ${skuName}`}>
-                  <span className="font-bold mr-1 text-foreground">({packageCount})</span>
+                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[240px]" title={skuName}>
                   {skuName}
                 </span>
               </div>
-              {/* Hàng 2: Nhãn kỳ hạn (T1, T2, T3) & Hạn học phí */}
-              <div className="flex items-center gap-1.5 flex-nowrap">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px] px-1 py-0 h-4 font-bold shrink-0 leading-none',
-                    expiryTier.badgeClass
-                  )}
-                >
+              {/* Hàng 2: Nhãn kỳ hạn (T1, T2...) & Hạn học phí */}
+              <div className="flex items-center gap-1.5 flex-nowrap text-xs">
+                <span className={cn('font-bold shrink-0', expiryTier.textClass)}>
                   {expiryTier.label}
-                </Badge>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                </span>
+                <span className="text-muted-foreground whitespace-nowrap">
                   Hạn: {cls.expectedEndDate}
                 </span>
               </div>

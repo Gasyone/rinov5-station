@@ -19,14 +19,28 @@ export interface StatusTile<T extends string> {
   status?: string
   semantic?: StatusSemantic
   icon?: ReactNode
+  countClassName?: string
 }
 
-interface StatusTilesProps<T extends string> {
+export interface StatusTilesProps<T extends string> {
   tiles: StatusTile<T>[]
   activeId: T
   onSelect: (id: T) => void
   className?: string
   noOverflowCollapse?: boolean
+  showDot?: boolean
+  hideDot?: boolean
+  coloredCount?: boolean
+}
+
+const SEMANTIC_COUNT_BG: Record<StatusSemantic, string> = {
+  success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300',
+  info: 'bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300',
+  warning: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300',
+  error: 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300',
+  neutral: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+  purple: 'bg-violet-100 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300',
+  completed: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300',
 }
 
 /* ── Single tile button ───────────────────────────────────── */
@@ -35,11 +49,15 @@ function TileButton<T extends string>({
   isActive,
   onSelect,
   compact,
+  showDot = true,
+  coloredCount = false,
 }: {
   tile: StatusTile<T>
   isActive: boolean
   onSelect: (id: T) => void
   compact?: boolean
+  showDot?: boolean
+  coloredCount?: boolean
 }) {
   const semantic =
     tile.semantic ??
@@ -52,36 +70,40 @@ function TileButton<T extends string>({
       variant="ghost"
       onClick={() => onSelect(tile.id)}
       className={cn(
-        'inline-flex items-center gap-2 whitespace-nowrap rounded-full border text-xs font-medium transition-colors',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border text-xs font-medium transition-colors',
         compact ? 'h-7 px-2.5' : 'h-8 px-3',
         isActive
           ? colors.active
           : cn(
-              'border-border bg-background text-muted-foreground',
+              'border-border bg-background text-foreground/80',
               'hover:bg-accent hover:text-foreground'
             )
       )}
     >
-      {tile.icon ? (
-        <span className={cn('h-3.5 w-3.5', isActive ? 'text-primary-foreground' : colors.text)}>
-          {tile.icon}
-        </span>
-      ) : (
-        <span
-          aria-hidden
-          className={cn(
-            'h-1.5 w-1.5 rounded-full',
-            isActive ? 'bg-primary-foreground' : colors.dot
-          )}
-        />
+      {showDot && (
+        tile.icon ? (
+          <span className={cn('h-3.5 w-3.5', isActive ? 'text-primary-foreground' : colors.text)}>
+            {tile.icon}
+          </span>
+        ) : (
+          <span
+            aria-hidden
+            className={cn(
+              'h-1.5 w-1.5 rounded-full',
+              isActive ? 'bg-primary-foreground' : colors.dot
+            )}
+          />
+        )
       )}
       <span>{tile.label}</span>
       <span
         className={cn(
-          'rounded-full px-1.5 text-xs font-semibold',
+          'rounded-full px-1.5 py-0.5 text-[11px] font-bold min-w-[20px] text-center leading-none transition-colors',
           isActive
             ? 'bg-primary-foreground/20 text-primary-foreground'
-            : 'bg-muted text-muted-foreground'
+            : coloredCount
+              ? (tile.countClassName || SEMANTIC_COUNT_BG[semantic] || 'bg-muted text-muted-foreground')
+              : 'bg-muted text-muted-foreground'
         )}
       >
         {tile.count}
@@ -104,7 +126,11 @@ export function StatusTiles<T extends string>({
   onSelect,
   className,
   noOverflowCollapse = false,
+  showDot = true,
+  hideDot,
+  coloredCount = false,
 }: StatusTilesProps<T>) {
+  const effectiveShowDot = hideDot ? false : showDot
   const containerRef = useRef<HTMLDivElement>(null)
   const measureRef = useRef<HTMLDivElement>(null)
   const [visibleCount, setVisibleCount] = useState(tiles.length)
@@ -168,6 +194,8 @@ export function StatusTiles<T extends string>({
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={onSelect}
+            showDot={effectiveShowDot}
+            coloredCount={coloredCount}
           />
         ))}
       </div>
@@ -194,6 +222,8 @@ export function StatusTiles<T extends string>({
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={() => {}}
+            showDot={effectiveShowDot}
+            coloredCount={coloredCount}
           />
         ))}
       </div>
@@ -206,6 +236,8 @@ export function StatusTiles<T extends string>({
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={onSelect}
+            showDot={effectiveShowDot}
+            coloredCount={coloredCount}
           />
         ))}
 
@@ -235,6 +267,8 @@ export function StatusTiles<T extends string>({
                     isActive={tile.id === activeId}
                     onSelect={onSelect}
                     compact
+                    showDot={effectiveShowDot}
+                    coloredCount={coloredCount}
                   />
                 ))}
               </div>

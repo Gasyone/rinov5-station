@@ -22,7 +22,7 @@ export function CrmLeadOverviewTab({
           <RotateCcw className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div className="space-y-1 flex-1">
             <div className="font-semibold text-amber-900 dark:text-amber-300 flex items-center gap-2 flex-wrap">
-              <span>Hồ sơ Lead quay lại (Chu kỳ {lead.salesCycles?.length || 2})</span>
+              <span>Hồ sơ Lead quay lại</span>
               {lead.returningReason && (
                 <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
                   • {lead.returningReason}
@@ -30,7 +30,7 @@ export function CrmLeadOverviewTab({
               )}
             </div>
             <p className="text-[11px] text-amber-800/90 dark:text-amber-400/90 leading-relaxed">
-              Học viên đã có lịch sử khảo sát &amp; đánh giá ở chu kỳ trước. Vui lòng kiểm tra tab <strong>Test &amp; Thử</strong> để xem lại kết quả bài test cũ và tab <strong>Vận hành / Đơn hàng</strong> để nắm trọn vẹn thông tin.
+              Học viên đã có lịch sử khảo sát &amp; đánh giá ở đợt trước. Vui lòng kiểm tra tab <strong>Test &amp; Thử</strong> để xem lại kết quả bài test cũ và tab <strong>Vận hành / Đơn hàng</strong> để nắm trọn vẹn thông tin.
             </p>
           </div>
         </div>

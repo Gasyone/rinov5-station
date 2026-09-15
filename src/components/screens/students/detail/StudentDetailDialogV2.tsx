@@ -1,51 +1,30 @@
 'use client'
 
-/* eslint-disable react-hooks/preserve-manual-memoization, react-hooks/immutability */
-
-import { useState, useMemo, useRef, useCallback } from 'react'
-import {
-  Phone,
-  GraduationCap,
-  PauseCircle,
-  CalendarX,
-  Sparkles,
-  Layers,
-  Award,
-  BookOpen,
-  Calendar,
-  Clock,
-  ShieldCheck,
-  Building,
-  Plus,
-} from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { useState, useMemo } from 'react'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { EmptyState, AppAvatar, InteractionLogsPanel, StudentHeaderInfoCard, type ParentMemberInfo } from '@/components/shared'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EmptyState, StudentHeaderInfoCard, ConfirmDialog, type ParentMemberInfo } from '@/components/shared'
 import { mockStudents, type EnrolledClass } from '@/mocks/students'
-import { useCallStore } from '@/stores/useCallStore'
 import { toast } from 'sonner'
 
 // Import Tab Components
 import { StudentDetailClasses } from './StudentDetailClasses'
 import { StudentDetailLevelDialog } from './StudentDetailLevelDialog'
-import { StudentDetailSessionsDialog } from './StudentDetailSessionsDialog'
 import { StudentDetailV2SidePanel } from './StudentDetailV2SidePanel'
-import { StudentDetailPackagesBar } from './StudentDetailPackagesBar'
+import { StudentDetailProgramsBar } from './StudentDetailProgramsBar'
+import { StudentClassAssignmentDialog } from './StudentClassAssignmentDialog'
 
 // Import Helper utilities
-import { getStudentPackages, getStudentNotes, getStudentFamilyMembers } from './studentDetailHelpers'
-import type { StudentNote, StudentGlobalLog, StudentPackage } from './studentDetailTypes'
-import { STUDENT_STATUS_LABELS } from '../studentTypes'
+import { getStudentPackages, getStudentFamilyMembers, getStudentPrograms } from './studentDetailHelpers'
+import type { StudentPackage } from './studentDetailTypes'
 import { mockClassRecords } from '@/mocks/classRecords'
-
-import { cn } from '@/lib/utils'
+import { LeaveReserveCreateDialog } from '@/components/screens/leave-reserve/LeaveReserveCreateDialog'
+import { StudentCareEarlyReturnDialog } from '@/components/screens/care/StudentCareEarlyReturnDialog'
+import { formatDateISO } from '@/components/screens/leave-reserve/leaveReserveHelpers'
+import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 
 export interface StudentDetailDialogV2Props {
   studentId: string | null
@@ -61,27 +40,75 @@ export function StudentDetailDialogV2({
   open,
   onOpenChange,
 }: StudentDetailDialogV2Props) {
-  const [mainTab, setMainTab] = useState<'classes' | 'logs'>('classes')
-  const [selectedPackageId, setSelectedPackageId] = useState<string>('all')
+  const [selectedProgramId, setSelectedProgramId] = useState<string>('prog-math')
 
   const [revision, setRevision] = useState(0)
 
-  // State to hold notes and system audit logs locally
+  // State to hold packages and enrolled classes locally
   const [prevStudentId, setPrevStudentId] = useState<string | null>(null)
-  const [, setNotes] = useState<StudentNote[]>([])
-  const [sideLogs, setSideLogs] = useState<StudentGlobalLog[]>([])
   const [packagesList, setPackagesList] = useState<StudentPackage[]>([])
   const [enrolledClasses, setEnrolledClasses] = useState<EnrolledClass[]>([])
-  
-  // States for editing dialogs
-  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false)
-  const [isEditSessionsOpen, setIsEditSessionsOpen] = useState(false)
 
-  // Ref to hold the assign class handler from StudentDetailClasses
-  const assignClassHandlerRef = useRef<((pkg: StudentPackage) => void) | null>(null)
-  const handleRegisterAssignHandler = useCallback((handler: (pkg: StudentPackage) => void) => {
-    assignClassHandlerRef.current = handler
-  }, [])
+  // Dialog States
+  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false)
+  const [isAssignOpen, setIsAssignOpen] = useState(false)
+  const [isConfirmDropOpen, setIsConfirmDropOpen] = useState(false)
+  const [isCreateLeaveReserveOpen, setIsCreateLeaveReserveOpen] = useState(false)
+  const [createLeaveReserveType, setCreateLeaveReserveType] = useState<'off' | 'reservation'>('off')
+  const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+
+  const student = useMemo(() => {
+    if (!studentId) return null
+    const cleanId = studentId.split('-')[0]
+    return mockStudents.find((s) => s.id === cleanId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId, revision])
+
+  // Sync state when studentId changes
+  if (student && student.id !== prevStudentId) {
+    setPrevStudentId(student.id)
+    const pkgs = getStudentPackages(student)
+    setPackagesList(pkgs)
+
+    const initialClasses = (student.enrolledClasses || []).map((c) => {
+      const matchingPkg = pkgs.find((p) => p.linkedClassCode === c.classCode)
+      return {
+        ...c,
+        packageId: matchingPkg?.id || undefined,
+      }
+    })
+    setEnrolledClasses(initialClasses)
+  }
+
+  // Derive programs list from current packages and classes
+  const programs = useMemo(() => {
+    if (!student) return []
+    return getStudentPrograms(student, packagesList, enrolledClasses)
+  }, [student, packagesList, enrolledClasses])
+
+  const selectedProgram = useMemo(() => {
+    if (programs.length === 0) return null
+    return programs.find((p) => p.id === selectedProgramId) || programs[0]
+  }, [programs, selectedProgramId])
+
+  const isStudentReserved = useMemo(() => {
+    return selectedProgram?.programStatus === 'reserved' || student?.status === 'reserve'
+  }, [selectedProgram, student])
+
+  const isWaitingForAssignment = useMemo(() => {
+    if (isStudentReserved) return false
+    return (
+      selectedProgram?.programStatus === 'wait_for_assignment' ||
+      selectedProgram?.programStatus === 'dropped' ||
+      !selectedProgram?.currentClass ||
+      student?.status === 'wait_for_assignment' ||
+      student?.status === 'pending' ||
+      student?.status === 'draft_class' ||
+      student?.status === 'enroll_later' ||
+      student?.status === 'pending_transfer' ||
+      (enrolledClasses.length === 0 && !selectedProgram?.currentClass)
+    )
+  }, [isStudentReserved, selectedProgram, student, enrolledClasses])
 
   const handleOpenEditLevel = () => {
     setIsEditLevelOpen(true)
@@ -101,28 +128,15 @@ export function StudentDetailDialogV2({
       }
     }
 
-    if (activeClass) {
+    if (selectedProgram?.currentClass) {
       setEnrolledClasses((prev) =>
         prev.map((c) =>
-          c.classCode === activeClass.classCode
+          c.classCode === selectedProgram.currentClass?.classCode
             ? { ...c, level: newLevel, subLevel: newSubLevel }
             : c
         )
       )
     }
-
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-    
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: `Đã cập nhật thông tin học viên: Trình độ ${newLevel} (${newSubLevel})${newSchoolClass ? ` - ${newSchoolClass}` : ''}${newEngName ? `, Tên tiếng Anh: "${newEngName}"` : ''}.`,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
 
     setRevision((r) => r + 1)
     setIsEditLevelOpen(false)
@@ -140,125 +154,53 @@ export function StudentDetailDialogV2({
       }
     }
 
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: newEngName
-          ? `Đã cập nhật tên tiếng Anh của học viên: "${newEngName}".`
-          : `Đã xóa tên tiếng Anh của học viên.`,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr,
-      },
-      ...prev,
-    ])
-
     setRevision((r) => r + 1)
     toast.success('Cập nhật tên tiếng Anh thành công!')
   }
 
-  const handleOpenEditSessions = () => {
-    if (selectedPackageId === 'all') return
-    setIsEditSessionsOpen(true)
-  }
-
-  const handleSaveSessions = (newStudiedSessions: number) => {
-    if (selectedPackageId === 'all') return
-    const pkg = packagesList.find((p) => p.id === selectedPackageId)
-    if (!pkg) return
-
-    const total = pkg.totalSessions
-    const newRemaining = total - newStudiedSessions
-    if (newRemaining < 0) {
-      toast.error('Số buổi đã học không được lớn hơn tổng số buổi!')
-      return
+  const handleCreateLeaveReserveSubmit = (newReq: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => {
+    const idPrefix = newReq.type === 'off' ? 'NP' : 'BL'
+    const newId = `${idPrefix}${String(mockLeaveReserveRequests.length + 1).padStart(3, '0')}`
+    const createdRequest: LeaveReserveRequest = {
+      ...newReq,
+      id: newId,
+      status: 'pending',
+      requestedDate: formatDateISO(new Date()),
     }
-
-    setPackagesList((prev) =>
-      prev.map((p) =>
-        p.id === selectedPackageId
-          ? { ...p, remainingSessions: newRemaining }
-          : p
-      )
+    mockLeaveReserveRequests.unshift(createdRequest)
+    setIsCreateLeaveReserveOpen(false)
+    toast.success(
+      `Tạo ${newReq.type === 'off' ? 'đơn xin nghỉ phép' : 'đơn bảo lưu'} thành công (${newId})!`,
+      {
+        description: `Học viên: ${newReq.studentName} • Bắt đầu: ${newReq.startDate}`,
+      }
     )
-
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-    
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: `Cập nhật số buổi gói "${pkg.packageName}": Đã học ${newStudiedSessions}/${total} buổi.`,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
-
-    setIsEditSessionsOpen(false)
-    toast.success('Cập nhật số buổi thành công!')
   }
 
-  const student = useMemo(() => {
-    if (!studentId) return null
-    const cleanId = studentId.split('-')[0]
-    return mockStudents.find((s) => s.id === cleanId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentId, revision])
-
-  // Sync state when studentId changes
-  if (student && student.id !== prevStudentId) {
-    setPrevStudentId(student.id)
-    const pkgs = getStudentPackages(student)
-    setPackagesList(pkgs)
-    const activePkgs = pkgs.filter(p => p.remainingSessions > 0)
-    setSelectedPackageId(activePkgs.length > 0 ? activePkgs[0].id : (pkgs.length > 0 ? pkgs[0].id : 'all'))
-    setNotes(getStudentNotes(student))
-    
-    const initialClasses = (student.enrolledClasses || []).map((c) => {
-      const matchingPkg = pkgs.find((p) => p.linkedClassCode === c.classCode)
-      return {
-        ...c,
-        packageId: matchingPkg?.id || undefined,
+  const handleUpdateSessions = (packageId: string, newStudied: number) => {
+    setPackagesList((prev) =>
+      prev.map((p) => {
+        if (p.id === packageId) {
+          const remaining = Math.max(0, p.totalSessions - newStudied)
+          return {
+            ...p,
+            remainingSessions: remaining,
+          }
+        }
+        return p
+      })
+    )
+    if (student) {
+      const sIdx = mockStudents.findIndex((s) => s.id === student.id)
+      if (sIdx !== -1) {
+        mockStudents[sIdx] = {
+          ...mockStudents[sIdx],
+          remainingSessions: Math.max(0, (mockStudents[sIdx].totalSessions || 96) - newStudied),
+        }
       }
-    })
-    setEnrolledClasses(initialClasses)
-
-    setSideLogs([
-      {
-        id: 'init-detail',
-        timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString('vi-VN'),
-        action: `Mở hồ sơ chi tiết học viên ${student.name}.`,
-        operator: 'Hệ thống',
-      }
-    ])
-  }
-
-  const filteredEnrolledClasses = useMemo(() => {
-    if (selectedPackageId === 'all') return enrolledClasses
-    const activePkg = packagesList.find((p) => p.id === selectedPackageId)
-    return enrolledClasses.filter((c) => {
-      if (c.packageId) {
-        return c.packageId === selectedPackageId
-      }
-      return activePkg ? c.classCode === activePkg.linkedClassCode : false
-    })
-  }, [enrolledClasses, packagesList, selectedPackageId])
-
-  const activeClass = useMemo(() => {
-    if (selectedPackageId === 'all') return null
-    const activePkg = packagesList.find((p) => p.id === selectedPackageId)
-    if (activePkg?.linkedClassCode) {
-      return enrolledClasses.find((c) => c.classCode === activePkg.linkedClassCode) || null
     }
-    return null
-  }, [enrolledClasses, packagesList, selectedPackageId])
-
-  const selectedPkg = useMemo(() => {
-    return packagesList.find((p) => p.id === selectedPackageId) || null
-  }, [packagesList, selectedPackageId])
+    setRevision((r) => r + 1)
+  }
 
   const parentMembers = useMemo<ParentMemberInfo[]>(() => {
     if (!student) return []
@@ -273,14 +215,15 @@ export function StudentDetailDialogV2({
   }, [student])
 
   const handleConfirmAssignment = (pkgId: string, classItem: { id: string; name: string; startSession?: string }) => {
-    const pkg = packagesList.find((p) => p.id === pkgId)
-    const oldClassCode = pkg?.linkedClassCode
+    const pkg = packagesList.find((p) => p.id === pkgId) || selectedProgram?.packages[0]
+    const actualPkgId = pkg?.id || pkgId
+    const oldClassCode = pkg?.linkedClassCode || selectedProgram?.currentClass?.classCode
     const foundClass = mockClassRecords.find((c) => c.id === classItem.id || c.code === classItem.id)
     const assignedClassCode = foundClass?.code || classItem.id
 
     setPackagesList((prev) =>
       prev.map((p) => {
-        if (p.id === pkgId) {
+        if (p.id === actualPkgId) {
           return {
             ...p,
             linkedClassCode: assignedClassCode,
@@ -302,17 +245,17 @@ export function StudentDetailDialogV2({
       progress: '0 / 24 buổi',
       branch: foundClass?.branch || student?.branch || 'RinoEdu Nguyễn Tuân',
       room: foundClass?.room || '—',
+      level: selectedProgram?.level || student?.level || 'Toán 1:6',
+      subLevel: selectedProgram?.subLevel || student?.subLevel || 'A',
+      programName: selectedProgram?.name,
       startDate: new Date().toISOString().split('T')[0],
       nextLessonDate: classItem.startSession,
-      packageId: pkgId,
+      packageId: actualPkgId,
     }
 
     setEnrolledClasses((prev) => {
       let updated = [...prev]
       updated = updated.map((c) => {
-        if (c.packageId === pkgId && c.classCode !== assignedClassCode) {
-          return { ...c, status: 'dropped' as const }
-        }
         if (oldClassCode && c.classCode === oldClassCode) {
           return { ...c, status: 'dropped' as const }
         }
@@ -321,37 +264,21 @@ export function StudentDetailDialogV2({
 
       const existsIdx = updated.findIndex((c) => c.classCode === newEnrolledClass.classCode)
       if (existsIdx !== -1) {
-        updated[existsIdx] = { ...updated[existsIdx], status: 'active' as const, packageId: pkgId }
+        updated[existsIdx] = { ...updated[existsIdx], status: 'active' as const, packageId: actualPkgId }
       } else {
         updated.push(newEnrolledClass)
       }
       return updated
     })
 
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-    
+    setIsAssignOpen(false)
     const isTransfer = !!oldClassCode
-    const actionText = isTransfer
-      ? `Chuyển lớp học viên từ ${pkg?.linkedClassName} sang ${classItem.name}.`
-      : `Ghép học viên vào lớp ${classItem.name}.`
-
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: actionText,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
-
-    toast.success(isTransfer ? `Chuyển lớp thành công!` : `Ghép lớp thành công!`)
+    toast.success(isTransfer ? 'Chuyển lớp thành công!' : 'Ghép lớp thành công!')
   }
 
   const handleChangeClassStatus = (classCode: string, newStatus: EnrolledClass['status']) => {
     setEnrolledClasses((prev) =>
-      prev.map((c) => (c.classCode === classCode ? { ...c, status: newStatus, packageId: c.packageId || selectedPackageId } : c))
+      prev.map((c) => (c.classCode === classCode ? { ...c, status: newStatus } : c))
     )
 
     if (newStatus === 'dropped') {
@@ -369,28 +296,13 @@ export function StudentDetailDialogV2({
         })
       )
     }
-
-    const now = new Date()
-    const timestampStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`
-
-    setSideLogs((prev) => [
-      {
-        id: Math.random().toString(),
-        action: `Đã thôi học lớp ${classCode}.`,
-        operator: 'Giáo vụ Lan',
-        timestamp: timestampStr
-      },
-      ...prev
-    ])
   }
 
   if (!student) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Không tìm thấy học viên</DialogTitle>
-          </DialogHeader>
+          <DialogTitle className="sr-only">Không tìm thấy học viên</DialogTitle>
           <EmptyState
             title="Không tìm thấy học viên"
             description="Học viên này không tồn tại hoặc đã bị xóa khỏi hệ thống."
@@ -410,28 +322,24 @@ export function StudentDetailDialogV2({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[90vh] max-h-[900px] flex-col overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1380px] bg-gray-50 dark:bg-zinc-950 border-primary/20 shadow-2xl">
-        <DialogHeader className="sr-only">
-          <DialogTitle>Chi tiết học viên: {student.name}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="flex h-[90vh] max-h-[900px] flex-col overflow-hidden p-5 pt-3.5 sm:max-w-[95vw] lg:max-w-[1380px] bg-gray-50 dark:bg-zinc-950 border-primary/20 shadow-2xl">
+        {/* Top Header Bar: Dialog Title & close clearance */}
+        <div className="flex items-center justify-between pb-1 select-none shrink-0 pr-8">
+          <DialogTitle className="text-xs font-normal text-muted-foreground">
+            Chi tiết học viên
+          </DialogTitle>
+        </div>
 
-        {/* Split Body Layout: Full height top to bottom */}
-        <div className="grid min-h-0 flex-1 gap-4 p-6 lg:grid-cols-[1fr_430px] overflow-hidden">
-          {/* Left CONTENT: Header + Student Info Card + Main Tabs */}
-          <main className="flex min-h-0 flex-col overflow-hidden space-y-3">
-            {/* Top Subtitle Label: Chi tiết xếp lớp */}
-            <div className="text-xs font-medium text-muted-foreground select-none shrink-0">
-              Chi tiết xếp lớp
-            </div>
-
+        {/* Split Body Layout: Full height top to bottom, flush to both edges */}
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_420px] overflow-hidden">
+          {/* Left CONTENT: Student Info Card + Main Programs & Classes */}
+          <main className="flex min-h-0 flex-col overflow-hidden space-y-2">
             {/* Student Info Card */}
             <StudentHeaderInfoCard
               studentAvatar={studentAvatar}
               studentName={student.name}
               englishName={student.englishName}
               onSaveEnglishName={handleSaveEnglishName}
-              statusKey={student.status}
-              statusLabel={STUDENT_STATUS_LABELS[student.status] || student.status}
               birthDate={student.dob ? new Date(student.dob).toLocaleDateString('vi-VN') : '15/03/2005'}
               gender={student.gender === 'Male' ? 'Nam' : student.gender === 'Female' ? 'Nữ' : 'Khác'}
               address="Số 49 Nguyễn Tuân, Nam Từ Liêm, Hà Nội"
@@ -440,114 +348,62 @@ export function StudentDetailDialogV2({
               sid={sid}
               initialNote={student.notes || 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.'}
               parents={parentMembers}
+              onLeave={() => {
+                setCreateLeaveReserveType('off')
+                setIsCreateLeaveReserveOpen(true)
+              }}
+              onReserve={() => {
+                setCreateLeaveReserveType('reservation')
+                setIsCreateLeaveReserveOpen(true)
+              }}
+              onResume={() => {
+                setIsEarlyReturnOpen(true)
+              }}
+              onTransfer={() => setIsAssignOpen(true)}
+              onDrop={() => setIsConfirmDropOpen(true)}
+              onAssignClass={() => setIsAssignOpen(true)}
+              isReserved={isStudentReserved}
+              isWaitingForAssignment={isWaitingForAssignment}
             />
 
-            {/* Main Tabs Section: Xếp lớp & Nhật ký (Tab menu LÊN TRÊN GÓI HỌC) */}
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-1">
-              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as 'classes' | 'logs')} className="flex min-h-0 flex-1 flex-col h-full space-y-3">
-                {/* 1. Tab menu */}
-                <TabsList className="shrink-0 grid w-full grid-cols-2 gap-1 bg-muted/60 p-1 h-9 rounded-lg border border-border/40">
-                  <TabsTrigger
-                    value="classes"
-                    className={cn(
-                      "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                      "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                      "hover:text-foreground"
-                    )}
-                  >
-                    <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    <span>Xếp lớp</span>
-                  </TabsTrigger>
+            {/* Programs Bar + Classes List (Left Panel) */}
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col space-y-3 pt-1">
+              {/* Program Tabs + [+ Ghép lớp] on the same row */}
+              <div className="shrink-0">
+                <StudentDetailProgramsBar
+                  programs={programs}
+                  selectedProgramId={selectedProgram?.id || 'prog-math'}
+                  onSelectProgram={setSelectedProgramId}
+                  onOpenAssignClass={() => setIsAssignOpen(true)}
+                />
+              </div>
 
-                  <TabsTrigger
-                    value="logs"
-                    className={cn(
-                      "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                      "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                      "hover:text-foreground"
-                    )}
-                  >
-                    <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    <span>Nhật ký</span>
-                    <span className="ml-1.5 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
-                      {sideLogs.length}
-                    </span>
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* 2. Content */}
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                  <TabsContent value="classes" className="m-0 focus-visible:outline-none flex flex-col space-y-3">
-                    {/* Dynamic Package details pills (GÓI HỌC Ở DƯỚI TAB MENU) */}
-                    <div className="shrink-0">
-                      <StudentDetailPackagesBar
-                        packagesList={packagesList}
-                        selectedPackageId={selectedPackageId}
-                        setSelectedPackageId={setSelectedPackageId}
-                        student={student}
-                        activeClass={activeClass}
-                        onEditLevel={handleOpenEditLevel}
-                        onEditSessions={handleOpenEditSessions}
-                        hideMetadata
-                      />
-                    </div>
-
-                    <StudentDetailClasses
-                      classes={filteredEnrolledClasses}
-                      packages={packagesList}
-                      selectedPackageId={selectedPackageId}
-                      studentName={student.name}
-                      studentCode={studentCode}
-                      studentBranch={student.branch}
-                      studentLevel={student.level}
-                      onConfirmAssignment={handleConfirmAssignment}
-                      onChangeClassStatus={handleChangeClassStatus}
-                      onRegisterAssignHandler={handleRegisterAssignHandler}
-                    />
-                  </TabsContent>
-
-                  <TabsContent value="logs" className="m-0 focus-visible:outline-none h-full pt-1">
-                    <div className="space-y-3 pr-1">
-                      {sideLogs.length === 0 ? (
-                        <div className="py-8 text-center text-xs text-muted-foreground italic">
-                          Chưa có nhật ký hoạt động.
-                        </div>
-                      ) : (
-                        sideLogs.map((log) => (
-                          <div key={log.id} className="rounded-xl border border-border/60 bg-card p-3.5 space-y-1.5 shadow-2xs text-xs">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <AppAvatar
-                                  name={log.operator}
-                                  size="xs"
-                                  className="h-6 w-6 border border-primary/10"
-                                />
-                                <span className="font-bold text-foreground">{log.operator}</span>
-                              </div>
-                              <span className="text-xs font-mono text-muted-foreground">{log.timestamp}</span>
-                            </div>
-                            <p className="text-xs text-foreground/90 leading-relaxed pl-8">{log.action}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </TabsContent>
-                </div>
-              </Tabs>
+              {/* Classes content for selected program */}
+              {selectedProgram && (
+                <StudentDetailClasses
+                  program={selectedProgram}
+                  studentName={student.name}
+                  studentCode={studentCode}
+                  studentBranch={student.branch}
+                  studentLevel={selectedProgram.level || student.level}
+                  onChangeClassStatus={handleChangeClassStatus}
+                  onOpenAssignClass={() => setIsAssignOpen(true)}
+                  onDirectAssign={(classItem) => handleConfirmAssignment(selectedProgram.packages[0]?.id || 'pkg-1', classItem)}
+                />
+              )}
             </div>
           </main>
 
-          {/* Right: Full top-to-bottom Side panel */}
+          {/* Right: Side panel with Program Info, flush to right edge, aligned with student info */}
           <aside className="flex min-h-0 flex-col overflow-hidden">
-            <StudentDetailV2SidePanel
-              packagesList={packagesList}
-              selectedPackageId={selectedPackageId}
-              setSelectedPackageId={setSelectedPackageId}
-              student={student}
-              activeClass={activeClass}
-              onEditLevel={handleOpenEditLevel}
-              onEditSessions={handleOpenEditSessions}
-            />
+            {selectedProgram && (
+              <StudentDetailV2SidePanel
+                program={selectedProgram}
+                student={student}
+                onEditLevel={handleOpenEditLevel}
+                onUpdateSessions={handleUpdateSessions}
+              />
+            )}
           </aside>
         </div>
       </DialogContent>
@@ -556,22 +412,93 @@ export function StudentDetailDialogV2({
       <StudentDetailLevelDialog
         open={isEditLevelOpen}
         onOpenChange={setIsEditLevelOpen}
-        initialLevel={activeClass?.level || student?.level || ''}
-        initialSubLevel={activeClass?.subLevel || student?.subLevel || ''}
+        initialLevel={selectedProgram?.level || student?.level || ''}
+        initialSubLevel={selectedProgram?.subLevel || student?.subLevel || ''}
         initialSchoolClass={student?.schoolClass || 'Lớp 6'}
         initialEnglishName={student?.englishName || ''}
         onSave={handleSaveLevel}
       />
 
-      {/* Dialog: Chỉnh sửa Số buổi */}
-      <StudentDetailSessionsDialog
-        key={selectedPkg?.id ?? 'all'}
-        open={isEditSessionsOpen}
-        onOpenChange={setIsEditSessionsOpen}
-        totalSessions={selectedPkg?.totalSessions || 24}
-        initialStudiedSessions={selectedPkg ? selectedPkg.totalSessions - selectedPkg.remainingSessions : 0}
-        onSave={handleSaveSessions}
+      {/* Dialog: Chọn ghép / chuyển lớp học */}
+      {selectedProgram && (
+        <StudentClassAssignmentDialog
+          open={isAssignOpen}
+          onOpenChange={setIsAssignOpen}
+          studentName={student.name}
+          studentCode={studentCode}
+          studentBranch={student.branch}
+          studentLevel={selectedProgram.level || student.level}
+          packageName={selectedProgram.packages[0]?.packageName || `Chương trình ${selectedProgram.name}`}
+          pkgRemainingSessions={selectedProgram.remainingSessions}
+          studentClasses={enrolledClasses}
+          currentClassCode={selectedProgram.currentClass?.classCode}
+          currentClassName={selectedProgram.currentClass?.className}
+          onConfirm={(classItem) => handleConfirmAssignment(selectedProgram.packages[0]?.id || 'pkg-1', classItem)}
+        />
+      )}
+
+      {/* Dialog: Xác nhận thoát lớp */}
+      <ConfirmDialog
+        open={isConfirmDropOpen}
+        onOpenChange={setIsConfirmDropOpen}
+        title="Xác nhận thoát lớp"
+        description={`Bạn có chắc chắn muốn cho học viên ${student?.name} thoát khỏi lớp ${selectedProgram?.currentClass?.classCode || 'hiện tại'}?`}
+        confirmLabel="Xác nhận thoát lớp"
+        cancelLabel="Hủy"
+        variant="destructive"
+        onConfirm={() => {
+          if (selectedProgram?.currentClass?.classCode) {
+            handleChangeClassStatus(selectedProgram.currentClass.classCode, 'dropped')
+          }
+          setIsConfirmDropOpen(false)
+          toast.success(`Đã cho học viên ${student?.name} thoát khỏi lớp thành công.`)
+        }}
       />
+
+      {/* Dialog: Tạo đơn nghỉ phép / bảo lưu */}
+      {student && (
+        <LeaveReserveCreateDialog
+          key={`${student.id}-${createLeaveReserveType}`}
+          open={isCreateLeaveReserveOpen}
+          onOpenChange={setIsCreateLeaveReserveOpen}
+          initialType={createLeaveReserveType}
+          initialStudentId={student.id}
+          onSubmit={handleCreateLeaveReserveSubmit}
+        />
+      )}
+
+      {/* Dialog: Xác nhận đi học lại sớm (khi đang bảo lưu) */}
+      {student && (
+        <StudentCareEarlyReturnDialog
+          key={`early-return-${student.id}`}
+          open={isEarlyReturnOpen}
+          onOpenChange={setIsEarlyReturnOpen}
+          studentName={student.name}
+          studentCode={studentCode}
+          studentId={student.id}
+          packageName={selectedProgram?.name || 'Khóa học'}
+          className={selectedProgram?.currentClass?.className || 'Lớp học'}
+          classCode={selectedProgram?.currentClass?.classCode || 'CLS-001'}
+          isHoldingClass={Boolean(selectedProgram?.currentClass?.classCode)}
+          expectedReturnDate={selectedProgram?.reservedInfo?.expiryDate || '16/09/2026'}
+          remainingSessions={selectedProgram?.remainingSessions ?? 20}
+          branchName={student.branch || 'RinoEdu Nguyễn Tuân'}
+          onSuccess={() => {
+            setIsEarlyReturnOpen(false)
+            if (student) {
+              const sIdx = mockStudents.findIndex((s) => s.id === student.id)
+              if (sIdx !== -1) {
+                mockStudents[sIdx] = {
+                  ...mockStudents[sIdx],
+                  status: 'active',
+                }
+              }
+            }
+            setRevision((r) => r + 1)
+            toast.success(`Học viên ${student.name} đã hoàn tất thủ tục quay lại học!`)
+          }}
+        />
+      )}
     </Dialog>
   )
 }

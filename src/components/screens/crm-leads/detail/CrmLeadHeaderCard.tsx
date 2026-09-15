@@ -6,17 +6,13 @@ import {
   Pencil,
   Check,
   ExternalLink,
-  Headset,
-  ArrowLeftRight,
   Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { AppAvatar, PersonnelHoverCard, type PersonnelItem } from '@/components/shared'
+import { AppAvatar } from '@/components/shared'
 import type { Lead } from '@/mocks/crmLeads'
-import { StaffSelect } from '../CrmCustomerCreateSearchSelect'
-import { STAFF_LIST } from '../crmCustomerCreateTypes'
 
 interface CrmLeadHeaderCardProps {
   lead: Lead
@@ -46,45 +42,9 @@ export function CrmLeadHeaderCard({
   )
   const [isNoteExpanded, setIsNoteExpanded] = useState(false)
 
-  const rawAssignedStaff = lead.assignedTo || 'Trần Thị Mai'
-  const cleanStaffName = rawAssignedStaff
-    .replace(/\s*\((?:Sales|Sale|Marketing|Tư vấn)\)/gi, '')
-    .trim()
-
-  const matchedStaff = STAFF_LIST.find(
-    (s) => s.name.toLowerCase() === cleanStaffName.toLowerCase()
-  )
-
-  const emailSlug = cleanStaffName
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/[^a-z0-9]/g, '.')
-    .replace(/\.+/g, '.')
-    .replace(/^\.|\.$/g, '')
-
-  const assignedStaffPerson: PersonnelItem = {
-    id: matchedStaff?.id ? `NV-00${matchedStaff.id}` : 'NV-001',
-    name: cleanStaffName,
-    role: matchedStaff?.role === 'Sales Manager' ? 'Trưởng nhóm Tuyển sinh' : 'Chuyên viên Tư vấn Tuyển sinh',
-    phone: '0901 112 233',
-    email: `${emailSlug || 'tuvan'}@rinoedu.vn`,
-  }
-
-  const handleAssignStaff = (staffName: string) => {
-    const cleanNewStaff = staffName.replace(/\s*\((?:Sales|Sale)\)/gi, '').trim()
-    const updatedLead: Lead = {
-      ...lead,
-      assignedTo: cleanNewStaff,
-    }
-    onUpdateLead?.(updatedLead)
-    toast.success(`Đã chuyển người phụ trách sang: ${cleanNewStaff}`)
-  }
-
   const birthDate = lead.birthYear
     ? `NS: ${lead.birthYear} (${lead.studentAge} tuổi)`
-    : `NS: 25/08/2017`
+    : `NS: 2016 (10 tuổi)`
   const address = lead.address || 'Số 45 Nguyễn Tuân, Thanh Xuân, Hà Nội'
 
   const handleSaveNote = () => {
@@ -99,10 +59,10 @@ export function CrmLeadHeaderCard({
 
   return (
     <div className="bg-card border border-border/80 rounded-2xl p-2.5 lg:p-3 shadow-xs space-y-2 text-left select-none">
-      {/* Top row: Back Button + Avatar + Học viên + Bên phải: Phụ trách & Phân bổ RinoEdu */}
-      <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center justify-between gap-3">
-        {/* Bên trái: Nút Back + Avatar + Thông tin học viên */}
-        <div className="flex items-start sm:items-center gap-3 min-w-0">
+      {/* Top row: Back Button + Avatar + Tên Học viên & Thông tin trường/học lực */}
+      <div className="flex items-start sm:items-center justify-between gap-3">
+        {/* Bên trái: Nút Back + Avatar + Thông tin chủ thể */}
+        <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
           {/* Nút Back tròn */}
           <Button
             variant="outline"
@@ -123,14 +83,14 @@ export function CrmLeadHeaderCard({
           >
             <AppAvatar
               src={studentAvatar}
-              name={lead.studentName}
+              name={lead.studentName || 'Student'}
               size="lg"
               className="border-2 border-background shadow-xs shrink-0 h-13 w-13 pointer-events-none"
             />
           </button>
 
-          {/* Cụm thông tin học viên */}
-          <div className="min-w-0 space-y-1">
+          {/* Cụm thông tin chủ thể */}
+          <div className="min-w-0 space-y-1 flex-1">
             <div className="flex items-center gap-2 flex-wrap leading-tight">
               <span
                 onClick={onOpenDetailModal}
@@ -140,7 +100,7 @@ export function CrmLeadHeaderCard({
                 {lead.studentName}
               </span>
 
-              {/* Nút Xem chi tiết hồ sơ đặt ngay cạnh tên bé */}
+              {/* Nút Xem chi tiết hồ sơ đặt ngay cạnh tên */}
               {onOpenDetailModal && (
                 <Button
                   size="sm"
@@ -160,78 +120,24 @@ export function CrmLeadHeaderCard({
                   size="sm"
                   onClick={onReactivateCycle}
                   className="h-6 px-2 text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
-                  title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
+                  title="Kích hoạt bán mới (Win-back / Tái tiếp cận)"
                 >
                   <Sparkles className="h-3 w-3" />
-                  <span>Kích hoạt chu kỳ mới</span>
+                  <span>Kích hoạt lại</span>
                 </Button>
               )}
             </div>
 
+            {/* Dòng thông tin: Năm sinh, Giới tính, Địa chỉ */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
               <span className="shrink-0">{birthDate}</span>
               <span className="text-muted-foreground/40 shrink-0">•</span>
               <span className="shrink-0">{lead.studentGender || 'Nữ'}</span>
               <span className="text-muted-foreground/40 shrink-0">•</span>
-              <span className="truncate max-w-[280px]" title={address}>
+              <span className="truncate max-w-[320px]" title={address}>
                 📍 {address}
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Bên phải: Cụm thông tin người phụ trách & Phân bổ (Làm phẳng hoàn toàn, không viền hộp lồng nhau) */}
-        <div className="shrink-0 flex flex-col items-start 2xl:items-end justify-center gap-1 select-none">
-          {/* Hàng 1: Người phụ trách + Popover Profile khi Hover + Nút đổi người tách riêng */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
-              <Headset className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-              <span>Phụ trách:</span>
-            </span>
-
-            {/* Tên người phụ trách: hover hiển thị Profile Popover tái sử dụng từ PersonnelHoverCard */}
-            <PersonnelHoverCard person={assignedStaffPerson} align="end">
-              <button
-                type="button"
-                className="font-bold text-xs text-foreground hover:text-primary transition-colors cursor-pointer decoration-dotted underline underline-offset-3 decoration-muted-foreground/40 hover:decoration-primary px-1 py-0.5 rounded hover:bg-muted/50"
-                title="Di chuột để xem hồ sơ người phụ trách"
-              >
-                {cleanStaffName}
-              </button>
-            </PersonnelHoverCard>
-
-            {/* Icon đổi người phụ trách tách riêng */}
-            <StaffSelect
-              mode="single"
-              selectedStaff={cleanStaffName}
-              onSelectStaff={(staff) => handleAssignStaff(staff.name)}
-              staffList={STAFF_LIST}
-              align="end"
-              trigger={
-                <button
-                  type="button"
-                  className="h-5 w-5 rounded inline-flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-muted/80 transition-colors cursor-pointer shrink-0"
-                  title="Đổi người phụ trách"
-                  aria-label="Đổi người phụ trách"
-                >
-                  <ArrowLeftRight className="h-3 w-3" />
-                </button>
-              }
-            />
-          </div>
-
-          {/* Hàng 2: Marketing & Nguồn tiếp nhận */}
-          <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-            <span>
-              MKT:{' '}
-              <strong className="text-foreground/85 font-medium">
-                {lead.marketingStaff
-                  ? lead.marketingStaff.replace(/\s*\(Marketing\)/, '')
-                  : 'Nguyễn Thị Lan'}
-              </strong>
-            </span>
-            <span className="text-border">•</span>
-            <span className="capitalize">Kênh {lead.source || 'Facebook'}</span>
           </div>
         </div>
       </div>

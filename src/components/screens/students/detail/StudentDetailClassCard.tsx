@@ -1,21 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import {
-  User,
-  Calendar,
-  Clock,
-  ChevronDown,
-  ChevronUp,
   History,
   Star,
 } from 'lucide-react'
 import {
   StatusBadge,
   AppAvatar,
-  StudentProfileHoverCard,
   PersonnelHoverCard,
-  type StudentProfileItem,
 } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { type ClassRecord } from '@/mocks/classRecords'
@@ -30,19 +22,41 @@ export interface StudentDetailClassCardProps {
   classRecord: ClassRecord | null
   studentLevel?: string
   studentBranch?: string
-  onSelectClassRecord: (record: ClassRecord, tab?: string) => void
+  isPast?: boolean
+  onSelectClassRecord?: (record: ClassRecord, tab?: string) => void
+  onTransferClass?: () => void
+  onReserveClass?: () => void
+  onDropClass?: () => void
+}
+
+function formatShortDay(dayStr?: string): string {
+  if (!dayStr) return 'T2'
+  const d = dayStr.trim().toLowerCase()
+  if (d.includes('2') || d.includes('hai')) return 'T2'
+  if (d.includes('3') || d.includes('ba')) return 'T3'
+  if (d.includes('4') || d.includes('tư') || d.includes('bốn')) return 'T4'
+  if (d.includes('5') || d.includes('năm')) return 'T5'
+  if (d.includes('6') || d.includes('sáu')) return 'T6'
+  if (d.includes('7') || d.includes('bảy')) return 'T7'
+  if (d.includes('chủ nhật') || d.includes('cn')) return 'CN'
+  return dayStr
 }
 
 export function StudentDetailClassCard({
   cls,
   classRecord,
-  studentLevel,
   studentBranch,
-  onSelectClassRecord,
+  isPast = false,
 }: StudentDetailClassCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const isCompleted = cls.status === 'session_ended' || cls.progress?.includes('Hoàn thành') || cls.progress?.includes('học xong')
 
-  const classStatus = classRecord
+  const classStatus = isPast
+    ? isCompleted
+      ? 'completed'
+      : cls.status === 'dropped'
+      ? 'huy'
+      : 'completed'
+    : classRecord
     ? classRecord.status
     : cls.status === 'dropped'
     ? 'huy'
@@ -57,50 +71,42 @@ export function StudentDetailClassCard({
     : 'dang_hoc'
 
   const isClassInactive =
-    classStatus === 'tam_dung' ||
+    !isPast &&
+    (classStatus === 'tam_dung' ||
     classStatus === 'huy' ||
     cls.status === 'dropped' ||
-    cls.status === 'session_ended'
+    cls.status === 'session_ended')
 
-  const classStatusLabel = (() => {
-    switch (classStatus) {
-      case 'nhap':
-        return 'Nháp'
-      case 'mo_chieu_sinh':
-        return 'Mở chiêu sinh'
-      case 'cho_khai_giang':
-        return 'Chờ khai giảng'
-      case 'dang_hoc':
-        return 'Đang học'
-      case 'tam_dung':
-        return 'Tạm nghỉ'
-      case 'huy':
-        return 'Đã kết thúc'
-      default:
-        return 'Không rõ'
-    }
-  })()
+  const classStatusLabel = isPast
+    ? isCompleted
+      ? 'Hoàn thành'
+      : cls.status === 'dropped'
+      ? 'Đã thôi học'
+      : 'Đã kết thúc'
+    : (() => {
+        switch (classStatus) {
+          case 'nhap':
+            return 'Nháp'
+          case 'mo_chieu_sinh':
+            return 'Mở chiêu sinh'
+          case 'cho_khai_giang':
+            return 'Chờ khai giảng'
+          case 'dang_hoc':
+            return 'Đang học'
+          case 'tam_dung':
+            return 'Tạm nghỉ'
+          case 'huy':
+            return 'Đã kết thúc'
+          default:
+            return 'Không rõ'
+        }
+      })()
 
   const record = classRecord
   const enrolled = record?.enrolledStudents || 15
   const max = record?.maxStudents || 20
   const pct = max > 0 ? Math.round((enrolled / max) * 100) : 0
   const newCount = record?.trialStudents || 2
-
-  const studentList = [
-    'Nguyễn An',
-    'Trần Bình',
-    'Lê Chi',
-    'Phạm Dũng',
-    'Trần Tuấn',
-    'Đặng Hồng',
-    'Nguyễn Hoàng',
-    'Trương Bảo',
-    'Lê Minh',
-    'Phạm Quỳnh',
-  ]
-  const displayAvatars = studentList.slice(0, 5)
-  const remaining = enrolled > 5 ? enrolled - 5 : 0
 
   const teacherList =
     cls.teacherName && cls.teacherName !== '—'
@@ -121,16 +127,16 @@ export function StudentDetailClassCard({
       title={`Xem lịch sử đổi giáo viên (${teacherHistoryList.length} giáo viên)`}
     >
       <History className="h-3 w-3" />
-      <span>Lịch sử GV ({teacherHistoryList.length})</span>
+      <span>({teacherHistoryList.length})</span>
     </span>
   )
 
   const upcomingList = [
-    { no: 14, date: '28/07/2026', time: '17:45 - 19:15', topic: 'Bài 14: Reading Skills Practice', room: 'A101', teacher: 'Cô Lan', label: 'Hôm nay / Sắp tới' },
-    { no: 15, date: '30/07/2026', time: '17:45 - 19:15', topic: 'Bài 15: Listening & Speaking Drills', room: 'A101', teacher: 'Cô Nga', label: 'Sắp diễn ra' },
-    { no: 16, date: '01/08/2026', time: '17:45 - 19:15', topic: 'Bài 16: Writing Task 1 Strategy', room: 'A101', teacher: 'Cô Lan', label: 'Sắp diễn ra' },
-    { no: 17, date: '04/08/2026', time: '17:45 - 19:15', topic: 'Bài 17: Grammar & Collocations', room: 'A101', teacher: 'Cô Lan', label: 'Sắp diễn ra' },
-    { no: 18, date: '06/08/2026', time: '17:45 - 19:15', topic: 'Bài 18: Mid-term Assessment', room: 'A101', teacher: 'Cô Nga', label: 'Sắp diễn ra' },
+    { no: 14, day: 'T3', date: '28/07', time: '17:45 – 19:15', topic: 'Bài 14: Reading Skills Practice', room: cls.room || 'A101', teacher: teacherList[0] || 'Cô Lan', label: 'Hôm nay / Sắp tới' },
+    { no: 15, day: 'T5', date: '30/07', time: '17:45 – 19:15', topic: 'Bài 15: Listening & Speaking Drills', room: cls.room || 'A101', teacher: teacherList[1] || 'Cô Nga', label: 'Sắp diễn ra' },
+    { no: 16, day: 'T7', date: '01/08', time: '17:45 – 19:15', topic: 'Bài 16: Writing Task 1 Strategy', room: cls.room || 'A101', teacher: teacherList[0] || 'Cô Lan', label: 'Sắp diễn ra' },
+    { no: 17, day: 'T3', date: '04/08', time: '17:45 – 19:15', topic: 'Bài 17: Grammar & Collocations', room: cls.room || 'A101', teacher: teacherList[0] || 'Cô Lan', label: 'Sắp diễn ra' },
+    { no: 18, day: 'T5', date: '06/08', time: '17:45 – 19:15', topic: 'Bài 18: Mid-term Assessment', room: cls.room || 'A101', teacher: teacherList[1] || 'Cô Nga', label: 'Sắp diễn ra' },
   ]
 
   const syllabusRecord: ClassRecord = classRecord || {
@@ -156,32 +162,62 @@ export function StudentDetailClassCard({
   }
 
   const perf = getClassPerformance(cls.classCode)
-  const attendanceNum = parseFloat(perf.attendanceRate) || 0
-  const hwNum = parseFloat(perf.homeworkSubmissionRate) || 0
+  const attendanceNum = parseFloat(perf.attendanceRate) || 91.7
+  const hwNum = parseFloat(perf.homeworkSubmissionRate) || 91.7
+
+  const totalSessions = cls.totalSessions || 24
+  const usedSessions =
+    cls.usedSessions ||
+    (cls.progress
+      ? parseInt(cls.progress.match(/(\d+)\s*\//)?.[1] || '24', 10)
+      : 24)
+  const pctUsed =
+    totalSessions > 0 ? Math.round((usedSessions / totalSessions) * 100) : 100
+
+  const scheduleSlots =
+    cls.scheduleSlots && cls.scheduleSlots.length > 0
+      ? cls.scheduleSlots
+      : classRecord?.scheduleSlots && classRecord.scheduleSlots.length > 0
+      ? classRecord.scheduleSlots
+      : [
+          { dayOfWeek: 'Thứ 3', startTime: '17:00', endTime: '18:30' },
+          { dayOfWeek: 'Thứ 5', startTime: '17:00', endTime: '18:30' },
+        ]
 
   return (
     <div
       className={cn(
         'border border-border/60 rounded-xl overflow-hidden bg-card shadow-2xs transition-all duration-200 hover:border-border',
+        isPast && 'opacity-95',
         isClassInactive && 'opacity-60 bg-muted/20'
       )}
     >
-      {/* Card Header: Minimalist & Clean */}
-      <div className="border-b border-border/40 px-4 py-3 bg-muted/10 dark:bg-zinc-900/30">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
-          {/* Left: Class Name, Status, Code & Metadata */}
+      {/* ========================================================
+          CARD HEADER: Đồng bộ 100% với thẻ lớp đề xuất
+          - Trái: Tên lớp, Trạng thái, Mã lớp, Trình độ, Loại lớp
+          - Phải:
+            + Dòng 1: Sĩ số xx/xx (+ x mới) [xóa viền/nền] + Lịch học [text thường]
+            + Dòng 2: KCT đưa lên trước GV + Danh sách giáo viên + icon (x)
+         ======================================================== */}
+      <div className="border-b border-border/40 px-4 py-2.5 bg-muted/10 dark:bg-zinc-900/30">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-left">
+          {/* Trái: Tên lớp, Status, Mã lớp, Trình độ, Loại lớp */}
           <div className="flex flex-col min-w-0 space-y-1">
             <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="font-bold text-foreground text-sm sm:text-base truncate max-w-[280px]">
                 {cls.className}
               </span>
-              <StatusBadge status={classStatus} label={classStatusLabel} />
-              {isClassInactive && (
-                <span className="text-xs text-muted-foreground italic font-medium">
-                  {cls.status === 'dropped' || cls.status === 'session_ended'
-                    ? '(Đã thoát lớp)'
-                    : '(Lớp đã nghỉ/kết thúc)'}
-                </span>
+              {!isPast && (
+                <>
+                  <StatusBadge status={classStatus} label={classStatusLabel} />
+                  {isClassInactive && (
+                    <span className="text-xs text-muted-foreground italic font-medium">
+                      {cls.status === 'dropped' || cls.status === 'session_ended'
+                        ? '(Đã thoát lớp)'
+                        : '(Lớp đã nghỉ/kết thúc)'}
+                    </span>
+                  )}
+                </>
               )}
             </div>
 
@@ -193,9 +229,9 @@ export function StudentDetailClassCard({
                   level={cls.subLevel || '5.0-5.5'}
                   teacherCode={cls.teacherName}
                   schedule={
-                    cls.scheduleSlots && cls.scheduleSlots.length > 0
-                      ? `${cls.scheduleSlots[0]?.dayOfWeek} ${cls.scheduleSlots[0]?.startTime}`
-                      : 'T2/4/6 18:00–19:30'
+                    scheduleSlots.length > 0
+                      ? `${formatShortDay(scheduleSlots[0]?.dayOfWeek)} ${scheduleSlots[0]?.startTime}`
+                      : 'T3/5 17:00–18:30'
                   }
                 />
               </div>
@@ -215,342 +251,230 @@ export function StudentDetailClassCard({
             </div>
           </div>
 
-          {/* Right: Sleek Metrics Strip */}
-          <div className="shrink-0 pt-1 sm:pt-0">
-            <div className="flex items-center gap-3 bg-muted/40 dark:bg-zinc-800/40 px-3 py-1.5 rounded-lg border border-border/30">
-              <div className="text-center space-y-0.5 min-w-[55px]">
-                <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Chuyên cần</div>
-                <div className="text-xs font-bold text-foreground">
-                  {attendanceNum > 0 ? `${attendanceNum}%` : '—'}
-                </div>
+          {/* Phải: Dòng 1 (Sĩ số + Lịch học), Dòng 2 (KCT + GV) */}
+          <div className="flex flex-col items-start sm:items-end justify-center space-y-1.5 shrink-0 pt-1 sm:pt-0">
+            {/* Dòng 1: Sĩ số (không viền, không nền) + Lịch học (text thường) */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isPast && (
+                <>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="font-semibold text-foreground">{enrolled}/{max}</span>
+                    <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
+                      (+{newCount} mới, Trial)
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground/30">•</span>
+                </>
+              )}
+
+              <div className="flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground font-normal">
+                {scheduleSlots.length > 0 ? (
+                  scheduleSlots.map((slot, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 text-muted-foreground font-normal text-xs"
+                    >
+                      <span>{formatShortDay(slot.dayOfWeek)}</span>
+                      <span className="font-mono text-xs">{slot.startTime}–{slot.endTime}</span>
+                      {idx < scheduleSlots.length - 1 && (
+                        <span className="text-muted-foreground/30">•</span>
+                      )}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground italic font-normal">
+                    {cls.startDate ? `Bắt đầu ${cls.startDate}` : 'Chưa cập nhật lịch'}
+                  </span>
+                )}
               </div>
-              <div className="h-5 w-[1px] bg-border/40" />
-              <div className="text-center space-y-0.5 min-w-[45px]">
-                <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">BTVN</div>
-                <div className="text-xs font-bold text-foreground">
-                  {hwNum > 0 ? `${hwNum}%` : '—'}
-                </div>
-              </div>
-              <div className="h-5 w-[1px] bg-border/40" />
-              <div className="text-center space-y-0.5 min-w-[55px]">
-                <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Điểm TB</div>
-                <div className="text-xs font-bold text-foreground">
-                  {perf.latestScore.score !== '—' ? (
-                    <>
-                      {perf.latestScore.score}
-                      <span className="text-[9.5px] font-normal text-muted-foreground">/10</span>
-                    </>
-                  ) : (
-                    '—'
-                  )}
-                </div>
-              </div>
-              <div className="h-5 w-[1px] bg-border/40" />
-              <div className="text-center space-y-0.5 min-w-[45px]">
-                <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Rating</div>
-                <div className="text-xs font-bold text-foreground flex items-center justify-center gap-0.5">
-                  4.5
-                  <Star className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
-                </div>
-              </div>
+            </div>
+
+            {/* Dòng 2: KCT lên trước GV + Danh sách giáo viên + icon (x) */}
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              <SyllabusProfileHoverCard cls={syllabusRecord} align="end">
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  title="Nhấp chuột để xem thông tin Khung chương trình"
+                >
+                  <span className="text-[11px] font-medium text-muted-foreground">KCT:</span>{' '}
+                  <span className="font-medium text-foreground">
+                    {cls.curriculumName || syllabusRecord.syllabus || 'IELTS Junior v2.1'}
+                  </span>
+                </span>
+              </SyllabusProfileHoverCard>
+
+              <span className="text-muted-foreground/30">•</span>
+
+              <span className="text-[11px] text-muted-foreground font-medium">GV:</span>
+              {teacherList.map((tName, idx) => {
+                const teacherPersonObj = {
+                  id: `EMP-${tName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'EMP'}`,
+                  name: tName,
+                  role: 'Giáo viên',
+                  phone: '0901234567',
+                  avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${tName}`,
+                  email: `${tName.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+                }
+
+                return (
+                  <PersonnelHoverCard key={idx} person={teacherPersonObj} align="end">
+                    <div
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                      title={`Rê chuột/Nhấp để xem thông tin giáo viên: ${tName}`}
+                    >
+                      <AppAvatar
+                        src={teacherPersonObj.avatar}
+                        name={tName}
+                        size="xs"
+                        className="h-4 w-4 shrink-0 border border-primary/20"
+                      />
+                      <span className="font-medium text-foreground truncate max-w-[120px]">{tName}</span>
+                    </div>
+                  </PersonnelHoverCard>
+                )
+              })}
+
+              <ClassTeacherHistoryPopover
+                trigger={historyTrigger}
+                currentTeacher={cls.teacherName}
+                teacherHistory={teacherHistoryList}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Card Content */}
-      <div className="p-3 space-y-2">
-        <div className="grid grid-cols-12 gap-2 items-center py-0.5">
-          {/* Cột 1: SĨ SỐ (Căn trái - col-span-5) */}
-          <div className="col-span-12 sm:col-span-5 space-y-1.5 flex flex-col justify-center text-left">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-foreground">
-                {enrolled}/{max} <span className="text-muted-foreground font-normal text-xs">({pct}%)</span>
-              </span>
-              <span className="text-[9.5px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
-                +{newCount} mới, Trial
-              </span>
-            </div>
-
-            <div className="h-1.5 rounded-full bg-muted overflow-hidden w-full max-w-[200px]">
-              <div
-                className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-
-            <div className="flex items-center justify-between w-full max-w-[220px] pt-0.5">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {displayAvatars.map((sName, sIdx) => {
-                  const studentItem: StudentProfileItem = {
-                    id: `stu-enrolled-${sIdx + 1}`,
-                    name: sName,
-                    code: `STU-2026-00${sIdx + 1}`,
-                    avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${sName}`,
-                    status: 'Đang học',
-                    birthDate: '15/03/2005',
-                    gender: sIdx % 2 === 0 ? 'Nam' : 'Nữ',
-                    branch: 'RinoEdu Nguyễn Tuân',
-                    parentName: `${sName.split(' ').slice(-1)[0]} Bố Nguyễn Văn A`,
-                    parentPhone: `098765432${sIdx}`,
-                    parentRelation: sIdx % 2 === 0 ? 'Bố' : 'Mẹ',
-                    attendanceRate: '91.7%',
-                    homeworkRate: '91.7%',
-                    avgScore: '7.0 / 9.0',
-                  }
-
-                  return (
-                    <StudentProfileHoverCard
-                      key={sName}
-                      student={studentItem}
-                      align="center"
-                      side="top"
-                    >
-                      <div
-                        className="cursor-pointer transition-transform hover:scale-110"
-                        title={`Xem profile học viên: ${sName}`}
-                      >
-                        <AppAvatar
-                          src={studentItem.avatar}
-                          name={sName}
-                          size="sm"
-                          className="h-5.5 w-5.5 border border-border/40 shadow-2xs cursor-pointer transition-all"
-                        />
-                      </div>
-                    </StudentProfileHoverCard>
-                  )
-                })}
-              </div>
-              {remaining > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const clsRec = classRecord || {
-                      id: cls.classCode,
-                      code: cls.classCode,
-                      name: cls.className,
-                      programName: cls.programName || 'IELTS Junior',
-                      subject: cls.programName || 'IELTS Junior',
-                      level: cls.level || studentLevel,
-                      branch: cls.branch || studentBranch,
-                      teacher: cls.teacherName,
-                      teacherPhone: '0901234567',
-                      room: cls.room || 'A101',
-                      schedule: 'Thứ 2, Thứ 4, Thứ 6 (18:00 - 19:30)',
-                      scheduleSlots: cls.scheduleSlots || [],
-                      startDate: cls.startDate || '2026-05-01',
-                      endDate: cls.endDate || '2026-08-01',
-                      maxStudents: 15,
-                      enrolledStudents: 12,
-                      status: 'dang_hoc',
-                      tuitionFee: 3500000,
-                    }
-                    onSelectClassRecord(clsRec as ClassRecord, 'roster')
-                  }}
-                  className="h-5 px-2 rounded-full bg-muted hover:bg-muted/80 text-[9.5px] font-semibold text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors border border-border/40"
-                  title={`Nhấp để xem danh sách toàn bộ ${enrolled} học viên trong lớp ${cls.className}`}
-                >
-                  +{remaining}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Cột 2: CỘT KHOẢNG TRỐNG Ở GIỮA (Đăng để trống - col-span-1) */}
-          <div className="hidden sm:block sm:col-span-1" />
-
-          {/* Cột 3: LỊCH HỌC (Căn phải - col-span-6) */}
-          <div className="col-span-12 sm:col-span-6 flex items-center justify-end gap-1.5 text-xs">
-            {classRecord?.scheduleSlots && classRecord.scheduleSlots.length > 0 ? (
-              (() => {
-                const teachers = (classRecord.teacher || '')
-                  .split(/[,/&]| và /)
-                  .map((t) => t.trim())
-                  .filter(Boolean)
-                return (
-                  <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                    {classRecord.scheduleSlots.map((slot, idx) => {
-                      const slotTeacher =
-                        slot.teachers && slot.teachers.length > 0
-                          ? slot.teachers[0]
-                          : teachers[idx % teachers.length] || teachers[0] || 'Cô Lan'
-
-                      const teacherPersonObj = {
-                        id: `EMP-${slotTeacher.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'CL'}`,
-                        name: slotTeacher,
-                        role: 'Giáo viên Tiếng Anh',
-                        phone: '0901234567',
-                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${slotTeacher}`,
-                        email: `${slotTeacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
-                      }
-
-                      return (
-                        <div
-                          key={idx}
-                          className="rounded-md border border-border/40 px-1.5 py-1 space-y-0.5 bg-card/30 flex flex-col items-center justify-center shrink-0 min-w-[105px]"
-                        >
-                          <div className="flex items-center gap-1 justify-center">
-                            <span className="inline-flex items-center rounded bg-primary/10 px-1 py-0 text-xs font-bold text-primary shrink-0">
-                              {slot.dayOfWeek}
-                            </span>
-                            <span className="font-mono text-xs font-semibold text-foreground shrink-0">
-                              {slot.startTime}–{slot.endTime}
-                            </span>
-                          </div>
-
-                          <PersonnelHoverCard person={teacherPersonObj} align="center">
-                            <div
-                              className="flex items-center justify-center gap-1 truncate max-w-[100px] cursor-pointer hover:opacity-80 transition-opacity text-xs text-muted-foreground"
-                              title={`Nhấp/Rê chuột để xem thông tin giáo viên: ${slotTeacher}`}
-                            >
-                              <AppAvatar
-                                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${slotTeacher}`}
-                                name={slotTeacher}
-                                size="xs"
-                                className="h-3.5 w-3.5 shrink-0 border border-primary/20 cursor-pointer"
-                              />
-                              <span className="font-medium text-foreground text-xs truncate">
-                                {slotTeacher}
-                              </span>
-                            </div>
-                          </PersonnelHoverCard>
-                        </div>
-                      )
-                    })}
-
-                    <ClassTeacherHistoryPopover
-                      trigger={historyTrigger}
-                      currentTeacher={cls.teacherName}
-                      teacherHistory={teacherHistoryList}
-                    />
-                  </div>
-                )
-              })()
-            ) : (
-              <div className="text-xs text-muted-foreground italic text-right">
-                {classRecord?.schedule || 'Chưa cập nhật lịch học'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Row 3: Buổi học tiếp theo - Streamlined Bar */}
-        <div className="space-y-1.5 text-xs pt-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary cursor-pointer transition-colors"
-            >
-              <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>Buổi học tiếp theo:</span>
-              {isExpanded ? (
-                <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              )}
-            </button>
-
-            <SyllabusProfileHoverCard cls={syllabusRecord} align="end">
-              <span
-                role="button"
-                tabIndex={0}
-                className="text-xs font-medium text-primary hover:underline cursor-pointer truncate max-w-[260px] block text-right"
-                title="Nhấp chuột để xem thông tin Khung chương trình"
-              >
-                KCT: {cls.curriculumName || 'IELTS Junior v2.1'}
-              </span>
-            </SyllabusProfileHoverCard>
-          </div>
-
-          {!isExpanded ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 px-3 py-2 rounded-lg">
-              <div className="flex flex-wrap items-center gap-2 min-w-0">
-                <span className="inline-flex items-center rounded bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shrink-0">
-                  Bắt đầu: Buổi {upcomingList[0]?.no || 14}
+      {/* ========================================================
+          CARD BODY: Đồng bộ 100% với thẻ lớp đề xuất
+          - 1. Dải chỉ số ngang: Chuyên cần, BTVN, Điểm TB, Rating, Tỷ lệ lấp đầy
+          - 2. Dòng buổi học tiếp theo & Selection mở ra 5 buổi tiếp theo
+         ======================================================== */}
+      <div className="p-3 space-y-2.5">
+        {isPast ? (
+          <div className="space-y-2">
+            {/* Dòng 1: Buổi ghép (Hiển thị đúng thông tin theo lớp ghép bên trên, dàn đều 2 đầu) */}
+            <div className="flex items-center justify-between gap-3 text-xs bg-muted/25 dark:bg-zinc-800/20 border border-border/40 px-3 py-2 rounded-lg flex-wrap">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  Buổi ghép:
                 </span>
-                <span className="font-mono text-xs font-semibold text-primary">
-                  {upcomingList[0]?.date || '28/07/2026'} ({upcomingList[0]?.time || '17:45 – 19:15'})
+                <span className="font-mono text-xs font-normal text-foreground shrink-0">
+                  {cls.startSessionDate
+                    ? cls.startSessionDate
+                    : cls.nextLessonDate
+                    ? cls.nextLessonDate
+                    : `${upcomingList[0]?.day}, ${cls.startDate || '15/01/2024'} (${upcomingList[0]?.time})`}
                 </span>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-medium text-foreground truncate max-w-[320px]">
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-foreground truncate font-normal">
+                  {cls.nextLessonName || upcomingList[0]?.topic || 'Bài 01: Khảo sát & Khởi động chuyên đề'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs font-normal">
+                <span className="font-mono">Phòng {cls.room || 'P.101'}</span>
+                <span className="text-muted-foreground/40">•</span>
+                <span>{cls.teacherName || teacherList[0] || 'GV phụ trách'}</span>
+              </div>
+            </div>
+
+            {/* Dòng 2: Thống kê gồm: Thời gian bắt đầu - kết thúc, Số buổi đã dùng, Cơ sở đào tạo (Chia dàn đều 3 cột) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs bg-muted/25 dark:bg-zinc-800/20 border border-border/40 px-3 py-2 rounded-lg items-center">
+              {/* Cột 1: Thời gian */}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  Thời gian:
+                </span>
+                <span className="font-mono text-xs font-normal text-foreground truncate">
+                  {cls.startDate || '15/01/2024'} → {cls.endDate || '15/04/2024'}
+                </span>
+              </div>
+
+              {/* Cột 2: Số buổi đã dùng */}
+              <div className="flex items-center gap-1.5 min-w-0 sm:justify-center">
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  Số buổi đã dùng:
+                </span>
+                <span className="text-foreground font-normal truncate">
+                  <strong className="font-medium text-foreground">{usedSessions}/{totalSessions} buổi</strong>
+                  <span className="text-muted-foreground ml-1">({pctUsed}%)</span>
+                </span>
+              </div>
+
+              {/* Cột 3: Cơ sở đào tạo */}
+              <div className="flex items-center gap-1.5 min-w-0 sm:justify-end">
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  Cơ sở đào tạo:
+                </span>
+                <span className="text-foreground font-normal truncate" title={cls.branch || studentBranch || 'RinoEdu Nguyễn Tuân'}>
+                  {cls.branch || studentBranch || 'RinoEdu Nguyễn Tuân'}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* 1. Dải chỉ số ngang (cho lớp đang học) */}
+            <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/25 dark:bg-zinc-800/30 border border-border/30 text-xs flex-wrap">
+              <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground font-medium text-[11.5px]">Chuyên cần:</span>
+                  <strong className="text-foreground font-bold">{attendanceNum}%</strong>
+                </div>
+                <span className="text-border/60">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground font-medium text-[11.5px]">BTVN:</span>
+                  <strong className="text-foreground font-bold">{hwNum}%</strong>
+                </div>
+                <span className="text-border/60">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground font-medium text-[11.5px]">Điểm TB:</span>
+                  <strong className="text-foreground font-bold">
+                    {perf.latestScore.score !== '—' ? perf.latestScore.score : '7.0'}
+                    <span className="text-[10px] font-normal text-muted-foreground">/10</span>
+                  </strong>
+                </div>
+                <span className="text-border/60">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground font-medium text-[11.5px]">Rating:</span>
+                  <strong className="text-foreground font-bold flex items-center gap-0.5">
+                    4.5 <Star className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
+                  </strong>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground font-medium">
+                Tỷ lệ lấp đầy: <strong className="text-foreground font-semibold">{pct}%</strong>
+              </div>
+            </div>
+
+            {/* 2. Dòng thông tin: Buổi ghép (lớp hiện tại, dàn đều 2 đầu) */}
+            <div className="flex items-center justify-between gap-3 text-xs bg-muted/25 dark:bg-zinc-800/20 border border-border/40 px-3 py-2 rounded-lg flex-wrap">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <span className="text-xs font-normal text-muted-foreground shrink-0">
+                  Buổi ghép:
+                </span>
+                <span className="font-mono text-xs font-normal text-foreground shrink-0">
+                  {cls.startSessionDate
+                    ? cls.startSessionDate
+                    : cls.nextLessonDate
+                    ? cls.nextLessonDate
+                    : `${upcomingList[0]?.day}, ${upcomingList[0]?.date} (${upcomingList[0]?.time})`}
+                </span>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-foreground truncate font-normal">
                   {upcomingList[0]?.topic || 'Bài 14: Reading Skills Practice'}
                 </span>
               </div>
-              <span className="text-xs font-mono text-muted-foreground shrink-0">
-                Phòng {cls.room || 'A101'}
-              </span>
-            </div>
-          ) : (
-            <div className="space-y-1.5 pt-1">
-              <div className="space-y-1">
-                {upcomingList.map((sess, idx) => (
-                  <div
-                    key={sess.no}
-                    className={cn(
-                      "flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg transition-colors text-xs",
-                      idx === 0
-                        ? "bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40"
-                        : "bg-muted/30 hover:bg-muted/50"
-                    )}
-                  >
-                    <div className="flex flex-wrap items-center gap-2 min-w-0">
-                      <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[9.5px] font-bold text-primary shrink-0">
-                        Buổi {sess.no}
-                      </span>
-                      {idx === 0 && (
-                        <span className="inline-flex items-center rounded bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 px-1.5 py-0.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shrink-0">
-                          Bắt đầu
-                        </span>
-                      )}
-                      <span className="font-mono text-xs font-semibold text-foreground">
-                        {sess.date} ({sess.time})
-                      </span>
-                      <span
-                        className="text-xs text-muted-foreground truncate max-w-[220px]"
-                        title={sess.topic}
-                      >
-                        • {sess.topic}
-                      </span>
-                      <span className="text-[10.5px] font-mono text-muted-foreground">
-                        • Phòng {sess.room}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {(() => {
-                        const teacherPersonObj = {
-                          id: `EMP-${sess.teacher.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'CL'}`,
-                          name: sess.teacher,
-                          role: 'Giáo viên Tiếng Anh',
-                          phone: '0901234567',
-                          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${sess.teacher}`,
-                          email: `${sess.teacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
-                        }
-                        return (
-                          <PersonnelHoverCard person={teacherPersonObj} align="end">
-                            <div
-                              className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer hover:opacity-80 transition-opacity"
-                              title={`Rê chuột/Nhấp để xem thông tin giáo viên: ${sess.teacher}`}
-                            >
-                              <AppAvatar
-                                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${sess.teacher}`}
-                                name={sess.teacher}
-                                size="sm"
-                                className="h-5 w-5 shrink-0 border border-primary/20 cursor-pointer"
-                              />
-                              <span className="font-medium text-foreground">{sess.teacher}</span>
-                            </div>
-                          </PersonnelHoverCard>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs font-normal">
+                <span className="font-mono">Phòng {cls.room || 'B201'}</span>
+                <span className="text-muted-foreground/40">•</span>
+                <span>{upcomingList[0]?.teacher}</span>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   )

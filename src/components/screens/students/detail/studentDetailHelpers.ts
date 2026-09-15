@@ -1,5 +1,5 @@
-import type { Student } from '@/mocks/students'
-import type { StudentPackage, StudentGlobalLog, StudentNote, FamilyMember, StudentScheduleSession } from './studentDetailTypes'
+import type { Student, EnrolledClass } from '@/mocks/students'
+import type { StudentPackage, StudentGlobalLog, StudentNote, FamilyMember, StudentScheduleSession, StudentProgram } from './studentDetailTypes'
 
 /**
  * Returns mock package registrations for a student
@@ -409,5 +409,298 @@ export function checkSlotsOverlap(
   return Math.max(startA, startB) < Math.min(endA, endB)
 }
 
+/**
+ * Groups packages & classes into Programs by Subject (e.g. Toán Tư Duy, Tiếng Anh).
+ * Calculates cumulative sessions, dates, current class, past classes, and program status.
+ */
+export function getStudentPrograms(
+  student: Student,
+  packagesList?: StudentPackage[],
+  classesList?: EnrolledClass[]
+): StudentProgram[] {
+  const allPackages = packagesList || getStudentPackages(student)
+  const allClasses = classesList || student.enrolledClasses || []
 
+  // Helper to categorize by subject
+  const isMath = (str: string) => {
+    const s = (str || '').toLowerCase()
+    return s.includes('toán') || s.includes('math') || s.includes('logic') || s.includes('archimedes')
+  }
 
+  const isEnglish = (str: string) => {
+    const s = (str || '').toLowerCase()
+    return s.includes('tiếng anh') || s.includes('ielts') || s.includes('english') || s.includes('speaking') || s.includes('junior')
+  }
+
+  // Split packages into Math, English, Other
+  const mathPackages = allPackages.filter((p) => isMath(p.packageName) || isMath(p.linkedClassName || ''))
+  const englishPackages = allPackages.filter((p) => isEnglish(p.packageName) || isEnglish(p.linkedClassName || ''))
+
+  // Split classes
+  const mathClasses = allClasses.filter((c) => isMath(c.className) || isMath(c.programName || '') || isMath(c.level || ''))
+  const englishClasses = allClasses.filter((c) => isEnglish(c.className) || isEnglish(c.programName || '') || isEnglish(c.level || ''))
+
+  const programs: StudentProgram[] = []
+
+  // 1. Math Program
+  if (mathPackages.length > 0 || mathClasses.length > 0 || student.subject === 'math' || isMath(student.level || '')) {
+    const pkgs = mathPackages.length > 0 ? mathPackages : [
+      {
+        id: `PKG-${student.id}-math-default`,
+        packageName: 'Gói Toán tư duy Standard (6 tháng)',
+        totalSessions: student.totalSessions || 96,
+        remainingSessions: student.remainingSessions || 12,
+        price: 14400000,
+        purchaseDate: student.enrollmentDate,
+        endDate: '2027-08-14',
+        status: 'active' as const,
+        linkedClassCode: mathClasses[0]?.classCode || 'LD_TOAN_00032',
+        linkedClassName: mathClasses[0]?.className || 'Toán Tư Duy 1:6 (96 buổi)',
+      }
+    ]
+
+    const totalSessions = pkgs.reduce((acc, p) => acc + p.totalSessions, 0)
+    const remainingSessions = pkgs.reduce((acc, p) => acc + p.remainingSessions, 0)
+    const studiedSessions = Math.max(0, totalSessions - remainingSessions)
+
+    // Determine current class vs past classes
+    const activeCls = mathClasses.find((c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer') || null
+    const droppedCls = mathClasses.find((c) => c.status === 'dropped') || null
+    const pausedCls = mathClasses.find((c) => c.status === 'paused') || null
+
+    let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
+    if (student.status === 'reserve' || pausedCls) {
+      programStatus = 'reserved'
+    } else if (activeCls) {
+      programStatus = 'active'
+    } else if (droppedCls) {
+      programStatus = 'dropped'
+    }
+
+    // Past classes: classes that are dropped or session_ended, or mock historical classes if none
+    const actualPast = mathClasses.filter((c) => c.status === 'dropped' || c.status === 'session_ended')
+    const mockPast: EnrolledClass[] = actualPast.length > 0 ? actualPast : [
+      {
+        classCode: 'LD_TOAN_00018',
+        className: 'Toán Tư Duy Nền Tảng K10',
+        type: 'tutor',
+        scheduleSlots: [
+          { dayOfWeek: 'Thứ 2', date: '15/01', startTime: '17:30', endTime: '19:00' },
+          { dayOfWeek: 'Thứ 5', date: '18/01', startTime: '17:30', endTime: '19:00' }
+        ],
+        teacherName: 'GV_HuiLT20',
+        status: 'session_ended',
+        progress: '24 / 24 buổi (Hoàn thành)',
+        branch: student.branch || 'RinoEdu Nguyễn Tuân',
+        room: 'B201',
+        level: 'Toán 1:6',
+        subLevel: 'A',
+        startDate: '2024-01-15',
+        endDate: '2024-04-15',
+        startSessionDate: 'Buổi 01 - 15/01/2024 (T2 17:30 - 19:00)',
+        totalSessions: 24,
+        usedSessions: 24,
+        attendanceRate: '95.8%',
+        presentSessions: 23,
+        excusedAbsences: 1,
+        unexcusedAbsences: 0,
+        homeworkRate: '92%',
+        homeworkScore: 8.5,
+        finalScore: 8.8,
+        finalOutcome: 'Đạt chuẩn đầu ra Archimedes 5 - A',
+        teacherFinalFeedback: 'Học viên có tư duy logic sắc bén, chủ động tương tác và hoàn thành tốt tất cả các bài toán dự án.',
+        linkedPackageName: 'Gói Toán tư duy Standard (6 tháng)',
+        finishReason: 'Hoàn thành khóa học',
+      }
+    ]
+
+    programs.push({
+      id: 'prog-math',
+      name: 'Toán Tư Duy',
+      subject: 'math',
+      level: activeCls?.level || student.level || 'Toán 1:6',
+      subLevel: activeCls?.subLevel || student.subLevel || 'Archimedes 5 - A',
+      packages: pkgs,
+      totalSessions,
+      studiedSessions,
+      remainingSessions,
+      startDate: pkgs[0]?.purchaseDate || student.enrollmentDate,
+      endDate: pkgs[pkgs.length - 1]?.endDate || '2027-08-14',
+      currentClass: activeCls || pausedCls,
+      pastClasses: mockPast,
+      programStatus,
+      droppedClassInfo: droppedCls ? {
+        className: droppedCls.className,
+        classCode: droppedCls.classCode,
+        droppedDate: '01/06/2026',
+        studiedBeforeDrop: droppedCls.progress || '84 / 96 buổi',
+        teacherName: droppedCls.teacherName,
+        room: droppedCls.room,
+        reason: 'Học viên xin rút khỏi lớp theo nguyện vọng đổi lịch học'
+      } : undefined,
+      transferInfo: droppedCls ? {
+        sourceClass: droppedCls.classCode,
+        targetClass: 'Chưa ghép lớp',
+        transferredSessions: remainingSessions,
+        transferDate: '01/06/2026',
+        reason: 'Chuyển ca học mới phù hợp lịch sinh hoạt gia đình'
+      } : undefined,
+      reservedInfo: (programStatus === 'reserved' || pausedCls) ? {
+        reservedSessions: remainingSessions,
+        startDate: '15/06/2026',
+        endDate: '15/09/2026',
+        duration: '3 tháng',
+        isHoldingClass: Boolean(pausedCls),
+        expiryDate: '15/10/2026',
+        reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh do bận thi học kỳ'
+      } : undefined,
+    })
+  }
+
+  // 2. English Program
+  if (englishPackages.length > 0 || englishClasses.length > 0 || student.subject === 'english' || programs.length === 1) {
+    const pkgs = englishPackages.length > 0 ? englishPackages : [
+      {
+        id: `PKG-${student.id}-eng-unlinked`,
+        packageName: 'Gói Tiếng Anh Giao Tiếp Bổ Trợ',
+        totalSessions: 16,
+        remainingSessions: 16,
+        price: 2400000,
+        purchaseDate: student.enrollmentDate,
+        endDate: '2026-10-30',
+        status: 'active' as const,
+      },
+      {
+        id: `PKG-${student.id}-eng-transferred`,
+        packageName: 'Gói IELTS Intensive 5.0 (Cũ)',
+        totalSessions: 20,
+        remainingSessions: 8,
+        price: 1800000,
+        purchaseDate: '2025-11-01',
+        endDate: '2026-04-01',
+        status: 'transferred' as const,
+        linkedClassCode: 'CLS-OLD-01',
+        linkedClassName: 'IELTS Intensive 5.0 - K12',
+      }
+    ]
+
+    const totalSessions = pkgs.reduce((acc, p) => acc + p.totalSessions, 0)
+    const remainingSessions = pkgs.reduce((acc, p) => acc + p.remainingSessions, 0)
+    const studiedSessions = Math.max(0, totalSessions - remainingSessions)
+
+    const activeCls = englishClasses.find((c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer') || null
+    const droppedCls = englishClasses.find((c) => c.status === 'dropped') || null
+    const pausedCls = englishClasses.find((c) => c.status === 'paused') || null
+
+    let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
+    if (activeCls) {
+      programStatus = 'active'
+    } else if (pausedCls) {
+      programStatus = 'reserved'
+    } else if (droppedCls) {
+      programStatus = 'dropped'
+    } else {
+      programStatus = 'wait_for_assignment'
+    }
+
+    const actualPast = englishClasses.filter((c) => c.status === 'dropped' || c.status === 'session_ended')
+    const mockPast: EnrolledClass[] = actualPast.length > 0 ? actualPast : [
+      {
+        classCode: 'CLS-OLD-01',
+        className: 'IELTS Intensive 5.0 - K12',
+        type: 'offline',
+        scheduleSlots: [
+          { dayOfWeek: 'Thứ 3', date: '15/11', startTime: '18:00', endTime: '19:30' },
+          { dayOfWeek: 'Thứ 6', date: '18/11', startTime: '18:00', endTime: '19:30' }
+        ],
+        teacherName: 'Thầy David Smith',
+        status: 'session_ended',
+        progress: '12 / 20 buổi (Đã chuyển phí)',
+        branch: student.branch || 'RinoEdu Nguyễn Tuân',
+        room: 'A201',
+        level: 'IELTS (5.0–5.5)',
+        subLevel: 'A2',
+        startDate: '2025-11-15',
+        endDate: '2026-03-30',
+        startSessionDate: 'Buổi 01 - 15/11/2025 (T3 18:00 - 19:30)',
+        totalSessions: 20,
+        usedSessions: 12,
+        attendanceRate: '91.7%',
+        presentSessions: 11,
+        excusedAbsences: 1,
+        unexcusedAbsences: 0,
+        homeworkRate: '90%',
+        homeworkScore: 8.2,
+        finalScore: 8.0,
+        finalOutcome: 'Hoàn thành 12/20 buổi (Kết chuyển 8 buổi)',
+        teacherFinalFeedback: 'Học viên tiến bộ tốt kỹ năng Nghe - Nói, phản xạ từ vựng tự nhiên, hoàn thành mục tiêu giai đoạn.',
+        linkedPackageName: 'Gói IELTS Intensive 5.0 (Cũ)',
+        finishReason: 'Chuyển lớp sang gói IELTS VIP',
+      }
+    ]
+
+    programs.push({
+      id: 'prog-english',
+      name: 'Tiếng Anh',
+      subject: 'english',
+      level: 'IELTS (5.0–5.5)',
+      subLevel: 'IELTS Junior (A2)',
+      packages: pkgs,
+      totalSessions,
+      studiedSessions,
+      remainingSessions,
+      startDate: pkgs[0]?.purchaseDate || '2025-11-01',
+      endDate: pkgs[pkgs.length - 1]?.endDate || '2026-10-30',
+      currentClass: activeCls,
+      pastClasses: mockPast,
+      programStatus,
+      droppedClassInfo: droppedCls ? {
+        className: droppedCls.className,
+        classCode: droppedCls.classCode,
+        droppedDate: '15/04/2026',
+        studiedBeforeDrop: droppedCls.progress || '12 / 20 buổi',
+        teacherName: droppedCls.teacherName,
+        room: droppedCls.room,
+        reason: 'Học viên chuyển gói học'
+      } : undefined,
+      transferInfo: droppedCls ? {
+        sourceClass: droppedCls.classCode,
+        targetClass: 'Chưa ghép lớp',
+        transferredSessions: remainingSessions,
+        transferDate: '15/04/2026',
+        reason: 'Chuyển sang gói học IELTS VIP mới'
+      } : undefined,
+      reservedInfo: programStatus === 'reserved' ? {
+        reservedSessions: remainingSessions,
+        startDate: '01/06/2026',
+        endDate: '31/07/2026',
+        duration: '2 tháng',
+        isHoldingClass: false,
+        expiryDate: '15/11/2026',
+        reason: 'Bảo lưu theo nguyện vọng phụ huynh'
+      } : undefined,
+    })
+  }
+
+  // Fallback if no programs detected
+  if (programs.length === 0) {
+    programs.push({
+      id: 'prog-standard',
+      name: 'Chương trình Chuẩn',
+      subject: 'other',
+      level: student.level || 'Chuẩn',
+      subLevel: student.subLevel || 'A',
+      packages: allPackages,
+      totalSessions: student.totalSessions || 24,
+      studiedSessions: (student.totalSessions || 24) - (student.remainingSessions || 24),
+      remainingSessions: student.remainingSessions || 24,
+      startDate: student.enrollmentDate,
+      endDate: '2026-12-31',
+      currentClass: allClasses[0] || null,
+      pastClasses: [],
+      programStatus: allClasses[0] ? 'active' : 'wait_for_assignment'
+    })
+  }
+
+  return programs
+}

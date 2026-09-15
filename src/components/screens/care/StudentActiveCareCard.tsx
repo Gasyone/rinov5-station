@@ -208,7 +208,7 @@ export function StudentActiveCareCard({
                       <span>• 18/07 09:30</span>
                       <span className="text-muted-foreground font-normal">•</span>
                       <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800">
+                      <span className="text-muted-foreground font-normal text-xs">
                         Đã trao đổi
                       </span>
                       <span className="text-muted-foreground font-normal">•</span>
@@ -254,7 +254,7 @@ export function StudentActiveCareCard({
                       <span>• 18/07 14:15</span>
                       <span className="text-muted-foreground font-normal">•</span>
                       <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800">
+                      <span className="text-muted-foreground font-normal text-xs">
                         Đã trao đổi
                       </span>
                       <span className="text-muted-foreground font-normal">•</span>
@@ -301,7 +301,7 @@ export function StudentActiveCareCard({
                         <span>• 19/07 10:00</span>
                         <span className="text-muted-foreground font-normal">•</span>
                         <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                        <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800">
+                        <span className="text-muted-foreground font-normal text-xs">
                           Đã trao đổi
                         </span>
                         <span className="text-muted-foreground font-normal">•</span>

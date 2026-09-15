@@ -218,6 +218,7 @@ export interface ExpiryTierInfo {
   tier: 'T1' | 'T2' | 'T3'
   label: string
   badgeClass: string
+  textClass: string
 }
 
 /**
@@ -229,6 +230,7 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
       tier: 'T1',
       label: 'T1',
       badgeClass: getStatusColors('error').badge,
+      textClass: getStatusColors('error').text,
     }
   }
 
@@ -238,6 +240,7 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
       tier: 'T1',
       label: 'T1',
       badgeClass: getStatusColors('error').badge,
+      textClass: getStatusColors('error').text,
     }
   }
 
@@ -256,6 +259,7 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
       tier: 'T1',
       label: 'T1',
       badgeClass: getStatusColors('error').badge,
+      textClass: getStatusColors('error').text,
     }
   }
 
@@ -265,6 +269,7 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
       tier: 'T2',
       label: 'T2',
       badgeClass: getStatusColors('warning').badge,
+      textClass: getStatusColors('warning').text,
     }
   }
 
@@ -273,6 +278,7 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
     tier: 'T3',
     label: 'T3',
     badgeClass: getStatusColors('success').badge,
+    textClass: getStatusColors('success').text,
   }
 }
 

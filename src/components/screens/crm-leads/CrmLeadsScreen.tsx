@@ -3,12 +3,10 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
-import { SlidersHorizontal, ChevronDown } from 'lucide-react'
 import { getLeads, Lead } from '@/mocks/crmLeads'
-import { StatusTiles } from '@/components/shared'
-import { Button } from '@/components/ui/button'
 import { FilterGroupAsidePanel, type FilterGroupConfig } from '@/components/filters'
-import { cn } from '@/lib/utils'
+import { StatusTiles } from '@/components/shared'
+import { CrmLeadsStatusMatrix } from './CrmLeadsStatusMatrix'
 import { CrmLeadsToolbar } from './CrmLeadsToolbar'
 import { CrmLeadsTable } from './CrmLeadsTable'
 import { CrmCustomerCreateDialog } from './CrmCustomerCreateDialog'
@@ -17,9 +15,9 @@ import type { DetailedOrder } from '@/components/screens/care/student-orders/stu
 import { formatCurrency } from '@/lib/format'
 import type { SalesCycle } from './detail/crmLeadDetailTypes'
 import {
-  SUB_STATUS_MAP,
   INITIAL_ADVANCED_FILTERS,
   type AdvancedFiltersState,
+  type StatusTileMode,
 } from './crmLeadsTypes'
 import { useLeadLifecycleStore } from '@/stores/useLeadLifecycleStore'
 import {
@@ -30,11 +28,17 @@ import {
   isChoChotStatus,
   isThucHienDonStatus,
   isChuyenDoiStatus,
-  isThatBaiStatus,
-  isTamDungStatus,
   isLeadTodayTask,
   isLeadOverdue,
   isLeadUnassigned,
+  isHenGoiLaiStatus,
+  isDaDatTestStatus,
+  isDaTestCoKqStatus,
+  isHocThuStatus,
+  isHenNopPhiStatus,
+  isDaCocStatus,
+  isChoXepLopStatus,
+  mapSubStatusToMainStatus,
   matchSubStatus,
   buildEditingOrderFromLead,
   buildCrmFilterGroups,
@@ -48,8 +52,9 @@ interface CrmLeadsScreenProps {
 }
 
 export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps) {
-  const { stages, pools } = useLeadLifecycleStore()
-  const [viewScope] = useState<'my' | 'all'>(defaultViewScope)
+  const { pools } = useLeadLifecycleStore()
+  const viewScope = defaultViewScope
+  const [statusTileMode, setStatusTileMode] = useState<StatusTileMode>('main')
   const [branch, setBranch] = useState('all')
   const [selectedPool, setSelectedPool] = useState('all')
   const [source, setSource] = useState('all')
@@ -58,7 +63,6 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   const [search, setSearch] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [selectedSubStatus, setSelectedSubStatus] = useState('all')
-  const [isSubStatusOpen, setIsSubStatusOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -143,7 +147,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     const newCycle: SalesCycle = {
       cycleId: newCycleId,
       cycleNumber: cycleCount,
-      title: `Chu kỳ ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
+      title: `Đợt ${cycleCount} (${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })} - Tái tiếp cận)`,
       status: 'active',
       startDate: new Date().toISOString().split('T')[0],
       assignedSales: lead.assignedTo || 'Trần Thị Mai (Sales)',
@@ -152,12 +156,12 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     const updatedLead: Lead = {
       ...lead,
       status: 'moi_tiep_nhan',
-      subStatus: 'Tái tiếp cận (Chu kỳ mới)',
+      subStatus: 'Tái tiếp cận',
       isReturningLead: true,
       currentCycleId: newCycleId,
       salesCycles: [newCycle, ...(lead.salesCycles || [])],
       createdAt: new Date().toISOString().split('T')[0],
-      lastNote: `[Tái kích hoạt Chu kỳ ${cycleCount}]: Mở chu kỳ bán mới cho học viên.`,
+      lastNote: `[Tái kích hoạt #${cycleCount}]: Mở chăm sóc tiếp cận mới cho học viên.`,
     }
 
     setCustomLeads((prev) => {
@@ -168,7 +172,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       return [updatedLead, ...prev]
     })
 
-    toast.success(`Đã kích hoạt Chu kỳ Bán mới (#${cycleCount}) cho học viên ${lead.studentName}!`)
+    toast.success(`Đã kích hoạt tái tiếp cận cho học viên ${lead.studentName}!`)
   }
 
   // Tổng hợp toàn bộ Lead cơ sở trước khi áp dụng bộ lọc nâng cao
@@ -211,7 +215,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
 
   const handleToggleFilter = (sectionId: string, value: string) => {
     setCurrentPage(1)
-    if (sectionId === 'statuses') {
+    if (sectionId === 'statuses' || sectionId === 'failedStatuses') {
       setSelectedStatus('all')
       setSelectedSubStatus('all')
     }
@@ -236,75 +240,6 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     return calculateStatusTileCounts(filteredLeads)
   }, [filteredLeads])
 
-  // Sub-status options according to current main status and stages in store
-  const subStatusOptions = useMemo(() => {
-    // Tìm stage tương ứng trong store
-    const matchedStage = stages.find((s) => {
-      if (selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') return s.id === 'stage-new' || s.code === 'NEW'
-      if (selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') return s.id === 'stage-qt' || s.code === 'QT'
-      if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') return s.id === 'stage-tad' || s.code === 'TAD'
-      if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') return s.id === 'stage-dentt' || s.code === 'DENTT'
-      if (selectedStatus === 'thuc_hien_don') return s.id === 'stage-order' || s.code === 'T4'
-      if (selectedStatus === 'chuyen_doi') return s.id === 'stage-won' || s.code === 'T5' || s.code === 'WON'
-      if (selectedStatus === 'that_bai') return s.id === 'stage-lost' || s.code === 'LOST'
-      return s.id === selectedStatus || s.code.toLowerCase() === selectedStatus.toLowerCase()
-    })
-
-    if (matchedStage && matchedStage.subStatuses && matchedStage.subStatuses.length > 0) {
-      return [
-        { id: 'all', label: 'Tất cả' },
-        ...matchedStage.subStatuses
-          .filter((sub) => sub.isActive !== false)
-          .map((sub) => ({
-            id: sub.code.toLowerCase(),
-            label: sub.name.replace(/\s*\(.*?\)/g, '').trim(),
-          })),
-      ]
-    }
-
-    return SUB_STATUS_MAP[selectedStatus] || SUB_STATUS_MAP.all
-  }, [selectedStatus, stages])
-
-  // Count sub-status leads dynamically for current status tab
-  const subStatusCounts = useMemo(() => {
-    const counts: Record<string, number> = {}
-    let baseLeads = filteredLeads
-    if (selectedStatus === 'today_tasks') {
-      baseLeads = filteredLeads.filter(isLeadTodayTask)
-    } else if (selectedStatus === 'overdue') {
-      baseLeads = filteredLeads.filter(isLeadOverdue)
-    } else if (selectedStatus === 'unassigned') {
-      baseLeads = filteredLeads.filter(isLeadUnassigned)
-    } else if (selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') {
-      baseLeads = filteredLeads.filter((item) => isMoiTiepNhanStatus(item.status))
-    } else if (selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') {
-      baseLeads = filteredLeads.filter((item) => isDangTuVanStatus(item.status))
-    } else if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') {
-      baseLeads = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status))
-    } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
-      baseLeads = filteredLeads.filter((item) => isChoChotStatus(item.status))
-    } else if (selectedStatus === 'thuc_hien_don') {
-      baseLeads = filteredLeads.filter(isThucHienDonStatus)
-    } else if (selectedStatus === 'chuyen_doi') {
-      baseLeads = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
-    } else if (selectedStatus === 'that_bai') {
-      baseLeads = filteredLeads.filter((item) => isThatBaiStatus(item.status))
-    } else if (selectedStatus === 'tam_dung') {
-      baseLeads = filteredLeads.filter((item) => isTamDungStatus(item.status))
-    } else if (selectedStatus !== 'all') {
-      baseLeads = filteredLeads.filter((item) => item.status === selectedStatus)
-    }
-
-    subStatusOptions.forEach((subOpt) => {
-      if (subOpt.id === 'all') {
-        counts[subOpt.id] = baseLeads.length
-      } else {
-        counts[subOpt.id] = baseLeads.filter((lead) => matchSubStatus(lead, subOpt.id)).length
-      }
-    })
-
-    return counts
-  }, [subStatusOptions, filteredLeads, selectedStatus])
 
   // Final list filtered by selected status tile and sub-status
   const displayLeads = useMemo(() => {
@@ -313,24 +248,58 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       list = filteredLeads.filter(isLeadTodayTask)
     } else if (selectedStatus === 'overdue') {
       list = filteredLeads.filter(isLeadOverdue)
-    } else if (selectedStatus === 'unassigned') {
-      list = filteredLeads.filter(isLeadUnassigned)
-    } else if (selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') {
-      list = filteredLeads.filter((item) => isMoiTiepNhanStatus(item.status))
-    } else if (selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') {
+    } else if (selectedStatus === 'unassigned' || selectedStatus === 'chua_phan_bo') {
+      list = filteredLeads.filter((item) => isLeadUnassigned(item) || item.status === 'chua_phan_bo')
+    } else if (selectedStatus === 'so_sai') {
+      list = filteredLeads.filter((l) => l.subStatus?.toLowerCase().includes('sai') || (l.lastNote || '').toLowerCase().includes('sai'))
+    } else if (selectedStatus === 'kho_chung') {
+      list = filteredLeads.filter((l) => l.poolId === 'pool-t' || isLeadUnassigned(l))
+    } else if (selectedStatus === 'kho_new') {
+      list = filteredLeads.filter((l) => l.poolId === 'pool-m')
+    } else if (selectedStatus === 'kho_loc') {
+      list = filteredLeads.filter((l) => l.poolId === 'pool-c')
+    } else if (selectedStatus === 'new' || selectedStatus === 'moi_tiep_nhan' || selectedStatus === 'chua_tiep_can') {
+      list = filteredLeads.filter((item) => isMoiTiepNhanStatus(item.status) && !isLeadUnassigned(item))
+    } else if (selectedStatus === 'knm') {
+      list = filteredLeads.filter((l) => (l.lastNote || '').toLowerCase().includes('knm') || (l.lastNote || '').toLowerCase().includes('không nghe'))
+    } else if (selectedStatus === 'gl' || selectedStatus === 'hen_goi_lai') {
+      list = filteredLeads.filter(isHenGoiLaiStatus)
+    } else if (selectedStatus === 'qt' || selectedStatus === 'dang_tu_van' || selectedStatus === 'dang_cham_soc') {
       list = filteredLeads.filter((item) => isDangTuVanStatus(item.status))
-    } else if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') {
-      list = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status))
-    } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
-      list = filteredLeads.filter((item) => isChoChotStatus(item.status))
-    } else if (selectedStatus === 'thuc_hien_don') {
+    } else if (selectedStatus === 'tad' || selectedStatus === 'da_dat_test') {
+      list = filteredLeads.filter(isDaDatTestStatus)
+    } else if (selectedStatus === 'dtt' || selectedStatus === 'da_test_co_kq') {
+      list = filteredLeads.filter(isDaTestCoKqStatus)
+    } else if (selectedStatus === 'tlttt') {
+      list = filteredLeads.filter((l) => Boolean(l.testResultLevel || l.initialLevel))
+    } else if (selectedStatus === 'dentt') {
+      list = filteredLeads.filter((item) => isChoChotStatus(item.status) || isHenNopPhiStatus(item))
+    } else if (selectedStatus === 'dadentt') {
+      list = filteredLeads.filter((l) => l.testStatus === 'completed' || l.trialStatus === 'completed')
+    } else if (selectedStatus === 'sdt') {
+      list = filteredLeads.filter((l) => (l.academicPerformance || '').includes('Xuất sắc') || (l.lastNote || '').includes('Hot') || l.status === 'tiem_nang')
+    } else if (selectedStatus === 'dg') {
+      list = filteredLeads.filter((l) => (l.familySiblings && l.familySiblings.length > 0) || (l.lastNote || '').includes('Gộp'))
+    } else if (selectedStatus === 'bank') {
+      list = filteredLeads.filter((l) => l.previousOrders?.some((o) => (o.paymentTerm || '').toLowerCase().includes('bank') || (o.paymentTerm || '').toLowerCase().includes('chuyển khoản')) || (l.lastNote || '').toLowerCase().includes('chuyển khoản'))
+    } else if (selectedStatus === 'cod') {
+      list = filteredLeads.filter((l) => l.previousOrders?.some((o) => (o.paymentTerm || '').toLowerCase().includes('cod')) || (l.lastNote || '').toLowerCase().includes('cod'))
+    } else if (selectedStatus === 'cgh') {
+      list = filteredLeads.filter((l) => l.orderStatus === 'pending_payment' || isThucHienDonStatus(l))
+    } else if (selectedStatus === 'dgnvc') {
+      list = filteredLeads.filter((l) => isThucHienDonStatus(l) && (l.lastNote || '').includes('NVC'))
+    } else if (selectedStatus === 'dgh') {
       list = filteredLeads.filter(isThucHienDonStatus)
+    } else if (selectedStatus === 'cho_xep_lop') {
+      list = filteredLeads.filter((item) => isChoXepLopStatus(item) || isThucHienDonStatus(item))
+    } else if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') {
+      list = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status) || isDaDatTestStatus(item) || isDaTestCoKqStatus(item) || isHocThuStatus(item))
+    } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
+      list = filteredLeads.filter((item) => isChoChotStatus(item.status) || isHenNopPhiStatus(item) || isDaCocStatus(item))
+    } else if (selectedStatus === 'thuc_hien_don') {
+      list = filteredLeads.filter((item) => isThucHienDonStatus(item) || isChoXepLopStatus(item))
     } else if (selectedStatus === 'chuyen_doi') {
       list = filteredLeads.filter((item) => isChuyenDoiStatus(item.status))
-    } else if (selectedStatus === 'that_bai') {
-      list = filteredLeads.filter((item) => isThatBaiStatus(item.status))
-    } else if (selectedStatus === 'tam_dung') {
-      list = filteredLeads.filter((item) => isTamDungStatus(item.status))
     } else if (selectedStatus !== 'all') {
       list = filteredLeads.filter((item) => item.status === selectedStatus)
     }
@@ -342,61 +311,20 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     return list
   }, [filteredLeads, selectedStatus, selectedSubStatus])
 
-  const statusTilesData = useMemo(() => {
-    // Xác định tiền tố hiển thị theo Kho đang chọn: Kho T -> T, Kho M -> M, Kho CC -> C, Kho G -> G. Mặc định 'T'
-    const activePool = pools.find((p) => p.id === selectedPool)
-    const poolPrefix = activePool ? activePool.code.toUpperCase() : 'T'
-
-    const getStageName = (stageIdOrCode: string, fallback: string) => {
-      const found = stages.find(
-        (s) =>
-          s.id === stageIdOrCode ||
-          s.code.toLowerCase() === stageIdOrCode.toLowerCase()
-      )
-      if (!found) return fallback
-
-      // Bỏ hoàn toàn các tiền tố ngoặc vuông [T0], [T1]... và hậu tố ngoặc đơn (...)
-      const cleaned = found.name
-        .replace(/^\[.*?\]\s*/, '')
-        .replace(/\s*\(.*?\)/g, '')
-        .trim()
-
-      if (stageIdOrCode === 'stage-new' && (cleaned === 'Tiếp nhận Lead' || !cleaned)) return 'Tiếp nhận'
-      if (stageIdOrCode === 'stage-qt' && (cleaned === 'Đang tư vấn & Chăm sóc' || !cleaned)) return 'Đang tư vấn'
-      if (stageIdOrCode === 'stage-tad' && (cleaned === 'Đánh giá & Học thử' || !cleaned)) return fallback
-      if (stageIdOrCode === 'stage-dentt' && (cleaned === 'Xác nhận nhập học' || found.name.includes('Chờ chốt deal'))) return 'Chờ chốt deal'
-      if (stageIdOrCode === 'stage-order' && (cleaned === 'Thực hiện đơn & Bàn giao' || found.name.includes('Thực hiện đơn'))) return 'Thực hiện đơn'
-      if (stageIdOrCode === 'stage-won' && (cleaned === 'Hoàn tất & Thành công' || found.name.includes('Won'))) return 'Đã chuyển đổi'
-
-      return cleaned || fallback
+  const handleToggleTileMode = () => {
+    const nextMode: StatusTileMode = statusTileMode === 'main' ? 'all' : 'main'
+    setStatusTileMode(nextMode)
+    if (nextMode === 'main') {
+      const mapped = mapSubStatusToMainStatus(selectedStatus)
+      setSelectedStatus(mapped)
     }
-
-    if (viewScope === 'my') {
-      // Dải Tab Tác nghiệp cho Tư vấn viên (Action-driven / Worklist)
-      return [
-        { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
-        { id: 'today_tasks', label: '⏰ Cần gọi hôm nay', count: tileCounts.today_tasks, status: 'today_tasks' },
-        { id: 'overdue', label: '⚠️ Quá hạn', count: tileCounts.overdue, status: 'overdue' },
-        { id: 'dang_tu_van', label: `${poolPrefix}1 · ${getStageName('stage-qt', 'Đang tư vấn')}`, count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
-        { id: 'hen_trai_nghiem', label: `${poolPrefix}2 · ${getStageName('stage-tad', 'Lịch trải nghiệm')}`, count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
-        { id: 'cho_chot', label: `${poolPrefix}3 · ${getStageName('stage-dentt', 'Chờ chốt deal')}`, count: tileCounts.cho_chot, status: 'cho_chot' },
-        { id: 'thuc_hien_don', label: `${poolPrefix}4 · ${getStageName('stage-order', 'Thực hiện đơn')}`, count: tileCounts.thuc_hien_don, status: 'thuc_hien_don' },
-        { id: 'chuyen_doi', label: `${poolPrefix}5 · ${getStageName('stage-won', 'Đã chuyển đổi')}`, count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
-      ]
-    }
-
-    // viewScope === 'all' -> Dải Tab Phễu & Điều phối cho Quản lý (Pipeline & Allocation)
-    return [
-      { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all' },
-      { id: 'unassigned', label: '👤 Chưa phân bổ', count: tileCounts.unassigned, status: 'unassigned' },
-      { id: 'moi_tiep_nhan', label: `${poolPrefix}0 · ${getStageName('stage-new', 'Tiếp nhận')}`, count: tileCounts.moi_tiep_nhan, status: 'moi_tiep_nhan' },
-      { id: 'dang_tu_van', label: `${poolPrefix}1 · ${getStageName('stage-qt', 'Đang tư vấn')}`, count: tileCounts.dang_tu_van, status: 'dang_tu_van' },
-      { id: 'hen_trai_nghiem', label: `${poolPrefix}2 · ${getStageName('stage-tad', 'Đánh giá & Học thử')}`, count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem' },
-      { id: 'cho_chot', label: `${poolPrefix}3 · ${getStageName('stage-dentt', 'Chờ chốt deal')}`, count: tileCounts.cho_chot, status: 'cho_chot' },
-      { id: 'thuc_hien_don', label: `${poolPrefix}4 · ${getStageName('stage-order', 'Thực hiện đơn')}`, count: tileCounts.thuc_hien_don, status: 'thuc_hien_don' },
-      { id: 'chuyen_doi', label: `${poolPrefix}5 · ${getStageName('stage-won', 'Đã chuyển đổi')}`, count: tileCounts.chuyen_doi, status: 'chuyen_doi' },
-    ]
-  }, [tileCounts, viewScope, stages, pools, selectedPool])
+    setCurrentPage(1)
+    toast.info(
+      nextMode === 'all'
+        ? 'Chuyển sang chế độ: Chia cột đầy đủ chuẩn bản cũ (T0, T1, T2, T3)'
+        : 'Chuyển sang chế độ: Trạng thái chính rút gọn'
+    )
+  }
 
   const handleTileSelect = (tileId: string) => {
     setSelectedStatus(tileId)
@@ -407,16 +335,33 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     setCurrentPage(1)
   }
 
+  const mainStatusTilesData = useMemo(() => {
+    return [
+      { id: 'all', label: 'Tất cả', count: tileCounts.all, status: 'all', semantic: 'neutral' as const },
+      ...(viewScope === 'all'
+        ? [{ id: 'chua_phan_bo', label: 'Chưa phân bổ', count: tileCounts.chua_phan_bo, status: 'chua_phan_bo', semantic: 'warning' as const }]
+        : []),
+      { id: 'moi_tiep_nhan', label: 'Mới tiếp nhận', count: tileCounts.moi_tiep_nhan, status: 'moi_tiep_nhan', semantic: 'info' as const },
+      { id: 'dang_tu_van', label: 'Đang tư vấn', count: tileCounts.dang_tu_van, status: 'dang_tu_van', semantic: 'warning' as const },
+      { id: 'hen_trai_nghiem', label: 'Đánh giá & Học thử', count: tileCounts.hen_trai_nghiem, status: 'hen_trai_nghiem', semantic: 'purple' as const },
+      { id: 'cho_chot', label: 'Chờ chốt deal', count: tileCounts.cho_chot, status: 'cho_chot', semantic: 'info' as const },
+      { id: 'thuc_hien_don', label: 'Thực hiện đơn', count: tileCounts.thuc_hien_don, status: 'thuc_hien_don', semantic: 'info' as const },
+      { id: 'chuyen_doi', label: 'Đã chuyển đổi', count: tileCounts.chuyen_doi, status: 'chuyen_doi', semantic: 'success' as const },
+    ]
+  }, [tileCounts, viewScope])
+
   const handleViewDetail = (lead: Lead) => {
     router.push(`/app/${viewScope === 'my' ? 'crm_my_leads' : 'crm_leads'}/${lead.id}`)
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-3 lg:p-4 bg-background">
-      {/* Toolbar */}
+      {/* Toolbar với Nút Chuyển Mode đặt trước Cơ sở */}
       <CrmLeadsToolbar
         leads={filteredLeads}
         viewScope={viewScope}
+        statusTileMode={statusTileMode}
+        onToggleTileMode={handleToggleTileMode}
         pools={pools}
         pool={selectedPool}
         onPoolChange={(val) => {
@@ -453,73 +398,25 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         onCreateClick={() => setIsCreateOpen(true)}
       />
 
-      {/* Dải Status Tiles Chuẩn Hóa Theo Màn Hình + Nút Mở Rộng Tab Lọc Phụ */}
-      <div className="flex items-center gap-2 w-full min-w-0">
-        <div className="flex-1 min-w-0">
+      {/* Dải Trạng thái: Mode Cấp 1 dùng Tab viên thuốc (StatusTiles), Mode All dùng Bảng chia cột (CrmLeadsStatusMatrix) */}
+      {statusTileMode === 'main' ? (
+        <div className="w-full min-w-0">
           <StatusTiles
-            tiles={statusTilesData}
+            tiles={mainStatusTilesData}
             activeId={selectedStatus}
             onSelect={handleTileSelect}
+            showDot={false}
+            coloredCount={true}
           />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className={cn(
-            "h-8 gap-1.5 shrink-0 text-xs font-medium cursor-pointer transition-colors",
-            isSubStatusOpen
-              ? "bg-primary/10 border-primary text-primary"
-              : "border-border text-muted-foreground hover:text-foreground"
-          )}
-          onClick={() => setIsSubStatusOpen(!isSubStatusOpen)}
-          title="Mở rộng lọc theo trạng thái phụ của tab hiện tại"
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-          <span>Lọc phụ</span>
-          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isSubStatusOpen && "rotate-180")} />
-        </Button>
-      </div>
-
-      {/* Thanh Lọc Trạng Thái Phụ Mở Rộng (Sub-status Filter Chips Bar) */}
-      {isSubStatusOpen && (
-        <div className="flex flex-wrap items-center gap-1.5 p-2 bg-muted/40 rounded-lg border border-border/60 text-xs animate-in fade-in duration-150">
-          <span className="text-xs font-semibold text-muted-foreground px-1 shrink-0">
-            Lọc phụ:
-          </span>
-          {subStatusOptions.map((subOpt) => {
-            const isActive = selectedSubStatus === subOpt.id
-            const count = subStatusCounts[subOpt.id] ?? 0
-            return (
-              <button
-                key={subOpt.id}
-                type="button"
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-normal transition-all cursor-pointer border",
-                  isActive
-                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-medium"
-                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-                )}
-                onClick={() => {
-                  setSelectedSubStatus(isActive ? 'all' : subOpt.id)
-                  setCurrentPage(1)
-                }}
-              >
-                <span>{subOpt.label}</span>
-                <span
-                  className={cn(
-                    "inline-flex items-center justify-center px-1.5 py-0.2 rounded-full text-[11px] font-mono leading-none",
-                    isActive
-                      ? "bg-primary-foreground/20 text-primary-foreground font-semibold"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+      ) : (
+        <CrmLeadsStatusMatrix
+          mode="all"
+          activeStatus={selectedStatus}
+          onSelectStatus={handleTileSelect}
+          counts={tileCounts}
+          viewScope={viewScope}
+        />
       )}
 
       {/* DataTable stretching to bottom & Panel Bộ Lọc Ghim Cạnh Phải */}

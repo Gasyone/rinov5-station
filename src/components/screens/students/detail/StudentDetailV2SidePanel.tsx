@@ -1,40 +1,30 @@
 'use client'
 
 import { StudentDetailPackageInfoTab } from './StudentDetailPackageInfoTab'
-import type { StudentPackage } from './studentDetailTypes'
-import type { EnrolledClass, Student } from '@/mocks/students'
+import type { StudentProgram } from './studentDetailTypes'
+import type { Student } from '@/mocks/students'
 
 interface StudentDetailV2SidePanelProps {
-  packagesList: StudentPackage[]
-  selectedPackageId: string
-  setSelectedPackageId: (id: string) => void
+  program: StudentProgram
   student: Student
-  activeClass: EnrolledClass | null
   onEditLevel: () => void
-  onEditSessions: () => void
+  onUpdateSessions?: (packageId: string, studiedSessions: number) => void
 }
 
 export function StudentDetailV2SidePanel({
-  packagesList,
-  selectedPackageId,
-  setSelectedPackageId,
+  program,
   student,
-  activeClass,
   onEditLevel,
-  onEditSessions,
+  onUpdateSessions,
 }: StudentDetailV2SidePanelProps) {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto pr-1">
       <StudentDetailPackageInfoTab
-        packagesList={packagesList}
-        selectedPackageId={selectedPackageId}
-        setSelectedPackageId={setSelectedPackageId}
+        program={program}
         student={student}
-        activeClass={activeClass}
         onEditLevel={onEditLevel}
-        onEditSessions={onEditSessions}
+        onUpdateSessions={onUpdateSessions}
       />
     </div>
   )
 }
-

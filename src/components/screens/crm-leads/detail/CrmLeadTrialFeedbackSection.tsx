@@ -8,7 +8,6 @@ import {
   ChevronUp,
   Star,
   MapPin,
-  BookOpen,
   Sparkles,
 } from 'lucide-react'
 import { StatusBadge } from '@/components/shared'
@@ -59,7 +58,6 @@ export function CrmLeadTrialFeedbackSection({
   const ticketStatus = (matchingTrial?.status || currentSubject.trialStatus || 'pending_approval') as import('@/mocks/trialClasses').TrialClassStatus
   const ticketStatusLabel = currentSubject.trialStatusLabel || (matchingTrial ? getTrialStatusLabel(matchingTrial.status) : 'Chờ xác nhận')
   
-  const className = currentSubject.trialClassName || matchingTrial?.sessions?.[0]?.className || 'Cambridge Starter A1'
   const dateTime = currentSubject.trialDate
     ? `${currentSubject.trialDate}${currentSubject.trialTime ? ` · ${currentSubject.trialTime}` : ''}`
     : matchingTrial?.sessions?.[0]?.trialDate
@@ -73,11 +71,11 @@ export function CrmLeadTrialFeedbackSection({
     <>
       <div className="p-3 rounded-lg bg-card border border-emerald-200/80 dark:border-emerald-900/60 space-y-3 shadow-2xs">
         {/* ============================================================ */}
-        {/* HEADER: THÔNG TIN LỊCH HỌC THỬ TINH GỌN (CHỈ LẤY THÔNG TIN CHÍNH) */}
+        {/* HEADER: LỊCH HỌC THỬ 1 DÒNG DUY NHẤT (BỎ CHƯƠNG TRÌNH, CƠ SỞ TRƯỚC TRẠNG THÁI) */}
         {/* ============================================================ */}
-        <div className="space-y-2 pb-2.5 border-b border-border/60">
-          {/* Dòng 1: Lịch học thử: [Ngày giờ] | [Trạng thái] */}
+        <div className="pb-2.5 border-b border-border/60">
           <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+            {/* Trái: Lịch học thử [Ngày giờ] */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-muted-foreground font-normal">Lịch học thử:</span>
               <button
@@ -92,20 +90,13 @@ export function CrmLeadTrialFeedbackSection({
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Phải: Cơ sở (trước) + Trạng thái (sau) */}
+            <div className="flex items-center gap-2.5 ml-auto">
+              <div className="flex items-center gap-1.5 text-xs">
+                <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                <span className="font-semibold text-foreground">{branch}</span>
+              </div>
               <StatusBadge status={ticketStatus} label={ticketStatusLabel} />
-            </div>
-          </div>
-
-          {/* Dòng 2: Thông tin chính: Tên lớp (trái) | Tên cơ sở (cạnh phải) */}
-          <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-              <span className="font-semibold text-foreground">{className}</span>
-            </div>
-            <div className="flex items-center gap-1.5 ml-auto">
-              <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-              <span className="font-semibold text-foreground">{branch}</span>
             </div>
           </div>
         </div>

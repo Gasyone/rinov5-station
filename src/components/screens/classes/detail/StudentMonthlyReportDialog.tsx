@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,9 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { RosterStudent } from './classesDetailTypes'
 import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSection'
+import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
+import { MonthlyReportRosterSidebar } from './MonthlyReportRosterSidebar'
+import { mockCareAlerts } from '@/mocks/careAlerts'
 import {
   MOCK_LESSONS_REVIEW,
   getReviewContentForRange,
@@ -27,8 +30,17 @@ import {
   getDirectLessonPlanForRange,
   WeekReviewItem,
   DEFAULT_SECTION_B2_WEEKS,
+  DetailedMonthlyReportForm,
+  DEFAULT_FILLED_REPORT_FORM,
+  EMPTY_REPORT_FORM,
 } from './monthlyReportHelpers'
-import { getStudentMonthlyReports, saveStudentMonthlyReport, MONTH_OPTIONS } from '@/mocks/monthlyReports'
+import {
+  getStudentMonthlyReports,
+  saveStudentMonthlyReport,
+  MONTH_OPTIONS,
+  DEFAULT_SECTION_A1_TEXT,
+  DEFAULT_SECTION_A2_TEXT,
+} from '@/mocks/monthlyReports'
 
 interface StudentMonthlyReportDialogProps {
   open: boolean
@@ -38,20 +50,6 @@ interface StudentMonthlyReportDialogProps {
   initialMonthKey?: string
 }
 
-export interface DetailedMonthlyReportForm {
-  monthPeriod: string
-  awardBadge: string
-  teacherName: string
-  sectionAContent: string
-  sectionA1Content: string
-  sectionA2Content: string
-  sectionB1Content: string
-  sectionB2StartLesson: number
-  sectionB2EndLesson: number
-  sectionB2Weeks: WeekReviewItem[]
-  sectionB2Content: string
-}
-
 const AWARD_BADGES = [
   'CHIẾN BINH BỨT PHÁ',
   'HỌC VIÊN XUẤT SẮC',
@@ -59,49 +57,6 @@ const AWARD_BADGES = [
   'CHIẾN BINH TIẾN BỘ',
   'NGÔI SAO SÁNG TẠO',
 ]
-
-const DEFAULT_SECTION_A1_TEXT = `Điểm nổi bật: Con có thái độ học tập tích cực và hợp tác tốt trong lớp. Khi đã hiểu yêu cầu, con vẫn cố gắng hoàn thành task và theo kịp hoạt động của lớp. Con có xu hướng quan sát khá kỹ trước khi tham gia, cho thấy con học theo hướng cẩn thận và muốn làm đúng trước khi trả lời. 
-
-Điểm cần lưu ý: Hiện tại tốc độ phản xạ lại câu hỏi và tham gia hoạt động của con còn chậm hơn so với nhịp chung của lớp, đặc biệt ở các hoạt động luyện tập hội thoại. Con khá sợ nói sai và ngại trả lời dù đã biết đáp án. Qua quan sát, cô nhận thấy con có tâm lý sợ bị chú ý và thiếu tự tin khi bị nhận xét góp ý, nên thường chọn im lặng để tránh sai thay vì thử trả lời. Điều này khiến khả năng phản xạ ngôn ngữ của con chưa phát huy hết khả năng thật sự.`
-
-const DEFAULT_SECTION_A2_TEXT = `Từ vựng & Phonics: Con nhớ khá tốt các từ vựng: touch, smell và Letter U: umbrella, up. Tuy nhiên con vẫn còn nhầm lẫn các từ see, hear và chưa nhớ chắc Letter T: tiger, tent.
-
-Cấu trúc & Mẫu câu: Con hiện chưa phản xạ được mẫu câu I see with my … và vẫn cần cô nhắc lại nhiều lần trước khi có thể sử dụng đúng cấu trúc.`
-
-const DEFAULT_SECTION_B1_TEXT = getAiSynthesizedNextMonthPlan(8, 10)
-
-const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
-  monthPeriod: '01/04/2026 đến 30/04/2026',
-  awardBadge: 'CHIẾN BINH BỨT PHÁ',
-  teacherName: 'Ms.Chloe',
-  sectionAContent: `${DEFAULT_SECTION_A1_TEXT}\n\n${DEFAULT_SECTION_A2_TEXT}`,
-  sectionA1Content: DEFAULT_SECTION_A1_TEXT,
-  sectionA2Content: DEFAULT_SECTION_A2_TEXT,
-  sectionB1Content: DEFAULT_SECTION_B1_TEXT,
-  sectionB2StartLesson: 8,
-  sectionB2EndLesson: 10,
-  sectionB2Weeks: DEFAULT_SECTION_B2_WEEKS,
-  sectionB2Content: getReviewContentForRange(8, 10),
-}
-
-const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
-  monthPeriod: '01/04/2026 đến 30/04/2026',
-  awardBadge: 'CHIẾN BINH BỨT PHÁ',
-  teacherName: 'Ms.Chloe',
-  sectionAContent: '',
-  sectionA1Content: '',
-  sectionA2Content: '',
-  sectionB1Content: '',
-  sectionB2StartLesson: 8,
-  sectionB2EndLesson: 10,
-  sectionB2Weeks: [
-    { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 3, title: 'Tuần 3', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 4, title: 'Tuần 4', content: '', docLink: '', thumbnailUrl: '' },
-  ],
-  sectionB2Content: '',
-}
 
 function resolveMonthValue(key?: string): string {
   if (!key) return '4_5_2026'
@@ -224,6 +179,48 @@ export function StudentMonthlyReportDialog({
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) || students[0]
 
+  const studentMetrics = useMemo(() => {
+    if (!selectedStudent) {
+      return {
+        attendanceRatio: '5/7',
+        lateCount: 1,
+        homeworkRatio: '7/7',
+        homeworkAvg: '7.5',
+        testScore: 8.0,
+        priorTestScore: 5.5,
+      }
+    }
+
+    const alert = mockCareAlerts.find(
+      (a) =>
+        a.studentId === selectedStudent.id ||
+        (a.studentName &&
+          selectedStudent.name &&
+          a.studentName.toLowerCase().includes(selectedStudent.name.toLowerCase())) ||
+        (a.classCode && selectedStudent.code && a.classCode === selectedStudent.code)
+    )
+
+    if (alert) {
+      return {
+        attendanceRatio: alert.attendanceRatio || '5/7',
+        lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
+        homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
+        homeworkAvg: '7.5',
+        testScore: alert.lastTestScore ?? 8.0,
+        priorTestScore: alert.priorTestScore ?? 5.5,
+      }
+    }
+
+    return {
+      attendanceRatio: '5/7',
+      lateCount: 1,
+      homeworkRatio: '7/7',
+      homeworkAvg: '7.5',
+      testScore: 8.0,
+      priorTestScore: 5.5,
+    }
+  }, [selectedStudent])
+
   // Step 1: Handle Start Lesson change
   const handleStartLessonChange = (startNum: number) => {
     const endNum = currentForm.sectionB2EndLesson || 10
@@ -312,8 +309,7 @@ export function StudentMonthlyReportDialog({
     : EMPTY_REPORT_FORM.sectionB2Weeks
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className={cn(
             'max-w-[95vw] max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-3xl border bg-background shadow-2xl transition-all',
@@ -325,12 +321,6 @@ export function StudentMonthlyReportDialog({
             <div className="space-y-0.5">
               <DialogTitle className="text-base font-extrabold text-foreground tracking-tight flex items-center gap-2">
                 <span>BÁO CÁO HỌC TẬP CHUYÊN SÂU & KẾ HOẠCH HỌC TẬP</span>
-                {isEditing && (
-                  <span className="ms-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 flex items-center gap-1">
-                    <Pencil className="h-3 w-3" />
-                    Chế độ chỉnh sửa
-                  </span>
-                )}
               </DialogTitle>
             </div>
 
@@ -356,72 +346,12 @@ export function StudentMonthlyReportDialog({
           <div className="flex-1 flex overflow-hidden">
             {/* Left Roster Student Sidebar (Only displayed when there are multiple students) */}
             {students.length > 1 && (
-              <div className="w-64 border-r bg-muted/10 flex flex-col shrink-0 overflow-y-auto custom-scrollbar">
-                <div className="p-3 border-b text-xs font-extrabold text-muted-foreground uppercase tracking-wider flex items-center justify-between bg-muted/20">
-                  <span>HỌC VIÊN IN ROSTER</span>
-                  <span>TRẠNG THÁI</span>
-                </div>
-
-                <div className="divide-y divide-border/40">
-                  {students.map((student) => {
-                    const isSelected = student.id === selectedStudentId
-                    const isDone = !!reportStatusMap[student.id]
-                    const sInitials = student.name
-                      .trim()
-                      .split(' ')
-                      .map((p) => p[0])
-                      .slice(-2)
-                      .join('')
-                      .toUpperCase()
-
-                    return (
-                      <button
-                        key={student.id}
-                        type="button"
-                        onClick={() => handleSelectStudent(student.id)}
-                        className={cn(
-                          'w-full p-3 flex items-center justify-between text-left transition-colors cursor-pointer',
-                          isSelected
-                            ? 'bg-primary/10 border-s-4 border-s-primary text-foreground font-bold'
-                            : 'hover:bg-muted/30 text-muted-foreground font-medium'
-                        )}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div
-                            className={cn(
-                              'h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0',
-                              isSelected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground'
-                            )}
-                          >
-                            {sInitials}
-                          </div>
-                          <div className="min-w-0">
-                            <div className={cn('text-sm truncate', isSelected ? 'font-bold text-primary' : 'font-medium')}>
-                              {student.name}
-                            </div>
-                            <div className="text-xs font-mono text-muted-foreground/80 truncate">
-                              {student.code}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Status indicator */}
-                        <div className="shrink-0 ms-1">
-                          {isDone ? (
-                            <div className="h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                              <Check className="h-3 w-3 stroke-[3]" />
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground/50 italic">—</span>
-                          )}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+              <MonthlyReportRosterSidebar
+                students={students}
+                selectedStudentId={selectedStudentId}
+                reportStatusMap={reportStatusMap}
+                onSelectStudent={handleSelectStudent}
+              />
             )}
 
             {/* Right Report Detail Form */}
@@ -481,8 +411,22 @@ export function StudentMonthlyReportDialog({
                 )}
               </div>
 
+              {/* Smartcard Section (Chuyên cần, BTVN, Điểm kiểm tra) đưa lên trên mục A */}
+              <MonthlyReportStatsCards
+                currentMonth={activeMonthConfig.current}
+                attendanceRatio={studentMetrics.attendanceRatio}
+                lateCount={studentMetrics.lateCount}
+                homeworkRatio={studentMetrics.homeworkRatio}
+                homeworkAvg={studentMetrics.homeworkAvg}
+                testScore={studentMetrics.testScore}
+                priorTestScore={studentMetrics.priorTestScore}
+                onScrollToEvaluation={() => {
+                  document.getElementById('dialog-report-section-a')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              />
+
               {/* SECTION A: BÁO CÁO HỌC TẬP CHUYÊN SÂU (TÁCH THÀNH 2 MỤC) */}
-              <div className="space-y-4 pt-2 border-t">
+              <div id="dialog-report-section-a" className="space-y-4 pt-2 border-t">
                 <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
                   A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
                 </h4>
@@ -525,7 +469,7 @@ export function StudentMonthlyReportDialog({
                     </label>
                     <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
                       <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                      Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
+                      Nội dung AI được tổng hợp từ các BTVN trong tháng của học viên.
                     </span>
                   </div>
                   {isEditing ? (
@@ -747,6 +691,5 @@ export function StudentMonthlyReportDialog({
           </div>
         </DialogContent>
       </Dialog>
-    </>
   )
 }

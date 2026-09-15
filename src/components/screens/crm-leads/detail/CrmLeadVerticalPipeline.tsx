@@ -8,14 +8,23 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
+  Headset,
+  ChevronDown,
+  ChevronRight,
+  UserCog,
+  Info,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import type { Lead, LeadStatus } from '@/mocks/crmLeads'
+import type { CareInteraction } from './crmLeadDetailTypes'
 import { STATUS_LABEL_MAP } from '../crmLeadsTypes'
 import { useLeadLifecycleStore } from '@/stores/useLeadLifecycleStore'
+import { CrmLeadStaffInfoModal } from './CrmLeadStaffInfoModal'
+import { CrmLeadReassignModal } from './CrmLeadReassignModal'
 
 export interface VerticalPipelineStage {
   id: string
@@ -118,6 +127,7 @@ interface CrmLeadVerticalPipelineProps {
   onOpenDropDialog?: () => void
   onOpenHistoryModal?: () => void
   onReactivateCycle?: () => void
+  onUpdateLead?: (updatedLead: Lead) => void
 }
 
 export function CrmLeadVerticalPipeline({
@@ -127,6 +137,7 @@ export function CrmLeadVerticalPipeline({
   onOpenDropDialog,
   onOpenHistoryModal,
   onReactivateCycle,
+  onUpdateLead,
 }: CrmLeadVerticalPipelineProps) {
   const { getStagesForPool, pools } = useLeadLifecycleStore()
   const poolId = lead.poolId || 'pool-t'
@@ -226,6 +237,45 @@ export function CrmLeadVerticalPipeline({
   const [selectedSubStatus, setSelectedSubStatus] = useState<string>(
     lead.subStatus || ''
   )
+  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false)
+  const [isReassignModalOpen, setIsReassignModalOpen] = useState(false)
+  const [assignedStaff, setAssignedStaff] = useState<string>(
+    lead.assignedTo || 'Trần Thị Mai'
+  )
+
+  const handleConfirmReassign = (
+    newStaffName: string,
+    reason: string,
+    handoverNote: string
+  ) => {
+    setAssignedStaff(newStaffName)
+    const newInteraction: CareInteraction = {
+      id: `inter-${Date.now()}`,
+      cycleId: lead.currentCycleId || 'cycle-001',
+      timestamp: new Date().toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      staffName: 'Admin / Điều phối',
+      channel: 'direct',
+      outcome: 'callback',
+      outcomeLabel: 'Điều chuyển phụ trách',
+      note: `Điều chuyển phụ trách sang: ${newStaffName}. Lý do: ${reason}.${handoverNote ? ` Ghi chú bàn giao: ${handoverNote}` : ''}`,
+    }
+
+    const updatedLead: Lead = {
+      ...lead,
+      assignedTo: newStaffName,
+      lastNote: `Điều chuyển phụ trách sang ${newStaffName}: ${reason}`,
+      careInteractions: [newInteraction, ...(lead.careInteractions || [])],
+    }
+    onUpdateLead?.(updatedLead)
+    toast.success(`Đã điều chuyển Lead cho ${newStaffName} thành công!`)
+  }
 
   const isFailed = lead.status === 'that_bai'
   const isConverted = lead.status === 'chuyen_doi'
@@ -260,99 +310,178 @@ export function CrmLeadVerticalPipeline({
     }
   }
 
+  const rawAssignedStaff = assignedStaff || lead.assignedTo || 'Trần Thị Mai'
+  const cleanStaffName = rawAssignedStaff
+    .replace(/\s*\((?:Sales|Sale|Marketing|Tư vấn)\)/gi, '')
+    .trim()
+
   return (
     <div className="rounded-2xl border border-border/80 bg-card p-2.5 lg:p-3 shadow-xs text-left">
-      {/* 1. Header Card Phễu */}
-      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/70">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-foreground">Phễu Vòng Đời Lead</span>
-          <Badge variant="outline" className="h-6 px-2 text-[11px] font-semibold bg-muted/60 text-foreground border-border">
-            {poolName}
-          </Badge>
-          <Badge className={cn('h-6 px-2.5 text-xs font-semibold rounded-full inline-flex items-center shadow-none', statusBadge)}>
-            {statusLabel}
-          </Badge>
-          {lead.isReturningLead && (
+      {/* 1. Header Card Phễu (Dòng 1 & Dòng 2) */}
+      <div className="pb-2 mb-2 border-b border-border/70 space-y-1.5">
+        {/* Dòng trên: [Icon Thu gọn/Mở rộng] Title + Badge trạng thái + Nút Báo rớt/Tiếp tục */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Nút đóng / mở phễu đặt TRƯỚC text Phễu Vòng Đời Lead */}
             <button
               type="button"
-              onClick={onOpenHistoryModal}
-              className="h-6 text-[11px] font-semibold px-2 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 inline-flex items-center gap-1 shadow-none hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
-              title={lead.returningReason ? `${lead.returningReason} - Bấm để xem chi tiết lịch sử các đợt tiếp cận` : 'Bấm để xem lịch sử các đợt tiếp cận'}
+              onClick={() => setIsCollapsed((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary cursor-pointer transition-colors select-none group"
+              title={isCollapsed ? 'Mở rộng để xem tất cả các trạng thái' : 'Thu gọn chỉ hiển thị trạng thái hiện tại'}
             >
-              <RotateCcw className="h-3 w-3" />
-              <span>Lead quay lại ({lead.salesCycles?.length ? `Chu kỳ ${lead.salesCycles.length}` : 'Chu kỳ 2'})</span>
+              <span className="h-5 w-5 rounded-md bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+                {isCollapsed ? (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                )}
+              </span>
+              <span>Phễu Vòng Đời Lead</span>
             </button>
-          )}
+
+            {/* Huy hiệu trạng thái hiện tại */}
+            <Badge
+              className={cn(
+                'h-5.5 px-2 text-[11px] font-semibold rounded-full inline-flex items-center shadow-none',
+                statusBadge
+              )}
+            >
+              {statusLabel}
+            </Badge>
+
+            {isCollapsed && (
+              <span className="text-[11px] text-muted-foreground font-normal">
+                (Chặng {Math.max(1, currentStageIndex + 1)}/{pipelineStages.length})
+              </span>
+            )}
+          </div>
+
+          {/* Quick Action: Báo rớt / Tiếp tục */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            {!isFailed && !isConverted && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenDropDialog}
+                  className="h-6.5 px-2 text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900/50 dark:hover:bg-rose-950/40 cursor-pointer"
+                  title="Báo rớt Lead kèm lý do chuẩn hóa"
+                >
+                  <UserX className="h-3 w-3 mr-1" />
+                  <span>Báo rớt</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onAdvanceStage}
+                  className="h-6.5 px-2.5 text-[11px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+                  title="Chuyển Lead sang chặng tiếp theo"
+                >
+                  <span>Tiếp tục</span>
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </>
+            )}
+
+            {isFailed && (
+              <div className="flex items-center gap-1.5">
+                <Badge variant="outline" className="text-[11px] font-semibold bg-rose-50 text-rose-700 border-rose-200">
+                  Đã báo rớt
+                </Badge>
+                {onReactivateCycle && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={onReactivateCycle}
+                    className="h-6.5 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                    title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>Kích hoạt lại</span>
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {isConverted && (
+              <div className="flex items-center gap-1.5">
+                <Badge variant="outline" className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
+                  Chuyển đổi (WON)
+                </Badge>
+                {onReactivateCycle && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={onReactivateCycle}
+                    className="h-6.5 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                    title="Kích hoạt bán mới (Học thêm môn / Tái ký / Tái tiếp cận)"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>Kích hoạt lại</span>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Quick Action: Báo rớt / Đã chuyển đổi */}
-        <div className="flex items-center gap-1.5">
-          {!isFailed && !isConverted && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onOpenDropDialog}
-                className="h-7 px-2 text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900/50 dark:hover:bg-rose-950/40 cursor-pointer"
-                title="Báo rớt Lead kèm lý do chuẩn hóa"
-              >
-                <UserX className="h-3 w-3 mr-1" />
-                <span>Báo rớt</span>
-              </Button>
+        {/* Dòng dưới: Kho T, Lead quay lại, Phụ trách (bỏ viền, bỏ nền, text phẳng thanh lịch) */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap pt-0.5">
+          {/* Kho T */}
+          <span className="font-medium text-foreground/90">
+            {poolName}
+          </span>
 
-              <Button
+          {/* Lead quay lại (nếu có) */}
+          {lead.isReturningLead && (
+            <>
+              <span className="text-muted-foreground/40">•</span>
+              <button
                 type="button"
-                size="sm"
-                onClick={onAdvanceStage}
-                className="h-7 px-2.5 text-[11px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
-                title="Chuyển Lead sang chặng tiếp theo"
+                onClick={onOpenHistoryModal}
+                className="inline-flex items-center gap-1 font-semibold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer transition-colors"
+                title={
+                  lead.returningReason
+                    ? `${lead.returningReason} - Bấm để xem chi tiết lịch sử các đợt tiếp cận`
+                    : 'Bấm để xem lịch sử các đợt tiếp cận'
+                }
               >
-                <span>Tiếp tục</span>
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
+                <RotateCcw className="h-3 w-3" />
+                <span>Lead quay lại</span>
+              </button>
             </>
           )}
 
-          {isFailed && (
-            <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-[11px] font-semibold bg-rose-50 text-rose-700 border-rose-200">
-                Đã báo rớt
-              </Badge>
-              {onReactivateCycle && (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={onReactivateCycle}
-                  className="h-7 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
-                  title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
-                >
-                  <Sparkles className="h-3 w-3" />
-                  <span>Kích hoạt lại</span>
-                </Button>
-              )}
-            </div>
-          )}
+          {/* Phụ trách (click mở modal thông tin CS, cơ sở,...) */}
+          <span className="text-muted-foreground/40">•</span>
+          <div className="inline-flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setIsStaffModalOpen(true)}
+              className="inline-flex items-center gap-1 font-normal text-muted-foreground hover:text-foreground cursor-pointer transition-colors group"
+              title="Nhấp để xem chi tiết thông tin phụ trách, CS và cơ sở"
+            >
+              <Headset className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+              <span>Phụ trách:</span>
+              <strong className="text-foreground font-semibold group-hover:text-primary underline decoration-dotted decoration-muted-foreground/50 underline-offset-2 group-hover:decoration-primary">
+                {cleanStaffName}
+              </strong>
+              <Info className="h-3 w-3 text-muted-foreground/60 group-hover:text-primary shrink-0" />
+            </button>
 
-          {isConverted && (
-            <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
-                Chuyển đổi (WON)
-              </Badge>
-              {onReactivateCycle && (
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={onReactivateCycle}
-                  className="h-7 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
-                  title="Kích hoạt Chu kỳ Bán mới (Học thêm môn / Tái ký / Tái tiếp cận)"
-                >
-                  <Sparkles className="h-3 w-3" />
-                  <span>Chu kỳ mới</span>
-                </Button>
-              )}
-            </div>
-          )}
+            {/* Cơ chế Đổi phụ trách */}
+            <button
+              type="button"
+              onClick={() => setIsReassignModalOpen(true)}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800 transition-colors cursor-pointer shadow-3xs"
+              title="Điều chuyển phụ trách Lead cho nhân sự khác"
+            >
+              <UserCog className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+              <span>Đổi</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -392,100 +521,69 @@ export function CrmLeadVerticalPipeline({
 
       {/* 3. Danh sách các chặng dạng Dọc (Vertical Stepper) */}
       <div className="space-y-1 relative pl-1">
-        {pipelineStages.map((stage, idx) => {
-          const isCurrent = !isFailed && currentStageIndex === idx
-          const isPast = !isFailed && currentStageIndex > idx
-          const isFuture = !isFailed && (currentStageIndex < idx || currentStageIndex === -1)
-          const isLast = idx === pipelineStages.length - 1
+        {isCollapsed ? (
+          // CHẾ ĐỘ THU GỌN: CHỈ HIỂN THỊ TRẠNG THÁI HIỆN TẠI
+          (() => {
+            const activeIndex = currentStageIndex >= 0 ? currentStageIndex : 0
+            const stage = pipelineStages[activeIndex] || pipelineStages[0]
+            const activeSub = selectedSubStatus || lead.subStatus || stage.subStatuses[0]
 
-          const activeSub =
-            isCurrent
-              ? selectedSubStatus || lead.subStatus || stage.subStatuses[0]
-              : null
-
-          return (
-            <div key={stage.id} className="relative flex items-start gap-2.5 group">
-              {/* Connecting line between stages */}
-              {!isLast && (
+            return (
+              <div key={stage.id} className="relative flex items-start gap-2.5">
+                {/* Stage Step Circle */}
                 <div
                   className={cn(
-                    'absolute left-[13px] top-[24px] bottom-[-4px] w-[2px] transition-colors',
-                    isPast ? 'bg-emerald-500' : 'bg-border'
+                    'relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-extrabold transition-all shadow-sm',
+                    isFailed
+                      ? 'bg-rose-600 text-white'
+                      : 'bg-primary text-primary-foreground ring-4 ring-primary/20 scale-105'
                   )}
-                />
-              )}
-
-              {/* Stage Step Circle */}
-              <button
-                type="button"
-                onClick={() => handleStageClick(stage)}
-                disabled={isFailed}
-                className={cn(
-                  'relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all cursor-pointer',
-                  isPast && 'bg-emerald-600 text-white shadow-2xs',
-                  isCurrent &&
-                    'bg-primary text-primary-foreground ring-4 ring-primary/20 font-extrabold shadow-sm scale-105',
-                  isFuture &&
-                    'bg-muted border border-border text-muted-foreground hover:border-primary/40',
-                  isFailed && 'bg-muted/60 border border-border/60 text-muted-foreground/50'
-                )}
-                title={`Chuyển sang: ${stage.name}`}
-              >
-                {isPast ? <Check className="h-3.5 w-3.5 stroke-[2.5]" /> : idx + 1}
-              </button>
-
-              {/* Stage Content */}
-              <div
-                onClick={() => handleStageClick(stage)}
-                className={cn(
-                  'flex-1 rounded-xl p-2 transition-all cursor-pointer select-none',
-                  isCurrent
-                    ? 'bg-primary/5 border border-primary/25 shadow-2xs'
-                    : 'hover:bg-muted/40 border border-transparent'
-                )}
-              >
-                <div className="flex items-center justify-between gap-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        'text-xs',
-                        isCurrent
-                          ? 'font-bold text-foreground'
-                          : isPast
-                          ? 'font-semibold text-foreground/80'
-                          : 'text-muted-foreground'
-                      )}
-                    >
-                      {stage.name}
-                    </span>
-
-                    {/* Mã Code Badge */}
-                    <span
-                      className="text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-tight inline-flex items-center"
-                      style={{
-                        backgroundColor: `${stage.color}15`,
-                        color: stage.color,
-                      }}
-                    >
-                      {stage.code}
-                    </span>
-                  </div>
-
-                  {isCurrent && (
-                    <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-                  )}
+                  title={`Chặng hiện tại: ${stage.name}`}
+                >
+                  {activeIndex + 1}
                 </div>
 
-                {/* Sub-status tag pill */}
-                {isCurrent && (
-                  <div className="mt-1.5 pt-1.5 border-t border-primary/15 space-y-1">
-                    <div className="text-[10px] text-muted-foreground font-medium flex items-center justify-between">
-                      <span>Trạng thái chi tiết:</span>
-                      <span className="font-semibold text-primary">{activeSub}</span>
+                {/* Stage Content */}
+                <div className="flex-1 rounded-xl p-2 bg-primary/5 border border-primary/25 shadow-2xs select-none">
+                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-bold text-foreground truncate">
+                        {stage.name}
+                      </span>
+
+                      {/* Mã Code Badge */}
+                      <span
+                        className="text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-tight inline-flex items-center shrink-0"
+                        style={{
+                          backgroundColor: `${stage.color}15`,
+                          color: stage.color,
+                        }}
+                      >
+                        {stage.code}
+                      </span>
                     </div>
 
-                    {/* Danh sách sub-statuses để Sales chọn nhanh */}
-                    <div className="flex flex-wrap gap-1 pt-0.5">
+                    <div className="flex items-center gap-2 shrink-0 ml-auto">
+                      {/* Trạng thái đang chọn ở cạnh phải dòng trạng thái chính */}
+                      {activeSub && (
+                        <span className="text-[11px] font-semibold text-primary">
+                          {activeSub}
+                        </span>
+                      )}
+                      <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
+                      <button
+                        type="button"
+                        onClick={() => setIsCollapsed(false)}
+                        className="text-[10px] text-sky-600 dark:text-sky-400 hover:underline font-medium cursor-pointer"
+                      >
+                        Mở rộng
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Danh sách sub-statuses để Sales chọn nhanh (đã bỏ nhãn Trạng thái chi tiết và text trùng lặp) */}
+                  {stage.subStatuses && stage.subStatuses.length > 0 && (
+                    <div className="mt-1.5 pt-1.5 border-t border-primary/15 flex flex-wrap gap-1">
                       {stage.subStatuses.map((sub) => {
                         const isSelected = activeSub === sub
                         return (
@@ -505,13 +603,155 @@ export function CrmLeadVerticalPipeline({
                         )
                       })}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })()
+        ) : (
+          // CHẾ ĐỘ MỞ RỘNG: HIỂN THỊ ĐẦY ĐỦ CÁC CHẶNG
+          pipelineStages.map((stage, idx) => {
+            const isCurrent = !isFailed && currentStageIndex === idx
+            const isPast = !isFailed && currentStageIndex > idx
+            const isFuture = !isFailed && (currentStageIndex < idx || currentStageIndex === -1)
+            const isLast = idx === pipelineStages.length - 1
+
+            const activeSub =
+              isCurrent
+                ? selectedSubStatus || lead.subStatus || stage.subStatuses[0]
+                : null
+
+            return (
+              <div key={stage.id} className="relative flex items-start gap-2.5 group">
+                {/* Connecting line between stages */}
+                {!isLast && (
+                  <div
+                    className={cn(
+                      'absolute left-[13px] top-[24px] bottom-[-4px] w-[2px] transition-colors',
+                      isPast ? 'bg-emerald-500' : 'bg-border'
+                    )}
+                  />
+                )}
+
+                {/* Stage Step Circle */}
+                <button
+                  type="button"
+                  onClick={() => handleStageClick(stage)}
+                  disabled={isFailed}
+                  className={cn(
+                    'relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all cursor-pointer',
+                    isPast && 'bg-emerald-600 text-white shadow-2xs',
+                    isCurrent &&
+                      'bg-primary text-primary-foreground ring-4 ring-primary/20 font-extrabold shadow-sm scale-105',
+                    isFuture &&
+                      'bg-muted border border-border text-muted-foreground hover:border-primary/40',
+                    isFailed && 'bg-muted/60 border border-border/60 text-muted-foreground/50'
+                  )}
+                  title={`Chuyển sang: ${stage.name}`}
+                >
+                  {isPast ? <Check className="h-3.5 w-3.5 stroke-[2.5]" /> : idx + 1}
+                </button>
+
+                {/* Stage Content */}
+                <div
+                  onClick={() => handleStageClick(stage)}
+                  className={cn(
+                    'flex-1 rounded-xl p-2 transition-all cursor-pointer select-none',
+                    isCurrent
+                      ? 'bg-primary/5 border border-primary/25 shadow-2xs'
+                      : 'hover:bg-muted/40 border border-transparent'
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className={cn(
+                          'text-xs truncate',
+                          isCurrent
+                            ? 'font-bold text-foreground'
+                            : isPast
+                            ? 'font-semibold text-foreground/80'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        {stage.name}
+                      </span>
+
+                      {/* Mã Code Badge */}
+                      <span
+                        className="text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-tight inline-flex items-center shrink-0"
+                        style={{
+                          backgroundColor: `${stage.color}15`,
+                          color: stage.color,
+                        }}
+                      >
+                        {stage.code}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 ml-auto">
+                      {/* Trạng thái đang chọn ở cạnh phải dòng trạng thái chính */}
+                      {isCurrent && activeSub && (
+                        <span className="text-[11px] font-semibold text-primary">
+                          {activeSub}
+                        </span>
+                      )}
+                      {isCurrent && (
+                        <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Danh sách sub-statuses để Sales chọn nhanh (đã bỏ nhãn Trạng thái chi tiết và text trùng lặp) */}
+                  {isCurrent && stage.subStatuses && stage.subStatuses.length > 0 && (
+                    <div className="mt-1.5 pt-1.5 border-t border-primary/15 flex flex-wrap gap-1">
+                      {stage.subStatuses.map((sub) => {
+                        const isSelected = activeSub === sub
+                        return (
+                          <button
+                            key={sub}
+                            type="button"
+                            onClick={(e) => handleSubStatusClick(sub, e)}
+                            className={cn(
+                              'text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors border cursor-pointer',
+                              isSelected
+                                ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
+                                : 'bg-background hover:bg-muted text-foreground/80 border-border/80'
+                            )}
+                          >
+                            {sub}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        )}
       </div>
+
+      {/* Modal Thông tin Phụ trách, CS và Cơ sở */}
+      <CrmLeadStaffInfoModal
+        open={isStaffModalOpen}
+        onOpenChange={setIsStaffModalOpen}
+        lead={lead}
+        staffName={cleanStaffName}
+        onReassignStaff={(newStaff) => {
+          handleConfirmReassign(newStaff, 'Điều phối thủ công từ Modal thông tin', '')
+        }}
+        onOpenReassignModal={() => setIsReassignModalOpen(true)}
+      />
+
+      {/* Modal Điều chuyển Phụ trách Lead */}
+      <CrmLeadReassignModal
+        open={isReassignModalOpen}
+        onOpenChange={setIsReassignModalOpen}
+        lead={lead}
+        currentStaffName={cleanStaffName}
+        onConfirmReassign={handleConfirmReassign}
+      />
     </div>
   )
 }

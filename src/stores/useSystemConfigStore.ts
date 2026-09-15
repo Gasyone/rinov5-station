@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-export type SystemDataScope = 'personal' | 'team' | 'branch' | 'global'
+export type SystemDataScope = 'personal' | 'branch'
 
 export interface StaffOption {
   id: string
@@ -60,7 +60,7 @@ export interface ScopeDefinition {
   badgeLabel: string
   description: string
   ruleDetail: string
-  iconName: 'user' | 'users' | 'building' | 'globe'
+  iconName: 'user' | 'building'
 }
 
 export const SCOPE_DEFINITIONS: ScopeDefinition[] = [
@@ -73,28 +73,12 @@ export const SCOPE_DEFINITIONS: ScopeDefinition[] = [
     iconName: 'user',
   },
   {
-    id: 'team',
-    label: 'Cùng nhóm (Tổ công tác)',
-    badgeLabel: 'Cùng nhóm',
-    description: 'Truy cập dữ liệu học viên của tất cả nhân sự trong cùng nhóm / tổ công tác.',
-    ruleDetail: 'Hệ thống hiển thị học viên do tất cả chuyên viên trong cùng Tổ Chăm sóc phụ trách.',
-    iconName: 'users',
-  },
-  {
     id: 'branch',
-    label: 'Toàn cơ sở (Chi nhánh)',
-    badgeLabel: 'Toàn cơ sở',
+    label: 'Cơ sở',
+    badgeLabel: 'Cơ sở',
     description: 'Truy cập toàn bộ dữ liệu học viên thuộc cơ sở / chi nhánh công tác.',
     ruleDetail: 'Hệ thống hiển thị học viên đang theo học tại chi nhánh công tác, không phân biệt người phụ trách.',
     iconName: 'building',
-  },
-  {
-    id: 'global',
-    label: 'Toàn hệ thống (Toàn chuỗi)',
-    badgeLabel: 'Toàn hệ thống',
-    description: 'Quyền quản trị cao nhất, xem toàn bộ dữ liệu trên toàn bộ các chi nhánh và nhân sự.',
-    ruleDetail: 'Không giới hạn phạm vi, được phép xem và chuyển đổi bất kỳ cơ sở nào.',
-    iconName: 'globe',
   },
 ]
 
@@ -154,6 +138,18 @@ export const useSystemConfigStore = create<SystemConfigState>()(
     {
       name: 'rinov5-system-data-scope',
       storage: createJSONStorage(() => localStorage),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      migrate: (persistedState: any) => {
+        if (
+          persistedState &&
+          persistedState.dataScope &&
+          persistedState.dataScope !== 'personal' &&
+          persistedState.dataScope !== 'branch'
+        ) {
+          persistedState.dataScope = 'personal'
+        }
+        return persistedState
+      },
     }
   )
 )

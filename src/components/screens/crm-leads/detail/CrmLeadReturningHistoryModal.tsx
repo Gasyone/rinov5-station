@@ -142,7 +142,7 @@ export function CrmLeadReturningHistoryModal({
                 className="h-6 text-[11px] font-semibold px-2 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 inline-flex items-center gap-1 shadow-none"
               >
                 <RotateCcw className="h-3 w-3" />
-                <span>Lead quay lại ({lead.salesCycles?.length ? `Chu kỳ ${lead.salesCycles.length}` : 'Chu kỳ 2'})</span>
+                <span>Lead quay lại</span>
               </Badge>
             </div>
           </div>

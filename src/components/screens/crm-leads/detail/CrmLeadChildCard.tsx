@@ -21,12 +21,14 @@ export interface StudentSubjectItem {
   id: string
   subjectName: string
   courseLevel?: string
+  grade?: string // Khối lớp (VD: Lớp 1, Lớp 2... Lớp 12 cho môn Toán)
   branch?: string
   trainingType?: string
   status?: string
   statusLabel?: string
   // Cờ kiểm soát trạng thái có lịch booking test / học thử hay chưa (để ẩn/hiện section tương ứng)
   hasTestBooking?: boolean
+  hasTestResult?: boolean
   hasTrialBooking?: boolean
 
   // Placement Test chuẩn theo /app/booking_test (media_1789031000711.png & media_1789031010639.png)

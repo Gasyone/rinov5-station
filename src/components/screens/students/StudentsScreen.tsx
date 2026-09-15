@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
 import { StudentsToolbar } from './StudentsToolbar'
@@ -15,7 +15,9 @@ import { Input } from '@/components/ui/input'
 import { FieldLabel } from '@/components/shared'
 
 export function StudentsScreen() {
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const studentIdFromUrl = searchParams?.get('studentId') || searchParams?.get('id') || null
+
   const [activeStatus, setActiveStatus] = useState<StudentStatusId>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [branchFilter, setBranchFilter] = useState('all')
@@ -23,7 +25,9 @@ export function StudentsScreen() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
-  const [activeStudentId, setActiveStudentId] = useState<string | null>(null)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+
+  const activeStudentId = selectedStudentId ?? studentIdFromUrl
 
   // Advanced Filter Sheet States
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -272,8 +276,8 @@ export function StudentsScreen() {
                   return next
                 })
               }}
-              onCreateTicket={(id) => toast.info('Tính năng đang được phát triển!')}
-              onView={(id) => router.push(`/app/students/${id}`)}
+              onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
+              onView={(id) => setSelectedStudentId(id)}
             />
           </DataTableFrame>
         </div>
@@ -295,9 +299,17 @@ export function StudentsScreen() {
         studentId={activeStudentId}
         open={!!activeStudentId}
         onOpenChange={(open) => {
-          if (!open) setActiveStudentId(null)
+          if (!open) {
+            setSelectedStudentId(null)
+            if (typeof window !== 'undefined' && (searchParams?.get('studentId') || searchParams?.get('id'))) {
+              const url = new URL(window.location.href)
+              url.searchParams.delete('studentId')
+              url.searchParams.delete('id')
+              window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''))
+            }
+          }
         }}
-        onCreateTicket={(id) => toast.info('Tính năng đang được phát triển!')}
+        onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
       />
     </div>
   )

@@ -21,6 +21,8 @@ import {
   DEFAULT_SECTION_B2_WEEKS,
 } from './monthlyReportHelpers'
 import { getStudentMonthlyReports, saveStudentMonthlyReport } from '@/mocks/monthlyReports'
+import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
+import { mockCareAlerts } from '@/mocks/careAlerts'
 
 interface ClassesStudentMonthlyReportOverlayPanelProps {
   student: RosterStudent
@@ -76,6 +78,35 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
   const [isEditing, setIsEditing] = useState(() => !initialReport)
+
+  const studentMetrics = useMemo(() => {
+    const alert = mockCareAlerts.find(
+      (a) =>
+        a.studentId === student.id ||
+        (a.studentName && student.name && a.studentName.toLowerCase().includes(student.name.toLowerCase())) ||
+        (a.classCode && student.code && a.classCode === student.code)
+    )
+
+    if (alert) {
+      return {
+        attendanceRatio: alert.attendanceRatio || '5/7',
+        lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
+        homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
+        homeworkAvg: '7.5',
+        testScore: alert.lastTestScore ?? 8.0,
+        priorTestScore: alert.priorTestScore ?? 5.5,
+      }
+    }
+
+    return {
+      attendanceRatio: '5/7',
+      lateCount: 1,
+      homeworkRatio: '7/7',
+      homeworkAvg: '7.5',
+      testScore: 8.0,
+      priorTestScore: 5.5,
+    }
+  }, [student])
 
   const handleMonthChange = (newKey: string) => {
     setSelectedMonthKey(newKey)
@@ -191,8 +222,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   }
 
   return (
-    <>
-      <aside className="flex min-h-0 flex-col overflow-hidden w-full h-full bg-background relative z-10 animate-in fade-in slide-in-from-right-4 duration-200">
+    <aside className="flex min-h-0 flex-col overflow-hidden w-full h-full bg-background relative z-10 animate-in fade-in slide-in-from-right-4 duration-200">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2.5 pt-1 mb-2 pr-1">
           <div className="min-w-0 flex items-center gap-2">
@@ -285,8 +315,22 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             )}
           </div>
 
+          {/* Smartcard Section (Chuyên cần, BTVN, Điểm kiểm tra) đưa lên trên mục A */}
+          <MonthlyReportStatsCards
+            currentMonth={activeMonthConfig.current}
+            attendanceRatio={studentMetrics.attendanceRatio}
+            lateCount={studentMetrics.lateCount}
+            homeworkRatio={studentMetrics.homeworkRatio}
+            homeworkAvg={studentMetrics.homeworkAvg}
+            testScore={studentMetrics.testScore}
+            priorTestScore={studentMetrics.priorTestScore}
+            onScrollToEvaluation={() => {
+              document.getElementById('overlay-section-a')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+          />
+
           {/* Section A (Tách 2 phần A1 & A2) */}
-          <div className="space-y-3 pt-2 border-t">
+          <div id="overlay-section-a" className="space-y-3 pt-2 border-t">
             <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
               A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
             </h4>
@@ -327,7 +371,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 </label>
                 <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
                   <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                  Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
+                  Nội dung AI được tổng hợp từ các BTVN trong tháng của học viên.
                 </span>
               </div>
               {isEditing ? (
@@ -505,6 +549,5 @@ export function ClassesStudentMonthlyReportOverlayPanel({
           )}
         </div>
       </aside>
-    </>
   )
 }

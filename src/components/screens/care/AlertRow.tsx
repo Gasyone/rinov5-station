@@ -12,8 +12,8 @@ import { type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
-import { getProductSku, getExpiryTier } from './renewal/renewalHelpers'
+import { getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
+import { getProductSku } from './renewal/renewalHelpers'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareItemsDialog } from './StudentCareItemsDialog'
 import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
@@ -264,15 +264,12 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       <td className="py-1.5 px-2 min-w-[165px]">
         {(() => {
           const studentInfo = mockStudents.find((s) => s.id === cls.studentId);
-          const hasClassHistory = cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer' || stableHash(cls.studentId) % 4 === 0;
-          const classCount = hasClassHistory ? 2 : 1;
 
           return (
             <div className="flex flex-col gap-1 text-left">
-              {/* Hàng 1: (N) Trình độ */}
+              {/* Hàng 1: Trình độ */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={`(${classCount}) ${cls.level}`}>
-                  <span className="font-bold mr-1 text-foreground">({classCount})</span>
+                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={cls.level}>
                   {cls.level}
                 </span>
               </div>
@@ -356,38 +353,24 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       {/* Gói sản phẩm */}
       <td className="py-1.5 px-2 min-w-[180px]">
         {(() => {
-          const hasPackageHistory = cls.status === 'Chờ chuyển lớp' || stableHash(cls.studentId) % 3 === 0
-          const packageCount = hasPackageHistory ? 2 : 1
           const skuName = getProductSku(cls)
-          const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions)
 
           return (
             <div className="flex flex-col gap-0.5 min-w-[180px] max-w-[260px]">
-              {/* Hàng 1: (N) Tên gói học mới nhất */}
+              {/* Hàng 1: Tên gói học mới nhất */}
               <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[230px]" title={`(${packageCount}) ${skuName}`}>
-                  <span className="font-bold mr-1 text-foreground">({packageCount})</span>
+                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[230px]" title={skuName}>
                   {skuName}
                 </span>
               </div>
-              {/* Hàng 2: Nhãn kỳ hạn (Chỉ T1, T2 - có màu, không viền nền; bỏ T3) & Hạn học phí */}
-              <div className="flex items-center gap-1.5 flex-nowrap text-xs">
-                {expiryTier.tier !== 'T3' && (
-                  <span
-                    className={cn(
-                      'font-bold shrink-0',
-                      expiryTier.tier === 'T1'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-amber-600 dark:text-amber-400'
-                    )}
-                  >
-                    {expiryTier.label}
+              {/* Hàng 2: Hạn học phí */}
+              {cls.expectedEndDate && (
+                <div className="flex items-center gap-1.5 flex-nowrap text-xs">
+                  <span className="text-muted-foreground whitespace-nowrap">
+                    Hạn: {cls.expectedEndDate}
                   </span>
-                )}
-                <span className="text-muted-foreground whitespace-nowrap">
-                  Hạn: {cls.expectedEndDate}
-                </span>
-              </div>
+                </div>
+              )}
             </div>
           )
         })()}

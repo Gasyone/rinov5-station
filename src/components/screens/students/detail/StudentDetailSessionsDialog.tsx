@@ -26,10 +26,17 @@ export function StudentDetailSessionsDialog({
   initialStudiedSessions,
   onSave,
 }: StudentDetailSessionsDialogProps) {
+  const [prevInitial, setPrevInitial] = useState(initialStudiedSessions)
   const [studiedSessions, setStudiedSessions] = useState(initialStudiedSessions)
+
+  if (initialStudiedSessions !== prevInitial) {
+    setPrevInitial(initialStudiedSessions)
+    setStudiedSessions(initialStudiedSessions)
+  }
 
   const handleSave = () => {
     onSave(studiedSessions)
+    onOpenChange(false)
   }
 
   return (

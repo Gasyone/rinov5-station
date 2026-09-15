@@ -7,8 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { SessionHistory } from './studentCareReportHelpers'
-import { PersonnelHoverCard, AppAvatar } from '@/components/shared'
 import { getStatusBadgeClass } from '@/lib/statusColors'
+import { ClassSessionHoverCard } from '@/components/screens/calendar/ClassSessionHoverCard'
+import type { GenericSessionData } from '@/components/screens/calendar/SessionHoverCard'
 import {
   type UnifiedSessionItem,
   getCareSessions,
@@ -124,52 +125,104 @@ export function CareSessionTimelineList({
             'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
             getStatusBadgeClass('absent_excused')
           )}
-          title="Vắng có phép (Phụ huynh đã xin phép)"
+          title="Vắng có phép"
         >
           Vắng có phép
         </span>
       )
     }
 
-    // 3. Vắng mặt chung
-    if (session.attendance === 'absent' || /vắng/i.test(session.attendanceText || '')) {
-      return (
-        <span
-          className={cn(
-            'text-[11px] font-bold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
-            getStatusBadgeClass('absent')
-          )}
-        >
-          {session.attendanceText || 'Vắng mặt'}
-        </span>
-      )
-    }
-
-    // 4. Đến muộn (Badge Vàng hổ phách cảnh báo - xóa 10m/15m chỉ để nhãn Đến muộn)
-    if (session.attendance === 'late' || /muộn/i.test(session.attendanceText || '')) {
+    // 3. Đến muộn (Badge Cam/Vàng chỉ để nhãn)
+    if (
+      session.attendance === 'late' ||
+      /muộn/i.test(session.attendanceText || '')
+    ) {
       return (
         <span
           className={cn(
             'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
             getStatusBadgeClass('late')
           )}
+          title="Đến muộn"
         >
           Đến muộn
         </span>
       )
     }
 
-    // 5. Đã đến (Badge xanh lục trang nhã)
+    // 4. Mặc định: Đã đến (Badge Xanh lá cây)
     return (
       <span
         className={cn(
-          'text-[11px] font-medium px-2 py-0.5 rounded-full border leading-none shrink-0',
+          'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
           getStatusBadgeClass('present')
         )}
+        title="Đã đến"
       >
         Đã đến
       </span>
     )
+  }
+
+  const buildGenericSessionData = (session: UnifiedSessionItem): GenericSessionData => {
+    const isTest = session.type === 'test'
+    const isUpcoming = session.type === 'upcoming'
+
+    const classCode = pkgIsEnglish ? 'SA1_TA_T03' : 'LD_TOAN_00010'
+    const className = pkgIsEnglish ? 'Tiếng Anh Trial Level 2' : 'Toán Tư Duy STEM Rino'
+    const kctName = pkgIsEnglish ? 'Tiếng Anh Trial Level 2' : 'Toán Tư Duy STEM Rino'
+    const subject = pkgIsEnglish ? 'Tiếng Anh' : 'Toán'
+    const level = pkgIsEnglish ? 'Level 2' : 'Level 3'
+    const schoolRoom = session.room || 'Phòng 1'
+    const branch = 'RinoEdu Linh Đàm'
+
+    const timeSlot = session.time || '15:30 - 17:30'
+    const teacherName = session.teacher || (pkgIsEnglish ? 'Thu Hà' : 'Hoàng Thị Mai')
+    const taName = session.assistant?.name || (pkgIsEnglish ? 'Đức Anh' : 'Trần Thảo')
+
+    let lessonSubtitle = ''
+    let lessonContent: GenericSessionData['lessonContent']
+
+    if (isTest) {
+      lessonSubtitle = 'Đánh giá năng lực từ vựng & ngữ pháp'
+      lessonContent = {
+        words: 'review vocabulary units 1-2',
+        sentences: 'Unit Test 1: Listening & Speaking Assessment',
+        phonics: 'Phonics test: Short vowels A, E, I, O, U',
+      }
+    } else if (session.comment) {
+      lessonSubtitle = session.topic
+      lessonContent = session.comment
+    } else {
+      lessonSubtitle = session.topic
+      lessonContent = 'Luyện tập kỹ năng và hoàn thành bài tập trên lớp theo kế hoạch đào tạo.'
+    }
+
+    return {
+      id: session.id,
+      title: session.topic,
+      classCode,
+      className,
+      kctName,
+      subject,
+      level,
+      schoolRoom,
+      branch,
+      timeSlot,
+      date: session.date,
+      teacher: teacherName,
+      teacherName,
+      assistantTeacher: taName,
+      taName,
+      totalStudents: 16,
+      trialStudents: 2,
+      type: isTest ? 'test' : isUpcoming ? 'upcoming' : 'class_session',
+      typeLabel: isTest ? 'Buổi kiểm tra' : isUpcoming ? 'Sắp tới' : 'Chính thức',
+      lessonNumber: session.sessionNumber,
+      lessonSubtitle,
+      lessonContent,
+      status: session.attendance === 'absent_unexcused' ? 'cancelled' : 'scheduled',
+    }
   }
 
   const renderSessionCard = (session: UnifiedSessionItem) => {
@@ -179,6 +232,7 @@ export function CareSessionTimelineList({
 
     const shortDay = getShortDayOfWeek(session.date)
     const shortDate = formatDateNoYear(session.date)
+    const hoverSessionData = buildGenericSessionData(session)
 
     return (
       <div
@@ -188,21 +242,42 @@ export function CareSessionTimelineList({
           isUpcoming && 'bg-muted/10 border-border/40'
         )}
       >
-        {/* Row 1 duy nhất: [Thứ, Ngày/Tháng] + Tên buổi học (nếu dài để ...) | GV (trợ giảng popover nếu có) • Điểm danh rõ ràng • BTVN • Điểm thi */}
+        {/* Row 1: [Thứ, Ngày/Tháng] + Tên buổi học (Hover / Click mở ClassSessionHoverCard) | Điểm danh • BTVN • Điểm thi */}
         <div className="flex items-center justify-between gap-2 min-w-0">
-          {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên buổi học (truncate ...) + Badge Kiểm tra */}
+          {/* Cụm trái: ClassSessionHoverCard kích hoạt khi hover/bấm [Thứ, Ngày/Tháng] + Tên buổi học */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            {/* Thứ viết tắt & Ngày (không có năm) đưa ra trước Tên buổi học */}
-            <span className="font-semibold text-xs shrink-0 text-sky-600 dark:text-sky-400">
-              {shortDay}, {shortDate}
-            </span>
+            <ClassSessionHoverCard session={hoverSessionData} side="bottom">
+              <div
+                role="button"
+                tabIndex={0}
+                className="flex items-center gap-1.5 min-w-0 max-w-full text-left cursor-pointer group focus:outline-hidden hover:opacity-85 transition-opacity"
+                title="Bấm hoặc rê chuột để xem chi tiết buổi học"
+              >
+                {/* Thứ viết tắt & Ngày (không có năm) đưa ra trước Tên buổi học */}
+                <span
+                  className={cn(
+                    'text-xs shrink-0 transition-colors group-hover:text-primary',
+                    session.type === 'lesson'
+                      ? 'font-bold text-foreground'
+                      : 'font-semibold text-sky-600 dark:text-sky-400'
+                  )}
+                >
+                  {shortDay}, {shortDate}
+                </span>
 
-            <h4
-              className="font-normal text-foreground text-xs truncate leading-snug min-w-0"
-              title={session.topic}
-            >
-              {session.topic}
-            </h4>
+                <h4
+                  className={cn(
+                    'text-xs truncate leading-snug min-w-0 transition-colors group-hover:text-primary group-hover:underline',
+                    session.type === 'lesson'
+                      ? 'font-bold text-foreground'
+                      : 'font-normal text-foreground'
+                  )}
+                  title={session.topic}
+                >
+                  {session.topic}
+                </h4>
+              </div>
+            </ClassSessionHoverCard>
 
             {isTest && (
               <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
@@ -211,86 +286,8 @@ export function CareSessionTimelineList({
             )}
           </div>
 
-          {/* Cụm phải ở cuối dòng: GV (+1 popover trợ giảng nếu có) trước BTVN, Điểm danh rõ ràng, BTVN, Điểm kiểm tra */}
+          {/* Cụm phải ở cuối dòng: Điểm danh rõ ràng • BTVN • Điểm kiểm tra (Đã bỏ GV & Trợ giảng) */}
           <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
-            {/* GV */}
-            <span className="text-muted-foreground">GV:</span>
-            <PersonnelHoverCard
-              person={{
-                id: 'EMP-HTM',
-                name: session.teacher || 'Hoàng Thị Mai',
-                role: 'Giáo viên chính',
-                phone: '0901234567',
-                email: 'hongthmai@rinoedu.com',
-                avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangThiMai',
-              }}
-              align="start"
-            >
-              <span className="font-normal text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer transition-colors">
-                {session.teacher || 'Hoàng Thị Mai'}
-              </span>
-            </PersonnelHoverCard>
-
-            {/* Trợ giảng: Chỉ hiển thị khi buổi đó CÓ trợ giảng, không sinh dòng, chỉ mở Popover */}
-            {session.assistant && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-0.5 text-xs font-semibold px-1 py-0.5 rounded border border-sky-200 hover:bg-sky-100 bg-sky-50/80 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900 transition-colors cursor-pointer select-none ml-0.5"
-                    title={`Trợ giảng: ${session.assistant.name}`}
-                  >
-                    <span>+1</span>
-                    <ChevronDown className="h-3 w-3 stroke-[2.5]" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  side="bottom"
-                  className="w-64 p-3 space-y-2.5 text-xs z-50 shadow-md border bg-popover text-popover-foreground rounded-xl"
-                >
-                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
-                    <span className="font-bold text-foreground text-xs">Trợ giảng buổi học</span>
-                    <span className="text-[10.5px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-200/60">
-                      Trợ giảng
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <AppAvatar
-                      src={session.assistant.avatar}
-                      name={session.assistant.name}
-                      size="sm"
-                      className="h-9 w-9 border border-primary/10 shrink-0"
-                    />
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <p className="font-bold text-xs text-foreground truncate">{session.assistant.name}</p>
-                      <p className="text-[10.5px] text-muted-foreground truncate">{session.assistant.role}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
-                    {session.assistant.phone && (
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Số điện thoại:</span>
-                        <span className="font-mono font-bold text-foreground">{session.assistant.phone}</span>
-                      </div>
-                    )}
-                    {session.assistant.email && (
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Email:</span>
-                        <span className="font-medium text-foreground truncate max-w-[140px]" title={session.assistant.email}>
-                          {session.assistant.email}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-
-            <span className="text-border/60">•</span>
-
             {/* Status Điểm danh (Rõ ràng: Vắng không phép, Vắng có phép, Đến muộn, Đã đến) */}
             {renderAttendanceBadge(session)}
 
@@ -384,26 +381,6 @@ export function CareSessionTimelineList({
 
   return (
     <div className="space-y-4">
-      {/* Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN) - Đặt bên ngoài, phía trên Nhật ký */}
-      {notices.length > 0 && (
-        <div className="rounded-xl border border-amber-300/80 dark:border-amber-800/70 bg-amber-50/75 dark:bg-amber-950/40 px-3 py-2 text-xs text-left animate-in fade-in-50 duration-200">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0 text-amber-950 dark:text-amber-100 text-xs leading-relaxed">
-              <span className="font-bold text-amber-800 dark:text-amber-300 mr-1.5">
-                Lưu ý:
-              </span>
-              {notices.map((notice, idx) => (
-                <span key={notice.id} className="inline">
-                  {notice.text}
-                  {idx < notices.length - 1 ? ' ' : ''}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Card Section 1: Nhật ký Buổi học */}
       <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden">
         {/* Streamlined Header with soft background tint */}
@@ -415,6 +392,31 @@ export function CareSessionTimelineList({
             30 ngày gần nhất
           </span>
         </div>
+
+        {/* Lưu ý phát sinh: Đặt trong Nhật ký buổi học, TRÊN Smartcard thống kê, hiển thị trên cùng 1 dòng, xóa chữ 'Vấn đề:', viết tắt 'HĐ:' */}
+        {notices.length > 0 && (
+          <div className="space-y-1.5 pt-0.5 pb-1 select-none">
+            {notices.map((notice) => (
+              <div
+                key={notice.id}
+                className="flex items-start gap-2 text-xs py-0.5 leading-relaxed"
+              >
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <span className="text-amber-800 dark:text-amber-300 font-medium">
+                    {notice.issue}
+                  </span>{' '}
+                  <span className="font-semibold text-foreground">
+                    HĐ:
+                  </span>{' '}
+                  <span className="text-muted-foreground">
+                    {notice.action}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
         {smartCards && <div className="mb-2">{smartCards}</div>}
@@ -509,7 +511,7 @@ export function CareSessionTimelineList({
         {/* Completed Regular Lessons */}
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
-            <div className="text-xs font-normal text-muted-foreground">
+            <div className="text-xs font-bold text-foreground">
               <span>Các buổi học chính ({regularCompletedSessions.length})</span>
             </div>
             <div className="space-y-2">

@@ -22,9 +22,12 @@ import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
 import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
-import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
+import { LeaveReserveCreateDialog } from '@/components/screens/leave-reserve/LeaveReserveCreateDialog'
+import { formatDateISO } from '@/components/screens/leave-reserve/leaveReserveHelpers'
+import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 import { CareJourneyModal } from './CareJourneyModal'
 import { StudentDetailDialog } from '../students/detail/StudentDetailDialog'
+import { StudentCareEarlyReturnDialog } from './StudentCareEarlyReturnDialog'
 import {
   getCareTopicsForStudent,
   getSimulatedLogs,
@@ -64,6 +67,33 @@ export function StudentCareDetailPage({
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
   const [showCodes, setShowCodes] = useState(false)
+  const [isCreateLeaveReserveOpen, setIsCreateLeaveReserveOpen] = useState(false)
+  const [createLeaveReserveType, setCreateLeaveReserveType] = useState<'off' | 'reservation'>('off')
+  const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+
+  const handleOpenCreateLeaveReserve = (type: 'off' | 'reservation') => {
+    setCreateLeaveReserveType(type)
+    setIsCreateLeaveReserveOpen(true)
+  }
+
+  const handleCreateLeaveReserveSubmit = (newReq: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => {
+    const idPrefix = newReq.type === 'off' ? 'NP' : 'BL'
+    const newId = `${idPrefix}${String(mockLeaveReserveRequests.length + 1).padStart(3, '0')}`
+    const createdRequest: LeaveReserveRequest = {
+      ...newReq,
+      id: newId,
+      status: 'pending',
+      requestedDate: formatDateISO(new Date()),
+    }
+    mockLeaveReserveRequests.unshift(createdRequest)
+    setIsCreateLeaveReserveOpen(false)
+    toast.success(
+      `Tạo ${newReq.type === 'off' ? 'đơn xin nghỉ phép' : 'đơn bảo lưu'} thành công (${newId})!`,
+      {
+        description: `Học viên: ${newReq.studentName} • Bắt đầu: ${newReq.startDate}`,
+      }
+    )
+  }
 
   // Find student in care alerts
   const student = useMemo(() => {
@@ -396,28 +426,30 @@ export function StudentCareDetailPage({
 
                 {/* Right side info next to avatar */}
                 <div className="min-w-0 space-y-1 flex-1">
-                  {/* Row: Tên học viên + Nút Mã ID sát cạnh phải */}
+                  {/* Row: Tên học viên + Nút Nghỉ phép, Bảo lưu, Mã ID */}
                   <div className="flex items-center justify-between gap-2 leading-tight flex-nowrap min-w-0">
                     <span className="text-base font-bold text-foreground truncate">
                       {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
                     </span>
 
-                    {/* Toggle Icon Button Mở rộng Mã ID sát cạnh phải */}
-                    <button
-                      type="button"
-                      onClick={() => setShowCodes((prev) => !prev)}
-                      className={cn(
-                        "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 py-0.5 px-1.5 rounded-md hover:bg-muted/80 whitespace-nowrap ml-auto",
-                        showCodes
-                          ? "text-primary font-bold bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground font-medium"
-                      )}
-                      title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>Mã ID</span>
-                      <ChevronDown className={cn("h-3 w-3 shrink-0 transition-transform duration-200", showCodes && "rotate-180")} />
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto flex-wrap sm:flex-nowrap">
+                      {/* Toggle Icon Button Mở rộng Mã ID */}
+                      <button
+                        type="button"
+                        onClick={() => setShowCodes((prev) => !prev)}
+                        className={cn(
+                          "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 h-6.5 px-2 rounded-md hover:bg-muted/80 whitespace-nowrap border border-border/60",
+                          showCodes
+                            ? "text-primary font-bold bg-primary/10 border-primary/30"
+                            : "text-muted-foreground hover:text-foreground font-medium"
+                        )}
+                        title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span>Mã ID</span>
+                        <ChevronDown className={cn("h-3 w-3 shrink-0 transition-transform duration-200", showCodes && "rotate-180")} />
+                      </button>
+                    </div>
                   </div>
 
                   <StudentCareHeaderClusterInfo
@@ -501,6 +533,7 @@ export function StudentCareDetailPage({
                 branchName="RinoEdu Nguyễn Tuân"
                 studentAlert={student}
                 onOpenLeaveReserveDialog={() => setIsLeaveReserveOpen(true)}
+                onCreateLeaveReserve={handleOpenCreateLeaveReserve}
               />
             </div>
           </main>
@@ -539,6 +572,35 @@ export function StudentCareDetailPage({
           readOnly={true}
         />
       )}
+
+      {/* Modal Tạo đơn bảo lưu / Nghỉ phép */}
+      <LeaveReserveCreateDialog
+        open={isCreateLeaveReserveOpen}
+        onOpenChange={setIsCreateLeaveReserveOpen}
+        initialType={createLeaveReserveType}
+        initialStudentId={student?.studentId}
+        onSubmit={handleCreateLeaveReserveSubmit}
+      />
+
+      {/* Modal Đi học lại (khi đang bảo lưu) */}
+      <StudentCareEarlyReturnDialog
+        open={isEarlyReturnOpen}
+        onOpenChange={setIsEarlyReturnOpen}
+        studentName={student?.studentName || ''}
+        studentCode={student?.customerCode || student?.studentId || ''}
+        studentId={student?.studentId}
+        packageName={student ? `${student.subject} - ${student.level}` : 'Khóa học'}
+        className={student?.classCode || 'Lớp học'}
+        classCode={student?.classCode || 'LD_TOAN_00010'}
+        isHoldingClass={Boolean(student?.classCode && student.classCode !== '-')}
+        expectedReturnDate={student?.expectedEndDate || '16/09/2026'}
+        remainingSessions={student?.remainingSessions ?? 22}
+        branchName="RinoEdu Nguyễn Tuân"
+        onSuccess={() => {
+          setIsEarlyReturnOpen(false)
+          toast.success(`Học viên ${student?.studentName} đã quay lại học thành công!`)
+        }}
+      />
 
       <CareJourneyModal
         isOpen={isRoadmapOpen}

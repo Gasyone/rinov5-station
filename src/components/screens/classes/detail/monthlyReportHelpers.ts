@@ -214,3 +214,51 @@ Học phát âm: Aa với apple; Bb với banana; Cc với cat; Dd với dog
 Tham gia hoạt động CLIL: nhận biết âm nhạc & vận động đếm số (1-10)
 Làm mini project: vẽ cây gia đình và làm con vật bằng giấy.`
 }
+
+export interface DetailedMonthlyReportForm {
+  monthPeriod: string
+  awardBadge: string
+  teacherName: string
+  sectionAContent: string
+  sectionA1Content: string
+  sectionA2Content: string
+  sectionB1Content: string
+  sectionB2StartLesson: number
+  sectionB2EndLesson: number
+  sectionB2Weeks: WeekReviewItem[]
+  sectionB2Content: string
+}
+
+export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
+  monthPeriod: '01/04/2026 đến 30/04/2026',
+  awardBadge: 'CHIẾN BINH BỨT PHÁ',
+  teacherName: 'Ms.Chloe',
+  sectionAContent: '',
+  sectionA1Content: '',
+  sectionA2Content: '',
+  sectionB1Content: getAiSynthesizedNextMonthPlan(8, 10),
+  sectionB2StartLesson: 8,
+  sectionB2EndLesson: 10,
+  sectionB2Weeks: DEFAULT_SECTION_B2_WEEKS,
+  sectionB2Content: getReviewContentForRange(8, 10),
+}
+
+export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
+  monthPeriod: '01/04/2026 đến 30/04/2026',
+  awardBadge: 'CHIẾN BINH BỨT PHÁ',
+  teacherName: 'Ms.Chloe',
+  sectionAContent: '',
+  sectionA1Content: '',
+  sectionA2Content: '',
+  sectionB1Content: '',
+  sectionB2StartLesson: 8,
+  sectionB2EndLesson: 10,
+  sectionB2Weeks: [
+    { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
+    { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
+    { weekNum: 3, title: 'Tuần 3', content: '', docLink: '', thumbnailUrl: '' },
+    { weekNum: 4, title: 'Tuần 4', content: '', docLink: '', thumbnailUrl: '' },
+  ],
+  sectionB2Content: '',
+}
+

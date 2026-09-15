@@ -13,6 +13,12 @@ import {
   X,
   Calendar,
   MapPin,
+  CalendarOff,
+  Snowflake,
+  PlayCircle,
+  ArrowRightLeft,
+  LogOut,
+  Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AppAvatar } from './AppAvatar'
@@ -32,6 +38,7 @@ export interface StudentHeaderInfoCardProps {
   status?: string
   statusKey?: string
   statusLabel?: string
+  showStatus?: boolean
   birthDate?: string
   gender?: string
   address?: string
@@ -42,6 +49,15 @@ export interface StudentHeaderInfoCardProps {
   parents?: ParentMemberInfo[]
   onOpenRoadmap?: () => void
   className?: string
+  onLeave?: () => void
+  onReserve?: () => void
+  onResume?: () => void
+  onTransfer?: () => void
+  onDrop?: () => void
+  onAssignClass?: () => void
+  isReserved?: boolean
+  isWaitingForAssignment?: boolean
+  showActions?: boolean
 }
 
 export function StudentHeaderInfoCard({
@@ -49,9 +65,10 @@ export function StudentHeaderInfoCard({
   studentName,
   englishName = '',
   onSaveEnglishName,
-  status = 'Đang học',
+  status,
   statusKey,
   statusLabel,
+  showStatus = false,
   birthDate = '15/03/2005',
   gender = 'Nam',
   address = 'Số 49 Nguyễn Tuân, Nam Từ Liêm, Hà Nội',
@@ -59,8 +76,17 @@ export function StudentHeaderInfoCard({
   uid = '111185',
   sid = '193060',
   initialNote = 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
-  parents,
+  parents = [],
   className,
+  onLeave,
+  onReserve,
+  onResume,
+  onTransfer,
+  onDrop,
+  onAssignClass,
+  isReserved = false,
+  isWaitingForAssignment = false,
+  showActions = false,
 }: StudentHeaderInfoCardProps) {
   // English Name state
   const [currentEnglishName, setCurrentEnglishName] = useState(englishName)
@@ -249,11 +275,110 @@ export function StudentHeaderInfoCard({
               <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", showCodes && "rotate-180")} />
             </button>
 
-            <StatusBadge
-              status={statusKey || status}
-              label={statusLabel || (status.includes('_') ? undefined : status)}
-              className="text-xs font-bold py-0.5 px-2.5 shadow-none"
-            />
+            {showStatus && (statusKey || status) ? (
+              <StatusBadge
+                status={statusKey || status || ''}
+                label={statusLabel || (status?.includes('_') ? undefined : status)}
+                className="text-xs font-bold py-0.5 px-2.5 shadow-none"
+              />
+            ) : null}
+
+            {/* Action buttons:
+                - Case 1: ĐANG BẢO LƯU -> Chỉ hiển thị duy nhất [Đi học lại]
+                - Case 2: CHỜ GHÉP LỚP -> Ẩn toàn bộ (Bảo lưu, Nghỉ phép, Thoát lớp, Chuyển lớp), chỉ hiển thị [Ghép lớp]
+                - Case 3: ĐANG HỌC -> Hiển thị đủ 4 nút [Nghỉ phép], [Bảo lưu], [Chuyển lớp], [Thoát lớp]
+            */}
+            {(onLeave || onReserve || onResume || onTransfer || onDrop || onAssignClass || showActions) && (
+              <div className="flex items-center gap-1.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap">
+                {isReserved ? (
+                  onResume && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={onResume}
+                      className="h-6.5 px-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/60 hover:bg-emerald-100 dark:bg-emerald-950/30 cursor-pointer shadow-3xs"
+                      title="Hoàn tất thủ tục và cho học viên đi học lại"
+                    >
+                      <PlayCircle className="h-3 w-3 mr-1 text-emerald-600 dark:text-emerald-400" />
+                      <span>Đi học lại</span>
+                    </Button>
+                  )
+                ) : isWaitingForAssignment ? (
+                  onAssignClass && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={onAssignClass}
+                      className="h-6.5 px-2.5 text-xs font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800 bg-indigo-50/60 hover:bg-indigo-100 dark:bg-indigo-950/30 cursor-pointer shadow-3xs"
+                      title="Ghép lớp cho học viên"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      <span>Ghép lớp</span>
+                    </Button>
+                  )
+                ) : (
+                  <>
+                    {onLeave && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onLeave}
+                        className="h-6.5 px-2 text-xs font-semibold text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800/80 bg-amber-50/60 hover:bg-amber-100 dark:bg-amber-950/30 cursor-pointer shadow-3xs"
+                        title="Tạo đơn xin nghỉ học cho học viên"
+                      >
+                        <CalendarOff className="h-3 w-3 mr-1" />
+                        <span>Nghỉ phép</span>
+                      </Button>
+                    )}
+
+                    {onReserve && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onReserve}
+                        className="h-6.5 px-2 text-xs font-semibold text-sky-700 dark:text-sky-400 border-sky-300 dark:border-sky-800/80 bg-sky-50/60 hover:bg-sky-100 dark:bg-sky-950/30 cursor-pointer shadow-3xs"
+                        title="Tạo đơn bảo lưu học tập cho học viên"
+                      >
+                        <Snowflake className="h-3 w-3 mr-1" />
+                        <span>Bảo lưu</span>
+                      </Button>
+                    )}
+
+                    {onTransfer && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onTransfer}
+                        className="h-6.5 px-2 text-xs font-semibold text-indigo-700 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800/80 bg-indigo-50/60 hover:bg-indigo-100 dark:bg-indigo-950/30 cursor-pointer shadow-3xs"
+                        title="Chuyển lớp cho học viên"
+                      >
+                        <ArrowRightLeft className="h-3 w-3 mr-1" />
+                        <span>Chuyển lớp</span>
+                      </Button>
+                    )}
+
+                    {onDrop && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onDrop}
+                        className="h-6.5 px-2 text-xs font-semibold text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800/80 bg-rose-50/60 hover:bg-rose-100 dark:bg-rose-950/30 cursor-pointer shadow-3xs"
+                        title="Xác nhận cho học viên thoát khỏi lớp"
+                      >
+                        <LogOut className="h-3 w-3 mr-1" />
+                        <span>Thoát lớp</span>
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Row Codes CID, UID, SID (khi mở rộng) */}

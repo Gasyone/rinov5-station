@@ -1,81 +1,57 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { BookOpen, Plus, ArrowLeftRight } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Plus,
+  ArrowLeftRight,
+  ArrowRightLeft,
+  History,
+  Snowflake,
+  UserX,
+  FileText,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/shared'
+import { ConfirmDialog, StatusBadge } from '@/components/shared'
 import type { EnrolledClass } from '@/mocks/students'
 import { ClassesDetailDialog } from '@/components/screens/classes/detail/ClassesDetailDialog'
 import { mockClassRecords, type ClassRecord } from '@/mocks/classRecords'
+import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
+import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 import { toast } from 'sonner'
-import type { StudentPackage } from './studentDetailTypes'
-import { StudentClassAssignmentDialog } from './StudentClassAssignmentDialog'
+import type { StudentProgram } from './studentDetailTypes'
 import { StudentDetailClassCard } from './StudentDetailClassCard'
 import { StudentDetailRecommendedClasses } from './StudentDetailRecommendedClasses'
 
 export interface StudentDetailClassesProps {
-  classes: EnrolledClass[]
-  packages: StudentPackage[]
-  selectedPackageId: string
+  program: StudentProgram
   studentName: string
-  studentCode: string
+  studentCode?: string
   studentBranch: string
   studentLevel?: string
-  hideSectionHeader?: boolean
-  onConfirmAssignment: (pkgId: string, classItem: { id: string; name: string; startSession?: string }) => void
   onChangeClassStatus: (classCode: string, newStatus: EnrolledClass['status']) => void
-  onRegisterAssignHandler?: (handler: (pkg: StudentPackage) => void) => void
+  onOpenAssignClass: () => void
+  onDirectAssign?: (classItem: { id: string; name: string; startSession?: string }) => void
 }
 
 export function StudentDetailClasses({
-  classes,
-  packages,
-  selectedPackageId,
+  program,
   studentName,
   studentCode,
   studentBranch,
   studentLevel,
-  hideSectionHeader = false,
-  onConfirmAssignment,
   onChangeClassStatus,
-  onRegisterAssignHandler,
+  onOpenAssignClass,
+  onDirectAssign,
 }: StudentDetailClassesProps) {
   const [selectedClassRecord, setSelectedClassRecord] = useState<ClassRecord | null>(null)
   const [isClassDetailOpen, setIsClassDetailOpen] = useState(false)
   const [initialTabForDetail, setInitialTabForDetail] = useState<string>('schedule')
 
-  // Dialog State: Class Assignment
-  const [assignOpen, setAssignOpen] = useState(false)
-  const [selectedPkgToAssign, setSelectedPkgToAssign] = useState<StudentPackage | null>(null)
-
+  // Modals for Actions
   const [confirmDropOpen, setConfirmDropOpen] = useState(false)
-  const [selectedClassToManage, setSelectedClassToManage] = useState<EnrolledClass | null>(null)
-
-  const handleOpenAssignClass = (pkg: StudentPackage) => {
-    setSelectedPkgToAssign(pkg)
-    setAssignOpen(true)
-  }
-
-  // Register handler with parent for external trigger
-  useEffect(() => {
-    if (onRegisterAssignHandler) {
-      onRegisterAssignHandler(handleOpenAssignClass)
-    }
-  }, [onRegisterAssignHandler])
-
-  const handleConfirmAssignment = (classItem: { id: string; name: string; startSession?: string }) => {
-    if (!selectedPkgToAssign) return
-    onConfirmAssignment(selectedPkgToAssign.id, classItem)
-    setAssignOpen(false)
-    setSelectedPkgToAssign(null)
-  }
-
-  const currentPackage = useMemo(() => {
-    if (selectedPackageId === 'all') {
-      return packages.find((p) => p.status === 'active' && p.remainingSessions > 0) || packages[0] || null
-    }
-    return packages.find((p) => p.id === selectedPackageId) || null
-  }, [packages, selectedPackageId])
+  const [confirmReserveOpen, setConfirmReserveOpen] = useState(false)
+  const [isLeaveReserveOpen, setIsLeaveReserveOpen] = useState(false)
+  const [selectedLeaveRequest, setSelectedLeaveRequest] = useState<LeaveReserveRequest | null>(null)
 
   const handleSelectClassRecord = (record: ClassRecord, tab: string = 'schedule') => {
     setSelectedClassRecord(record)
@@ -83,162 +59,282 @@ export function StudentDetailClasses({
     setIsClassDetailOpen(true)
   }
 
-  // Sort classes: Active / waiting / pending transfer first, dropped last
-  const sortedClasses = useMemo(() => {
-    if (!classes) return []
-    const statusPriority: Record<string, number> = {
-      active: 1,
-      wait_for_assignment: 2,
-      pending_transfer: 3,
-      dropped: 4,
-      session_ended: 5,
-    }
-    return [...classes].sort((a, b) => {
-      const prioA = statusPriority[a.status] || 99
-      const prioB = statusPriority[b.status] || 99
-      return prioA - prioB
-    })
-  }, [classes])
+  // Recommended classes suitable for this program
+  const currentClassCodes = new Set([
+    program.currentClass?.classCode?.toLowerCase(),
+    ...program.pastClasses.map((c) => c.classCode.toLowerCase()),
+  ].filter(Boolean))
 
-  // Check if current package / student is unassigned or has no active class
-  const showRecommendedSection = useMemo(() => {
-    if (!sortedClasses || sortedClasses.length === 0) return true
-    const activeOrPending = sortedClasses.some(
-      (c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer'
+  const recommendedClasses = mockClassRecords
+    .filter(
+      (c) =>
+        !currentClassCodes.has(c.code.toLowerCase()) &&
+        (c.status === 'mo_chieu_sinh' || c.status === 'cho_khai_giang' || c.status === 'dang_hoc')
     )
-    if (!activeOrPending) return true
-    if (currentPackage && !currentPackage.linkedClassCode) return true
-    return false
-  }, [sortedClasses, currentPackage])
+    .slice(0, 3)
 
-  // Suitable matching recommended classes
-  const recommendedClasses = useMemo(() => {
-    const assignedCodes = new Set(sortedClasses.map((c) => c.classCode.toLowerCase()))
-    return mockClassRecords
-      .filter(
-        (c) =>
-          !assignedCodes.has(c.code.toLowerCase()) &&
-          (c.status === 'mo_chieu_sinh' || c.status === 'cho_khai_giang' || c.status === 'dang_hoc')
-      )
-      .slice(0, 3)
-  }, [sortedClasses])
+  const primaryPackage = program.packages.find((p) => p.remainingSessions > 0) || program.packages[0] || null
+
+  const currentClassRecord = program.currentClass
+    ? mockClassRecords.find((c) => c.code.toLowerCase() === program.currentClass?.classCode.toLowerCase()) || null
+    : null
 
   return (
-    <div className="w-full space-y-3 pt-0">
-      {/* Section Header: Lớp học + Nút thao tác nghiệp vụ (Chuyển lớp, Nghỉ, Ghép lớp) */}
-      {!hideSectionHeader && (
-        <div className="pb-1 mb-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5 text-primary" />
-            <span className="font-bold text-xs text-primary">Lớp học</span>
+    <div className="w-full space-y-5 pt-1">
+      {/* ========================================================
+          PHẦN 1: LỚP HIỆN TẠI (Theo trạng thái của chương trình)
+         ======================================================== */}
+      <section className="space-y-2.5">
+
+        {/* --- CASE A: CHƯA GHÉP LỚP (Theo chuẩn màn Chăm sóc) --- */}
+        {program.programStatus === 'wait_for_assignment' && (
+          <div className="space-y-3">
+            <div className="p-3.5 rounded-xl border border-indigo-200/80 bg-indigo-50/40 dark:bg-indigo-950/20 dark:border-indigo-900/40 select-none animate-in fade-in-50 duration-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-3">
+                <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+                  <UserX className="h-5 w-5" />
+                </span>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-indigo-900 dark:text-indigo-300 text-xs sm:text-sm">
+                      Học viên chưa ghép lớp
+                    </span>
+                    <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <span>
+                      Gói đăng ký: <strong className="font-semibold text-foreground">{primaryPackage?.packageName || program.packages[0]?.packageName || 'Gói Tiêu Chuẩn'}</strong>
+                    </span>
+                    <span className="text-border">•</span>
+                    <span>
+                      Số buổi khả dụng: <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{program.remainingSessions} buổi</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                onClick={onOpenAssignClass}
+                className="shrink-0 h-8 px-3.5 text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Ghép lớp ngay</span>
+              </Button>
+            </div>
+
+            {/* Recommended classes list */}
+            <StudentDetailRecommendedClasses
+              recommendedClasses={recommendedClasses}
+              currentPackage={primaryPackage}
+              packages={program.packages}
+              onSelectClassRecord={handleSelectClassRecord}
+              onOpenAssignClass={onOpenAssignClass}
+              onDirectAssign={onDirectAssign}
+            />
           </div>
+        )}
 
-          <div className="flex items-center gap-2">
-            {(() => {
-              const activeClass = sortedClasses.find(
-                (c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer'
-              )
-              if (activeClass) {
-                const activeLinkedPkg =
-                  packages.find(
-                    (p) => p.linkedClassCode === activeClass.classCode || p.id === activeClass.packageId
-                  ) || currentPackage
+        {/* --- CASE B: CHUYỂN LỚP / THOÁT LỚP (Theo chuẩn màn Chăm sóc) --- */}
+        {program.programStatus === 'dropped' && (
+          <div className="space-y-3">
+            <div className="p-3.5 rounded-xl border border-sky-200/80 bg-sky-50/40 dark:bg-sky-950/20 dark:border-sky-900/40 select-none animate-in fade-in-50 duration-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-3">
+                <span className="p-2 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0">
+                  <ArrowRightLeft className="h-5 w-5" />
+                </span>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sky-900 dark:text-sky-300 text-xs sm:text-sm">
+                      Tiến trình chuyển lớp đang diễn ra
+                    </span>
+                    <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    <span>
+                      Lớp nguồn: <strong className="font-semibold text-foreground">{program.transferInfo?.sourceClass || program.droppedClassInfo?.classCode || 'Lớp cũ'}</strong>
+                    </span>
+                    <span className="text-sky-500">➔</span>
+                    <span>
+                      Lớp đích: <strong className="font-semibold text-foreground">{program.transferInfo?.targetClass || 'Chưa ghép lớp'}</strong>
+                    </span>
+                    <span className="text-border">•</span>
+                    <span>
+                      Số buổi kết chuyển: <strong className="font-semibold text-sky-600 dark:text-sky-400">{program.remainingSessions} buổi</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-                return (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      className="text-xs h-7 px-2.5 flex items-center gap-1 border-primary/20 hover:border-primary text-primary hover:bg-primary/5 cursor-pointer font-semibold shadow-2xs"
-                      onClick={() => {
-                        if (activeLinkedPkg) handleOpenAssignClass(activeLinkedPkg)
-                      }}
-                      title="Đổi sang lớp học khác"
-                    >
-                      <ArrowLeftRight className="h-3 w-3" /> Chuyển lớp
-                    </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={onOpenAssignClass}
+                className="shrink-0 h-8 px-3.5 text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Chọn lớp đích / Ghép lớp</span>
+              </Button>
+            </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="xs"
-                      className="text-xs h-7 px-2.5 flex items-center gap-1 text-destructive hover:text-destructive border-destructive/20 hover:border-destructive hover:bg-destructive/5 cursor-pointer font-semibold shadow-2xs"
-                      onClick={() => {
-                        setSelectedClassToManage(activeClass)
-                        setConfirmDropOpen(true)
-                      }}
-                      title="Duyệt thoát khỏi lớp này"
-                    >
-                      Nghỉ
-                    </Button>
-                  </>
-                )
-              } else if (currentPackage && currentPackage.remainingSessions > 0) {
-                return (
+            {/* Recommended classes list */}
+            <StudentDetailRecommendedClasses
+              recommendedClasses={recommendedClasses}
+              currentPackage={primaryPackage}
+              packages={program.packages}
+              onSelectClassRecord={handleSelectClassRecord}
+              onOpenAssignClass={onOpenAssignClass}
+              onDirectAssign={onDirectAssign}
+            />
+          </div>
+        )}
+
+        {/* --- CASE C: BẢO LƯU (Theo chuẩn màn Chăm sóc) --- */}
+        {program.programStatus === 'reserved' && (
+          <div className="space-y-3">
+            <div className="p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/40 dark:bg-amber-950/20 dark:border-amber-900/40 select-none animate-in fade-in-50 duration-200 text-left space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+                    <Snowflake className="h-4 w-4" />
+                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-amber-900 dark:text-amber-300 text-xs sm:text-sm">
+                      Khóa học đang bảo lưu
+                    </span>
+                    {program.reservedInfo?.isHoldingClass ? (
+                      <StatusBadge status="reserve" label="Bảo lưu giữ lớp" className="text-xs py-0 px-1.5" />
+                    ) : (
+                      <StatusBadge status="reserve" label="Bảo lưu" className="text-xs py-0 px-1.5" />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-muted-foreground">
+                    Ngày học lại dự kiến: <strong className="font-semibold text-foreground">{program.reservedInfo?.expiryDate || '16/09/2026'}</strong>
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-muted-foreground pt-1.5 border-t border-amber-200/60 dark:border-amber-900/40">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span>
+                    Thời gian: <strong className="font-semibold text-foreground">{program.reservedInfo?.startDate || '15/06/2026'} ➔ {program.reservedInfo?.endDate || '15/09/2026'}</strong> ({program.reservedInfo?.duration || '3 tháng'})
+                  </span>
+                  <span className="text-border">•</span>
+                  <span>
+                    Số buổi bảo lưu: <strong className="font-semibold text-amber-700 dark:text-amber-300">{program.reservedInfo?.reservedSessions || program.remainingSessions} buổi</strong>
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const req = mockLeaveReserveRequests.find(
+                        (r) => r.studentCode === studentCode || r.studentName.toLowerCase() === studentName.toLowerCase()
+                      ) || mockLeaveReserveRequests[0]
+                      setSelectedLeaveRequest(req)
+                      setIsLeaveReserveOpen(true)
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    <span>Xem đơn bảo lưu</span>
+                  </button>
+
                   <Button
                     type="button"
                     size="sm"
-                    className="whitespace-nowrap h-7 text-xs font-medium cursor-pointer"
-                    onClick={() => handleOpenAssignClass(currentPackage)}
+                    variant="outline"
+                    onClick={onOpenAssignClass}
+                    className="h-7 px-3 text-xs font-semibold border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer shadow-3xs"
                   >
-                    <Plus className="h-3.5 w-3.5 mr-1 inline-block" /> Ghép lớp
+                    <ArrowLeftRight className="h-3.5 w-3.5 mr-1" />
+                    <span>Quay lại học / Ghép lớp</span>
                   </Button>
-                )
-              }
-              return null
-            })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Nếu bảo lưu giữ lớp: hiển thị thẻ lớp học bên dưới */}
+            {program.reservedInfo?.isHoldingClass && program.currentClass && (
+              <div className="space-y-1 pt-1">
+                <div className="text-xs font-semibold text-muted-foreground px-1">
+                  Thông tin lớp học đang được giữ chỗ:
+                </div>
+                <StudentDetailClassCard
+                  cls={program.currentClass}
+                  classRecord={currentClassRecord}
+                  studentLevel={studentLevel}
+                  studentBranch={studentBranch}
+                  onSelectClassRecord={handleSelectClassRecord}
+                  onTransferClass={onOpenAssignClass}
+                  onReserveClass={() => setConfirmReserveOpen(true)}
+                  onDropClass={() => setConfirmDropOpen(true)}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- CASE D: ĐANG HỌC --- */}
+        {program.programStatus === 'active' && program.currentClass && (
+          <StudentDetailClassCard
+            cls={program.currentClass}
+            classRecord={currentClassRecord}
+            studentLevel={studentLevel}
+            studentBranch={studentBranch}
+            onSelectClassRecord={handleSelectClassRecord}
+            onTransferClass={onOpenAssignClass}
+            onReserveClass={() => setConfirmReserveOpen(true)}
+            onDropClass={() => setConfirmDropOpen(true)}
+          />
+        )}
+      </section>
+
+      {/* ========================================================
+          PHẦN 2: LỊCH SỬ CÁC LỚP TRƯỚC ĐÓ
+         ======================================================== */}
+      <section className="space-y-2.5 pt-2 border-t border-border/40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-primary" />
+            <h3 className="font-bold text-sm text-foreground">Lịch sử các lớp trước đó</h3>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground">
+              {program.pastClasses.length}
+            </span>
           </div>
         </div>
-      )}
 
-      {/* Main content: Enrolled classes list or Empty placeholder */}
-      {!sortedClasses || sortedClasses.length === 0 ? (
-        <div className="space-y-3">
-          <div className="rounded-lg border border-dashed border-border/60 bg-transparent px-4 py-3.5 text-xs text-center text-muted-foreground flex items-center justify-center">
-            <span>Học viên chưa được ghép vào lớp học nào cho gói này.</span>
+        {program.pastClasses.length > 0 ? (
+          <div className="space-y-2.5">
+            {program.pastClasses.map((pastCls) => {
+              const pastRecord =
+                mockClassRecords.find(
+                  (c) => c.code.toLowerCase() === pastCls.classCode.toLowerCase()
+                ) || null
+
+              return (
+                <StudentDetailClassCard
+                  key={pastCls.classCode}
+                  cls={pastCls}
+                  classRecord={pastRecord}
+                  studentBranch={studentBranch}
+                  studentLevel={studentLevel}
+                  isPast
+                />
+              )
+            })}
           </div>
-          {showRecommendedSection && (
-            <StudentDetailRecommendedClasses
-              recommendedClasses={recommendedClasses}
-              currentPackage={currentPackage}
-              packages={packages}
-              onSelectClassRecord={handleSelectClassRecord}
-              onOpenAssignClass={handleOpenAssignClass}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="w-full space-y-4">
-          {sortedClasses.map((cls) => {
-            const classRecord =
-              mockClassRecords.find(
-                (c) => c.code.toLowerCase() === cls.classCode.toLowerCase()
-              ) || null
-
-            return (
-              <StudentDetailClassCard
-                key={cls.classCode}
-                cls={cls}
-                classRecord={classRecord}
-                studentLevel={studentLevel}
-                studentBranch={studentBranch}
-                onSelectClassRecord={handleSelectClassRecord}
-              />
-            )
-          })}
-
-          {showRecommendedSection && (
-            <StudentDetailRecommendedClasses
-              recommendedClasses={recommendedClasses}
-              currentPackage={currentPackage}
-              packages={packages}
-              onSelectClassRecord={handleSelectClassRecord}
-              onOpenAssignClass={handleOpenAssignClass}
-            />
-          )}
-        </div>
-      )}
+        ) : (
+          <div className="rounded-xl border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
+            Chưa có lịch sử lớp học trước đó cho chương trình này.
+          </div>
+        )}
+      </section>
 
       {/* Dialog: Chi tiết lớp học */}
       <ClassesDetailDialog
@@ -248,40 +344,49 @@ export function StudentDetailClasses({
         initialTab={initialTabForDetail}
       />
 
-      {/* Dialog: Chọn ghép/chuyển lớp học */}
-      {selectedPkgToAssign && (
-        <StudentClassAssignmentDialog
-          open={assignOpen}
-          onOpenChange={setAssignOpen}
-          studentName={studentName}
-          studentCode={studentCode}
-          studentBranch={studentBranch}
-          studentLevel={studentLevel}
-          packageName={selectedPkgToAssign.packageName}
-          pkgRemainingSessions={selectedPkgToAssign.remainingSessions}
-          studentClasses={classes}
-          currentClassCode={selectedPkgToAssign.linkedClassCode}
-          currentClassName={selectedPkgToAssign.linkedClassName}
-          onConfirm={handleConfirmAssignment}
-        />
-      )}
-
-      {/* Modal xác nhận Thôi học / Nghỉ lớp */}
+      {/* Modal xác nhận Thôi học / Thoát lớp */}
       <ConfirmDialog
         open={confirmDropOpen}
         onOpenChange={setConfirmDropOpen}
-        title="Xác nhận Thôi học / Rút khỏi lớp"
-        description={`Bạn có chắc chắn muốn duyệt cho học viên ${studentName} thôi học khỏi lớp "${selectedClassToManage?.className}"? Hành động này sẽ chuyển trạng thái của học viên thành Đã thoát lớp.`}
-        confirmLabel="Xác nhận Thôi học"
+        title="Xác nhận Thoát lớp / Rút khỏi lớp"
+        description={`Bạn có chắc chắn muốn duyệt cho học viên ${studentName} thoát khỏi lớp "${program.currentClass?.className}"? Trạng thái của học viên trong chương trình này sẽ chuyển thành Đã thoát lớp và số buổi còn lại sẽ được bảo lưu.`}
+        confirmLabel="Xác nhận Thoát lớp"
         variant="destructive"
         onConfirm={() => {
-          if (selectedClassToManage) {
-            onChangeClassStatus(selectedClassToManage.classCode, 'dropped')
-            toast.success(`Đã cập nhật trạng thái thôi học lớp ${selectedClassToManage.className}!`)
+          if (program.currentClass) {
+            onChangeClassStatus(program.currentClass.classCode, 'dropped')
+            toast.success(`Đã cập nhật trạng thái thôi học lớp ${program.currentClass.className}!`)
           }
           setConfirmDropOpen(false)
         }}
       />
+
+      {/* Modal xác nhận Bảo lưu */}
+      <ConfirmDialog
+        open={confirmReserveOpen}
+        onOpenChange={setConfirmReserveOpen}
+        title="Xác nhận Bảo lưu buổi học"
+        description={`Bạn có chắc chắn muốn xác nhận Bảo lưu chương trình "${program.name}" cho học viên ${studentName}? Lớp học hiện tại sẽ được tạm dừng và số buổi còn lại (${program.remainingSessions} buổi) được giữ lại.`}
+        confirmLabel="Xác nhận Bảo lưu"
+        variant="default"
+        onConfirm={() => {
+          if (program.currentClass) {
+            onChangeClassStatus(program.currentClass.classCode, 'paused')
+            toast.success(`Đã cập nhật trạng thái bảo lưu chương trình ${program.name}!`)
+          }
+          setConfirmReserveOpen(false)
+        }}
+      />
+
+      {/* Dialog: Xem đơn bảo lưu */}
+      {selectedLeaveRequest && (
+        <LeaveReserveDetailDialog
+          open={isLeaveReserveOpen}
+          onOpenChange={setIsLeaveReserveOpen}
+          request={selectedLeaveRequest}
+          readOnly={true}
+        />
+      )}
     </div>
   )
 }

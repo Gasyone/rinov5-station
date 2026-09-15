@@ -16,6 +16,7 @@ import {
   AGE_GROUP_OPTIONS,
   CUSTOMER_TYPE_OPTIONS,
   SALES_TEAM_OPTIONS,
+  FAILED_STATUS_OPTIONS,
 } from './crmLeadsTypes'
 
 export const SALES_STAFF_OPTIONS = [
@@ -315,20 +316,116 @@ export const isLeadOverdue = (l: Lead) => {
 export const isLeadUnassigned = (l: Lead) =>
   !isInactiveLeadStatus(l.status) && (!l.assignedTo || l.assignedTo.trim() === '' || l.assignedTo === 'Chưa phân bổ')
 
+export const isHenGoiLaiStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'hen_goi_lai') return true
+  const care = getLeadCareInfo(l)
+  if (care.isRescheduled) return true
+  if (l.subStatus && l.subStatus.toLowerCase().includes('hẹn gọi lại')) return true
+  return false
+}
+
+export const isDaDatTestStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'da_dat_test') return true
+  if (l.testStatus === 'scheduled') return true
+  if (l.subStatus && (l.subStatus.toLowerCase().includes('đặt lịch') || l.subStatus.toLowerCase().includes('hẹn test'))) return true
+  return false
+}
+
+export const isDaTestCoKqStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'da_test_co_kq') return true
+  if (l.testStatus === 'completed' && l.trialStatus !== 'scheduled' && l.trialStatus !== 'completed') return true
+  if (l.subStatus && (l.subStatus.toLowerCase().includes('đạt trình độ') || l.subStatus.toLowerCase().includes('đạt level') || l.subStatus.toLowerCase().includes('ra level') || l.subStatus.toLowerCase().includes('đã test'))) return true
+  return false
+}
+
+export const isHocThuStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'hoc_thu') return true
+  if (l.trialStatus === 'scheduled' || l.trialStatus === 'completed') return true
+  if (l.subStatus && l.subStatus.toLowerCase().includes('học thử')) return true
+  return false
+}
+
+export const isHenNopPhiStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'hen_nop_phi') return true
+  if (l.subStatus && (l.subStatus.toLowerCase().includes('nộp tiền mặt') || l.subStatus.toLowerCase().includes('giữ chỗ') || l.subStatus.toLowerCase().includes('chờ chuyển khoản'))) return true
+  return false
+}
+
+export const isDaCocStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'da_coc') return true
+  if (l.paymentTerm && l.paymentTerm.toLowerCase().includes('cọc')) return true
+  if (l.subStatus && l.subStatus.toLowerCase().includes('cọc')) return true
+  return false
+}
+
+export const isChoXepLopStatus = (l: Lead) => {
+  if (isInactiveLeadStatus(l.status)) return false
+  if (l.status === 'cho_xep_lop') return true
+  if (l.subStatus && (l.subStatus.toLowerCase().includes('xếp lớp') || l.subStatus.toLowerCase().includes('bàn giao'))) return true
+  return false
+}
+
+/**
+ * Ánh xạ trạng thái chi tiết sang trạng thái chính tương ứng khi chuyển mode
+ */
+export function mapSubStatusToMainStatus(status: string): string {
+  if (status === 'chua_phan_bo') return 'unassigned'
+  if (status === 'hen_goi_lai') return 'dang_tu_van'
+  if (status === 'da_dat_test' || status === 'da_test_co_kq' || status === 'hoc_thu') return 'hen_trai_nghiem'
+  if (status === 'hen_nop_phi' || status === 'da_coc') return 'cho_chot'
+  if (status === 'cho_xep_lop') return 'thuc_hien_don'
+  return status
+}
+
 export function calculateStatusTileCounts(leads: Lead[]) {
   const counts: Record<string, number> = {
     all: leads.length,
     today_tasks: leads.filter(isLeadTodayTask).length,
     overdue: leads.filter(isLeadOverdue).length,
     unassigned: leads.filter(isLeadUnassigned).length,
-    moi_tiep_nhan: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
+    chua_phan_bo: leads.filter((l) => isLeadUnassigned(l) || l.status === 'chua_phan_bo').length,
+    moi_tiep_nhan: leads.filter((l) => isMoiTiepNhanStatus(l.status) && !isLeadUnassigned(l)).length,
     dang_tu_van: leads.filter((l) => isDangTuVanStatus(l.status)).length,
-    hen_trai_nghiem: leads.filter((l) => isHenTraiNghiemStatus(l.status)).length,
-    cho_chot: leads.filter((l) => isChoChotStatus(l.status)).length,
+    hen_goi_lai: leads.filter(isHenGoiLaiStatus).length,
+    da_dat_test: leads.filter(isDaDatTestStatus).length,
+    da_test_co_kq: leads.filter(isDaTestCoKqStatus).length,
+    hoc_thu: leads.filter(isHocThuStatus).length,
+    hen_trai_nghiem: leads.filter((l) => isHenTraiNghiemStatus(l.status) || isDaDatTestStatus(l) || isDaTestCoKqStatus(l) || isHocThuStatus(l)).length,
+    cho_chot: leads.filter((l) => isChoChotStatus(l.status) || isHenNopPhiStatus(l) || isDaCocStatus(l)).length,
+    hen_nop_phi: leads.filter(isHenNopPhiStatus).length,
+    da_coc: leads.filter(isDaCocStatus).length,
     thuc_hien_don: leads.filter(isThucHienDonStatus).length,
+    cho_xep_lop: leads.filter((l) => isChoXepLopStatus(l) || isThucHienDonStatus(l)).length,
     chuyen_doi: leads.filter((l) => isChuyenDoiStatus(l.status)).length,
     that_bai: leads.filter((l) => isThatBaiStatus(l.status)).length,
     tam_dung: leads.filter((l) => isTamDungStatus(l.status)).length,
+    // Các cột bản cũ (chia cột như ảnh T0, T1, T2, T3)
+    so_sai: leads.filter((l) => l.subStatus?.toLowerCase().includes('sai') || (l.lastNote || '').toLowerCase().includes('sai')).length,
+    kho_chung: leads.filter((l) => l.poolId === 'pool-t' || isLeadUnassigned(l)).length,
+    kho_new: leads.filter((l) => l.poolId === 'pool-m').length,
+    kho_loc: leads.filter((l) => l.poolId === 'pool-c').length,
+    new: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
+    knm: leads.filter((l) => (l.lastNote || '').toLowerCase().includes('knm') || (l.lastNote || '').toLowerCase().includes('không nghe')).length,
+    gl: leads.filter(isHenGoiLaiStatus).length,
+    qt: leads.filter((l) => isDangTuVanStatus(l.status)).length,
+    tad: leads.filter(isDaDatTestStatus).length,
+    dtt: leads.filter(isDaTestCoKqStatus).length,
+    tlttt: leads.filter((l) => Boolean(l.testResultLevel || l.initialLevel)).length,
+    dentt: leads.filter((l) => isChoChotStatus(l.status) || isHenNopPhiStatus(l)).length,
+    dadentt: leads.filter((l) => l.testStatus === 'completed' || l.trialStatus === 'completed').length,
+    sdt: leads.filter((l) => (l.academicPerformance || '').includes('Xuất sắc') || (l.lastNote || '').includes('Hot') || l.status === 'tiem_nang').length,
+    dg: leads.filter((l) => (l.familySiblings && l.familySiblings.length > 0) || (l.lastNote || '').includes('Gộp')).length,
+    bank: leads.filter((l) => l.previousOrders?.some((o) => (o.paymentTerm || '').toLowerCase().includes('bank') || (o.paymentTerm || '').toLowerCase().includes('chuyển khoản')) || (l.lastNote || '').toLowerCase().includes('chuyển khoản')).length,
+    cod: leads.filter((l) => l.previousOrders?.some((o) => (o.paymentTerm || '').toLowerCase().includes('cod')) || (l.lastNote || '').toLowerCase().includes('cod')).length,
+    cgh: leads.filter((l) => l.orderStatus === 'pending_payment' || isThucHienDonStatus(l)).length,
+    dgnvc: leads.filter((l) => isThucHienDonStatus(l) && (l.lastNote || '').includes('NVC')).length,
+    dgh: leads.filter(isThucHienDonStatus).length,
     // Legacy aliases
     chua_tiep_can: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
     dang_cham_soc: leads.filter((l) => isDangTuVanStatus(l.status)).length,
@@ -735,7 +832,7 @@ export function filterLeadsWithAllCriteria({
     )
   }
 
-  // 11. Trạng thái vòng đời Lead
+  // 11. Trạng thái vòng đời Lead (Chỉ các chặng đang hoạt động)
   if (advancedFilters.statuses.length > 0) {
     result = result.filter((l) => {
       return advancedFilters.statuses.some((st) => {
@@ -745,12 +842,28 @@ export function filterLeadsWithAllCriteria({
         if (st === 'cho_chot') return isChoChotStatus(l.status)
         if (st === 'thuc_hien_don') return isThucHienDonStatus(l)
         if (st === 'chuyen_doi') return isChuyenDoiStatus(l.status)
-        if (st === 'that_bai') return isThatBaiStatus(l.status)
-        if (st === 'tam_dung') return isTamDungStatus(l.status)
         return l.status === st
       })
     })
-  } else {
+  }
+
+  // 12. Hồ sơ Thất bại & Dừng xử lý (Bộ lọc nâng cao)
+  if (advancedFilters.failedStatuses && advancedFilters.failedStatuses.length > 0) {
+    result = result.filter((l) => {
+      return advancedFilters.failedStatuses.some((st) => {
+        if (st === 'that_bai') return isThatBaiStatus(l.status)
+        if (st === 'tam_dung') return isTamDungStatus(l.status)
+        const note = (l.lastNote || '').toLowerCase()
+        if (st === 'fail_thua') return note.includes('đối thủ') || note.includes('thua')
+        if (st === 'fail_khong_nghe_may') return note.includes('không nghe') || note.includes('sai số')
+        if (st === 'fail_no_show') return l.testStatus === 'no_show' || l.trialStatus === 'no_show' || note.includes('no-show')
+        if (st === 'fail_phi_cao') return note.includes('học phí') || note.includes('giá cao')
+        if (st === 'fail_klp') return note.includes('làm phiền') || note.includes('dnc')
+        if (st === 'fail_huy') return note.includes('hủy') || (l.subStatus || '').toLowerCase().includes('hủy')
+        return false
+      })
+    })
+  } else if (!advancedFilters.statuses || advancedFilters.statuses.length === 0) {
     // Mặc định ở ngoài danh sách: Không hiển thị Lead Thất bại và Tạm dừng trừ khi có filter trạng thái
     result = result.filter((lead) => !isInactiveLeadStatus(lead.status))
   }
@@ -953,20 +1066,18 @@ export function buildCrmFilterGroups({
     })
   )
 
-  // 13. Nhóm Trạng thái vòng đời Lead
+  // 13. Nhóm Trạng thái Phễu tuyển sinh (Chỉ các chặng đang xử lý)
   groups.push(
     createFilterGroup({
       id: 'statuses',
-      title: 'Trạng thái Lead',
+      title: 'Trạng thái Phễu tuyển sinh',
       options: [
         { value: 'moi_tiep_nhan', label: 'Mới tiếp nhận' },
         { value: 'dang_tu_van', label: 'Đang tư vấn' },
-        { value: 'hen_trai_nghiem', label: 'Hẹn trải nghiệm' },
+        { value: 'hen_trai_nghiem', label: 'Đánh giá & Học thử' },
         { value: 'cho_chot', label: 'Chờ chốt deal' },
         { value: 'thuc_hien_don', label: 'Thực hiện đơn' },
         { value: 'chuyen_doi', label: 'Đã chuyển đổi' },
-        { value: 'that_bai', label: 'Thất bại' },
-        { value: 'tam_dung', label: 'Tạm dừng' },
       ],
       selectedValues: advancedFilters.statuses,
       getOptionCount: (val) =>
@@ -977,9 +1088,30 @@ export function buildCrmFilterGroups({
           if (val === 'cho_chot') return isChoChotStatus(l.status)
           if (val === 'thuc_hien_don') return isThucHienDonStatus(l)
           if (val === 'chuyen_doi') return isChuyenDoiStatus(l.status)
+          return l.status === val
+        }).length,
+    })
+  )
+
+  // 14. Nhóm Hồ sơ Thất bại & Dừng xử lý (Được tách riêng vào Lọc nâng cao)
+  groups.push(
+    createFilterGroup({
+      id: 'failedStatuses',
+      title: 'Hồ sơ Thất bại & Dừng chăm sóc',
+      options: FAILED_STATUS_OPTIONS,
+      selectedValues: advancedFilters.failedStatuses || [],
+      getOptionCount: (val) =>
+        baseLeads.filter((l) => {
           if (val === 'that_bai') return isThatBaiStatus(l.status)
           if (val === 'tam_dung') return isTamDungStatus(l.status)
-          return l.status === val
+          const note = (l.lastNote || '').toLowerCase()
+          if (val === 'fail_thua') return note.includes('đối thủ') || note.includes('thua')
+          if (val === 'fail_khong_nghe_may') return note.includes('không nghe') || note.includes('sai số')
+          if (val === 'fail_no_show') return l.testStatus === 'no_show' || l.trialStatus === 'no_show' || note.includes('no-show')
+          if (val === 'fail_phi_cao') return note.includes('học phí') || note.includes('giá cao')
+          if (val === 'fail_klp') return note.includes('làm phiền') || note.includes('dnc')
+          if (val === 'fail_huy') return note.includes('hủy') || (l.subStatus || '').toLowerCase().includes('hủy')
+          return false
         }).length,
     })
   )

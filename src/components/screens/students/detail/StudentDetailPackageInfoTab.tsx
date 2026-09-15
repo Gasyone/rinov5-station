@@ -1,28 +1,24 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Pencil,
-  ArrowLeftRight,
-  CheckCircle2,
-  HelpCircle,
-  XCircle,
   BookOpen,
-  Clock,
-  Calendar,
-  Package,
   Building,
-  UserCheck,
   FileText,
+  Layers,
+  History,
 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
-import { getStatusColors } from '@/lib/statusColors'
-import type { StudentPackage } from './studentDetailTypes'
-import type { EnrolledClass, Student } from '@/mocks/students'
-import { StudentDetailPackagesMoreMenu } from './StudentDetailPackagesMoreMenu'
+import type { StudentProgram, StudentPackage } from './studentDetailTypes'
+import type { Student } from '@/mocks/students'
 import { ChangeCSStaffPopover, AppAvatar } from '@/components/shared'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { StudentDetailSessionsDialog } from './StudentDetailSessionsDialog'
+import { toast } from 'sonner'
 
 const CSM_OPTIONS_BY_BRANCH: Record<string, string[]> = {
   'RinoEdu Nguyễn Tuân': ['CSM Quỳnh Anh', 'CSM Minh Phương', 'CSM Khánh Linh'],
@@ -30,24 +26,18 @@ const CSM_OPTIONS_BY_BRANCH: Record<string, string[]> = {
   'RinoEdu Cầu Giấy': ['CSM Hải Yến', 'CSM Thùy Trang'],
 }
 
-interface StudentDetailPackageInfoTabProps {
-  packagesList: StudentPackage[]
-  selectedPackageId: string
-  setSelectedPackageId: (id: string) => void
+export interface StudentDetailPackageInfoTabProps {
+  program: StudentProgram
   student: Student
-  activeClass: EnrolledClass | null
   onEditLevel: () => void
-  onEditSessions: () => void
+  onUpdateSessions?: (packageId: string, studiedSessions: number) => void
 }
 
 export function StudentDetailPackageInfoTab({
-  packagesList,
-  selectedPackageId,
-  setSelectedPackageId,
+  program,
   student,
-  activeClass,
   onEditLevel,
-  onEditSessions,
+  onUpdateSessions,
 }: StudentDetailPackageInfoTabProps) {
   const currentBranch = student.branch || 'RinoEdu Nguyễn Tuân'
   const csmOptions = useMemo(() => {
@@ -55,130 +45,94 @@ export function StudentDetailPackageInfoTab({
   }, [currentBranch])
 
   const [selectedCsm, setSelectedCsm] = useState<string>(() => csmOptions[0] || 'CSM Quỳnh Anh')
-  const getPackageIcon = (pkg: StudentPackage) => {
-    if (pkg.remainingSessions === 0) {
-      return <XCircle className={cn('h-3.5 w-3.5 shrink-0', getStatusColors('neutral').text)} />
-    }
-    if (pkg.linkedClassCode) {
-      return <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', getStatusColors('success').text)} />
-    }
-    return <HelpCircle className={cn('h-3.5 w-3.5 shrink-0', getStatusColors('warning').text)} />
-  }
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr
-    if (dateStr.includes('(')) return dateStr.split(' ')[0]
-    try {
-      const d = new Date(dateStr)
-      if (isNaN(d.getTime())) return dateStr
-      return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
-    } catch {
-      return dateStr
-    }
-  }
-
-  const { activePackages, expiredPackages } = useMemo(() => {
-    const active = packagesList.filter(
-      (p) =>
-        p.remainingSessions > 0 &&
-        p.status !== 'transferred' &&
-        p.status !== 'cancelled' &&
-        p.status !== 'suspended' &&
-        p.status !== 'reserved' &&
-        p.status !== 'expired'
-    )
-    const expired = packagesList.filter(
-      (p) =>
-        p.remainingSessions === 0 ||
-        p.status === 'transferred' ||
-        p.status === 'cancelled' ||
-        p.status === 'suspended' ||
-        p.status === 'reserved' ||
-        p.status === 'expired'
-    )
-    return { activePackages: active, expiredPackages: expired }
-  }, [packagesList])
-
-  const handleSelectPackage = (packageId: string) => {
-    setSelectedPackageId(selectedPackageId === packageId ? 'all' : packageId)
-  }
-
-  const startAndEndDates = useMemo(() => {
-    if (selectedPackageId !== 'all') {
-      const pkg = packagesList.find((p) => p.id === selectedPackageId)
-      return {
-        start: pkg?.purchaseDate ? formatDate(pkg.purchaseDate) : '—',
-        end: pkg?.endDate ? formatDate(pkg.endDate) : '—',
-      }
-    }
-    const activePkgs = packagesList.filter((p) => p.remainingSessions > 0)
-    if (activePkgs.length === 0) return { start: '—', end: '—' }
-
-    let earliestStart = new Date(activePkgs[0].purchaseDate)
-    let latestEnd = activePkgs[0].endDate ? new Date(activePkgs[0].endDate) : null
-
-    activePkgs.forEach((p) => {
-      const s = new Date(p.purchaseDate)
-      if (s < earliestStart) earliestStart = s
-      if (p.endDate) {
-        const e = new Date(p.endDate)
-        if (!latestEnd || e > latestEnd) latestEnd = e
-      }
-    })
-
-    return {
-      start: formatDate(earliestStart.toISOString().split('T')[0]),
-      end: latestEnd ? formatDate(latestEnd.toISOString().split('T')[0]) : '—',
-    }
-  }, [packagesList, selectedPackageId])
-
-  const sessionsSummary = useMemo(() => {
-    if (selectedPackageId !== 'all') {
-      const pkg = packagesList.find((p) => p.id === selectedPackageId)
-      if (!pkg) return { total: 0, remaining: 0, studied: 0 }
-      return {
-        total: pkg.totalSessions,
-        remaining: pkg.remainingSessions,
-        studied: pkg.totalSessions - pkg.remainingSessions,
-      }
-    }
-    const activePkgs = packagesList.filter((p) => p.remainingSessions > 0)
-    return activePkgs.reduce(
-      (acc, p) => {
-        acc.total += p.totalSessions
-        acc.remaining += p.remainingSessions
-        acc.studied += p.totalSessions - p.remainingSessions
-        return acc
-      },
-      { total: 0, remaining: 0, studied: 0 }
-    )
-  }, [packagesList, selectedPackageId])
-
-  const progressPercent = useMemo(() => {
-    if (sessionsSummary.total === 0) return 0
-    return Math.min(100, Math.round((sessionsSummary.studied / sessionsSummary.total) * 100))
-  }, [sessionsSummary])
-
-  const selectedPkg = useMemo(() => {
-    if (selectedPackageId === 'all') return null
-    return packagesList.find((p) => p.id === selectedPackageId) || null
-  }, [packagesList, selectedPackageId])
+  const [isEditSessionsOpen, setIsEditSessionsOpen] = useState(false)
 
   const isMathSubject = useMemo(() => {
-    if (student.subject === 'math') return true
-    const pkgName = selectedPkg?.packageName?.toLowerCase() || ''
-    const lvl = (activeClass?.level || student.level || '').toLowerCase()
-    return pkgName.includes('toán') || pkgName.includes('math') || lvl.includes('math') || lvl.includes('toán')
-  }, [student, selectedPkg, activeClass])
+    if (program.subject === 'math' || student.subject === 'math') return true
+    const name = program.name.toLowerCase()
+    return name.includes('toán') || name.includes('math')
+  }, [program, student])
+
+  const currentPackage = useMemo(() => {
+    if (!program.packages || program.packages.length === 0) return null
+    if (program.currentClass) {
+      const linked = program.packages.find((p) => p.linkedClassCode === program.currentClass?.classCode)
+      if (linked) return linked
+    }
+    const active = program.packages.find((p) => p.status === 'active' && p.remainingSessions > 0)
+    if (active) return active
+    const anyActive = program.packages.find((p) => p.status === 'active')
+    if (anyActive) return anyActive
+    return program.packages[0]
+  }, [program.packages, program.currentClass])
+
+  const [overrideStudied, setOverrideStudied] = useState<number | null>(null)
+
+  const totalSessionsCount = currentPackage ? currentPackage.totalSessions : (program.totalSessions || 96)
+  const baseStudiedSessions = currentPackage
+    ? Math.max(0, currentPackage.totalSessions - currentPackage.remainingSessions)
+    : (program.studiedSessions || 0)
+
+  const studiedSessionsCount = overrideStudied !== null ? overrideStudied : baseStudiedSessions
+  const remainingSessionsCount = Math.max(0, totalSessionsCount - studiedSessionsCount)
+
+  const handleSaveSessions = (newStudied: number) => {
+    setOverrideStudied(newStudied)
+    if (onUpdateSessions) {
+      const targetPkgId = currentPackage?.id || program.packages[0]?.id || 'pkg-1'
+      onUpdateSessions(targetPkgId, newStudied)
+    }
+    toast.success('Cập nhật số buổi học thành công!')
+  }
+
+  const pastPackages = useMemo(() => {
+    if (!currentPackage || !program.packages) return []
+    return program.packages.filter((p) => p.id !== currentPackage.id)
+  }, [program.packages, currentPackage])
+
+  const getPackageStatusBadge = (status: StudentPackage['status'], remaining: number) => {
+    if (remaining === 0 || status === 'expired') {
+      return (
+        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-muted text-muted-foreground">
+          Hết hạn
+        </span>
+      )
+    }
+    if (status === 'transferred') {
+      return (
+        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+          Đã chuyển phí
+        </span>
+      )
+    }
+    if (status === 'suspended' || status === 'reserved') {
+      return (
+        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+          Bảo lưu
+        </span>
+      )
+    }
+    if (status === 'cancelled') {
+      return (
+        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+          Đã hủy
+        </span>
+      )
+    }
+    return (
+      <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+        Đang học
+      </span>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3 text-xs">
-      {/* 1. Trình độ */}
+      {/* 1. Trình độ học viên theo chương trình */}
       <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2 shadow-2xs">
         <div className="flex items-center justify-between pb-0.5">
           <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-            <BookOpen className="h-3.5 w-3.5 text-primary" /> Trình độ học viên
+            <BookOpen className="h-3.5 w-3.5 text-primary" /> Trình độ ({program.name})
           </span>
           <button
             type="button"
@@ -194,18 +148,18 @@ export function StudentDetailPackageInfoTab({
           <div>
             <div className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ</div>
             <span className="font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md inline-block">
-              {activeClass?.level || student.level || 'IELTS (5.0–5.5)'}
+              {program.level || student.level || 'Toán 1:6'}
             </span>
           </div>
           <div>
             <div className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ phụ</div>
             <strong className="text-foreground font-semibold">
-              {activeClass?.subLevel || student.subLevel || 'IELTS (A1)'}
+              {program.subLevel || student.subLevel || 'A'}
             </strong>
           </div>
           {isMathSubject && (
             <div>
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Lớp</div>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Khối / Lớp</div>
               <strong className="text-foreground font-semibold">
                 {student.schoolClass || 'Lớp 6'}
               </strong>
@@ -214,75 +168,124 @@ export function StudentDetailPackageInfoTab({
         </div>
       </div>
 
-      {/* 2. Thông tin gói (Gộp thời gian & Số buổi học tiến độ) */}
-      <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2 shadow-2xs">
+      {/* 2. Thông tin chương trình: Thời gian & Gói hiện tại */}
+      <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2.5 shadow-2xs">
         <div className="flex items-center justify-between pb-0.5">
           <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-            <Package className="h-3.5 w-3.5 text-primary" /> Thông tin gói
+            <Layers className="h-3.5 w-3.5 text-primary" /> Thông tin chương trình
           </span>
-          {selectedPackageId !== 'all' && (
-            <button
-              type="button"
-              onClick={onEditSessions}
-              className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-1 rounded hover:bg-muted"
-              title="Sửa số buổi gói"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsEditSessionsOpen(true)}
+            className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-1 rounded hover:bg-muted"
+            title="Cập nhật số buổi học"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
         </div>
 
         <div className="space-y-2 text-xs">
-          {/* Thời gian (Tách cột) */}
+          {/* Thời gian */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Ngày bắt đầu</div>
-              <strong className="text-foreground font-semibold font-mono">{startAndEndDates.start}</strong>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Bắt đầu sớm nhất</div>
+              <strong className="text-foreground font-semibold font-mono">{program.startDate || '—'}</strong>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Ngày kết thúc</div>
-              <strong className="text-foreground font-semibold font-mono">{startAndEndDates.end}</strong>
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Kết thúc muộn nhất</div>
+              <strong className="text-foreground font-semibold font-mono">{program.endDate || '—'}</strong>
             </div>
           </div>
+        </div>
 
-          {/* Số buổi học & Tiến độ (Riêng phần đã học để nguyên) */}
-          <div className="space-y-2 pt-1">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-medium">Đã học / Tổng:</span>
-              <strong className="text-foreground font-bold">
-                {sessionsSummary.studied} / {sessionsSummary.total} buổi
+        {/* Gói hiện tại ở cột trái, Số buổi ở cột phải, Icon (n) nếu có nhiều gói */}
+        <div className="pt-2 border-t border-border/40">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {/* Cột trái: Gói hiện tại */}
+            <div className="min-w-0">
+              <div className="text-xs text-muted-foreground font-medium mb-0.5 flex items-center gap-1.5">
+                <span>Gói hiện tại</span>
+                {pastPackages.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        className="px-1.5 py-0.2 rounded text-[10.5px] font-medium text-muted-foreground hover:text-foreground border border-border/40 bg-muted/40 hover:bg-muted transition-all cursor-pointer inline-flex items-center gap-1 shrink-0"
+                        title={`Xem danh sách ${pastPackages.length} gói trước đó`}
+                      >
+                        <History className="h-2.5 w-2.5" />
+                        <span>({pastPackages.length})</span>
+                      </span>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-[340px] p-3 space-y-2 shadow-xl">
+                      <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
+                        <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                          <History className="h-3.5 w-3.5 text-primary" />
+                          Các gói trước đó ({pastPackages.length})
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          {program.name}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-0.5">
+                        {pastPackages.map((pkg) => {
+                          const studied = pkg.totalSessions - pkg.remainingSessions
+                          return (
+                            <div
+                              key={pkg.id}
+                              className="rounded-lg border border-border/50 bg-muted/20 p-2 space-y-1 text-xs"
+                            >
+                              <div className="flex items-start justify-between gap-1.5">
+                                <span className="font-semibold text-foreground text-xs truncate max-w-[190px]" title={pkg.packageName}>
+                                  {pkg.packageName}
+                                </span>
+                                {getPackageStatusBadge(pkg.status, pkg.remainingSessions)}
+                              </div>
+                              <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                                <span>
+                                  Đã học: <strong className="text-foreground">{studied}/{pkg.totalSessions}</strong> buổi
+                                </span>
+                                <span>
+                                  Còn lại: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{pkg.remainingSessions}</strong> buổi
+                                </span>
+                              </div>
+                              {(pkg.purchaseDate || pkg.endDate) && (
+                                <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 pt-0.5 border-t border-border/30">
+                                  <span>Mua: {pkg.purchaseDate || '—'}</span>
+                                  <span>Hạn: {pkg.endDate || '—'}</span>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+
+              <strong className="text-foreground font-semibold truncate block" title={currentPackage?.packageName}>
+                {currentPackage?.packageName || '—'}
               </strong>
             </div>
 
-            {/* Progress bar */}
-            <div className="space-y-1">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full bg-primary transition-all duration-300 rounded-full"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                <span>Đã hoàn thành {progressPercent}%</span>
-                <span>Còn lại {sessionsSummary.remaining} buổi</span>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-0.5">
-              <span className="text-muted-foreground font-medium">Còn lại:</span>
-              <div className="flex items-center gap-1.5">
-                <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
-                  {sessionsSummary.remaining} buổi
-                </strong>
-                {selectedPackageId !== 'all' && sessionsSummary.remaining > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => toast.info('Tính năng chuyển phí đang được phát triển!')}
-                    className="text-primary hover:bg-primary/10 p-1 rounded transition-colors"
-                    title="Chuyển phí học viên"
-                  >
-                    <ArrowLeftRight className="h-3.5 w-3.5" />
-                  </button>
+            {/* Cột phải: Số buổi: xx/xx (Còn xx buổi) */}
+            <div className="min-w-0">
+              <div className="text-xs text-muted-foreground font-medium mb-0.5">Số buổi</div>
+              <div className="font-semibold text-foreground text-xs">
+                {totalSessionsCount > 0 ? (
+                  <>
+                    <span className="font-mono text-foreground font-medium">
+                      {studiedSessionsCount}/{totalSessionsCount}
+                    </span>{' '}
+                    <span className="text-[11px] font-normal text-muted-foreground">
+                      (Còn <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">{remainingSessionsCount}</strong> buổi)
+                    </span>
+                  </>
+                ) : (
+                  '—'
                 )}
               </div>
             </div>
@@ -326,7 +329,7 @@ export function StudentDetailPackageInfoTab({
         </div>
       </div>
 
-      {/* 4. Ghi chú (Ở dưới cùng) */}
+      {/* 4. Ghi chú */}
       <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2 shadow-2xs">
         <div className="flex items-center justify-between pb-0.5">
           <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
@@ -338,6 +341,15 @@ export function StudentDetailPackageInfoTab({
           {student.notes || 'Học lực khá, hơi nhút nhát, cần giáo viên chú ý gọi phát biểu bài thường xuyên.'}
         </div>
       </div>
+
+      {/* Modal: Cập nhật số buổi học */}
+      <StudentDetailSessionsDialog
+        open={isEditSessionsOpen}
+        onOpenChange={setIsEditSessionsOpen}
+        totalSessions={totalSessionsCount}
+        initialStudiedSessions={studiedSessionsCount}
+        onSave={handleSaveSessions}
+      />
     </div>
   )
 }

@@ -22,6 +22,7 @@ tags: [crm, lead, detail, handoff]
 
 | Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
 |---|---|---|
+| 14/09/2026 | Cập nhật cấu trúc màn hình chi tiết: đưa trường học và học lực lên thẻ tiêu đề, chuyển nhân sự phụ trách sang tiêu đề phễu vòng đời, chuẩn hóa thông tin học viên luôn hiển thị với 3 trạng thái đánh giá năng lực, thiết kế phẳng phần tâm lý, gộp thông tin phụ huynh và đưa danh sách con khác xuống dưới cùng | Tối ưu hóa trải nghiệm xem hồ sơ học viên tiềm năng và đồng bộ giao diện theo thực tế nghiệp vụ |
 | 09/09/2026 | Khởi tạo tài liệu đặc tả màn hình Chi tiết Lead, bổ sung quy trình Stepper 5 bước, chuẩn hóa danh mục Điểm rơi (Drop-off Taxonomy), cơ chế bàn giao vận hành khi chốt đơn và tái kích hoạt sau 6 tháng không hoạt động | Chuẩn hóa nghiệp vụ chăm sóc khách hàng tiềm năng và liên thông dữ liệu học vụ |
 
 ### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
@@ -80,29 +81,35 @@ sequenceDiagram
 | **Thao tác Báo rớt / Lưu kho** | Nút hành động & Hộp thoại | `crm.lead.mark_drop` | Ẩn nút báo rớt |
 | **Chuyển Chặng Quy trình** | Thanh tiến trình Stepper | `crm.lead.advance_stage` | Chặn nhấp chuyển chặng trên thanh tiến trình |
 | **Kích hoạt Chu kỳ Bán mới** | Nút màu nhấn | `crm.lead.reactivate` | Ẩn nút kích hoạt chu kỳ mới |
+| **Xem Chi tiết Đội ngũ Phụ trách** | Hộp thoại thông tin | `crm.lead.view_staff_info` | Chỉ hiển thị tên phụ trách, không mở hộp thoại |
 
 ### 3.2. Cấu trúc các khối thông tin
-1. **Khối 1: Thanh tiến trình Chuyển đổi 5 bước (Pipeline Stepper):**
-   - Chặng 1: Mới tiếp nhận (Lead mới đổ về, chưa liên hệ).
-   - Chặng 2: Đang tư vấn (Đã liên hệ, đang giới thiệu khóa học).
-   - Chặng 3: Hẹn trải nghiệm (Đã có lịch kiểm tra năng lực hoặc học thử).
-   - Chặng 4: Chờ chốt deal (Đã có kết quả, đang giữ chỗ hoặc gửi báo giá).
-   - Chặng 5: Đã chuyển đổi (Đã thanh toán học phí hoặc đặt cọc) HOẶC Thất bại / Lưu kho (nếu báo rớt).
-2. **Khối 2: Cột trái - Hồ sơ Thực thể & Chu kỳ Bán:**
-   - Bộ chuyển đổi Chu kỳ bán (Ví dụ: `Chu kỳ 1 (08/2026)` / `Chu kỳ 2 (03/2027)`).
-   - Thông tin Học viên: Họ tên bé, tuổi, năm sinh, trường học, môn quan tâm, trình độ hiện tại.
-   - Thông tin Phụ huynh: Họ tên người đại diện, mối quan hệ, số điện thoại đầy đủ, thư điện tử, địa chỉ, liên kết anh chị em cùng gia đình.
-   - Nguồn tiếp nhận & Phân bổ: Kênh quảng cáo, tư vấn viên phụ trách, cơ sở.
-3. **Khối 3: Cột phải - Form Tác nghiệp Nhanh (Quick Care Logger):**
-   - Lựa chọn kênh tiếp cận: Cuộc gọi, Zalo, Trực tiếp.
-   - Kết quả tiếp cận: Nghe máy quan tâm, Bận hẹn gọi lại, Không nghe máy, Sai số, Từ chối.
-   - Ô nhập nội dung trao đổi.
-   - Ô chọn ngày giờ hẹn chăm sóc tiếp theo.
-4. **Khối 4: Hệ thống Tab Dòng thời gian & Liên thông Vận hành:**
-   - Tab 1: Dòng thời gian tương tác (Vertical Timeline hiển thị từng lần trao đổi).
-   - Tab 2: Lịch kiểm tra & Học thử (Lịch thi, kết quả đánh giá, lớp học thử).
-   - Tab 3: Cơ hội & Đơn hàng (Gói học dự kiến, đơn hàng đăng ký, tiến độ nộp phí).
-   - Tab 4: Bàn giao Vận hành (Mã học viên chính thức, lớp học đang theo học, sĩ số, ngày học, cảnh báo không hoạt động trên 180 ngày).
+1. **Khối Thẻ Tiêu đề Lead (Header Card):**
+   - Thông tin học viên chính: Họ tên học viên, nút xem chi tiết hồ sơ, nút sao chép mã lead và nút kích hoạt tái tiếp cận.
+   - Dòng phụ đề: Ngày sinh, giới tính, địa chỉ cư trú.
+2. **Khối 1: Panel trái - Chân dung Lead & Học viên (Bố cục dọc 1 cột):**
+   - **Phía trên: Khối Thông tin học tập:**
+     - Dòng tiêu đề và thông tin trường lớp: Tiêu đề "Thông tin học tập", trường đang theo học và học lực hiện tại của học viên, các nút hành động (sửa, phóng to).
+     - Danh mục 2 chương trình đào tạo trọng tâm: Toán Tư Duy và Tiếng Anh.
+     - Thể hiện 3 trạng thái đánh giá năng lực & học thử:
+       - *Chưa có lịch:* Khung nét đứt kèm nút đặt lịch đánh giá và đặt lịch học thử.
+       - *Đã có lịch hẹn - Chưa có kết quả:* Thể hiện thông tin ca test (ngày giờ, chương trình, chi nhánh, giáo viên phụ trách) kèm thông báo đã xếp lịch và đang chờ kết quả kiểm tra.
+       - *Đã có kết quả kiểm tra:* Thể hiện xếp loại trình độ, điểm số tổng, biểu đồ đánh giá năng lực 5 kỹ năng, điểm mạnh, điểm cần rèn giũa và liên kết mở xem bài làm từ thiết bị máy tính bảng.
+     - Khối Đặc điểm tâm lý & Phương pháp học tập: Thiết kế phẳng hoàn toàn, tập trung vào mục tiêu học tập, phong cách tiếp thu, tính cách lớp học, sở thích và điểm rèn giũa.
+   - **Phía dưới: Thông tin Phụ huynh:**
+     - Dòng tiêu đề: Biểu tượng và chữ "Thông tin Phụ huynh", mã lead, ngày tạo, cùng các nút thao tác (chỉnh sửa, phóng to).
+     - Chi tiết người giám hộ: Bộ chuyển đổi người giám hộ (Bố, Mẹ) khi có nhiều người liên hệ, họ tên, vai trò, số điện thoại, thư điện tử.
+     - Địa chỉ & cơ sở: Địa chỉ cư trú kèm liên kết mở bản đồ, danh sách khoảng cách tới các cơ sở gần nhất dưới dạng liên kết mở trực tiếp trên bản đồ số.
+     - Con khác của Phụ huynh / Gia đình: Nằm ngay dưới khối địa chỉ và cơ sở, hiển thị danh sách liên kết nhanh tới hồ sơ các con khác trong cùng một gia đình đang được chăm sóc hoặc học tập tại trung tâm.
+3. **Khối 2: Panel phải - Hệ thống 2 Tab Tác nghiệp Chuyên sâu:**
+   - **Tab 1: Chăm sóc bán hàng (Mặc định):**
+     - Phễu Vòng đời dạng dọc:
+       - Dòng trên: Tiêu đề phễu, nút biểu tượng thu gọn/mở rộng (cho phép thu gọn chỉ hiển thị chặng hiện tại để tập trung làm việc hoặc mở rộng xem toàn bộ các chặng), huy hiệu trạng thái hiện tại, cùng cụm nút hành động Báo rớt / Tiếp tục / Kích hoạt lại.
+       - Dòng dưới: Thiết kế phẳng (không viền, không nền) thể hiện kho dữ liệu tiếp nhận (Kho T), trạng thái Lead quay lại (nếu có), và tên nhân sự phụ trách (click để mở Hộp thoại thông tin chi tiết về Tư vấn viên, Chuyên viên CSKH và Cơ sở tiếp nhận & đào tạo kèm bản đồ chỉ đường).
+       - Tiến trình các chặng: Thể hiện các chặng từ Mới tiếp nhận → Đang tư vấn → Hẹn trải nghiệm → Kết quả Test & Level → Chờ chốt / Đăng ký → Chuyển đổi thành công.
+     - Cụm Chăm sóc & Tác nghiệp nhanh: Lựa chọn kênh tiếp cận (Cuộc gọi, Zalo, Trực tiếp), kết quả cuộc gọi, ô nhập ghi chú trao đổi, hẹn chăm sóc tiếp theo, cùng nhật ký dòng thời gian chăm sóc.
+   - **Tab 2: Đơn hàng:**
+     - Danh sách gói học, đơn hàng đã tạo, tiến độ nộp phí (đã thu, còn thiếu, đợt thanh toán), trạng thái thanh toán và nút tạo đơn hàng mới cho học viên.
 
 ---
 

@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { MonthlyReportReviewItemsSection } from '../classes/detail/MonthlyReportReviewItemsSection'
+import { MonthlyReportStatsCards } from '../classes/detail/MonthlyReportStatsCards'
+import { mockCareAlerts } from '@/mocks/careAlerts'
 import {
   getMonthlyReportById,
   MONTH_OPTIONS,
@@ -71,6 +73,37 @@ export function MonthlyReportLandingScreen({
     MONTH_OPTIONS.find((m) => m.value === selectedMonthOption) ||
     MONTH_OPTIONS.find((m) => m.value === report.monthOptionValue) ||
     MONTH_OPTIONS[0]
+
+  const studentMetrics = useMemo(() => {
+    const alert = mockCareAlerts.find(
+      (a) =>
+        a.studentId === report.studentId ||
+        (a.studentName &&
+          report.studentName &&
+          a.studentName.toLowerCase().includes(report.studentName.toLowerCase())) ||
+        (a.classCode && report.studentCode && a.classCode === report.studentCode)
+    )
+
+    if (alert) {
+      return {
+        attendanceRatio: alert.attendanceRatio || '5/7',
+        lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
+        homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
+        homeworkAvg: '7.5',
+        testScore: alert.lastTestScore ?? 8.0,
+        priorTestScore: alert.priorTestScore ?? 5.5,
+      }
+    }
+
+    return {
+      attendanceRatio: '5/7',
+      lateCount: 1,
+      homeworkRatio: '7/7',
+      homeworkAvg: '7.5',
+      testScore: 8.0,
+      priorTestScore: 5.5,
+    }
+  }, [report.studentId, report.studentName, report.studentCode])
 
   const handleMonthChange = (val: string) => {
     setSelectedMonthOption(val)
@@ -285,8 +318,22 @@ export function MonthlyReportLandingScreen({
 
           {/* Thân báo cáo */}
           <div className="p-6 space-y-6 bg-background">
+            {/* Smartcard Section (Chuyên cần, BTVN, Kiểm tra) đưa lên trên mục A */}
+            <MonthlyReportStatsCards
+              currentMonth={activeMonthConfig.current}
+              attendanceRatio={studentMetrics.attendanceRatio}
+              lateCount={studentMetrics.lateCount}
+              homeworkRatio={studentMetrics.homeworkRatio}
+              homeworkAvg={studentMetrics.homeworkAvg}
+              testScore={studentMetrics.testScore}
+              priorTestScore={studentMetrics.priorTestScore}
+              onScrollToEvaluation={() => {
+                document.getElementById('landing-section-a')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            />
+
             {/* SECTION A: BÁO CÁO HỌC TẬP CHUYÊN SÂU */}
-            <div className="space-y-4">
+            <div id="landing-section-a" className="space-y-4 pt-2 border-t">
               <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
                 A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
               </h4>
@@ -321,7 +368,7 @@ export function MonthlyReportLandingScreen({
                   </label>
                   <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
                     <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                    Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
+                    Nội dung AI được tổng hợp từ các BTVN trong tháng của học viên.
                   </span>
                 </div>
                 <div className="w-full text-sm p-4 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">

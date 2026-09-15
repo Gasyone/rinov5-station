@@ -2,24 +2,22 @@
 
 import { useState } from 'react'
 import {
-  User,
-  Calendar,
-  Clock,
   ChevronDown,
-  ChevronUp,
   History,
-  Eye,
-  CalendarPlus,
   Star,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   StatusBadge,
   AppAvatar,
-  StudentProfileHoverCard,
   PersonnelHoverCard,
-  type StudentProfileItem,
 } from '@/components/shared'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { CLASS_STATUS_LABELS, type ClassRecord } from '@/mocks/classRecords'
 import { ClassTeacherHistoryPopover } from '@/components/screens/care/ClassTeacherHistoryPopover'
 import { ClassCodeHoverCell } from '@/components/screens/care/ClassCodeHoverCell'
@@ -34,22 +32,48 @@ export interface StudentDetailRecommendedClassesProps {
   packages: StudentPackage[]
   onSelectClassRecord: (record: ClassRecord, tab?: string) => void
   onOpenAssignClass: (pkg: StudentPackage) => void
+  onDirectAssign?: (classItem: { id: string; name: string; startSession?: string }) => void
+}
+
+function formatShortDay(dayStr?: string): string {
+  if (!dayStr) return 'T2'
+  const d = dayStr.trim().toLowerCase()
+  if (d.includes('2') || d.includes('hai')) return 'T2'
+  if (d.includes('3') || d.includes('ba')) return 'T3'
+  if (d.includes('4') || d.includes('tư') || d.includes('bốn')) return 'T4'
+  if (d.includes('5') || d.includes('năm')) return 'T5'
+  if (d.includes('6') || d.includes('sáu')) return 'T6'
+  if (d.includes('7') || d.includes('bảy')) return 'T7'
+  if (d.includes('chủ nhật') || d.includes('cn')) return 'CN'
+  return dayStr
 }
 
 export function StudentDetailRecommendedClasses({
   recommendedClasses,
   currentPackage,
   packages,
-  onSelectClassRecord,
   onOpenAssignClass,
+  onDirectAssign,
 }: StudentDetailRecommendedClassesProps) {
-  const [expandedUpcomingClasses, setExpandedUpcomingClasses] = useState<Record<string, boolean>>({})
+  const [selectedSessionNoByClass, setSelectedSessionNoByClass] = useState<Record<string, number>>({})
 
-  const toggleExpandUpcoming = (classCode: string) => {
-    setExpandedUpcomingClasses((prev) => ({
-      ...prev,
-      [classCode]: !prev[classCode],
-    }))
+  const handleConfirmDirectAssign = (
+    recItem: ClassRecord,
+    sess: { no: number; day: string; date: string; time: string; topic: string }
+  ) => {
+    const sessionStr = `${sess.day}, ${sess.date} (${sess.time})`
+    if (onDirectAssign) {
+      onDirectAssign({
+        id: recItem.code || recItem.id,
+        name: recItem.name,
+        startSession: sessionStr,
+      })
+    } else {
+      const pkgToAssign = currentPackage || packages[0]
+      if (pkgToAssign) {
+        onOpenAssignClass(pkgToAssign)
+      }
+    }
   }
 
   return (
@@ -71,50 +95,40 @@ export function StudentDetailRecommendedClasses({
           const max = rec.maxStudents || 20
           const pct = max > 0 ? Math.round((enrolled / max) * 100) : 0
           const newCount = rec.trialStudents || 2
-          const studentList = [
-            'Nguyễn An',
-            'Trần Bình',
-            'Lê Chi',
-            'Phạm Dũng',
-            'Trần Tuấn',
-            'Đặng Hồng',
-            'Nguyễn Hoàng',
-            'Trương Bảo',
-            'Lê Minh',
-            'Phạm Quỳnh',
-          ]
-          const displayAvatars = studentList.slice(0, 5)
-          const remaining = enrolled > 5 ? enrolled - 5 : 0
           const teachers = (rec.teacher || '').split(/[,/&]| và /).map((t) => t.trim()).filter(Boolean)
 
-          const isExpanded = !!expandedUpcomingClasses[rec.code]
+          // Upcoming sessions list: no 'Buổi xx' prefix, no year, day of week prefix (Tx)
           const upcomingList = [
-            { no: 14, date: '28/07/2026', time: '17:45 - 19:15', topic: 'Bài 14: Reading Skills Practice', room: rec.room || 'A101', teacher: teachers[0] || 'Cô Lan', label: 'Hôm nay / Sắp tới' },
-            { no: 15, date: '30/07/2026', time: '17:45 - 19:15', topic: 'Bài 15: Listening & Speaking Drills', room: rec.room || 'A101', teacher: teachers[1] || 'Cô Nga', label: 'Sắp diễn ra' },
-            { no: 16, date: '01/08/2026', time: '17:45 - 19:15', topic: 'Bài 16: Writing Task 1 Strategy', room: rec.room || 'A101', teacher: teachers[0] || 'Cô Lan', label: 'Sắp diễn ra' },
-            { no: 17, date: '04/08/2026', time: '17:45 - 19:15', topic: 'Bài 17: Grammar & Collocations', room: rec.room || 'A101', teacher: teachers[0] || 'Cô Lan', label: 'Sắp diễn ra' },
-            { no: 18, date: '06/08/2026', time: '17:45 - 19:15', topic: 'Bài 18: Mid-term Assessment', room: rec.room || 'A101', teacher: teachers[1] || 'Cô Nga', label: 'Sắp diễn ra' },
+            { no: 14, day: 'T3', date: '28/07', time: '17:45–19:15', topic: 'Bài 14: Reading Skills Practice', room: rec.room || 'B201', teacher: teachers[0] || 'Nguyễn Mạnh Hùng' },
+            { no: 15, day: 'T5', date: '30/07', time: '17:45–19:15', topic: 'Bài 15: Listening & Speaking Drills', room: rec.room || 'B201', teacher: teachers[1] || 'Hoàng Thị Mai' },
+            { no: 16, day: 'T7', date: '01/08', time: '17:45–19:15', topic: 'Bài 16: Writing Task 1 Strategy', room: rec.room || 'B201', teacher: teachers[0] || 'Nguyễn Mạnh Hùng' },
+            { no: 17, day: 'T3', date: '04/08', time: '17:45–19:15', topic: 'Bài 17: Grammar & Collocations', room: rec.room || 'B201', teacher: teachers[0] || 'Nguyễn Mạnh Hùng' },
+            { no: 18, day: 'T5', date: '06/08', time: '17:45–19:15', topic: 'Bài 18: Mid-term Assessment', room: rec.room || 'B201', teacher: teachers[1] || 'Hoàng Thị Mai' },
           ]
+
+          const selectedNo = selectedSessionNoByClass[rec.code] ?? 14
+          const currentSelectedSession = upcomingList.find((s) => s.no === selectedNo) || upcomingList[0]
 
           const perf = getClassPerformance(rec.code)
           const attendanceNum = parseFloat(perf.attendanceRate) || 91.7
           const hwNum = parseFloat(perf.homeworkSubmissionRate) || 91.7
 
           const teacherHistoryList = [
-            { name: teachers[0] || 'Cô Lan', role: 'Chủ nhiệm', startDate: '01/05/2026', isCurrent: true },
-            { name: teachers[1] || 'Cô Nga', role: 'Giảng dạy', startDate: '01/05/2026', isCurrent: true },
+            { name: teachers[0] || 'Nguyễn Mạnh Hùng', role: 'Chủ nhiệm', startDate: '01/05/2026', isCurrent: true },
+            { name: teachers[1] || 'Hoàng Thị Mai', role: 'Giảng dạy', startDate: '01/05/2026', isCurrent: true },
             { name: 'Thầy Hùng', role: 'GV cũ', startDate: '01/01/2026', endDate: '30/04/2026', reason: 'Chuyển ca dạy', isCurrent: false },
           ]
 
+          // Xóa text Lịch sử GV đi, để icon (x) thôi
           const historyTrigger = (
             <span
               role="button"
               tabIndex={0}
-              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-xs font-medium shrink-0"
+              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-[11px] font-medium shrink-0"
               title={`Xem lịch sử đổi giáo viên (${teacherHistoryList.length} giáo viên)`}
             >
               <History className="h-3 w-3" />
-              <span>Lịch sử GV ({teacherHistoryList.length})</span>
+              <span>({teacherHistoryList.length})</span>
             </span>
           )
 
@@ -123,12 +137,19 @@ export function StudentDetailRecommendedClasses({
               key={rec.id}
               className="border border-border/60 rounded-xl overflow-hidden bg-card shadow-2xs transition-all duration-200 hover:border-border"
             >
-              {/* Card Header: Minimalist & Clean */}
-              <div className="border-b border-border/40 px-4 py-3 bg-muted/10 dark:bg-zinc-900/30">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
+              {/* ========================================================
+                  CARD HEADER:
+                  - Trái: Tên lớp, Trạng thái, Mã lớp, Trình độ, Loại lớp
+                  - Phải:
+                    + Dòng trên: Sĩ số xx/xx (+ x mới) [xóa viền/nền] + Lịch học [text thường]
+                    + Dòng dưới: KCT đưa lên trước GV + Danh sách giáo viên + icon (x)
+                 ======================================================== */}
+              <div className="border-b border-border/40 px-4 py-2.5 bg-muted/10 dark:bg-zinc-900/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-left">
+                  {/* Trái: Tên lớp & Mã lớp */}
                   <div className="flex flex-col min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap min-w-0">
-                      <span className="font-bold text-foreground text-sm sm:text-base truncate max-w-[280px]">
+                      <span className="font-bold text-foreground text-sm sm:text-base truncate max-w-[260px]">
                         {rec.name}
                       </span>
                       <StatusBadge
@@ -161,301 +182,225 @@ export function StudentDetailRecommendedClasses({
                     </div>
                   </div>
 
-                  <div className="shrink-0 pt-1 sm:pt-0">
-                    <div className="flex items-center gap-3 bg-muted/40 dark:bg-zinc-800/40 px-3 py-1.5 rounded-lg border border-border/30">
-                      <div className="text-center space-y-0.5 min-w-[55px]">
-                        <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Chuyên cần</div>
-                        <div className="text-xs font-bold text-foreground">{attendanceNum}%</div>
+                  {/* Phải: Dòng 1 (Sĩ số + Lịch học), Dòng 2 (KCT + GV) */}
+                  <div className="flex flex-col items-start sm:items-end justify-center space-y-1.5 shrink-0 pt-1 sm:pt-0">
+                    {/* Dòng 1: Sĩ số (xóa nền, viền) + Lịch học (xóa viền, nền, text thường) */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Sĩ số: Không nền, không viền */}
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="font-semibold text-foreground">{enrolled}/{max}</span>
+                        <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
+                          (+{newCount} mới, Trial)
+                        </span>
                       </div>
-                      <div className="h-5 w-[1px] bg-border/40" />
-                      <div className="text-center space-y-0.5 min-w-[45px]">
-                        <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">BTVN</div>
-                        <div className="text-xs font-bold text-foreground">{hwNum}%</div>
+
+                      <span className="text-muted-foreground/30">•</span>
+
+                      {/* Lịch học: xóa viền, xóa nền, text thường không in đậm */}
+                      <div className="flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground font-normal">
+                        {rec.scheduleSlots && rec.scheduleSlots.length > 0 ? (
+                          rec.scheduleSlots.map((slot, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1 text-muted-foreground font-normal text-xs"
+                            >
+                              <span>{formatShortDay(slot.dayOfWeek)}</span>
+                              <span className="font-mono text-xs">{slot.startTime}–{slot.endTime}</span>
+                              {idx < rec.scheduleSlots.length - 1 && (
+                                <span className="text-muted-foreground/30">•</span>
+                              )}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic font-normal">
+                            {rec.schedule || 'Chưa cập nhật lịch'}
+                          </span>
+                        )}
                       </div>
-                      <div className="h-5 w-[1px] bg-border/40" />
-                      <div className="text-center space-y-0.5 min-w-[55px]">
-                        <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Điểm TB</div>
-                        <div className="text-xs font-bold text-foreground">
-                          {perf.latestScore.score !== '—' ? perf.latestScore.score : '7.0'}
-                          <span className="text-[9.5px] font-normal text-muted-foreground">/10</span>
-                        </div>
-                      </div>
-                      <div className="h-5 w-[1px] bg-border/40" />
-                      <div className="text-center space-y-0.5 min-w-[45px]">
-                        <div className="text-[9.5px] text-muted-foreground font-medium uppercase tracking-wider">Rating</div>
-                        <div className="text-xs font-bold text-foreground flex items-center justify-center gap-0.5">
-                          4.5<Star className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
-                        </div>
-                      </div>
+                    </div>
+
+                    {/* Dòng 2: KCT đưa lên trước GV + Danh sách giáo viên + icon (x) */}
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      {/* KCT lên trước GV */}
+                      <SyllabusProfileHoverCard cls={rec} align="end">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                          title="Nhấp chuột để xem thông tin Khung chương trình"
+                        >
+                          <span className="text-[11px] font-medium text-muted-foreground">KCT:</span>{' '}
+                          <span className="font-medium text-foreground">
+                            {rec.syllabus && rec.syllabus !== '—' ? rec.syllabus : 'IELTS Junior v2.1'}
+                          </span>
+                        </span>
+                      </SyllabusProfileHoverCard>
+
+                      <span className="text-muted-foreground/30">•</span>
+
+                      <span className="text-[11px] text-muted-foreground font-medium">GV:</span>
+                      {teachers.map((tName, idx) => {
+                        const teacherPersonObj = {
+                          id: `EMP-${tName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'EMP'}`,
+                          name: tName,
+                          role: 'Giáo viên',
+                          phone: '0901234567',
+                          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${tName}`,
+                          email: `${tName.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+                        }
+
+                        return (
+                          <PersonnelHoverCard key={idx} person={teacherPersonObj} align="end">
+                            <div
+                              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                              title={`Rê chuột/Nhấp để xem thông tin giáo viên: ${tName}`}
+                            >
+                              <AppAvatar
+                                src={teacherPersonObj.avatar}
+                                name={tName}
+                                size="xs"
+                                className="h-4 w-4 shrink-0 border border-primary/20"
+                              />
+                              <span className="font-medium text-foreground truncate max-w-[120px]">{tName}</span>
+                            </div>
+                          </PersonnelHoverCard>
+                        )
+                      })}
+
+                      <ClassTeacherHistoryPopover
+                        trigger={historyTrigger}
+                        currentTeacher={rec.teacher}
+                        teacherHistory={teacherHistoryList}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Card Body */}
-              <div className="p-3 space-y-2">
-                <div className="grid grid-cols-12 gap-2 items-center py-0.5">
-                  {/* Cột 1: SĨ SỐ (Căn trái - col-span-5) */}
-                  <div className="col-span-12 sm:col-span-5 space-y-1.5 flex flex-col justify-center text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-foreground">
-                        {enrolled}/{max} <span className="text-muted-foreground font-normal text-xs">({pct}%)</span>
-                      </span>
-                      <span className="text-[9.5px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
-                        +{newCount} mới, Trial
-                      </span>
+              {/* ========================================================
+                  CARD BODY:
+                  - 1. Dải chỉ số: Chuyên cần, BTVN, Điểm TB, Rating, Tỷ lệ lấp đầy
+                  - 2. Buổi đầu tiên & Droplist Chọn buổi bên phải
+                 ======================================================== */}
+              <div className="p-3 space-y-2.5">
+                {/* 1. Dải chỉ số: Chuyên cần, BTVN, Điểm TB, Rating */}
+                <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/25 dark:bg-zinc-800/30 border border-border/30 text-xs flex-wrap">
+                  <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground font-medium text-[11.5px]">Chuyên cần:</span>
+                      <strong className="text-foreground font-bold">{attendanceNum}%</strong>
                     </div>
-
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden w-full max-w-[200px]">
-                      <div
-                        className="h-full rounded-full bg-primary/80 transition-all duration-300"
-                        style={{ width: `${pct}%` }}
-                      />
+                    <span className="text-border/60">•</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground font-medium text-[11.5px]">BTVN:</span>
+                      <strong className="text-foreground font-bold">{hwNum}%</strong>
                     </div>
+                    <span className="text-border/60">•</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground font-medium text-[11.5px]">Điểm TB:</span>
+                      <strong className="text-foreground font-bold">
+                        {perf.latestScore.score !== '—' ? perf.latestScore.score : '7.0'}
+                        <span className="text-[10px] font-normal text-muted-foreground">/10</span>
+                      </strong>
+                    </div>
+                    <span className="text-border/60">•</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground font-medium text-[11.5px]">Rating:</span>
+                      <strong className="text-foreground font-bold flex items-center gap-0.5">
+                        4.5 <Star className="h-3 w-3 text-amber-500 fill-amber-500 inline" />
+                      </strong>
+                    </div>
+                  </div>
 
-                    <div className="flex items-center justify-between w-full max-w-[220px] pt-0.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {displayAvatars.map((sName, sIdx) => {
-                          const studentItem: StudentProfileItem = {
-                            id: `stu-rec-${sIdx + 1}`,
-                            name: sName,
-                            code: `STU-2026-0${sIdx + 1}`,
-                            avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${sName}`,
-                            status: 'Đang học',
-                            birthDate: '15/03/2005',
-                            gender: sIdx % 2 === 0 ? 'Nam' : 'Nữ',
-                            branch: 'RinoEdu Nguyễn Tuân',
-                            parentName: `${sName.split(' ').slice(-1)[0]} Bố Nguyễn Văn A`,
-                            parentPhone: `098765432${sIdx}`,
-                            parentRelation: sIdx % 2 === 0 ? 'Bố' : 'Mẹ',
-                            attendanceRate: '91.7%',
-                            homeworkRate: '91.7%',
-                            avgScore: '7.0 / 9.0',
-                          }
+                  <div className="text-[11px] text-muted-foreground font-medium">
+                    Tỷ lệ lấp đầy: <strong className="text-foreground font-semibold">{pct}%</strong>
+                  </div>
+                </div>
 
-                          return (
-                            <StudentProfileHoverCard
-                              key={sName}
-                              student={studentItem}
-                              align="center"
-                              side="top"
-                            >
-                              <div className="cursor-pointer transition-transform hover:scale-110" title={`Xem profile học viên: ${sName}`}>
-                                <AppAvatar
-                                  src={studentItem.avatar}
-                                  name={sName}
-                                  size="sm"
-                                  className="h-5.5 w-5.5 border border-border/40 shadow-2xs cursor-pointer transition-all"
-                                />
-                              </div>
-                            </StudentProfileHoverCard>
-                          )
-                        })}
-                      </div>
-                      {remaining > 0 && (
-                        <button
+                {/* 2. Buổi đầu tiên & Droplist Chọn buổi bên phải */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs bg-muted/25 dark:bg-zinc-800/20 border border-border/40 px-3 py-2 rounded-lg">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    <span className="font-bold text-foreground font-mono">
+                      {currentSelectedSession.day}, {currentSelectedSession.date} ({currentSelectedSession.time})
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="font-medium text-foreground truncate max-w-[280px]" title={currentSelectedSession.topic}>
+                      {currentSelectedSession.topic}
+                    </span>
+                    <span className="text-muted-foreground/60 hidden sm:inline">•</span>
+                    <span className="text-[11px] font-mono text-muted-foreground hidden sm:inline">
+                      Phòng {currentSelectedSession.room}
+                    </span>
+                    <span className="text-muted-foreground/60 hidden md:inline">•</span>
+                    <span className="text-xs text-muted-foreground font-medium hidden md:inline">
+                      {currentSelectedSession.teacher}
+                    </span>
+                  </div>
+
+                  {/* Cạnh phải: Droplist và nút [Chọn] */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <DropdownMenu>
+                      <div className="inline-flex rounded-md shadow-2xs">
+                        <Button
                           type="button"
-                          onClick={() => onSelectClassRecord(rec, 'roster')}
-                          className="h-5 px-2 rounded-full bg-muted hover:bg-muted/80 text-[9.5px] font-semibold text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors border border-border/40"
-                          title={`Nhấp để xem danh sách toàn bộ ${enrolled} học viên trong lớp ${rec.name}`}
+                          size="xs"
+                          onClick={() => handleConfirmDirectAssign(rec, currentSelectedSession)}
+                          className="h-7 px-3 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-r-none cursor-pointer"
+                          title="Chọn buổi này và ghép lớp ngay"
                         >
-                          +{remaining}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                          Chọn
+                        </Button>
 
-                  {/* Cột 2: CỘT KHOẢNG TRỐNG Ở GIỮA (Đăng để trống - col-span-1) */}
-                  <div className="hidden sm:block sm:col-span-1" />
-
-                  {/* Cột 3: LỊCH HỌC (Căn phải - col-span-6) */}
-                  <div className="col-span-12 sm:col-span-6 flex items-center justify-end gap-1.5 text-xs">
-                    {rec.scheduleSlots && rec.scheduleSlots.length > 0 ? (
-                      (() => {
-                        const teachers = (rec.teacher || '')
-                          .split(/[,/&]| và /)
-                          .map((t) => t.trim())
-                          .filter(Boolean)
-                        return (
-                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                            {rec.scheduleSlots.map((slot, idx) => {
-                              const slotTeacher = (slot.teachers && slot.teachers.length > 0)
-                                ? slot.teachers[0]
-                                : (teachers[idx % teachers.length] || teachers[0] || 'Cô Lan')
-
-                              const teacherPersonObj = {
-                                id: `EMP-${slotTeacher.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'CL'}`,
-                                name: slotTeacher,
-                                role: 'Giáo viên Tiếng Anh',
-                                phone: '0901234567',
-                                avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${slotTeacher}`,
-                                email: `${slotTeacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
-                              }
-
-                              return (
-                                <div
-                                  key={idx}
-                                  className="rounded-md border border-border/40 px-1.5 py-1 space-y-0.5 bg-card/30 flex flex-col items-center justify-center shrink-0 min-w-[105px]"
-                                >
-                                  <div className="flex items-center gap-1 justify-center">
-                                    <span className="inline-flex items-center rounded bg-primary/10 px-1 py-0 text-xs font-bold text-primary shrink-0">
-                                      {slot.dayOfWeek}
-                                    </span>
-                                    <span className="font-mono text-xs font-semibold text-foreground shrink-0">
-                                      {slot.startTime}–{slot.endTime}
-                                    </span>
-                                  </div>
-                                  
-                                  <PersonnelHoverCard person={teacherPersonObj} align="center">
-                                    <div className="flex items-center justify-center gap-1 truncate max-w-[100px] cursor-pointer hover:opacity-80 transition-opacity text-xs text-muted-foreground" title={`Nhấp/Rê chuột để xem thông tin giáo viên: ${slotTeacher}`}>
-                                      <AppAvatar
-                                        src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${slotTeacher}`}
-                                        name={slotTeacher}
-                                        size="xs"
-                                        className="h-3.5 w-3.5 shrink-0 border border-primary/20 cursor-pointer"
-                                      />
-                                      <span className="font-medium text-foreground text-xs truncate">{slotTeacher}</span>
-                                    </div>
-                                  </PersonnelHoverCard>
-                                </div>
-                              )
-                            })}
-
-                            <ClassTeacherHistoryPopover
-                              trigger={historyTrigger}
-                              currentTeacher={rec.teacher}
-                              teacherHistory={teacherHistoryList}
-                            />
-                          </div>
-                        )
-                      })()
-                    ) : (
-                      <div className="text-xs text-muted-foreground italic text-right">
-                        {rec.schedule || 'Chưa cập nhật lịch học'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Row 3: Buổi học tiếp theo - Streamlined Bar */}
-                <div className="space-y-1.5 text-xs pt-0.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => toggleExpandUpcoming(rec.code)}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary cursor-pointer transition-colors"
-                    >
-                      <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>Buổi học tiếp theo:</span>
-                      {isExpanded ? (
-                        <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      ) : (
-                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      )}
-                    </button>
-
-                    <SyllabusProfileHoverCard cls={rec} align="end">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        className="text-xs font-medium text-primary hover:underline cursor-pointer truncate max-w-[260px] block text-right"
-                        title="Nhấp chuột để xem thông tin Khung chương trình"
-                      >
-                        KCT: {rec.syllabus && rec.syllabus !== '—' ? rec.syllabus : 'IELTS Junior v2.1'}
-                      </span>
-                    </SyllabusProfileHoverCard>
-                  </div>
-
-                  {!isExpanded ? (
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs bg-muted/30 dark:bg-zinc-900/30 border border-border/30 px-3 py-2 rounded-lg">
-                      <div className="flex flex-wrap items-center gap-2 min-w-0">
-                        <span className="font-mono text-xs font-semibold text-primary">
-                          28/07/2026 (17:45 – 19:15)
-                        </span>
-                        <span className="text-muted-foreground">•</span>
-                        <span className="font-medium text-foreground truncate max-w-[320px]">
-                          Bài 14: Reading Skills Practice
-                        </span>
-                      </div>
-                      <span className="text-xs font-mono text-muted-foreground shrink-0">
-                        Phòng {rec.room || 'A101'}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="space-y-1">
-                        {upcomingList.map((sess) => (
-                          <div
-                            key={sess.no}
-                            className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-xs"
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            size="xs"
+                            className="h-7 px-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-l-none border-l border-emerald-500/40 cursor-pointer"
+                            title="Mở danh sách các buổi tiếp theo để chọn buổi khác"
                           >
-                            <div className="flex flex-wrap items-center gap-2 min-w-0">
-                              <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[9.5px] font-bold text-primary shrink-0">
-                                Buổi {sess.no}
-                              </span>
-                              <span className="font-mono text-xs font-semibold text-foreground">{sess.date} ({sess.time})</span>
-                              <span className="text-xs text-muted-foreground truncate max-w-[220px]" title={sess.topic}>
-                                • {sess.topic}
-                              </span>
-                              <span className="text-[10.5px] font-mono text-muted-foreground">• Phòng {sess.room}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              {(() => {
-                                const teacherPersonObj = {
-                                  id: `EMP-${sess.teacher.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'CL'}`,
-                                  name: sess.teacher,
-                                  role: 'Giáo viên Tiếng Anh',
-                                  phone: '0901234567',
-                                  avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${sess.teacher}`,
-                                  email: `${sess.teacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
-                                }
-                                return (
-                                  <PersonnelHoverCard person={teacherPersonObj} align="end">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer hover:opacity-80 transition-opacity" title={`Rê chuột/Nhấp để xem thông tin giáo viên: ${sess.teacher}`}>
-                                      <AppAvatar
-                                        src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${sess.teacher}`}
-                                        name={sess.teacher}
-                                        size="sm"
-                                        className="h-5 w-5 shrink-0 border border-primary/20 cursor-pointer"
-                                      />
-                                      <span className="font-medium text-foreground">{sess.teacher}</span>
-                                    </div>
-                                  </PersonnelHoverCard>
-                                )
-                              })()}
-                            </div>
-                          </div>
-                        ))}
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
                       </div>
-                    </div>
-                  )}
-                </div>
 
-                {/* Card Footer: Action buttons */}
-                <div className="pt-2 border-t border-border/30 flex items-center justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="xs"
-                    className="text-[10.5px] h-7 px-3 font-medium text-muted-foreground hover:text-foreground cursor-pointer"
-                    onClick={() => onSelectClassRecord(rec, 'sessions')}
-                    title="Xem lịch chi tiết các buổi để chọn ghép lớp"
-                  >
-                    <Eye className="h-3.5 w-3.5 mr-1" /> Chi tiết buổi học
-                  </Button>
-
-                  <Button
-                    type="button"
-                    size="xs"
-                    className="text-[10.5px] h-7 px-3 font-medium bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-xs"
-                    onClick={() => {
-                      const pkgToAssign = currentPackage || packages[0]
-                      if (pkgToAssign) onOpenAssignClass(pkgToAssign)
-                    }}
-                  >
-                    <CalendarPlus className="h-3.5 w-3.5 mr-1" /> Ghép lớp này
-                  </Button>
+                      <DropdownMenuContent align="end" className="w-[380px] p-1.5 space-y-1">
+                        <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground border-b border-border/40">
+                          Chọn buổi ghép lớp ({rec.name})
+                        </div>
+                        {upcomingList.map((sess, idx) => (
+                          <DropdownMenuItem
+                            key={sess.no}
+                            onClick={() => {
+                              setSelectedSessionNoByClass((prev) => ({ ...prev, [rec.code]: sess.no }))
+                              handleConfirmDirectAssign(rec, sess)
+                            }}
+                            className={cn(
+                              "flex flex-col items-start gap-0.5 p-2 rounded-md cursor-pointer text-xs",
+                              currentSelectedSession.no === sess.no && "bg-emerald-50 dark:bg-emerald-950/40 font-semibold"
+                            )}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="font-bold text-foreground font-mono">
+                                {sess.day}, {sess.date} ({sess.time})
+                              </span>
+                              {idx === 0 && (
+                                <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded">
+                                  Buổi đầu
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] truncate w-full">
+                              <span className="truncate">{sess.topic}</span>
+                              <span>•</span>
+                              <span>Phòng {sess.room}</span>
+                              <span>•</span>
+                              <span>{sess.teacher}</span>
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
             </div>

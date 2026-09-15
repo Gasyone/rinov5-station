@@ -1,8 +1,8 @@
 'use client'
-
 import { useMemo } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Layers, Table } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { Lead } from '@/mocks/crmLeads'
 import type { DataPoolConfig } from '@/components/screens/lead-lifecycle-config/leadLifecycleTypes'
 import {
@@ -15,12 +15,15 @@ import {
   SOURCE_OPTIONS,
   ASSIGNMENT_OPTIONS,
   FOLLOW_UP_OPTIONS,
+  type StatusTileMode,
 } from './crmLeadsTypes'
 import { CrmLeadsSmartcardPopover } from './CrmLeadsSmartcardPopover'
 
 interface CrmLeadsToolbarProps {
   leads: Lead[]
   viewScope: 'my' | 'all'
+  statusTileMode?: StatusTileMode
+  onToggleTileMode?: () => void
   pools?: DataPoolConfig[]
   pool?: string
   onPoolChange?: (val: string) => void
@@ -42,6 +45,8 @@ interface CrmLeadsToolbarProps {
 export function CrmLeadsToolbar({
   leads,
   viewScope,
+  statusTileMode = 'main',
+  onToggleTileMode,
   pools = [],
   pool = 'all',
   onPoolChange,
@@ -81,8 +86,41 @@ export function CrmLeadsToolbar({
 
   return (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-      {/* Bộ lọc bên trái: Cơ sở, Kho Dữ liệu, Nguồn Lead & Bộ lọc ngữ cảnh */}
+      {/* Bộ lọc bên trái: Nút đổi Mode, Cơ sở, Kho Dữ liệu, Nguồn Lead & Bộ lọc ngữ cảnh */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* Nút chuyển đổi Mode Cấp 1 (viên thuốc) vs All (dạng bảng) đặt trước Cơ sở */}
+        {onToggleTileMode && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggleTileMode}
+            className={cn(
+              "h-8 gap-1.5 text-xs font-medium cursor-pointer transition-colors px-2.5",
+              statusTileMode === 'all'
+                ? "bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-100"
+                : "bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
+            )}
+            title={
+              statusTileMode === 'main'
+                ? "Đang xem: Cấp 1 (Tab viên thuốc). Bấm để chuyển sang All"
+                : "Đang xem: All. Bấm để chuyển sang Cấp 1 (Tab viên thuốc)"
+            }
+          >
+            {statusTileMode === 'main' ? (
+              <>
+                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                <span>Cấp 1</span>
+              </>
+            ) : (
+              <>
+                <Table className="w-3.5 h-3.5 text-purple-600" />
+                <span>All</span>
+              </>
+            )}
+          </Button>
+        )}
+
         {/* Chọn cơ sở */}
         {onBranchChange && (
           <BranchSelect

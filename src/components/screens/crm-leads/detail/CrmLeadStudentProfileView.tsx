@@ -11,7 +11,6 @@ import {
   Calendar,
   ClipboardCheck,
   GraduationCap,
-  BookOpen,
   MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -21,10 +20,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { CrmLeadStudentEditForm } from './CrmLeadStudentEditForm'
 import { CrmLeadAssessmentSchedulePopover } from './CrmLeadAssessmentSchedulePopover'
 import { CrmLeadTrialFeedbackSection } from './CrmLeadTrialFeedbackSection'
+import { CrmLeadAssessmentRadarSection } from './CrmLeadAssessmentRadarSection'
 import { getDefaultStudentSubjects } from './leadContactsHelper'
 import type { ChildPersonaItem, StudentSubjectItem } from './CrmLeadChildCard'
 
@@ -74,6 +81,32 @@ export function CrmLeadStudentProfileView({
   const isMathSubject = useMemo(() => {
     return Boolean(currentSubject?.subjectName?.toLowerCase().includes('toán'))
   }, [currentSubject])
+
+  // Khối lớp cho môn Toán (Lớp 1 -> Lớp 12)
+  const detectedMathGrade = useMemo(() => {
+    const g = currentSubject?.grade || student.grade || student.academicPerformance || ''
+    const match = g.match(/Lớp\s*(\d+)/i)
+    if (match) return `Lớp ${match[1]}`
+    return 'Lớp 3'
+  }, [currentSubject?.grade, student.grade, student.academicPerformance])
+
+  const [selectedMathGradeMap, setSelectedMathGradeMap] = useState<Record<string, string>>({})
+  const currentMathGrade = (currentSubject?.id && selectedMathGradeMap[currentSubject.id]) || detectedMathGrade
+
+  const handleMathGradeChange = (newGrade: string) => {
+    if (currentSubject?.id) {
+      setSelectedMathGradeMap((prev) => ({ ...prev, [currentSubject.id]: newGrade }))
+    }
+    if (setEditedStudent) {
+      setEditedStudent((prev) => ({
+        ...prev,
+        grade: newGrade,
+        subjects: prev.subjects?.map((s) =>
+          s.id === currentSubject?.id ? { ...s, grade: newGrade } : s
+        ),
+      }))
+    }
+  }
 
   const handleBookTest = () => {
     if (onOpenBookingTest) {
@@ -138,66 +171,52 @@ export function CrmLeadStudentProfileView({
       ) : (
         <div className="space-y-3.5">
           {/* ============================================================ */}
-          {/* CỤM 1: TRƯỜNG HỌC, TRÌNH ĐỘ, TEST ĐẦU VÀO & HỌC THỬ (CHUẨN) */}
-          {/* Gộp toàn bộ vào 1 cụm section, hỗ trợ lead nhiều môn         */}
+          {/* CỤM 1: THÔNG TIN HỌC TẬP: MÔN HỌC, TEST ĐẦU VÀO & HỌC THỬ   */}
           {/* ============================================================ */}
           <div className="p-3.5 rounded-xl border border-indigo-200/90 dark:border-indigo-900/60 bg-indigo-50/20 dark:bg-indigo-950/20 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between pb-1.5 border-b border-border/60 flex-wrap gap-2">
-              <div className="text-xs font-bold text-indigo-900 dark:text-indigo-300">
-                <span>Học thuật, Đánh giá Test &amp; Trải nghiệm</span>
+            <div className="pb-1.5 border-b border-border/60">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="text-xs font-bold text-foreground">
+                  <span>Thông tin học tập</span>
+                </div>
+
+                {/* Action buttons (Pencil & Zoom) */}
+                <div className="flex items-center gap-0.5">
+                  {onStartEdit && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={onStartEdit}
+                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-700 hover:bg-indigo-100/70 dark:hover:bg-indigo-950 dark:hover:text-indigo-300 cursor-pointer transition-colors shadow-none border-0"
+                      title="Chỉnh sửa chân dung học viên"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {onZoom && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={onZoom}
+                      className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-700 hover:bg-indigo-100/70 dark:hover:bg-indigo-950 dark:hover:text-indigo-300 cursor-pointer transition-colors shadow-none border-0"
+                      title="Phóng to chân dung học viên"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
-              {/* Action buttons (Pencil & Zoom) - Đã xóa nhãn Đang tư vấn và đưa icon xuống đây theo yêu cầu */}
-              <div className="flex items-center gap-0.5">
-                {onStartEdit && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={onStartEdit}
-                    className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-700 hover:bg-indigo-100/70 dark:hover:bg-indigo-950 dark:hover:text-indigo-300 cursor-pointer transition-colors shadow-none border-0"
-                    title="Chỉnh sửa chân dung học viên"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-                {onZoom && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={onZoom}
-                    className="h-7 w-7 rounded-lg text-muted-foreground hover:text-indigo-700 hover:bg-indigo-100/70 dark:hover:bg-indigo-950 dark:hover:text-indigo-300 cursor-pointer transition-colors shadow-none border-0"
-                    title="Phóng to chân dung học viên"
-                  >
-                    <Maximize2 className="h-3.5 w-3.5" />
-                  </Button>
-                )}
+              {/* Dòng dưới tiêu đề: Trường & Học lực */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium pt-1 flex-wrap">
+                <span>Trường: <strong className="text-foreground font-semibold">{student.school || 'Tiểu học Lương Định Của (Quận 3)'}</strong></span>
+                <span className="text-muted-foreground/40">•</span>
+                <span>Học lực: <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">{student.academicPerformance || 'Học sinh Giỏi (THCS)'}</strong></span>
               </div>
             </div>
 
-            {/* Dòng thông tin trường và học lực (Chuẩn theo tạo mới / chi tiết hồ sơ: title text thường, không in hoa, không khối, không trình độ tiếp cận) */}
-            <div className="p-2.5 rounded-lg bg-card border border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="min-w-0">
-                <span className="text-muted-foreground text-[11px] font-medium block">
-                  Trường đang theo học hiện tại:
-                </span>
-                <p className={cn("font-semibold truncate pt-0.5 text-xs", student.school ? "text-foreground" : "text-muted-foreground/80 italic font-normal")} title={student.school}>
-                  {student.school || 'Chưa cập nhật'}
-                </p>
-              </div>
-              <div className="min-w-0">
-                <span className="text-muted-foreground text-[11px] font-medium block">
-                  Học lực hiện tại:
-                </span>
-                <p className={cn("font-semibold truncate pt-0.5 text-xs", student.academicPerformance ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground/80 italic font-normal")} title={student.academicPerformance}>
-                  {student.academicPerformance || 'Chưa cập nhật'}
-                </p>
-              </div>
-            </div>
-
-            {/* ============================================================ */}
-            {/* ============================================================ */}
             {/* ============================================================ */}
             {/* DANH SÁCH MÔN (BÊN TRÁI) VÀ NÚT ĐẶT LỊCH (BÊN PHẢI) */}
             <div className="w-full flex items-center justify-between gap-2 flex-wrap">
@@ -276,10 +295,10 @@ export function CrmLeadStudentProfileView({
               {/* HÀNG 2: KẾT QUẢ ĐÁNH GIÁ TRÌNH ĐỘ (Ẩn nếu lead mới chưa có booking đánh giá) */}
               {hasTestBooking && (
                 <div className="p-3 rounded-lg bg-card border border-sky-200/80 dark:border-sky-900/60 space-y-2.5">
-                {/* Header: Lịch đánh giá tinh gọn (2 dòng, có liên kết mở Popover chi tiết) */}
-                <div className="space-y-2 pb-2.5 border-b border-border/60">
-                  {/* Dòng 1: Lịch đánh giá: [Ngày giờ test có link mở Popover] | [Trạng thái] */}
+                {/* Header: Lịch đánh giá 1 dòng duy nhất (cơ sở đứng trước trạng thái) */}
+                <div className="pb-2.5 border-b border-border/60">
                   <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+                    {/* Trái: Lịch đánh giá: [Ngày giờ test có link mở Popover] */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-muted-foreground font-normal">Lịch đánh giá:</span>
                       <CrmLeadAssessmentSchedulePopover
@@ -301,158 +320,105 @@ export function CrmLeadStudentProfileView({
                       </CrmLeadAssessmentSchedulePopover>
                     </div>
 
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800">
-                      {currentSubject.statusLabel || 'Đang tư vấn'}
-                    </span>
-                  </div>
-
-                  {/* Dòng 2: Thông tin chính: Chương trình (trái) | Cơ sở (cạnh phải) */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <BookOpen className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                      <span className="font-semibold text-foreground">
-                        {currentSubject.testProgram || currentSubject.subjectName}
+                    {/* Phải: Cơ sở (đứng trước) + Trạng thái (đứng sau) */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 text-rose-500 shrink-0" />
+                        <span className="font-medium text-foreground">
+                          {currentSubject.testBranch || currentSubject.branch || student.branch || 'RinoEdu Linh Đàm'}
+                        </span>
                       </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 ml-auto">
-                      <MapPin className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-                      <span className="font-semibold text-foreground">
-                        {currentSubject.testBranch || currentSubject.branch || student.branch || 'RinoEdu Linh Đàm'}
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800">
+                        {currentSubject.statusLabel || 'Đang tư vấn'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Khối Trình độ & Trình độ đạt được (Đã xóa Speaking và LWR, title viết thường không in hoa) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  {/* Cột 1: Trình độ (đưa xuống dưới trước trình độ đạt được) */}
+                {/* Khối Trình độ, Trình độ đạt được & Link kết quả (3 cột cân đối) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  {/* Cột: Trình độ (Với Toán: chọn Lớp 1..12; Với Tiếng Anh: Trình độ mục tiêu) */}
                   <div className="space-y-0.5">
                     <span className="text-[11px] text-muted-foreground font-medium block">
                       Trình độ
                     </span>
-                    <div className="h-6 flex items-center font-semibold text-foreground text-xs">
-                      <span>
-                        {currentSubject.testTargetLevel || currentSubject.courseLevel || (isMathSubject ? 'Tư duy Tiểu học Cấp độ 2' : 'Flyers Intensive Cấp độ 3')}
-                      </span>
-                    </div>
+                    {isMathSubject ? (
+                      <div className="h-6 flex items-center">
+                        <Select value={currentMathGrade} onValueChange={handleMathGradeChange}>
+                          <SelectTrigger className="h-6 w-24 text-xs font-semibold bg-background/80 border-border/80 px-2 py-0 cursor-pointer shadow-none focus:ring-1 focus:ring-indigo-500">
+                            <SelectValue placeholder="Chọn lớp" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 12 }, (_, i) => `Lớp ${i + 1}`).map((g) => (
+                              <SelectItem key={g} value={g} className="text-xs cursor-pointer">
+                                {g}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div
+                        className="h-6 flex items-center font-semibold text-foreground text-xs truncate"
+                        title={currentSubject.testTargetLevel || currentSubject.courseLevel || 'Flyers Intensive Cấp độ 3'}
+                      >
+                        <span className="truncate">
+                          {currentSubject.testTargetLevel || currentSubject.courseLevel || 'Flyers Intensive Cấp độ 3'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Cột 2: Trình độ đạt được */}
+                  {/* Cột: Trình độ đạt được */}
                   <div className="space-y-0.5">
                     <span className="text-[11px] text-muted-foreground font-medium block">
                       Trình độ đạt được
                     </span>
                     <div className="h-6 flex items-center font-bold text-foreground text-xs">
                       <span>
-                        {currentSubject.testLevel || 'Level 2B'}
+                        {currentSubject.testLevel || (isMathSubject ? 'Level 2A' : 'Level 2B')}
                         {currentSubject.testSubLevel ? ` - ${currentSubject.testSubLevel}` : ''}
                       </span>
                     </div>
                   </div>
-                </div>
 
-                {/* 5 Kỹ năng Đánh giá năng lực (Tiếng Anh hoặc Toán theo môn) */}
-                <div className="p-2.5 rounded-lg bg-muted/30 border border-border/60 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground flex items-center gap-1">
-                      <span>
-                        {isMathSubject
-                          ? 'Năng lực 5 kỹ năng (Đánh giá Năng lực Toán & Logic)'
-                          : 'Năng lực 5 kỹ năng (Placement Test Tiếng Anh)'}
-                      </span>
+                  {/* Cột: Link kết quả (2 link: Phiếu kết quả & Bài làm online) */}
+                  <div className="space-y-0.5">
+                    <span className="text-[11px] text-muted-foreground font-medium block">
+                      Link kết quả
                     </span>
-                    <span className="text-xs font-bold text-foreground">
-                      Tổng điểm: <span className="text-rose-600 dark:text-rose-400 font-extrabold">{currentSubject.testScore || '8.5/10'}</span>
-                    </span>
-                  </div>
-
-                  {/* 5 thanh kỹ năng */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-[11px]">
-                    <div className="p-1.5 rounded-md bg-card border border-border/60 space-y-1">
-                      <span className="text-muted-foreground text-[10px] block">
-                        {isMathSubject ? 'Phản xạ logic' : 'Phản xạ'}
-                      </span>
-                      <div className="font-bold text-sky-600 dark:text-sky-400">{currentSubject.testRadarSkills?.reflex ?? 31}%</div>
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-sky-500 h-1.5 rounded-full" style={{ width: `${currentSubject.testRadarSkills?.reflex ?? 31}%` }} />
-                      </div>
+                    <div className="h-6 flex items-center gap-2 text-xs flex-wrap">
+                      <a
+                        href={currentSubject.detailReportLink || '/app/booking_test'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                        title="Xem phiếu kết quả đánh giá chi tiết"
+                      >
+                        <span>Phiếu kết quả</span>
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                      <span className="text-muted-foreground/40 text-[10px]">|</span>
+                      <a
+                        href={currentSubject.ipadTestLink || 'https://rinoedu.ai'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                        title="Xem bài làm trực tuyến từ iPad"
+                      >
+                        <Tablet className="h-3 w-3 shrink-0" />
+                        <span>Bài làm online</span>
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
                     </div>
-
-                    <div className="p-1.5 rounded-md bg-card border border-border/60 space-y-1">
-                      <span className="text-muted-foreground text-[10px] block">
-                        {isMathSubject ? 'Hình khối' : 'Phát âm'}
-                      </span>
-                      <div className="font-bold text-rose-600 dark:text-rose-400">{currentSubject.testRadarSkills?.pronunciation ?? 75}%</div>
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-rose-500 h-1.5 rounded-full" style={{ width: `${currentSubject.testRadarSkills?.pronunciation ?? 75}%` }} />
-                      </div>
-                    </div>
-
-                    <div className="p-1.5 rounded-md bg-card border border-border/60 space-y-1">
-                      <span className="text-muted-foreground text-[10px] block">
-                        {isMathSubject ? 'Số học nhẩm' : 'Từ - Cấu trúc'}
-                      </span>
-                      <div className="font-bold text-amber-600 dark:text-amber-400">{currentSubject.testRadarSkills?.vocabGrammar ?? 65}%</div>
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${currentSubject.testRadarSkills?.vocabGrammar ?? 65}%` }} />
-                      </div>
-                    </div>
-
-                    <div className="p-1.5 rounded-md bg-card border border-border/60 space-y-1">
-                      <span className="text-muted-foreground text-[10px] block">
-                        {isMathSubject ? 'Đọc hiểu đề' : 'Đọc - Viết'}
-                      </span>
-                      <div className="font-bold text-emerald-600 dark:text-emerald-400">{currentSubject.testRadarSkills?.readingWriting ?? 70}%</div>
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${currentSubject.testRadarSkills?.readingWriting ?? 70}%` }} />
-                      </div>
-                    </div>
-
-                    <div className="p-1.5 rounded-md bg-card border border-border/60 space-y-1 col-span-2 sm:col-span-1">
-                      <span className="text-muted-foreground text-[10px] block">
-                        {isMathSubject ? 'Tập trung logic' : 'Nghe hiểu'}
-                      </span>
-                      <div className="font-bold text-indigo-600 dark:text-indigo-400">{currentSubject.testRadarSkills?.listening ?? 80}%</div>
-                      <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${currentSubject.testRadarSkills?.listening ?? 80}%` }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Điểm mạnh & Điểm cần cải thiện */}
-                  <div className="pt-1.5 space-y-1 text-xs border-t border-border/50">
-                    <p className="text-[11px] leading-relaxed text-emerald-800 dark:text-emerald-300">
-                      <strong className="font-bold">Điểm mạnh:</strong> {currentSubject.testStrengths || 'Ghi nhớ tốt, phản xạ nhanh...'}
-                    </p>
-                    <p className="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
-                      <strong className="font-bold">Cần cải thiện:</strong> {currentSubject.testImprovements || 'Cần luyện tập thêm phản xạ và kiến thức trọng tâm.'}
-                    </p>
                   </div>
                 </div>
 
-                {/* 2 Link xem kết quả từ iPad & Xem trang đánh giá chi tiết đưa xuống dưới cùng */}
-                <div className="pt-2 border-t border-border/60 flex items-center justify-end gap-3 text-xs">
-                  <a
-                    href={currentSubject.ipadTestLink || 'https://rinoedu.ai'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-                  >
-                    <Tablet className="h-3 w-3" />
-                    <span>Xem kết quả từ iPad</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                  <a
-                    href={currentSubject.detailReportLink || '/app/booking_test'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-                  >
-                    <span>Xem trang đánh giá chi tiết</span>
-                    <ExternalLink className="h-2.5 w-2.5" />
-                  </a>
-                </div>
+                {/* 5 Kỹ năng Đánh giá năng lực & Điểm mạnh / Cần cải thiện (Có viền cho từng mục, không line process, 2 box chuẩn ảnh 2) */}
+                <CrmLeadAssessmentRadarSection
+                  currentSubject={currentSubject}
+                  isMathSubject={isMathSubject}
+                />
               </div>
               )}
 
@@ -504,21 +470,20 @@ export function CrmLeadStudentProfileView({
           </div>
 
           {/* ============================================================ */}
-          {/* CỤM 2: TÂM LÝ & PHƯƠNG PHÁP HỌC TẬP (MỤC TIÊU Ở TRÊN CÙNG) */}
-          {/* 4 thông tin gom chung 1 khối thống nhất, không tách 4 khối  */}
+          {/* CỤM 2: TÂM LÝ & PHƯƠNG PHÁP HỌC TẬP (NỘI DUNG PHẲNG, BỎ VIỀN NỀN) */}
           {/* ============================================================ */}
           <div className="p-3.5 rounded-xl border border-border/80 bg-card space-y-3 shadow-2xs">
-            <div className="text-xs font-bold text-purple-900 dark:text-purple-300 pb-1.5 border-b border-border/60">
+            <div className="text-xs font-bold text-foreground pb-1.5 border-b border-border/60">
               <span>Đặc điểm tâm lý &amp; Phương pháp học tập</span>
             </div>
 
-            {/* 1. MỤC TIÊU HỌC TẬP CỦA CON (ĐƯỢC ĐẶT LÊN TRÊN CÙNG) */}
-            <div className="p-3 rounded-lg border border-emerald-200 dark:border-emerald-900/70 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-1">
-              <div className="text-xs font-bold text-emerald-900 dark:text-emerald-300">
+            {/* 1. MỤC TIÊU HỌC TẬP CỦA CON (ĐẶT LÊN TRÊN CÙNG - PHẲNG, KHÔNG VIỀN, KHÔNG NỀN) */}
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">
                 <span>Mục tiêu học tập &amp; Kỳ vọng cam kết đầu ra</span>
               </div>
               {student.learningGoal ? (
-                <p className="text-xs font-semibold text-foreground leading-relaxed">
+                <p className="text-xs font-medium text-foreground leading-relaxed">
                   {student.learningGoal}
                 </p>
               ) : (
@@ -528,11 +493,11 @@ export function CrmLeadStudentProfileView({
               )}
             </div>
 
-            {/* 2. GOM 4 THÔNG TIN (VARK, TÍNH CÁCH, SỞ THÍCH, ĐIỂM MẠNH/YẾU) TRONG 1 CỤM THỐNG NHẤT */}
-            <div className="p-3 rounded-lg border border-border/70 bg-muted/20 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* 2. GOM 4 THÔNG TIN (VARK, TÍNH CÁCH, SỞ THÍCH, ĐIỂM MẠNH/YẾU) - PHẲNG, KHÔNG VIỀN, KHÔNG NỀN */}
+            <div className="pt-2.5 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Phong cách tiếp thu VARK */}
               <div className="space-y-1">
-                <div className="text-xs font-bold text-foreground">
+                <div className="text-xs font-semibold text-foreground">
                   <span>Phong cách tiếp thu (VARK)</span>
                 </div>
                 <p className={cn("text-xs leading-relaxed", student.learningStyle ? "text-muted-foreground" : "text-muted-foreground/80 italic")}>
@@ -542,7 +507,7 @@ export function CrmLeadStudentProfileView({
 
               {/* Tính cách & Tâm lý lớp học */}
               <div className="space-y-1">
-                <div className="text-xs font-bold text-foreground">
+                <div className="text-xs font-semibold text-foreground">
                   <span>Tính cách &amp; Tâm lý lớp học</span>
                 </div>
                 <p className={cn("text-xs leading-relaxed", student.personality ? "text-muted-foreground" : "text-muted-foreground/80 italic")}>
@@ -552,7 +517,7 @@ export function CrmLeadStudentProfileView({
 
               {/* Sở thích & Đam mê ngoài giờ */}
               <div className="space-y-1">
-                <div className="text-xs font-bold text-foreground">
+                <div className="text-xs font-semibold text-foreground">
                   <span>Sở thích &amp; Đam mê</span>
                 </div>
                 <p className={cn("text-xs leading-relaxed", student.interests ? "text-muted-foreground" : "text-muted-foreground/80 italic")}>
@@ -562,18 +527,18 @@ export function CrmLeadStudentProfileView({
 
               {/* Điểm mạnh & Điểm cần rèn */}
               <div className="space-y-1">
-                <div className="text-xs font-bold text-foreground">
+                <div className="text-xs font-semibold text-foreground">
                   <span>Điểm mạnh &amp; Cần rèn giũa</span>
                 </div>
                 <div className="text-xs space-y-0.5">
                   <p>
-                    <strong className="text-emerald-700 dark:text-emerald-400">Mạnh:</strong>{' '}
+                    <strong className="text-emerald-700 dark:text-emerald-400 font-medium">Mạnh:</strong>{' '}
                     <span className={cn(student.strengths ? "text-muted-foreground" : "text-muted-foreground/80 italic")}>
                       {student.strengths || 'Chưa cập nhật (Cập nhật sau)'}
                     </span>
                   </p>
                   <p>
-                    <strong className="text-amber-700 dark:text-amber-400">Cần rèn:</strong>{' '}
+                    <strong className="text-amber-700 dark:text-amber-400 font-medium">Cần rèn:</strong>{' '}
                     <span className={cn(student.weaknesses ? "text-muted-foreground" : "text-muted-foreground/80 italic")}>
                       {student.weaknesses || 'Chưa cập nhật (Cập nhật sau)'}
                     </span>

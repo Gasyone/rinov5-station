@@ -77,7 +77,7 @@ export function AttendanceStatusBadge({
   if (status === 'late') {
     return (
       <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/20 px-2.5 py-0.5 text-xs font-normal text-amber-600 border border-amber-200/50 select-none">
-        Đến muộn
+        Đến Muộn
       </span>
     )
   }
@@ -99,7 +99,7 @@ export function HomeworkStatusBadge({ status }: { status?: SessionHistory['homew
   if (status === 'late') {
     return (
       <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 text-xs font-normal text-amber-600 border border-amber-200/50 select-none">
-        Nộp muộn
+        Nộp Muộn
       </span>
     )
   }

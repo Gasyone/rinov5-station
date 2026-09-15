@@ -6,14 +6,24 @@ import type {
 } from '@/components/screens/crm-leads/detail/crmLeadDetailTypes'
 
 export type LeadStatus =
-  // Standardized Lifecycle Pipeline
+  // Core / Main Stages
   | 'moi_tiep_nhan'
   | 'dang_tu_van'
   | 'hen_trai_nghiem'
   | 'cho_chot'
+  | 'thuc_hien_don'
   | 'chuyen_doi'
   | 'that_bai'
   | 'tam_dung'
+  // Flat Funnel Specific Statuses
+  | 'chua_phan_bo'
+  | 'hen_goi_lai'
+  | 'da_dat_test'
+  | 'da_test_co_kq'
+  | 'hoc_thu'
+  | 'hen_nop_phi'
+  | 'da_coc'
+  | 'cho_xep_lop'
   // Backward compatibility legacy statuses
   | 'chua_tiep_can'
   | 'dang_cham_soc'
@@ -96,6 +106,7 @@ export interface Lead {
   createdAt: string
   slaDeadline?: string // Hạn SLA xử lý theo trạng thái
   lastNote?: string
+  academicPerformance?: string
 
   // Thông tin Lead quay lại (Returning Lead) & Lịch sử khảo sát trước
   isReturningLead?: boolean
@@ -246,7 +257,7 @@ export const mockLeads: Lead[] = [
       },
     ],
     source: 'facebook',
-    status: 'danh_gia_trai_nghiem',
+    status: 'da_dat_test',
     subStatus: 'Đang hẹn test lại (Đợt 2)',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
@@ -499,7 +510,7 @@ export const mockLeads: Lead[] = [
     email: 'thu.ha@gmail.com',
     familySiblings: ['Bé An (8t)'],
     source: 'facebook',
-    status: 'danh_gia_trai_nghiem',
+    status: 'da_coc',
     subStatus: 'Đã test đợt 2 (Level B2)',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
@@ -636,7 +647,7 @@ export const mockLeads: Lead[] = [
     address: 'Phường Đa Kao, Quận 1, TP.HCM',
     email: 'nam.tran@yahoo.com',
     source: 'hotline',
-    status: 'chua_tiep_can',
+    status: 'chua_phan_bo',
     assignedTo: '',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-11',
@@ -660,7 +671,7 @@ export const mockLeads: Lead[] = [
     email: 'bich.pham@outlook.com',
     familySiblings: ['Bé Linh (7t)'],
     source: 'referral',
-    status: 'tiem_nang',
+    status: 'hen_nop_phi',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Nguyễn Tuân',
     createdAt: '2026-08-09',
@@ -696,7 +707,7 @@ export const mockLeads: Lead[] = [
     email: 'bich.pham@outlook.com',
     familySiblings: ['Bé Đức (10t)'],
     source: 'referral',
-    status: 'dang_cham_soc',
+    status: 'hoc_thu',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Nguyễn Tuân',
     createdAt: '2026-08-09',
@@ -922,7 +933,7 @@ export const mockLeads: Lead[] = [
     address: 'Phường Phạm Ngũ Lão, Quận 1, TP.HCM',
     email: 'tai.ngo@gmail.com',
     source: 'facebook',
-    status: 'dang_cham_soc',
+    status: 'hen_goi_lai',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-11',
@@ -1092,10 +1103,12 @@ export const mockLeads: Lead[] = [
     address: 'Phường Nguyễn Cư Trinh, Quận 1, TP.HCM',
     email: 'hung.le@gmail.com',
     source: 'facebook',
-    status: 'danh_gia_trai_nghiem',
+    status: 'da_dat_test',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-10',
+    schoolName: 'Tiểu học Lương Định Của (Quận 3)',
+    academicAbility: 'Học sinh Giỏi (THCS)',
     lastNote: 'Đã xếp lịch test tuần này, chưa giao GV test đầu vào.',
     testStatus: 'scheduled',
     testDate: '17/08/2026',
@@ -1125,7 +1138,7 @@ export const mockLeads: Lead[] = [
     address: 'Phường Bến Thành, Quận 1, TP.HCM',
     email: 'huong.do@yahoo.com',
     source: 'hotline',
-    status: 'danh_gia_trai_nghiem',
+    status: 'da_test_co_kq',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-08',
@@ -1191,7 +1204,7 @@ export const mockLeads: Lead[] = [
     address: 'Phường Tân Thuận Đông, Quận 7, TP.HCM',
     email: 'chi.trinh@gmail.com',
     source: 'referral',
-    status: 'tiem_nang',
+    status: 'da_coc',
     assignedTo: 'Trần Thị Mai (Sales)',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-03',
@@ -1341,7 +1354,7 @@ export const mockLeads: Lead[] = [
     address: 'Phường Phú Mỹ, Quận 7, TP.HCM',
     email: 'dung.cao@hcm.gov.vn',
     source: 'referral',
-    status: 'danh_gia_trai_nghiem',
+    status: 'cho_xep_lop',
     assignedTo: 'Nguyễn Văn Hùng (Sales Manager)',
     branch: 'RinoEdu Linh Đàm',
     createdAt: '2026-08-01',

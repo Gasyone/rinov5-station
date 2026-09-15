@@ -147,6 +147,29 @@
   .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: color-mix(in srgb, var(--muted-foreground) 36%, transparent);
   }
+
+  .matrix-scrollbar {
+    scrollbar-width: thin !important;
+    scrollbar-color: #94a3b8 #f1f5f9 !important;
+  }
+
+  .matrix-scrollbar::-webkit-scrollbar {
+    height: 7px !important;
+  }
+
+  .matrix-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .matrix-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #94a3b8 !important;
+    border-radius: 9999px !important;
+  }
+
+  .matrix-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #64748b !important;
+  }
 }
 
 /* Tỷ lệ hiển thị cơ bản ổn định (Tương thích 100% với Zoom của Trình duyệt).

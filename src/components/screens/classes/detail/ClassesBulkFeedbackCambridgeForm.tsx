@@ -46,128 +46,14 @@ interface ClassesBulkFeedbackCambridgeFormProps {
   readOnly?: boolean
 }
 
-const CAMBRIDGE_HOMEWORK_OPTIONS = [
-  { value: 'Done', label: 'Done', type: 'done' },
-  { value: 'Partly Done', label: 'Partly Done', type: 'partly' },
-  { value: 'Not Yet', label: 'Not Yet', type: 'not_yet' },
-  { value: 'No Homework', label: 'No Homework', type: 'none' },
-]
-
-const CAMBRIDGE_EVALUATION_OPTIONS = [
-  { value: 1, label: '1 - Poor' },
-  { value: 2, label: '2 - Needs Improvement' },
-  { value: 3, label: '3 - Below Expectations' },
-  { value: 4, label: '4 - Meets Expectations' },
-  { value: 5, label: '5 - Exceeds Expectations' },
-]
-
-const CAMBRIDGE_REMINDERS = [
-  "Attend class on time (automatically updated)",
-  "Pay more attention and don't do your own work in class",
-  "Be confident in interacting with the teacher and classmates in class",
-  "Do not turn off the camera frequently",
-  "Need a better internet connection",
-  "Need to fix camera",
-  "Need to fix micro",
-  "Avoid studying in noisy and crowded places.",
-  "Be polite to teachers",
-  "Adjust the camera properly",
-  "Sit upright with proper posture",
-]
-
-const CAMBRIDGE_SUGGESTIONS: Record<
-  'vocabulary' | 'grammar' | 'speaking' | 'pronunciation',
-  Record<number, { good: string[]; improve: string[] }>
-> = {
-  vocabulary: {
-    1: {
-      good: ['tries to repeat after teacher', 'shows effort in speaking', 'listens and imitates sounds'],
-      improve: ['needs strong support to remember words', 'struggles to recall past words', 'forgets quickly after lessons', 'needs more listening and repetition practice', 'limited vocabulary for simple topics']
-    },
-    2: {
-      good: ['recognizes some learned words', 'tries to name pictures with help', 'remembers a few familiar words'],
-      improve: ['forgets or mixes up words', 'needs help to pronounce clearly', 'needs more word practice', 'rarely uses learned words', 'depends on teacher\'s support to recall']
-    },
-    3: {
-      good: ['remembers basic words from lessons', 'understands meanings through pictures', 'uses simple familiar words'],
-      improve: ['confuses old and new words', 'forgets words without review', 'needs support to use words in context', 'needs regular vocabulary revision', 'slow to recall new vocabulary']
-    },
-    4: {
-      good: ['uses familiar words correctly', 'recalls vocabulary from past lessons', 'uses words in short sentences', 'understands teacher\'s prompts easily'],
-      improve: ['needs reminders to use full sentences', 'sometimes slow to recall new words', 'can expand vocabulary further']
-    },
-    5: {
-      good: ['uses a wide range of familiar words', 'remembers new words quickly', 'uses vocabulary fluently and accurately', 'recalls past words easily', 'speaks confidently with varied words'],
-      improve: ['encourage use in longer or more complex sentences', 'challenge with advanced vocabulary', 'continue expanding word range']
-    }
-  },
-  grammar: {
-    1: {
-      good: ['tries to repeat short phrases', 'understands simple commands', 'shows effort to speak'],
-      improve: ['unable to form short phrases', 'needs more listening and repetition', 'needs help using simple sentences', 'limited sentence awareness']
-    },
-    2: {
-      good: ['follows sentence patterns with help', 'uses short phrases correctly with guidance', 'tries to respond using short patterns'],
-      improve: ['needs help forming longer sentences', 'still makes grammar mistakes', 'needs regular review and correction', 'forgets structure easily']
-    },
-    3: {
-      good: ['uses short, correct phrases with help', 'tries to follow sentence patterns', 'applies simple grammar rules'],
-      improve: ['still mixes up word order', 'needs consistent review and correction', 'responses lack completeness']
-    },
-    4: {
-      good: ['forms simple sentences clearly', 'applies patterns in different contexts'],
-      improve: ['needs to add more complete responses', 'still needs correction on minor errors']
-    },
-    5: {
-      good: ['speaks short sentences naturally', 'adjusts sentence forms correctly', 'applies patterns in different contexts', 'maintains good accuracy'],
-      improve: ['maintain accuracy while speaking faster']
-    }
-  },
-  speaking: {
-    1: {
-      good: ['tries to answer when asked', 'responds with single words', 'shows effort to speak'],
-      improve: ['often quiet or shy', 'needs more confidence', 'needs frequent prompting', 'short or unclear answers']
-    },
-    2: {
-      good: ['speaks when prompted', 'answers short questions with help', 'can recall some learned words'],
-      improve: ['pauses or stops mid-sentence', 'speaks softly or unclearly', 'needs practice in full answers', 'needs more speaking turns']
-    },
-    3: {
-      good: ['says short learned phrases', 'tries to speak independently', 'uses vocabulary from lessons'],
-      improve: ['limited sentence length', 'needs more spontaneous speech', 'may rely on teacher\'s help', 'pronunciation sometimes unclear']
-    },
-    4: {
-      good: ['speaks clearly with correct structure', 'expresses ideas simply', 'joins class speaking confidently'],
-      improve: ['needs longer sentences', 'should add more details', 'may hesitate occasionally']
-    },
-    5: {
-      good: ['speaks clearly and naturally', 'uses vocabulary fluently', 'expresses ideas flexibly', 'joins class speaking confidently'],
-      improve: ['needs exposure to more speaking tasks']
-    }
-  },
-  pronunciation: {
-    1: {
-      good: ["tries to copy teacher's sounds", "listens carefully to pronunciation models"],
-      improve: ['sounds unclear or incomplete', 'needs slow and repeated drills', 'skips ending sounds', 'confuses similar sounds', 'tone not natural', 'limited awareness of word stress']
-    },
-    2: {
-      good: ['produces some common sounds correctly', 'tries to correct self when guided'],
-      improve: ['still confuses several sounds', 'often drops ending sounds', 'tone not natural yet', 'limited awareness of word stress']
-    },
-    3: {
-      good: ['pronounces most learned words clearly', "copies teacher's sounds accurately", 'includes ending sounds with guidance'],
-      improve: ['sometimes drops endings', 'needs to improve stress and tone']
-    },
-    4: {
-      good: ['pronounces words clearly and evenly', 'keeps stress and tone', 'includes ending sounds when speaking', 'natural mouth movement'],
-      improve: ['needs focus on tricky sounds', 'refine intonation naturally']
-    },
-    5: {
-      good: ['speaks with clear, natural sounds', 'keeps stress and tone well', 'includes all ending sounds', 'shows strong sound awareness'],
-      improve: ['refine intonation for expressiveness', 'maintain fluency at higher speed']
-    }
-  }
-}
+import {
+  CAMBRIDGE_HOMEWORK_OPTIONS,
+  CAMBRIDGE_EVALUATION_OPTIONS,
+  CAMBRIDGE_REMINDERS,
+  CAMBRIDGE_SUGGESTIONS,
+  CAMBRIDGE_HIGHLIGHT_TAGS,
+  CAMBRIDGE_POINTS_TO_NOTE_TAGS,
+} from './cambridgeFeedbackConstants'
 
 interface PerformanceEvaluationTagInputProps {
   value: string
@@ -448,6 +334,33 @@ export function ClassesBulkFeedbackCambridgeForm({
     onUpdateField('reminders', nextReminders)
   }
 
+  const syncOtherNotes = (str: string, weak: string) => {
+    const parts: string[] = []
+    if (str.trim()) parts.push(`Điểm nổi bật: ${str.trim()}`)
+    if (weak.trim()) parts.push(`Điểm cần lưu ý: ${weak.trim()}`)
+    onUpdateField('otherNotes', parts.join('; '))
+  }
+
+  const handleAddHighlightTag = (tag: string) => {
+    if (readOnly) return
+    const current = formState.strength || ''
+    const updated = current
+      ? (current.endsWith(', ') || current.endsWith(',') ? `${current}${tag}` : `${current}, ${tag}`)
+      : tag
+    onUpdateField('strength', updated)
+    syncOtherNotes(updated, formState.weakness || '')
+  }
+
+  const handleAddPointToNoteTag = (tag: string) => {
+    if (readOnly) return
+    const current = formState.weakness || ''
+    const updated = current
+      ? (current.endsWith(', ') || current.endsWith(',') ? `${current}${tag}` : `${current}, ${tag}`)
+      : tag
+    onUpdateField('weakness', updated)
+    syncOtherNotes(formState.strength || '', updated)
+  }
+
   return (
     <div className="space-y-4 max-w-[850px] mx-auto pb-4">
       {/* Banner / Current student title */}
@@ -667,16 +580,73 @@ export function ClassesBulkFeedbackCambridgeForm({
           />
         </div>
 
-        {/* Other text field */}
-        <div className="py-1.5 bg-transparent space-y-1">
-          <label className="text-xs font-bold text-foreground uppercase tracking-wide">Other</label>
-          <Input
-            value={formState.otherNotes}
-            onChange={(e) => onUpdateField('otherNotes', e.target.value)}
-            disabled={readOnly}
-            placeholder="Note ..."
-            className="text-xs h-8 bg-zinc-50/50 dark:bg-zinc-950/50 border-zinc-200 dark:border-zinc-800 rounded-lg"
-          />
+        {/* General Highlights & Points to Note (2 columns) */}
+        <div className="py-2 bg-transparent space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* Column 1: Điểm nổi bật (Key Highlights) */}
+            <div className="space-y-1.5 p-3 rounded-xl border border-emerald-200/70 dark:border-emerald-900/40 bg-emerald-50/30 dark:bg-emerald-950/10">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+                <Check className="h-3.5 w-3.5 stroke-[2.5px]" />
+                Key Highlights
+              </label>
+              <Input
+                value={formState.strength || ''}
+                onChange={(e) => {
+                  const val = e.target.value
+                  onUpdateField('strength', val)
+                  syncOtherNotes(val, formState.weakness || '')
+                }}
+                disabled={readOnly}
+                placeholder="e.g. Confident speaker, good focus, quick learner..."
+                className="text-xs h-8.5 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/60"
+              />
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {CAMBRIDGE_HIGHLIGHT_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    disabled={readOnly}
+                    onClick={() => handleAddHighlightTag(tag)}
+                    className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 rounded-md px-2 py-0.5 font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/40 cursor-pointer select-none transition-colors disabled:cursor-default"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Column 2: Điểm cần lưu ý (Points to Note) */}
+            <div className="space-y-1.5 p-3 rounded-xl border border-amber-200/70 dark:border-amber-900/40 bg-amber-50/30 dark:bg-amber-950/10">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                <span className="text-xs">⚠️</span>
+                Points to Note
+              </label>
+              <Input
+                value={formState.weakness || ''}
+                onChange={(e) => {
+                  const val = e.target.value
+                  onUpdateField('weakness', val)
+                  syncOtherNotes(formState.strength || '', val)
+                }}
+                disabled={readOnly}
+                placeholder="e.g. Needs to speak louder, review vocabulary..."
+                className="text-xs h-8.5 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/60"
+              />
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {CAMBRIDGE_POINTS_TO_NOTE_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    disabled={readOnly}
+                    onClick={() => handleAddPointToNoteTag(tag)}
+                    className="text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80 rounded-md px-2 py-0.5 font-medium hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer select-none transition-colors disabled:cursor-default"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

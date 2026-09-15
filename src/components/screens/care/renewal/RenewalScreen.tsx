@@ -1,18 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import Link from 'next/link'
-import { User, Users, Building2, Globe } from 'lucide-react'
 import { getCareAlerts, mockCareAlerts, getFamilyContacts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { RenewalTable } from './RenewalTable'
 import { RenewalToolbar } from './RenewalToolbar'
 import { StudentCareDetailPage } from '../StudentCareDetailPage'
 import { useCallStore } from '@/stores/useCallStore'
-import {
-  useSystemConfigStore,
-  SIMULATED_TEAM_LIST,
-} from '@/stores/useSystemConfigStore'
+import { useSystemConfigStore } from '@/stores/useSystemConfigStore'
 import { FilterGroupAsidePanel } from '@/components/filters'
 import type { StatusTile } from '@/components/shared'
 import {
@@ -33,7 +28,6 @@ export function RenewalScreen() {
   const dataScope = useSystemConfigStore((s) => s.dataScope)
   const currentStaffName = useSystemConfigStore((s) => s.currentStaffName)
   const currentBranch = useSystemConfigStore((s) => s.currentBranch)
-  const currentTeam = useSystemConfigStore((s) => s.currentTeam)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -118,13 +112,9 @@ export function RenewalScreen() {
     const baseAlerts = getCareAlerts()
     let res = baseAlerts
 
-    // 0. Filter by System Data Scope (Cấu hình phạm vi dữ liệu hệ thống)
+    // 0. Filter by System Data Scope (Cấu hình phạm vi dữ liệu hệ thống: Cá nhân hoặc Cơ sở)
     if (dataScope === 'personal') {
       res = res.filter((item) => item.csStaff === currentStaffName)
-    } else if (dataScope === 'team') {
-      const teamObj = SIMULATED_TEAM_LIST.find((t) => t.name === currentTeam)
-      const members = teamObj ? teamObj.members : [currentStaffName]
-      res = res.filter((item) => members.includes(item.csStaff))
     } else if (dataScope === 'branch') {
       res = res.filter((item) => {
         const student = mockStudents.find(
@@ -133,7 +123,6 @@ export function RenewalScreen() {
         return student && student.branch === currentBranch
       })
     }
-    // 'global' has no scope restrictions
 
     // Exclude 'that_bai' and 'chua_den_han' from base tab pool unless explicitly selected in advanced filters
     const includesThatBai = selectedCalls.has('that_bai') || selectedCalls.has('Thất bại') || selectedRenewalStatuses.has('that_bai')
@@ -363,7 +352,6 @@ export function RenewalScreen() {
     dataScope,
     currentStaffName,
     currentBranch,
-    currentTeam,
   ])
 
   // Compute care progress tiles from baseFiltered
@@ -678,38 +666,6 @@ export function RenewalScreen() {
         selectedExpiryPeriod={selectedExpiryPeriod}
         onExpiryPeriodChange={(p) => { setSelectedExpiryPeriod(p); resetPagination() }}
       />
-
-      {/* System Data Scope Indicator Banner */}
-      <div className="mx-2 lg:mx-3 my-1 px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 flex items-center justify-between text-xs shrink-0">
-        <div className="flex items-center gap-2 text-foreground">
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-            {dataScope === 'personal' && <User className="h-3 w-3" />}
-            {dataScope === 'team' && <Users className="h-3 w-3" />}
-            {dataScope === 'branch' && <Building2 className="h-3 w-3" />}
-            {dataScope === 'global' && <Globe className="h-3 w-3" />}
-          </div>
-          <span className="text-xs">
-            <span className="text-muted-foreground">Phạm vi:</span>{' '}
-            <span className="font-semibold text-primary">
-              {dataScope === 'personal' && 'Cá nhân'}
-              {dataScope === 'team' && 'Cùng nhóm'}
-              {dataScope === 'branch' && 'Toàn cơ sở'}
-              {dataScope === 'global' && 'Toàn hệ thống'}
-            </span>
-            <span className="text-muted-foreground ml-2">
-              • {filtered.length} học viên
-            </span>
-          </span>
-        </div>
-
-        <Link
-          href="/app/system_config"
-          className="text-primary hover:underline font-medium flex items-center gap-1 text-[11px] shrink-0"
-        >
-          <span>Đổi phạm vi dữ liệu</span>
-          <span aria-hidden="true">&rarr;</span>
-        </Link>
-      </div>
 
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-1.5 lg:px-3 pb-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">

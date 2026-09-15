@@ -8,19 +8,31 @@ export interface StatusTileOption {
   statusValue: string
 }
 
+export type StatusTileMode = 'main' | 'all'
+
 export const STATUS_LABEL_MAP: Record<LeadStatus, string> = {
-  // Chuẩn hóa Vòng đời Lead
+  // Chuẩn hóa Vòng đời Lead - Trạng thái chính
   moi_tiep_nhan: 'Mới tiếp nhận',
   dang_tu_van: 'Đang tư vấn',
-  hen_trai_nghiem: 'Hẹn trải nghiệm',
+  hen_trai_nghiem: 'Đánh giá & Học thử',
   cho_chot: 'Chờ chốt deal',
+  thuc_hien_don: 'Thực hiện đơn',
   chuyen_doi: 'Đã chuyển đổi',
   that_bai: 'Thất bại',
   tam_dung: 'Tạm dừng',
+  // Trạng thái phễu trải phẳng chi tiết
+  chua_phan_bo: 'Chưa phân bổ',
+  hen_goi_lai: 'Hẹn gọi lại',
+  da_dat_test: 'Đã đặt lịch Test',
+  da_test_co_kq: 'Đã Test / Có kết quả',
+  hoc_thu: 'Đăng ký học thử',
+  hen_nop_phi: 'Hẹn nộp phí / Giữ chỗ',
+  da_coc: 'Đã cọc học phí',
+  cho_xep_lop: 'Chờ xếp lớp & Sách',
   // Tương thích ngược với dữ liệu cũ
   chua_tiep_can: 'Mới tiếp nhận',
   dang_cham_soc: 'Đang tư vấn',
-  danh_gia_trai_nghiem: 'Hẹn trải nghiệm',
+  danh_gia_trai_nghiem: 'Đánh giá & Học thử',
   tiem_nang: 'Chờ chốt deal',
 }
 
@@ -222,6 +234,113 @@ export interface LeadMyMetrics {
 // BỘ LỌC TOÀN DIỆN: PHÂN BỔ ĐỊA BÀN & LÀM SẠCH DATA
 // ========================================================
 
+export interface LegacyStatusCol {
+  id: string
+  label: string
+  color: string
+}
+
+export interface LegacyStatusGroup {
+  groupCode: string
+  groupLabel?: string
+  columns: LegacyStatusCol[]
+}
+
+export const LEGACY_STATUS_GROUPS: LegacyStatusGroup[] = [
+  {
+    groupCode: 'T0',
+    groupLabel: 'Tiếp nhận Lead',
+    columns: [
+      { id: 'so_sai', label: 'Số sai', color: '#333333' },
+      { id: 'kho_chung', label: 'Kho chung', color: '#5b32a8' },
+      { id: 'kho_new', label: 'Kho NEW', color: '#5b32a8' },
+      { id: 'kho_loc', label: 'Kho lọc', color: '#795548' },
+    ],
+  },
+  {
+    groupCode: 'T1',
+    groupLabel: 'Tư vấn & Chăm sóc',
+    columns: [
+      { id: 'new', label: 'New', color: '#38bdf8' },
+      { id: 'knm', label: 'KNM', color: '#0d47a1' },
+      { id: 'gl', label: 'GL', color: '#ab47bc' },
+      { id: 'qt', label: 'Quan tâm', color: '#ff9800' },
+    ],
+  },
+  {
+    groupCode: 'T2',
+    groupLabel: 'Đánh giá & Trải nghiệm',
+    columns: [
+      { id: 'tad', label: 'Test/Demo', color: '#e57373' },
+      { id: 'dtt', label: 'Đã Test /Demo', color: '#880e4f' },
+      { id: 'tlttt', label: 'Ra level', color: '#f48fb1' },
+      { id: 'dentt', label: 'Confirm', color: '#00897b' },
+      { id: 'dadentt', label: 'Đã đến TT', color: '#00bcd4' },
+      { id: 'sdt', label: 'Tiềm năng', color: '#f44336' },
+      { id: 'dg', label: 'Đã gộp', color: '#a1887f' },
+    ],
+  },
+  {
+    groupCode: 'T3',
+    groupLabel: 'Đơn hàng & Giao vận',
+    columns: [
+      { id: 'bank', label: 'Bank', color: '#afb42b' },
+      { id: 'cod', label: 'COD', color: '#2e7d32' },
+      { id: 'cgh', label: 'Chờ giao hàng', color: '#ef5350' },
+      { id: 'dgnvc', label: 'Đã gửi NVC', color: '#ef5350' },
+      { id: 'dgh', label: 'Đang giao hàng', color: '#ef5350' },
+      { id: 'cho_xep_lop', label: 'Chờ xếp lớp', color: '#0284c7' },
+      { id: 'chuyen_doi', label: 'Đã chuyển đổi', color: '#10b981' },
+    ],
+  },
+]
+
+export const MAIN_STATUS_GROUPS: LegacyStatusGroup[] = [
+  {
+    groupCode: 'T0',
+    groupLabel: 'Tiếp nhận',
+    columns: [
+      { id: 'chua_phan_bo', label: 'Chưa phân bổ', color: '#f59e0b' },
+      { id: 'moi_tiep_nhan', label: 'Mới tiếp nhận', color: '#38bdf8' },
+    ],
+  },
+  {
+    groupCode: 'T1',
+    groupLabel: 'Tư vấn',
+    columns: [
+      { id: 'dang_tu_van', label: 'Đang tư vấn', color: '#ff9800' },
+    ],
+  },
+  {
+    groupCode: 'T2',
+    groupLabel: 'Đánh giá & Học thử',
+    columns: [
+      { id: 'hen_trai_nghiem', label: 'Đánh giá & Học thử', color: '#ec4899' },
+    ],
+  },
+  {
+    groupCode: 'T3',
+    groupLabel: 'Chờ chốt deal',
+    columns: [
+      { id: 'cho_chot', label: 'Chờ chốt deal', color: '#00897b' },
+    ],
+  },
+  {
+    groupCode: 'T4',
+    groupLabel: 'Thực hiện đơn',
+    columns: [
+      { id: 'thuc_hien_don', label: 'Thực hiện đơn', color: '#ef5350' },
+    ],
+  },
+  {
+    groupCode: 'Hoàn tất',
+    groupLabel: 'Chuyển đổi thành công',
+    columns: [
+      { id: 'chuyen_doi', label: 'Đã chuyển đổi', color: '#10b981' },
+    ],
+  },
+]
+
 export interface AdvancedFiltersState {
   // Trụ cột 1: Phân bổ & Địa bàn
   regions: string[]
@@ -240,6 +359,8 @@ export interface AdvancedFiltersState {
   sources: string[]
   subjects: string[]
   statuses: string[]
+  // Hồ sơ thất bại & dừng chăm sóc (chỉ mở xem khi lọc nâng cao)
+  failedStatuses: string[]
 }
 
 export const INITIAL_ADVANCED_FILTERS: AdvancedFiltersState = {
@@ -257,7 +378,19 @@ export const INITIAL_ADVANCED_FILTERS: AdvancedFiltersState = {
   sources: [],
   subjects: [],
   statuses: [],
+  failedStatuses: [],
 }
+
+export const FAILED_STATUS_OPTIONS = [
+  { value: 'that_bai', label: '⛔ Tất cả Lead Thất bại / Đóng' },
+  { value: 'fail_thua', label: 'Thua đối thủ cạnh tranh' },
+  { value: 'fail_khong_nghe_may', label: 'Không nghe máy / Sai số' },
+  { value: 'fail_no_show', label: 'Vắng test (No-show)' },
+  { value: 'fail_phi_cao', label: 'Chê học phí cao' },
+  { value: 'fail_klp', label: 'Không làm phiền (DNC)' },
+  { value: 'fail_huy', label: 'Khách hủy đăng ký' },
+  { value: 'tam_dung', label: 'Tạm dừng chăm sóc' },
+]
 
 export const REGION_OPTIONS = [
   { value: 'mien_bac', label: 'Miền Bắc' },

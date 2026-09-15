@@ -3,10 +3,38 @@ export interface MathThinkingSkillConfig {
   label: string
   shortLabel: string
   icon: string
-  ratingKey: 'evaluation' | 'mathLogic' | 'mathArithmetic' | 'mathSpatial' | 'mathModeling'
-  strengthKey: 'strength' | 'mathLogicStrength' | 'mathArithmeticStrength' | 'mathSpatialStrength' | 'mathModelingStrength'
-  weaknessKey: 'weakness' | 'mathLogicWeakness' | 'mathArithmeticWeakness' | 'mathSpatialWeakness' | 'mathModelingWeakness'
+  ratingKey:
+    | 'mathBasic'
+    | 'mathLogic'
+    | 'mathMath'
+    | 'mathCreative'
+    | 'mathCritical'
+    | 'evaluation'
+    | 'mathArithmetic'
+    | 'mathSpatial'
+    | 'mathModeling'
+  strengthKey:
+    | 'mathBasicStrength'
+    | 'mathLogicStrength'
+    | 'mathMathStrength'
+    | 'mathCreativeStrength'
+    | 'mathCriticalStrength'
+    | 'strength'
+    | 'mathArithmeticStrength'
+    | 'mathSpatialStrength'
+    | 'mathModelingStrength'
+  weaknessKey:
+    | 'mathBasicWeakness'
+    | 'mathLogicWeakness'
+    | 'mathMathWeakness'
+    | 'mathCreativeWeakness'
+    | 'mathCriticalWeakness'
+    | 'weakness'
+    | 'mathArithmeticWeakness'
+    | 'mathSpatialWeakness'
+    | 'mathModelingWeakness'
   description: string
+  subSkills: string[]
   suggestions: {
     strength: string[]
     weakness: string[]
@@ -15,122 +43,150 @@ export interface MathThinkingSkillConfig {
 
 export const MATH_THINKING_SKILLS: MathThinkingSkillConfig[] = [
   {
-    id: 'problem_solving',
-    label: 'Giải quyết vấn đề & trình bày',
-    shortLabel: 'Giải quyết vấn đề',
-    icon: '💡',
-    ratingKey: 'evaluation',
-    strengthKey: 'strength',
-    weaknessKey: 'weakness',
-    description: 'Khả năng phân tích yêu cầu đề bài, tìm hướng giải và trình bày các bước rõ ràng.',
+    id: 'basic',
+    label: '1. Tư duy cơ bản',
+    shortLabel: 'Tư duy cơ bản',
+    icon: '🧠',
+    ratingKey: 'mathBasic',
+    strengthKey: 'mathBasicStrength',
+    weaknessKey: 'mathBasicWeakness',
+    description: 'Đánh giá khả năng quan sát, mức độ tập trung và khả năng ghi nhớ thông tin.',
+    subSkills: [
+      'Khả năng quan sát',
+      'Tập trung',
+      'Ghi nhớ',
+    ],
     suggestions: {
       strength: [
-        'Trình bày mạch lạc, rõ ràng',
-        'Độc lập giải quyết bài toán',
-        'Hiểu rõ dữ kiện đề bài',
-        'Tự tin chia sẻ cách làm',
+        'Khả năng quan sát nhanh nhạy',
+        'Tập trung chú ý cao',
+        'Ghi nhớ tốt kiến thức',
+        'Tiếp thu bài học nhanh',
+        'Quan sát chi tiết tỉ mỉ',
       ],
       weakness: [
-        'Trình bày còn tắt bước',
-        'Chưa đọc kỹ dữ kiện đề bài',
-        'Cần rèn tính kiên nhẫn khi gặp bài khó',
-        'Chưa có thói quen kiểm tra đáp số',
+        'Còn xao nhãng trong giờ học',
+        'Cần rèn luyện khả năng quan sát',
+        'Hay quên các bước cơ bản',
+        'Cần thầy cô nhắc nhở để tập trung',
       ],
     },
   },
   {
     id: 'logic',
-    label: 'Tư duy Logic & Suy luận',
-    shortLabel: 'Logic & Suy luận',
+    label: '2. Tư duy logic',
+    shortLabel: 'Tư duy logic',
     icon: '🧩',
     ratingKey: 'mathLogic',
     strengthKey: 'mathLogicStrength',
     weaknessKey: 'mathLogicWeakness',
-    description: 'Suy luận logic, phát hiện mâu thuẫn, xâu chuỗi dữ kiện và lập luận bài toán chặt chẽ.',
+    description: 'Phân tích, tổng hợp vấn đề và liên hệ với đời sống thực tiễn hằng ngày.',
+    subSkills: [
+      'Phân tích, tổng hợp vấn đề',
+      'Liên hệ với đời sống thực tiễn hằng ngày',
+    ],
     suggestions: {
       strength: [
-        'Suy luận logic sắc bén',
-        'Lập luận có căn cứ rõ ràng',
-        'Phản xạ nhanh với câu hỏi mở',
-        'Hiểu sâu bản chất vấn đề',
+        'Phân tích, tổng hợp vấn đề tốt',
+        'Liên hệ thực tiễn nhanh nhạy',
+        'Suy luận logic chặt chẽ',
+        'Xâu chuỗi dữ kiện logic',
       ],
       weakness: [
-        'Dễ bối rối khi đề bài đổi hướng',
-        'Cần thầy cô định hướng từng bước',
+        'Phân tích vấn đề còn lúng túng',
         'Chưa xâu chuỗi tốt các giả thiết',
+        'Cần liên hệ thực tiễn nhiều hơn',
         'Suy luận còn theo cảm tính',
       ],
     },
   },
   {
-    id: 'arithmetic',
-    label: 'Tư duy Số học & Tính toán',
-    shortLabel: 'Số học & Tính toán',
+    id: 'math',
+    label: '3. Tư duy Toán học',
+    shortLabel: 'Tư duy Toán học',
     icon: '🔢',
-    ratingKey: 'mathArithmetic',
-    strengthKey: 'mathArithmeticStrength',
-    weaknessKey: 'mathArithmeticWeakness',
-    description: 'Cảm nhận số học, tính nhẩm, phản xạ bảng tính và độ chuẩn xác của phép tính.',
+    ratingKey: 'mathMath',
+    strengthKey: 'mathMathStrength',
+    weaknessKey: 'mathMathWeakness',
+    description: 'Số và Các phép tính, Hình học phẳng, Hình học không gian, Đại lượng và đo lường, Thống kê và xác suất.',
+    subSkills: [
+      'Số và Các phép tính',
+      'Hình học phẳng',
+      'Hình học không gian',
+      'Đại lượng và đo lường',
+      'Thống kê và xác suất',
+    ],
     suggestions: {
       strength: [
+        'Nắm chắc Số và Các phép tính',
+        'Nhận biết tốt hình học phẳng & không gian',
+        'Hiểu rõ đại lượng và đo lường',
+        'Đọc hiểu bảng thống kê & xác suất tốt',
         'Tính nhẩm nhanh và chuẩn xác',
-        'Nắm vững bản chất phép tính',
-        'Phản xạ số học tốt',
-        'Vận dụng linh hoạt bảng số',
       ],
       weakness: [
-        'Còn nhầm lẫn dấu phép tính',
-        'Tính nhẩm còn chậm',
-        'Cần cẩn thận khi đặt tính',
-        'Dễ sai sót ở bước tính nhẩm',
+        'Còn nhầm lẫn phép tính cơ bản',
+        'Khó tưởng tượng hình học không gian',
+        'Cần củng cố về đại lượng và đo lường',
+        'Lúng túng khi xử lý bảng số liệu thống kê',
+        'Cần cẩn thận khi đặt tính nháp',
       ],
     },
   },
   {
-    id: 'spatial',
-    label: 'Tư duy Hình học & Không gian',
-    shortLabel: 'Hình học & Không gian',
-    icon: '📐',
-    ratingKey: 'mathSpatial',
-    strengthKey: 'mathSpatialStrength',
-    weaknessKey: 'mathSpatialWeakness',
-    description: 'Trực quan không gian, nhận biết đặc điểm hình học, xoay lật và phân tích khối hình.',
+    id: 'creative',
+    label: '4. Tư duy sáng tạo',
+    shortLabel: 'Tư duy sáng tạo',
+    icon: '💡',
+    ratingKey: 'mathCreative',
+    strengthKey: 'mathCreativeStrength',
+    weaknessKey: 'mathCreativeWeakness',
+    description: 'Khả năng sáng tạo khác biệt, nghĩ khác và làm khác khi giải quyết bài toán.',
+    subSkills: [
+      'Khả năng sáng tạo khác biệt nghĩ khác, làm khác',
+    ],
     suggestions: {
       strength: [
-        'Tưởng tượng không gian tốt',
-        'Nhận biết hình dạng nhanh nhạy',
-        'Quan sát trực quan đa chiều',
-        'Phân biệt chính xác các khối hình',
+        'Khả năng sáng tạo khác biệt, nghĩ khác, làm khác',
+        'Tìm ra nhiều cách giải mới mẻ',
+        'Ý tưởng độc đáo và linh hoạt',
+        'Tò mò và ham khám phá bài toán mở',
       ],
       weakness: [
-        'Khó tưởng tượng từ hình phẳng sang khối',
-        'Còn nhầm lẫn góc và cạnh',
-        'Cần sử dụng học cụ trực quan hỗ trợ',
-        'Vẽ hình minh họa còn lúng túng',
+        'Còn rập khuôn theo bài mẫu',
+        'Chưa dám thử nghiệm cách làm mới',
+        'Cần khuyến khích tư duy mở và linh hoạt',
       ],
     },
   },
   {
-    id: 'modeling',
-    label: 'Tư duy Quy luật & Mô hình hóa',
-    shortLabel: 'Quy luật & Mô hình hóa',
-    icon: '📊',
-    ratingKey: 'mathModeling',
-    strengthKey: 'mathModelingStrength',
-    weaknessKey: 'mathModelingWeakness',
-    description: 'Tìm quy luật chuỗi số/hình, chuyển bài toán thành sơ đồ đoạn thẳng hoặc mô hình hóa.',
+    id: 'critical',
+    label: '5. Tư duy phản biện và giải quyết vấn đề',
+    shortLabel: 'Phản biện & GQVĐ',
+    icon: '🎯',
+    ratingKey: 'mathCritical',
+    strengthKey: 'mathCriticalStrength',
+    weaknessKey: 'mathCriticalWeakness',
+    description: 'Tự tin thể hiện ý kiến cá nhân, bảo vệ quan điểm, kỹ năng thuyết trình, giải quyết vấn đề sáng tạo và hiệu quả.',
+    subSkills: [
+      'Tự tin thể hiện ý kiến, quan điểm cá nhân',
+      'Bảo vệ ý kiến',
+      'Kĩ năng thuyết trình',
+      'Kỹ năng giải quyết vấn đề sáng tạo và hiệu quả',
+    ],
     suggestions: {
       strength: [
-        'Phát hiện quy luật chuỗi nhanh',
-        'Mô hình hóa bài toán bằng sơ đồ tốt',
-        'Nhạy bén với chuỗi hình lặp lại',
-        'Áp dụng công thức quy luật linh hoạt',
+        'Tự tin thể hiện ý kiến, quan điểm cá nhân',
+        'Bảo vệ ý kiến có lập luận vững vàng',
+        'Kỹ năng thuyết trình mạch lạc, rõ ràng',
+        'Giải quyết vấn đề sáng tạo và hiệu quả',
+        'Chủ động đặt câu hỏi phản biện',
       ],
       weakness: [
-        'Lúng túng với bài toán tìm quy luật',
-        'Chưa biết vẽ sơ đồ tóm tắt đề',
-        'Cần thêm ví dụ trực quan cụ thể',
-        'Khó chuyển lời văn thành mô hình số',
+        'Còn rụt rè, ngại chia sẻ ý kiến',
+        'Chưa tự tin bảo vệ quan điểm',
+        'Kỹ năng thuyết trình còn rụt rè',
+        'Lúng túng khi gặp vấn đề phức tạp',
       ],
     },
   },

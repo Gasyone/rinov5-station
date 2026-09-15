@@ -1,11 +1,11 @@
 'use client'
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useState, useMemo, useEffect } from 'react'
-import { AlertTriangle, CheckCircle2, UserCheck } from 'lucide-react'
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { FieldLabel, AppAvatar } from '@/components/shared'
+import { FieldLabel } from '@/components/shared'
 import { SegmentedControl, StudentCombobox, type StudentOption } from '@/components/controls'
 import { mockStudents } from '@/mocks/students'
 import type { LeaveReserveRequest } from '@/mocks/leaveReserve'
@@ -14,7 +14,6 @@ import {
   formatDateISO,
   addDays,
   addMonths,
-  maskPhone,
   generateStudentSessions,
   getSubjectMaxHoldSessions,
   isEligibleForReserve,
@@ -28,6 +27,7 @@ interface LeaveReserveCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialType?: 'off' | 'reservation'
+  initialStudentId?: string
   onSubmit: (req: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => void
 }
 
@@ -35,11 +35,12 @@ export function LeaveReserveCreateDialog({
   open,
   onOpenChange,
   initialType = 'off',
+  initialStudentId,
   onSubmit,
 }: LeaveReserveCreateDialogProps) {
   const todayStr = useMemo(() => formatDateISO(new Date()), [])
   const [type, setType] = useState<'off' | 'reservation'>(initialType)
-  const [studentId, setStudentId] = useState<string>(mockStudents[0]?.id || '')
+  const [studentId, setStudentId] = useState<string>(initialStudentId || mockStudents[0]?.id || '')
   const [selectedClassCode, setSelectedClassCode] = useState<string>('all')
 
   // Reservation specific sub-type: hold_seat vs no_hold_seat
@@ -93,6 +94,9 @@ export function LeaveReserveCreateDialog({
   useEffect(() => {
     if (open) {
       setType(initialType)
+      if (initialStudentId) {
+        setStudentId(initialStudentId)
+      }
       const today = new Date()
       const tStr = formatDateISO(today)
       setStartDate(tStr)
@@ -105,7 +109,7 @@ export function LeaveReserveCreateDialog({
         setEndDate(computedEnd)
       }
     }
-  }, [open, initialType])
+  }, [open, initialType, initialStudentId, selectedClass, selectedStudent])
 
   // Reset form when switching main types (Off vs Reservation)
   const handleTypeChange = (newType: string) => {
@@ -308,8 +312,37 @@ export function LeaveReserveCreateDialog({
             {/* Left Column: Form Controls (7 cols) */}
             <div className="space-y-3 md:col-span-7">
               {/* Student Selector */}
-              <div className="space-y-2">
-                <FieldLabel label="Học viên" required>
+              <div className="space-y-1.5">
+                <FieldLabel
+                  label={
+                    <div className="flex items-center justify-between w-full">
+                      <span>Học viên</span>
+                      {type === 'reservation' && selectedStudent && (
+                        <span
+                          className={cn(
+                            'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full border normal-case',
+                            eligibility.eligible
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                              : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+                          )}
+                        >
+                          {eligibility.eligible ? (
+                            <>
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Đủ ĐK ({eligibility.remaining}b ≥ 16b)
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Chưa đủ 16 buổi
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  }
+                  required
+                >
                   <StudentCombobox
                     options={studentOptions}
                     value={selectedStudent?.id || ''}
@@ -321,89 +354,6 @@ export function LeaveReserveCreateDialog({
                     className="w-full"
                   />
                 </FieldLabel>
-
-                {/* Selected Student Card (New Hero Card Structure) */}
-                {selectedStudent && (
-                  <div className="rounded-2xl border border-border/80 bg-card p-3 shadow-2xs space-y-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        <AppAvatar
-                          name={selectedStudent.name}
-                          src={selectedStudent.avatar}
-                          size="lg"
-                          className="h-11 w-11 rounded-full border border-primary/20 text-base font-bold"
-                        />
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-sm font-bold text-foreground">{selectedStudent.name}</span>
-                            <span className="text-xs font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.2 rounded border">
-                              + Thêm tên TA ✎
-                            </span>
-                            <Badge variant="outline" className="text-xs px-1.5 py-0">
-                              {type === 'off' ? 'Nghỉ phép' : 'Bảo lưu'}
-                            </Badge>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>NS: {selectedStudent.dob || '15/03/2012'}</span>
-                            <span>•</span>
-                            <span>{selectedStudent.gender || 'Nam'}</span>
-                            <span>•</span>
-                            <span>ĐC: {selectedStudent.branch}</span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
-                            <span className="font-medium text-foreground">
-                              {selectedStudent.parentName || 'Phạm Mai (Mẹ)'}
-                            </span>
-                            <span className="text-xs font-semibold bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 px-1 py-0.2 rounded border border-sky-200">
-                              Chính
-                            </span>
-                            <span>•</span>
-                            <span className="font-mono font-semibold text-foreground">
-                              {maskPhone(selectedStudent.parentPhone || selectedStudent.phone)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-xs font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border">
-                          STU-00{selectedStudent.id.replace(/\D/g, '') || '01'}
-                        </span>
-                        {type === 'reservation' && (
-                          <span
-                            className={cn(
-                              'inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded-full border',
-                              eligibility.eligible
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
-                            )}
-                          >
-                            {eligibility.eligible ? (
-                              <>
-                                <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
-                                Đủ ĐK ({eligibility.remaining}b ≥ 16b)
-                              </>
-                            ) : (
-                              <>
-                                <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
-                                Chưa đủ 16b
-                              </>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60 rounded-lg px-2.5 py-1 text-xs text-amber-900 dark:text-amber-200">
-                      <span className="text-amber-600 font-bold shrink-0">✎</span>
-                      <span className="italic font-medium truncate">
-                        Ghi chú: {selectedStudent.notes || 'Học viên tiếp thu tốt, phụ huynh mong muốn theo sát chuyên cần và bài tập.'}
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* SECTION: Nghỉ phép with 4-button Date Selector & Multi-session Checklist */}

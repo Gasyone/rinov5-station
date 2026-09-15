@@ -46,11 +46,28 @@ export interface StudentFormState {
   pronImproveNotes: string
   aiUsesLeft?: number
 
-  // 4 Additional Math Thinking Competencies:
+  // 5 Bậc tư duy toán học:
+  mathBasic?: number
+  mathBasicStrength?: string
+  mathBasicWeakness?: string
+
   mathLogic?: number
   mathLogicStrength?: string
   mathLogicWeakness?: string
 
+  mathMath?: number
+  mathMathStrength?: string
+  mathMathWeakness?: string
+
+  mathCreative?: number
+  mathCreativeStrength?: string
+  mathCreativeWeakness?: string
+
+  mathCritical?: number
+  mathCriticalStrength?: string
+  mathCriticalWeakness?: string
+
+  // Legacy fallback fields
   mathArithmetic?: number
   mathArithmeticStrength?: string
   mathArithmeticWeakness?: string
@@ -108,8 +125,10 @@ function TestThinkingSkillItem({
     <div className="space-y-2 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 last:border-b-0">
       {/* Dòng trên: Title bên trái, Chỉ số rating bên phải */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <span className="text-sm font-bold text-foreground shrink-0">
-          {skill.label} <span className="text-rose-500">*</span>
+        <span className="text-sm font-bold text-foreground shrink-0 flex items-center gap-1.5">
+          <span className="text-base leading-none">{skill.icon}</span>
+          <span>{skill.label}</span>
+          <span className="text-rose-500">*</span>
         </span>
 
         {/* Rating Options cạnh phải title tư duy */}
@@ -153,6 +172,23 @@ function TestThinkingSkillItem({
       <p className="text-xs text-muted-foreground -mt-0.5">
         {skill.description}
       </p>
+
+      {/* Danh sách tiêu chí thành phần (Sub-skills) */}
+      {skill.subSkills && skill.subSkills.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5 pb-0.5">
+          <span className="text-[11px] font-semibold text-muted-foreground/80 shrink-0">
+            Nội dung trọng tâm:
+          </span>
+          {skill.subSkills.map((sub, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium border border-zinc-200/60 dark:border-zinc-700/60"
+            >
+              • {sub}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Amber callout container for Strength & Weakness */}
       <div className="border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/40 dark:bg-amber-950/20 rounded-xl p-3.5 space-y-2.5">
@@ -431,7 +467,7 @@ export function ClassesBulkFeedbackMathTestForm({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-bold text-sm uppercase tracking-wider text-muted-foreground">
             <Star className="h-4 w-4 text-primary fill-primary shrink-0" />
-            <span>Đánh giá kết quả kiểm tra (5 nhóm năng lực tư duy)</span>
+            <span>Đánh giá kết quả kiểm tra (5 bậc tư duy toán học)</span>
           </div>
         </div>
 

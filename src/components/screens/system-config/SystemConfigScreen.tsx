@@ -9,17 +9,28 @@ import {
 } from '@/stores/useSystemConfigStore'
 import { cn } from '@/lib/utils'
 
-const SCOPE_OPTIONS: Array<{ id: SystemDataScope; label: string }> = [
-  { id: 'personal', label: 'Cá nhân' },
-  { id: 'team', label: 'Cùng nhóm' },
-  { id: 'branch', label: 'Toàn cơ sở' },
-  { id: 'global', label: 'Toàn hệ thống' },
+const SCOPE_OPTIONS: Array<{
+  id: SystemDataScope
+  label: string
+  description: string
+}> = [
+  {
+    id: 'personal',
+    label: 'Cá nhân',
+    description: 'Chỉ hiển thị và thao tác dữ liệu do chính mình phụ trách.',
+  },
+  {
+    id: 'branch',
+    label: 'Cơ sở',
+    description: 'Hiển thị và thao tác toàn bộ dữ liệu thuộc cơ sở / chi nhánh công tác.',
+  },
 ]
 
 export function SystemConfigScreen() {
   const dataScope = useSystemConfigStore((s) => s.dataScope)
   const setDataScope = useSystemConfigStore((s) => s.setDataScope)
-  const [selectedScope, setSelectedScope] = useState<SystemDataScope>(dataScope)
+  const activeScope: SystemDataScope = dataScope === 'branch' ? 'branch' : 'personal'
+  const [selectedScope, setSelectedScope] = useState<SystemDataScope>(activeScope)
 
   const handleSelect = (id: SystemDataScope) => {
     setSelectedScope(id)
@@ -38,9 +49,14 @@ export function SystemConfigScreen() {
       <div className="max-w-xl mx-auto w-full space-y-6">
         {/* Tiêu đề & Nút Lưu tối giản */}
         <div className="flex items-center justify-between pb-4 border-b border-border">
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Cấu hình phạm vi dữ liệu
-          </h1>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Cấu hình phạm vi dữ liệu
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Thiết lập phạm vi hiển thị và thao tác dữ liệu mặc định cho phân hệ Station.
+            </p>
+          </div>
           <Button
             size="sm"
             onClick={handleSave}
@@ -65,10 +81,13 @@ export function SystemConfigScreen() {
                     : 'border-border bg-card hover:bg-muted/40 text-foreground'
                 )}
               >
-                <span className="text-sm font-medium">{option.label}</span>
+                <div className="space-y-0.5">
+                  <span className="text-sm font-medium">{option.label}</span>
+                  <p className="text-xs text-muted-foreground">{option.description}</p>
+                </div>
                 <div
                   className={cn(
-                    'h-4 w-4 rounded-full border flex items-center justify-center transition-colors',
+                    'h-4 w-4 rounded-full border flex items-center justify-center transition-colors shrink-0 ml-4',
                     isSelected
                       ? 'border-primary bg-primary'
                       : 'border-muted-foreground/40 bg-background'

@@ -133,43 +133,73 @@ export function buildOtherParents(lead: Lead): ParentContact[] {
   )
 }
 
+export function checkLeadHasBooking(lead: Lead): boolean {
+  if (!lead) return false
+  const hasTest = Boolean(
+    (lead.testStatus && lead.testStatus !== 'no_show') ||
+    (lead.testDate && lead.testDate !== '--') ||
+    (lead.testScore && lead.testScore !== 'Chưa kiểm tra' && lead.testScore !== '--') ||
+    (lead.testHistory && lead.testHistory.length > 0)
+  )
+
+  const hasTrial = Boolean(
+    (lead.trialStatus && lead.trialStatus !== 'no_show') ||
+    (lead.trialDate && lead.trialDate !== '--') ||
+    (lead.trialFeedback && lead.trialFeedback !== '--') ||
+    (lead.trialHistory && lead.trialHistory.length > 0)
+  )
+
+  return hasTest || hasTrial
+}
+
 export function buildChildContacts(lead: Lead): ChildPersonaItem[] {
+  const hasBooking = checkLeadHasBooking(lead)
+  const isAn = lead.studentName?.includes('An') || lead.id === 'lead-001'
+  const hasSiblings = Boolean(lead.familySiblings && lead.familySiblings.length > 0)
+
   const rawFamily = (lead as unknown as Record<string, unknown>).familyMembers as RawFamilyMember[] | undefined
-  const familyLeads: RawFamilyMember[] =
-    rawFamily && rawFamily.length > 0
-      ? rawFamily
-      : [
-          {
-            id: lead.id,
-            studentName: lead.studentName || 'Bé An',
-            studentAge: lead.studentAge || 8,
-            relationship: 'Con chính',
-            status: lead.status,
-            testStatus: lead.testStatus,
-            testDate: lead.testDate,
-            testScore: lead.testScore || '88/100',
-            testResultLevel: 'Level B2 (Cô Emma)',
-            schoolName: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
-            targetSubject: lead.targetSubject || 'Anh văn Nhi đồng (SuperKids)',
-            isMainLead: true,
-            studentPhone: lead.studentPhone || lead.phone,
-          },
-          {
-            id: 'child-002',
-            studentName: 'Bé Bình',
-            studentAge: 12,
-            relationship: 'Em/Anh ruột',
-            status: 'dang_tu_van' as Lead['status'],
-            testStatus: 'scheduled',
-            testDate: '2026-08-25',
-            testTime: '18:00',
-            testerTeacherName: 'Thầy Alex',
-            schoolName: 'THCS Nguyễn Du',
-            targetSubject: 'Luyện thi Flyers & Toán tư duy',
-            isMainLead: false,
-            studentPhone: '0988776655',
-          },
-        ]
+  let familyLeads: RawFamilyMember[]
+
+  if (rawFamily && rawFamily.length > 0) {
+    familyLeads = rawFamily
+  } else {
+    familyLeads = [
+      {
+        id: lead.id,
+        studentName: lead.studentName || 'Học viên',
+        studentAge: lead.studentAge || 8,
+        relationship: 'Con chính',
+        status: lead.status,
+        testStatus: lead.testStatus,
+        testDate: lead.testDate,
+        testScore: lead.testScore || (hasBooking ? '88/100' : undefined),
+        testResultLevel: hasBooking ? (lead.testResultLevel || 'Level B2 (Cô Emma)') : undefined,
+        schoolName: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
+        targetSubject: lead.targetSubject || 'Anh văn Nhi đồng (SuperKids)',
+        isMainLead: true,
+        studentPhone: lead.studentPhone || lead.phone,
+      },
+    ]
+
+    // Chỉ bổ sung bé thứ 2 nếu lead thực sự có danh sách anh chị em (Bé An có Bé Bình)
+    if (hasSiblings && isAn) {
+      familyLeads.push({
+        id: 'child-002',
+        studentName: 'Bé Bình',
+        studentAge: 12,
+        relationship: 'Em/Anh ruột',
+        status: 'dang_tu_van' as Lead['status'],
+        testStatus: 'scheduled',
+        testDate: '2026-08-25',
+        testTime: '18:00',
+        testerTeacherName: 'Thầy Alex',
+        schoolName: 'THCS Nguyễn Du',
+        targetSubject: 'Luyện thi Flyers & Toán tư duy',
+        isMainLead: false,
+        studentPhone: '0988776655',
+      })
+    }
+  }
 
   return familyLeads
     .map((ch: RawFamilyMember, idx: number) => {
@@ -226,31 +256,32 @@ export function buildChildContacts(lead: Lead): ChildPersonaItem[] {
       const learningGoal = isCurrent ? (lead.studentLearningGoal || '') : ''
       const notes = ch.lastNote || lead.lastNote || ''
 
-      const isNewLeadWithoutBooking =
-        (lead.status === 'moi_tiep_nhan' || lead.status === 'chua_tiep_can' || lead.id === 'lead-008') &&
-        !lead.testStatus &&
-        !lead.testDate &&
-        !lead.trialStatus &&
-        !lead.trialDate
+      const isNewLeadWithoutBooking = !hasBooking
+
+      const isLeadTuan = lead.id === 'lead-002' || lead.id === 'lead-011' || lead.studentName?.includes('Tuấn') || lead.code === 'LD-10296' || lead.code === 'LD-10299'
+      const hasLeadTestBooking = !isNewLeadWithoutBooking && Boolean(lead.testDate || isLeadTuan || lead.testStatus === 'completed' || lead.testStatus === 'scheduled')
+      const hasLeadTestResult = hasLeadTestBooking && !isLeadTuan && Boolean(lead.testScore && lead.testScore !== 'Chưa kiểm tra' && lead.testScore !== '--')
+      const hasLeadTrialBooking = !isNewLeadWithoutBooking && Boolean(lead.trialDate || lead.trialFeedback || lead.trialStatus === 'scheduled' || lead.trialStatus === 'completed')
 
       const subjects: StudentSubjectItem[] = isAn
         ? [
             {
               id: 'sub-01',
-              subjectName: 'Anh văn Nhi đồng (SuperKids)',
+              subjectName: 'Tiếng Anh',
               courseLevel: 'SuperKids Level 2',
               branch: lead.branch || 'RinoEdu Linh Đàm',
               trainingType: 'Trực tiếp tại trung tâm',
               status: 'hen_trai_nghiem',
               statusLabel: 'Hẹn trải nghiệm',
               hasTestBooking: true,
+              hasTestResult: true,
               hasTrialBooking: true,
 
               // Placement Test chuẩn theo /app/booking_test (media_1789031000711.png & media_1789031010639.png)
               testLevel: 'Level 2B',
               testSubLevel: 'B',
               testPath: 'SuperKids Starter -> Level 2B',
-              testProgram: 'Anh văn Nhi đồng (SuperKids)',
+              testProgram: 'Tiếng Anh (SuperKids)',
               testTargetLevel: 'Flyers Intensive Cấp độ 3',
               testDate: '10/08/2026',
               testTime: '18:00',
@@ -317,19 +348,21 @@ export function buildChildContacts(lead: Lead): ChildPersonaItem[] {
             },
             {
               id: 'sub-02',
-              subjectName: 'Toán tư duy & Logic (MathKids)',
+              subjectName: 'Toán Tư Duy',
               courseLevel: 'Tư duy Tiểu học Cấp 2',
+              grade: 'Lớp 3',
               branch: lead.branch || 'RinoEdu Linh Đàm',
               trainingType: 'Trực tiếp tại trung tâm',
               status: 'danh_gia_trai_nghiem',
               statusLabel: 'Đã test đầu vào',
               hasTestBooking: true,
+              hasTestResult: true,
               hasTrialBooking: true,
 
               testLevel: 'Level 3A',
               testSubLevel: 'A',
               testPath: 'MathKids Basic -> Level 3A',
-              testProgram: 'Toán tư duy & Logic (MathKids)',
+              testProgram: 'Toán Tư Duy (MathKids)',
               testTargetLevel: 'Tư duy Tiểu học Cấp 2',
               testDate: '12/08/2026',
               testTime: '18:30',
@@ -395,44 +428,51 @@ export function buildChildContacts(lead: Lead): ChildPersonaItem[] {
         : [
             {
               id: 'sub-01',
-              subjectName: lead.id === 'lead-009' ? 'Anh văn Nhi đồng (SuperKids)' : (lead.targetSubject || 'Tiếng Anh (Flyers Intensive)'),
-              courseLevel: lead.id === 'lead-009' ? 'SuperKids Level 2' : 'Flyers Intensive Cấp độ 3',
+              subjectName: 'Tiếng Anh',
+              courseLevel: 'Anh văn Thiếu nhi (Movers)',
               branch: lead.branch || 'RinoEdu Linh Đàm',
               trainingType: 'Trực tiếp tại trung tâm',
-              status: isNewLeadWithoutBooking ? lead.status : 'dang_tu_van',
-              statusLabel: isNewLeadWithoutBooking ? 'Mới tiếp nhận' : 'Đang tư vấn',
-              hasTestBooking: !isNewLeadWithoutBooking,
-              hasTrialBooking: !isNewLeadWithoutBooking,
-              testScore: isNewLeadWithoutBooking ? 'Chưa kiểm tra' : '8.5/10',
-              testLevel: isNewLeadWithoutBooking ? undefined : 'Level 3B',
-              testSubLevel: isNewLeadWithoutBooking ? undefined : 'B',
+              status: isNewLeadWithoutBooking ? lead.status : (hasLeadTestResult ? 'danh_gia_trai_nghiem' : 'dang_tu_van'),
+              statusLabel: isNewLeadWithoutBooking ? 'Mới tiếp nhận' : (hasLeadTestResult ? 'Đã test đầu vào' : 'Đang tư vấn'),
+              hasTestBooking: hasLeadTestBooking,
+              hasTestResult: hasLeadTestResult,
+              hasTrialBooking: hasLeadTrialBooking,
+              testScore: hasLeadTestResult ? (lead.testScore || '8.5/10') : undefined,
+              testLevel: hasLeadTestResult ? 'Level 3B' : undefined,
+              testSubLevel: hasLeadTestResult ? 'B' : undefined,
               testPath: 'Flyers Preparation -> Level 3B',
-              speakingGv: isNewLeadWithoutBooking ? undefined : '6.5/8',
-              speakingAi: isNewLeadWithoutBooking ? undefined : '6/8',
-              speakingAttempt: isNewLeadWithoutBooking ? undefined : '1',
-              lwrScoreText: isNewLeadWithoutBooking ? undefined : 'Flyers - 28/40',
-              testDate: isNewLeadWithoutBooking ? undefined : '25/08/2026',
-              testRadarSkills: {
+              testProgram: 'Anh văn Thiếu nhi (Movers)',
+              testTargetLevel: 'Flyers Intensive Cấp độ 3',
+              speakingGv: hasLeadTestResult ? '6.5/8' : undefined,
+              speakingAi: hasLeadTestResult ? '6/8' : undefined,
+              speakingAttempt: hasLeadTestResult ? '1' : undefined,
+              lwrScoreText: hasLeadTestResult ? 'Flyers - 28/40' : undefined,
+              testDate: hasLeadTestBooking ? (lead.testDate || '25/08/2026') : undefined,
+              testTime: hasLeadTestBooking ? (lead.testTime || '18:00') : undefined,
+              testBranch: lead.branch || 'RinoEdu Linh Đàm',
+              testTeacher: hasLeadTestBooking ? (lead.testerTeacherName || 'Thầy Alex') : undefined,
+              testRadarSkills: hasLeadTestResult ? {
                 reflex: 50,
                 pronunciation: 50,
                 vocabGrammar: 50,
                 readingWriting: 50,
                 listening: 50,
-              },
-              testStrengths: 'Ghi nhớ từ vựng nhanh qua ngữ cảnh, tự giác học tập.',
-              testImprovements: 'Cần rèn thêm kỹ năng viết luận tiếng Anh học thuật và phản xạ giao tiếp.',
+              } : undefined,
+              testStrengths: hasLeadTestResult ? 'Ghi nhớ từ vựng nhanh qua ngữ cảnh, tự giác học tập.' : undefined,
+              testImprovements: hasLeadTestResult ? 'Cần rèn thêm kỹ năng viết luận tiếng Anh học thuật và phản xạ giao tiếp.' : undefined,
               ipadTestLink: 'https://rinoedu.ai/ipad-assessment/LD-10291-A',
               detailReportLink: '/app/booking_test/results/E0001',
-              trialStatus: 'Hẹn test xếp lớp ngày 25/08',
-              trialDate: '25/08/2026 18:00',
-              trialTeacher: 'Thầy Alex',
-              trialRating: 4,
-              trialRatingLabel: 'Good',
-              trialResult: 'Chờ kiểm tra đầu vào',
-              trialReportLink: '/app/trial_class',
-              recommendedClass: 'FLY-T3T5-19H',
-              teacherFeedback:
-                'Học lực Khá Giỏi ở trường THCS, tự giác cao, cần rèn thêm kỹ năng viết luận tiếng Anh học thuật.',
+              trialStatus: hasLeadTrialBooking ? 'Hẹn test xếp lớp ngày 25/08' : undefined,
+              trialDate: hasLeadTrialBooking ? '25/08/2026 18:00' : undefined,
+              trialTeacher: hasLeadTrialBooking ? 'Thầy Alex' : undefined,
+              trialRating: hasLeadTrialBooking ? 4 : undefined,
+              trialRatingLabel: hasLeadTrialBooking ? 'Good' : undefined,
+              trialResult: hasLeadTrialBooking ? 'Chờ kiểm tra đầu vào' : undefined,
+              trialReportLink: hasLeadTrialBooking ? '/app/trial_class' : undefined,
+              recommendedClass: hasLeadTrialBooking ? 'FLY-T3T5-19H' : undefined,
+              teacherFeedback: hasLeadTrialBooking
+                ? 'Học lực Khá Giỏi ở trường THCS, tự giác cao, cần rèn thêm kỹ năng viết luận tiếng Anh học thuật.'
+                : undefined,
               trialFeedbackSections: {
                 whatLearned: [
                   'Ôn tập cấu trúc câu điều kiện loại 1 & 2 📘',
@@ -452,39 +492,46 @@ export function buildChildContacts(lead: Lead): ChildPersonaItem[] {
             },
             {
               id: 'sub-02',
-              subjectName: 'Toán tư duy & Logic (MathKids)',
-              courseLevel: 'Tư duy Tiểu học Cấp độ 2',
+              subjectName: 'Toán Tư Duy',
+              courseLevel: 'Toán Tư Duy Tiểu Học Cấp độ 2',
+              grade: 'Lớp 3',
               branch: lead.branch || 'RinoEdu Linh Đàm',
               trainingType: 'Trực tiếp tại trung tâm',
-              status: isNewLeadWithoutBooking ? lead.status : 'danh_gia_trai_nghiem',
-              statusLabel: isNewLeadWithoutBooking ? 'Mới tiếp nhận' : 'Đã test đầu vào',
-              hasTestBooking: !isNewLeadWithoutBooking,
-              hasTrialBooking: !isNewLeadWithoutBooking,
-              testScore: isNewLeadWithoutBooking ? 'Chưa kiểm tra' : '8.8/10',
-              testLevel: isNewLeadWithoutBooking ? undefined : 'Level 2A',
-              testSubLevel: isNewLeadWithoutBooking ? undefined : 'A',
+              status: isNewLeadWithoutBooking ? lead.status : (hasLeadTestResult ? 'danh_gia_trai_nghiem' : 'dang_tu_van'),
+              statusLabel: isNewLeadWithoutBooking ? 'Mới tiếp nhận' : (hasLeadTestResult ? 'Đã test đầu vào' : 'Đang tư vấn'),
+              hasTestBooking: hasLeadTestBooking,
+              hasTestResult: hasLeadTestResult,
+              hasTrialBooking: hasLeadTrialBooking,
+              testScore: hasLeadTestResult ? '8.8/10' : undefined,
+              testLevel: hasLeadTestResult ? 'Level 2A' : undefined,
+              testSubLevel: hasLeadTestResult ? 'A' : undefined,
               testPath: 'MathKids Basic -> Level 2A',
-              speakingGv: isNewLeadWithoutBooking ? undefined : '8.0/8',
-              speakingAi: isNewLeadWithoutBooking ? undefined : '7.5/8',
-              speakingAttempt: isNewLeadWithoutBooking ? undefined : '1',
-              lwrScoreText: isNewLeadWithoutBooking ? undefined : 'Logic 2 - 32/40',
-              testDate: isNewLeadWithoutBooking ? undefined : '22/08/2026',
-              testRadarSkills: {
+              testProgram: 'Toán Tư Duy & Logic',
+              testTargetLevel: 'Tư duy Tiểu học Cấp độ 2',
+              speakingGv: hasLeadTestResult ? '8.0/8' : undefined,
+              speakingAi: hasLeadTestResult ? '7.5/8' : undefined,
+              speakingAttempt: hasLeadTestResult ? '1' : undefined,
+              lwrScoreText: hasLeadTestResult ? 'Logic 2 - 32/40' : undefined,
+              testDate: hasLeadTestBooking ? '22/08/2026' : undefined,
+              testTime: hasLeadTestBooking ? '18:30' : undefined,
+              testBranch: lead.branch || 'RinoEdu Linh Đàm',
+              testTeacher: hasLeadTestBooking ? 'Thầy Quang Huy' : undefined,
+              testRadarSkills: hasLeadTestResult ? {
                 reflex: 80,
                 pronunciation: 85,
                 vocabGrammar: 75,
                 readingWriting: 85,
                 listening: 80,
-              },
-              testStrengths: 'Tư duy số học và hình khối không gian nhạy bén, tính nhẩm nhanh.',
-              testImprovements: 'Cần cẩn thận hơn khi giải bài toán đố có nhiều bước logic.',
+              } : undefined,
+              testStrengths: hasLeadTestResult ? 'Tư duy số học và hình khối không gian nhạy bén, tính nhẩm nhanh.' : undefined,
+              testImprovements: hasLeadTestResult ? 'Cần cẩn thận hơn khi giải bài toán đố có nhiều bước logic.' : undefined,
               ipadTestLink: 'https://rinoedu.ai/ipad-assessment/LD-10291-B',
               detailReportLink: '/app/booking_test/results/E0002',
               trialStatus: 'Đã hoàn thành 01 buổi trải nghiệm',
               trialDate: '24/08/2026 19:30',
               trialTeacher: 'Thầy Quang Huy',
               trialRating: 5,
-              trialRatingLabel: 'Excellent',
+              trialRatingLabel: 'Very Good',
               trialResult: 'Đạt - Phản xạ tính nhẩm tốt, thích thú với trò chơi logic',
               trialReportLink: '/app/trial_class/feedback/TR-2605-002',
               recommendedClass: 'MK2-T7CN-09H',
@@ -549,19 +596,20 @@ export function getDefaultStudentSubjects(branch?: string): StudentSubjectItem[]
   return [
     {
       id: 'sub-01',
-      subjectName: 'Anh văn Nhi đồng (SuperKids)',
+      subjectName: 'Tiếng Anh',
       courseLevel: 'SuperKids Level 2',
       branch: branch || 'RinoEdu Linh Đàm',
       trainingType: 'Trực tiếp tại trung tâm',
       status: 'hen_trai_nghiem',
       statusLabel: 'Hẹn trải nghiệm',
       hasTestBooking: true,
+      hasTestResult: true,
       hasTrialBooking: true,
 
       testLevel: 'Level 2B',
       testSubLevel: 'B',
       testPath: 'SuperKids Starter -> Level 2B',
-      testProgram: 'Anh văn Nhi đồng (SuperKids)',
+      testProgram: 'Tiếng Anh (SuperKids)',
       testTargetLevel: 'Flyers Intensive Cấp độ 3',
       testDate: '10/08/2026',
       testTime: '18:00',
@@ -627,13 +675,15 @@ export function getDefaultStudentSubjects(branch?: string): StudentSubjectItem[]
     },
     {
       id: 'sub-02',
-      subjectName: 'Toán tư duy & Logic (MathKids)',
+      subjectName: 'Toán Tư Duy',
       courseLevel: 'Tư duy Tiểu học Cấp độ 2',
+      grade: 'Lớp 3',
       branch: branch || 'RinoEdu Linh Đàm',
       trainingType: 'Trực tiếp tại trung tâm',
       status: 'danh_gia_trai_nghiem',
       statusLabel: 'Đã test đầu vào',
       hasTestBooking: true,
+      hasTestResult: true,
       hasTrialBooking: true,
 
       testLevel: 'Level 2A',
