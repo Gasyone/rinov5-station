@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/useUIStore'
 import { StudentCareHeaderClusterInfo, StudentCareHeaderClusterNote } from './StudentCareHeaderCluster'
 import { getStatusBadgeClass } from '@/lib/statusColors'
-import { type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
+import { mockCareAlerts, type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
 import { stableHash } from './operationsAlertHelpers'
 import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
@@ -106,6 +106,17 @@ export function StudentCareDetailPage({
   if (student && student.studentId !== prevStudentIdForCS) {
     setPrevStudentIdForCS(student.studentId)
     setAssignedCS(student.csStaff || 'Trần Thị Mai')
+  }
+
+  const isRenewalMode = initialTab === 'renewal' || initialMode === 'renewal'
+
+  const handleAssignedCSChange = (newCS: string) => {
+    setAssignedCS(newCS)
+    const foundAlert = mockCareAlerts.find((a) => a.id === studentId || a.studentId === studentId)
+    if (foundAlert) {
+      foundAlert.csStaff = newCS
+    }
+    onRefresh?.()
   }
 
   // Get packages list dynamically
@@ -529,11 +540,12 @@ export function StudentCareDetailPage({
                 setSelectedPackageId={setSelectedPackageId}
                 staffInfo={staffInfo}
                 assignedCS={assignedCS}
-                onAssignedCSChange={setAssignedCS}
+                onAssignedCSChange={handleAssignedCSChange}
                 branchName="RinoEdu Nguyễn Tuân"
                 studentAlert={student}
                 onOpenLeaveReserveDialog={() => setIsLeaveReserveOpen(true)}
                 onCreateLeaveReserve={handleOpenCreateLeaveReserve}
+                isRenewal={isRenewalMode}
               />
             </div>
           </main>

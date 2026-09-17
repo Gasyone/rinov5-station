@@ -16,6 +16,7 @@ import {
   Ticket,
   ArrowRight,
   BookOpen,
+  User,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/format'
@@ -43,7 +44,6 @@ export function StudentOrderCardItem({
   order,
   isDraft,
   isPaymentsExpanded,
-  showOtherChildren,
   onToggleExpandPayments,
   onViewDetail,
   onCreateCompletionOrder,
@@ -166,15 +166,6 @@ export function StudentOrderCardItem({
               <span>{order.orderNo || order.id}</span>
               <ExternalLink className="h-3 w-3 text-sky-500/70" />
             </button>
-            {/* Hiển thị thêm tên con sau Mã đơn hàng khi tích xem đơn con khác */}
-            {(showOtherChildren || order.isOtherChild) && order.studentName && (
-              <>
-                <span className="text-muted-foreground">-</span>
-                <span className="font-semibold text-foreground font-sans">
-                  {order.studentName}
-                </span>
-              </>
-            )}
 
             <span className="text-muted-foreground">/</span>
             <span
@@ -320,7 +311,25 @@ export function StudentOrderCardItem({
 
       {/* Products List Breakdown */}
       <div className="space-y-2 py-1">
-        {order.detailedItems?.map((item, idx) => {
+        {(order.detailedItems && order.detailedItems.length > 0
+          ? order.detailedItems
+          : order.items && order.items.length > 0
+            ? order.items.map((it) => ({
+                productId: it.productId,
+                productName: it.productName,
+                quantity: it.quantity,
+                unitPrice: it.unitPrice,
+                subtotal: it.subtotal,
+                studentName: order.studentName,
+                orderType: '--',
+                durationText: '48 buổi',
+                bonusText: '--',
+                giftText: '--',
+              }))
+            : []
+        ).map((item, idx) => {
+          const itemStudentName = item.studentName || order.studentName
+
           return (
             <div
               key={idx}
@@ -352,23 +361,36 @@ export function StudentOrderCardItem({
                 </div>
               </div>
 
-              {/* Sub-line: Duration (Clock), Bonus Extra Sessions (Hourglass), Gift (Gift icon - only when exists) */}
+              {/* Sub-line: Con (User), Duration (Clock), Bonus Extra Sessions (Hourglass), Gift (Gift icon - only when exists) */}
               <div className="flex items-center gap-4 text-xs text-muted-foreground pl-6 flex-wrap">
+                {/* Tên con đi theo từng sản phẩm */}
+                {itemStudentName && (
+                  <div className="flex items-center gap-1 font-sans">
+                    <User className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>
+                      Con:{' '}
+                      <strong className="font-semibold text-foreground">
+                        {itemStudentName}
+                      </strong>
+                    </span>
+                  </div>
+                )}
+
                 {/* Duration / Sessions */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 font-sans">
                   <Clock className="h-3 w-3 text-muted-foreground/70 shrink-0" />
                   <span>{item.durationText && item.durationText !== '--' ? item.durationText : '48 buổi'}</span>
                 </div>
 
                 {/* Bonus Extra Sessions (Hourglass) */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 font-sans">
                   <Hourglass className="h-3 w-3 text-muted-foreground/70 shrink-0" />
                   <span>{item.bonusText && item.bonusText !== '--' ? item.bonusText : '--'}</span>
                 </div>
 
                 {/* Gift (Gift icon) - Only display when gift is present */}
                 {item.giftText && item.giftText !== '--' && item.giftText.trim() !== '' && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 font-sans">
                     <Gift className="h-3 w-3 text-muted-foreground/70 shrink-0" />
                     <span>{item.giftText}</span>
                   </div>

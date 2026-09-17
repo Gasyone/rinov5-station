@@ -154,17 +154,18 @@
   }
 
   .matrix-scrollbar::-webkit-scrollbar {
-    height: 7px !important;
+    height: 10px !important;
   }
 
   .matrix-scrollbar::-webkit-scrollbar-track {
     background: #f1f5f9 !important;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #cbd5e1 !important;
   }
 
   .matrix-scrollbar::-webkit-scrollbar-thumb {
     background-color: #94a3b8 !important;
     border-radius: 9999px !important;
+    border: 2px solid #f1f5f9 !important;
   }
 
   .matrix-scrollbar::-webkit-scrollbar-thumb:hover {

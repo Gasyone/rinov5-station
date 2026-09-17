@@ -195,8 +195,8 @@ export const MATH_THINKING_SKILLS: MathThinkingSkillConfig[] = [
 export const MATH_ATTITUDE_LABELS: Record<number, string> = {
   1: '1 - Yếu',
   2: '2 - Cần cải thiện',
-  3: '3 - Chưa đạt yêu cầu',
-  4: '4 - Đạt yêu cầu',
+  3: '3 - Chưa đạt',
+  4: '4 - Đạt',
   5: '5 - Xuất sắc',
 }
 
@@ -210,8 +210,8 @@ export const MATH_HOMEWORK_OPTIONS = [
 export const MATH_EVALUATION_OPTIONS = [
   { value: 1, label: '1 - Yếu' },
   { value: 2, label: '2 - Cần cải thiện' },
-  { value: 3, label: '3 - Chưa đạt yêu cầu' },
-  { value: 4, label: '4 - Đạt yêu cầu' },
+  { value: 3, label: '3 - Chưa đạt' },
+  { value: 4, label: '4 - Đạt' },
   { value: 5, label: '5 - Xuất sắc' },
 ]
 

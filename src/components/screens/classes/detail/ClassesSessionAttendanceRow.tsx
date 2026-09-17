@@ -7,7 +7,6 @@ import {
   Star,
   Check,
   PenSquare,
-  HeartHandshake,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -71,13 +70,11 @@ export function ClassesSessionAttendanceRow({
   onAttendanceChange,
   onOpenTestScoreDialog,
   setIsBulkFeedbackOpen,
-  onOpenCareDetail,
   handleOpenLeaveDialog,
   isSessionInactive = false,
   sessionStatus = '',
 }: ClassesSessionAttendanceRowProps) {
   const hwLink = deriveHomeworkLink(student.id, sessionId)
-  const isCareStudent = student.status === 'trial' || student.status === 'new' || !!student.sessionLabel
   const nameParts = getStudentNameParts(student)
 
   return (
@@ -87,7 +84,7 @@ export function ClassesSessionAttendanceRow({
         hasLeave && "bg-amber-50/40 dark:bg-amber-950/10 hover:bg-amber-50/60 dark:hover:bg-amber-950/20"
       )}
     >
-      {/* Avatar + Name + Hover action icons */}
+      {/* Avatar + Name + Level */}
       <td className={cn(
         "py-2 px-2.5",
         (isTestSession && !isMath) ? "w-[180px]" : "w-[35%] min-w-[280px]",
@@ -102,9 +99,6 @@ export function ClassesSessionAttendanceRow({
               )}>
                 {getInitials(nameParts.hasEnglishName ? nameParts.englishName! : student.name)}
               </div>
-              {isCareStudent && (
-                <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rose-500 border-2 border-white dark:border-zinc-900 animate-pulse" title="Cần chăm sóc" />
-              )}
             </div>
             <div className="min-w-0 flex flex-col justify-center">
               {/* Dòng 1: Tên tiếng Anh (nếu có) */}
@@ -119,8 +113,8 @@ export function ClassesSessionAttendanceRow({
                 </div>
               )}
 
-              {/* Dòng 2: Tên tiếng Việt + Nhãn buổi (1,2,3) + Nhãn học thử/mới + Icon chăm sóc + Mã học viên - Trên cùng dòng tiếng Việt, không lệch dòng */}
-              <div className="flex items-center gap-1.5 min-w-0 flex-wrap leading-tight">
+              {/* Dòng 2: Tên tiếng Việt */}
+              <div className="flex items-center gap-1.5 min-w-0 leading-tight">
                 <span className={cn(
                   "text-xs truncate",
                   nameParts.hasEnglishName ? "text-muted-foreground font-normal" : "text-foreground font-bold"
@@ -132,20 +126,7 @@ export function ClassesSessionAttendanceRow({
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
                 )}
 
-                {/* Nhãn Buổi 1, 2, 3... text thường, nhỏ, trên dòng tiếng Việt */}
-                {student.sessionLabel && (
-                  <StatusBadge
-                    status={student.sessionLabel}
-                    label={
-                      student.sessionLabel === 'buoi_1' ? 'Buổi 1' :
-                      student.sessionLabel === 'buoi_2' ? 'Buổi 2' :
-                      student.sessionLabel === 'buoi_3' ? 'Buổi 3' : 'Buổi cuối'
-                    }
-                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
-                  />
-                )}
-
-                {/* Nhãn Học thử (trial) text thường, nhỏ, trên dòng tiếng Việt */}
+                {/* Nhãn Học thử (trial) */}
                 {student.status === 'trial' && (
                   <StatusBadge
                     status="trial"
@@ -154,7 +135,7 @@ export function ClassesSessionAttendanceRow({
                   />
                 )}
 
-                {/* Nhãn Mới (new) text thường, nhỏ, trên dòng tiếng Việt */}
+                {/* Nhãn Mới (new) */}
                 {student.status === 'new' && (
                   <StatusBadge
                     status="new"
@@ -162,37 +143,16 @@ export function ClassesSessionAttendanceRow({
                     className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
                   />
                 )}
+              </div>
 
-                {/* Icon chăm sóc học viên: Bấm vào mở tab mới chăm sóc của học viên đó */}
-                {isCareStudent && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (typeof window !== 'undefined') {
-                        window.open(`/app/student_operations_alert?studentId=${student.id}`, '_blank')
-                      }
-                      onOpenCareDetail?.(student)
-                    }}
-                    className="inline-flex items-center justify-center h-4 w-4 rounded text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800 dark:hover:bg-rose-950/60 cursor-pointer transition-colors shrink-0"
-                    title="Mở tab mới Chăm sóc học viên này"
-                  >
-                    <HeartHandshake className="h-2.5 w-2.5" />
-                  </button>
-                )}
-
-                {/* Mã học viên */}
-                <span className="text-[11px] text-muted-foreground font-mono shrink-0">
-                  {student.code}
-                </span>
-
-                {/* Level học viên (nếu có) */}
-                {student.level && (
-                  <span className="text-[10px] text-muted-foreground font-medium bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm border border-zinc-200/60 dark:border-zinc-700/60 font-sans leading-none shrink-0">
+              {/* Trình độ (nếu có) - Không viền, không nền, để dưới tên học viên */}
+              {student.level && (
+                <div className="mt-0.5 leading-tight">
+                  <span className="text-[11px] text-muted-foreground font-normal">
                     {student.level}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -319,20 +279,35 @@ export function ClassesSessionAttendanceRow({
                 {skScore?.status === 'graded' && skScore.score !== null ? (
                   sk === 'Speaking' ? (
                     <button
+                      type="button"
                       disabled={isScoreDisabled}
                       onClick={() => {
                         if (isScoreDisabled) return
                         onOpenTestScoreDialog?.(student.id, sk)
                       }}
                       className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      title="Chấm điểm / Đánh giá kỹ năng Nói"
                     >
                       <span>{skScore.score}/10</span>
                       <PenSquare className="h-2.5 w-2.5 opacity-70 shrink-0" />
                     </button>
                   ) : (
-                    <span className="text-xs font-extrabold text-sky-600 dark:text-sky-400 font-mono select-none">
-                      {skScore.score}/10
-                    </span>
+                    <button
+                      type="button"
+                      disabled={isScoreDisabled}
+                      onClick={() => {
+                        if (isScoreDisabled) return
+                        if (typeof window !== 'undefined') {
+                          window.open(`/app/booking_test/results/e0001?skill=${sk.toLowerCase()}&student=${encodeURIComponent(student.name)}`, '_blank')
+                        }
+                        toast.info(`Đang mở bài làm ${sk} của học viên ${student.name} trong tab mới`)
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      title={`Mở tab xem chi tiết bài thi ${sk} của học viên ${student.name}`}
+                    >
+                      <span>{skScore.score}/10</span>
+                      <ExternalLink className="h-2.5 w-2.5 opacity-70 shrink-0" />
+                    </button>
                   )
                 ) : skScore?.status === 'score_button' ? (
                   sk === 'Speaking' ? (
@@ -347,11 +322,20 @@ export function ClassesSessionAttendanceRow({
                     </Button>
                   ) : (
                     <button
+                      type="button"
                       disabled={isScoreDisabled}
-                      onClick={() => onOpenTestScoreDialog?.(student.id, sk)}
-                      className="text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
+                      onClick={() => {
+                        if (isScoreDisabled) return
+                        if (typeof window !== 'undefined') {
+                          window.open(`/app/booking_test/results/e0001?skill=${sk.toLowerCase()}&student=${encodeURIComponent(student.name)}`, '_blank')
+                        }
+                        toast.info(`Đang mở bài thi ${sk} của học viên ${student.name} trong tab mới`)
+                      }}
+                      className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
+                      title={`Mở tab làm bài thi ${sk}`}
                     >
-                      Score
+                      <span>Score</span>
+                      <ExternalLink className="h-2.5 w-2.5 opacity-70 shrink-0" />
                     </button>
                   )
                 ) : (

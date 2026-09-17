@@ -28,8 +28,11 @@ import {
   Info,
   FolderOpen,
   LayoutDashboard,
+  Film,
+  Play,
 } from 'lucide-react'
 import { ClassesSessionOverviewTab } from './ClassesSessionOverviewTab'
+import { LiveTeachingDialog } from './live-teaching/LiveTeachingDialog'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -57,6 +60,7 @@ import { ClassesSessionCommentBox } from './ClassesSessionCommentBox'
 import {
   INACTIVE_STATUSES,
   getSessionStatusLabel,
+  getSessionStatusBadgeKey,
   deriveAttendance,
   deriveFeedback,
   stableHash,
@@ -97,6 +101,7 @@ export function ClassesSessionDetailDialog({
   const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({})
   const [ratingMap] = useState<Record<string, number>>({})
   const [isBulkFeedbackOpen, setIsBulkFeedbackOpen] = useState(false)
+  const [isLiveTeachingOpen, setIsLiveTeachingOpen] = useState(false)
   const [isSemesterEvalOpen, setIsSemesterEvalOpen] = useState(false)
   const [isProgressModalOpen, setIsProgressModalOpen] = useState(false)
   const [isBannerDismissed, setIsBannerDismissed] = useState(false)
@@ -262,8 +267,8 @@ export function ClassesSessionDetailDialog({
 
   // ── Feedback helper ──
   const getFeedback = useCallback((studentId: string): string =>
-    feedbackMap[studentId] ?? deriveFeedback(studentId, session.id),
-  [feedbackMap, session.id])
+    feedbackMap[studentId] ?? deriveFeedback(studentId, session.id, isMath),
+  [feedbackMap, session.id, isMath])
 
   const getRating = useCallback((studentId: string): number =>
     ratingMap[studentId] ?? ((stableHash(studentId + session.id) % 2) + 4),
@@ -348,8 +353,18 @@ export function ClassesSessionDetailDialog({
             </div>
           </div>
 
-          {/* Right: Semester Eval + Buổi trước / Selection buổi / Buổi sau + Icon X */}
+          {/* Right: Vào ca dạy (Live) + Semester Eval + Buổi trước / Selection buổi / Buổi sau + Icon X */}
           <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              size="xs"
+              onClick={() => setIsLiveTeachingOpen(true)}
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-xs transition-all px-2.5 h-7 text-xs rounded-lg cursor-pointer mr-1"
+              title="Khởi chạy màn hình giảng dạy và tốc ký học viên"
+            >
+              <Play className="h-3.5 w-3.5 fill-current shrink-0" />
+              <span>Vào ca dạy (Live)</span>
+            </Button>
             {isTestSession && !isMath && (
               <Button
                 type="button"
@@ -392,7 +407,7 @@ export function ClassesSessionDetailDialog({
                           ? 'text-primary dark:text-sky-400 font-bold'
                           : 'text-foreground font-normal group-hover:font-semibold'
                       )}>
-                        Buổi {s.sessionNumber}: {s.topic}
+                        {s.topic}
                       </span>
                       <div className="flex items-center gap-1 shrink-0">
                         {s.id === currentSessionId && (
@@ -400,9 +415,7 @@ export function ClassesSessionDetailDialog({
                             Đang xem
                           </Badge>
                         )}
-                        <Badge variant="outline" className={`rounded-full text-xs font-bold px-1.5 py-0 scale-90 shrink-0 ${
-                          s.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(s.status)
-                        }`}>
+                        <Badge variant="outline" className={cn("rounded-full text-xs font-bold px-1.5 py-0 scale-90 shrink-0", getStatusBadgeClass(getSessionStatusBadgeKey(s.status)))}>
                           {getSessionStatusLabel(s.status)}
                         </Badge>
                       </div>
@@ -441,9 +454,7 @@ export function ClassesSessionDetailDialog({
               <div>
                 <DialogTitle className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
                   <span>{session.topic}</span>
-                  <Badge variant="outline" className={`rounded-full text-xs font-bold px-1.5 py-0 ${
-                    session.status === 'ongoing' ? 'border-sky-300 bg-sky-100 text-sky-800' : getStatusBadgeClass(session.status)
-                  }`}>
+                  <Badge variant="outline" className={cn("rounded-full text-xs font-bold px-1.5 py-0", getStatusBadgeClass(getSessionStatusBadgeKey(session.status)))}>
                     {getSessionStatusLabel(session.status)}
                   </Badge>
                   {isTestSession && (
@@ -545,8 +556,8 @@ export function ClassesSessionDetailDialog({
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground'
                 }`}
               >
-                <FolderOpen className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                <span>Tài liệu & Media</span>
+                <Film className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
+                <span>Media</span>
               </button>
             </div>
 
@@ -717,6 +728,20 @@ export function ClassesSessionDetailDialog({
       <ClassesSessionUnitTestWarningDialog
         isOpen={showUnitTestWarning}
         onClose={() => setShowUnitTestWarning(false)}
+      />
+
+      {/* Màn hình Giảng dạy Trực tiếp & Tốc ký Học viên */}
+      <LiveTeachingDialog
+        isOpen={isLiveTeachingOpen}
+        onClose={() => setIsLiveTeachingOpen(false)}
+        session={session}
+        cls={cls}
+        roster={activeRoster}
+        isMath={isMath}
+        onFinishAndOpenBulkFeedback={(prefilledMap) => {
+          setFeedbackMap((prev) => ({ ...prev, ...prefilledMap }))
+          setIsBulkFeedbackOpen(true)
+        }}
       />
     </Dialog>
   )

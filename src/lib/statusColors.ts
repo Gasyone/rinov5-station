@@ -223,6 +223,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   dang_hoc: 'success',
   huy: 'completed',
 
+  // Session selector statuses
+  hom_nay: 'info',
+  da_hoc: 'success',
+  cho_dien_ra: 'warning',
+
   // Tuition Renewal & CRM Lead
   moi_tiep_nhan: 'info',
   dang_tu_van: 'warning',

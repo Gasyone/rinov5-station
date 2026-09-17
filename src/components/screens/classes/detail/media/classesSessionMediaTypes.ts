@@ -45,6 +45,26 @@ export interface SessionMediaItem {
   taggedStudentIds: string[] // Empty array = "Cả lớp"
 }
 
+export const MAX_IMAGE_DOC_SIZE_BYTES = 25 * 1024 * 1024 // 25MB
+export const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024 // 100MB
+export const MAX_FILES_PER_UPLOAD = 10
+
+export interface UploadingMediaItem {
+  id: string
+  sessionId: string
+  sessionNumber: number
+  sessionTitle: string
+  sessionDate: string
+  sessionTime: string
+  name: string
+  type: 'image' | 'video' | 'doc'
+  size: string
+  totalBytes: number
+  loadedBytes: number
+  progress: number
+  rawFile?: File
+}
+
 export function extractThumbnailFromUrl(
   url: string
 ): { thumbnailUrl: string; type: 'image' | 'video' | 'doc'; defaultName: string } {

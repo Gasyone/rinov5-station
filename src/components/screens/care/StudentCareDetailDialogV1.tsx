@@ -44,6 +44,7 @@ import {
   getSimulatedLogs,
   getSimulatedPackagesList,
 } from './studentCareDetailHelpers'
+import { defaultCSStaffList } from './studentCareDetailTypes'
 
 export interface StudentCareDetailDialogV1Props {
   studentId: string | null
@@ -66,29 +67,7 @@ export function StudentCareDetailDialogV1({
 }: StudentCareDetailDialogV1Props) {
   const [leftTab, setLeftTab] = useState<'learning' | 'orders'>('learning')
   const [closedBanners, setClosedBanners] = useState<string[]>([])
-  const [assignedCS, setAssignedCS] = useState('Lê Thị Lan')
   const [csSearchQuery, setCsSearchQuery] = useState('')
-
-  const csStaffList = useMemo(() => [
-    { id: 'cs-1', name: 'Lê Thị Lan', code: 'EMP-CS-001', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lan' },
-    { id: 'cs-2', name: 'Minh Phương', code: 'EMP-CS-002', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
-    { id: 'cs-3', name: 'Nguyễn Văn Hùng', code: 'EMP-CS-003', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hung' },
-    { id: 'cs-4', name: 'Phạm Thị Hà', code: 'EMP-CS-004', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
-    { id: 'cs-5', name: 'Hoàng Anh Tuấn', code: 'EMP-CS-005', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tuan' },
-    { id: 'cs-6', name: 'Đỗ Mai Hương', code: 'EMP-CS-006', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Huong' },
-  ], [])
-
-  const filteredCsList = useMemo(() => {
-    if (!csSearchQuery.trim()) return csStaffList
-    const q = csSearchQuery.toLowerCase()
-    return csStaffList.filter((item) =>
-      item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
-    )
-  }, [csSearchQuery, csStaffList])
-
-  const currentCSObj = useMemo(() => {
-    return csStaffList.find((c) => c.name === assignedCS) || csStaffList[0]
-  }, [assignedCS, csStaffList])
 
   const [localStudentId, setLocalStudentId] = useState<string | null>(null)
 
@@ -102,6 +81,41 @@ export function StudentCareDetailDialogV1({
     if (!localStudentId) return null
     return alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId) || null
   }, [localStudentId, alerts])
+
+  // Đồng bộ Phụ trách CS với cột ngoài danh sách
+  const [assignedCS, setAssignedCS] = useState(student?.csStaff || 'Trần Thảo Anh 20')
+  const [prevStudentIdForCS, setPrevStudentIdForCS] = useState<string | null>(student?.studentId || null)
+
+  if (student && student.studentId !== prevStudentIdForCS) {
+    setPrevStudentIdForCS(student.studentId)
+    setAssignedCS(student.csStaff || 'Trần Thảo Anh 20')
+  }
+
+  const handleAssignedCSChange = (newCS: string) => {
+    setAssignedCS(newCS)
+    if (student) {
+      student.csStaff = newCS
+    }
+    const foundAlert = alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId)
+    if (foundAlert) {
+      foundAlert.csStaff = newCS
+    }
+    onRefresh?.()
+  }
+
+  const csStaffList = useMemo(() => defaultCSStaffList, [])
+
+  const filteredCsList = useMemo(() => {
+    if (!csSearchQuery.trim()) return csStaffList
+    const q = csSearchQuery.toLowerCase()
+    return csStaffList.filter((item) =>
+      item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
+    )
+  }, [csSearchQuery, csStaffList])
+
+  const currentCSObj = useMemo(() => {
+    return csStaffList.find((c) => c.name.toLowerCase() === assignedCS.toLowerCase()) || csStaffList[0]
+  }, [assignedCS, csStaffList])
 
   // Get packages list dynamically
   const packagesList = useMemo(() => {
@@ -243,37 +257,39 @@ export function StudentCareDetailDialogV1({
   const staffInfo = useMemo(() => {
     if (!student) {
       return {
-        cs: { id: 'cs1', name: 'CSM Minh Phương', role: 'CS KH', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
-        teachers: [
-          { id: 't1', name: 'GV Nguyễn Minh Trí', role: 'GV', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tri' },
-          { id: 't2', name: 'GV Bùi Văn Anh', role: 'GV Phụ', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Anh' },
-        ],
+        cs: { id: 'cs1', name: 'Trần Thảo Anh 20', role: 'Chuyên viên CSKH', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThaoAnh' },
+        teachers: [],
       }
     }
-    const hash = stableHash(student.studentId)
-    const teachersList = [
-      [
-        { id: 't1', name: 'GV Nguyễn Minh Trí', role: 'GV', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tri' },
-        { id: 't2', name: 'GV Bùi Văn Anh', role: 'GV Phụ', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Anh' },
-      ],
-      [
-        { id: 't3', name: 'GV Đỗ Thị Xuân', role: 'GV', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Xuan' },
-      ],
-      [
-        { id: 't4', name: 'GV Trần Văn Nam', role: 'GV', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Nam' },
-        { id: 't5', name: 'GV Lê Thu Hà', role: 'GV Phụ', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
-      ],
-    ]
+
+    const rawTeacherCodes = [
+      ...new Set([
+        ...(student.teacherCode ? student.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+        ...(student.substituteTeacher ? student.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+      ]),
+    ].filter((t) => t && t !== '-')
+
+    const teachers = rawTeacherCodes.map((code, idx) => ({
+      id: `teacher-${idx}-${code}`,
+      name: code,
+      role: code.toLowerCase().includes('sub') ? 'Trợ giảng (TA)' : 'Giáo viên Chủ nhiệm',
+      phone: '0912 345 678',
+      email: `${code.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+      avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(code)}`,
+    }))
+
+    const csName = assignedCS || student.csStaff || 'Trần Thảo Anh 20'
+
     return {
       cs: {
-        id: `cs-${hash % 3}`,
-        name: student.csStaff || 'CSM Minh Phương',
-        role: 'CS KH',
-        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${student.csStaff || 'CS'}`,
+        id: `cs-${csName.replace(/\s+/g, '-').toLowerCase()}`,
+        name: csName,
+        role: 'Chuyên viên CSKH',
+        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(csName)}`,
       },
-      teachers: teachersList[hash % teachersList.length],
+      teachers,
     }
-  }, [student])
+  }, [student, assignedCS])
 
   if (!open || !student) return null
 
@@ -438,7 +454,7 @@ export function StudentCareDetailDialogV1({
                   setSelectedPackageId={setSelectedPackageId}
                   staffInfo={staffInfo}
                   assignedCS={assignedCS}
-                  onAssignedCSChange={setAssignedCS}
+                  onAssignedCSChange={handleAssignedCSChange}
                   branchName="RinoEdu Nguyễn Tuân"
                 />
               ) : (

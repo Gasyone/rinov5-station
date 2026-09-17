@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { MediaPreviewModal, PersonnelHoverCard } from '@/components/shared'
 import { getShortDayOfWeek, formatDateNoYear } from './careSessionTimelineHelpers'
 
@@ -346,7 +345,7 @@ export function CareProjectMediaList({
                     </h4>
                   </div>
 
-                  {/* Cụm phải: GV (+hover card) • Project */}
+                  {/* Cụm phải: GV (+hover card) */}
                   <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
                     <span className="text-muted-foreground">GV:</span>
                     <PersonnelHoverCard
@@ -364,15 +363,6 @@ export function CareProjectMediaList({
                         {project.evaluator}
                       </span>
                     </PersonnelHoverCard>
-
-                    <span className="text-border/60">•</span>
-
-                    <Badge
-                      variant="secondary"
-                      className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0"
-                    >
-                      Project
-                    </Badge>
                   </div>
                 </div>
 

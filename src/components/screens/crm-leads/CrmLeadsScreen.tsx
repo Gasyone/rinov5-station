@@ -292,6 +292,18 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
       list = filteredLeads.filter(isThucHienDonStatus)
     } else if (selectedStatus === 'cho_xep_lop') {
       list = filteredLeads.filter((item) => isChoXepLopStatus(item) || isThucHienDonStatus(item))
+    } else if (selectedStatus === 'da_xep_lop') {
+      list = filteredLeads.filter((l) => (l.subStatus || '').toLowerCase().includes('đã xếp') || (l.lastNote || '').toLowerCase().includes('đã xếp') || Boolean(l.trialClassName && l.status === 'chuyen_doi'))
+    } else if (selectedStatus === 't_datt1') {
+      list = filteredLeads.filter((l) => (l.paymentTerm || '').toLowerCase().includes('1 phần') || (l.subStatus || '').toLowerCase().includes('1 phần') || (l.lastNote || '').toLowerCase().includes('1 phần') || Boolean(l.previousOrders?.some((o) => (o.paymentTerm || '').includes('1 phần'))))
+    } else if (selectedStatus === 'danghh') {
+      list = filteredLeads.filter((l) => (l.subStatus || '').toLowerCase().includes('hoàn') || (l.lastNote || '').toLowerCase().includes('hoàn'))
+    } else if (selectedStatus === 'cdh') {
+      list = filteredLeads.filter((l) => (l.subStatus || '').toLowerCase().includes('duyệt hoàn') || (l.lastNote || '').toLowerCase().includes('duyệt hoàn'))
+    } else if (selectedStatus === 'da_thu_du') {
+      list = filteredLeads.filter((l) => isChuyenDoiStatus(l.status) && !(l.paymentTerm || '').toLowerCase().includes('1 phần'))
+    } else if (selectedStatus === 'dang_hoc') {
+      list = filteredLeads.filter((l) => isChuyenDoiStatus(l.status) && Boolean(l.trialClassName || (l.lastNote || '').toLowerCase().includes('học')))
     } else if (selectedStatus === 'hen_trai_nghiem' || selectedStatus === 'danh_gia_trai_nghiem') {
       list = filteredLeads.filter((item) => isHenTraiNghiemStatus(item.status) || isDaDatTestStatus(item) || isDaTestCoKqStatus(item) || isHocThuStatus(item))
     } else if (selectedStatus === 'cho_chot' || selectedStatus === 'tiem_nang') {
@@ -321,7 +333,7 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     setCurrentPage(1)
     toast.info(
       nextMode === 'all'
-        ? 'Chuyển sang chế độ: Chia cột đầy đủ chuẩn bản cũ (T0, T1, T2, T3)'
+        ? 'Chuyển sang chế độ: Chia cột đầy đủ chuẩn bản cũ (T0, T1, T2, T3, T4, T5)'
         : 'Chuyển sang chế độ: Trạng thái chính rút gọn'
     )
   }

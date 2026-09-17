@@ -1,11 +1,12 @@
 'use client'
 
 import React from 'react'
-import { Check, X, Sparkles, Star } from 'lucide-react'
+import { Check, X, Sparkles, Star, AlertCircle } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import type { StudentFormState } from './classesBulkFeedbackTypes'
 import {
   MATH_THINKING_SKILLS,
   MATH_ATTITUDE_LABELS,
@@ -16,70 +17,7 @@ import {
   MathThinkingSkillConfig,
 } from './mathThinkingTypes'
 
-export interface StudentFormState {
-  homeworkApp: string
-  homeworkBook: string
-  absorption: number
-  participation: number
-  evaluation: number
-  strength: string
-  weakness: string
-  otherNotes: string
-  reminders: string[]
-  otherReminder: string
-  tone: string
-  generatedFeedback: string
-  isSent: boolean
-  internalNote: string
-  vocabulary: number
-  grammar: number
-  speaking: number
-  pronunciation: number
-  attitude: number
-  vocabGoodNotes: string
-  vocabImproveNotes: string
-  grammarGoodNotes: string
-  grammarImproveNotes: string
-  speakingGoodNotes: string
-  speakingImproveNotes: string
-  pronGoodNotes: string
-  pronImproveNotes: string
-  aiUsesLeft?: number
-
-  // 5 Bậc tư duy toán học:
-  mathBasic?: number
-  mathBasicStrength?: string
-  mathBasicWeakness?: string
-
-  mathLogic?: number
-  mathLogicStrength?: string
-  mathLogicWeakness?: string
-
-  mathMath?: number
-  mathMathStrength?: string
-  mathMathWeakness?: string
-
-  mathCreative?: number
-  mathCreativeStrength?: string
-  mathCreativeWeakness?: string
-
-  mathCritical?: number
-  mathCriticalStrength?: string
-  mathCriticalWeakness?: string
-
-  // Legacy fallback fields
-  mathArithmetic?: number
-  mathArithmeticStrength?: string
-  mathArithmeticWeakness?: string
-
-  mathSpatial?: number
-  mathSpatialStrength?: string
-  mathSpatialWeakness?: string
-
-  mathModeling?: number
-  mathModelingStrength?: string
-  mathModelingWeakness?: string
-}
+export type { StudentFormState }
 
 interface ClassesBulkFeedbackMathFormProps {
   formState: StudentFormState
@@ -91,6 +29,7 @@ interface ClassesBulkFeedbackMathFormProps {
   classLevel?: string
   sessionTopic?: string
   readOnly?: boolean
+  errors?: Record<string, string>
 }
 
 interface ThinkingSkillItemProps {
@@ -98,6 +37,7 @@ interface ThinkingSkillItemProps {
   formState: StudentFormState
   onUpdateField: (field: keyof StudentFormState, value: StudentFormState[keyof StudentFormState]) => void
   readOnly: boolean
+  errorMessage?: string
 }
 
 function ThinkingSkillItem({
@@ -105,11 +45,14 @@ function ThinkingSkillItem({
   formState,
   onUpdateField,
   readOnly,
+  errorMessage,
 }: ThinkingSkillItemProps) {
-  const currentRating = (formState[skill.ratingKey] as number) || 3
+  const currentRating = formState[skill.ratingKey] as number | undefined
   const strengthValue = (formState[skill.strengthKey] as string) || ''
   const weaknessValue = (formState[skill.weaknessKey] as string) || ''
 
+  // Tạm ẩn gợi ý nhận xét theo yêu cầu
+  /*
   const handleAddTag = (fieldKey: keyof StudentFormState, tagText: string) => {
     if (readOnly) return
     const currentVal = (formState[fieldKey] as string) || ''
@@ -120,9 +63,15 @@ function ThinkingSkillItem({
       : tagText
     onUpdateField(fieldKey, newVal)
   }
+  */
 
   return (
-    <div className="space-y-2 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 last:border-b-0">
+    <div
+      className={cn(
+        'space-y-2 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 last:border-b-0 transition-all rounded-xl',
+        errorMessage && 'bg-rose-50/20 dark:bg-rose-950/10 p-2.5 border border-rose-300/80 dark:border-rose-800/80 shadow-2xs'
+      )}
+    >
       {/* Dòng trên: Title bên trái, Chỉ số rating bên phải */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <span className="text-sm font-bold text-foreground shrink-0 flex items-center gap-1.5">
@@ -140,7 +89,7 @@ function ThinkingSkillItem({
                 key={opt.value}
                 type="button"
                 disabled={readOnly}
-                onClick={() => onUpdateField(skill.ratingKey, opt.value)}
+                onClick={() => onUpdateField(skill.ratingKey, isChecked ? undefined : opt.value)}
                 className="flex items-center gap-1 text-xs transition-all cursor-pointer select-none disabled:cursor-default hover:text-foreground whitespace-nowrap"
               >
                 <span
@@ -148,7 +97,9 @@ function ThinkingSkillItem({
                     'h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all',
                     isChecked
                       ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-zinc-300 dark:border-zinc-600 bg-background'
+                      : errorMessage
+                        ? 'border-rose-400 dark:border-rose-600 bg-background'
+                        : 'border-zinc-300 dark:border-zinc-600 bg-background'
                   )}
                 >
                   {isChecked && (
@@ -173,20 +124,11 @@ function ThinkingSkillItem({
         {skill.description}
       </p>
 
-      {/* Danh sách tiêu chí thành phần (Sub-skills) */}
-      {skill.subSkills && skill.subSkills.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 pt-0.5 pb-0.5">
-          <span className="text-[11px] font-semibold text-muted-foreground/80 shrink-0">
-            Nội dung trọng tâm:
-          </span>
-          {skill.subSkills.map((sub, idx) => (
-            <span
-              key={idx}
-              className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 font-medium border border-zinc-200/60 dark:border-zinc-700/60"
-            >
-              • {sub}
-            </span>
-          ))}
+      {/* Thông báo lỗi nếu thiếu đánh giá bắt buộc (*) */}
+      {errorMessage && (
+        <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-lg">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -210,8 +152,8 @@ function ThinkingSkillItem({
               placeholder="ví dụ: suy luận tốt, tính nhẩm nhanh..."
               className="text-sm h-9 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/45 placeholder:font-normal"
             />
-            {/* Suggestion Chips */}
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {/* Tạm ẩn Suggestion Chips */}
+            {/* <div className="flex flex-wrap gap-1.5 pt-0.5">
               {skill.suggestions.strength.map((tag) => (
                 <button
                   key={tag}
@@ -223,7 +165,7 @@ function ThinkingSkillItem({
                   + {tag}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Weakness */}
@@ -239,8 +181,8 @@ function ThinkingSkillItem({
               placeholder="ví dụ: cần cẩn thận hơn, nháp phép tính..."
               className="text-sm h-9 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/45 placeholder:font-normal"
             />
-            {/* Suggestion Chips */}
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {/* Tạm ẩn Suggestion Chips */}
+            {/* <div className="flex flex-wrap gap-1.5 pt-0.5">
               {skill.suggestions.weakness.map((tag) => (
                 <button
                   key={tag}
@@ -252,7 +194,7 @@ function ThinkingSkillItem({
                   + {tag}
                 </button>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -270,6 +212,7 @@ export function ClassesBulkFeedbackMathForm({
   classLevel,
   sessionTopic,
   readOnly = false,
+  errors = {},
 }: ClassesBulkFeedbackMathFormProps) {
   const handleToggleReminder = (item: string) => {
     if (readOnly) return
@@ -279,7 +222,7 @@ export function ClassesBulkFeedbackMathForm({
   }
 
   const attitudeScore = formState.attitude || 3
-  const attitudeLabel = MATH_ATTITUDE_LABELS[attitudeScore] || '3 - Chưa đạt yêu cầu'
+  const attitudeLabel = MATH_ATTITUDE_LABELS[attitudeScore] || '3 - Chưa đạt'
 
   return (
     <div className="space-y-4 max-w-[850px] mx-auto pb-4">
@@ -341,123 +284,153 @@ export function ClassesBulkFeedbackMathForm({
 
         <div className="space-y-2">
           {/* Row 1: Bài tập trên ứng dụng */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 bg-transparent gap-2">
-            <span className="text-xs font-bold text-foreground">
-              Bài tập trên ứng dụng <span className="text-rose-500">*</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-              {MATH_HOMEWORK_OPTIONS.map((opt) => {
-                const isChecked =
-                  formState.homeworkApp === opt.value || formState.homeworkApp === opt.altValue
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => onUpdateField('homeworkApp', opt.value)}
-                    className="flex items-center gap-1.5 text-xs transition-all cursor-pointer select-none disabled:cursor-default"
-                  >
-                    <span
-                      className={cn(
-                        'h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all bg-background',
-                        isChecked
-                          ? 'border-zinc-900 dark:border-zinc-100'
-                          : 'border-zinc-300 dark:border-zinc-600'
-                      )}
+          <div
+            className={cn(
+              'p-2 rounded-xl transition-all',
+              errors.homeworkApp && 'bg-rose-50/20 dark:bg-rose-950/10 border border-rose-300/80 dark:border-rose-800/80 shadow-2xs'
+            )}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-0.5 bg-transparent gap-2">
+              <span className="text-xs font-bold text-foreground">
+                Bài tập trên ứng dụng <span className="text-rose-500">*</span>
+              </span>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+                {MATH_HOMEWORK_OPTIONS.map((opt) => {
+                  const isChecked =
+                    formState.homeworkApp === opt.value || formState.homeworkApp === opt.altValue
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={readOnly}
+                      onClick={() => onUpdateField('homeworkApp', opt.value)}
+                      className="flex items-center gap-1.5 text-xs transition-all cursor-pointer select-none disabled:cursor-default"
                     >
-                      {isChecked && (
-                        <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
-                      )}
-                    </span>
-                    {opt.type === 'done' && (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <Check className="h-3 w-3 stroke-[3px]" /> Hoàn thành
-                      </span>
-                    )}
-                    {opt.type === 'partly' && (
-                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <span className="text-xs leading-none">♦</span> Hoàn thành 1 phần
-                      </span>
-                    )}
-                    {opt.type === 'not_yet' && (
-                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <X className="h-3 w-3 stroke-[3px]" /> Chưa làm
-                      </span>
-                    )}
-                    {opt.type === 'none' && (
                       <span
                         className={cn(
-                          'text-xs font-semibold',
-                          isChecked ? 'text-foreground font-bold' : 'text-muted-foreground'
+                          'h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all bg-background',
+                          isChecked
+                            ? 'border-zinc-900 dark:border-zinc-100'
+                            : errors.homeworkApp
+                              ? 'border-rose-400 dark:border-rose-600'
+                              : 'border-zinc-300 dark:border-zinc-600'
                         )}
                       >
-                        Không có
+                        {isChecked && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+                        )}
                       </span>
-                    )}
-                  </button>
-                )
-              })}
+                      {opt.type === 'done' && (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <Check className="h-3 w-3 stroke-[3px]" /> Hoàn thành
+                        </span>
+                      )}
+                      {opt.type === 'partly' && (
+                        <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <span className="text-xs leading-none">♦</span> Hoàn thành 1 phần
+                        </span>
+                      )}
+                      {opt.type === 'not_yet' && (
+                        <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <X className="h-3 w-3 stroke-[3px]" /> Chưa làm
+                        </span>
+                      )}
+                      {opt.type === 'none' && (
+                        <span
+                          className={cn(
+                            'text-xs font-semibold',
+                            isChecked ? 'text-foreground font-bold' : 'text-muted-foreground'
+                          )}
+                        >
+                          Không có
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
+            {errors.homeworkApp && (
+              <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold pt-1 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-lg mt-1">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>{errors.homeworkApp}</span>
+              </div>
+            )}
           </div>
 
           {/* Row 2: Bài tập trong sách */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-1 bg-transparent gap-2">
-            <span className="text-xs font-bold text-foreground">
-              Bài tập trong sách <span className="text-rose-500">*</span>
-            </span>
-            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-              {MATH_HOMEWORK_OPTIONS.map((opt) => {
-                const isChecked =
-                  formState.homeworkBook === opt.value || formState.homeworkBook === opt.altValue
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => onUpdateField('homeworkBook', opt.value)}
-                    className="flex items-center gap-1.5 text-xs transition-all cursor-pointer select-none disabled:cursor-default"
-                  >
-                    <span
-                      className={cn(
-                        'h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all bg-background',
-                        isChecked
-                          ? 'border-zinc-900 dark:border-zinc-100'
-                          : 'border-zinc-300 dark:border-zinc-600'
-                      )}
+          <div
+            className={cn(
+              'p-2 rounded-xl transition-all',
+              errors.homeworkBook && 'bg-rose-50/20 dark:bg-rose-950/10 border border-rose-300/80 dark:border-rose-800/80 shadow-2xs'
+            )}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-0.5 bg-transparent gap-2">
+              <span className="text-xs font-bold text-foreground">
+                Bài tập trong sách <span className="text-rose-500">*</span>
+              </span>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+                {MATH_HOMEWORK_OPTIONS.map((opt) => {
+                  const isChecked =
+                    formState.homeworkBook === opt.value || formState.homeworkBook === opt.altValue
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      disabled={readOnly}
+                      onClick={() => onUpdateField('homeworkBook', opt.value)}
+                      className="flex items-center gap-1.5 text-xs transition-all cursor-pointer select-none disabled:cursor-default"
                     >
-                      {isChecked && (
-                        <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
-                      )}
-                    </span>
-                    {opt.type === 'done' && (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <Check className="h-3 w-3 stroke-[3px]" /> Hoàn thành
-                      </span>
-                    )}
-                    {opt.type === 'partly' && (
-                      <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <span className="text-xs leading-none">♦</span> Hoàn thành 1 phần
-                      </span>
-                    )}
-                    {opt.type === 'not_yet' && (
-                      <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
-                        <X className="h-3 w-3 stroke-[3px]" /> Chưa làm
-                      </span>
-                    )}
-                    {opt.type === 'none' && (
                       <span
                         className={cn(
-                          'text-xs font-semibold',
-                          isChecked ? 'text-foreground font-bold' : 'text-muted-foreground'
+                          'h-4 w-4 rounded-full border flex items-center justify-center shrink-0 transition-all bg-background',
+                          isChecked
+                            ? 'border-zinc-900 dark:border-zinc-100'
+                            : errors.homeworkBook
+                              ? 'border-rose-400 dark:border-rose-600'
+                              : 'border-zinc-300 dark:border-zinc-600'
                         )}
                       >
-                        Không có
+                        {isChecked && (
+                          <div className="h-1.5 w-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+                        )}
                       </span>
-                    )}
-                  </button>
-                )
-              })}
+                      {opt.type === 'done' && (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <Check className="h-3 w-3 stroke-[3px]" /> Hoàn thành
+                        </span>
+                      )}
+                      {opt.type === 'partly' && (
+                        <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <span className="text-xs leading-none">♦</span> Hoàn thành 1 phần
+                        </span>
+                      )}
+                      {opt.type === 'not_yet' && (
+                        <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 px-1.5 py-0.5 rounded text-xs font-bold">
+                          <X className="h-3 w-3 stroke-[3px]" /> Chưa làm
+                        </span>
+                      )}
+                      {opt.type === 'none' && (
+                        <span
+                          className={cn(
+                            'text-xs font-semibold',
+                            isChecked ? 'text-foreground font-bold' : 'text-muted-foreground'
+                          )}
+                        >
+                          Không có
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
+            {errors.homeworkBook && (
+              <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold pt-1 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-lg mt-1">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>{errors.homeworkBook}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -490,6 +463,7 @@ export function ClassesBulkFeedbackMathForm({
               formState={formState}
               onUpdateField={onUpdateField}
               readOnly={readOnly}
+              errorMessage={errors[skill.ratingKey]}
             />
           ))}
         </div>

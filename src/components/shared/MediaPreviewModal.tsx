@@ -56,7 +56,6 @@ export function MediaPreviewModal({
               <DialogTitle className="font-bold text-base truncate text-white drop-shadow-xs">
                 {previewMedia.name}
               </DialogTitle>
-              <p className="text-xs text-zinc-300 font-medium">Tài liệu & hình ảnh đính kèm buổi học</p>
             </div>
 
             {/* Actions: Share Link, Download Link & Explicit High-Contrast Close "X" Button */}

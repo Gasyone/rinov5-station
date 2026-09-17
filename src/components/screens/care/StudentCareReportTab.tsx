@@ -56,6 +56,7 @@ interface StudentCareReportTabProps {
   branchName?: string
   onOpenLeaveReserveDialog?: () => void
   onCreateLeaveReserve?: (type: 'off' | 'reservation') => void
+  isRenewal?: boolean
 }
 
 // ── Main Component ──────────────────────────────────────────────────────
@@ -74,6 +75,7 @@ export function StudentCareReportTab({
   branchName,
   onOpenLeaveReserveDialog,
   onCreateLeaveReserve,
+  isRenewal = false,
 }: StudentCareReportTabProps) {
   const isEnglish = useMemo(() => {
     if (!activePackage) return true
@@ -400,6 +402,7 @@ export function StudentCareReportTab({
                 student={currentStudentAlert}
                 onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
                 onCreateLeaveReserve={onCreateLeaveReserve}
+                isRenewal={isRenewal}
               />
 
 

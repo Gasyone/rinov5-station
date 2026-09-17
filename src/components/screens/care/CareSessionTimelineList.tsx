@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { SessionHistory } from './studentCareReportHelpers'
@@ -291,29 +290,31 @@ export function CareSessionTimelineList({
             {/* Status Điểm danh (Rõ ràng: Vắng không phép, Vắng có phép, Đến muộn, Đã đến) */}
             {renderAttendanceBadge(session)}
 
-            <span className="text-border/60">•</span>
-
-            {/* BTVN */}
-            <span>
-              BTVN:{' '}
-              {session.homeworkSubmitted ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    toast.info(
-                      `Chi tiết bài tập ${session.homeworkCode}: Đã làm (${session.homeworkScore})`
-                    )
-                  }
-                  className="text-primary hover:underline font-medium cursor-pointer"
-                >
-                  {session.homeworkCode} ({session.homeworkScore})
-                </button>
-              ) : (
-                <span className="text-muted-foreground/70 font-normal">
-                  {session.homeworkCode} (Chưa làm)
-                </span>
-              )}
-            </span>
+            {/* BTVN: Để BT-01, BT-02 thôi, xóa nhãn BTVN, xóa điểm. Chưa làm text xám, đã làm text xanh mở tab mới */}
+            {session.homeworkCode && (
+              <>
+                <span className="text-border/60">•</span>
+                {session.homeworkSubmitted ? (
+                  <a
+                    href={`/app/classes?homework=${session.homeworkCode}&studentId=${studentId || ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+                    title={`Mở bài tập ${session.homeworkCode} trong tab mới`}
+                  >
+                    {session.homeworkCode}
+                  </a>
+                ) : (
+                  <span
+                    className="text-muted-foreground/70 font-normal"
+                    title={`Bài tập ${session.homeworkCode} (Chưa làm)`}
+                  >
+                    {session.homeworkCode}
+                  </span>
+                )}
+              </>
+            )}
 
             {/* Điểm bài kiểm tra nếu có */}
             {isTest && session.score && (
@@ -393,16 +394,17 @@ export function CareSessionTimelineList({
           </span>
         </div>
 
-        {/* Lưu ý phát sinh: Đặt trong Nhật ký buổi học, TRÊN Smartcard thống kê, hiển thị trên cùng 1 dòng, xóa chữ 'Vấn đề:', viết tắt 'HĐ:' */}
+        {/* Lưu ý phát sinh: Đặt trong Nhật ký buổi học, TRÊN Smartcard thống kê, rút gọn 1 dòng, ngắn gọn */}
         {notices.length > 0 && (
-          <div className="space-y-1.5 pt-0.5 pb-1 select-none">
+          <div className="space-y-1 pt-0.5 pb-1 select-none">
             {notices.map((notice) => (
               <div
                 key={notice.id}
-                className="flex items-start gap-2 text-xs py-0.5 leading-relaxed"
+                className="flex items-center gap-1.5 text-xs py-0.5 leading-tight min-w-0"
+                title={`${notice.issue} HĐ: ${notice.action}`}
               >
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="min-w-0 flex-1">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <div className="min-w-0 flex-1 truncate">
                   <span className="text-amber-800 dark:text-amber-300 font-medium">
                     {notice.issue}
                   </span>{' '}
@@ -421,7 +423,7 @@ export function CareSessionTimelineList({
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
         {smartCards && <div className="mb-2">{smartCards}</div>}
 
-        {/* Single Line Upcoming Session Banner (1 buổi tiếp theo) */}
+        {/* Single Line Upcoming Session Banner (1 buổi tiếp theo - Tái sử dụng ClassSessionHoverCard chuẩn) */}
         {upcomingSessions.length > 0 && (() => {
           const nextSession = [...allSessions.filter((s) => s.type === 'upcoming')].sort(
             (a, b) => a.sessionNumber - b.sessionNumber
@@ -430,80 +432,30 @@ export function CareSessionTimelineList({
           const sessionTime = nextSession.time || '17:30 - 19:00'
           const dayOfWeek = getDayOfWeekName(nextSession.date)
           const shortDate = formatDateNoYear(nextSession.date)
+          const nextHoverSessionData = buildGenericSessionData(nextSession)
 
           return (
             <div className="pt-0.5 pb-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
-                        {dayOfWeek}, {shortDate} ({sessionTime})
-                      </span>
-                      <span className="text-border">•</span>
-                      <span
-                        className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
-                        title={nextSession.topic}
-                      >
-                        {nextSession.topic}
-                      </span>
-                    </div>
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  side="top"
-                  className="w-80 p-3.5 space-y-3 text-xs z-50 shadow-lg border bg-popover text-popover-foreground rounded-2xl animate-in fade-in zoom-in-95 duration-150 text-left"
+              <ClassSessionHoverCard session={nextHoverSessionData} side="bottom">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
                 >
-                  <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <span className="font-bold text-foreground text-xs uppercase tracking-wide">
-                      Thông tin buổi học tiếp theo
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
+                      {dayOfWeek}, {shortDate} ({sessionTime})
                     </span>
-                    <span className="text-[10px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-100/80 dark:bg-sky-950 px-1.5 py-0.5 rounded border border-sky-200/60">
-                      Sắp tới
+                    <span className="text-border">•</span>
+                    <span
+                      className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
+                      title={nextSession.topic}
+                    >
+                      {nextSession.topic}
                     </span>
                   </div>
-
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <p className="font-bold text-sm text-foreground leading-snug">{nextSession.topic}</p>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        {pkgIsEnglish ? 'IELTS Junior 1A • CLS-IELTS-001' : 'Toán Tư Duy STEM Rino • LD_TOAN_00010'}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Thời gian:</span>
-                        <span className="font-semibold text-foreground">{dayOfWeek}, {shortDate}</span>
-                        <span className="text-muted-foreground block text-[11px] font-mono">{sessionTime}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground block text-[11px]">Phòng học:</span>
-                        <span className="font-semibold text-foreground">{nextSession.room || 'P.102 (Tầng 1)'}</span>
-                        <span className="text-muted-foreground block text-[11px] truncate">RinoEdu Nguyễn Tuân</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-1.5 border-t border-border/40 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Giáo viên:</span>
-                        <span className="font-semibold text-foreground">{nextSession.teacher || 'Sarah Smith'}</span>
-                      </div>
-                      {nextSession.assistant && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Trợ giảng:</span>
-                          <span className="font-semibold text-foreground">{nextSession.assistant.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                </div>
+              </ClassSessionHoverCard>
             </div>
           )
         })()}
@@ -512,7 +464,7 @@ export function CareSessionTimelineList({
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
             <div className="text-xs font-bold text-foreground">
-              <span>Các buổi học chính ({regularCompletedSessions.length})</span>
+              <span>Lịch sử buổi học ({regularCompletedSessions.length})</span>
             </div>
             <div className="space-y-2">
               {regularCompletedSessions.map(renderSessionCard)}

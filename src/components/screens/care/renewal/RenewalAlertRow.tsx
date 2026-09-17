@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ContactCell, PersonnelHoverCard } from '@/components/shared'
+import { ContactCell, PersonnelHoverCard, StatusBadge } from '@/components/shared'
 import {
   ExternalLink,
   RefreshCw,
@@ -19,6 +19,10 @@ import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getR
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
+import {
+  resolveStudentPlacementStatus,
+  PLACEMENT_STATUS_META,
+} from '../class-card/studentCareClassCardHelpers'
 
 export interface RenewalAlertRowProps {
   cls: StudentCareAlert
@@ -294,8 +298,8 @@ export function RenewalAlertRow({
       {/* Phụ trách */}
       <td className="py-3 px-3 min-w-[160px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-1.5 text-left">
-          {/* CS ở trên */}
-          {cls.csStaff && (
+          {/* Phụ trách CS */}
+          {cls.csStaff ? (
             <PersonnelHoverCard
               person={{
                 name: cls.csStaff,
@@ -309,50 +313,36 @@ export function RenewalAlertRow({
                   <span className="text-xs px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
                     CS
                   </span>
-                  <span className="text-foreground text-xs hover:text-emerald-600 dark:hover:text-emerald-400">{cls.csStaff}</span>
+                  <span className="text-foreground text-xs hover:text-emerald-600 dark:hover:text-emerald-400 font-medium">{cls.csStaff}</span>
                 </div>
               </div>
             </PersonnelHoverCard>
+          ) : (
+            <span className="text-xs text-muted-foreground italic">Chưa phân công</span>
           )}
-
-          {/* GV ở dưới (có thể có nhiều GV) */}
-          {(() => {
-            const teachers = [
-              ...new Set([
-                ...(cls.teacherCode ? cls.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
-                ...(cls.substituteTeacher ? cls.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
-              ]),
-            ].filter(Boolean)
-
-            return teachers.map((teacher, idx) => (
-              <PersonnelHoverCard
-                key={idx}
-                person={{
-                  name: teacher,
-                  role: 'Giáo viên Học thuật (GV)',
-                  phone: '0987 654 321',
-                  email: `${teacher.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
-                }}
-              >
-                <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs px-1 font-bold border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400 rounded">
-                      GV
-                    </span>
-                    <span className="text-foreground text-xs hover:text-violet-600 dark:hover:text-violet-400">{teacher}</span>
-                  </div>
-                </div>
-              </PersonnelHoverCard>
-            ))
-          })()}
         </div>
       </td>
 
       {/* Lớp học */}
       <td className="py-3 px-3 min-w-[200px]">
         {(() => {
-          const studentInfo = mockStudents.find((s) => s.id === cls.studentId)
-          const isWaitAssignment = studentInfo?.status === 'wait_for_assignment'
+          const studentInfo = mockStudents.find(
+            (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
+          )
+          const placementStatus = resolveStudentPlacementStatus(cls, studentInfo)
+          const isHoldingClass =
+            placementStatus === 'reserve' &&
+            Boolean(cls.classCode && cls.classCode !== '-') &&
+            !cls.studentNote?.toLowerCase().includes('thoát lớp')
+
+          const hasClassCode = Boolean(cls.classCode && cls.classCode !== '-')
+          const showClassHover =
+            hasClassCode &&
+            (placementStatus === 'active' ||
+              placementStatus === 'draft_class' ||
+              placementStatus === 'awaiting_opening' ||
+              placementStatus === 'trial' ||
+              isHoldingClass)
 
           return (
             <div className="flex flex-col gap-1 text-left">
@@ -365,56 +355,31 @@ export function RenewalAlertRow({
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {isWaitAssignment || cls.status === 'Chưa ghép lớp' ? (
-                  <>
-                    <span className="text-xs text-muted-foreground font-mono">Chưa có mã lớp</span>
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50">
-                      Chờ ghép lớp
-                    </span>
-                  </>
-                ) : studentInfo?.status === 'reserve' || cls.status === 'Bảo lưu' ? (
-                  <>
-                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
-                    <span className="text-xs font-semibold text-violet-755 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 px-1.5 py-0.5 rounded border border-violet-200/50 w-fit">
-                      Bảo lưu
-                    </span>
-                  </>
-                ) : cls.status === 'Hết buổi' ? (
-                  <>
-                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
-                    <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/40 px-1.5 py-0.5 rounded border border-zinc-200 w-fit">
-                      Hết phí
-                    </span>
-                  </>
-                ) : cls.status === 'Chờ chuyển lớp' ? (
-                  <>
-                    <span className="text-xs text-muted-foreground font-mono">{cls.classCode}</span>
-                    <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-200/50 w-fit">
-                      Chờ ghép lớp mới
-                    </span>
-                  </>
+                {showClassHover ? (
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <RenewalClassCodeHoverCell
+                      classCode={cls.classCode}
+                      subject={cls.subject}
+                      level={cls.level}
+                      teacherCode={cls.teacherCode}
+                      schedule={cls.schedule}
+                    />
+                  </span>
                 ) : (
-                  <>
-                    <span onClick={(e) => e.stopPropagation()}>
-                      <RenewalClassCodeHoverCell
-                        classCode={cls.classCode}
-                        subject={cls.subject}
-                        level={cls.level}
-                        teacherCode={cls.teacherCode}
-                        schedule={cls.schedule}
-                      />
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-xs px-1.5 py-0 h-3.5 font-semibold shrink-0',
-                        getStatusBadgeClass('dang_hoc')
-                      )}
-                    >
-                      Đang học
-                    </Badge>
-                  </>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {hasClassCode ? cls.classCode : 'Chưa có mã lớp'}
+                  </span>
                 )}
+
+                <StatusBadge
+                  status={placementStatus}
+                  label={
+                    isHoldingClass
+                      ? 'Bảo lưu (Giữ lớp)'
+                      : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
+                  }
+                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
+                />
               </div>
             </div>
           )

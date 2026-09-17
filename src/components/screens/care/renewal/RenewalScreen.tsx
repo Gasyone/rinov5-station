@@ -23,6 +23,7 @@ import {
   isChuaDenHan,
 } from './renewalHelpers'
 import { buildRenewalFilterGroups } from './renewalFilterConfig'
+import { resolveStudentPlacementStatus } from '../class-card/studentCareClassCardHelpers'
 
 export function RenewalScreen() {
   const dataScope = useSystemConfigStore((s) => s.dataScope)
@@ -202,9 +203,23 @@ export function RenewalScreen() {
       })
     }
 
-    // Filter by status (Trạng thái lớp)
+    // Filter by status (Trạng thái lớp & Học tập đồng bộ với resolveStudentPlacementStatus)
     if (selectedStatuses.size > 0) {
-      res = res.filter((item) => selectedStatuses.has(item.status))
+      res = res.filter((item) => {
+        const studentInfo = mockStudents.find(
+          (s) => s.id === item.studentId || s.name.toLowerCase() === item.studentName.toLowerCase()
+        )
+        const placementStatus = resolveStudentPlacementStatus(item, studentInfo)
+        return (
+          selectedStatuses.has(placementStatus) ||
+          selectedStatuses.has(item.status) ||
+          (selectedStatuses.has('active') && item.status === 'Đang học') ||
+          (selectedStatuses.has('reserve') && (item.status === 'Bảo lưu' || item.realtimeStatus === 'Bảo lưu')) ||
+          (selectedStatuses.has('pending_transfer') && item.status === 'Chờ chuyển lớp') ||
+          (selectedStatuses.has('session_ended') && item.status === 'Hết buổi') ||
+          (selectedStatuses.has('wait_for_assignment') && item.status === 'Chưa ghép lớp')
+        )
+      })
     }
 
     // Filter by Subject (Môn học)

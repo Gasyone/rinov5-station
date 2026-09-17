@@ -112,8 +112,64 @@ export function deriveHomeworkLink(studentId: string, sessionId: string): string
 }
 
 /** Auto-generated feedback text. */
-export function deriveFeedback(studentId: string, sessionId: string): string {
+export function deriveFeedback(studentId: string, sessionId: string, isMath?: boolean): string {
   const hashVal = stableHash(sessionId + studentId + 'fb')
+
+  if (isMath) {
+    // Allow ~40% of students in a class to not have feedback yet so teachers can test inputting & AI validation
+    if (hashVal % 10 < 4) return ''
+    const mathFeedbackBank = [
+      `- Luyện tập chủ đề: Math Kindi — Phép trừ trong phạm vi 10 📐
+- Con đã hoàn thành xuất sắc bài tập trên ứng dụng và sách bài tập - rất đáng khen! 👑
+
+🏅 Thành tích nổi bật:
+- Khả năng quan sát nhanh nhạy, tập trung tốt và ghi nhớ kiến thức rất chắc (4/5) 🧠
+- Điểm tốt về tư duy cơ bản: Khả năng quan sát tốt, ghi nhớ nhanh ✨
+- Tư duy logic, liên hệ thực tế và giải thích phương pháp tốt (4/5) 💡
+- Điểm tốt về tư duy logic: Tư duy logic nhạy bén, hiểu đề nhanh ✨
+- Nắm chắc bản chất toán học, thực hiện phép tính và áp dụng mô hình chính xác (4/5) 📐
+- Năng lực sáng tạo tốt trong việc tìm nhiều cách tiếp cận bài toán (4/5) 🎨
+- Khả năng lập luận, phản biện và giải quyết vấn đề tự tin (4/5) 🔍
+
+🌱 Mục tiêu cần cải thiện:
+- Tiếp tục phát huy các kỹ năng hiện tại.
+
+🔔 Nhắc nhở nhỏ xíu:
+- Vào lớp đúng giờ (tự động cập nhật)`,
+      `- Luyện tập chủ đề: Math Kindi — Phép trừ trong phạm vi 10 📐
+- Con đã hoàn thành xuất sắc bài tập trên ứng dụng và sách bài tập - rất đáng khen! 👑
+
+🏅 Thành tích nổi bật:
+- Khả năng quan sát nhanh nhạy, tập trung tốt và ghi nhớ kiến thức rất chắc (5/5) 🧠
+- Tư duy logic, liên hệ thực tế và giải thích phương pháp tốt (4/5) 💡
+- Nắm chắc bản chất toán học, thực hiện phép tính và áp dụng mô hình chính xác (5/5) 📐
+- Điểm tốt về tư duy toán học: Tính toán nhẩm chuẩn xác và tốc độ nhanh ✨
+- Năng lực sáng tạo tốt trong việc tìm nhiều cách tiếp cận bài toán (4/5) 🎨
+- Khả năng lập luận, phản biện và giải quyết vấn đề tự tin (4/5) 🔍
+
+🌱 Mục tiêu cần cải thiện:
+- Tiếp tục phát huy các kỹ năng hiện tại.
+
+🔔 Nhắc nhở nhỏ xíu:
+- Vào lớp đúng giờ (tự động cập nhật)`,
+      `- Luyện tập chủ đề: Math Kindi — Phép trừ trong phạm vi 10 📐
+- Con đã hoàn thành bài tập trên ứng dụng rất tốt! 🌟
+
+🏅 Thành tích nổi bật:
+- Khả năng quan sát nhanh nhạy, tập trung tốt và ghi nhớ kiến thức rất chắc (4/5) 🧠
+- Nắm chắc bản chất toán học, thực hiện phép tính và áp dụng mô hình chính xác (4/5) 📐
+- Khả năng lập luận, phản biện và giải quyết vấn đề tự tin (4/5) 🔍
+
+🌱 Mục tiêu cần cải thiện:
+- Cần chú ý về tư duy logic: Phân tích các dữ kiện bài toán còn đôi chút vội vàng 💡
+- Tiếp tục rèn luyện thêm khả năng sáng tạo các cách giải mới.
+
+🔔 Nhắc nhở nhỏ xíu:
+- Vào lớp đúng giờ (tự động cập nhật)`,
+    ]
+    return mathFeedbackBank[hashVal % mathFeedbackBank.length]
+  }
+
   if (hashVal % 5 === 0) return '' // 20% of students have no feedback initially (placeholder demonstration)
   const bank = [
     'Tiếp thu bài nhanh, phát âm tốt. Cần luyện thêm ngữ pháp.',
@@ -124,6 +180,53 @@ export function deriveFeedback(studentId: string, sessionId: string): string {
     'Tham gia hoạt động nhóm tốt. Cần ôn lại từ vựng chủ đề.',
   ]
   return bank[hashVal % bank.length]
+}
+
+/** Initial ratings generator for math students to match mock evaluation state */
+export function deriveMathInitialRatings(hasFeedback: boolean, hashVal: number) {
+  if (!hasFeedback) {
+    return {
+      homeworkApp: '',
+      homeworkBook: '',
+      mathBasic: undefined as number | undefined,
+      mathBasicStrength: '',
+      mathBasicWeakness: '',
+      mathLogic: undefined as number | undefined,
+      mathLogicStrength: '',
+      mathLogicWeakness: '',
+      mathMath: undefined as number | undefined,
+      mathMathStrength: '',
+      mathMathWeakness: '',
+      mathCreative: undefined as number | undefined,
+      mathCreativeStrength: '',
+      mathCreativeWeakness: '',
+      mathCritical: undefined as number | undefined,
+      mathCriticalStrength: '',
+      mathCriticalWeakness: '',
+      attitude: 3,
+    }
+  }
+  const isExcellent = hashVal % 2 === 0
+  return {
+    homeworkApp: 'Hoàn thành',
+    homeworkBook: 'Hoàn thành',
+    mathBasic: isExcellent ? 5 : 4,
+    mathBasicStrength: 'Khả năng quan sát tốt, ghi nhớ nhanh',
+    mathBasicWeakness: '',
+    mathLogic: 4,
+    mathLogicStrength: 'Tư duy logic nhạy bén, hiểu đề nhanh',
+    mathLogicWeakness: '',
+    mathMath: isExcellent ? 5 : 4,
+    mathMathStrength: isExcellent ? 'Tính toán nhẩm chuẩn xác và tốc độ nhanh' : '',
+    mathMathWeakness: '',
+    mathCreative: 4,
+    mathCreativeStrength: '',
+    mathCreativeWeakness: '',
+    mathCritical: 4,
+    mathCriticalStrength: '',
+    mathCriticalWeakness: '',
+    attitude: 4,
+  }
 }
 
 // ── Attendance config ───────────────────────────────────────────────────
@@ -168,11 +271,20 @@ export const INACTIVE_STATUSES: RosterStudent['status'][] = ['dropout', 'session
 export function getSessionStatusLabel(status: RoadmapSession['status']) {
   switch (status) {
     case 'completed': return 'Đã học'
-    case 'ongoing': return 'Đang học'
+    case 'ongoing': return 'Hôm nay'
     case 'upcoming': return 'Chờ diễn ra'
-    case 'cancelled': return 'Đã hủy'
-    case 'absent': return 'Nghỉ học'
-    default: return status
+    case 'cancelled': return 'Hủy'
+    default: return 'Chờ diễn ra'
+  }
+}
+
+export function getSessionStatusBadgeKey(status: RoadmapSession['status']): string {
+  switch (status) {
+    case 'completed': return 'da_hoc'
+    case 'ongoing': return 'hom_nay'
+    case 'upcoming': return 'cho_dien_ra'
+    case 'cancelled': return 'huy'
+    default: return 'cho_dien_ra'
   }
 }
 

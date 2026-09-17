@@ -231,7 +231,7 @@ export function StudentCareHeaderClusterNote({
               <p
                 className={cn(
                   'text-xs leading-relaxed font-normal text-amber-600 dark:text-amber-400 cursor-pointer',
-                  !isExpanded && 'line-clamp-2 pr-16'
+                  !isExpanded && 'line-clamp-1 pr-16'
                 )}
                 onClick={() => {
                   if (isLongNote) {

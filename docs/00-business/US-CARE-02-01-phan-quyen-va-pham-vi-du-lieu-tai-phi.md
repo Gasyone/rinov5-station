@@ -6,16 +6,16 @@ domain: CAP-CARE
 persona: "PERSONA-CSM"
 sr: "SR-CSM-002"
 status: "Standardized"
-tags: [care, renewal, authz, data-scope, permissions, testing-guide]
+tags: [care, renewal, authz, data-scope, permissions, personnel-in-charge, testing-guide]
 ---
 
 # US-CARE-02-01: Phân quyền & Phân định Phạm vi Dữ liệu Màn hình Tái phí Học viên
 
-> **Tham chiếu:** `BF-CARE-02` · `SR-CSM-002` · `US-SYS-04-04` · Giao diện Mẫu §4.2 (Màn hình Danh sách & Thẻ Thống kê)  
+> **Tham chiếu:** `BF-CARE-02` · `SR-CSM-002` · `US-SYS-04-04` · `US-SYS-04-06` · Giao diện Mẫu §4.2 (Màn hình Danh sách & Thẻ Thống kê)  
 > **Đường dẫn màn hình & Trạng thái liên quan:**  
 > - `/app/renewal` $\rightarrow$ Màn hình Tái phí Học viên  
-> - `/app/system_config` $\rightarrow$ Màn hình Cấu hình Hệ thống (Bàn điều khiển thử nghiệm phân quyền)  
-> - **Phiên bản hệ thống:** `v2026.09.15.01.station`
+> - `/app/system_config` $\rightarrow$ Màn hình Cấu hình Hệ thống (Bàn điều khiển thử nghiệm phân quyền phạm vi)  
+> - **Phiên bản hệ thống:** `v2026.09.15.02.station`
 
 ---
 
@@ -26,17 +26,18 @@ tags: [care, renewal, authz, data-scope, permissions, testing-guide]
 | Ngày cập nhật | Nội dung cập nhật | Lý do cập nhật |
 |---|---|---|
 | 15/09/2026 | Khởi tạo tài liệu đặc tả phân quyền và phân định phạm vi dữ liệu cho màn hình Tái phí | Tách biệt quyền thao tác chức năng và biên giới phạm vi dữ liệu, loại bỏ thanh thông báo phạm vi thừa trên giao diện nghiệp vụ |
-| 15/09/2026 | Bổ sung quy trình và kịch bản thử nghiệm dành cho đội ngũ phát triển và kiểm thử thông qua màn hình Cấu hình hệ thống | Cung cấp công cụ giả lập vai trò và phạm vi linh hoạt trên môi trường phát triển |
+| 15/09/2026 | Bổ sung quy tắc Cụm Người phụ trách (1 - n: Chuyên viên CS và Giáo viên từ lớp) cùng 5 tình huống điều chỉnh khi đổi lớp | Định nghĩa chuẩn xác cơ chế kế thừa và chuyển giao nhân sự phụ trách khi học viên biến động lớp học |
+| 15/09/2026 | Tích hợp cơ chế đối soát quyền khi đăng nhập theo cấu hình phạm vi hệ thống và bổ sung kịch bản kiểm thử chi tiết | Đảm bảo tính nhất quán giữa cấu hình phạm vi nền tảng và bộ lọc hiển thị màn hình Tái phí |
 
 ### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
-* **Bối cảnh:** Màn hình Tái phí học viên (`/app/renewal`) là trung tâm theo dõi các học viên sắp hết hạn gói học hoặc sắp kết thúc số buổi học để đội ngũ chăm sóc khách hàng chủ động liên hệ tư vấn gia hạn. Trước đây, hệ thống đã có sẵn cơ chế phân quyền chức năng kế thừa từ phân hệ quản lý quan hệ khách hàng (quyền truy cập màn hình, xem chi tiết, cập nhật nhật ký, xuất danh sách).
-* **Vấn đề hiện tại:** Màn hình trước đây chỉ tải và hiển thị danh sách phẳng toàn bộ học viên hoặc phải dựa vào việc nhân viên tự tay chọn bộ lọc cơ sở/người phụ trách. Chưa có cơ chế máy chủ tự động gọt dữ liệu ngầm theo biên giới phân quyền (phạm vi dữ liệu cá nhân hay cơ sở). Điều này dẫn đến nguy cơ nhân viên nhìn thấy dữ liệu của đồng nghiệp hoặc cơ sở khác, gây quá tải danh sách và vi phạm quy định bảo mật thông tin học viên.
-* **Mục tiêu & Giá trị mang lại:** Thiết lập cơ chế kiểm soát biên giới phạm vi dữ liệu tự động gắn liền với tài khoản đăng nhập. Nhân sự chỉ thấy đúng tập học viên thuộc trách nhiệm quản lý của mình (Cá nhân hoặc Toàn cơ sở). Dữ liệu thẻ thống kê, bộ lọc và danh sách bảng tự động đồng bộ theo phạm vi mà không cần hiển thị các thanh cảnh báo làm xao nhãng giao diện.
+* **Bối cảnh:** Màn hình Tái phí học viên (`/app/renewal`) là trung tâm theo dõi các gói học sắp kết thúc số buổi hoặc cận ngày hết hạn để đội ngũ chăm sóc khách hàng chủ động liên hệ tư vấn gia hạn. Trước đây, hệ thống đã có sẵn cơ chế phân quyền chức năng kế thừa từ phân hệ quản lý quan hệ khách hàng (quyền truy cập màn hình, xem chi tiết, cập nhật nhật ký, xuất danh sách).
+* **Vấn đề hiện tại:** Trước đây màn hình chỉ tải và hiển thị danh sách phẳng toàn bộ học viên hoặc cần người dùng tự tay chọn bộ lọc thủ công. Chưa có cơ chế máy chủ tự động gọt dữ liệu ngầm theo biên giới phân quyền (phạm vi dữ liệu cá nhân hay cơ sở). Đồng thời, cột người phụ trách chưa phản ánh rõ ràng mối liên kết kép giữa chuyên viên chăm sóc dịch vụ và giáo viên đang trực tiếp giảng dạy học sinh tại lớp.
+* **Mục tiêu & Giá trị mang lại:** Thiết lập cơ chế kiểm soát biên giới phạm vi dữ liệu tự động gắn liền với tài khoản đăng nhập. Chuẩn hóa định nghĩa Cụm người phụ trách (1 - n) gồm chuyên viên chăm sóc và giáo viên đứng lớp. Khi người dùng đăng nhập, hệ thống tự động đối chiếu cấu hình phạm vi để gọt danh sách và đồng bộ thẻ chỉ số thống kê mà không phô bày các nhãn cảnh báo thừa.
 
 ### Hiểu người dùng & Tình huống sử dụng (User Needs & Use Cases)
-* **Người dùng chính (Persona):** Chuyên viên Chăm sóc Khách hàng (`PERSONA-CSM`), Quản lý Cơ sở (`PERSONA-BRANCH_MANAGER`).
-* **Nhu cầu thực tế (Needs):** Chuyên viên chăm sóc muốn khi mở màn hình Tái phí là thấy ngay danh sách các học viên do chính mình phụ trách để xử lý ngay trong ngày, không phải mất thời gian chọn lọc tên mình trong danh sách dài. Quản lý cơ sở muốn nắm bắt toàn diện bức tranh tái phí của toàn bộ cơ sở để điều phối nhân sự.
-* **Câu phát biểu nghiệp vụ:** **Là một** Chuyên viên Chăm sóc Khách hàng, **tôi muốn** khi truy cập màn hình Tái phí, hệ thống tự động lọc danh sách chỉ hiển thị những học viên do tôi phụ trách, **để** tôi tập trung chăm sóc đúng đối tượng và bảo mật thông tin học viên của trung tâm.
+* **Người dùng chính (Persona):** Chuyên viên Chăm sóc Khách hàng (`PERSONA-CSM`), Giáo viên Giảng dạy (`PERSONA-TEACHER`), Quản lý Cơ sở (`PERSONA-BRANCH_MANAGER`).
+* **Nhu cầu thực tế (Needs):** Chuyên viên chăm sóc muốn khi mở màn hình Tái phí là thấy ngay danh sách học viên do mình phụ trách để liên hệ tư vấn; Giáo viên muốn nắm được học sinh nào trong lớp của mình sắp hết hạn để viết nhận xét đánh giá; Quản lý cơ sở muốn nắm bắt toàn bộ học viên tái phí của cơ sở để điều phối chỉ tiêu.
+* **Câu phát biểu nghiệp vụ:** **Là một** Chuyên viên Chăm sóc Khách hàng, **tôi muốn** khi truy cập màn hình Tái phí, hệ thống tự động lọc danh sách chỉ hiển thị những học viên do tôi phụ trách hoặc do giáo viên lớp tôi theo dõi, **để** tôi tập trung chăm sóc đúng đối tượng và bảo mật thông tin học viên của trung tâm.
 
 ### Phạm vi kiểm soát (Scope & Classification)
 
@@ -46,7 +47,7 @@ tags: [care, renewal, authz, data-scope, permissions, testing-guide]
 | **Tiêu chí B: Tác động tài chính** | Ảnh hưởng đến việc bảo vệ dữ liệu doanh thu tái đăng ký và thông tin khách hàng | 1 |
 | **Tiêu chí C1: Loại thay đổi nghiệp vụ** | Bổ sung tầng phân định phạm vi dữ liệu (Cá nhân vs Cơ sở) vào phân quyền chức năng có sẵn | 1 |
 | **Tiêu chí C2: Độ mới nghiệp vụ** | Cơ chế phân quyền chức năng đã có, điểm mới là phân tầng phạm vi dữ liệu ngầm | 0 |
-| **Tiêu chí D: Phụ thuộc bên ngoài** | Vận hành trên máy chủ nội bộ, không liên kết dịch vụ đối tác ngoài | 0 |
+| **Tiêu chí D: Liên kết dịch vụ ngoài** | Vận hành trên máy chủ nội bộ, không liên kết dịch vụ đối tác ngoài | 0 |
 
 * **Tổng điểm đánh giá:** 3/5 điểm $\rightarrow$ 🔴 **Risk** (Yêu cầu Quản lý Sản phẩm và Trưởng nhóm Kiểm thử rà soát trước khi triển khai chính thức).
 
@@ -55,19 +56,20 @@ tags: [care, renewal, authz, data-scope, permissions, testing-guide]
 | Mã Yêu Cầu | Tên Chức Năng | Mức Độ Ưu Tiên | Phân Loại Rủi Ro | Ghi Chú Nghiệp Vụ |
 |---|---|:---:|:---:|---|
 | **FEAT-01** | Kiểm soát quyền truy cập màn hình Tái phí (`care.renewal.access`) | Bắt buộc (Must) | 🟢 Standard | Chặn người dùng không có quyền truy cập |
-| **FEAT-02** | Phân tầng Phạm vi Dữ liệu Cấp độ Cá nhân (`personal`) | Bắt buộc (Must) | 🔴 Risk | Chỉ hiển thị học viên do chính người dùng phụ trách |
-| **FEAT-03** | Phân tầng Phạm vi Dữ liệu Cấp độ Cơ sở (`branch`) | Bắt buộc (Must) | 🔴 Risk | Hiển thị toàn bộ học viên tái phí thuộc cơ sở công tác |
-| **FEAT-04** | Đồng bộ tự động các Thẻ chỉ số trạng thái theo Phạm vi Dữ liệu | Bắt buộc (Must) | 🟢 Standard | Số lượng đếm trên thẻ phản ánh đúng tập dữ liệu được phép xem |
-| **FEAT-05** | Giữ giao diện nghiệp vụ thuần túy, loại bỏ thanh thông báo phạm vi | Bắt buộc (Must) | 🟢 Standard | Kiểm soát ngầm qua phiên làm việc, không hiện nhãn thừa |
-| **FEAT-06** | Cơ chế chuyển đổi phạm vi thử nghiệm trên màn hình Cấu hình hệ thống | Bắt buộc (Must) | 🟢 Standard | Phục vụ đội ngũ phát triển và kiểm thử thao tác nhanh |
-| **FEAT-07** | Bảo mật số điện thoại phụ huynh trên bảng danh sách | Bắt buộc (Must) | 🟢 Standard | Che ẩn số ở giữa, chỉ hiện đầy đủ khi mở bảng chi tiết |
+| **FEAT-02** | Định nghĩa Cụm Người phụ trách kép (1 - n: Chuyên viên CS và Giáo viên) | Bắt buộc (Must) | 🔴 Risk | Quản lý đồng thời trách nhiệm dịch vụ và học thuật |
+| **FEAT-03** | Cơ chế tự động gán và kế thừa Người phụ trách ban đầu | Bắt buộc (Must) | 🟢 Standard | CS kế thừa từ đơn hàng/cơ sở; GV kế thừa từ lớp học |
+| **FEAT-04** | Quy tắc tự động điều chỉnh Người phụ trách khi biến động lớp học | Bắt buộc (Must) | 🔴 Risk | 5 tình huống: chuyển lớp, chuyển cơ sở, song song, đệm, bảo lưu |
+| **FEAT-05** | Đối soát quyền và lọc dữ liệu ngầm khi đăng nhập theo Cấu hình Hệ thống | Bắt buộc (Must) | 🔴 Risk | Áp dụng cấu hình phạm vi từ màn hình Cấu hình hệ thống |
+| **FEAT-06** | Đồng bộ tự động các Thẻ chỉ số trạng thái theo Phạm vi Dữ liệu | Bắt buộc (Must) | 🟢 Standard | Số lượng đếm trên thẻ phản ánh đúng tập dữ liệu được phép xem |
+| **FEAT-07** | Bảo mật số điện thoại phụ huynh trên bảng danh sách | Bắt buộc (Must) | 🟢 Standard | Che ẩn số ở giữa dạng 091****111 |
 
 ### Quy tắc Nghiệp vụ Toàn cục (Business Rules)
 Hệ thống tuân thủ nghiêm ngặt các quy tắc nghiệp vụ sau:
-1. **Lọc ngầm tại máy chủ:** Toàn bộ quá trình sàng lọc theo phạm vi dữ liệu phải được thực thi tại máy chủ dựa trên thông tin phiên làm việc của người dùng, không phụ thuộc vào tham số gửi từ giao diện.
-2. **Nguyên tắc không lộ dữ liệu:** Tài khoản mang phạm vi Cá nhân tuyệt đối không được nhận bất kỳ bản ghi nào của nhân sự khác từ máy chủ.
-3. **Thẻ thống kê theo phạm vi:** Toàn bộ số liệu hiển thị trên các thẻ trạng thái (Cần tư vấn ngay, Tiềm năng, Hẹn tái phí, Đã tái phí,...) phải được tính toán dựa trên tập dữ liệu đã qua bộ lọc phạm vi.
-4. **Bảo mật số điện thoại chống sao chép:** Trên bảng danh sách chính, mọi số điện thoại liên lạc phải được che định dạng `091****111`. Chỉ tài khoản có quyền xem chi tiết mới được xem số đầy đủ trong bảng thông tin chi tiết.
+1. **Bản chất thực thể tái phí:** Mỗi dòng bản ghi trên bảng tái phí đại diện cho một gói học sắp hết hạn của học viên, gắn liền với một lớp học cụ thể đang theo học (hoặc trạng thái chờ ghép lớp).
+2. **Cụm người phụ trách kép (1 - n):** Mỗi gói học có thể có nhiều người phụ trách thuộc hai tầng: Tầng Dịch vụ (Chuyên viên CS) và Tầng Học thuật (Giáo viên chủ nhiệm lớp học).
+3. **Bảo toàn Chuyên viên CS khi đổi lớp:** Khi học viên đổi lớp trong cùng cơ sở, hệ thống chỉ cập nhật lại thông tin giáo viên theo lớp mới; chuyên viên CS phụ trách được giữ nguyên để duy trì tính liền mạch trong tư vấn phụ huynh.
+4. **Lọc ngầm tại máy chủ:** Toàn bộ quá trình sàng lọc theo phạm vi dữ liệu phải được thực thi tại máy chủ dựa trên thông tin phiên làm việc của người dùng, không phụ thuộc vào tham số gửi từ giao diện.
+5. **Bảo mật số điện thoại chống sao chép:** Trên bảng danh sách chính, mọi số điện thoại liên lạc phải được che định dạng `091****111`. Chỉ tài khoản có quyền xem chi tiết mới được xem số đầy đủ trong bảng thông tin chi tiết.
 
 ---
 
@@ -76,53 +78,69 @@ Hệ thống tuân thủ nghiêm ngặt các quy tắc nghiệp vụ sau:
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Staff as Chuyên viên Chăm sóc / Quản lý
+    actor User as Nhân sự Đăng nhập (CS / Giáo viên / Quản lý)
     participant UI as Giao diện Tái phí (/app/renewal)
     participant Server as Hệ thống Máy chủ
     participant DB as Cơ sở dữ liệu
 
-    Staff->>UI: Truy cập vào màn hình Tái phí học viên
-    UI->>Server: Gửi yêu cầu lấy danh sách học viên tái phí
-    Server->>Server: Xác thực danh tính & Kiểm tra quyền hạn chức năng
-    Server->>Server: Xác định Phạm vi Dữ liệu được gán (Cá nhân hoặc Cơ sở)
-    alt Phạm vi Cá nhân (Personal)
-        Server->>DB: Gọi đến cơ sở dữ liệu học viên với điều kiện người phụ trách là tài khoản đăng nhập
-    else Phạm vi Cơ sở (Branch)
-        Server->>DB: Gọi đến cơ sở dữ liệu học viên với điều kiện cơ sở là cơ sở công tác của người dùng
+    User->>UI: Mở màn hình Tái phí học viên
+    UI->>Server: Yêu cầu lấy danh sách học viên tái phí
+    Server->>Server: Xác thực danh tính & Kiểm tra cấu hình phạm vi hệ thống
+    alt Cấu hình Phạm vi Cá nhân (personal)
+        Server->>DB: Gọi đến cơ sở dữ liệu học viên với điều kiện: Tài khoản đăng nhập trùng với CS phụ trách HOẶC trùng với Giáo viên đứng lớp
+    else Cấu hình Phạm vi Cơ sở (branch)
+        Server->>DB: Gọi đến cơ sở dữ liệu học viên với điều kiện: Cơ sở học viên trùng với Cơ sở công tác của người dùng
+    else Cấu hình Phạm vi Toàn chuỗi (all)
+        Server->>DB: Gọi đến cơ sở dữ liệu học viên không giới hạn cơ sở
     end
-    DB-->>Server: Trả về danh sách học viên thỏa mãn phạm vi
-    Server->>Server: Tính toán lại số lượng theo từng thẻ trạng thái tiến trình
-    Server-->>UI: Phản hồi danh sách học viên kèm số liệu tổng hợp
-    UI-->>Staff: Hiển thị bảng danh sách và các thẻ trạng thái chuẩn xác
+    DB-->>Server: Trả về danh sách gói học và học viên thỏa mãn phạm vi
+    Server->>Server: Tính toán lại số lượng đếm trên các thẻ trạng thái
+    Server-->>UI: Phản hồi danh sách học viên cùng số liệu thống kê
+    UI-->>User: Hiển thị bảng danh sách có cột Người phụ trách (CS + GV) chuẩn xác
 ```
 
 ---
 
-## 3. GIAO DIỆN & KIỂM SOÁT QUYỀN HẠN (UI & CAPABILITY GATING)
+## 3. GIAO DIỆN & CẤU TRÚC BẢNG DỮ LIỆU (UI & CAPABILITY GATING)
 
-### 3.1. Cấu trúc các vùng giao diện & Ràng buộc Quyền hạn (Capability Gating)
+### 3.1. Đặc tả Vòng đời Sự kiện: Người phụ trách từ Lớp học (Dành cho Đội ngũ Phát triển Hệ thống)
 
-Màn hình áp dụng cơ chế kiểm soát hiển thị theo **Mã Quyền Động (Atomic Capabilities)**:
+> [!IMPORTANT]
+> **Quy định phạm vi:** Phần này chuyên sâu đặc tả riêng cho **Người phụ trách học thuật kế thừa từ Lớp học (Giáo viên)**. Người phụ trách dịch vụ (Chuyên viên chăm sóc khách hàng - CS) thuộc luồng nghiệp vụ độc lập và không bị xáo trộn bởi các biến động học thuật.
 
-| Vùng Giao diện / Nút Thao Tác | Loại Hiển Thị | Mã Quyền Yêu Cầu (Capability Key) | Xử Lý Khi Không Đủ Quyền |
-| :--- | :--- | :--- | :--- |
-| **Truy cập Màn hình `/app/renewal`** | Toàn bộ giao diện | `care.renewal.access` | Chặn truy cập, chuyển hướng đến thông báo không có quyền |
-| **Bảng danh sách học viên** | Khung bảng dữ liệu | `care.renewal.access` | Áp dụng gọt dữ liệu theo phạm vi được gán |
-| **Thẻ trạng thái tiến trình chăm sóc** | Hàng thẻ chỉ số | `care.renewal.access` | Hiển thị tổng số lượng đếm thuộc phạm vi được cấp |
-| **Cột Thao tác: Ghi nhận tư vấn / Cuộc gọi** | Nút hành động trên dòng | `care.renewal.edit` | Vô hiệu hóa hoặc ẩn nút ghi nhận tương tác |
-| **Nhấp dòng mở Bảng chi tiết học viên** | Bảng chi tiết toàn màn hình | `care.renewal.view_detail` | Không kích hoạt mở bảng thông tin chi tiết |
-| **Nút [Xuất danh sách]** | Nút trên thanh công cụ | `care.renewal.export` | Ẩn nút xuất dữ liệu khỏi thanh công cụ |
-| **Bộ lọc Cơ sở trên thanh công cụ** | Ô chọn danh sách | `care.renewal.view_all` | Khóa cứng giá trị cơ sở của người dùng nếu không có quyền xem tất cả |
+#### Pha 1: Cơ chế Gán Tự động Lần đầu (Initial Auto-Assignment)
+1. **Sự kiện kích hoạt:** Khi gói học của học viên được xếp vào một lớp học cụ thể (thao tác ghép lớp / xếp lớp tại phân hệ Quản lý Lớp học).
+2. **Nguồn dữ liệu trích xuất:** Máy chủ tự động đọc thông tin **Giáo viên chủ nhiệm chính thức** của lớp học được ghép để gán vào trường Người phụ trách từ lớp của gói học tái phí.
+3. **Trạng thái khi chưa có lớp:** Đối với các gói học mới mua hoặc đang ở trạng thái `Chờ ghép lớp` / `Chưa xếp lớp`, trường Giáo viên mang giá trị rỗng hoặc hiển thị nhãn cảnh báo `Chờ ghép lớp`. Chưa có quyền truy cập học thuật nào được kích hoạt.
 
-### 3.2. Ma trận Cấp độ Phạm vi Dữ liệu (Data Scope Matrix)
+#### Pha 2: Danh mục các Sự kiện CÓ KÍCH HOẠT Cập nhật (Trigger Events)
+Đội ngũ phát triển cần lắng nghe và xử lý cập nhật trường Giáo viên trên màn Tái phí đối với 5 sự kiện sau:
 
-| Cấp độ Phạm vi | Tên Gọi | Điều kiện Lọc Dữ liệu Nghiệp vụ | Đối tượng Người dùng Áp dụng |
-|---|---|---|---|
-| **Cấp 1** | **Cá nhân** (`personal`) | Người phụ trách chăm sóc bằng chính tên tài khoản đăng nhập | Chuyên viên chăm sóc khách hàng (CSM), Tư vấn viên |
-| **Cấp 2** | **Cơ sở** (`branch`) | Cơ sở học sinh đang theo học bằng chính cơ sở công tác của tài khoản | Quản lý Cơ sở, Trưởng nhóm Chăm sóc khách hàng cơ sở |
-| **Cấp 3** | **Toàn chuỗi** (`all`) | Không giới hạn cơ sở, hiển thị toàn bộ học viên toàn hệ thống | Giám đốc Vận hành, Quản trị viên Cấp cao |
+| Mã Sự Kiện | Tên Sự Kiện Kích Hoạt | Nguồn Phát Sinh | Quy Tắc Xử Lý Cập Nhật Máy Chủ |
+|:---:|---|---|---|
+| **EVT-01** | **Lớp học đổi Giáo viên chính thức** | Phân hệ Lớp học / Phân công giảng dạy | Quét toàn bộ học viên tái phí đang học tại lớp đó $\rightarrow$ **Tự động đồng bộ sang Giáo viên mới**. |
+| **EVT-02** | **Học viên chuyển sang lớp mới** | Phân hệ Xếp lớp / Chuyển lớp | Gỡ Giáo viên của lớp cũ $\rightarrow$ **Gán Giáo viên chủ nhiệm của lớp mới** cho gói học. |
+| **EVT-03** | **Lớp học bị Gộp hoặc Giải thể** | Phân hệ Vận hành Lớp học | Chuyển học sinh sang lớp gộp $\rightarrow$ **Tự động gán Giáo viên của lớp gộp mới**. |
+| **EVT-04** | **Hết thời gian đệm sau kết thúc lớp (> 30 ngày)** | Tác vụ tự động máy chủ theo mốc thời gian | Sau 30 ngày kể từ buổi học cuối cùng của lớp $\rightarrow$ **Gỡ liên kết Giáo viên**, chỉ còn Chuyên viên CS theo dõi. |
+| **EVT-05** | **Học viên xác nhận Bảo lưu gói học** | Phân hệ Bảo lưu & Nghỉ phép | Hoàn tất bảo lưu $\rightarrow$ **Tạm ngắt liên kết Giáo viên** cho đến khi học viên tái nhập học vào lớp mới. |
 
-### 3.3. Cấu trúc Bảng Danh sách Học viên Tái phí
+#### Pha 3: Danh mục các Sự kiện TUYỆT ĐỐI KHÔNG KÍCH HOẠT Cập nhật (Non-trigger Events / Exclusions)
+Đội ngũ phát triển cần cấu hình bỏ qua, không kích hoạt cập nhật trường Giáo viên đối với 5 sự kiện sau:
+
+| Mã Bỏ Qua | Tên Sự Kiện Bỏ Qua | Lý Do Nghiệp Vụ Loại Trừ (Rationale) |
+|:---:|---|---|
+| **IGN-01** | **Giáo viên Dạy thay theo buổi (Cover / Substitute)** | Dạy thay chỉ áp dụng tạm thời cho 1 - 2 ca học đơn lẻ (nghỉ ốm, việc bận). Màn Tái phí chỉ gắn kết với Giáo viên chủ nhiệm chính thức để đánh giá cả lộ trình; không làm lộ hợp đồng tài chính cho giáo viên dạy thay. |
+| **IGN-02** | **Học viên đi Học bù tại lớp khác (Makeup Session)** | Học bù là buổi học nhờ tại lớp khác. Biên chế lớp gốc và giáo viên đồng hành của học viên không thay đổi. |
+| **IGN-03** | **Lớp học Đổi Ca học, Phòng học hoặc Lịch học** | Chỉ là biến động thuộc tính vận hành không gian/thời gian, không làm thay đổi con người giảng dạy chính thức của lớp. |
+| **IGN-04** | **Thay đổi Trợ giảng (TA) của lớp học** | Màn Tái phí chỉ theo dõi Giáo viên giảng dạy chính (người đánh giá năng lực học sinh). Biến động trợ giảng không làm thay đổi cột Giáo viên. |
+| **IGN-05** | **Học viên xin Nghỉ học có phép 1 - 2 buổi** | Học viên vẫn duy trì trong danh sách lớp chính thức; không phát sinh thay đổi hợp đồng hay lớp học. |
+
+#### Pha 4: Cơ chế Chuyển giao Quyền hạn & Bảo toàn Dữ liệu (Authority Handover & Immutability)
+1. **Cấp quyền cho Giáo viên mới:** Ngay khi sự kiện cập nhật hoàn tất, Giáo viên mới khi đăng nhập với phạm vi *Cá nhân* (`personal`) sẽ lập tức thấy danh sách các học viên tái phí của lớp này để phục vụ viết nhận xét và theo dõi học lực.
+2. **Thu hồi quyền của Giáo viên cũ:** Giáo viên cũ tự động bị thu hồi quyền xem danh sách tái phí cá nhân đối với các học viên của lớp này (trừ khi giáo viên đó vẫn đang giảng dạy học viên đó ở một môn học khác).
+3. **Bảo toàn lịch sử bất biến (Không ghi đè):** Mọi nhận xét học thuật, đánh giá tiến độ do Giáo viên cũ ghi nhận trước thời điểm chuyển giao được bảo lưu nguyên vẹn trong hồ sơ học viên, hiển thị rõ tên tác giả cũ và mốc thời gian ghi nhận.
+
+### 3.2. Cấu trúc Bảng Danh sách Học viên Tái phí
 
 | Tên Cột Thông Tin | Kiểu Hiển Thị | Nguồn Dữ Liệu | Diễn Giải & Quy Tắc Hiển Thị |
 |---|---|---|---|
@@ -131,92 +149,100 @@ Màn hình áp dụng cơ chế kiểm soát hiển thị theo **Mã Quyền Đ�
 | **Cơ sở** | Chữ thường | Danh mục cơ sở | Tên cơ sở học viên đang theo học |
 | **Gói học & Buổi còn** | Nhãn nổi bật | Dữ liệu khóa học | Số buổi còn lại kèm màu cảnh báo mức độ khẩn |
 | **Trạng thái tái phí** | Nhãn trạng thái chuẩn | Tiến trình tư vấn | Màu sắc tương ứng theo tiến trình chăm sóc |
-| **Người phụ trách** | Tên chuyên viên | Phân công nhân sự | Tên nhân sự chăm sóc trực tiếp học viên |
+| **Người phụ trách** | Hai dòng thông tin tách biệt (CS + GV) | Phân công nhân sự & Lớp học | Dòng 1: CS [Tên chuyên viên CS]; Dòng 2: GV [Tên giáo viên chủ nhiệm - Tên lớp] |
 | **Thao tác** | Nút biểu tượng | Tác vụ nghiệp vụ | Nút gọi điện, ghi nhận ý kiến phụ huynh |
 
 ---
 
 ## 4. KHỐI CHỨC NĂNG CHI TIẾT: ACTION & TIÊU CHÍ NGHIỆM THU (ACTIONS & ACCEPTANCE CRITERIA)
 
-### Khối chức năng 1: Lọc dữ liệu ngầm theo Phạm vi Dữ liệu
+### Khối chức năng 1: Đối soát Quyền Đăng nhập & Lọc theo Cấu hình Phạm vi
 
-#### Action 1.1: Truy cập với quyền hạn phạm vi Cá nhân
-* **Luồng kích hoạt:** Khi người dùng có phạm vi Cá nhân truy cập vào đường dẫn `/app/renewal`.
+#### Action 1.1: Chuyên viên CS đăng nhập với Phạm vi Cá nhân
+* **Luồng kích hoạt:** Người dùng là chuyên viên CS truy cập `/app/renewal` khi hệ thống đang ở cấu hình phạm vi Cá nhân.
 * **Tiêu chí nghiệm thu:**
-  - **AC-1 (Happy Path - Lọc chính xác học viên của tài khoản):**
-    - **Giả sử:** Tài khoản đăng nhập là chuyên viên chăm sóc "Lan Anh" và hệ thống có 50 học viên sắp hết phí (trong đó có 12 học viên do "Lan Anh" phụ trách).
+  - **AC-1 (Happy Path - Lọc chính xác học viên CS phụ trách):**
+    - **Giả sử:** Tài khoản đăng nhập là chuyên viên chăm sóc "Lan Anh" và hệ thống có 60 học viên tái phí (trong đó có 15 học viên do "Lan Anh" phụ trách).
     - **Khi:** Người dùng truy cập màn hình Tái phí học viên.
-    - **Thì:** Bảng danh sách hiển thị đúng 12 học viên của "Lan Anh", các thẻ trạng thái phía trên hiển thị tổng số và phân bổ khớp đúng 12 bản ghi này.
-  - **AC-2 (Alternate Path - Nhân viên chưa có học viên phụ trách):**
-    - **Giả sử:** Tài khoản đăng nhập là nhân viên mới chưa được gán bất kỳ học viên tái phí nào.
-    - **Khi:** Người dùng truy cập màn hình Tái phí học viên.
-    - **Thì:** Bảng danh sách hiển thị trạng thái danh sách trống với thông báo không có dữ liệu học viên cần chăm sóc.
+    - **Thì:** Bảng danh sách hiển thị đúng 15 học viên của "Lan Anh", các thẻ trạng thái phía trên hiển thị tổng số và phân bổ khớp đúng 15 bản ghi này.
 
-#### Action 1.2: Truy cập với quyền hạn phạm vi Cơ sở
-* **Luồng kích hoạt:** Khi người dùng có phạm vi Cơ sở truy cập vào đường dẫn `/app/renewal`.
+#### Action 1.2: Giáo viên đăng nhập với Phạm vi Cá nhân
+* **Luồng kích hoạt:** Người dùng là giáo viên truy cập `/app/renewal` khi hệ thống đang ở cấu hình phạm vi Cá nhân.
 * **Tiêu chí nghiệm thu:**
-  - **AC-3 (Happy Path - Lọc toàn bộ học viên thuộc cơ sở công tác):**
-    - **Giả sử:** Tài khoản đăng nhập công tác tại cơ sở "Cơ sở Cầu Giấy" có 35 học viên tái phí phân bổ cho 3 chuyên viên khác nhau.
-    - **Khi:** Người dùng truy cập màn hình Tái phí học viên.
-    - **Thì:** Bảng danh sách hiển thị toàn bộ 35 học viên thuộc cơ sở Cầu Giấy, bao gồm học viên của cả 3 chuyên viên trong cơ sở.
-  - **AC-4 (Alternate Path - Kết hợp bộ lọc trạng thái tiến trình):**
-    - **Giả sử:** Danh sách cơ sở đang hiển thị 35 học viên.
-    - **Khi:** Người dùng nhấp vào thẻ trạng thái "Cần tư vấn ngay".
-    - **Thì:** Bảng danh sách chỉ hiển thị các học viên có trạng thái "Cần tư vấn ngay" nằm trong phạm vi cơ sở Cầu Giấy.
+  - **AC-2 (Happy Path - Lọc học viên theo các lớp giáo viên giảng dạy):**
+    - **Giả sử:** Tài khoản đăng nhập là giáo viên "Thầy Tuấn", đang đứng lớp 2 lớp học có tổng cộng 8 học viên sắp hết hạn gói học.
+    - **Khi:** Giáo viên truy cập màn hình Tái phí học viên.
+    - **Thì:** Bảng danh sách hiển thị đúng 8 học viên thuộc 2 lớp mà "Thầy Tuấn" giảng dạy, giúp giáo viên nắm bắt để gửi nhận xét học thuật.
 
-### Khối chức năng 2: Hướng dẫn Thử nghiệm Kiểm thử trên Môi trường Phát triển (Dev & QA Guide)
-
-#### Action 2.1: Chuyển đổi phạm vi tại màn hình Cấu hình hệ thống
-* **Luồng kích hoạt:** Đội ngũ phát triển và kiểm thử viên truy cập `/app/system_config` để đổi vai trò thử nghiệm.
+#### Action 1.3: Quản lý Cơ sở đăng nhập với Phạm vi Cơ sở
+* **Luồng kích hoạt:** Người dùng là Quản lý cơ sở truy cập `/app/renewal` khi hệ thống đang ở cấu hình phạm vi Cơ sở.
 * **Tiêu chí nghiệm thu:**
-  - **AC-5 (Happy Path - Đổi sang phạm vi Cá nhân để kiểm thử):**
-    - **Giả sử:** Kiểm thử viên đang ở màn hình Cấu hình hệ thống (`/app/system_config`).
-    - **Khi:** Kiểm thử viên chọn tùy chọn "Cá nhân" và bấm nút [Lưu cấu hình], sau đó điều hướng sang màn hình `/app/renewal`.
-    - **Thì:** Màn hình Tái phí hiển thị danh sách học viên thu hẹp đúng theo chuyên viên mặc định đang giả lập, không hiển thị bất kỳ thanh thông báo cấu hình nào trên trang Tái phí.
-  - **AC-6 (Happy Path - Đổi sang phạm vi Cơ sở để kiểm thử):**
-    - **Giả sử:** Kiểm thử viên đang ở màn hình Cấu hình hệ thống (`/app/system_config`).
-    - **Khi:** Kiểm thử viên chọn tùy chọn "Cơ sở" và bấm nút [Lưu cấu hình], sau đó điều hướng sang màn hình `/app/renewal`.
-    - **Thì:** Màn hình Tái phí mở rộng hiển thị toàn bộ danh sách học viên của cơ sở hiện tại, số lượng đếm trên bảng và các thẻ trạng thái tăng tương ứng.
+  - **AC-3 (Happy Path - Hiển thị toàn bộ học viên tái phí trong cơ sở):**
+    - **Giả sử:** Tài khoản đăng nhập là Quản lý cơ sở Cầu Giấy, nơi có 45 học viên tái phí phân bổ cho 4 chuyên viên CS và nhiều giáo viên khác nhau.
+    - **Khi:** Người dùng truy cập màn hình Tái phí học viên.
+    - **Thì:** Bảng danh sách hiển thị toàn bộ 45 học viên thuộc cơ sở Cầu Giấy, đầy đủ thông tin cả CS và GV trên từng dòng bản ghi.
+
+### Khối chức năng 2: Cơ chế Điều chỉnh Người phụ trách khi Đổi Lớp hoặc Đổi Giáo viên Lớp
+
+#### Action 2.1: Chuyển lớp cho học viên trên hệ thống
+* **Luồng kích hoạt:** Bộ phận học vụ thực hiện thao tác chuyển lớp cho học viên từ lớp A sang lớp B.
+* **Tiêu chí nghiệm thu:**
+  - **AC-4 (Happy Path - Tự động cập nhật giáo viên mới, giữ nguyên CS):**
+    - **Giả sử:** Học viên "Nguyễn Văn An" đang có chuyên viên CS là "Lan Anh" và giáo viên là "Cô Mai - Lớp Toán 01".
+    - **Khi:** Học vụ chuyển học sinh "Nguyễn Văn An" sang "Lớp Toán 02" do "Thầy Hùng" giảng dạy.
+    - **Thì:** Tại màn hình Tái phí, dòng Người phụ trách của học viên tự động cập nhật giáo viên thành "Thầy Hùng - Lớp Toán 02", trong khi chuyên viên CS vẫn giữ nguyên là "Lan Anh".
+
+#### Action 2.2: Phân công hoặc Đổi Giáo viên phụ trách của Lớp học đang vận hành
+* **Luồng kích hoạt:** Quản lý cơ sở hoặc nhân viên học vụ thực hiện thay đổi Giáo viên chính thức của một lớp học đang có học sinh theo học.
+* **Tiêu chí nghiệm thu:**
+  - **AC-5 (Happy Path - Lớp đổi giáo viên, màn Tái phí tự động cập nhật đồng loạt):**
+    - **Giả sử:** Lớp "Lớp Toán 01" đang có 12 học viên tái phí và giáo viên phụ trách lớp là "Cô Mai".
+    - **Khi:** Quản trị viên thực hiện đổi giáo viên phụ trách của "Lớp Toán 01" sang "Thầy Hoàng".
+    - **Thì:** Tại màn hình Tái phí, toàn bộ 12 học viên của lớp này tự động cập nhật dòng Giáo viên thành "Thầy Hoàng - Lớp Toán 01", chuyên viên CS vẫn giữ nguyên; khi "Thầy Hoàng" đăng nhập với phạm vi Cá nhân sẽ thấy 12 học viên này, còn "Cô Mai" không còn thấy trong danh sách cá nhân nữa.
+  - **AC-6 (Happy Path - Bảo toàn lịch sử nhận xét của giáo viên tiền nhiệm):**
+    - **Giả sử:** "Cô Mai" đã ghi nhận các nhận xét đánh giá học thuật cho học viên trước thời điểm chuyển giao lớp.
+    - **Khi:** "Thầy Hoàng" tiếp nhận lớp và mở bảng thông tin chi tiết của học viên trên màn Tái phí.
+    - **Thì:** Toàn bộ lịch sử nhận xét do "Cô Mai" viết trước đó vẫn được bảo toàn nguyên vẹn, hiển thị rõ tên tác giả "Cô Mai" kèm thời gian ghi nhận và không bị ghi đè.
 
 ---
 
 ## 5. CÁC TRƯỜNG HỢP GÓC CẠNH (CORNER CASES)
 
-- **Trường hợp 1 (Học viên chưa gán người phụ trách):** Đối với các học viên sắp hết phí nhưng chưa được phân công nhân sự chăm sóc, tài khoản mang phạm vi Cá nhân sẽ không nhìn thấy; chỉ tài khoản mang phạm vi Cơ sở hoặc Toàn chuỗi mới nhìn thấy để thực hiện phân công.
-- **Trường hợp 2 (Nhân sự luân chuyển cơ sở):** Khi một chuyên viên được điều chuyển sang cơ sở mới, máy chủ ngay lập tức cập nhật lại biên giới dữ liệu của cơ sở mới, không cho phép truy cập tiếp danh sách học viên thuộc cơ sở cũ.
-- **Trường hợp 3 (Thay đổi cấu hình phạm vi giữa phiên làm việc):** Nếu quản trị viên điều chỉnh phạm vi quyền của tài khoản khi người dùng đang mở màn hình, ở lần tải dữ liệu tiếp theo, hệ thống tự động áp dụng phạm vi mới mà không gây xung đột dữ liệu.
-- **Trường hợp 4 (Nhập từ khóa tìm kiếm học viên ngoài phạm vi):** Khi người dùng mang phạm vi Cá nhân nhập tên một học viên thuộc cơ sở khác vào ô tìm kiếm nhanh, hệ thống phản hồi kết quả trống, đảm bảo dữ liệu không bị lộ qua chức năng tìm kiếm.
-- **Trường hợp 5 (Học viên cùng lúc có nhiều gói học):** Khi học viên có nhiều gói học sắp hết hạn, hệ thống gom nhóm theo từng học viên duy nhất trên bảng tái phí để người phụ trách tiện theo dõi tổng thể.
-- **Trường hợp 6 (Thao tác trên học viên khi vừa bị chuyển quyền):** Khi nhân viên bấm nút ghi nhận tương tác đối với học viên vừa được quản lý phân bổ cho người khác, máy chủ phản hồi thông báo học viên đã được chuyển giao và tải lại danh sách mới nhất.
+- **Trường hợp 1 (Gói học chưa được ghép lớp):** Với học viên mới đóng phí hoặc đang chờ mở lớp mới, dòng Giáo viên hiển thị trạng thái `Chờ ghép lớp` màu vàng cam; chỉ chuyên viên CS phụ trách xuất hiện trong danh sách.
+- **Trường hợp 2 (Giáo viên dạy thay đột xuất):** Khi lớp học có giáo viên dạy thay tạm thời trong 1-2 buổi, hệ thống vẫn giữ nguyên Giáo viên chủ nhiệm chính thức trên cột Người phụ trách của màn Tái phí.
+- **Trường hợp 3 (Chuyên viên CS nghỉ việc hoặc chuyển công tác):** Khi tài khoản CS bị khóa, hệ thống kích hoạt thông báo cần phân bổ lại cho các học viên của CS đó để Quản lý cơ sở gán người tiếp nhận mới.
+- **Trường hợp 4 (Học viên cùng lúc có 2 gói học tại 2 cơ sở khác nhau):** Hệ thống hiển thị 2 dòng gói học riêng biệt, mỗi dòng tuân thủ đúng cơ sở và cụm người phụ trách của gói đó.
+- **Trường hợp 5 (Học viên bảo lưu dài hạn):** Khi học viên bảo lưu, dòng bản ghi ẩn khỏi danh sách cần tư vấn ngay và chuyển vào trạng thái theo dõi định kỳ của chuyên viên CS.
+- **Trường hợp 6 (Tìm kiếm học viên của đồng nghiệp khi đang ở phạm vi Cá nhân):** Khi người dùng nhập tên học viên không do mình phụ trách vào ô tìm kiếm nhanh, hệ thống phản hồi kết quả trống nhằm bảo mật dữ liệu tuyệt đối.
 
 ---
 
 ## 6. LUỒNG NGOẠI LỆ & XỬ LÝ SỰ CỐ (EXCEPTION FLOW)
 
-- **Ngoại lệ 1 (Mất kết nối mạng hoặc máy chủ không phản hồi):** Khi người dùng đang tải danh sách hoặc cập nhật trạng thái mà đường truyền gián đoạn quá 10 giây, giao diện hiển thị thông báo "Không thể kết nối máy chủ, vui lòng kiểm tra đường truyền" và giữ nguyên trạng thái trước đó.
-- **Ngoại lệ 2 (Hết hạn phiên làm việc):** Khi phiên đăng nhập hết hiệu lực trong lúc thao tác, hệ thống tự động lưu trạng thái tạm thời và điều hướng người dùng về màn hình đăng nhập an toàn.
-- **Ngoại lệ 3 (Tài khoản bị thu hồi quyền truy cập):** Nếu tài khoản bị quản trị viên gỡ bỏ quyền `care.renewal.access`, ngay khi người dùng bấm tải lại hoặc thực hiện thao tác, giao diện hiển thị bảng thông báo "Bạn không có quyền truy cập tính năng này" và chuyển hướng về trang chủ điều hành.
+- **Ngoại lệ 1 (Mất kết nối máy chủ khi đang tải danh sách):** Nếu đường truyền mạng gián đoạn quá 10 giây, giao diện hiển thị thông báo lỗi kết nối và nút bấm thử lại mà không làm mất trạng thái bộ lọc đang chọn.
+- **Ngoại lệ 2 (Hết phiên làm việc trong khi đang thao tác):** Khi phiên đăng nhập hết hạn, hệ thống tự động lưu lại bản nháp nội dung tương tác đang soạn thảo và điều hướng an toàn về màn hình đăng nhập.
+- **Ngoại lệ 3 (Tài khoản bị thu hồi quyền truy cập màn hình):** Nếu quản trị viên thu hồi quyền `care.renewal.access`, giao diện thông báo tài khoản không đủ quyền và chuyển hướng về màn hình tổng quan.
 
 ---
 
 ## 7. QUY TẮC KIỂM SOÁT & RÀNG BUỘC DỮ LIỆU (VALIDATION RULES)
 
-- **Ràng buộc 1 (Phạm vi dữ liệu bắt buộc):** Mỗi tài khoản người dùng khi được gán nhóm quyền Chăm sóc bắt buộc phải có giá trị phạm vi dữ liệu xác định (mặc định là `personal` nếu không được chọn cụ thể).
-- **Ràng buộc 2 (Định dạng số điện thoại):** Dữ liệu số điện thoại trên bảng bắt buộc phải tuân thủ chuẩn che mặt nạ 10 chữ số, chỉ hiển thị 3 chữ số đầu và 3 chữ số cuối.
-- **Ràng buộc 3 (Bộ lọc cơ sở hợp lệ):** Người dùng chỉ được phép chọn các cơ sở nằm trong phạm vi quyền hạn được cấp. Nếu người dùng chỉ có phạm vi Cá nhân hoặc Cơ sở đơn lẻ, ô chọn cơ sở bị vô hiệu hóa chọn nhiều.
+- **Ràng buộc 1 (Tính duy nhất của gói học):** Mỗi dòng trên bảng tái phí phải có mã gói học duy nhất để tránh hiển thị trùng lặp khi một học viên có nhiều môn học.
+- **Ràng buộc 2 (Định dạng che mặt nạ số điện thoại):** Số điện thoại hiển thị trên bảng bắt buộc phải theo cấu trúc `091****111`, chỉ mở số đầy đủ khi có quyền mở bảng chi tiết.
+- **Ràng buộc 3 (Bắt buộc có ít nhất một người phụ trách):** Một gói học khi bước vào giai đoạn tái phí bắt buộc phải có thông tin Chuyên viên CS phụ trách hoặc cờ cảnh báo chưa phân công.
 
 ---
 
 ## 8. YÊU CẦU PHI CHỨC NĂNG (NON-FUNCTIONAL REQUIREMENTS)
 
-- **Thời gian phản hồi:** Tốc độ máy chủ xử lý truy vấn danh sách học viên theo phạm vi dữ liệu phải hoàn tất dưới 1 giây đối với tập dữ liệu dưới 10.000 bản ghi.
-- **Bảo mật và toàn vẹn dữ liệu:** Toàn bộ quá trình kiểm tra phạm vi phải được thực thi tại máy chủ. Không cho phép vượt qua biên giới dữ liệu thông qua việc can thiệp tham số gửi đi.
-- **Khả năng phục hồi:** Khi xảy ra gián đoạn cập nhật nhật ký tư vấn, hệ thống không làm mất nội dung đang soạn thảo của chuyên viên.
+- **Thời gian phản hồi:** Máy chủ xử lý truy vấn danh sách tái phí và tính toán số liệu thẻ trạng thái trong thời gian dưới 1 giây.
+- **Bảo mật dữ liệu:** Tuyệt đối không gửi các bản ghi ngoài phạm vi dữ liệu xuống giao diện người dùng.
+- **Độ tin cậy:** Cơ chế cập nhật giáo viên khi đổi lớp phải đồng bộ tức thì, không xảy ra hiện tượng hiển thị sai lệch giữa phân hệ lớp học và phân hệ chăm sóc.
 
 ---
 
 ## 9. KẾT NỐI MÁY CHỦ & DỮ LIỆU PHẢN HỒI (SERVER SPECIFICATION)
 
-- **Yêu cầu lấy danh sách tái phí:** Giao diện gửi yêu cầu lấy danh sách kèm mã định danh phiên làm việc và các tham số lọc trạng thái.
-- **Quy trình xử lý tại máy chủ:** Máy chủ trích xuất thông tin người dùng từ phiên làm việc, xác định cấp độ phạm vi dữ liệu (`personal` hoặc `branch`), bổ sung điều kiện truy vấn vào cơ sở dữ liệu và tổng hợp số lượng đếm cho từng trạng thái tiến trình.
-- **Dữ liệu máy chủ phản hồi:** Máy chủ trả về gói dữ liệu bao gồm danh sách học viên thỏa mãn phạm vi và bảng số lượng đếm của các thẻ thống kê.
+- **Yêu cầu lấy dữ liệu tái phí:** Giao diện gửi yêu cầu kèm mã phiên đăng nhập và các tham số lọc trạng thái tiến trình.
+- **Quy trình xử lý tại máy chủ:** Máy chủ xác thực người dùng, trích xuất cấu hình phạm vi dữ liệu (`personal`, `branch` hoặc `all`), bổ sung điều kiện truy vấn đối chiếu Cụm người phụ trách và tính toán số lượng đếm trên các thẻ trạng thái.
+- **Dữ liệu phản hồi:** Máy chủ trả về gói dữ liệu bao gồm danh sách các gói học thỏa mãn phạm vi cùng bảng số liệu thống kê đã được tính toán đồng bộ.

@@ -289,8 +289,26 @@ export const LEGACY_STATUS_GROUPS: LegacyStatusGroup[] = [
       { id: 'cgh', label: 'Chờ giao hàng', color: '#ef5350' },
       { id: 'dgnvc', label: 'Đã gửi NVC', color: '#ef5350' },
       { id: 'dgh', label: 'Đang giao hàng', color: '#ef5350' },
+    ],
+  },
+  {
+    groupCode: 'T4',
+    groupLabel: 'Bàn giao & Xếp lớp',
+    columns: [
       { id: 'cho_xep_lop', label: 'Chờ xếp lớp', color: '#0284c7' },
+      { id: 'da_xep_lop', label: 'Đã xếp lớp', color: '#059669' },
+      { id: 't_datt1', label: 'Thanh toán 1 phần', color: '#f43f5e' },
+      { id: 'danghh', label: 'Đang hoàn hàng', color: '#ef5350' },
+      { id: 'cdh', label: 'Chờ duyệt hoàn', color: '#dc2626' },
+    ],
+  },
+  {
+    groupCode: 'T5',
+    groupLabel: 'Hoàn tất & Chuyển đổi',
+    columns: [
       { id: 'chuyen_doi', label: 'Đã chuyển đổi', color: '#10b981' },
+      { id: 'da_thu_du', label: 'Đã thu 100%', color: '#059669' },
+      { id: 'dang_hoc', label: 'Đang học chính thức', color: '#0d9488' },
     ],
   },
 ]
@@ -333,7 +351,7 @@ export const MAIN_STATUS_GROUPS: LegacyStatusGroup[] = [
     ],
   },
   {
-    groupCode: 'Hoàn tất',
+    groupCode: 'T5',
     groupLabel: 'Chuyển đổi thành công',
     columns: [
       { id: 'chuyen_doi', label: 'Đã chuyển đổi', color: '#10b981' },

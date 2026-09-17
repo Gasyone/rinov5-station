@@ -40,6 +40,7 @@ import {
   getSimulatedLogs,
   getSimulatedPackagesList,
 } from './studentCareDetailHelpers'
+import { defaultCSStaffList } from './studentCareDetailTypes'
 
 
 interface StudentCareDetailDialogV2Props {
@@ -60,29 +61,8 @@ export function StudentCareDetailDialogV2({
   onRefresh,
 }: StudentCareDetailDialogV2Props) {
   const [closedBanners, setClosedBanners] = useState<string[]>([])
-  const [assignedCS, setAssignedCS] = useState('Lê Thị Lan')
   const [csSearchQuery, setCsSearchQuery] = useState('')
 
-  const csStaffList = useMemo(() => [
-    { id: 'cs-1', name: 'Lê Thị Lan', code: 'EMP-CS-001', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lan' },
-    { id: 'cs-2', name: 'Minh Phương', code: 'EMP-CS-002', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
-    { id: 'cs-3', name: 'Nguyễn Văn Hùng', code: 'EMP-CS-003', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hung' },
-    { id: 'cs-4', name: 'Phạm Thị Hà', code: 'EMP-CS-004', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
-    { id: 'cs-5', name: 'Hoàng Anh Tuấn', code: 'EMP-CS-005', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tuan' },
-    { id: 'cs-6', name: 'Đỗ Mai Hương', code: 'EMP-CS-006', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Huong' },
-  ], [])
-
-  const filteredCsList = useMemo(() => {
-    if (!csSearchQuery.trim()) return csStaffList
-    const q = csSearchQuery.toLowerCase()
-    return csStaffList.filter((item) =>
-      item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
-    )
-  }, [csSearchQuery, csStaffList])
-
-  const currentCSObj = useMemo(() => {
-    return csStaffList.find((c) => c.name === assignedCS) || csStaffList[0]
-  }, [assignedCS, csStaffList])
   const [localStudentId, setLocalStudentId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -96,8 +76,40 @@ export function StudentCareDetailDialogV2({
     return alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId) || null
   }, [localStudentId, alerts])
 
+  // Đồng bộ Phụ trách CS với cột ngoài danh sách
+  const [assignedCS, setAssignedCS] = useState(student?.csStaff || 'Trần Thảo Anh 20')
+  const [prevStudentIdForCS, setPrevStudentIdForCS] = useState<string | null>(student?.studentId || null)
 
+  if (student && student.studentId !== prevStudentIdForCS) {
+    setPrevStudentIdForCS(student.studentId)
+    setAssignedCS(student.csStaff || 'Trần Thảo Anh 20')
+  }
 
+  const handleAssignedCSChange = (newCS: string) => {
+    setAssignedCS(newCS)
+    if (student) {
+      student.csStaff = newCS
+    }
+    const foundAlert = alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId)
+    if (foundAlert) {
+      foundAlert.csStaff = newCS
+    }
+    onRefresh?.()
+  }
+
+  const csStaffList = useMemo(() => defaultCSStaffList, [])
+
+  const filteredCsList = useMemo(() => {
+    if (!csSearchQuery.trim()) return csStaffList
+    const q = csSearchQuery.toLowerCase()
+    return csStaffList.filter((item) =>
+      item.name.toLowerCase().includes(q) || item.code.toLowerCase().includes(q)
+    )
+  }, [csSearchQuery, csStaffList])
+
+  const currentCSObj = useMemo(() => {
+    return csStaffList.find((c) => c.name.toLowerCase() === assignedCS.toLowerCase()) || csStaffList[0]
+  }, [assignedCS, csStaffList])
 
   // Get packages list dynamically
   const packagesList = useMemo(() => {
@@ -124,107 +136,41 @@ export function StudentCareDetailDialogV2({
   }, [packagesList, selectedPackageId])
 
   const staffInfo = useMemo(() => {
-    if (!activePackage) return {
-      cs: { id: '—', name: '—', role: 'CS', avatar: '' },
-      teachers: []
+    if (!student) {
+      return {
+        cs: { id: 'cs1', name: 'Trần Thảo Anh 20', role: 'Chuyên viên CSKH', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThaoAnh' },
+        teachers: [],
+      }
     }
-    const isEnglish = !activePackage.packageName.toLowerCase().includes('toán')
-    
-    switch (activePackage.id) {
-      case 'pkg-1':
-        return {
-          cs: {
-            id: 'EMP-MP',
-            name: 'CSM Minh Phương',
-            role: 'Quản lý chăm sóc học viên (CSM)',
-            phone: '0901234567',
-            email: 'phuong.minh@rinoedu.vn',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=MinhPhuong'
-          },
-          teachers: [
-            {
-              id: 'EMP-GV-HH',
-              name: isEnglish ? 'GV Nguyễn Huy Hoàng' : 'GV Nguyễn Minh Trí',
-              role: isEnglish ? 'Giáo viên Tiếng Anh' : 'Giáo viên Toán tư duy',
-              phone: '0912345678',
-              email: isEnglish ? 'hoang.nh@rinoedu.vn' : 'tri.nm@rinoedu.vn',
-              avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${isEnglish ? 'HuyHoang' : 'MinhTri'}`
-            },
-            {
-              id: 'EMP-GV-TA',
-              name: isEnglish ? 'GV Sarah Smith' : 'GV Bùi Văn Anh',
-              role: isEnglish ? 'Giáo viên Bản ngữ' : 'Giáo viên phụ khuyết',
-              phone: '0918273645',
-              email: isEnglish ? 'sarah.smith@rinoedu.vn' : 'anh.bv@rinoedu.vn',
-              avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${isEnglish ? 'Sarah' : 'VanAnh'}`
-            }
-          ]
-        }
-      case 'pkg-2':
-        return {
-          cs: {
-            id: 'EMP-TT',
-            name: 'CSM Thu Trang',
-            role: 'Quản lý chăm sóc học viên (CSM)',
-            phone: '0907654321',
-            email: 'trang.thu@rinoedu.vn',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThuTrang'
-          },
-          teachers: [
-            {
-              id: 'EMP-GV-PTT',
-              name: 'GV Phạm Thị Toán',
-              role: 'Giáo viên Toán tư duy',
-              phone: '0917654321',
-              email: 'toan.pt@rinoedu.vn',
-              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThiToan'
-            }
-          ]
-        }
-      case 'pkg-3':
-        return {
-          cs: {
-            id: 'EMP-LA',
-            name: 'CSM Lan Anh',
-            role: 'Quản lý vận hành (CSM)',
-            phone: '0901234567',
-            email: 'lananh@rinoedu.vn',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=LanAnh'
-          },
-          teachers: [
-            {
-              id: 'EMP-GV-BVA',
-              name: 'GV Bùi Văn Anh',
-              role: 'Giáo viên chính',
-              phone: '0918273645',
-              email: 'anh.bv@rinoedu.vn',
-              avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=VanAnh'
-            }
-          ]
-        }
-      default:
-        return {
-          cs: {
-            id: 'EMP-LD',
-            name: 'CSM Linh Đan',
-            role: 'Quản lý chăm sóc học viên (CSM)',
-            phone: '0902223334',
-            email: 'dan.linh@rinoedu.vn',
-            avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=LinhDan'
-          },
-          teachers: [
-            {
-              id: 'EMP-GV-DEFAULT',
-              name: isEnglish ? 'GV Sarah Smith' : 'GV Trần Minh Đức',
-              role: isEnglish ? 'Giáo viên Bản ngữ' : 'Giáo viên Toán tư duy',
-              phone: '0919998887',
-              email: isEnglish ? 'sarah.smith@rinoedu.vn' : 'duc.tm@rinoedu.vn',
-              avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${isEnglish ? 'Sarah' : 'MinhDuc'}`
-            }
-          ]
-        }
+
+    const rawTeacherCodes = [
+      ...new Set([
+        ...(student.teacherCode ? student.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+        ...(student.substituteTeacher ? student.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+      ]),
+    ].filter((t) => t && t !== '-')
+
+    const teachers = rawTeacherCodes.map((code, idx) => ({
+      id: `teacher-${idx}-${code}`,
+      name: code,
+      role: code.toLowerCase().includes('sub') ? 'Trợ giảng (TA)' : 'Giáo viên Chủ nhiệm',
+      phone: '0912 345 678',
+      email: `${code.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+      avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(code)}`,
+    }))
+
+    const csName = assignedCS || student.csStaff || 'Trần Thảo Anh 20'
+
+    return {
+      cs: {
+        id: `cs-${csName.replace(/\s+/g, '-').toLowerCase()}`,
+        name: csName,
+        role: 'Chuyên viên CSKH',
+        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(csName)}`,
+      },
+      teachers,
     }
-  }, [activePackage])
+  }, [student, assignedCS])
 
   // Get contacts
   const contacts = useMemo(() => {
@@ -501,7 +447,7 @@ export function StudentCareDetailDialogV2({
                 setSelectedPackageId={setSelectedPackageId}
                 staffInfo={staffInfo}
                 assignedCS={assignedCS}
-                onAssignedCSChange={setAssignedCS}
+                onAssignedCSChange={handleAssignedCSChange}
                 branchName="RinoEdu Nguyễn Tuân"
               />
             </div>

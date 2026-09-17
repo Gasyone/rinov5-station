@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import {
   Film,
   FileText,
@@ -16,11 +16,14 @@ import {
   DEFAULT_ROSTER_STUDENTS,
   SessionMediaItem,
   SessionMediaTeacher,
-  isDateInRange,
-  formatDateToDisplay,
+  UploadingMediaItem,
+  MAX_IMAGE_DOC_SIZE_BYTES,
+  MAX_VIDEO_SIZE_BYTES,
+  MAX_FILES_PER_UPLOAD,
 } from './media/classesSessionMediaTypes'
 import { ClassesSessionMediaCard } from './media/ClassesSessionMediaCard'
 import { ClassesSessionMediaToolbar } from './media/ClassesSessionMediaToolbar'
+import { ClassesSessionUploadingCard } from './media/ClassesSessionUploadingCard'
 
 export type { RosterStudentOption, SessionMediaItem }
 export { DEFAULT_ROSTER_STUDENTS }
@@ -137,6 +140,23 @@ const INITIAL_MOCK_MEDIA: SessionMediaItem[] = [
   },
 ]
 
+const INITIAL_DEMO_UPLOADING: UploadingMediaItem[] = [
+  {
+    id: 'upload-demo-in-progress',
+    sessionId: 'ses-5',
+    sessionNumber: 5,
+    sessionTitle: 'Reading Strategies & Skimming/Scanning',
+    sessionDate: '09/05/2026',
+    sessionTime: '18:00 - 19:30',
+    name: 'Video_Bao_Cao_Nhom1_FullHD.mp4',
+    type: 'video',
+    size: '68.4 MB',
+    totalBytes: Math.round(68.4 * 1024 * 1024),
+    loadedBytes: Math.round(28.7 * 1024 * 1024),
+    progress: 42,
+  },
+]
+
 interface ClassesSessionMediaTabProps {
   className?: string
   rosterStudents?: RosterStudentOption[]
@@ -156,28 +176,131 @@ export function ClassesSessionMediaTab({
   const [activePopoverItemId, setActivePopoverItemId] = useState<string | null>(null)
   const [selectedStudentFilter, setSelectedStudentFilter] = useState<string>('all')
 
-  const [dateFilterPreset, setDateFilterPreset] = useState<string>('all')
-  const [customStartDate, setCustomStartDate] = useState<string>('')
-  const [customEndDate, setCustomEndDate] = useState<string>('')
+  const [uploadingItems, setUploadingItems] = useState<UploadingMediaItem[]>(INITIAL_DEMO_UPLOADING)
+  const uploadTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Start initial demo upload ticker & cleanup timers on unmount
+  useEffect(() => {
+    // Demo item ticker running slowly (1% per 1.2s)
+    const demoItem = uploadingItems.find((u) => u.id === 'upload-demo-in-progress')
+    if (demoItem) {
+      const demoTimer = setInterval(() => {
+        setUploadingItems((prev) => {
+          const current = prev.find((u) => u.id === 'upload-demo-in-progress')
+          if (!current) {
+            clearInterval(demoTimer)
+            return prev
+          }
+          const nextProgress = current.progress + 1
+          const nextLoadedBytes = Math.round((nextProgress / 100) * current.totalBytes)
+          if (nextProgress >= 100) {
+            clearInterval(demoTimer)
+            uploadTimersRef.current.delete('upload-demo-in-progress')
+            const completedDemo: SessionMediaItem = {
+              id: 'm-demo-finished',
+              sessionId: current.sessionId,
+              sessionNumber: current.sessionNumber,
+              sessionTitle: current.sessionTitle,
+              sessionDate: current.sessionDate,
+              sessionTime: current.sessionTime,
+              name: current.name,
+              type: 'video',
+              url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+              thumbnailUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+              size: current.size,
+              uploadedBy: 'Giáo viên',
+              uploadedAt: 'Vừa xong',
+              duration: '02:15',
+              taggedStudentIds: [],
+            }
+            setItems((prev) => [completedDemo, ...prev])
+            toast.success(`Đã tải lên thành công: ${current.name}!`)
+            return prev.filter((u) => u.id !== current.id)
+          }
+          return prev.map((u) =>
+            u.id === current.id
+              ? { ...u, progress: nextProgress, loadedBytes: nextLoadedBytes }
+              : u
+          )
+        })
+      }, 1200)
+
+      uploadTimersRef.current.set('upload-demo-in-progress', demoTimer)
+    }
+
+    return () => {
+      uploadTimersRef.current.forEach((timer) => clearInterval(timer))
+      uploadTimersRef.current.clear()
+    }
+  }, [])
+
+  const handleCancelUpload = (uploadId: string) => {
+    const timer = uploadTimersRef.current.get(uploadId)
+    if (timer) {
+      clearInterval(timer)
+      uploadTimersRef.current.delete(uploadId)
+    }
+    setUploadingItems((prev) => {
+      const target = prev.find((u) => u.id === uploadId)
+      if (target) {
+        toast.info(`Đã hủy tải lên tệp: ${target.name}`)
+      }
+      return prev.filter((u) => u.id !== uploadId)
+    })
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0) return
+
+    const selectedFiles = Array.from(fileList)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+
+    if (selectedFiles.length > MAX_FILES_PER_UPLOAD) {
+      toast.error(`Mỗi lượt tải lên cho phép tối đa ${MAX_FILES_PER_UPLOAD} tệp. Vui lòng chọn lại!`)
+      return
+    }
 
     const targetSessionId = sessionId || 'ses-5'
     const targetSessionNum = sessionNumber || 5
 
-    const newItems: SessionMediaItem[] = Array.from(files).map((file, idx) => {
-      const objectUrl = URL.createObjectURL(file)
+    const validNewUploads: UploadingMediaItem[] = []
+
+    for (const file of selectedFiles) {
       const isImg = file.type.startsWith('image/')
       const isVid = file.type.startsWith('video/')
-      return {
-        id: `upload-${Date.now()}-${idx}`,
+      const isDoc =
+        file.type.startsWith('application/pdf') ||
+        file.type.includes('word') ||
+        file.name.endsWith('.pdf') ||
+        file.name.endsWith('.doc') ||
+        file.name.endsWith('.docx')
+
+      if (!isImg && !isVid && !isDoc) {
+        toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ. Vui lòng chỉ tải tệp ảnh, video hoặc tài liệu!`)
+        continue
+      }
+
+      if ((isImg || isDoc) && file.size > MAX_IMAGE_DOC_SIZE_BYTES) {
+        toast.error(`Tệp "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) vượt quá dung lượng tối đa 25MB cho ảnh/tài liệu!`)
+        continue
+      }
+
+      if (isVid && file.size > MAX_VIDEO_SIZE_BYTES) {
+        toast.error(`Tệp video "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) vượt quá dung lượng tối đa 100MB cho video!`)
+        continue
+      }
+
+      const uploadId = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+      validNewUploads.push({
+        id: uploadId,
         sessionId: targetSessionId,
         sessionNumber: targetSessionNum,
         sessionTitle: 'Nội dung buổi học',
@@ -185,21 +308,75 @@ export function ClassesSessionMediaTab({
         sessionTime: '18:00 - 19:30',
         name: file.name,
         type: isVid ? 'video' : isImg ? 'image' : 'doc',
-        url: objectUrl,
-        thumbnailUrl: isImg ? objectUrl : undefined,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploadedBy: 'Giáo viên',
-        uploadedAt: 'Vừa xong',
-        duration: isVid ? '00:45' : undefined,
-        taggedStudentIds: [],
-      }
-    })
-
-    setItems((prev) => [...newItems, ...prev])
-    toast.success(`Đã tải lên ${newItems.length} tài liệu/media!`)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+        totalBytes: file.size,
+        loadedBytes: Math.round(file.size * 0.12),
+        progress: 12,
+        rawFile: file,
+      })
     }
+
+    if (validNewUploads.length === 0) return
+
+    setUploadingItems((prev) => [...validNewUploads, ...prev])
+
+    // Progressive simulated upload for each file (tốc độ chậm để người dùng dễ quan sát / chụp ảnh màn hình)
+    validNewUploads.forEach((uploadItem) => {
+      const stepIncrement = 2 // Tăng 2% mỗi nhịp
+      const intervalMs = 800  // Nhịp 800ms -> mất ~35-45 giây để hoàn tất tải lên
+
+      const timer = setInterval(() => {
+        setUploadingItems((prev) => {
+          const current = prev.find((u) => u.id === uploadItem.id)
+          if (!current) {
+            clearInterval(timer)
+            uploadTimersRef.current.delete(uploadItem.id)
+            return prev
+          }
+
+          const nextProgress = Math.min(100, current.progress + stepIncrement)
+          const nextLoadedBytes = Math.min(current.totalBytes, Math.round((nextProgress / 100) * current.totalBytes))
+
+          if (nextProgress >= 100) {
+            clearInterval(timer)
+            uploadTimersRef.current.delete(uploadItem.id)
+
+            // Convert to completed item
+            const objectUrl = uploadItem.rawFile
+              ? URL.createObjectURL(uploadItem.rawFile)
+              : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+            const completedItem: SessionMediaItem = {
+              id: uploadItem.id,
+              sessionId: uploadItem.sessionId,
+              sessionNumber: uploadItem.sessionNumber,
+              sessionTitle: uploadItem.sessionTitle,
+              sessionDate: uploadItem.sessionDate,
+              sessionTime: uploadItem.sessionTime,
+              name: uploadItem.name,
+              type: uploadItem.type,
+              url: objectUrl,
+              thumbnailUrl: uploadItem.type === 'image' ? objectUrl : undefined,
+              size: uploadItem.size,
+              uploadedBy: 'Giáo viên',
+              uploadedAt: 'Vừa xong',
+              duration: uploadItem.type === 'video' ? '00:45' : undefined,
+              taggedStudentIds: [],
+            }
+
+            setItems((prevItems) => [completedItem, ...prevItems])
+            toast.success(`Đã tải lên thành công: ${uploadItem.name}!`)
+
+            return prev.filter((u) => u.id !== uploadItem.id)
+          }
+
+          return prev.map((u) =>
+            u.id === uploadItem.id ? { ...u, progress: nextProgress, loadedBytes: nextLoadedBytes } : u
+          )
+        })
+      }, intervalMs)
+
+      uploadTimersRef.current.set(uploadItem.id, timer)
+    })
   }
 
   const handleShareLink = (item: SessionMediaItem) => {
@@ -321,23 +498,9 @@ export function ClassesSessionMediaTab({
         if (!item.taggedStudentIds.includes(selectedStudentFilter)) return false
       }
 
-      if (dateFilterPreset === '7days') {
-        if (customStartDate && customEndDate) {
-          if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
-        } else if (item.sessionNumber < 4) {
-          return false
-        }
-      } else if (dateFilterPreset === '30days' || dateFilterPreset === 'this_month') {
-        if (customStartDate && customEndDate) {
-          if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
-        }
-      } else if (dateFilterPreset === 'custom') {
-        if (!isDateInRange(item.sessionDate, customStartDate, customEndDate)) return false
-      }
-
       return true
     })
-  }, [items, singleSessionMode, sessionId, sessionNumber, selectedStudentFilter, dateFilterPreset, customStartDate, customEndDate])
+  }, [items, singleSessionMode, sessionId, sessionNumber, selectedStudentFilter])
 
   const selectedStudentFilterLabel = useMemo(() => {
     if (selectedStudentFilter === 'all') return `Tất cả tệp (${items.length})`
@@ -345,22 +508,6 @@ export function ClassesSessionMediaTab({
     const found = rosterStudents.find((st) => st.id === selectedStudentFilter)
     return found ? found.name : 'Đã chọn học viên'
   }, [selectedStudentFilter, items, rosterStudents])
-
-  const dateFilterLabel = useMemo(() => {
-    if (dateFilterPreset === 'all') return 'Tất cả thời gian'
-    if (dateFilterPreset === '7days') return '7 ngày qua'
-    if (dateFilterPreset === '30days') return '30 ngày qua'
-    if (dateFilterPreset === 'this_month') return 'Tháng 5/2026'
-    if (dateFilterPreset === 'custom') {
-      if (customStartDate && customEndDate) {
-        return `${formatDateToDisplay(customStartDate)} – ${formatDateToDisplay(customEndDate)}`
-      }
-      if (customStartDate) return `Từ ${formatDateToDisplay(customStartDate)}`
-      if (customEndDate) return `Đến ${formatDateToDisplay(customEndDate)}`
-      return 'Tùy chọn ngày'
-    }
-    return 'Khoảng thời gian'
-  }, [dateFilterPreset, customStartDate, customEndDate])
 
   const DEFAULT_TEACHER: SessionMediaTeacher = {
     id: 't1',
@@ -401,6 +548,30 @@ export function ClassesSessionMediaTab({
     return Array.from(map.values()).sort((a, b) => b.sessionNumber - a.sessionNumber)
   }, [filteredItems])
 
+  const handleStudentFilterChange = (filterId: string) => {
+    setSelectedStudentFilter(filterId)
+    // [CASE-10] Automatically sync selectedItemIds to only keep items that match the new filter
+    setSelectedItemIds((prevSelected) => {
+      if (prevSelected.length === 0) return prevSelected
+      const matchingItems = items.filter((item) => {
+        if (singleSessionMode || sessionId || sessionNumber !== undefined) {
+          const matchesSession =
+            (sessionId && item.sessionId === sessionId) ||
+            (sessionNumber !== undefined && item.sessionNumber === sessionNumber)
+          if (!matchesSession) return false
+        }
+        if (filterId === 'class_wide') {
+          return item.taggedStudentIds.length === 0
+        } else if (filterId !== 'all') {
+          return item.taggedStudentIds.includes(filterId)
+        }
+        return true
+      })
+      const matchingIds = new Set(matchingItems.map((i) => i.id))
+      return prevSelected.filter((id) => matchingIds.has(id))
+    })
+  }
+
   const isAllSelected = filteredItems.length > 0 && filteredItems.every((i) => selectedItemIds.includes(i.id))
 
   return (
@@ -412,17 +583,10 @@ export function ClassesSessionMediaTab({
         selectedItemIds={selectedItemIds}
         setSelectedItemIds={setSelectedItemIds}
         selectedStudentFilter={selectedStudentFilter}
-        setSelectedStudentFilter={setSelectedStudentFilter}
+        setSelectedStudentFilter={handleStudentFilterChange}
         selectedStudentFilterLabel={selectedStudentFilterLabel}
         rosterStudents={rosterStudents}
         items={items}
-        dateFilterPreset={dateFilterPreset}
-        setDateFilterPreset={setDateFilterPreset}
-        dateFilterLabel={dateFilterLabel}
-        customStartDate={customStartDate}
-        setCustomStartDate={setCustomStartDate}
-        customEndDate={customEndDate}
-        setCustomEndDate={setCustomEndDate}
         fileInputRef={fileInputRef}
         handleFileChange={handleFileChange}
         handleBulkDeleteConfirm={handleBulkDeleteConfirm}
@@ -431,19 +595,35 @@ export function ClassesSessionMediaTab({
       />
 
       {/* ── MEDIA LISTING ── */}
-      {filteredItems.length === 0 ? (
+      {filteredItems.length === 0 && uploadingItems.length === 0 ? (
         <div className="py-12 text-center rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
           <Film className="h-10 w-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
-          <p className="text-sm font-semibold text-foreground">Không tìm thấy tài liệu hay media phù hợp</p>
+          <p className="text-sm font-semibold text-foreground">Không tìm thấy media phù hợp</p>
           <p className="text-xs text-muted-foreground mt-0.5">
             {singleSessionMode
-              ? 'Chưa có tệp nào cho buổi học này. Nhấp "+ Tải lên" để tải tệp mới.'
-              : 'Vui lòng thay đổi bộ lọc học viên hoặc khoảng thời gian.'}
+              ? 'Chưa có media nào cho buổi học này. Nhấp "+ Tải lên" để tải tệp mới.'
+              : 'Vui lòng thay đổi bộ lọc học viên.'}
           </p>
         </div>
       ) : singleSessionMode ? (
         /* Single Session Mode: Direct Grid without session group header label */
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
+          {/* In-flight uploading cards */}
+          {uploadingItems
+            .filter((u) => {
+              if (sessionId && u.sessionId === sessionId) return true
+              if (sessionNumber && u.sessionNumber === sessionNumber) return true
+              if (!sessionId && !sessionNumber) return true
+              return false
+            })
+            .map((uploading) => (
+              <ClassesSessionUploadingCard
+                key={uploading.id}
+                item={uploading}
+                onCancel={handleCancelUpload}
+              />
+            ))}
+
           {filteredItems.map((item) => (
             <ClassesSessionMediaCard
               key={item.id}
@@ -464,6 +644,17 @@ export function ClassesSessionMediaTab({
       ) : (
         /* Multi-session (Class Detail) Mode: Grouped by session with headers */
         <div className="space-y-6 pt-1">
+          {uploadingItems.length > 0 && groupedSessions.length === 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {uploadingItems.map((uploading) => (
+                <ClassesSessionUploadingCard
+                  key={uploading.id}
+                  item={uploading}
+                  onCancel={handleCancelUpload}
+                />
+              ))}
+            </div>
+          )}
           {groupedSessions.map((group) => {
             return (
               <div key={group.sessionId} className="space-y-2.5">
@@ -507,6 +698,15 @@ export function ClassesSessionMediaTab({
 
                 {/* Session Media Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {uploadingItems
+                    .filter((u) => u.sessionId === group.sessionId || u.sessionNumber === group.sessionNumber)
+                    .map((uploading) => (
+                      <ClassesSessionUploadingCard
+                        key={uploading.id}
+                        item={uploading}
+                        onCancel={handleCancelUpload}
+                      />
+                    ))}
                   {group.items.map((item) => (
                     <ClassesSessionMediaCard
                       key={item.id}

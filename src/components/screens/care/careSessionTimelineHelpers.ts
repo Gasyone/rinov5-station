@@ -415,10 +415,10 @@ export function getCareSessionNotices(
     notices.push({
       id: 'uncommented',
       title: 'Chưa có nhận xét',
-      issue: `${sessionNumbers} đã hoàn thành nhưng giáo viên chưa cập nhật nhận xét đánh giá.`,
-      action: 'Cần đôn đốc GV hoàn thiện báo cáo học tập của học viên.',
-      text: `${sessionNumbers} đã hoàn thành nhưng giáo viên chưa cập nhật nhận xét đánh giá, cần đôn đốc GV hoàn thiện báo cáo học tập của học viên.`,
-      actionHint: 'Cần đôn đốc GV hoàn thiện nhận xét buổi học',
+      issue: `${sessionNumbers} chưa có nhận xét.`,
+      action: 'Đôn đốc GV hoàn thiện.',
+      text: `${sessionNumbers} chưa có nhận xét, đôn đốc GV hoàn thiện.`,
+      actionHint: 'Đôn đốc GV hoàn thiện nhận xét',
       type: 'uncommented',
     })
   }
@@ -429,15 +429,15 @@ export function getCareSessionNotices(
   )
   if (unmarkedList.length > 0) {
     const sessionDetails = unmarkedList
-      .map((s) => `Buổi ${s.sessionNumber} ngày ${formatDateNoYear(s.date)}`)
+      .map((s) => `Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)})`)
       .join(', ')
     notices.push({
       id: 'unmarked',
       title: 'Chưa điểm danh',
-      issue: `${sessionDetails} đã kết thúc nhưng chưa được chốt điểm danh trên hệ thống.`,
-      action: 'Cần xác minh sĩ số thực tế với giáo viên phụ trách để cập nhật trạng thái chuyên cần.',
-      text: `${sessionDetails} đã kết thúc nhưng chưa được chốt điểm danh trên hệ thống, cần xác minh sĩ số thực tế với giáo viên phụ trách để cập nhật trạng thái chuyên cần.`,
-      actionHint: 'Cần liên hệ GV/TA chốt danh sách điểm danh',
+      issue: `${sessionDetails} chưa chốt điểm danh.`,
+      action: 'Xác minh GV cập nhật chuyên cần.',
+      text: `${sessionDetails} chưa chốt điểm danh, xác minh GV cập nhật chuyên cần.`,
+      actionHint: 'Xác minh GV cập nhật chuyên cần',
       type: 'unmarked',
     })
   }
@@ -493,10 +493,10 @@ export function getCareSessionNotices(
     notices.push({
       id: 'absent',
       title: 'Nghỉ học liên tiếp',
-      issue: `Học viên đang nghỉ liên tiếp ${finalAbsences} buổi (chưa có đơn xin phép), chưa có lịch học bù.`,
-      action: 'Cần liên hệ phụ huynh xác minh lý do và sắp xếp buổi học bổ trợ sớm.',
-      text: `Học viên đang nghỉ liên tiếp ${finalAbsences} buổi (chưa có đơn xin phép), chưa có lịch học bù, cần liên hệ phụ huynh xác minh lý do và sắp xếp buổi học bổ trợ sớm.`,
-      actionHint: 'Cần liên hệ phụ huynh xác minh lý do và xếp lịch học bù',
+      issue: `Nghỉ liên tiếp ${finalAbsences} buổi chưa có lịch học bù.`,
+      action: 'Liên hệ PH xếp lịch học bù sớm.',
+      text: `Nghỉ liên tiếp ${finalAbsences} buổi chưa có lịch học bù, liên hệ PH xếp lịch học bù sớm.`,
+      actionHint: 'Liên hệ PH xếp lịch học bù',
       type: 'absent',
     })
   } else if (studentAlert && studentAlert.attendanceRatio) {
@@ -508,10 +508,10 @@ export function getCareSessionNotices(
       notices.push({
         id: 'absent_ratio',
         title: 'Cảnh báo chuyên cần',
-        issue: `Học viên đã nghỉ ${absentCount} buổi trong ${total} buổi gần nhất (tỷ lệ chuyên cần ${rate}%).`,
-        action: 'Cần theo dõi sát sao tiến độ đi học và hỗ trợ kịp thời trước các buổi tới.',
-        text: `Học viên đã nghỉ ${absentCount} buổi trong ${total} buổi gần nhất (tỷ lệ chuyên cần ${rate}%), cần theo dõi sát sao tiến độ đi học và hỗ trợ kịp thời trước các buổi tới.`,
-        actionHint: 'Cần theo dõi sát chuyên cần các buổi tới',
+        issue: `Nghỉ ${absentCount}/${total} buổi gần nhất (chuyên cần ${rate}%).`,
+        action: 'Theo dõi sát chuyên cần buổi tới.',
+        text: `Nghỉ ${absentCount}/${total} buổi gần nhất (chuyên cần ${rate}%), theo dõi sát chuyên cần buổi tới.`,
+        actionHint: 'Theo dõi sát chuyên cần',
         type: 'absent',
       })
     }
@@ -529,10 +529,10 @@ export function getCareSessionNotices(
     notices.push({
       id: 'homework',
       title: 'Chưa làm bài tập',
-      issue: `Học viên chưa hoàn thành ${missingHwList.length} bài tập về nhà gần nhất${hwDetail}.`,
-      action: 'Cần liên hệ đôn đốc phụ huynh hỗ trợ con làm bài và nộp bù trước buổi học tiếp theo.',
-      text: `Học viên chưa hoàn thành ${missingHwList.length} bài tập về nhà gần nhất${hwDetail}, cần liên hệ đôn đốc phụ huynh hỗ trợ con làm bài và nộp bù trước buổi học tiếp theo.`,
-      actionHint: 'Nhắn Zalo phụ huynh hỗ trợ đôn đốc con làm bài',
+      issue: `Chưa hoàn thành ${missingHwList.length} BTVN gần nhất${hwDetail}.`,
+      action: 'Đôn đốc PH hỗ trợ con nộp bù.',
+      text: `Chưa hoàn thành ${missingHwList.length} BTVN gần nhất${hwDetail}, đôn đốc PH hỗ trợ con nộp bù.`,
+      actionHint: 'Đôn đốc PH hỗ trợ nộp bài',
       type: 'homework',
     })
   }
@@ -547,30 +547,30 @@ export function getCareSessionNotices(
       notices.push({
         id: 'csdb_c90b',
         title: 'Cảnh báo CSĐB',
-        issue: 'Học viên thuộc danh sách Chăm sóc Đặc biệt (C90B) có nguy cơ gián đoạn học tập cao.',
-        action: 'Cần ưu tiên liên hệ phụ huynh và phối hợp quản lý cơ sở can thiệp trong 24 giờ.',
-        text: 'Học viên thuộc danh sách Chăm sóc Đặc biệt (C90B) có nguy cơ gián đoạn học tập cao, cần ưu tiên liên hệ phụ huynh và phối hợp quản lý cơ sở can thiệp trong 24 giờ.',
-        actionHint: 'Chuyên viên CS phối hợp Quản lý can thiệp trực tiếp',
+        issue: 'Học viên thuộc nhóm CSĐB (C90B) có nguy cơ nghỉ học.',
+        action: 'Phối hợp quản lý can thiệp trong 24h.',
+        text: 'Học viên thuộc nhóm CSĐB (C90B) có nguy cơ nghỉ học, phối hợp quản lý can thiệp trong 24h.',
+        actionHint: 'Phối hợp quản lý can thiệp trong 24h',
         type: 'special_care',
       })
     } else if (studentAlert.lastTestScore > 0 && studentAlert.lastTestScore <= 6.0) {
       notices.push({
         id: 'csdb_score',
         title: 'Học lực sút giảm',
-        issue: `Bài kiểm tra gần nhất chỉ đạt ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), kiến thức nền tảng bị hổng.`,
-        action: 'Cần giáo viên bộ môn lên kế hoạch phụ đạo bổ trợ tăng cường 1-1.',
-        text: `Bài kiểm tra gần nhất chỉ đạt ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), kiến thức nền tảng bị hổng, cần giáo viên bộ môn lên kế hoạch phụ đạo bổ trợ tăng cường 1-1.`,
-        actionHint: 'Giáo viên phụ trách cần lên kế hoạch phụ đạo kiến thức',
+        issue: `Điểm kiểm tra gần nhất ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0).`,
+        action: 'GV lên kế hoạch phụ đạo 1-1.',
+        text: `Điểm kiểm tra gần nhất ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), GV lên kế hoạch phụ đạo 1-1.`,
+        actionHint: 'Lên kế hoạch phụ đạo 1-1',
         type: 'special_care',
       })
     } else if (studentAlert.careAlert && !studentAlert.careAlert.includes('Bình thường')) {
       notices.push({
         id: 'csdb_custom',
         title: 'Cảnh báo CSKH',
-        issue: `Phát sinh yêu cầu chăm sóc nghiệp vụ: ${studentAlert.careAlert}.`,
-        action: 'Chuyên viên CS cần liên hệ phụ huynh để nắm bắt tình hình và ghi nhận tiến độ tương tác.',
-        text: `Phát sinh yêu cầu chăm sóc nghiệp vụ: ${studentAlert.careAlert}, chuyên viên CS cần liên hệ phụ huynh để nắm bắt tình hình và ghi nhận tiến độ tương tác.`,
-        actionHint: 'Ghi nhận nhật ký chăm sóc sau khi liên hệ',
+        issue: `Cảnh báo CSKH: ${studentAlert.careAlert}.`,
+        action: 'Liên hệ PH nắm bắt tiến độ tương tác.',
+        text: `Cảnh báo CSKH: ${studentAlert.careAlert}, liên hệ PH nắm bắt tiến độ tương tác.`,
+        actionHint: 'Liên hệ PH nắm bắt tiến độ',
         type: 'special_care',
       })
     }

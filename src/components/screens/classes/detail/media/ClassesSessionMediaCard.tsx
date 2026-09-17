@@ -8,6 +8,7 @@ import {
   FileText,
   X,
   Share2,
+  UserPlus,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
@@ -157,9 +158,10 @@ export function ClassesSessionMediaCard({
                   e.stopPropagation()
                   setActivePopoverItemId(item.id)
                 }}
-                className="px-4 py-1.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md cursor-pointer transition-transform hover:scale-105 flex items-center gap-1"
+                className="px-3.5 py-1.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-md cursor-pointer transition-transform hover:scale-105 flex items-center gap-1.5"
               >
-                <span>Thêm</span>
+                <UserPlus className="h-3.5 w-3.5 shrink-0" />
+                <span>Gắn học viên</span>
               </button>
             </PopoverTrigger>
 

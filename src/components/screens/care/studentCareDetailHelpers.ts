@@ -3,7 +3,7 @@ import { mockOrders } from '@/mocks/orders'
 import { mockStudents } from '@/mocks/students'
 import { stableHash } from './operationsAlertHelpers'
 import { type SimulatedPackage, type CareTopic, type CareTopicStatus, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
-import { getStudentOrderInfo } from './renewal/renewalHelpers'
+import { getStudentOrderInfo, getProductSku } from './renewal/renewalHelpers'
 
 // Parse care topic prefix from notes (e.g. "[ĐB1]")
 export function parseLogTopic(notes?: string | null): string {
@@ -401,56 +401,78 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
 // Generate packages list
 export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPackage[] {
   const isMath = student.subject === 'Toán tư duy'
+  const skuName = getProductSku(student)
   
+  // Gói 1: Gói chính hiện tại (khớp 100% với cột Gói sản phẩm ngoài danh sách)
   const pkg1: SimulatedPackage = {
     id: 'pkg-1',
-    packageName: isMath ? 'Gói Toán tư duy Standard (6 tháng)' : 'Gói Tiếng Anh Level 4 (12 tháng)',
-    totalSessions: student.totalSessions,
-    remainingSessions: student.remainingSessions,
+    packageName: skuName,
+    totalSessions: student.totalSessions || 96,
+    remainingSessions: student.remainingSessions ?? 12,
     classCode: student.classCode,
     className: student.classCode
       ? (isMath ? `Lớp Toán Tư Duy ${student.classCode.slice(-5)}` : `Lớp Tiếng Anh Giao Tiếp ${student.classCode.slice(-5)}`)
       : (isMath ? 'Lớp Toán Tư Duy (Chờ xếp)' : 'Lớp Tiếng Anh (Chờ xếp)'),
     teacherCode: student.teacherCode,
-    schedule: student.schedule,
-    attendanceRatio: student.attendanceRatio,
-    homeworkCompletion: student.homeworkCompletion,
-    lastTestScore: student.lastTestScore,
-    priorTestScore: student.priorTestScore,
-    startDate: student.startDate,
-    endDate: student.expectedEndDate,
+    schedule: student.schedule || 'T3 - 17:30-19:30, T6 - 17:30-19:30',
+    attendanceRatio: student.attendanceRatio || '92%',
+    homeworkCompletion: student.homeworkCompletion ?? 85,
+    lastTestScore: student.lastTestScore ?? 8.5,
+    priorTestScore: student.priorTestScore ?? 8.0,
+    startDate: student.startDate || '14/08/2024',
+    endDate: student.expectedEndDate || '14/08/2027',
     level: student.level,
     subLevel: student.subLevel,
     status: !student.classCode || student.status === 'Chưa ghép lớp' ? 'pending' : (student.remainingSessions > 0 ? 'active' : 'expired'),
   }
 
+  // Gói 2: Gói nâng cao / giai đoạn 2 của cùng môn học để chọn lọc
   const pkg2: SimulatedPackage = {
     id: 'pkg-2',
-    packageName: isMath ? 'Gói Tiếng Anh Bổ trợ Standard (12 tháng)' : 'Gói Toán tư duy nâng cao (6 tháng)',
+    packageName: isMath 
+      ? `[MATH_ARCH] Toán Tư Duy Archimedes_${student.totalSessions || 48} buổi`
+      : `[IE_MOVERS] Tiếng Anh SuperKids Level 4_${student.totalSessions || 48} buổi`,
     totalSessions: 48,
-    remainingSessions: 32,
-    classCode: isMath ? 'LD_ANH_00201' : 'LD_TOAN_00010',
-    className: isMath ? 'Lớp Tiếng Anh Standard B1' : 'Lớp Toán Tư Duy Nâng Cao A1',
-    teacherCode: 'GV_ThuTrang08',
-    schedule: 'T3 - 18:00-19:30, T7 - 09:00-10:30',
-    attendanceRatio: '8/8',
-    homeworkCompletion: 95,
+    remainingSessions: 36,
+    classCode: isMath ? 'LD_TOAN_00088' : 'LD_ANH_00201',
+    className: isMath ? 'Lớp Toán Tư Duy Archimedes G2' : 'Lớp Tiếng Anh SuperKids B2',
+    teacherCode: student.teacherCode || 'GV_HuiLT20',
+    schedule: 'T4 - 18:00-19:30, T7 - 09:00-10:30',
+    attendanceRatio: '95%',
+    homeworkCompletion: 90,
     lastTestScore: 9.0,
     priorTestScore: 8.5,
-    startDate: '10/02/2026',
-    endDate: '10/08/2026',
-    level: isMath ? 'Flyers' : 'Einstein 1',
+    startDate: '10/01/2026',
+    endDate: '10/01/2027',
+    level: isMath ? 'Archimedes 1' : 'Level 4',
     subLevel: 'B',
     status: 'active',
   }
 
-  const hash = stableHash(student.studentId)
-  // Chỉ hiển thị các chương trình khác nhau (Tiếng Anh, Toán tư duy), không lặp lại môn học
-  if (hash % 3 === 0) {
-    return [pkg1]
-  } else {
-    return [pkg1, pkg2]
+  // Gói 3: Gói giai đoạn trước đã hoàn thành (Lịch sử gói)
+  const pkg3: SimulatedPackage = {
+    id: 'pkg-3',
+    packageName: isMath 
+      ? `[MATH_PRE] Toán Einstein 0 Foundation_48 buổi`
+      : `[IE_KID] Tiếng Anh Kindy 0 Foundation_48 buổi`,
+    totalSessions: 48,
+    remainingSessions: 0,
+    classCode: isMath ? 'LD_TOAN_00008' : 'LD_ANH_00005',
+    className: isMath ? 'Lớp Toán Einstein 0' : 'Lớp Tiếng Anh Kindy 0',
+    teacherCode: student.teacherCode || 'GV_HuiLT20',
+    schedule: 'T2 - 17:30-19:00, T5 - 17:30-19:00',
+    attendanceRatio: '100%',
+    homeworkCompletion: 100,
+    lastTestScore: 9.8,
+    priorTestScore: 9.2,
+    startDate: '14/08/2023',
+    endDate: '14/08/2024',
+    level: isMath ? 'Einstein 0' : 'Level 0',
+    subLevel: 'A',
+    status: 'expired',
   }
+
+  return [pkg1, pkg2, pkg3]
 }
 
 // Generate orders list

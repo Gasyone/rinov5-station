@@ -31,37 +31,9 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
       setCanScrollLeft(scrollLeft > 2)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4)
     }
   }, [])
-
-  useEffect(() => {
-    checkScroll()
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener('scroll', checkScroll)
-    window.addEventListener('resize', checkScroll)
-    return () => {
-      el.removeEventListener('scroll', checkScroll)
-      window.removeEventListener('resize', checkScroll)
-    }
-  }, [checkScroll])
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 320
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      })
-    }
-  }
-
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (scrollRef.current && e.deltaY !== 0) {
-      scrollRef.current.scrollLeft += e.deltaY
-    }
-  }
 
   const baseGroups: LegacyStatusGroup[] = mode === 'all' ? LEGACY_STATUS_GROUPS : MAIN_STATUS_GROUPS
   const groups = React.useMemo(() => {
@@ -73,11 +45,82 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
       }))
       .filter((g) => g.columns.length > 0)
   }, [baseGroups, viewScope])
+
+  useEffect(() => {
+    checkScroll()
+    const el = scrollRef.current
+    if (!el) return
+    el.addEventListener('scroll', checkScroll)
+    window.addEventListener('resize', checkScroll)
+
+    let observer: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        checkScroll()
+      })
+      observer.observe(el)
+    }
+
+    const timer = setTimeout(checkScroll, 100)
+
+    return () => {
+      el.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+      if (observer) observer.disconnect()
+      clearTimeout(timer)
+    }
+  }, [checkScroll, mode, groups])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 360
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (scrollRef.current) {
+      if (Math.abs(e.deltaX) > 0) return // Trackpad horizontal swipe
+      if (e.shiftKey && e.deltaY !== 0) {
+        scrollRef.current.scrollLeft += e.deltaY
+      }
+    }
+  }
   const isAllActive = activeStatus === 'all'
   const totalCount = counts.all ?? 0
 
   return (
-    <div className="w-full border border-slate-300 rounded-md bg-white shadow-2xs overflow-hidden">
+    <div className="relative w-full border border-slate-300 rounded-md bg-white shadow-2xs overflow-hidden">
+      {/* Floating nút cuộn phải khi còn cột ẩn phía sau (T4, T5) */}
+      {canScrollRight && (
+        <button
+          type="button"
+          onClick={() => scroll('right')}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full py-1 px-2 flex items-center gap-1 text-[11px] font-semibold transition-all hover:scale-105 cursor-pointer group animate-pulse hover:animate-none"
+          title="Cuộn sang phải xem các trạng thái tiếp theo (T4, T5)"
+        >
+          <span className="hidden md:inline text-[10px] text-slate-500 group-hover:text-blue-600 font-medium">
+            Cuộn xem T4, T5
+          </span>
+          <ChevronRight className="w-4 h-4 text-blue-600" />
+        </button>
+      )}
+
+      {/* Floating nút cuộn trái khi đã cuộn sang phải */}
+      {canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => scroll('left')}
+          className="absolute left-[118px] top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full p-1 flex items-center text-[11px] font-semibold transition-all hover:scale-105 cursor-pointer"
+          title="Cuộn sang trái"
+        >
+          <ChevronLeft className="w-4 h-4 text-blue-600" />
+        </button>
+      )}
+
       <div
         ref={scrollRef}
         onWheel={handleWheel}
@@ -85,7 +128,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
       >
         <table className="w-full border-collapse text-left border-spacing-0 min-w-max">
           <thead>
-            {/* HÀNG 1: NHÓM CHẶNG (T0, T1, T2, T3...) */}
+            {/* HÀNG 1: NHÓM CHẶNG (T0, T1, T2, T3, T4, T5) */}
             <tr className="border-b border-slate-300 bg-slate-50/90 text-slate-700">
               {/* Ô Xem tất cả góc trái */}
               <th
@@ -102,7 +145,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                   Xem tất cả
                 </div>
                 <div className="text-[10px] text-slate-500 font-medium mt-0.5">
-                  Toàn bộ phễu
+                  {mode === 'all' ? 'Toàn bộ T0-T5' : 'Toàn bộ phễu'}
                 </div>
                 {/* Nút cuộn trái / phải hỗ trợ xem cột phía sau */}
                 <div className="flex items-center justify-center gap-1 mt-1.5 pt-1 border-t border-slate-200/80">
@@ -132,10 +175,10 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                     }}
                     className={`p-0.5 rounded transition-colors ${
                       canScrollRight
-                        ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200 cursor-pointer'
+                        ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-100/60 font-bold cursor-pointer'
                         : 'text-slate-300 opacity-40 cursor-not-allowed'
                     }`}
-                    title="Cuộn sang phải"
+                    title="Cuộn sang phải xem T4, T5"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>

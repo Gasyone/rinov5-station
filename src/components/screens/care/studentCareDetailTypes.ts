@@ -55,10 +55,14 @@ export interface CSStaffMember {
 
 export const defaultCSStaffList: CSStaffMember[] = [
   { id: 'cs-1', name: 'Trần Thị Mai', code: 'EMP-CS-001', role: 'Chuyên viên CSKH', phone: '0901 112 233', email: 'mai.tt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Mai' },
-  { id: 'cs-2', name: 'Lê Thị Lan', code: 'EMP-CS-002', role: 'Chuyên viên CSKH', phone: '0912 345 678', email: 'lan.lt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lan' },
-  { id: 'cs-3', name: 'Minh Phương', code: 'EMP-CS-003', role: 'Quản lý CSM', phone: '0901 234 567', email: 'phuong.minh@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
-  { id: 'cs-4', name: 'Nguyễn Văn Hùng', code: 'EMP-CS-004', role: 'Chuyên viên CSKH', phone: '0983 222 111', email: 'hung.nv@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hung' },
-  { id: 'cs-5', name: 'Phạm Thị Hà', code: 'EMP-CS-005', role: 'Chuyên viên CSKH', phone: '0977 888 999', email: 'ha.pt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
-  { id: 'cs-6', name: 'Hoàng Anh Tuấn', code: 'EMP-CS-006', role: 'Chuyên viên CSKH', phone: '0966 555 444', email: 'tuan.ha@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tuan' },
-  { id: 'cs-7', name: 'Đỗ Mai Hương', code: 'EMP-CS-007', role: 'Chuyên viên CSKH', phone: '0933 444 555', email: 'huong.dm@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Huong' },
+  { id: 'cs-2', name: 'Nguyễn Thị Ngọc Anh', code: 'EMP-CS-010', role: 'Chuyên viên CSKH', phone: '0912 888 999', email: 'ngocanh.nt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=NgocAnh' },
+  { id: 'cs-3', name: 'Trần Thảo Anh 20', code: 'EMP-CS-011', role: 'Chuyên viên CSKH', phone: '0983 666 777', email: 'thaoanh.tt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThaoAnh' },
+  { id: 'cs-4', name: 'Lê Hoàng Long', code: 'EMP-CS-012', role: 'Chuyên viên CSKH', phone: '0977 123 456', email: 'long.lh@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangLong' },
+  { id: 'cs-5', name: 'Lê Thị Lan', code: 'EMP-CS-002', role: 'Chuyên viên CSKH', phone: '0912 345 678', email: 'lan.lt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Lan' },
+  { id: 'cs-6', name: 'Minh Phương', code: 'EMP-CS-003', role: 'Quản lý CSM', phone: '0901 234 567', email: 'phuong.minh@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Phuong' },
+  { id: 'cs-7', name: 'Bùi Thu Phương', code: 'EMP-CS-013', role: 'Chuyên viên CSKH', phone: '0908 990 011', email: 'phuong.nt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=ThuPhuong' },
+  { id: 'cs-8', name: 'Nguyễn Văn Hùng', code: 'EMP-CS-004', role: 'Chuyên viên CSKH', phone: '0983 222 111', email: 'hung.nv@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Hung' },
+  { id: 'cs-9', name: 'Phạm Thị Hà', code: 'EMP-CS-005', role: 'Chuyên viên CSKH', phone: '0977 888 999', email: 'ha.pt@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ha' },
+  { id: 'cs-10', name: 'Hoàng Anh Tuấn', code: 'EMP-CS-006', role: 'Chuyên viên CSKH', phone: '0966 555 444', email: 'tuan.ha@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Tuan' },
+  { id: 'cs-11', name: 'Đỗ Mai Hương', code: 'EMP-CS-007', role: 'Chuyên viên CSKH', phone: '0933 444 555', email: 'huong.dm@rinoedu.vn', avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Huong' },
 ]

@@ -379,7 +379,8 @@ export function mapSubStatusToMainStatus(status: string): string {
   if (status === 'hen_goi_lai') return 'dang_tu_van'
   if (status === 'da_dat_test' || status === 'da_test_co_kq' || status === 'hoc_thu') return 'hen_trai_nghiem'
   if (status === 'hen_nop_phi' || status === 'da_coc') return 'cho_chot'
-  if (status === 'cho_xep_lop') return 'thuc_hien_don'
+  if (status === 'cho_xep_lop' || status === 'da_xep_lop' || status === 't_datt1' || status === 'danghh' || status === 'cdh') return 'thuc_hien_don'
+  if (status === 'da_thu_du' || status === 'dang_hoc') return 'chuyen_doi'
   return status
 }
 
@@ -405,7 +406,7 @@ export function calculateStatusTileCounts(leads: Lead[]) {
     chuyen_doi: leads.filter((l) => isChuyenDoiStatus(l.status)).length,
     that_bai: leads.filter((l) => isThatBaiStatus(l.status)).length,
     tam_dung: leads.filter((l) => isTamDungStatus(l.status)).length,
-    // Các cột bản cũ (chia cột như ảnh T0, T1, T2, T3)
+    // Các cột bản cũ (chia cột đầy đủ T0, T1, T2, T3, T4, T5)
     so_sai: leads.filter((l) => l.subStatus?.toLowerCase().includes('sai') || (l.lastNote || '').toLowerCase().includes('sai')).length,
     kho_chung: leads.filter((l) => l.poolId === 'pool-t' || isLeadUnassigned(l)).length,
     kho_new: leads.filter((l) => l.poolId === 'pool-m').length,
@@ -426,6 +427,14 @@ export function calculateStatusTileCounts(leads: Lead[]) {
     cgh: leads.filter((l) => l.orderStatus === 'pending_payment' || isThucHienDonStatus(l)).length,
     dgnvc: leads.filter((l) => isThucHienDonStatus(l) && (l.lastNote || '').includes('NVC')).length,
     dgh: leads.filter(isThucHienDonStatus).length,
+    // T4: Bàn giao & Xếp lớp
+    da_xep_lop: leads.filter((l) => (l.subStatus || '').toLowerCase().includes('đã xếp') || (l.lastNote || '').toLowerCase().includes('đã xếp') || Boolean(l.trialClassName && l.status === 'chuyen_doi')).length,
+    t_datt1: leads.filter((l) => (l.paymentTerm || '').toLowerCase().includes('1 phần') || (l.subStatus || '').toLowerCase().includes('1 phần') || (l.lastNote || '').toLowerCase().includes('1 phần') || Boolean(l.previousOrders?.some((o) => (o.paymentTerm || '').includes('1 phần')))).length,
+    danghh: leads.filter((l) => (l.subStatus || '').toLowerCase().includes('hoàn') || (l.lastNote || '').toLowerCase().includes('hoàn')).length,
+    cdh: leads.filter((l) => (l.subStatus || '').toLowerCase().includes('duyệt hoàn') || (l.lastNote || '').toLowerCase().includes('duyệt hoàn')).length,
+    // T5: Hoàn tất & Chuyển đổi
+    da_thu_du: leads.filter((l) => isChuyenDoiStatus(l.status) && !(l.paymentTerm || '').toLowerCase().includes('1 phần')).length,
+    dang_hoc: leads.filter((l) => isChuyenDoiStatus(l.status) && Boolean(l.trialClassName || (l.lastNote || '').toLowerCase().includes('học'))).length,
     // Legacy aliases
     chua_tiep_can: leads.filter((l) => isMoiTiepNhanStatus(l.status)).length,
     dang_cham_soc: leads.filter((l) => isDangTuVanStatus(l.status)).length,

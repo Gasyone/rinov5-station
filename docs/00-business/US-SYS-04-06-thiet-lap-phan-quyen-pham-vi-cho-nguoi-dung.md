@@ -30,7 +30,7 @@ tags: [sys, authz, data-scope, permissions, system-config, governance]
 
 ### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
 * **Bối cảnh:** Trong hệ thống quản lý trường học và trung tâm đào tạo, phân quyền người dùng gồm hai lớp độc lập: Lớp thẩm quyền thao tác (được làm gì: xem, thêm, sửa, xóa, xuất dữ liệu) và Lớp biên giới dữ liệu (được thao tác trên những dữ liệu nào: dữ liệu của chính mình, dữ liệu của cơ sở mình công tác, hay toàn bộ chuỗi cơ sở).
-* **Vấn đề hiện tại:** Trước đây hệ thống chủ yếu kiểm soát theo hành động nút bấm, chưa phân tách biên giới phạm vi dữ liệu rõ ràng. Dữ liệu tải về giao diện thường là danh sách phẳng, phụ thuộc vào bộ lọc thủ công của người dùng, dẫn đến nguy cơ nhân sự tiếp cận dữ liệu ngoài thẩm quyền và gây quá tải xử lý.
+* **Vấn đề hiện tại:** Trước đây hệ thống chủ yếu kiểm soát theo hành động nút bấm, chưa phân tách biên giới phạm vi dữ liệu rõ ràng. Dữ liệu tải về giao diện thường là danh sách phẳng, cần người dùng tự tay chọn bộ lọc thủ công, dẫn đến nguy cơ nhân sự tiếp cận dữ liệu ngoài thẩm quyền và gây quá tải xử lý.
 * **Mục tiêu & Giá trị mang lại:** Thiết lập chuẩn hóa 3 cấp độ phạm vi dữ liệu (Cá nhân, Cơ sở, Toàn chuỗi). Cung cấp màn hình Cấu hình hệ thống (`/app/system_config`) để điều phối phạm vi dữ liệu ngầm cho các phân hệ tác nghiệp, đảm bảo dữ liệu máy chủ trả về được gọt đúng biên giới phân quyền ngay từ đầu.
 
 ### Hiểu người dùng & Tình huống sử dụng (User Needs & Use Cases)

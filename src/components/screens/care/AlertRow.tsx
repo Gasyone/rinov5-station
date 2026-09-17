@@ -17,6 +17,10 @@ import { getProductSku } from './renewal/renewalHelpers'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareItemsDialog } from './StudentCareItemsDialog'
 import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
+import {
+  resolveStudentPlacementStatus,
+  PLACEMENT_STATUS_META,
+} from './class-card/studentCareClassCardHelpers'
 
 export interface AlertRowProps {
   cls: StudentCareAlert
@@ -263,7 +267,23 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       {/* Lớp học */}
       <td className="py-1.5 px-2 min-w-[165px]">
         {(() => {
-          const studentInfo = mockStudents.find((s) => s.id === cls.studentId);
+          const studentInfo = mockStudents.find(
+            (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
+          )
+          const placementStatus = resolveStudentPlacementStatus(cls, studentInfo)
+          const isHoldingClass =
+            placementStatus === 'reserve' &&
+            Boolean(cls.classCode && cls.classCode !== '-') &&
+            !cls.studentNote?.toLowerCase().includes('thoát lớp')
+
+          const hasClassCode = Boolean(cls.classCode && cls.classCode !== '-')
+          const showClassHover =
+            hasClassCode &&
+            (placementStatus === 'active' ||
+              placementStatus === 'draft_class' ||
+              placementStatus === 'awaiting_opening' ||
+              placementStatus === 'trial' ||
+              isHoldingClass)
 
           return (
             <div className="flex flex-col gap-1 text-left">
@@ -276,77 +296,34 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
 
               {/* Hàng 2: Mã lớp & Trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {(() => {
-                  const isEnrolled = cls.status === 'Đang học'
-                  // Bảo lưu nhưng không thoát lớp (như Hoàng Bảo Nam) giữ mã lớp
-                  const isReservedHoldingClass =
-                    (cls.status === 'Bảo lưu' || studentInfo?.status === 'reserve') &&
-                    Boolean(cls.classCode) &&
-                    !cls.studentNote?.toLowerCase().includes('thoát lớp')
-
-                  if (isEnrolled || isReservedHoldingClass) {
-                    return (
-                      <>
-                        <span onClick={(e) => e.stopPropagation()}>
-                          <ClassCodeHoverCell
-                            classCode={cls.classCode}
-                            subject={cls.subject}
-                            level={cls.level}
-                            teacherCode={cls.teacherCode}
-                            schedule={cls.schedule}
-                          />
-                        </span>
-                        <StatusBadge
-                          status={isEnrolled ? 'dang_hoc' : 'reserve'}
-                          label={isEnrolled ? 'Đang học' : 'Bảo lưu'}
-                          className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
-                        />
-                      </>
-                    )
-                  }
-
-                  // Còn lại: chỉ hiển thị badge trạng thái (không kèm mã lớp)
-                  if (cls.status === 'Chờ chuyển lớp' || studentInfo?.status === 'pending_transfer') {
-                    return (
-                      <StatusBadge
-                        status="pending_transfer"
-                        label="Chờ ghép lớp mới"
-                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
-                      />
-                    )
-                  }
-
-                  if (cls.status === 'Bảo lưu' || studentInfo?.status === 'reserve') {
-                    return (
-                      <StatusBadge
-                        status="reserve"
-                        label="Bảo lưu"
-                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
-                      />
-                    )
-                  }
-
-                  if (cls.status === 'Hết buổi') {
-                    return (
-                      <StatusBadge
-                        status="session_ended"
-                        label="Hết buổi"
-                        className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
-                      />
-                    )
-                  }
-
-                  return (
-                    <StatusBadge
-                      status="wait_for_assignment"
-                      label="Chờ ghép lớp"
-                      className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                {showClassHover ? (
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <ClassCodeHoverCell
+                      classCode={cls.classCode}
+                      subject={cls.subject}
+                      level={cls.level}
+                      teacherCode={cls.teacherCode}
+                      schedule={cls.schedule}
                     />
-                  )
-                })()}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {hasClassCode ? cls.classCode : 'Chưa có mã lớp'}
+                  </span>
+                )}
+
+                <StatusBadge
+                  status={placementStatus}
+                  label={
+                    isHoldingClass
+                      ? 'Bảo lưu (Giữ lớp)'
+                      : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
+                  }
+                  className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                />
               </div>
             </div>
-          );
+          )
         })()}
       </td>
 

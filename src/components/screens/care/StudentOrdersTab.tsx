@@ -75,16 +75,26 @@ export function StudentOrdersTab({
     return [...customDraftOrders, ...nonDuplicatedInitial]
   }, [customDraftOrders, initialOrders])
 
-  // Có đơn hàng của con khác trong gia đình
+  // Có đơn hàng của con khác trong gia đình hoặc đơn có sản phẩm của con khác
   const hasOtherChildrenOrders = useMemo(() => {
-    return orders.some((o) => o.isOtherChild)
-  }, [orders])
+    return orders.some(
+      (o) =>
+        o.isOtherChild ||
+        o.detailedItems?.some(
+          (item) =>
+            item.studentName &&
+            studentName &&
+            item.studentName.trim().toLowerCase() !== studentName.trim().toLowerCase()
+        )
+    )
+  }, [orders, studentName])
 
   // Tự động tích chọn nếu bé hiện tại không có đơn riêng nhưng có đơn của con khác
   useEffect(() => {
     const ownCount = orders.filter((o) => !o.isOtherChild).length
     const siblingCount = orders.filter((o) => o.isOtherChild).length
     if (ownCount === 0 && siblingCount > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowOtherChildrenOrders(true)
     }
   }, [orders])
@@ -95,7 +105,7 @@ export function StudentOrdersTab({
   }, [orders, showOtherChildrenOrders])
 
   // Không có đơn hàng nháp trong hệ thống Rinov5
-  const isDraftOrder = useCallback((_order: DetailedOrder): boolean => false, [])
+  const isDraftOrder = useCallback((): boolean => false, [])
 
   const isCurrentPackageOrder = useCallback(
     (order: DetailedOrder): boolean => {

@@ -2,81 +2,39 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  History,
   ChevronDown,
   ChevronUp,
-  ArrowRightLeft,
-  ArrowLeftRight,
-  Snowflake,
-  UserX,
-  FileText,
-  Search,
-  Check,
   BookOpen,
   Calendar,
   GraduationCap,
-  Building2,
-  Clock,
-  Award,
+  History,
   Headphones,
-  Users,
-  RotateCcw,
-  MoreVertical,
-  CalendarOff,
-  UserPlus,
-  ExternalLink,
+  ArrowLeftRight,
+  Search,
+  Check,
+  Package,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
-import { PersonnelHoverCard, AppAvatar, StatusBadge, type PersonnelItem } from '@/components/shared'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { PersonnelHoverCard, StatusBadge, AppAvatar, type PersonnelItem } from '@/components/shared'
+import { mockStudents } from '@/mocks/students'
 import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
-import { SyllabusProfileHoverCard } from '@/components/screens/classes/SyllabusProfileHoverCard'
 import { StudentCareEarlyReturnDialog } from './StudentCareEarlyReturnDialog'
+import { defaultCSStaffList, type CSStaffMember, type SimulatedPackage } from './studentCareDetailTypes'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { type SimulatedPackage, type CSStaffMember, defaultCSStaffList } from './studentCareDetailTypes'
-import { type StudentCareAlert } from '@/mocks/careAlerts'
 import { cn } from '@/lib/utils'
 
-interface StudentCareActiveClassCardProps {
-  pkg: SimulatedPackage
-  visiblePackages: SimulatedPackage[]
-  selectedPackageId: string
-  setSelectedPackageId: (id: string) => void
-  currentBranchName: string
-  pkgIsEnglish: boolean
-  student?: StudentCareAlert | null
-  onOpenLeaveReserveDialog?: () => void
-  onOpenEarlyReturnDialog?: () => void
-  onCreateLeaveReserve?: (type: 'off' | 'reservation') => void
-  assignedCS?: string
-  onAssignedCSChange?: (csName: string) => void
-  staffInfo?: {
-    cs: {
-      id: string
-      name: string
-      role: string
-      phone?: string
-      email?: string
-      avatar: string
-    }
-    teachers: Array<{
-      id: string
-      name: string
-      role: string
-      phone?: string
-      email?: string
-      avatar: string
-    }>
-  }
-}
+import {
+  resolveStudentPlacementStatus,
+  shouldShowClass3Columns,
+} from './class-card/studentCareClassCardHelpers'
+import { StudentCareClassStatusBanner } from './class-card/StudentCareClassStatusBanner'
+import { StudentCareClassActionMenu } from './class-card/StudentCareClassActionMenu'
+import { StudentCareClassExpandedInfo } from './class-card/StudentCareClassExpandedInfo'
+import type { StudentCareActiveClassCardProps } from './class-card/studentCareClassCardTypes'
+
+export type { StudentCareActiveClassCardProps }
 
 export function StudentCareActiveClassCard({
   pkg,
@@ -92,12 +50,39 @@ export function StudentCareActiveClassCard({
   onOpenLeaveReserveDialog,
   onOpenEarlyReturnDialog,
   onCreateLeaveReserve,
+  isRenewal = false,
 }: StudentCareActiveClassCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [selectedCSName, setSelectedCSName] = useState<string | null>(null)
   const [isCsPopoverOpen, setIsCsPopoverOpen] = useState(false)
   const [csSearchQuery, setCsSearchQuery] = useState('')
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+  const [isPackageDropdownOpen, setIsPackageDropdownOpen] = useState(false)
+
+  // Reset selectedCSName khi chuyển học viên
+  const [prevStudentId, setPrevStudentId] = useState<string | null>(student?.studentId || null)
+  if (student && student.studentId !== prevStudentId) {
+    setPrevStudentId(student.studentId)
+    setSelectedCSName(null)
+  }
+
+  // Tra cứu dữ liệu gốc từ mockStudents để đồng bộ 100% với màn /app/class_placement
+  const matchedMockStudent = useMemo(() => {
+    if (!student) return null
+    return (
+      mockStudents.find(
+        (s) =>
+          s.id === student.studentId ||
+          s.id === student.id ||
+          s.name.toLowerCase() === student.studentName.toLowerCase()
+      ) || null
+    )
+  }, [student])
+
+  // Xác định chuẩn xác 1 trong 11 trạng thái học viên
+  const placementStatus = useMemo(() => {
+    return resolveStudentPlacementStatus(student, matchedMockStudent, pkg)
+  }, [student, matchedMockStudent, pkg])
 
   const assignedTargetClass = student?.targetClass || student?.destinationClass || null
 
@@ -112,10 +97,17 @@ export function StudentCareActiveClassCard({
   const effectiveCSName = selectedCSName || assignedCS || student?.csStaff || 'Trần Thị Mai'
 
   const currentCSObj = useMemo(() => {
-    return (
-      defaultCSStaffList.find((c) => c.name.toLowerCase() === effectiveCSName.toLowerCase()) ||
-      defaultCSStaffList[0]
-    )
+    const matched = defaultCSStaffList.find((c) => c.name.toLowerCase() === effectiveCSName.toLowerCase())
+    if (matched) return matched
+    return {
+      id: `cs-${effectiveCSName.replace(/\s+/g, '-').toLowerCase()}`,
+      name: effectiveCSName,
+      code: `EMP-CS-${String(Math.abs(effectiveCSName.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % 900 + 100)}`,
+      role: 'Chuyên viên CSKH',
+      phone: '0901 112 233',
+      email: `${effectiveCSName.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+      avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(effectiveCSName)}`,
+    }
   }, [effectiveCSName])
 
   const filteredCsList = useMemo(() => {
@@ -146,35 +138,34 @@ export function StudentCareActiveClassCard({
     onAssignedCSChange?.(staff.name)
     setIsCsPopoverOpen(false)
     setCsSearchQuery('')
-    toast.success(`Đã đổi nhân viên phụ trách CS sang: ${staff.name}`)
+    toast.success(`Đã gán học viên cho nhân sự CS: ${staff.name}`)
   }
 
-  // Danh sách giáo viên của lớp (lấy từ GV của lớp: staffInfo.teachers)
+  // Danh sách giáo viên của lớp - Đồng bộ 100% với cột Phụ trách GV ở danh sách ngoài
   const classTeachers = useMemo(() => {
     if (staffInfo?.teachers && staffInfo.teachers.length > 0) {
       return staffInfo.teachers
     }
-    return [
-      {
-        id: 't-1',
-        name: pkgIsEnglish ? 'Sarah Smith' : 'Hoàng Thị Mai',
-        role: pkgIsEnglish ? 'Giáo viên Bản ngữ' : 'Giáo viên Toán tư duy',
+    const rawTeacherCodes = [
+      ...new Set([
+        ...(student?.teacherCode ? student.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+        ...(student?.substituteTeacher ? student.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+      ]),
+    ].filter((t) => t && t !== '-')
+
+    if (rawTeacherCodes.length > 0) {
+      return rawTeacherCodes.map((code, idx) => ({
+        id: `t-${idx}-${code}`,
+        name: code,
+        role: code.toLowerCase().includes('sub') ? 'Trợ giảng (TA)' : 'Giáo viên Chủ nhiệm',
         phone: '0912 345 678',
-        email: 'giaovien@rinoedu.vn',
-        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${pkgIsEnglish ? 'Sarah' : 'ThiMai'}`,
-      },
-      {
-        id: 't-2',
-        name: 'Hoàng Anh',
-        role: 'Trợ giảng (TA)',
-        phone: '0934 567 890',
-        email: 'trogiang@rinoedu.vn',
-        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=HoangAnh',
-      },
-    ]
-  }, [staffInfo, pkgIsEnglish])
+        email: `${code.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${code}`,
+      }))
+    }
 
-
+    return []
+  }, [staffInfo, student])
 
   const startDateDisplay = pkg.startDate
     ? (pkg.startDate.includes('-') ? pkg.startDate.split('-').reverse().join('/') : pkg.startDate)
@@ -184,54 +175,16 @@ export function StudentCareActiveClassCard({
   const remainingSessions = pkg.remainingSessions ?? 30
   const attendedSessions = Math.max(0, totalSessions - remainingSessions)
 
-  // Xác định trạng thái tự động dựa trên dữ liệu mẫu học viên
-  const classStatus: 'da_ghep' | 'chua_ghep' | 'bao_luu' | 'chuyen_lop' = (() => {
-    if (student) {
-      if (
-        student.status === 'Chờ chuyển lớp' ||
-        (student.status as string) === 'pending_transfer' ||
-        student.realtimeStatus === 'Chờ chuyển lớp'
-      ) {
-        return 'chuyen_lop'
-      }
-      if (
-        (student.status === 'Hết buổi' && student.careAlert?.toLowerCase().includes('bảo lưu')) ||
-        (student.status as string) === 'reserve' ||
-        (student.status as string) === 'Bảo lưu' ||
-        (student.realtimeStatus as string) === 'Bảo lưu' ||
-        Boolean(student.careAlert?.toLowerCase().includes('bảo lưu'))
-      ) {
-        return 'bao_luu'
-      }
-      if (
-        (student.status as string) === 'Chưa ghép lớp' ||
-        (student.status as string) === 'wait_for_assignment' ||
-        (student.status as string) === 'pending_assignment' ||
-        (student.realtimeStatus as string) === 'Chưa ghép lớp' ||
-        !student.classCode ||
-        student.classCode === '-'
-      ) {
-        return 'chua_ghep'
-      }
-    }
-    if (pkg.status === 'pending' || !pkg.classCode) {
-      return 'chua_ghep'
-    }
-    return 'da_ghep'
-  })()
-
   // Xác định trường hợp bảo lưu nhưng không thoát lớp (giữ lớp)
-  const isHoldingClass = (() => {
-    if (classStatus !== 'bao_luu') return false
-    // Hoàng Bảo Nam (s-baonam / bao-nam) bảo lưu nhưng không thoát lớp (giữ lớp LD_TOAN_00010)
+  const isHoldingClass = useMemo(() => {
+    if (placementStatus !== 'reserve') return false
     if (student?.studentId === 's-baonam' || student?.id === 'bao-nam') return true
     if (student?.studentNote?.toLowerCase().includes('thoát lớp')) return false
     return Boolean(student?.classCode && student?.classCode !== '-')
-  })()
+  }, [placementStatus, student])
 
-  // Phần thông tin lớp chỉ hiển thị khi đang ghép lớp, còn lại là thông tin của badge.
-  // 2 cái không đồng thời xuất hiện, trừ khi bảo lưu nhưng không thoát lớp.
-  const showClassInfo = classStatus === 'da_ghep' || isHoldingClass
+  // Kiểm tra hiển thị 3 cột thông tin lớp (Mã lớp, Lịch học, GV)
+  const showClassInfo = shouldShowClass3Columns(placementStatus, isHoldingClass)
 
   const classRecordForHover: ClassRecord = {
     id: pkg.id,
@@ -284,286 +237,207 @@ export function StudentCareActiveClassCard({
 
   return (
     <div className="bg-card dark:bg-zinc-900 border border-border/70 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
-      {/* Header bar: Chương trình selector + Nút Thu gọn/Mở rộng */}
-      <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-2.5">
-        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-          {displayPackages.map((pItem) => {
-            const isSelected = pItem.id === selectedPackageId
-            const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
-            const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
-              ? 'Tiếng Anh'
-              : /toán|math|LD_TOAN/i.test(text)
-                ? 'Toán tư duy'
-                : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
-            const isPkgActive = pItem.status === 'active'
+      {/* Header bar: Chương trình selector + Danh sách mở rộng chọn gói + Tên gói hiện tại + Menu Thao tác */}
+      <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex flex-col gap-2 mb-2.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+            {displayPackages.map((pItem) => {
+              const isSelected = pItem.id === selectedPackageId
+              const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
+              const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
+                ? 'Tiếng Anh'
+                : /toán|math|LD_TOAN/i.test(text)
+                  ? 'Toán tư duy'
+                  : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
+              const isPkgActive = pItem.status === 'active'
 
-            return (
-              <button
-                key={pItem.id}
-                type="button"
-                onClick={() => setSelectedPackageId(pItem.id)}
-                className={cn(
-                  'h-8 px-3.5 py-1 text-xs font-semibold rounded-lg transition-all inline-flex justify-center items-center text-center cursor-pointer select-none border shrink-0',
-                  isSelected
-                    ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
-                    : isPkgActive
-                      ? 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
-                      : 'bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30'
-                )}
-                title={pItem.packageName}
-              >
-                <span>{shortSubject}</span>
-              </button>
-            )
-          })}
+              return (
+                <Popover
+                  key={pItem.id}
+                  open={isPackageDropdownOpen && isSelected}
+                  onOpenChange={(open) => {
+                    if (isSelected) {
+                      setIsPackageDropdownOpen(open)
+                    } else {
+                      setSelectedPackageId(pItem.id)
+                    }
+                  }}
+                >
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isSelected) {
+                          setSelectedPackageId(pItem.id)
+                        } else {
+                          setIsPackageDropdownOpen((prev) => !prev)
+                        }
+                      }}
+                      className={cn(
+                        'h-8 px-3 py-1 text-xs font-semibold rounded-lg transition-all inline-flex justify-center items-center gap-1.5 text-center cursor-pointer select-none border shrink-0',
+                        isSelected
+                          ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
+                          : isPkgActive
+                            ? 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
+                            : 'bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30'
+                      )}
+                      title={`Bấm để mở rộng danh sách gói và lọc theo gói môn ${shortSubject}`}
+                    >
+                      <span>{shortSubject}</span>
+                      <ChevronDown
+                        className={cn(
+                          'h-3.5 w-3.5 transition-transform duration-200 opacity-80',
+                          isPackageDropdownOpen && isSelected ? 'rotate-180' : ''
+                        )}
+                      />
+                    </button>
+                  </PopoverTrigger>
+
+                  <PopoverContent
+                    align="start"
+                    className="w-80 sm:w-96 p-2 space-y-1.5 z-50 shadow-lg bg-popover text-popover-foreground rounded-xl border border-border"
+                  >
+                    <div className="px-2 py-1.5 border-b border-border/50 flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Package className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                        <span>Danh sách gói ({shortSubject})</span>
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/80 normal-case font-normal">
+                        Chọn để lọc dữ liệu
+                      </span>
+                    </div>
+
+                    <div className="max-h-60 overflow-y-auto space-y-1 pr-0.5">
+                      {visiblePackages.map((pkgItem) => {
+                        const isCurrentPkg = pkgItem.id === selectedPackageId
+                        return (
+                          <div
+                            key={pkgItem.id}
+                            onClick={() => {
+                              setSelectedPackageId(pkgItem.id)
+                              setIsPackageDropdownOpen(false)
+                              toast.success(`Đã chọn lọc theo gói: ${pkgItem.packageName}`)
+                            }}
+                            className={cn(
+                              'flex items-center justify-between gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors',
+                              isCurrentPkg
+                                ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-900 dark:text-sky-100 font-medium border border-sky-200 dark:border-sky-800/60'
+                                : 'hover:bg-muted/60 text-foreground border border-transparent'
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold truncate block text-xs">
+                                  {pkgItem.packageName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+                                <span>
+                                  {Math.max(0, (pkgItem.totalSessions || 0) - (pkgItem.remainingSessions || 0))}/{pkgItem.totalSessions || 0} buổi
+                                </span>
+                                <span>•</span>
+                                <span>Còn {pkgItem.remainingSessions || 0} buổi</span>
+                                <span>•</span>
+                                <span>Hạn: {pkgItem.endDate || '—'}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {pkgItem.status === 'active' ? (
+                                <StatusBadge status="active" label="Đang học" className="text-[9px] py-0 px-1.5 h-4" />
+                              ) : (
+                                <StatusBadge status="expired" label="Hết buổi" className="text-[9px] py-0 px-1.5 h-4" />
+                              )}
+                              {isCurrentPkg && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 ml-0.5" />}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )
+            })}
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Nút Thu gọn / Mở rộng */}
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium py-1 px-1.5 rounded-md hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
+              title={isExpanded ? 'Thu gọn thông tin' : 'Mở rộng xem thêm thông tin'}
+            >
+              <span>{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
+              {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </button>
+
+            {/* Menu Action Lớp học theo 11 trạng thái học viên */}
+            <StudentCareClassActionMenu
+              placementStatus={placementStatus}
+              onOpenPlacementTab={handleOpenPlacementTab}
+              onCreateLeaveReserve={onCreateLeaveReserve}
+              onOpenEarlyReturnDialog={() => {
+                if (onOpenEarlyReturnDialog) {
+                  onOpenEarlyReturnDialog()
+                } else {
+                  setIsEarlyReturnOpen(true)
+                }
+              }}
+              onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Nút Thu gọn / Mở rộng (bỏ viền, bỏ nền) */}
-          <button
-            type="button"
-            onClick={() => setIsExpanded((prev) => !prev)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium py-1 px-1.5 rounded-md hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
-            title={isExpanded ? 'Thu gọn thông tin' : 'Mở rộng xem thêm thông tin'}
-          >
-            <span>{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
-            {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          </button>
-
-          {/* Menu Action Lớp học - Thay đổi động theo trạng thái lớp học */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground rounded-md bg-background hover:bg-muted/60 border-border/70 cursor-pointer shadow-3xs"
-                title="Danh sách thao tác học vụ"
-              >
-                <MoreVertical className="h-3.5 w-3.5" />
-                <span>Thao tác</span>
-                <ChevronDown className="h-3 w-3 opacity-60" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {/* 1. Trạng thái CHỜ XẾP LỚP / CHƯA GHÉP LỚP */}
-              {classStatus === 'chua_ghep' && (
-                <>
-                  <DropdownMenuItem
-                    onClick={handleOpenPlacementTab}
-                    className="cursor-pointer gap-2 font-medium text-indigo-600 dark:text-indigo-400 focus:text-indigo-700"
-                  >
-                    <UserPlus className="h-4 w-4 text-indigo-500 shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span>Ghép lớp</span>
-                      <span className="text-[10px] text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
-                    </div>
-                    <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onCreateLeaveReserve?.('reservation')}
-                    className="cursor-pointer gap-2"
-                  >
-                    <Snowflake className="h-4 w-4 text-sky-500 shrink-0" />
-                    <span>Bảo lưu</span>
-                  </DropdownMenuItem>
-                </>
-              )}
-
-              {/* 2. Trạng thái ĐANG CHUYỂN LỚP */}
-              {classStatus === 'chuyen_lop' && (
-                <>
-                  <DropdownMenuItem
-                    onClick={handleOpenPlacementTab}
-                    className="cursor-pointer gap-2 font-medium text-sky-600 dark:text-sky-400 focus:text-sky-700"
-                  >
-                    <ArrowRightLeft className="h-4 w-4 text-sky-500 shrink-0" />
-                    <div className="flex flex-col min-w-0">
-                      <span>Ghép lớp đích</span>
-                      <span className="text-[10px] text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
-                    </div>
-                    <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onCreateLeaveReserve?.('reservation')}
-                    className="cursor-pointer gap-2"
-                  >
-                    <Snowflake className="h-4 w-4 text-sky-500 shrink-0" />
-                    <span>Bảo lưu</span>
-                  </DropdownMenuItem>
-                </>
-              )}
-
-              {/* 3. Trạng thái ĐANG BẢO LƯU */}
-              {classStatus === 'bao_luu' && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (onOpenEarlyReturnDialog) {
-                        onOpenEarlyReturnDialog()
-                      } else {
-                        setIsEarlyReturnOpen(true)
-                      }
-                    }}
-                    className="cursor-pointer gap-2 font-medium text-emerald-600 dark:text-emerald-400 focus:text-emerald-700"
-                  >
-                    <RotateCcw className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Đi học lại</span>
-                  </DropdownMenuItem>
-                  {onOpenLeaveReserveDialog && (
-                    <DropdownMenuItem
-                      onClick={onOpenLeaveReserveDialog}
-                      className="cursor-pointer gap-2"
-                    >
-                      <FileText className="h-4 w-4 text-amber-500 shrink-0" />
-                      <span>Xem đơn bảo lưu</span>
-                    </DropdownMenuItem>
-                  )}
-                </>
-              )}
-
-              {/* 4. Trạng thái ĐANG HỌC BÌNH THƯỜNG */}
-              {classStatus === 'da_ghep' && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => onCreateLeaveReserve?.('off')}
-                    className="cursor-pointer gap-2"
-                  >
-                    <CalendarOff className="h-4 w-4 text-amber-500 shrink-0" />
-                    <span>Nghỉ phép</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onCreateLeaveReserve?.('reservation')}
-                    className="cursor-pointer gap-2"
-                  >
-                    <Snowflake className="h-4 w-4 text-sky-500 shrink-0" />
-                    <span>Bảo lưu</span>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Dòng hiển thị tên gói hiện tại ở dưới Toán tư duy */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5 border-t border-border/40 flex-wrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Package className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <span className="text-[11px] text-muted-foreground font-medium shrink-0">Gói hiện tại:</span>
+            <span className="font-semibold text-foreground truncate max-w-[280px] sm:max-w-md" title={pkg.packageName}>
+              {pkg.packageName}
+            </span>
+          </div>
+          <span className="text-border/70">•</span>
+          <span className="text-[11px] text-muted-foreground shrink-0">
+            {attendedSessions}/{totalSessions} buổi (còn {remainingSessions} buổi)
+          </span>
+          <span className="text-border/70">•</span>
+          <span className="text-[11px] text-muted-foreground shrink-0">
+            Hạn: {endDateDisplay}
+          </span>
+          {pkg.status === 'active' ? (
+            <StatusBadge status="active" label="Đang học" className="text-[9.5px] py-0 px-1.5 h-4 shrink-0" />
+          ) : (
+            <StatusBadge status="expired" label="Hết buổi" className="text-[9.5px] py-0 px-1.5 h-4 shrink-0" />
+          )}
         </div>
       </div>
 
-      {/* THÔNG TIN LỚP DẠNG THÔNG TIN PHẲNG (Khi không ở trạng thái đang ghép lớp bình thường) */}
-      {classStatus === 'chuyen_lop' && (
-        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="p-1 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400">
-              <ArrowRightLeft className="h-3.5 w-3.5" />
-            </span>
-            <span className="font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wide text-xs">
-              Tiến trình chuyển lớp đang diễn ra
-            </span>
-            <StatusBadge
-              status={assignedTargetClass ? 'dang_hoc' : 'wait_for_assignment'}
-              label={assignedTargetClass ? 'Đã xếp lớp đích' : 'Chờ xếp lớp'}
-              className="text-xs py-0 px-1.5"
-            />
-          </div>
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground flex-wrap pt-0.5 text-center">
-            <div>
-              <span>Lớp nguồn: </span>
-              <strong className="font-semibold text-foreground">{student?.classCode || classCode}</strong>
-              <span className="mx-1.5 text-sky-500">➔</span>
-              <span>Lớp đích: </span>
-              <strong className={assignedTargetClass ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'font-semibold text-foreground'}>
-                {assignedTargetClass || student?.targetClass || student?.destinationClass || 'Chưa ghép lớp'}
-              </strong>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Cụm Banner / Thông tin trạng thái đặc thù */}
+      <StudentCareClassStatusBanner
+        placementStatus={placementStatus}
+        student={student}
+        mockStudent={matchedMockStudent}
+        pkg={pkg}
+        pkgIsEnglish={pkgIsEnglish}
+        classCode={classCode}
+        assignedTargetClass={assignedTargetClass}
+        isHoldingClass={isHoldingClass}
+        onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
+        onOpenEarlyReturnDialog={() => {
+          if (onOpenEarlyReturnDialog) {
+            onOpenEarlyReturnDialog()
+          } else {
+            setIsEarlyReturnOpen(true)
+          }
+        }}
+        onOpenPlacementTab={handleOpenPlacementTab}
+      />
 
-      {classStatus === 'bao_luu' && (
-        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 text-left">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                <Snowflake className="h-3.5 w-3.5" />
-              </span>
-              <span className="font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide text-xs">
-                Khóa học đang bảo lưu
-              </span>
-              {isHoldingClass && (
-                <StatusBadge
-                  status="reserve"
-                  label="Bảo lưu giữ lớp"
-                  className="text-xs py-0 px-1.5"
-                />
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              Ngày học lại dự kiến: <strong className="font-semibold text-foreground">{isHoldingClass ? '16/09/2026' : '01/08/2026'}</strong>
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground flex-wrap pt-0.5">
-            <span>
-              Thời gian: <strong className="font-semibold text-foreground">{isHoldingClass ? '15/06/2026 ➔ 15/09/2026' : '01/06/2026 ➔ 31/07/2026'}</strong> ({isHoldingClass ? '3 tháng' : '2 tháng'})
-            </span>
-            <div className="flex items-center gap-2 ml-auto">
-              {onOpenLeaveReserveDialog && (
-                <button
-                  type="button"
-                  onClick={onOpenLeaveReserveDialog}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  <span>Xem đơn bảo lưu</span>
-                </button>
-              )}
-              {onOpenLeaveReserveDialog && <span className="text-muted-foreground/30">•</span>}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (onOpenEarlyReturnDialog) {
-                    onOpenEarlyReturnDialog()
-                  } else {
-                    setIsEarlyReturnOpen(true)
-                  }
-                }}
-                className="h-6 px-2 text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-3xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1 text-sky-600 dark:text-sky-400" />
-                <span>Đi học lại</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {classStatus === 'chua_ghep' && (
-        <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <UserX className="h-3.5 w-3.5" />
-            </span>
-            <span className="font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-wide text-xs">
-              {assignedTargetClass ? 'Học viên đã được ghép lớp' : 'Học viên chưa ghép lớp'}
-            </span>
-            <StatusBadge
-              status={assignedTargetClass ? 'dang_hoc' : 'wait_for_assignment'}
-              label={assignedTargetClass ? 'Đã xếp lớp' : 'Chờ xếp lớp'}
-              className="text-xs py-0 px-1.5"
-            />
-          </div>
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-0.5 text-center flex-wrap">
-            <div>
-              <span>{assignedTargetClass ? 'Lớp tiếp nhận: ' : 'Gói đăng ký: '}</span>
-              <strong className={assignedTargetClass ? 'font-semibold text-emerald-600 dark:text-emerald-400' : 'font-semibold text-foreground'}>
-                {assignedTargetClass || pkg.packageName || 'Gói Tiếng Anh Standard 48 buổi'}
-              </strong>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* THÔNG TIN HIỂN THỊ CHÍNH (3 Cột: Mã lớp, Lịch, Giáo viên - Chỉ hiển thị khi đang ghép lớp hoặc bảo lưu giữ lớp) */}
+      {/* THÔNG TIN HIỂN THỊ CHÍNH (3 Cột: Mã lớp, Lịch, Giáo viên) */}
       {showClassInfo && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-          {/* Cột 1: Mã lớp (hover popover) */}
+          {/* Cột 1: Mã lớp */}
           <div className="space-y-0.5 min-w-0">
             <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
               <BookOpen className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
@@ -577,8 +451,17 @@ export function StudentCareActiveClassCard({
                 teacherCode={pkg.teacherCode || 'GV'}
                 schedule={pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
               />
-              {classStatus === 'da_ghep' && (
-                <StatusBadge status="dang_hoc" label="Đang học" className="text-[9.5px] py-0 px-1.5" />
+              {placementStatus === 'active' && (
+                <StatusBadge status="active" label="Đang học" className="text-[9.5px] py-0 px-1.5" />
+              )}
+              {placementStatus === 'draft_class' && (
+                <StatusBadge status="draft_class" label="Lớp nháp" className="text-[9.5px] py-0 px-1.5" />
+              )}
+              {placementStatus === 'awaiting_opening' && (
+                <StatusBadge status="awaiting_opening" label="Chờ khai giảng" className="text-[9.5px] py-0 px-1.5" />
+              )}
+              {placementStatus === 'trial' && (
+                <StatusBadge status="trial" label="Học thử" className="text-[9.5px] py-0 px-1.5" />
               )}
               {isHoldingClass && (
                 <StatusBadge status="reserve" label="Bảo lưu (Giữ lớp)" className="text-[9.5px] py-0 px-1.5" />
@@ -597,105 +480,8 @@ export function StudentCareActiveClassCard({
             </p>
           </div>
 
-          {/* Cột 3: Giáo viên (hover popover) */}
-          <div className="space-y-0.5 min-w-0">
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-                <GraduationCap className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>Giáo viên</span>
-              </span>
-              <ClassTeacherHistoryPopover
-                trigger={
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium cursor-pointer transition-colors"
-                    title="Lịch sử đổi giáo viên (3)"
-                  >
-                    <History className="h-3 w-3 text-amber-500" />
-                    <span className="text-xs font-semibold">(3)</span>
-                  </button>
-                }
-              />
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-medium text-foreground flex-wrap">
-              {staffInfo && staffInfo.teachers.length > 0 ? (
-                staffInfo.teachers.map((teacher, idx) => {
-                  const cleanedTeacherName = teacher.name.replace(/^GV\.?\s*/i, '')
-                  return (
-                    <React.Fragment key={teacher.id}>
-                      <PersonnelHoverCard person={{ ...teacher, name: cleanedTeacherName }}>
-                        <span className="text-foreground font-medium hover:underline cursor-pointer">
-                          {cleanedTeacherName}
-                        </span>
-                      </PersonnelHoverCard>
-                      {idx < staffInfo.teachers.length - 1 && <span className="text-muted-foreground">,</span>}
-                    </React.Fragment>
-                  )
-                })
-              ) : (
-                <span className="text-muted-foreground font-normal">Chưa phân công</span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PHẦN THÔNG TIN MỞ RỘNG BÊN DƯỚI (Khi bấm Mở rộng: Cơ sở, Thời hạn, Trình độ & Phụ trách CS, Phụ trách GV) */}
-      {isExpanded && (
-        <div className="pt-2 mt-1 space-y-2.5 text-left animate-in fade-in-50 duration-200">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Cột 1: Cơ sở */}
-            <div className="space-y-0.5 min-w-0">
-              <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>Cơ sở</span>
-              </span>
-              <p className="text-xs font-medium text-foreground truncate">
-                {currentBranchName}
-              </p>
-            </div>
-
-            {/* Cột 2: Thời hạn */}
-            <div className="space-y-0.5 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                  <span>Thời hạn</span>
-                </span>
-                <span className="text-xs text-muted-foreground font-normal">
-                  {attendedSessions}/{totalSessions} buổi
-                </span>
-              </div>
-              <p className="text-xs font-medium text-foreground truncate">
-                <span>{startDateDisplay} - {endDateDisplay}</span>
-              </p>
-            </div>
-
-            {/* Cột 3: Trình độ */}
-            <div className="space-y-0.5 min-w-0">
-              <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-                <Award className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>Trình độ</span>
-              </span>
-              <div className="flex items-center gap-1.5 text-xs text-foreground flex-wrap font-normal">
-                <SyllabusProfileHoverCard cls={classRecordForHover}>
-                  <span className="hover:underline cursor-pointer font-medium text-foreground">
-                    {pkgIsEnglish ? 'IELTS Junior v2.1' : 'Toán Tư Duy STEM Rino'}
-                  </span>
-                </SyllabusProfileHoverCard>
-                <span className="text-border/80 font-normal">•</span>
-                <span className="font-medium text-foreground">
-                  {pkg.level && pkg.subLevel
-                    ? (pkg.subLevel.includes(pkg.level) ? pkg.subLevel : `${pkg.level} - ${pkg.subLevel}`)
-                    : (pkg.subLevel || pkg.level || 'Level 4 - A')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Dòng Phụ trách CS và Phụ trách GV ở dưới cùng */}
-          <div className="pt-2.5 border-t border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Cột 1: Phụ trách CS */}
+          {/* Cột 3: Phụ trách CS (nếu là Tái phí) HOẶC Giáo viên (nếu là màn khác) */}
+          {isRenewal ? (
             <div className="space-y-0.5 min-w-0">
               <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
                 <Headphones className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
@@ -708,7 +494,7 @@ export function StudentCareActiveClassCard({
                   </span>
                 </PersonnelHoverCard>
 
-                {/* Popover đổi người phụ trách CS */}
+                {/* Popover đổi nhân sự CS */}
                 <Popover open={isCsPopoverOpen} onOpenChange={setIsCsPopoverOpen}>
                   <PopoverTrigger asChild>
                     <button
@@ -784,33 +570,38 @@ export function StudentCareActiveClassCard({
                 </Popover>
               </div>
             </div>
-
-            {/* Cột 2: Phụ trách GV (Tất cả giáo viên của lớp cùng 1 dòng, không cần icon đổi) */}
-            <div className="space-y-0.5 min-w-0 sm:col-span-2">
-              <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-                <span>Phụ trách GV</span>
-              </span>
-              <div className="flex items-center gap-1 text-xs font-medium text-foreground flex-wrap">
+          ) : (
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                  <span>Giáo viên</span>
+                </span>
+                <ClassTeacherHistoryPopover
+                  trigger={
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium cursor-pointer transition-colors"
+                      title="Lịch sử đổi giáo viên (3)"
+                    >
+                      <History className="h-3 w-3 text-amber-500" />
+                      <span className="text-xs font-semibold">(3)</span>
+                    </button>
+                  }
+                />
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-foreground flex-wrap">
                 {classTeachers.length > 0 ? (
                   classTeachers.map((teacher, idx) => {
-                    const cleanedName = teacher.name.replace(/^GV\.?\s*/i, '').trim()
-                    const teacherPersonnel: PersonnelItem = {
-                      id: teacher.id,
-                      name: cleanedName,
-                      role: teacher.role || 'Giáo viên phụ trách',
-                      phone: teacher.phone || '0912 345 678',
-                      email: teacher.email || 'giaovien@rinoedu.vn',
-                      avatar: teacher.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${cleanedName}`,
-                    }
+                    const displayTeacherName = teacher.name.startsWith('GV_') ? teacher.name : teacher.name.replace(/^GV\s+/i, '')
                     return (
                       <React.Fragment key={teacher.id}>
-                        <PersonnelHoverCard person={teacherPersonnel}>
-                          <span className="hover:underline cursor-pointer font-semibold text-foreground">
-                            {cleanedName}
+                        <PersonnelHoverCard person={{ ...teacher, name: displayTeacherName }}>
+                          <span className="text-foreground font-semibold hover:underline cursor-pointer">
+                            {displayTeacherName}
                           </span>
                         </PersonnelHoverCard>
-                        {idx < classTeachers.length - 1 && <span className="text-muted-foreground mr-1">,</span>}
+                        {idx < classTeachers.length - 1 && <span className="text-muted-foreground">,</span>}
                       </React.Fragment>
                     )
                   })
@@ -819,8 +610,33 @@ export function StudentCareActiveClassCard({
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
+      )}
+
+      {/* Phần thông tin mở rộng bên dưới (Cơ sở, Thời hạn, Trình độ, CS & GV) */}
+      {isExpanded && (
+        <StudentCareClassExpandedInfo
+          currentBranchName={currentBranchName}
+          attendedSessions={attendedSessions}
+          totalSessions={totalSessions}
+          startDateDisplay={startDateDisplay}
+          endDateDisplay={endDateDisplay}
+          pkg={pkg}
+          pkgIsEnglish={pkgIsEnglish}
+          classRecordForHover={classRecordForHover}
+          csPersonnelItem={csPersonnelItem}
+          currentCSObj={currentCSObj}
+          effectiveCSName={effectiveCSName}
+          filteredCsList={filteredCsList}
+          csSearchQuery={csSearchQuery}
+          setCsSearchQuery={setCsSearchQuery}
+          isCsPopoverOpen={isCsPopoverOpen}
+          setIsCsPopoverOpen={setIsCsPopoverOpen}
+          handleSelectCS={handleSelectCS}
+          classTeachers={classTeachers}
+          isRenewal={isRenewal}
+        />
       )}
 
       {/* Modal Đi học lại trước hạn */}

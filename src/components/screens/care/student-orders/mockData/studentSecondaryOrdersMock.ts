@@ -275,7 +275,7 @@ export function getSecondaryStudentOrders(studentId: string, displayStudentName:
           unitPrice: 1900000,
           subtotal: 1900000,
           isPaidConfirmed: true,
-          studentName: displayStudentName,
+          studentName: 'Lê Nguyễn Bảo Hân',
           orderType: 'Mua mới',
           durationText: '12 buổi',
           bonusText: '--',

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { Clipboard } from 'lucide-react'
+import { Clipboard, PenSquare, Sparkles } from 'lucide-react'
 import type { RosterStudent, TestScoreData } from './classesDetailTypes'
 import { getInitials, getAvatarColor } from './classesSessionDetailHelpers'
 import { getStudentNameParts } from './classesDetailHelpers'
@@ -50,6 +50,7 @@ export function ClassesTestScoreDialog({
   skill,
   scores,
   onSaveScore,
+  classLevel,
 }: ClassesTestScoreDialogProps) {
   const [prevInitialStudentId, setPrevInitialStudentId] = useState<string | null>(initialStudentId)
   const [activeStudentId, setActiveStudentId] = useState<string>(() => {
@@ -232,12 +233,25 @@ export function ClassesTestScoreDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="grid h-[90vh] max-h-[900px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1380px] rounded-2xl border bg-white dark:bg-zinc-950 shadow-xl">
+      <DialogContent className="grid h-[90vh] max-h-[900px] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1060px] rounded-2xl border bg-white dark:bg-zinc-950 shadow-xl">
         {/* Dialog Header */}
-        <DialogHeader className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between bg-white dark:bg-zinc-950">
-          <DialogTitle className="text-base font-bold text-foreground">
-            {skill} Score
-          </DialogTitle>
+        <DialogHeader className="shrink-0 border-b border-zinc-200 dark:border-zinc-800 px-6 py-3.5 bg-white dark:bg-zinc-950 flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2.5 text-left">
+            <div className="h-8 w-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50 flex items-center justify-center shrink-0">
+              <PenSquare className="h-4 w-4" />
+            </div>
+            <div>
+              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <span>{skill} Score</span>
+                <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                  {classLevel || 'Cambridge'}
+                </span>
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Đang chấm điểm cho: <strong className="text-foreground">{activeStudent?.name}</strong> ({activeStudent?.code})
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
         {/* Main Content Split: Left Sidebar (Student List) / Right Form */}
@@ -357,13 +371,13 @@ export function ClassesTestScoreDialog({
                 <div className="space-y-6 max-w-4xl">
                   {/* vocabulary */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2 dark:border-zinc-800">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    <div className="flex items-center justify-start gap-6 border-b pb-2 dark:border-zinc-800">
+                      <label className="text-xs font-bold text-foreground uppercase tracking-wider min-w-[170px] shrink-0">
                         Vocabulary<span className="text-destructive">*</span>
                       </label>
                       <div className="flex items-center gap-4">
                         {[1, 2, 3, 4, 5].map((val) => (
-                          <label key={val} className="flex items-center gap-1 text-xs font-medium cursor-pointer select-none">
+                          <label key={val} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer select-none hover:text-sky-600 transition-colors">
                             <input
                               type="radio"
                               name="vocab-rating"
@@ -400,13 +414,13 @@ export function ClassesTestScoreDialog({
 
                   {/* grammar */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2 dark:border-zinc-800">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    <div className="flex items-center justify-start gap-6 border-b pb-2 dark:border-zinc-800">
+                      <label className="text-xs font-bold text-foreground uppercase tracking-wider min-w-[170px] shrink-0">
                         Grammar<span className="text-destructive">*</span>
                       </label>
                       <div className="flex items-center gap-4">
                         {[1, 2, 3, 4, 5].map((val) => (
-                          <label key={val} className="flex items-center gap-1 text-xs font-medium cursor-pointer select-none">
+                          <label key={val} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer select-none hover:text-sky-600 transition-colors">
                             <input
                               type="radio"
                               name="grammar-rating"
@@ -443,13 +457,13 @@ export function ClassesTestScoreDialog({
 
                   {/* pronunciation */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2 dark:border-zinc-800">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    <div className="flex items-center justify-start gap-6 border-b pb-2 dark:border-zinc-800">
+                      <label className="text-xs font-bold text-foreground uppercase tracking-wider min-w-[170px] shrink-0">
                         Pronunciation<span className="text-destructive">*</span>
                       </label>
                       <div className="flex items-center gap-4">
                         {[1, 2, 3, 4, 5].map((val) => (
-                          <label key={val} className="flex items-center gap-1 text-xs font-medium cursor-pointer select-none">
+                          <label key={val} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer select-none hover:text-sky-600 transition-colors">
                             <input
                               type="radio"
                               name="pronunciation-rating"
@@ -486,13 +500,13 @@ export function ClassesTestScoreDialog({
 
                   {/* fluency and interaction */}
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b pb-2 dark:border-zinc-800">
-                      <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    <div className="flex items-center justify-start gap-6 border-b pb-2 dark:border-zinc-800">
+                      <label className="text-xs font-bold text-foreground uppercase tracking-wider min-w-[170px] shrink-0">
                         Fluency and interaction<span className="text-destructive">*</span>
                       </label>
                       <div className="flex items-center gap-4">
                         {[1, 2, 3, 4, 5].map((val) => (
-                          <label key={val} className="flex items-center gap-1 text-xs font-medium cursor-pointer select-none">
+                          <label key={val} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer select-none hover:text-sky-600 transition-colors">
                             <input
                               type="radio"
                               name="fluency-rating"
@@ -523,7 +537,7 @@ export function ClassesTestScoreDialog({
                       </div>
                       
                       {/* Suggestions list */}
-                      {showSuggestions && (
+                      {showSuggestions ? (
                         <div className="space-y-1.5 p-1 animate-fade-in">
                           <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
                             Suggestions (Based on rating)
@@ -547,6 +561,12 @@ export function ClassesTestScoreDialog({
                             ))}
                           </div>
                         </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full min-h-[110px] rounded-lg border border-dashed border-zinc-200 dark:border-zinc-800 p-4 text-center text-muted-foreground text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
+                          <Sparkles className="h-4 w-4 text-amber-500 mb-1 opacity-70" />
+                          <p className="font-semibold text-zinc-700 dark:text-zinc-300">Gợi ý từ vựng Fluency</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Chọn điểm Fluency (1 - 5) ở trên để xem các từ vựng gợi ý phù hợp.</p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -555,20 +575,25 @@ export function ClassesTestScoreDialog({
             </div>
 
             {/* Sticky Form Footer */}
-            <div className="shrink-0 sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-6 py-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-1 text-xs">
+            <div className="shrink-0 sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-6 py-3.5 flex items-center justify-between z-10">
+              <div className="flex items-center gap-2 text-xs">
                 <span className="font-semibold text-muted-foreground">{skill} Score:</span>
                 <span className={cn(
-                  "font-bold text-sm font-mono",
-                  activeScore !== null ? "text-primary text-base" : "text-zinc-400"
+                  "font-bold text-sm font-mono px-2 py-0.5 rounded bg-muted/60 border",
+                  activeScore !== null ? "text-primary border-primary/30 text-base" : "text-zinc-400 border-transparent"
                 )}>
                   {activeScore !== null ? `${activeScore}/10` : '--'}
                 </span>
+                {activeScore !== null && (
+                  <span className="text-muted-foreground text-[11px] font-normal">
+                    (Điểm trung bình rubric)
+                  </span>
+                )}
               </div>
               <Button
                 type="button"
                 onClick={handleUpdate}
-                className="bg-[#e11d48] hover:bg-[#be123c] dark:bg-rose-600 dark:hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider px-6 h-9 rounded-lg"
+                className="bg-[#e11d48] hover:bg-[#be123c] dark:bg-rose-600 dark:hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider px-6 h-9 rounded-lg cursor-pointer"
               >
                 UPDATE
               </Button>
