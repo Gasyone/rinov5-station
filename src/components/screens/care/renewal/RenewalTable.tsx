@@ -67,8 +67,8 @@ export function RenewalTable({
               </th>
               <th className="py-2.5 px-3 min-w-[320px]">Học viên</th>
               <th className="py-2.5 px-3 min-w-[170px]">Liên hệ</th>
-              <th className="py-2.5 px-3 min-w-[160px]">Phụ trách</th>
-              <th className="py-2.5 px-3 text-left min-w-[260px]">Lịch sử chăm sóc</th>
+              <th className="py-2.5 px-3 min-w-[160px]">Người chăm sóc</th>
+              <th className="py-2.5 px-3 text-left min-w-[260px]">Nội dung chăm sóc</th>
               <th className="py-2.5 px-3 min-w-[110px]">Trạng thái tái phí</th>
               <th className="py-2.5 px-3 text-left min-w-[240px]">Đơn hàng</th>
               <th className="py-2.5 px-3 min-w-[180px]">Lớp học</th>

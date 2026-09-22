@@ -294,18 +294,13 @@ export function RenewalAlertRow({
           masked={true}
           showCallButton={false}
           showPhoneIcon={false}
-          additionalContacts={
-            contacts && contacts.length > 1
-              ? contacts.map((c) => ({ name: `${c.name} (${c.relationship})`, phone: c.phone }))
-              : undefined
-          }
         />
       </td>
 
-      {/* Phụ trách */}
+      {/* Người chăm sóc */}
       <td className="py-3 px-3 min-w-[160px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-1.5 text-left">
-          {/* Phụ trách CS */}
+          {/* Người chăm sóc CS */}
           {cls.csStaff ? (
             <PersonnelHoverCard
               person={{
@@ -331,7 +326,7 @@ export function RenewalAlertRow({
       </td>
 
 
-      {/* Lịch sử chăm sóc */}
+      {/* Nội dung chăm sóc */}
       <td className="py-3 px-3 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
@@ -383,7 +378,7 @@ export function RenewalAlertRow({
 
           const cellContent = (
             <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
-              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất */}
+              {/* Dòng 1 (trên): Nội dung chăm sóc gần nhất */}
               {isUncared ? (
                 <div className="text-xs text-muted-foreground">
                   <span className="font-normal text-muted-foreground">Chưa chăm sóc</span>
@@ -391,7 +386,10 @@ export function RenewalAlertRow({
               ) : (
                 latestLog && (
                   <div
-                    className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                    className={cn(
+                      'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-snug',
+                      rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 break-words'
+                    )}
                     title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
                   >
                     <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0">

@@ -65,7 +65,7 @@ graph TD
      - **Kế thừa từ nhân viên Sale/Tư vấn viên** đã chốt đơn hàng (chuyển giao giai đoạn Onboarding).
      - Hoặc gán cho **CSM trực thuộc Chi nhánh tiếp nhận**.
    - Nếu chưa có CS tiếp nhận, hệ thống bật cờ cảnh báo:
-     - `hasMissingCS: true`, hiển thị dòng chữ cảnh báo màu cam: **"Chưa gán CS/GV"** ngay dưới cột Nội dung chăm sóc.
+     - `hasMissingCS: true`, hiển thị dòng chữ cảnh báo màu cam: **"Chưa gán CS/GV"** ngay dưới cột Thẻ chăm sóc.
      - Đồng thời, chỉ số ưu tiên (`priority = 10`) tự động đẩy học viên lên **TOP đầu danh sách** để Quản lý chi nhánh (Branch Manager) hoặc Trưởng nhóm CS phân công ngay trong ngày.
 3. **Thẻ chăm sóc giai đoạn chờ:**
    - Kích hoạt thẻ chăm sóc Onboarding / Nhắc lịch xếp lớp: CSM liên hệ phụ huynh để xác nhận khung giờ rảnh, nguyện vọng học, thông báo dự kiến ngày mở lớp.

@@ -73,13 +73,11 @@ export interface AlertRowProps {
 }
 
 function getCareTagFullLabel(tag: CareTag): string {
-  if (tag.label === 'CSCĐ') return 'CSCĐ: Cảnh báo học thuật'
-  if (tag.label === 'ĐB1' || tag.label.startsWith('ĐB')) return `${tag.label}: CS Đặc biệt`
-  if (tag.label === 'ĐK1') return 'ĐK1: CS học tập Định kỳ'
-  if (tag.label === 'ĐK2') return 'ĐK2: CS học phí Định kỳ'
-  if (tag.label === 'TB1') return 'TB1: CS chuyên cần & gói phí'
-  if (tag.label === 'TB2') return 'TB2: CS bài tập về nhà'
-  if (tag.label === 'CSTP') return 'CSTP: Chăm sóc Tái phí'
+  if (tag.label === 'CĐB' || tag.label === 'CSCĐ' || tag.label.startsWith('ĐB')) return 'CĐB - Chăm sóc đặc biệt'
+  if (tag.label === 'CGH' || tag.label === 'CSTP') return 'CGH - Chăm sóc gia hạn'
+  if (tag.label === 'CĐK' || tag.label.startsWith('ĐK')) return 'CĐK - Chăm sóc định kỳ'
+  if (tag.label === 'CBH' || tag.label.startsWith('TB') || tag.label.startsWith('TH')) return 'CBH - Chăm sóc theo buổi học'
+  if (tag.label === 'CYC' || tag.label === 'T1') return 'CYC - Chăm sóc theo yêu cầu'
   return `${tag.label}: ${tag.displayLabel || tag.description}`
 }
 
@@ -94,8 +92,8 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
   const pendingTags = rawTags.filter((tag) => !tag.isCompleted)
   // Ưu tiên hiển thị thẻ chưa hoàn thành, nếu tất cả đã hoàn thành thì hiển thị thẻ đã hoàn thành để không bị trống
   const allTags = (pendingTags.length > 0 ? pendingTags : rawTags).sort((a, b) => {
-    const aIsDB = a.label.startsWith('ĐB') || a.label.startsWith('CSĐB')
-    const bIsDB = b.label.startsWith('ĐB') || b.label.startsWith('CSĐB')
+    const aIsDB = a.label === 'CĐB' || a.label.startsWith('ĐB') || a.label.startsWith('CSĐB')
+    const bIsDB = b.label === 'CĐB' || b.label.startsWith('ĐB') || b.label.startsWith('CSĐB')
     if (aIsDB && !bIsDB) return -1
     if (!aIsDB && bIsDB) return 1
     return 0
@@ -107,7 +105,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
   const remainingCount = allTags.length - visibleCount
 
   const renderTagBadge = (tag: CareTag, idx: number) => {
-    const isSpecialCare = tag.label.startsWith('ĐB')
+    const isSpecialCare = tag.label === 'CĐB' || tag.label.startsWith('ĐB')
     const isOverdue = !tag.isCompleted && tag.isOverdue
     const isDueToday = !tag.isCompleted && tag.isDueToday
 
@@ -116,11 +114,11 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       colorClass = 'border-zinc-200 bg-zinc-100/70 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-500'
     } else if (isSpecialCare || tag.semantic === 'error') {
       colorClass = getStatusColors('error').badge
-    } else if (tag.semantic === 'purple' || tag.label.startsWith('ĐK')) {
+    } else if (tag.semantic === 'purple' || tag.label === 'CĐK' || tag.label.startsWith('ĐK')) {
       colorClass = getStatusColors('purple').badge
-    } else if (tag.semantic === 'warning' || tag.label.startsWith('TB')) {
+    } else if (tag.semantic === 'warning' || tag.label === 'CBH' || tag.label.startsWith('TB')) {
       colorClass = getStatusColors('warning').badge
-    } else if (tag.semantic === 'success' || tag.label === 'CSTP') {
+    } else if (tag.semantic === 'success' || tag.label === 'CGH' || tag.label === 'CSTP') {
       colorClass = getStatusColors('success').badge
     } else if (tag.semantic === 'info' || tag.label === 'CSCĐ') {
       colorClass = getStatusColors('info').badge
@@ -128,6 +126,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
 
     const fullText = getCareTagFullLabel(tag)
     const assignees = getCareTagAssignees(tag)
+    const assigneeText = assignees.length > 1 ? 'CS/GV' : assignees[0] || 'CS'
 
     return (
       <CareTagHoverCard
@@ -147,18 +146,18 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
         <Badge
           variant="outline"
           className={cn(
-            'text-xs px-2.5 py-1 min-h-[30px] font-semibold flex items-center gap-1.5 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded-lg shadow-none',
+            'text-xs px-2 py-0.5 min-h-[26px] font-normal flex items-center gap-1 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded-md shadow-none',
             colorClass
           )}
         >
-          <span className={cn('font-semibold text-xs', tag.isCompleted && 'line-through text-zinc-400 dark:text-zinc-500')}>
+          <span className={cn('font-normal text-xs', tag.isCompleted && 'line-through text-zinc-400 dark:text-zinc-500')}>
             {tag.label}
           </span>
           <span
-            className={cn('text-xs font-bold opacity-85 shrink-0 ml-0.5', tag.isCompleted && 'line-through text-zinc-400 dark:text-zinc-500')}
-            title={`Phụ trách: ${assignees.join(' - ')}`}
+            className={cn('text-xs font-normal opacity-85 shrink-0 ml-0.5', tag.isCompleted && 'line-through text-zinc-400 dark:text-zinc-500')}
+            title={`Người chăm sóc: ${assigneeText}`}
           >
-            {assignees.length > 1 ? 'CS - GV' : assignees[0] || 'CS'}
+            {assigneeText}
           </span>
         </Badge>
       </CareTagHoverCard>
@@ -223,15 +222,10 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
           masked={true}
           showCallButton={false}
           showPhoneIcon={false}
-          additionalContacts={
-            contacts && contacts.length > 1
-              ? contacts.map((c) => ({ name: `${c.name} (${c.relationship})`, phone: c.phone }))
-              : undefined
-          }
         />
       </td>
 
-      {/* Phụ trách */}
+      {/* Người chăm sóc */}
       <td className="py-1.5 px-2 min-w-[135px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col gap-1.5 text-left">
           {/* CS ở trên */}
@@ -289,7 +283,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
       </td>
 
 
-      {/* Nội dung chăm sóc (Hiển thị hàng ngang flex-wrap, tối đa 2 dòng) */}
+      {/* Thẻ chăm sóc (Hiển thị hàng ngang flex-wrap, tối đa 2 dòng) */}
       <td className="py-1.5 px-2 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           return (
@@ -308,7 +302,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
                             e.stopPropagation()
                             setIsItemsModalOpen(true)
                           }}
-                          className="h-6 px-1.5 text-xs font-extrabold text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded-md shrink-0 shadow-none cursor-pointer"
+                          className="h-6 px-1.5 text-xs font-normal text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded-md shrink-0 shadow-none cursor-pointer"
                           title="Xem toàn bộ danh sách hạng mục chăm sóc"
                         >
                           +{remainingCount}
@@ -339,7 +333,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
         })()}
       </td>
 
-      {/* Lịch sử chăm sóc */}
+      {/* Nội dung chăm sóc */}
       <td className="py-1.5 px-2 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
@@ -391,14 +385,17 @@ export function AlertRow({ cls, isSelected, onSelectChange, onRefresh, onViewDet
 
           const cellContent = (
             <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
-              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất */}
+              {/* Dòng 1 (trên): Nội dung chăm sóc gần nhất */}
               {isUncared && !rescheduleInfo.isRescheduled ? (
                 <div className="text-xs text-muted-foreground">
                   <span className="font-normal text-muted-foreground">Chưa chăm sóc</span>
                 </div>
               ) : latestLog ? (
                 <div
-                  className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
+                  className={cn(
+                    'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-snug',
+                    rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 break-words'
+                  )}
                   title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
                 >
                   <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0">

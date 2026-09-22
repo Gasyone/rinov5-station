@@ -101,7 +101,7 @@ export function OperationsAlertScreen() {
     { id: 'careAlerts', label: 'Trạng thái Cảnh báo CS', defaultChecked: true },
     { id: 'c90bConfirmation', label: 'Xác nhận C90B', defaultChecked: true },
     { id: 'latestCareNote', label: 'Ghi chú tương tác gần nhất', defaultChecked: true },
-    { id: 'csStaff', label: 'Nhân viên CS phụ trách', defaultChecked: true }
+    { id: 'csStaff', label: 'Người chăm sóc', defaultChecked: true }
   ]
 
   const handleConfirmExport = (

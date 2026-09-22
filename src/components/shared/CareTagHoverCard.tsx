@@ -36,7 +36,7 @@ function resolveTagDefaults(
   let resolvedRealDataIssue = realDataIssue
   let resolvedSla = slaText
 
-  if (c.includes('ĐB') || c === 'CSĐB' || c === 'CĐB' || c === 'ĐB1') {
+  if (c.includes('ĐB') || c === 'CSĐB' || c === 'CĐB' || c === 'ĐB1' || c === 'CSCĐ') {
     resolvedFullLabel = resolvedFullLabel || 'CĐB - Chăm sóc đặc biệt'
     resolvedConfigRule = resolvedConfigRule || 'Chuyên cần < 85% hoặc Điểm kiểm tra < 5.5'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Cần chăm sóc khẩn cấp do có cảnh báo vận hành hoặc học thuật'
@@ -46,27 +46,17 @@ function resolveTagDefaults(
     resolvedConfigRule = resolvedConfigRule || 'Điểm chạm kiểm tra tiến độ học tập hàng tháng'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Trao đổi học tập hàng tháng và cập nhật kết quả'
     resolvedSla = resolvedSla || '28/07/2026'
-  } else if (c.includes('ĐK2') || c === 'CSĐK2') {
-    resolvedFullLabel = resolvedFullLabel || 'CGH - Chăm sóc gia hạn'
-    resolvedConfigRule = resolvedConfigRule || 'Nhắc tái phí theo số buổi học còn lại'
-    resolvedRealDataIssue = resolvedRealDataIssue || 'Còn 2 buổi học trong khóa hiện tại'
-    resolvedSla = resolvedSla || '30/07/2026'
-  } else if (c.includes('TB') || c === 'CSBH' || c === 'CBH' || c === 'THT') {
-    resolvedFullLabel = resolvedFullLabel || 'CBH - Chăm sóc theo buổi học'
-    resolvedConfigRule = resolvedConfigRule || 'Thiếu bài tập về nhà từ 2 buổi liên tiếp'
-    resolvedRealDataIssue = resolvedRealDataIssue || 'Nhắc nhở chuyên cần & nộp bổ sung BTVN'
-    resolvedSla = resolvedSla || '26/07/2026'
-  } else if (c === 'CSTP' || c === 'TP' || c === 'CGH' || c === 'CSGH') {
+  } else if (c.includes('ĐK2') || c === 'CSĐK2' || c === 'CSTP' || c === 'TP' || c === 'CGH' || c === 'CSGH' || c.startsWith('GO')) {
     resolvedFullLabel = resolvedFullLabel || 'CGH - Chăm sóc gia hạn'
     resolvedConfigRule = resolvedConfigRule || 'Cảnh báo hạn gia hạn và đóng học phí khóa mới'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Hạn đóng phí dự kiến: 30/07/2026'
     resolvedSla = resolvedSla || '30/07/2026'
-  } else if (c === 'CSCĐ') {
-    resolvedFullLabel = resolvedFullLabel || 'Cảnh báo học thuật'
-    resolvedConfigRule = resolvedConfigRule || 'Điểm kiểm tra định kỳ thấp hơn mức chuẩn 6.0'
-    resolvedRealDataIssue = resolvedRealDataIssue || 'Cần tư vấn hỗ trợ lộ trình phụ đạo bổ sung'
-    resolvedSla = resolvedSla || '24/07/2026'
-  } else if (c === 'CYC' || c === 'TYC') {
+  } else if (c.includes('TB') || c === 'CSBH' || c === 'CBH' || c === 'THT' || c.startsWith('TH') || c.startsWith('LH')) {
+    resolvedFullLabel = resolvedFullLabel || 'CBH - Chăm sóc theo buổi học'
+    resolvedConfigRule = resolvedConfigRule || 'Thiếu bài tập về nhà từ 2 buổi liên tiếp hoặc mốc hành trình buổi học'
+    resolvedRealDataIssue = resolvedRealDataIssue || 'Nhắc nhở chuyên cần & nộp bổ sung BTVN'
+    resolvedSla = resolvedSla || '26/07/2026'
+  } else if (c === 'CYC' || c === 'TYC' || c === 'T1') {
     resolvedFullLabel = resolvedFullLabel || 'CYC - Chăm sóc theo yêu cầu'
     resolvedConfigRule = resolvedConfigRule || 'Phát sinh yêu cầu chăm sóc từ phụ huynh / học viên'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Hỗ trợ giải đáp và xử lý các yêu cầu phát sinh'
@@ -140,11 +130,12 @@ export function CareTagHoverCard({
 }: CareTagHoverCardProps) {
   const defaults = resolveTagDefaults(code, fullLabel, description, configRule, realDataIssue, slaText)
   const codeUpper = (code || label || '').trim().toUpperCase()
-  const assignees: ('CS' | 'GV')[] = codeUpper.includes('CSCĐ')
+  const assignees: ('CS' | 'GV')[] = (codeUpper.includes('CSCĐ') || codeUpper === 'CĐB' || codeUpper.includes('ĐB') || codeUpper === 'CBH' || codeUpper.includes('TB1'))
     ? ['CS', 'GV']
-    : codeUpper.includes('ĐK1') || codeUpper.includes('TB2')
+    : (codeUpper.includes('ĐK1') || codeUpper.includes('TB2'))
     ? ['GV']
     : ['CS']
+  const assigneeText = assignees.length > 1 ? 'CS/GV' : assignees[0] || 'CS'
 
   return (
     <HoverCard openDelay={100} closeDelay={100}>
@@ -153,13 +144,13 @@ export function CareTagHoverCard({
           <Badge
             variant="outline"
             className={cn(
-              'text-xs px-2 py-0.5 min-h-[22px] font-semibold cursor-help shadow-none border whitespace-nowrap leading-none rounded-md transition-opacity hover:opacity-90 inline-flex items-center gap-1.5',
+              'text-xs px-2 py-0.5 min-h-[22px] font-normal cursor-help shadow-none border whitespace-nowrap leading-none rounded-md transition-opacity hover:opacity-90 inline-flex items-center gap-1',
               colorClass
             )}
           >
-            <span>{label || code}</span>
-            <span className="text-xs font-bold opacity-85 shrink-0 ml-0.5">
-              {assignees.length > 1 ? 'CS - GV' : assignees[0] || 'CS'}
+            <span className="font-normal text-xs">{label || code}</span>
+            <span className="text-xs font-normal opacity-85 shrink-0 ml-0.5" title={`Người chăm sóc: ${assigneeText}`}>
+              {assigneeText}
             </span>
           </Badge>
         )}

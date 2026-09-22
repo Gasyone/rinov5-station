@@ -12,8 +12,9 @@ import { Printer, Edit3 } from 'lucide-react'
 import { mockStudents, type EnrolledClass } from '@/mocks/students'
 import { toast } from 'sonner'
 
-// Import Tab Components
-import { StudentProgramPackagesView } from './StudentProgramPackagesView'
+// Import Tab Components & Sub-columns
+import { StudentDetailAcademicColumn } from './StudentDetailAcademicColumn'
+import { StudentDetailPackageWalletColumn } from './StudentDetailPackageWalletColumn'
 import { StudentDetailLevelDialog } from './StudentDetailLevelDialog'
 import { StudentDetailProgramsBar } from './StudentDetailProgramsBar'
 import { StudentClassAssignmentDialog } from './StudentClassAssignmentDialog'
@@ -62,8 +63,42 @@ export function StudentDetailDialogV2({
 
   const student = useMemo(() => {
     if (!studentId) return null
-    const cleanId = studentId.split('-')[0]
-    return mockStudents.find((s) => s.id === cleanId)
+
+    // 1. Exact match by id (e.g. "s-baohan", "s-baonam", "s1", "s2")
+    const directMatch = mockStudents.find((s) => s.id === studentId)
+    if (directMatch) return directMatch
+
+    // 2. Case-insensitive match
+    const lowerMatch = mockStudents.find((s) => s.id.toLowerCase() === studentId.toLowerCase())
+    if (lowerMatch) return lowerMatch
+
+    // 3. Match formatted student code (e.g. "STU-00-baohan", "STU-001", "STU-00-baonam")
+    const codeMatch = mockStudents.find((s) => {
+      const codeClean = s.id.startsWith('s-')
+        ? `STU-00-${s.id.replace('s-', '')}`
+        : `STU-00${s.id.replace('s', '')}`
+      return codeClean.toLowerCase() === studentId.toLowerCase()
+    })
+    if (codeMatch) return codeMatch
+
+    // 4. Prefix match (for composite keys like "s-baohan-LD_TOAN_00032")
+    const prefixMatch = mockStudents.find((s) => studentId.startsWith(s.id))
+    if (prefixMatch) return prefixMatch
+
+    // 5. Match by stripped STU prefix: "STU-00-baohan" -> "s-baohan", "STU-001" -> "s1"
+    const strippedId = studentId.replace(/^STU-00-?/, '').replace(/^STU-/, '')
+    const strippedMatch = mockStudents.find(
+      (s) =>
+        s.id === strippedId ||
+        s.id === `s-${strippedId}` ||
+        s.id === `s${strippedId}` ||
+        s.id.toLowerCase().includes(strippedId.toLowerCase())
+    )
+    if (strippedMatch) return strippedMatch
+
+    // 6. Legacy fallback
+    const firstPart = studentId.split('-')[0]
+    return mockStudents.find((s) => s.id === firstPart) || null
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studentId, revision])
 
@@ -120,6 +155,45 @@ export function StudentDetailDialogV2({
     }
     return selectedProgram.packages[0]
   }, [selectedProgram, assignTargetPkgId])
+
+  // Active / current packages (remaining sessions > 0 or active status)
+  const activePackages = useMemo(() => {
+    if (!selectedProgram) return []
+    return selectedProgram.packages.filter(
+      (p) => p.status !== 'transferred' && p.status !== 'cancelled' && (p.remainingSessions > 0 || p.status === 'active')
+    )
+  }, [selectedProgram])
+
+  // Ended / historical packages
+  const historicalPackages = useMemo(() => {
+    if (!selectedProgram) return []
+    return selectedProgram.packages.filter(
+      (p) => p.status === 'transferred' || p.status === 'cancelled' || p.remainingSessions === 0
+    )
+  }, [selectedProgram])
+
+  // Determine Deducting Package (Active in-use) vs Queued (Next in line)
+  const { activeDeductingPackage, nextQueuedPackage, otherActivePackages } = useMemo(() => {
+    if (!selectedProgram || activePackages.length === 0) {
+      return { activeDeductingPackage: null, nextQueuedPackage: null, otherActivePackages: [] }
+    }
+
+    // Prioritize package linked to current class or first package with remaining sessions
+    const activePkg: StudentPackage | null =
+      activePackages.find((p) => p.linkedClassCode && p.linkedClassCode === selectedProgram.currentClass?.classCode && p.remainingSessions > 0) ||
+      activePackages.find((p) => p.remainingSessions > 0) ||
+      activePackages[0]
+
+    const remaining = activePackages.filter((p) => p.id !== activePkg.id)
+    const nextPkg: StudentPackage | null = remaining.find((p) => p.remainingSessions > 0) || null
+    const others = remaining.filter((p) => p.id !== nextPkg?.id)
+
+    return {
+      activeDeductingPackage: activePkg,
+      nextQueuedPackage: nextPkg,
+      otherActivePackages: others,
+    }
+  }, [activePackages, selectedProgram])
 
   const handleOpenAssignForPackage = (pkgId?: string) => {
     setAssignTargetPkgId(pkgId || null)
@@ -276,22 +350,18 @@ export function StudentDetailDialogV2({
     )
   }
 
-  const studentCode = `STU-00${student.id.replace('s', '')}`
+  const studentCode = student.id.startsWith('s-')
+    ? `STU-00-${student.id.replace('s-', '')}`
+    : `STU-00${student.id.replace('s', '')}`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[90vh] max-h-[900px] flex-col overflow-hidden p-5 pt-3.5 sm:max-w-[95vw] lg:max-w-[1380px] bg-gray-50 dark:bg-zinc-950 border-primary/20 shadow-2xl">
         {/* Top Header Bar: Dialog Title & quick actions */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-border/70 select-none shrink-0 pr-8">
-          <div className="flex items-center gap-2.5">
-            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
-              {studentCode}
-            </span>
-            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-              <span>Hồ sơ & Điều phối Xếp lớp:</span>
-              <span className="text-primary">{student.name}</span>
-            </DialogTitle>
-          </div>
+        <div className="flex items-center justify-between select-none shrink-0 pr-8">
+          <DialogTitle className="text-sm font-normal text-muted-foreground">
+            Chi tiết xếp lớp
+          </DialogTitle>
 
           <div className="flex items-center gap-2">
             <Button
@@ -320,20 +390,15 @@ export function StudentDetailDialogV2({
           </div>
         </div>
 
-        {/* 2-Panel Master-Detail Layout: Profile on Left (~380px), Workspace on Right (Remaining) */}
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[380px_1fr] xl:grid-cols-[400px_1fr] overflow-hidden pt-1">
-          {/* PANEL TRÁI: Toàn bộ thông tin học viên, phụ huynh, trình độ, giờ rảnh, cơ sở */}
-          <aside className="flex min-h-0 flex-col overflow-y-auto pr-1">
-            <StudentDetailProfilePanel
-              student={student}
-              selectedProgram={selectedProgram}
-            />
-          </aside>
+        {/* ── BỐ CỤC 2 CỘT: CỘT TRÁI (HỒ SƠ, TAB CHƯƠNG TRÌNH, LỚP HỌC), CỘT PHẢI (TRÌNH ĐỘ, GIỜ RẢNH, VÍ GÓI HỌC) ── */}
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_430px] overflow-hidden pt-1">
+          {/* CỘT TRÁI: THÔNG TIN HỌC VIÊN + TAB CHƯƠNG TRÌNH + TIẾN TRÌNH HỌC TẬP & LỚP HỌC */}
+          <div className="flex min-h-0 flex-col overflow-y-auto pr-1 space-y-3.5 scrollbar-thin">
+            {/* 1. Thẻ thông tin học viên chuẩn màn chăm sóc (đưa sang trái, trên tab chương trình) */}
+            <StudentDetailProfilePanel student={student} />
 
-          {/* PANEL PHẢI: Không gian tác vụ - Tabs Môn học + Quản lý Gói & Ghép lớp */}
-          <main className="flex min-h-0 flex-col overflow-hidden space-y-2.5 pl-0.5">
-            {/* Top row của Panel Phải: Program Tabs + [Thao tác ▾] button ở cạnh phải */}
-            <div className="shrink-0">
+            {/* 2. Tab chương trình môn học + Thao tác nhanh (ở panel trái) */}
+            <div className="pt-0.5 pb-0.5">
               <StudentDetailProgramsBar
                 programs={programs}
                 selectedProgramId={selectedProgram?.id || 'prog-math'}
@@ -358,29 +423,48 @@ export function StudentDetailDialogV2({
               />
             </div>
 
-            {/* Thân Panel Phải: Quota toàn môn + Danh sách Gói học & Lớp ghép */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-              {selectedProgram && (
-                <StudentProgramPackagesView
-                  program={selectedProgram}
-                  studentName={student.name}
-                  studentCode={studentCode}
-                  studentBranch={student.branch}
-                  studentLevel={selectedProgram.level || student.level}
-                  onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
-                  onLeaveClass={() => {
-                    setCreateLeaveReserveType('off')
-                    setIsCreateLeaveReserveOpen(true)
-                  }}
-                  onReservePackage={() => {
-                    setCreateLeaveReserveType('reservation')
-                    setIsCreateLeaveReserveOpen(true)
-                  }}
-                  onDropClass={() => setIsConfirmDropOpen(true)}
-                />
-              )}
-            </div>
-          </main>
+            {/* 3. Tiến trình học tập, Lớp hiện tại, Cơ sở phụ trách, Cấn trừ buổi, Thao tác, Lịch sử lớp */}
+            {selectedProgram && (
+              <StudentDetailAcademicColumn
+                program={selectedProgram}
+                studentName={student.name}
+                studentCode={studentCode}
+                studentBranch={student.branch}
+                studentLevel={selectedProgram.level || student.level}
+                activeDeductingPackage={activeDeductingPackage}
+                nextQueuedPackage={nextQueuedPackage}
+                onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
+                onLeaveClass={() => {
+                  setCreateLeaveReserveType('off')
+                  setIsCreateLeaveReserveOpen(true)
+                }}
+                onReserveClass={() => {
+                  setCreateLeaveReserveType('reservation')
+                  setIsCreateLeaveReserveOpen(true)
+                }}
+                onDropClass={() => setIsConfirmDropOpen(true)}
+              />
+            )}
+          </div>
+
+          {/* CỘT PHẢI: PANEL PHẢI NHỎ - TRÌNH ĐỘ MỤC TIÊU LÊN SÁT TRÊN CÙNG + KHUNG GIỜ + VÍ GÓI HỌC */}
+          <div className="flex min-h-0 flex-col overflow-y-auto pr-1 space-y-3.5 scrollbar-thin">
+            {/* Trình độ mục tiêu (sát trên cùng) + Khung giờ rảnh + Ví gói học (không có học phí) */}
+            {selectedProgram && (
+              <StudentDetailPackageWalletColumn
+                program={selectedProgram}
+                activeDeductingPackage={activeDeductingPackage}
+                nextQueuedPackage={nextQueuedPackage}
+                otherActivePackages={otherActivePackages}
+                historicalPackages={historicalPackages}
+                onReservePackage={() => {
+                  setCreateLeaveReserveType('reservation')
+                  setIsCreateLeaveReserveOpen(true)
+                }}
+                onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
+              />
+            )}
+          </div>
         </div>
       </DialogContent>
 

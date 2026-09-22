@@ -27,13 +27,11 @@ interface StudentCareItemsDialogProps {
 }
 
 function getCareTagFullLabel(tag: CareTag): string {
-  if (tag.label === 'CSCĐ') return 'CSCĐ: Cảnh báo học thuật'
-  if (tag.label === 'ĐB1' || tag.label.startsWith('ĐB')) return `${tag.label}: CS Đặc biệt`
-  if (tag.label === 'ĐK1') return 'ĐK1: CS học tập Định kỳ'
-  if (tag.label === 'ĐK2') return 'ĐK2: CS học phí Định kỳ'
-  if (tag.label === 'TB1') return 'TB1: CS chuyên cần & gói phí'
-  if (tag.label === 'TB2') return 'TB2: CS bài tập về nhà'
-  if (tag.label === 'CSTP') return 'CSTP: Chăm sóc Tái phí'
+  if (tag.label === 'CĐB' || tag.label === 'CSCĐ' || tag.label.startsWith('ĐB')) return 'CĐB - Chăm sóc đặc biệt'
+  if (tag.label === 'CGH' || tag.label === 'CSTP') return 'CGH - Chăm sóc gia hạn'
+  if (tag.label === 'CĐK' || tag.label.startsWith('ĐK')) return 'CĐK - Chăm sóc định kỳ'
+  if (tag.label === 'CBH' || tag.label.startsWith('TB') || tag.label.startsWith('TH')) return 'CBH - Chăm sóc theo buổi học'
+  if (tag.label === 'CYC' || tag.label === 'T1') return 'CYC - Chăm sóc theo yêu cầu'
   return `${tag.label}: ${tag.displayLabel || tag.description}`
 }
 
@@ -46,22 +44,33 @@ export function StudentCareItemsDialog({
 }: StudentCareItemsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-xl">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-            <span>Hạng mục chăm sóc</span>
-            <span className="text-xs text-muted-foreground font-mono font-normal">
-              ({studentName} - {studentId})
-            </span>
-          </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Danh sách tất cả {tags.length} hạng mục chăm sóc cần xử lý
-          </DialogDescription>
+      <DialogContent
+        className="max-w-md w-full rounded-2xl p-5 border border-border shadow-2xl space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-8 w-8 text-xs border border-primary/20 bg-primary/10 text-primary font-bold">
+              <AvatarImage src="" />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                {studentName ? studentName.slice(0, 2).toUpperCase() : 'HV'}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <DialogTitle className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                Danh sách thẻ chăm sóc
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Học viên: <span className="font-semibold text-foreground">{studentName}</span> ({studentId})
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2 py-2 max-h-[60vh] overflow-y-auto pr-1">
+        {/* List of tags */}
+        <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
           {tags.map((tag, idx) => {
-            const isSpecialCare = tag.label.startsWith('ĐB')
+            const isSpecialCare = tag.label === 'CĐB' || tag.label.startsWith('ĐB')
             const isOverdue = !tag.isCompleted && tag.isOverdue
             const isDueToday = !tag.isCompleted && tag.isDueToday
 
@@ -72,11 +81,11 @@ export function StudentCareItemsDialog({
                 'border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-600 line-through'
             } else if (isSpecialCare || tag.semantic === 'error') {
               colorClass = getStatusColors('error').badge
-            } else if (tag.semantic === 'purple' || tag.label.startsWith('ĐK')) {
+            } else if (tag.semantic === 'purple' || tag.label === 'CĐK' || tag.label.startsWith('ĐK')) {
               colorClass = getStatusColors('purple').badge
-            } else if (tag.semantic === 'warning' || tag.label.startsWith('TB')) {
+            } else if (tag.semantic === 'warning' || tag.label === 'CBH' || tag.label.startsWith('TB')) {
               colorClass = getStatusColors('warning').badge
-            } else if (tag.semantic === 'success' || tag.label === 'CSTP') {
+            } else if (tag.semantic === 'success' || tag.label === 'CGH' || tag.label === 'CSTP') {
               colorClass = getStatusColors('success').badge
             } else if (tag.semantic === 'info' || tag.label === 'CSCĐ') {
               colorClass = getStatusColors('info').badge
@@ -84,6 +93,7 @@ export function StudentCareItemsDialog({
 
             const fullText = getCareTagFullLabel(tag)
             const assignees = getCareTagAssignees(tag)
+            const assigneeText = assignees.length > 1 ? 'CS/GV' : assignees[0] || 'CS'
 
             return (
               <div
@@ -104,13 +114,13 @@ export function StudentCareItemsDialog({
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-xs px-2.5 py-1 min-h-[28px] font-bold flex items-center gap-2 shrink-0 shadow-2xs border w-fit cursor-help rounded-md',
+                        'text-xs px-2 py-0.5 min-h-[26px] font-normal flex items-center gap-1 shrink-0 shadow-none border w-fit cursor-help rounded-md',
                         colorClass
                       )}
                     >
-                      <span className="font-extrabold tracking-wide text-[11.5px]">{tag.label}</span>
-                      <span className="text-[10.5px] font-bold text-muted-foreground shrink-0 ml-1" title={`Phụ trách: ${assignees.join(' - ')}`}>
-                        {assignees.length > 1 ? 'CS - GV' : assignees[0] || 'CS'}
+                      <span className="font-normal text-xs">{tag.label}</span>
+                      <span className="text-xs font-normal text-muted-foreground shrink-0 ml-0.5" title={`Người chăm sóc: ${assigneeText}`}>
+                        {assigneeText}
                       </span>
                     </Badge>
                   </CareTagHoverCard>

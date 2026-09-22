@@ -1,12 +1,29 @@
 import { StudentCareAlert } from '@/mocks/careAlerts'
 
 /**
- * Checks if a care tag code belongs to Special Care (CSĐB)
+ * Checks if a care tag code belongs to Special Care (CSĐB / CĐB)
  */
 export function isCSDBTag(code?: string): boolean {
   if (!code) return false
   const upper = code.trim().toUpperCase()
-  return upper.startsWith('ĐB') || upper.includes('CSĐB') || upper.includes('ĐẶC BIỆT')
+  return upper.startsWith('ĐB') || upper.includes('CSĐB') || upper.includes('CĐB') || upper.includes('ĐẶC BIỆT') || upper === 'CSCĐ'
+}
+
+/**
+ * Standardized nature abbreviation matching care conditions config (/app/care_conditions_config) & detail
+ * CĐB: Chăm sóc đặc biệt
+ * CGH: Chăm sóc gia hạn
+ * CĐK: Chăm sóc định kỳ
+ * CBH: Chăm sóc theo buổi học
+ * CYC: Chăm sóc theo yêu cầu
+ */
+export function getCareNatureAbbrev(code: string): 'CĐB' | 'CGH' | 'CĐK' | 'CBH' | 'CYC' {
+  const upper = (code || '').trim().toUpperCase()
+  if (upper.startsWith('ĐB') || upper === 'CSĐB' || upper === 'CĐB' || upper === 'CSCĐ') return 'CĐB'
+  if (upper === 'CSTP' || upper === 'TP' || upper === 'CGH' || upper === 'CSGH' || upper.startsWith('GO')) return 'CGH'
+  if (upper.startsWith('ĐK') || upper.startsWith('CĐK')) return 'CĐK'
+  if (upper.startsWith('TB') || upper === 'CBH' || upper === 'THT' || upper === 'CSBH' || upper.startsWith('TH') || upper.startsWith('LH')) return 'CBH'
+  return 'CYC'
 }
 
 /**
@@ -256,31 +273,37 @@ export function getStudentActiveTags(item: StudentCareAlert): string[] {
   const academicIssues = getAcademicIssues(item)
   if (academicIssues.length > 0) {
     tags.push('CSCĐ')
+    tags.push('CĐB')
   }
 
   // 1. CS Đặc biệt (Red / Error) -> ĐB
   if (item.careAlert === 'C90B' || item.homeworkCompletion < 70 || parseFloat(avgScore) < 5.0) {
     tags.push('ĐB1')
+    tags.push('CĐB')
   }
   
   // 2. CS Định kỳ (Purple) -> ĐK
   if (hash % 3 === 0) {
     tags.push('ĐK1')
     tags.push('ĐK2')
+    tags.push('CĐK')
   } else if (hash % 4 === 0) {
     tags.push('ĐK1')
+    tags.push('CĐK')
   }
   
   // 3. CS Theo buổi (Warning / Amber) -> TB
   if (item.remainingSessions <= 5 || hash % 5 === 0) {
     tags.push('TB1')
+    tags.push('CBH')
   }
   if (hash % 6 === 0) {
     tags.push('TB2')
+    tags.push('CBH')
   }
   
   const completed = item.completedCareTags || []
-  return tags.filter(tag => !completed.includes(tag))
+  return Array.from(new Set(tags)).filter(tag => !completed.includes(tag) && !completed.some(c => getCareNatureAbbrev(c) === tag))
 }
 
 
@@ -304,10 +327,13 @@ export function getCareTagAssignees(tag: CareTag): ('CS' | 'GV')[] {
     return tag.assignees
   }
   const code = (tag.label || '').trim().toUpperCase()
-  if (code.startsWith('ĐB') || code === 'TB1' || code === 'TB2' || code === 'CSCĐ') {
+  if (code === 'CĐB' || code.startsWith('ĐB') || code === 'CSCĐ') {
     return ['CS', 'GV']
   }
-  if (code === 'ĐK1') {
+  if (code === 'CBH' || code.startsWith('TB') || code.startsWith('TH') || code === 'TB1' || code === 'TB2') {
+    return ['CS', 'GV']
+  }
+  if (code === 'CĐK' || code === 'ĐK1') {
     return ['GV']
   }
   return ['CS']
@@ -341,7 +367,7 @@ export function getUnassignedStaffStatus(cls: StudentCareAlert): {
 }
 
 export function getStudentCareTags(item: StudentCareAlert): CareTag[] {
-  const tags: CareTag[] = []
+  const rawTags: CareTag[] = []
   const hash = stableHash(item.studentId)
   const avgScore = ((item.lastTestScore + item.priorTestScore) / 2).toFixed(1)
 
@@ -359,148 +385,163 @@ export function getStudentCareTags(item: StudentCareAlert): CareTag[] {
     }
   }
   
-  // 0. CS Chủ động (CSCĐ) -> Triggered by academic issues
+  // 0. CS Chủ động (học thuật) -> CĐB
   const academicIssues = getAcademicIssues(item)
   if (academicIssues.length > 0) {
-    tags.push({
-      label: 'CSCĐ',
+    rawTags.push({
+      label: 'CĐB',
       semantic: 'error',
-      description: 'Chăm sóc Chủ động: ' + academicIssues.join(', '),
+      description: 'Chăm sóc Đặc biệt (Học thuật): ' + academicIssues.join(', '),
       isOverdue: false,
-      isDueToday: false
+      isDueToday: false,
+      assignees: ['CS', 'GV'],
     })
   }
 
-  // 1. CS Đặc biệt (Red / Error) -> ĐB
+  // 1. CS Đặc biệt (Vận hành / Điểm yếu) -> CĐB
   if (item.careAlert === 'C90B' || item.homeworkCompletion < 70 || parseFloat(avgScore) < 5.0) {
-    const slaInfo = getSlaInfo('ĐB1', '24 giờ')
-    tags.push({
-      label: `ĐB1`,
+    const slaInfo = getSlaInfo('CĐB', '24 giờ')
+    rawTags.push({
+      label: 'CĐB',
       semantic: 'error',
       description: 'Chăm sóc Đặc biệt: Cần chăm sóc khẩn cấp do có cảnh báo vận hành hoặc học thuật yếu.',
       isOverdue: slaInfo.isOverdue,
-      isDueToday: slaInfo.isDueToday
+      isDueToday: slaInfo.isDueToday,
+      assignees: ['CS', 'GV'],
     })
   }
   
-  // 2. CS Định kỳ (Purple) -> ĐK
+  // 2. CS Định kỳ -> CĐK
   if (hash % 3 === 0) {
-    const dk1Info = getSlaInfo('ĐK1', '5 ngày')
-    tags.push({
-      label: `ĐK1`,
+    const dk1Info = getSlaInfo('CĐK', '5 ngày')
+    rawTags.push({
+      label: 'CĐK',
       semantic: 'purple',
-      description: 'Chăm sóc Định kỳ Kỳ 1: Trao đổi học tập định kỳ hàng tháng.',
+      description: 'Chăm sóc Định kỳ: Trao đổi học tập định kỳ hàng tháng.',
       isOverdue: dk1Info.isOverdue,
-      isDueToday: dk1Info.isDueToday
+      isDueToday: dk1Info.isDueToday,
+      assignees: ['GV'],
     })
-    const dk2Info = getSlaInfo('ĐK2', '5 ngày')
-    tags.push({
-      label: `ĐK2`,
+    const dk2Info = getSlaInfo('CĐK2', '5 ngày')
+    rawTags.push({
+      label: 'CĐK',
       semantic: 'purple',
-      description: 'Chăm sóc Định kỳ Kỳ 2: Trao đổi gia hạn khóa học.',
+      description: 'Chăm sóc Định kỳ: Trao đổi định kỳ giữa kỳ.',
       isOverdue: dk2Info.isOverdue,
-      isDueToday: dk2Info.isDueToday
+      isDueToday: dk2Info.isDueToday,
+      assignees: ['CS'],
     })
   } else if (hash % 4 === 0) {
-    const dk1Info = getSlaInfo('ĐK1', '5 ngày')
-    tags.push({
-      label: `ĐK1`,
+    const dk1Info = getSlaInfo('CĐK', '5 ngày')
+    rawTags.push({
+      label: 'CĐK',
       semantic: 'purple',
       description: 'Chăm sóc Định kỳ: Điểm chạm kiểm tra định kỳ hàng tháng/giữa kỳ.',
       isOverdue: dk1Info.isOverdue,
-      isDueToday: dk1Info.isDueToday
+      isDueToday: dk1Info.isDueToday,
+      assignees: ['GV'],
     })
   }
   
-  // 3. CS Theo buổi (Warning / Amber) -> TB
+  // 3. CS Theo buổi -> CBH
   if (item.remainingSessions <= 5 || hash % 5 === 0) {
-    const tb1Info = getSlaInfo('TB1', '3 ngày')
-    tags.push({
-      label: `TB1`,
+    const tb1Info = getSlaInfo('CBH', '3 ngày')
+    rawTags.push({
+      label: 'CBH',
       semantic: 'warning',
       description: 'Chăm sóc Theo buổi: Chăm sóc phát sinh sau buổi học do nghỉ học/đi muộn hoặc sắp hết buổi.',
       isOverdue: tb1Info.isOverdue,
-      isDueToday: tb1Info.isDueToday
+      isDueToday: tb1Info.isDueToday,
+      assignees: ['CS', 'GV'],
     })
   }
 
-  // Dồn thêm chăm sóc theo buổi nếu chưa làm
   if (hash % 6 === 0) {
-    const tb2Info = getSlaInfo('TB2', '2 ngày')
-    tags.push({
-      label: `TB2`,
+    const tb2Info = getSlaInfo('CBH2', '2 ngày')
+    rawTags.push({
+      label: 'CBH',
       semantic: 'warning',
       description: 'Chăm sóc Theo buổi: Nhắc nhở thiếu bài tập về nhà.',
       isOverdue: tb2Info.isOverdue,
-      isDueToday: tb2Info.isDueToday
+      isDueToday: tb2Info.isDueToday,
+      assignees: ['GV'],
     })
   }
 
-  // 4. CS Tái phí (Success / Green) -> CSTP
-  const cstpInfo = getSlaInfo('CSTP', '5 ngày')
-  tags.push({
-    label: `CSTP`,
+  // 4. CS Gia hạn / Tái phí -> CGH
+  const cstpInfo = getSlaInfo('CGH', '5 ngày')
+  rawTags.push({
+    label: 'CGH',
     semantic: 'success',
-    description: 'Chăm sóc Tái phí: Liên hệ trao đổi gia hạn và đóng phí khóa học mới.',
+    description: 'Chăm sóc Gia hạn: Liên hệ trao đổi gia hạn và đóng phí khóa học mới.',
     isOverdue: cstpInfo.isOverdue,
-    isDueToday: cstpInfo.isDueToday
+    isDueToday: cstpInfo.isDueToday,
+    assignees: ['CS'],
   })
 
   // Custom care tags
   if (item.customCareTags) {
     item.customCareTags.forEach(ct => {
       const slaInfo = getSlaInfo(ct.code, ct.sla.toString().includes('ngày') || ct.sla.toString().includes('h') ? ct.sla.toString() : `${ct.sla} ngày`)
-      tags.push({
-        label: ct.code,
-        semantic: ct.code.startsWith('ĐB')
+      const abbrev = getCareNatureAbbrev(ct.code)
+      rawTags.push({
+        label: abbrev,
+        semantic: abbrev === 'CĐB'
           ? 'error'
-          : ct.code.startsWith('ĐK')
+          : abbrev === 'CĐK'
           ? 'purple'
-          : ct.code.startsWith('TB')
+          : abbrev === 'CBH'
           ? 'warning'
-          : ct.code.startsWith('CSTP')
+          : abbrev === 'CGH'
           ? 'success'
-          : 'info',
+          : 'neutral',
         description: ct.description || `${ct.name} (SLA: ${ct.sla} ngày)`,
         isOverdue: slaInfo.isOverdue,
-        isDueToday: slaInfo.isDueToday
+        isDueToday: slaInfo.isDueToday,
+        assignees: ct.code.includes('GV') ? ['GV'] : ct.code.includes('CS') ? ['CS'] : ['CS', 'GV'],
       })
     })
   }
-  const completed = item.completedCareTags || []
-  
-  if (tags.length === 0) {
-    tags.push({
-      label: `T1`,
+
+  if (rawTags.length === 0) {
+    rawTags.push({
+      label: 'CYC',
       semantic: 'neutral',
-      description: 'Chăm sóc Thường: Tương tác chăm sóc, thăm hỏi định kỳ thông thường.',
+      description: 'Chăm sóc Theo yêu cầu: Tương tác chăm sóc, thăm hỏi định kỳ thông thường.',
       isOverdue: false,
-      isDueToday: false
+      isDueToday: false,
+      assignees: ['CS'],
     })
   }
-  
-  return tags.map(tag => {
-    const isCompleted = completed.includes(tag.label) || (item.callConfirmation !== 'Chưa gọi' && item.callConfirmation !== 'KNM')
-    if (tag.label === 'T1') return { ...tag, displayLabel: tag.label, isCompleted }
-    
-    let displayPrefix = tag.label
-    if (tag.label.startsWith('ĐB')) {
-      displayPrefix = 'CSĐB'
-    } else if (tag.label.startsWith('ĐK')) {
-      displayPrefix = 'CSĐK'
-    } else if (tag.label.startsWith('TB')) {
-      displayPrefix = 'CSBH'
-    } else if (tag.label === 'CSTP') {
-      displayPrefix = 'CSTP'
+
+  // Consolidate duplicate tags that share the exact same label and assignees
+  const consolidatedTags: CareTag[] = []
+  rawTags.forEach(tag => {
+    const assigneeKey = (tag.assignees || []).slice().sort().join('/')
+    const existingIndex = consolidatedTags.findIndex(
+      t => t.label === tag.label && (t.assignees || []).slice().sort().join('/') === assigneeKey
+    )
+    if (existingIndex >= 0) {
+      const existing = consolidatedTags[existingIndex]
+      if (tag.isOverdue) existing.isOverdue = true
+      if (tag.isDueToday) existing.isDueToday = true
+      if (tag.description && !existing.description.includes(tag.description)) {
+        existing.description = `${existing.description} | ${tag.description}`
+      }
+    } else {
+      consolidatedTags.push({ ...tag })
     }
-    
-    const baseCount = hash % 2 + 1
-    const addedLogs = item.interactionLogs.filter(l => l.notes.includes(tag.label)).length
-    const count = baseCount + addedLogs
+  })
+
+  const completed = item.completedCareTags || []
+  return consolidatedTags.map(tag => {
+    const isCompleted = completed.includes(tag.label)
+      || completed.some(c => getCareNatureAbbrev(c) === tag.label)
+      || (item.callConfirmation !== 'Chưa gọi' && item.callConfirmation !== 'KNM')
     return {
       ...tag,
       isCompleted,
-      displayLabel: count === 1 ? displayPrefix : `${displayPrefix} (${count})`
+      displayLabel: tag.label,
     }
   })
 }
