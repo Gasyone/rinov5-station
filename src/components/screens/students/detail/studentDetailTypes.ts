@@ -6,6 +6,13 @@ export interface StudentProgram {
   subject: 'math' | 'english' | 'stem' | 'other'
   level?: string
   subLevel?: string
+  branch?: string
+  entryScore?: string
+  entryScoreEvaluation?: string
+  assessmentNote?: string
+  csmName?: string
+  saleName?: string
+  availableSlots?: StudentAvailableSlot[]
   packages: StudentPackage[]
   totalSessions: number
   studiedSessions: number
@@ -54,6 +61,15 @@ export interface StudentPackage {
   linkedClassName?: string
   startSessionDate?: string
   endDate?: string
+  allocatedSessions?: number
+}
+
+export interface StudentAvailableSlot {
+  id: string
+  dayOfWeek: string
+  timeRange: string
+  note?: string
+  isPreferred?: boolean
 }
 
 export interface StudentGlobalLog {

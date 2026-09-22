@@ -18,6 +18,7 @@ import {
 import { StudentCareTimeline } from './StudentCareTimeline'
 import { StudentCareFormCard, type CareMode } from './StudentCareFormCard'
 import { StudentOrdersTab } from './StudentOrdersTab'
+import { StudentPackagesTab } from './StudentPackagesTab'
 
 const getTagColorClass = (code: string, isExpanded: boolean) => {
   if (code.startsWith('ĐB')) {
@@ -55,6 +56,7 @@ interface StudentCareChatFeedProps {
   allLogs: CareInteractionLog[]
   selectedPackageId?: string
   selectedPackage?: SimulatedPackage | null
+  onSelectPackageId?: (packageId: string) => void
   initialMode?: CareMode
 }
 
@@ -67,6 +69,7 @@ export function StudentCareChatFeed({
   allLogs = [],
   selectedPackageId = 'pkg-1',
   selectedPackage,
+  onSelectPackageId,
   initialMode,
 }: StudentCareChatFeedProps) {
   const startCall = useCallStore((state) => state.startCall)
@@ -416,12 +419,27 @@ export function StudentCareChatFeed({
           onRefresh={onRefresh}
         />
 
-        {/* Message timelines & history below care form OR StudentOrdersTab */}
+        {/* Message timelines & history below care form OR StudentOrdersTab OR StudentPackagesTab */}
         {careMode === 'orders' ? (
           <div className="flex-1 min-h-0 pt-1">
             <StudentOrdersTab
               studentId={student.studentId}
               studentName={student.studentName}
+            />
+          </div>
+        ) : careMode === 'packages' ? (
+          <div className="flex-1 min-h-0 pt-1">
+            <StudentPackagesTab
+              studentId={student.studentId}
+              studentName={student.studentName}
+              selectedPackageId={selectedPackageId}
+              onSelectPackageId={onSelectPackageId}
+              onNavigateToOrder={() => {
+                setCareMode('orders')
+              }}
+              onRenewalClick={() => {
+                setCareMode('renewal')
+              }}
             />
           </div>
         ) : (

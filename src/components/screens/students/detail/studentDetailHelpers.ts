@@ -1,5 +1,5 @@
 import type { Student, EnrolledClass } from '@/mocks/students'
-import type { StudentPackage, StudentGlobalLog, StudentNote, FamilyMember, StudentScheduleSession, StudentProgram } from './studentDetailTypes'
+import type { StudentPackage, StudentGlobalLog, StudentNote, FamilyMember, StudentScheduleSession, StudentProgram, StudentAvailableSlot } from './studentDetailTypes'
 
 /**
  * Returns mock package registrations for a student
@@ -49,6 +49,18 @@ export function getStudentPackages(student: Student): StudentPackage[] {
       })
     })
   }
+
+  // Add a secondary Math package with no linked class for multi-package & placement demo
+  list.push({
+    id: `PKG-${student.id}-math-unlinked`,
+    packageName: 'Gói Bổ Trợ Hình Học Không Gian & Logic',
+    totalSessions: 8,
+    remainingSessions: 8,
+    price: 1200000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'active',
+  })
 
   // Add a package with no linked class for demo
   list.push({
@@ -518,8 +530,18 @@ export function getStudentPrograms(
       id: 'prog-math',
       name: 'Toán Tư Duy',
       subject: 'math',
-      level: activeCls?.level || student.level || 'Toán 1:6',
-      subLevel: activeCls?.subLevel || student.subLevel || 'Archimedes 5 - A',
+      level: activeCls?.level || (student.level?.toLowerCase().includes('ielts') ? 'Toán Tiền Tiểu Học' : student.level) || 'Toán Tiền Tiểu Học',
+      subLevel: activeCls?.subLevel || (student.subLevel?.toLowerCase().includes('ielts') ? 'Kindi 3 (Pre-K)' : student.subLevel) || 'Kindi 3 (Pre-K)',
+      branch: activeCls?.branch || student.branch || 'RinoEdu Linh Đàm',
+      entryScore: '8.5 / 10',
+      entryScoreEvaluation: 'Khá giỏi (Tư duy Logic tốt)',
+      assessmentNote: 'Tập trung tốt, phản xạ toán học và tư duy hình học không gian nhạy bén. Cần củng cố thêm kỹ năng giải toán có lời văn.',
+      csmName: 'Minh Phương (CSM Toán)',
+      saleName: student.saleName || 'Trần Thị Mai (Sales)',
+      availableSlots: [
+        { id: `slot-${student.id}-m1`, dayOfWeek: 'Thứ 3 & Thứ 6', timeRange: '17:30 - 19:00', isPreferred: true, note: `Ưu tiên cơ sở ${student.branch || 'Linh Đàm'}` },
+        { id: `slot-${student.id}-m2`, dayOfWeek: 'Thứ 7', timeRange: '09:00 - 10:30', isPreferred: false, note: 'Lịch bổ trợ cuối tuần' },
+      ],
       packages: pkgs,
       totalSessions,
       studiedSessions,
@@ -643,8 +665,18 @@ export function getStudentPrograms(
       id: 'prog-english',
       name: 'Tiếng Anh',
       subject: 'english',
-      level: 'IELTS (5.0–5.5)',
-      subLevel: 'IELTS Junior (A2)',
+      level: 'IELTS Junior',
+      subLevel: 'Band 5.0 – 5.5 (Pre-Intermediate)',
+      branch: activeCls?.branch || 'RinoEdu Nguyễn Tuân',
+      entryScore: '6.0 / 9.0 (IELTS Mock)',
+      entryScoreEvaluation: 'Đạt chuẩn đầu vào Lớp Foundation',
+      assessmentNote: 'Kỹ năng Nghe (Listening) và Phát âm (Pronunciation) chuẩn, tự tin giao tiếp với GV bản ngữ. Cần rèn luyện thêm Ngữ pháp viết Task 1.',
+      csmName: 'Hoàng Yến (CSM Ngoại ngữ)',
+      saleName: 'Đặng Quốc Anh (Sales Tiếng Anh)',
+      availableSlots: [
+        { id: `slot-${student.id}-e1`, dayOfWeek: 'Thứ 4 & Thứ 7', timeRange: '18:00 - 19:30', isPreferred: true, note: 'Ưu tiên cơ sở Nguyễn Tuân' },
+        { id: `slot-${student.id}-e2`, dayOfWeek: 'Chủ Nhật', timeRange: '14:30 - 16:00', isPreferred: false, note: 'Lớp kỹ năng mềm & Speaking' },
+      ],
       packages: pkgs,
       totalSessions,
       studiedSessions,
@@ -703,4 +735,47 @@ export function getStudentPrograms(
   }
 
   return programs
+}
+
+/**
+ * Returns available schedule slots for a student (Khung giờ rảnh của học viên)
+ */
+export function getStudentAvailableSlots(student?: Student | null): StudentAvailableSlot[] {
+  if (student?.id === 's2') {
+    return [
+      {
+        id: 'slot-1',
+        dayOfWeek: 'Thứ 2 & Thứ 4',
+        timeRange: '18:00 - 19:30',
+        note: 'Ưu tiên cơ sở Linh Đàm',
+      },
+      {
+        id: 'slot-2',
+        dayOfWeek: 'Thứ 7',
+        timeRange: '09:00 - 10:30',
+        note: 'Học buổi sáng',
+      },
+    ]
+  }
+
+  return [
+    {
+      id: 'slot-1',
+      dayOfWeek: 'Thứ 3 & Thứ 6',
+      timeRange: '17:30 - 19:00',
+      note: 'Ưu tiên cơ sở Nguyễn Tuân',
+    },
+    {
+      id: 'slot-2',
+      dayOfWeek: 'Thứ 7',
+      timeRange: '09:00 - 10:30',
+      note: 'Khung giờ rảnh cố định',
+    },
+    {
+      id: 'slot-3',
+      dayOfWeek: 'Chủ Nhật',
+      timeRange: 'Cả ngày (08:30 - 17:00)',
+      note: 'Linh hoạt mọi khung giờ',
+    },
+  ]
 }

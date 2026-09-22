@@ -124,6 +124,11 @@ export function RenewalToolbar({
             onSelect={(id) =>
               onCareProgressTabChange(careProgressTab === id && id !== 'all' ? 'all' : id)
             }
+            noOverflowCollapse={true}
+            className="flex-nowrap"
+            showDot={false}
+            hideDot={true}
+            coloredCount={true}
           />
         </div>
 

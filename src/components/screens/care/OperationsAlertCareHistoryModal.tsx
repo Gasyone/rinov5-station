@@ -96,9 +96,7 @@ export function OperationsAlertCareHistoryModal({
   const previousLogs = currentLogs.slice(1)
 
   const formatLogItem = (log: HistoryLog, indexInCurrentLogs: number) => {
-    const attemptNum = currentLogs.length - indexInCurrentLogs
     const channelLabel = log.channel === 'telephone' ? 'Cuộc gọi' : log.channel === 'zalo' ? 'Zalo' : 'Trực tiếp'
-    const showReschedule = indexInCurrentLogs === 0 && rescheduleInfo.isRescheduled
 
     // Trích xuất hoặc định dạng câu phản hồi phụ huynh
     const noteContent = log.note
@@ -129,11 +127,9 @@ export function OperationsAlertCareHistoryModal({
             : "bg-muted/30 hover:bg-muted/50 border border-border/60 rounded-md p-2.5"
         )}
       >
-        {/* Hàng tiêu đề: Lần XX · Tên CS/GV · Kênh · Người nhận  ---  Ngày */}
+        {/* Hàng tiêu đề: Tên CS/GV · Kênh · Người nhận  ---  Ngày */}
         <div className="flex items-center justify-between gap-1 text-xs flex-wrap">
           <div className="font-bold text-foreground flex items-center gap-1.5 flex-wrap">
-            <span>Lần {attemptNum}</span>
-            <span className="text-muted-foreground font-normal">·</span>
             <span className="text-sky-700 dark:text-sky-400 font-semibold">
               {log.staff.includes('GV') ? 'GV' : 'CS'}: {log.staff}
             </span>
@@ -149,11 +145,6 @@ export function OperationsAlertCareHistoryModal({
 
         {/* Nội dung note & Ý kiến phản hồi phụ huynh trên cùng dòng */}
         <div className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">
-          {showReschedule && (
-            <div className="font-semibold text-violet-600 dark:text-violet-400 mb-0.5">
-              Hẹn: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}
-            </div>
-          )}
           {log.channel === 'telephone' && (
             <span className="inline-flex items-center align-middle mr-2">
               <AudioPlayButton duration={indexInCurrentLogs === 0 ? '01:45' : '01:15'} />
@@ -213,10 +204,13 @@ export function OperationsAlertCareHistoryModal({
     >
       <PopoverTrigger asChild>
         <div
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={() => {
-            setOpen(true)
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation()
+            setOpen((prev) => !prev)
           }}
+          className="cursor-pointer"
         >
           {trigger}
         </div>

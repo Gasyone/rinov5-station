@@ -1,8 +1,12 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  ExternalLink,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { SessionHistory } from './studentCareReportHelpers'
@@ -18,8 +22,9 @@ import {
   getCareSessionNotices,
 } from './careSessionTimelineHelpers'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
+import type { StudentPlacementStatus } from './class-card/studentCareClassCardTypes'
 
-interface CareSessionTimelineListProps {
+export interface CareSessionTimelineListProps {
   regularSessions?: SessionHistory[]
   testSessions?: SessionHistory[]
   pkgIsEnglish: boolean
@@ -27,6 +32,9 @@ interface CareSessionTimelineListProps {
   studentId?: string
   studentName?: string
   studentAlert?: StudentCareAlert | null
+  onOpenLeave?: (date: string) => void
+  placementStatus?: StudentPlacementStatus
+  expectedStartDate?: string
 }
 
 export function CareSessionTimelineList({
@@ -34,6 +42,9 @@ export function CareSessionTimelineList({
   smartCards,
   studentId,
   studentAlert,
+  onOpenLeave,
+  placementStatus,
+  expectedStartDate,
 }: CareSessionTimelineListProps) {
   const [showAllHistory, setShowAllHistory] = useState(false)
   const [showAllTests, setShowAllTests] = useState(false)
@@ -43,8 +54,8 @@ export function CareSessionTimelineList({
 
   // Cảnh báo & Lưu ý phát sinh (Chuyên cần, CSĐB, Chưa nhận xét, Chưa điểm danh, BTVN)
   const notices = useMemo(() => {
-    return getCareSessionNotices(allSessions, studentAlert, studentId)
-  }, [allSessions, studentAlert, studentId])
+    return getCareSessionNotices(allSessions, studentAlert)
+  }, [allSessions, studentAlert])
 
   const visibleSessions = showAllHistory ? allSessions : allSessions.slice(0, 7)
   const upcomingSessions = visibleSessions.filter((s) => s.type === 'upcoming')
@@ -94,44 +105,28 @@ export function CareSessionTimelineList({
       )
     }
 
-    // 1. Vắng không phép (Nổi bật nhất - Badge Đỏ chỉ để nhãn)
+    // 1. Vắng (tách riêng với nghỉ phép - buổi vắng có phép hay không phép đều ghi nhận điểm danh là Vắng)
     if (
+      session.attendance === 'absent' ||
       session.attendance === 'absent_unexcused' ||
-      /không phép/i.test(session.attendanceText || '')
-    ) {
-      return (
-        <span
-          className={cn(
-            'text-[11px] font-bold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
-            getStatusBadgeClass('absent_unexcused')
-          )}
-          title="Vắng không phép"
-        >
-          Vắng không phép
-        </span>
-      )
-    }
-
-    // 2. Vắng có phép (Badge Cam/Vàng chỉ để nhãn)
-    if (
       session.attendance === 'absent_excused' ||
       session.attendance === 'excused' ||
-      /có phép|nghỉ phép/i.test(session.attendanceText || '')
+      /vắng/i.test(session.attendanceText || '')
     ) {
       return (
         <span
           className={cn(
             'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
-            getStatusBadgeClass('absent_excused')
+            getStatusBadgeClass('absent')
           )}
-          title="Vắng có phép"
+          title="Vắng mặt"
         >
-          Vắng có phép
+          Vắng
         </span>
       )
     }
 
-    // 3. Đến muộn (Badge Cam/Vàng chỉ để nhãn)
+    // 2. Đến muộn
     if (
       session.attendance === 'late' ||
       /muộn/i.test(session.attendanceText || '')
@@ -149,7 +144,7 @@ export function CareSessionTimelineList({
       )
     }
 
-    // 4. Mặc định: Đã đến (Badge Xanh lá cây)
+    // 3. Mặc định: Đã đến (Badge Xanh lá cây)
     return (
       <span
         className={cn(
@@ -160,6 +155,38 @@ export function CareSessionTimelineList({
       >
         Đã đến
       </span>
+    )
+  }
+
+  // Render trạng thái Nghỉ phép (V) tách rời với điểm danh
+  const renderLeaveBadge = (session: UnifiedSessionItem) => {
+    const hasLeave = Boolean(
+      session.isLeaveRequested ||
+      session.attendance === 'absent_excused' ||
+      session.attendance === 'excused' ||
+      /có phép|nghỉ phép/i.test(session.attendanceText || '') ||
+      session.leaveReason
+    )
+
+    if (!hasLeave) return null
+
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          if (onOpenLeave) {
+            onOpenLeave(session.date)
+          } else {
+            toast.info(`Buổi học ngày ${session.date}: Học viên có đơn xin nghỉ phép đã được phê duyệt.`)
+          }
+        }}
+        className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200/80 dark:border-amber-800/60 shadow-3xs transition-all shrink-0 select-none"
+        title="Học viên có đơn xin nghỉ phép buổi học này. Bấm để xem chi tiết đơn nghỉ phép"
+      >
+        <span>Nghỉ phép (V)</span>
+        <ExternalLink className="h-2.5 w-2.5 shrink-0 opacity-75" />
+      </button>
     )
   }
 
@@ -228,6 +255,19 @@ export function CareSessionTimelineList({
     const isUpcoming = session.type === 'upcoming'
     const isTest = session.type === 'test'
     const isExpanded = isSessionExpanded(session.id)
+    const hasLeave = Boolean(
+      session.isLeaveRequested ||
+      session.attendance === 'absent_excused' ||
+      session.attendance === 'excused' ||
+      /có phép|nghỉ phép/i.test(session.attendanceText || '') ||
+      session.leaveReason
+    )
+    const isAbsent = Boolean(
+      session.attendance === 'absent' ||
+      session.attendance === 'absent_unexcused' ||
+      /vắng/i.test(session.attendanceText || '')
+    )
+    const isAbsentOrLeave = hasLeave || isAbsent
 
     const shortDay = getShortDayOfWeek(session.date)
     const shortDate = formatDateNoYear(session.date)
@@ -277,18 +317,15 @@ export function CareSessionTimelineList({
                 </h4>
               </div>
             </ClassSessionHoverCard>
-
-            {isTest && (
-              <Badge variant="secondary" className="text-xs font-bold px-1.5 py-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
-                Kiểm tra
-              </Badge>
-            )}
           </div>
 
-          {/* Cụm phải ở cuối dòng: Điểm danh rõ ràng • BTVN • Điểm kiểm tra (Đã bỏ GV & Trợ giảng) */}
+          {/* Cụm phải ở cuối dòng: Điểm danh • Nghỉ phép (V) • BTVN • Điểm kiểm tra */}
           <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
-            {/* Status Điểm danh (Rõ ràng: Vắng không phép, Vắng có phép, Đến muộn, Đã đến) */}
+            {/* Status Điểm danh (Tách rời: Đã đến, Đến muộn, Vắng, Chưa điểm danh) */}
             {renderAttendanceBadge(session)}
+
+            {/* Trạng thái Nghỉ phép (V) tách riêng - Hiển thị khi học viên có đơn xin nghỉ phép */}
+            {renderLeaveBadge(session)}
 
             {/* BTVN: Để BT-01, BT-02 thôi, xóa nhãn BTVN, xóa điểm. Chưa làm text xám, đã làm text xanh mở tab mới */}
             {session.homeworkCode && (
@@ -329,7 +366,18 @@ export function CareSessionTimelineList({
         </div>
 
         {/* Nhận xét của học viên: Mặc định buổi đầu tiên mở rộng, các buổi khác thu gọn 3 dòng kèm nút xem thêm */}
-        {session.comment && session.comment.trim() ? (
+        {isAbsentOrLeave ? (
+          /* Học viên nghỉ / nghỉ phép: Hiển thị text ngắn gọn, không hiển thị cảnh báo nhận xét */
+          <div className="pt-1.5 border-t border-border/30">
+            <p className="text-xs text-muted-foreground italic">
+              {hasLeave
+                ? (session.leaveReason
+                    ? `Học viên nghỉ có phép (${session.leaveReason.replace(/^Phụ huynh xin nghỉ phép do /, '').replace(/\.$/, '')}).`
+                    : 'Học viên nghỉ học có phép.')
+                : 'Học viên nghỉ học không phép.'}
+            </p>
+          </div>
+        ) : session.comment && session.comment.trim() ? (
           <div className="pt-1.5 border-t border-border/30">
             <div className="relative">
               <p
@@ -353,29 +401,90 @@ export function CareSessionTimelineList({
             </div>
           </div>
         ) : (
-          /* Buổi học chưa có nhận xét (Do giáo viên chưa nhập) - Thêm dòng cảnh báo */
+          /* Buổi học chưa có nhận xét: Chỉ cảnh báo nhận xét, KHÔNG xét giờ */
           !isUpcoming && (
-            <div className="pt-1.5 border-t border-border/30">
-              <div className="flex items-center justify-between gap-2 py-1 px-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <span className="font-semibold text-xs">Chưa có nhận xét học viên</span>
-                  <span className="text-[11px] text-amber-700/80 dark:text-amber-400/80 italic hidden sm:inline">
-                    (Do giáo viên chưa nhập)
+            <div className="pt-2 border-t border-border/30">
+              <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-50/85 dark:bg-amber-950/35 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs text-center flex-wrap shadow-3xs">
+                <div className="flex items-center justify-center gap-1.5 shrink-0">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span className="font-bold text-xs text-amber-700 dark:text-amber-300">
+                    Chưa có nhận xét từ giáo viên:
                   </span>
                 </div>
-                <span
-                  className={cn(
-                    'text-[10px] font-bold px-1.5 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
-                    getStatusBadgeClass('warning')
-                  )}
-                >
-                  Chờ cập nhật
+                <span className="text-amber-800/90 dark:text-amber-300/90 font-medium">
+                  Giáo viên chưa cập nhật đánh giá học viên cho ca học này.
                 </span>
               </div>
             </div>
           )
         )}
+      </div>
+    )
+  }
+
+  if (
+    placementStatus === 'pending_transfer' ||
+    placementStatus === 'wait_for_assignment' ||
+    placementStatus === 'pending_payment' ||
+    placementStatus === 'enroll_later' ||
+    placementStatus === 'fee_transfer' ||
+    placementStatus === 'draft_class'
+  ) {
+    return null
+  }
+
+  if (placementStatus === 'awaiting_opening') {
+    const openingDate = expectedStartDate || '21/11/2023'
+    const openingDayOfWeek = getDayOfWeekName(openingDate)
+    const openingShortDate = formatDateNoYear(openingDate)
+    const openingTime = '17:45 - 19:15'
+    const openingHoverSessionData = buildGenericSessionData({
+      id: 'opening-session',
+      sessionNumber: 1,
+      date: openingDate,
+      time: openingTime,
+      topic: 'Khai giảng & Định hướng học tập',
+      teacher: 'Thầy David Wilson',
+      type: 'upcoming',
+      attendance: 'unmarked',
+      attendanceText: 'Chưa diễn ra',
+    })
+
+    return (
+      <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden animate-in fade-in-50 duration-200">
+        {/* Streamlined Header with soft background tint */}
+        <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
+          <h3 className="text-sm font-bold text-foreground tracking-tight">
+            Nhật ký Buổi học
+          </h3>
+          <span className="text-xs text-muted-foreground font-normal">
+            Dự kiến khai giảng: {openingDate}
+          </span>
+        </div>
+
+        {/* Single Line Upcoming Session Banner (Giống thiết kế buổi sắp tới của lớp đã học, không có icon riêng hay nhãn buổi) */}
+        <div className="pt-0.5 pb-1">
+          <ClassSessionHoverCard session={openingHoverSessionData} side="bottom">
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
+                  {openingDayOfWeek}, {openingShortDate} ({openingTime})
+                </span>
+                <span className="text-border">•</span>
+                <span
+                  className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
+                  title="Khai giảng & Định hướng học tập"
+                >
+                  Khai giảng & Định hướng học tập
+                </span>
+              </div>
+            </div>
+          </ClassSessionHoverCard>
+        </div>
       </div>
     )
   }
@@ -394,22 +503,27 @@ export function CareSessionTimelineList({
           </span>
         </div>
 
-        {/* Lưu ý phát sinh: Đặt trong Nhật ký buổi học, TRÊN Smartcard thống kê, rút gọn 1 dòng, ngắn gọn */}
-        {notices.length > 0 && (
+        {/* Thông báo nếu đang bảo lưu */}
+        {placementStatus === 'reserve' && (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50 text-xs text-amber-900 dark:text-amber-200">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>Khóa học đang bảo lưu. Danh sách dưới đây lưu lại tiến trình các buổi học đã hoàn thành trước ngày bảo lưu.</span>
+          </div>
+        )}
+
+        {/* Lưu ý phát sinh: Tạm ẩn khỏi thiết kế giao diện theo yêu cầu */}
+        {false && notices.length > 0 && (
           <div className="space-y-1 pt-0.5 pb-1 select-none">
             {notices.map((notice) => (
               <div
                 key={notice.id}
                 className="flex items-center gap-1.5 text-xs py-0.5 leading-tight min-w-0"
-                title={`${notice.issue} HĐ: ${notice.action}`}
+                title={`${notice.issue} ${notice.action}`}
               >
                 <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <div className="min-w-0 flex-1 truncate">
                   <span className="text-amber-800 dark:text-amber-300 font-medium">
                     {notice.issue}
-                  </span>{' '}
-                  <span className="font-semibold text-foreground">
-                    HĐ:
                   </span>{' '}
                   <span className="text-muted-foreground">
                     {notice.action}
@@ -423,8 +537,8 @@ export function CareSessionTimelineList({
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
         {smartCards && <div className="mb-2">{smartCards}</div>}
 
-        {/* Single Line Upcoming Session Banner (1 buổi tiếp theo - Tái sử dụng ClassSessionHoverCard chuẩn) */}
-        {upcomingSessions.length > 0 && (() => {
+        {/* Single Line Upcoming Session Banner (1 buổi tiếp theo - Ẩn khi bảo lưu hoặc hết buổi) */}
+        {placementStatus !== 'reserve' && placementStatus !== 'session_ended' && upcomingSessions.length > 0 && (() => {
           const nextSession = [...allSessions.filter((s) => s.type === 'upcoming')].sort(
             (a, b) => a.sessionNumber - b.sessionNumber
           )[0] || upcomingSessions[0]
@@ -463,30 +577,28 @@ export function CareSessionTimelineList({
         {/* Completed Regular Lessons */}
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
-            <div className="text-xs font-bold text-foreground">
-              <span>Lịch sử buổi học ({regularCompletedSessions.length})</span>
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-bold text-foreground">
+                {placementStatus === 'reserve' ? 'Lịch sử buổi học trước khi bảo lưu' : 'Lịch sử buổi học'} ({regularCompletedSessions.length})
+              </span>
+              {allSessions.length > 7 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <span>
+                    {showAllHistory
+                      ? 'Thu gọn'
+                      : `Xem thêm (${allSessions.length - 7} buổi cũ hơn)`}
+                  </span>
+                  {showAllHistory ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                </button>
+              )}
             </div>
             <div className="space-y-2">
               {regularCompletedSessions.map(renderSessionCard)}
             </div>
-          </div>
-        )}
-
-        {/* Expand More Button */}
-        {allSessions.length > 7 && (
-          <div className="pt-1.5 text-center">
-            <button
-              type="button"
-              onClick={() => setShowAllHistory(!showAllHistory)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground border border-border/40 transition-all cursor-pointer"
-            >
-              <span>
-                {showAllHistory
-                  ? 'Thu gọn lịch sử'
-                  : `Xem thêm lịch sử (${allSessions.length - 7} buổi cũ hơn)`}
-              </span>
-              {showAllHistory ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-            </button>
           </div>
         )}
       </div>
@@ -499,32 +611,33 @@ export function CareSessionTimelineList({
             <h3 className="text-xs font-bold text-foreground tracking-tight">
               Kiểm tra
             </h3>
-            <span className="text-xs text-muted-foreground font-normal">
-              Hiển thị {testCompletedSessions.length}/{allTestSessions.length} bài kiểm tra
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground font-normal">
+                Hiển thị {testCompletedSessions.length}/{allTestSessions.length} bài kiểm tra
+              </span>
+              {allTestSessions.length > 1 && (
+                <>
+                  <span className="text-border">•</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTests(!showAllTests)}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <span>
+                      {showAllTests
+                        ? 'Thu gọn'
+                        : `Xem thêm (${allTestSessions.length - 1} bài cũ hơn)`}
+                    </span>
+                    {showAllTests ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2 pt-0.5">
             {testCompletedSessions.map(renderSessionCard)}
           </div>
-
-          {/* Button xem thêm lịch sử (x bài cũ hơn) */}
-          {allTestSessions.length > 1 && (
-            <div className="pt-1.5 text-center">
-              <button
-                type="button"
-                onClick={() => setShowAllTests(!showAllTests)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted/20 hover:bg-muted/50 text-muted-foreground hover:text-foreground border border-border/40 transition-all cursor-pointer"
-              >
-                <span>
-                  {showAllTests
-                    ? 'Thu gọn lịch sử'
-                    : `Xem thêm lịch sử (${allTestSessions.length - 1} bài cũ hơn)`}
-                </span>
-                {showAllTests ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>

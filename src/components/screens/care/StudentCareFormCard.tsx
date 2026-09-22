@@ -3,7 +3,7 @@
 import { RefObject, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Phone, ChevronDown, Check, Copy, CheckCircle } from 'lucide-react'
+import { Phone, ChevronDown, Check, Copy, CheckCircle, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
@@ -21,6 +21,7 @@ import { StudentRenewalLinkedOrderRow } from './StudentRenewalLinkedOrderRow'
 import { ConfirmDialog } from '@/components/shared'
 import { getStudentOrderInfo } from './renewal/renewalHelpers'
 import { getStudentOrders } from './StudentOrdersTab'
+import { getStudentEnrolledPackages } from './student-packages/studentPackagesMock'
 import { mockOrders } from '@/mocks/orders'
 
 export function formatContactDisplayName(name: string, relationship: string): string {
@@ -150,7 +151,7 @@ export function getRenewalStatusLabel(status: string): string {
   }
 }
 
-export type CareMode = 'regular' | 'renewal' | 'orders'
+export type CareMode = 'regular' | 'renewal' | 'orders' | 'packages'
 
 interface StudentCareFormCardProps {
   careFormRef: RefObject<HTMLDivElement | null>
@@ -263,6 +264,11 @@ export function StudentCareFormCard({
   const ordersCount = useMemo(() => {
     if (!student?.studentId) return 0
     return getStudentOrders(student.studentId, student.studentName).length
+  }, [student])
+
+  const packagesCount = useMemo(() => {
+    if (!student?.studentId) return 0
+    return getStudentEnrolledPackages(student.studentId, student.studentName).filter((p) => !(p as any).isOtherChild && p.status !== 'expired').length
   }, [student])
 
   const suggestedOrders = useMemo(() => {
@@ -454,7 +460,7 @@ export function StudentCareFormCard({
             type="button"
             onClick={() => onCareModeChange('orders')}
             className={cn(
-              'flex-1 h-7 px-2.5 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              'flex-1 h-7 px-2 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
               careMode === 'orders'
                 ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
                 : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
@@ -472,9 +478,32 @@ export function StudentCareFormCard({
               {ordersCount}
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => onCareModeChange('packages')}
+            className={cn(
+              'flex-1 h-7 px-2 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              careMode === 'packages'
+                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
+            )}
+          >
+            <span>Gói đăng ký</span>
+            <span
+              className={cn(
+                'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                careMode === 'packages'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold'
+                  : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300 font-medium'
+              )}
+            >
+              {packagesCount}
+            </span>
+          </button>
         </div>
 
-        {careMode !== 'orders' && (
+        {careMode !== 'orders' && careMode !== 'packages' && (
           <div className="space-y-1">
           {visibleTopics.length === 0 ? (
             <div className="py-3 text-center text-xs text-muted-foreground italic bg-white dark:bg-zinc-900 rounded-lg border border-border/40">
@@ -554,7 +583,7 @@ export function StudentCareFormCard({
       </div>
 
       {/* Main Section Card: Form nhập liệu tương tác - Phủ toàn bộ màu nền Xanh Sky Light */}
-      {careMode !== 'orders' && (
+      {careMode !== 'orders' && careMode !== 'packages' && (
         <div className="bg-sky-50/40 dark:bg-sky-950/25 rounded-2xl border border-sky-200/80 dark:border-sky-900/60 shadow-2xs p-3.5 space-y-2">
           <CallConnectionBanner
             isActive={isCallActive}
@@ -566,235 +595,227 @@ export function StudentCareFormCard({
             }}
           />
 
-            <div className="select-none animate-in fade-in-50 duration-150 grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-start">
-          {/* Left Column (~33%): Contact Info & Controls in horizontal rows */}
-          <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-sky-200/60 dark:border-sky-900/50 pb-2 md:pb-0 pr-0 md:pr-3">
-            {/* Box cụm người liên hệ phụ huynh (nền trắng nổi bật trên card xanh nhạt) */}
-            <div className="p-2 rounded-lg border border-sky-200/80 dark:border-sky-900/70 bg-white/90 dark:bg-zinc-900/90 space-y-1.5 w-full shadow-3xs">
-              {/* Row 1: Tên Phụ huynh (dạng dropdown trigger) */}
-              <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
-                <Popover>
-                  <PopoverTrigger asChild>
+          {isRenewalMode ? (
+            <div className="select-none animate-in fade-in-50 duration-150 space-y-2.5 w-full">
+              {/* Header của cả section chăm sóc: Thông tin liên hệ phụ huynh */}
+              <div className="flex items-center justify-between gap-3 pb-2 border-b border-sky-200/70 dark:border-sky-800/60 px-0.5 flex-wrap">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                    Liên hệ:
+                  </span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground transition-all cursor-pointer shrink-0 select-none group bg-transparent border-0 p-0 hover:opacity-80"
+                        title="Mở danh sách người liên hệ phụ huynh"
+                      >
+                        <span className="font-extrabold text-sky-700 dark:text-sky-400 shrink-0">
+                          {selectedContact.relationship || 'Mẹ'}
+                        </span>
+                        <span className="font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
+                          {getCleanContactName(selectedContact.name)}
+                        </span>
+                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-1.5 text-xs" align="start">
+                      <div className="font-normal text-[11.5px] text-muted-foreground px-2 py-1 border-b border-border/40 mb-1">
+                        Liên hệ cho
+                      </div>
+                      <div className="space-y-0.5">
+                        {contactsList.map((c, idx) => (
+                          <button
+                            key={c.phone + idx}
+                            type="button"
+                            onClick={() => setSelectedContactIndex(idx)}
+                            className={cn(
+                              'w-full text-left px-2 py-1.5 rounded text-[11.5px] font-medium flex items-center justify-between transition-colors cursor-pointer',
+                              selectedContactIndex === idx
+                                ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
+                                : 'hover:bg-muted text-foreground'
+                            )}
+                          >
+                            <div className="flex flex-col">
+                              <span>{formatContactDisplayName(c.name, c.relationship)}</span>
+                              <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
+                            </div>
+                            {selectedContactIndex === idx && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0 ml-auto flex-wrap">
+                  {/* SĐT + Nút Copy + Nút Gọi */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-muted-foreground font-mono font-semibold text-xs">
+                      {activeContactPhone}
+                    </span>
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground transition-all cursor-pointer shrink-0 select-none group bg-transparent border-0 p-0 hover:opacity-80 flex-1 min-w-0 truncate justify-start"
-                      title="Mở danh sách người liên hệ phụ huynh"
+                      onClick={() => {
+                        navigator.clipboard.writeText(activeContactPhone)
+                          .then(() => toast.success(`Đã sao chép SĐT: ${activeContactPhone}`))
+                          .catch(() => toast.error('Không thể sao chép.'))
+                      }}
+                      className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-md transition-colors cursor-pointer shrink-0"
+                      title="Sao chép số điện thoại"
                     >
-                      <span className="font-extrabold text-sky-700 dark:text-sky-400 shrink-0">
-                        {selectedContact.relationship || 'Mẹ'}
-                      </span>
-                      <span className="font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
-                        {getCleanContactName(selectedContact.name)}
-                      </span>
-                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
+                      <Copy className="h-3.5 w-3.5" />
                     </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-1.5 text-xs" align="start">
-                    <div className="font-normal text-[11.5px] text-muted-foreground px-2 py-1 border-b border-border/40 mb-1">
-                      Liên hệ cho
-                    </div>
-                    <div className="space-y-0.5">
-                      {contactsList.map((c, idx) => (
-                        <button
-                          key={c.phone + idx}
-                          type="button"
-                          onClick={() => setSelectedContactIndex(idx)}
-                          className={cn(
-                            'w-full text-left px-2 py-1.5 rounded text-[11.5px] font-medium flex items-center justify-between transition-colors cursor-pointer',
-                            selectedContactIndex === idx
-                              ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
-                              : 'hover:bg-muted text-foreground'
-                          )}
-                        >
-                          <div className="flex flex-col">
-                            <span>{formatContactDisplayName(c.name, c.relationship)}</span>
-                            <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
-                          </div>
-                          {selectedContactIndex === idx && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
-                        </button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {/* Row 2: Số ĐT + Copy + Nút Gọi */}
-              <div className="flex items-center justify-between gap-1.5 min-w-0 w-full pt-0.5">
-                <span className="text-muted-foreground font-mono font-semibold text-xs truncate">
-                  {activeContactPhone}
-                </span>
-                <div className="flex items-center gap-1 shrink-0 ml-auto">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(activeContactPhone)
-                        .then(() => toast.success(`Đã sao chép SĐT: ${activeContactPhone}`))
-                        .catch(() => toast.error('Không thể sao chép.'))
-                    }}
-                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-md transition-colors cursor-pointer shrink-0"
-                    title="Sao chép số điện thoại"
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!activeContactPhone || activeContactPhone === '--'}
-                    onClick={() => {
-                      if (!activeContactPhone || activeContactPhone === '--' || activeContactPhone.trim() === '') {
-                        toast.warning('Người liên hệ chưa được gán số điện thoại. Vui lòng cập nhật số điện thoại trước khi gọi!')
-                        return
+                    <button
+                      type="button"
+                      disabled={!activeContactPhone || activeContactPhone === '--'}
+                      onClick={() => {
+                        if (!activeContactPhone || activeContactPhone === '--' || activeContactPhone.trim() === '') {
+                          toast.warning('Người liên hệ chưa được gán số điện thoại. Vui lòng cập nhật số điện thoại trước khi gọi!')
+                          return
+                        }
+                        setChatChannel('telephone')
+                        if (setCallOutcome) setCallOutcome('nghe_may')
+                        setIsCallActive(true)
+                        startCall({
+                          studentId: student?.studentId || 's1',
+                          studentName: student?.studentName || 'Alex (Nguyễn An)',
+                          parentPhone: activeContactPhone,
+                          parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
+                        })
+                      }}
+                      className={cn(
+                        'h-6 px-2.5 text-[10.5px] font-bold rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0',
+                        !activeContactPhone || activeContactPhone === '--'
+                          ? 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed'
+                          : 'bg-red-600 hover:bg-red-700 text-white'
+                      )}
+                      title={
+                        !activeContactPhone || activeContactPhone === '--'
+                          ? 'Chưa gán số điện thoại liên hệ'
+                          : `Kích hoạt cuộc gọi cho ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})`
                       }
-                      setChatChannel('telephone')
-                      if (setCallOutcome) setCallOutcome('nghe_may')
-                      setIsCallActive(true)
-                      startCall({
-                        studentId: student?.studentId || 's1',
-                        studentName: student?.studentName || 'Alex (Nguyễn An)',
-                        parentPhone: activeContactPhone,
-                        parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
-                      })
-                    }}
-                    className={cn(
-                      'h-6 px-2.5 text-[10.5px] font-bold rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0',
-                      !activeContactPhone || activeContactPhone === '--'
-                        ? 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed'
-                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    >
+                      <Phone className="h-3 w-3 fill-current" />
+                      <span>Gọi</span>
+                    </button>
+                  </div>
+
+                  <span className="text-sky-200/80 dark:text-sky-800/80 hidden sm:inline">|</span>
+
+                  {/* Lịch hẹn đưa lên cạnh phải header liên hệ */}
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-sky-200/80 dark:border-sky-900/60 shadow-3xs">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0 flex items-center gap-1">
+                      <Calendar className="h-3 w-3 text-sky-600 dark:text-sky-400" />
+                      Lịch hẹn:
+                    </span>
+                    <input
+                      type={callbackTime ? 'datetime-local' : 'text'}
+                      value={callbackTime}
+                      placeholder="Lên lịch"
+                      onFocus={(e) => {
+                        e.target.type = 'datetime-local'
+                        try { e.target.showPicker() } catch {}
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) e.target.type = 'text'
+                      }}
+                      onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
+                      className="h-5 text-xs text-foreground bg-transparent border-none focus:outline-none w-[125px] font-medium placeholder:text-muted-foreground/70 cursor-pointer"
+                    />
+                    {callbackTime && (
+                      <button
+                        type="button"
+                        onClick={() => setCallbackTime && setCallbackTime('')}
+                        className="text-muted-foreground hover:text-foreground text-[10px] p-0.5 rounded cursor-pointer leading-none"
+                        title="Xóa lịch hẹn"
+                      >
+                        ✕
+                      </button>
                     )}
-                    title={
-                      !activeContactPhone || activeContactPhone === '--'
-                        ? 'Chưa gán số điện thoại liên hệ'
-                        : `Kích hoạt cuộc gọi cho ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})`
-                    }
-                  >
-                    <Phone className="h-3 w-3 fill-current" />
-                    <span>Gọi</span>
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Row 3: Kênh liên hệ */}
-            <div className="flex items-center justify-between gap-2 min-w-0 w-full">
-              <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
-                Kênh liên hệ:
-              </span>
-              <select
-                value={chatChannel}
-                onChange={(e) => {
-                  const val = e.target.value as 'zalo' | 'telephone' | 'direct'
-                  setChatChannel(val)
-                  if (val === 'telephone' && setCallOutcome) {
-                    setCallOutcome('nghe_may')
-                  } else if (val === 'direct' && setCallOutcome) {
-                    setCallOutcome('da_gap')
-                  }
-                }}
-                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
-              >
-                <option value="zalo">Zalo</option>
-                <option value="telephone">Gọi điện</option>
-                <option value="direct">Gặp mặt</option>
-              </select>
-            </div>
+              {/* Ô nhập liệu Full chiều rộng */}
+              <div className="rounded-xl border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 shadow-xs overflow-hidden focus-within:ring-2 focus-within:ring-sky-500/40 focus-within:border-sky-500 transition-all w-full">
+                {/* Toolbar Header: Kênh liên hệ + Button Option Kết quả */}
+                <div className="bg-sky-50/70 dark:bg-sky-950/40 border-b border-sky-200/80 dark:border-sky-900/60 px-3 py-1.5 flex items-center gap-2.5 flex-wrap">
+                  {/* Kênh liên hệ */}
+                  <div className="flex items-center gap-1.5 min-w-0 bg-white dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-sky-200/80 dark:border-sky-900/60 shadow-3xs shrink-0">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">
+                      Kênh:
+                    </span>
+                    <select
+                      value={chatChannel}
+                      onChange={(e) => {
+                        const val = e.target.value as 'zalo' | 'telephone' | 'direct'
+                        setChatChannel(val)
+                        if (val === 'telephone' && setCallOutcome) {
+                          setCallOutcome('nghe_may')
+                        } else if (val === 'direct' && setCallOutcome) {
+                          setCallOutcome('da_gap')
+                        } else if (val === 'zalo' && setCallOutcome) {
+                          setCallOutcome('da_nhan')
+                        }
+                      }}
+                      className="text-xs font-bold text-sky-800 dark:text-sky-300 bg-transparent border-none focus:outline-none cursor-pointer"
+                    >
+                      <option value="telephone">📞 Gọi điện</option>
+                      <option value="zalo">💬 Zalo</option>
+                      <option value="direct">👥 Gặp mặt</option>
+                    </select>
+                  </div>
 
-            <div className="flex items-center justify-between gap-2 min-w-0 w-full">
-              <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
-                Kết quả:
-              </span>
-              <select
-                value={callOutcome}
-                onChange={(e) => setCallOutcome && setCallOutcome(e.target.value)}
-                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
-              >
-                {chatChannel === 'telephone' ? (
-                  <>
-                    <option value="nghe_may">Nghe máy</option>
-                    <option value="khong_nghe">Không nghe máy</option>
-                    <option value="may_ban">Máy bận</option>
-                  </>
-                ) : chatChannel === 'direct' ? (
-                  <>
-                    <option value="da_gap">Đã gặp</option>
-                    <option value="vang_mat">Vắng mặt</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="da_nhan">Đã gửi tin nhắn</option>
-                    <option value="da_phan_hoi">Phụ huynh đã phản hồi</option>
-                  </>
-                )}
-              </select>
-            </div>
+                  <span className="text-border/60 hidden sm:inline">|</span>
 
-            <div className="flex items-center justify-between gap-2 min-w-0 w-full">
-              <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
-                Lịch hẹn:
-              </span>
-              <input
-                type={callbackTime ? 'datetime-local' : 'text'}
-                value={callbackTime}
-                placeholder="Lên lịch"
-                onFocus={(e) => {
-                  e.target.type = 'datetime-local'
-                  try { e.target.showPicker() } catch {}
-                }}
-                onBlur={(e) => {
-                  if (!e.target.value) e.target.type = 'text'
-                }}
-                onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
-              />
-            </div>
-          </div>
+                  {/* Kết quả: Các option hiển thị button chọn luôn */}
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">
+                      Kết quả:
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {(
+                        chatChannel === 'telephone'
+                          ? [
+                              { value: 'nghe_may', label: 'Nghe máy' },
+                              { value: 'khong_nghe', label: 'Không nghe máy' },
+                              { value: 'may_ban', label: 'Máy bận' },
+                            ]
+                          : chatChannel === 'direct'
+                          ? [
+                              { value: 'da_gap', label: 'Đã gặp' },
+                              { value: 'vang_mat', label: 'Vắng mặt' },
+                            ]
+                          : [
+                              { value: 'da_nhan', label: 'Đã gửi' },
+                              { value: 'da_phan_hoi', label: 'Đã phản hồi' },
+                            ]
+                      ).map((opt) => {
+                        const isSelected = callOutcome === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setCallOutcome && setCallOutcome(opt.value)}
+                            className={cn(
+                              'h-6 px-2.5 text-[11px] font-semibold rounded-md border transition-all cursor-pointer inline-flex items-center gap-1 select-none',
+                              isSelected
+                                ? 'bg-sky-600 text-white border-sky-600 shadow-2xs font-bold'
+                                : 'bg-white dark:bg-zinc-850 text-foreground/80 border-sky-200/80 dark:border-sky-900/60 hover:bg-sky-50 dark:hover:bg-sky-950/50 hover:text-sky-700'
+                            )}
+                          >
+                            <span>{opt.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
 
-          {/* Right Column (~67%): Resizable Textareas & Action Buttons */}
-          <div className="md:col-span-8 space-y-2 flex flex-col justify-between h-full">
-            <div className="space-y-1.5 w-full">
-              {/* Ô nhập ghi chú trao đổi */}
-              <textarea
-                ref={textareaRef}
-                rows={3}
-                value={chatText}
-                onChange={(e) => setChatText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                    e.preventDefault()
-                    handleSendChat()
-                  }
-                }}
-                placeholder={
-                  expandedTopicCode 
-                    ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
-                    : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
-                }
-                className="w-full min-h-[76px] max-h-[180px] py-1.5 px-3 text-xs rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed shadow-xs transition-all"
-              />
-
-              {/* Input Phụ huynh phản hồi */}
-              <div className="pt-0.5">
-                <input
-                  type="text"
-                  value={parentOpinionText}
-                  onChange={(e) => setParentOpinionText && setParentOpinionText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                      e.preventDefault()
-                      handleSendChat()
-                    }
-                  }}
-                  placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
-                  className="w-full h-7 text-xs px-2.5 rounded-md border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-normal focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground/60 shadow-3xs"
-                />
-              </div>
-            </div>
-
-            {/* Action Row: Selection Trạng thái (Left) + Action Buttons (Right) */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
-                {isRenewalMode ? (
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10.5px] text-muted-foreground font-medium shrink-0">
-                      Trạng thái Tái phí:
+                  {/* Cạnh phải: Trạng thái Tái phí (Gia hạn) */}
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto bg-white dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-sky-200/80 dark:border-sky-900/60 shadow-3xs">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">
+                      Tái phí:
                     </span>
                     <select
                       value={
@@ -816,7 +837,7 @@ export function StudentCareFormCard({
                         }
                         if (onRefresh) onRefresh()
                       }}
-                      className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
+                      className="text-xs font-semibold text-foreground bg-transparent border-none focus:outline-none cursor-pointer"
                     >
                       <option value="" disabled hidden>
                         Chọn phân loại...
@@ -825,41 +846,63 @@ export function StudentCareFormCard({
                       <option value="tiem_nang">Tiềm năng</option>
                       <option value="hen_tai">Hẹn tái</option>
                       <option value="tai_phi" disabled={!orderInfo?.orderCode}>
-                        Tái phí thành công {!orderInfo?.orderCode ? '(Cần liên kết đơn)' : ''}
+                        Tái phí thành công {!orderInfo?.orderCode ? '(Cần đơn)' : ''}
                       </option>
                       {(renewalStatus === 'that_bai' || cstpStatus === 'that_bai') && (
                         <option value="that_bai" disabled>
-                          Thất bại (Hệ thống tự động)
+                          Thất bại (Hệ thống)
                         </option>
                       )}
                     </select>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10.5px] text-muted-foreground font-medium shrink-0">
-                      Trạng thái Chăm sóc:
-                    </span>
-                    <select
-                      value={regularCareStatus}
-                      onChange={(e) => {
-                        setRegularCareStatus(e.target.value)
-                        toast.success(`Đã chuyển trạng thái chăm sóc sang: ${
-                          e.target.value === 'da_cham_soc' ? 'Đã chăm sóc' :
-                          e.target.value === 'can_ho_tro' ? 'Cần hỗ trợ' :
-                          e.target.value === 'cho_phan_hoi' ? 'Chờ phản hồi' :
-                          e.target.value === 'hen_goi_lai' ? 'Hẹn gọi lại' : 'Đang xử lý'
-                        }`)
-                      }}
-                      className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
-                    >
-                      <option value="dang_xu_ly">Đang xử lý</option>
-                      <option value="da_cham_soc">Đã chăm sóc</option>
-                      <option value="can_ho_tro">Cần hỗ trợ</option>
-                      <option value="cho_phan_hoi">Chờ phản hồi</option>
-                      <option value="hen_goi_lai">Hẹn gọi lại</option>
-                    </select>
-                  </div>
-                )}
+                </div>
+
+                {/* Textarea ghi chú */}
+                <textarea
+                  ref={textareaRef}
+                  rows={3}
+                  value={chatText}
+                  onChange={(e) => setChatText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault()
+                      handleSendChat()
+                    }
+                  }}
+                  placeholder={
+                    expandedTopicCode 
+                      ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
+                      : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
+                  }
+                  className="w-full min-h-[72px] max-h-[180px] p-2.5 text-xs bg-transparent text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed border-0"
+                />
+
+                {/* Input Phụ huynh phản hồi */}
+                <div className="p-1.5 bg-slate-50/70 dark:bg-zinc-800/60 border-t border-sky-100 dark:border-zinc-800 flex items-center gap-2">
+                  <span className="text-emerald-700 dark:text-emerald-400 font-bold text-[11px] shrink-0 pl-1 flex items-center gap-1">
+                    💬 Ý kiến PH:
+                  </span>
+                  <input
+                    type="text"
+                    value={parentOpinionText}
+                    onChange={(e) => setParentOpinionText && setParentOpinionText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault()
+                        handleSendChat()
+                      }
+                    }}
+                    placeholder="Nhập tóm tắt ý kiến / phản hồi của phụ huynh..."
+                    className="flex-1 h-6 text-xs px-2 rounded border border-emerald-200/80 dark:border-emerald-900/60 bg-white dark:bg-zinc-900 text-emerald-950 dark:text-emerald-200 font-normal focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground/60 shadow-3xs"
+                  />
+                </div>
+              </div>
+
+              {/* Action Row: Ghi chú Lưu & Đóng (Left) + Action Buttons (Right) cùng một hàng */}
+              <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
+                <p className="text-[11px] text-muted-foreground/80 italic leading-tight select-none">
+                  * &quot;Lưu &amp; Đóng&quot;: Lưu nội dung trao đổi, xác nhận Đã tái phí và đóng ca chăm sóc.
+                </p>
 
                 <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                   <Button
@@ -887,18 +930,294 @@ export function StudentCareFormCard({
                   </Button>
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="select-none animate-in fade-in-50 duration-150 grid grid-cols-1 md:grid-cols-12 gap-3 w-full items-start">
+              {/* Left Column (~33%): Contact Info & Controls in horizontal rows */}
+              <div className="md:col-span-4 space-y-2 border-b md:border-b-0 md:border-r border-sky-200/60 dark:border-sky-900/50 pb-2 md:pb-0 pr-0 md:pr-3">
+                {/* Box cụm người liên hệ phụ huynh (nền trắng nổi bật trên card xanh nhạt) */}
+                <div className="p-2 rounded-lg border border-sky-200/80 dark:border-sky-900/70 bg-white/90 dark:bg-zinc-900/90 space-y-1.5 w-full shadow-3xs">
+                  {/* Row 1: Tên Phụ huynh (dạng dropdown trigger) */}
+                  <div className="flex items-center justify-between gap-1.5 min-w-0 w-full">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground transition-all cursor-pointer shrink-0 select-none group bg-transparent border-0 p-0 hover:opacity-80 flex-1 min-w-0 truncate justify-start"
+                          title="Mở danh sách người liên hệ phụ huynh"
+                        >
+                          <span className="font-extrabold text-sky-700 dark:text-sky-400 shrink-0">
+                            {selectedContact.relationship || 'Mẹ'}
+                          </span>
+                          <span className="font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
+                            {getCleanContactName(selectedContact.name)}
+                          </span>
+                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-1.5 text-xs" align="start">
+                        <div className="font-normal text-[11.5px] text-muted-foreground px-2 py-1 border-b border-border/40 mb-1">
+                          Liên hệ cho
+                        </div>
+                        <div className="space-y-0.5">
+                          {contactsList.map((c, idx) => (
+                            <button
+                              key={c.phone + idx}
+                              type="button"
+                              onClick={() => setSelectedContactIndex(idx)}
+                              className={cn(
+                                'w-full text-left px-2 py-1.5 rounded text-[11.5px] font-medium flex items-center justify-between transition-colors cursor-pointer',
+                                selectedContactIndex === idx
+                                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
+                                  : 'hover:bg-muted text-foreground'
+                              )}
+                            >
+                              <div className="flex flex-col">
+                                <span>{formatContactDisplayName(c.name, c.relationship)}</span>
+                                <span className="text-xs text-muted-foreground font-mono">{c.phone}</span>
+                              </div>
+                              {selectedContactIndex === idx && <Check className="h-3.5 w-3.5 text-sky-600 shrink-0" />}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
 
-              {/* Dòng mô tả diễn giải ở góc phải bên dưới cụm nút */}
-              <div className="flex justify-end pr-0.5">
-                <p className="text-xs text-muted-foreground/80 italic text-right leading-tight select-none">
-                  {isRenewalMode
-                    ? '* "Lưu & Đóng": Lưu nội dung trao đổi, xác nhận Đã tái phí và đóng ca chăm sóc.'
-                    : '* "Lưu & Đóng": Lưu nội dung trao đổi và đánh dấu đóng ca chăm sóc này.'}
-                </p>
+                  {/* Row 2: Số ĐT + Copy + Nút Gọi */}
+                  <div className="flex items-center justify-between gap-1.5 min-w-0 w-full pt-0.5">
+                    <span className="text-muted-foreground font-mono font-semibold text-xs truncate">
+                      {activeContactPhone}
+                    </span>
+                    <div className="flex items-center gap-1 shrink-0 ml-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(activeContactPhone)
+                            .then(() => toast.success(`Đã sao chép SĐT: ${activeContactPhone}`))
+                            .catch(() => toast.error('Không thể sao chép.'))
+                        }}
+                        className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-md transition-colors cursor-pointer shrink-0"
+                        title="Sao chép số điện thoại"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!activeContactPhone || activeContactPhone === '--'}
+                        onClick={() => {
+                          if (!activeContactPhone || activeContactPhone === '--' || activeContactPhone.trim() === '') {
+                            toast.warning('Người liên hệ chưa được gán số điện thoại. Vui lòng cập nhật số điện thoại trước khi gọi!')
+                            return
+                          }
+                          setChatChannel('telephone')
+                          if (setCallOutcome) setCallOutcome('nghe_may')
+                          setIsCallActive(true)
+                          startCall({
+                            studentId: student?.studentId || 's1',
+                            studentName: student?.studentName || 'Alex (Nguyễn An)',
+                            parentPhone: activeContactPhone,
+                            parentName: formatContactDisplayName(selectedContact.name, selectedContact.relationship),
+                          })
+                        }}
+                        className={cn(
+                          'h-6 px-2.5 text-[10.5px] font-bold rounded-md transition-colors cursor-pointer inline-flex items-center justify-center gap-1 shadow-2xs shrink-0',
+                          !activeContactPhone || activeContactPhone === '--'
+                            ? 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700 text-white'
+                        )}
+                        title={
+                          !activeContactPhone || activeContactPhone === '--'
+                            ? 'Chưa gán số điện thoại liên hệ'
+                            : `Kích hoạt cuộc gọi cho ${formatContactDisplayName(selectedContact.name, selectedContact.relationship)} (${activeContactPhone})`
+                        }
+                      >
+                        <Phone className="h-3 w-3 fill-current" />
+                        <span>Gọi</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rows 3, 4, 5: Kênh liên hệ, Kết quả, Lịch hẹn */}
+                <div className="flex items-center justify-between gap-2 min-w-0 w-full">
+                  <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
+                    Kênh liên hệ:
+                  </span>
+                  <select
+                    value={chatChannel}
+                    onChange={(e) => {
+                      const val = e.target.value as 'zalo' | 'telephone' | 'direct'
+                      setChatChannel(val)
+                      if (val === 'telephone' && setCallOutcome) {
+                        setCallOutcome('nghe_may')
+                      } else if (val === 'direct' && setCallOutcome) {
+                        setCallOutcome('da_gap')
+                      }
+                    }}
+                    className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
+                  >
+                    <option value="zalo">Zalo</option>
+                    <option value="telephone">Gọi điện</option>
+                    <option value="direct">Gặp mặt</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 min-w-0 w-full">
+                  <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
+                    Kết quả:
+                  </span>
+                  <select
+                    value={callOutcome}
+                    onChange={(e) => setCallOutcome && setCallOutcome(e.target.value)}
+                    className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs flex-1 min-w-0 truncate"
+                  >
+                    {chatChannel === 'telephone' ? (
+                      <>
+                        <option value="nghe_may">Nghe máy</option>
+                        <option value="khong_nghe">Không nghe máy</option>
+                        <option value="may_ban">Máy bận</option>
+                      </>
+                    ) : chatChannel === 'direct' ? (
+                      <>
+                        <option value="da_gap">Đã gặp</option>
+                        <option value="vang_mat">Vắng mặt</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="da_nhan">Đã gửi tin nhắn</option>
+                        <option value="da_phan_hoi">Phụ huynh đã phản hồi</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 min-w-0 w-full">
+                  <span className="text-[10.5px] text-muted-foreground font-medium shrink-0 w-[72px]">
+                    Lịch hẹn:
+                  </span>
+                  <input
+                    type={callbackTime ? 'datetime-local' : 'text'}
+                    value={callbackTime}
+                    placeholder="Lên lịch"
+                    onFocus={(e) => {
+                      e.target.type = 'datetime-local'
+                      try { e.target.showPicker() } catch {}
+                    }}
+                    onBlur={(e) => {
+                      if (!e.target.value) e.target.type = 'text'
+                    }}
+                    onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
+                    className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column (~67%): Resizable Textareas & Action Buttons */}
+              <div className="md:col-span-8 space-y-2 flex flex-col justify-between h-full">
+                <div className="space-y-1.5 w-full">
+                  {/* Ô nhập ghi chú trao đổi */}
+                  <textarea
+                    ref={textareaRef}
+                    rows={3}
+                    value={chatText}
+                    onChange={(e) => setChatText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault()
+                        handleSendChat()
+                      }
+                    }}
+                    placeholder={
+                      expandedTopicCode 
+                        ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
+                        : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
+                    }
+                    className="w-full min-h-[76px] max-h-[180px] py-1.5 px-3 text-xs rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/40 disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed shadow-xs transition-all"
+                  />
+
+                  {/* Input Phụ huynh phản hồi */}
+                  <div className="pt-0.5">
+                    <input
+                      type="text"
+                      value={parentOpinionText}
+                      onChange={(e) => setParentOpinionText && setParentOpinionText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                          e.preventDefault()
+                          handleSendChat()
+                        }
+                      }}
+                      placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
+                      className="w-full h-7 text-xs px-2.5 rounded-md border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 font-normal focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-muted-foreground/60 shadow-3xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Row: Selection Trạng thái (Left) + Action Buttons (Right) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[10.5px] text-muted-foreground font-medium shrink-0">
+                        Trạng thái Chăm sóc:
+                      </span>
+                      <select
+                        value={regularCareStatus}
+                        onChange={(e) => {
+                          setRegularCareStatus(e.target.value)
+                          toast.success(`Đã chuyển trạng thái chăm sóc sang: ${
+                            e.target.value === 'da_cham_soc' ? 'Đã chăm sóc' :
+                            e.target.value === 'can_ho_tro' ? 'Cần hỗ trợ' :
+                            e.target.value === 'cho_phan_hoi' ? 'Chờ phản hồi' :
+                            e.target.value === 'hen_goi_lai' ? 'Hẹn gọi lại' : 'Đang xử lý'
+                          }`)
+                        }}
+                        className="h-7 text-xs px-2 rounded-md border border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-zinc-900 text-foreground font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer shadow-3xs min-w-[130px]"
+                      >
+                        <option value="dang_xu_ly">Đang xử lý</option>
+                        <option value="da_cham_soc">Đã chăm sóc</option>
+                        <option value="can_ho_tro">Cần hỗ trợ</option>
+                        <option value="cho_phan_hoi">Chờ phản hồi</option>
+                        <option value="hen_goi_lai">Hẹn gọi lại</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleCheckComplete}
+                        className="h-7 px-3 text-xs font-semibold cursor-pointer shrink-0 bg-transparent text-sky-600 border border-sky-600/40 hover:bg-sky-600 hover:text-white dark:text-sky-400 dark:border-sky-500/40 dark:hover:bg-sky-600 dark:hover:text-white rounded-lg transition-colors shadow-none"
+                        title="Lưu nội dung tương tác và đóng ca chăm sóc"
+                      >
+                        Lưu & Đóng
+                      </Button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={!chatText.trim() && !parentOpinionText.trim()}
+                        onClick={() => {
+                          handleSendChat()
+                          setIsCallActive(false)
+                        }}
+                        className="h-7 px-4 text-xs font-semibold cursor-pointer shrink-0 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs"
+                        title="Lưu ghi chú tương tác và tiếp tục theo dõi ca chăm sóc"
+                      >
+                        Lưu
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pr-0.5">
+                    <p className="text-xs text-muted-foreground/80 italic text-right leading-tight select-none">
+                      * &quot;Lưu &amp; Đóng&quot;: Lưu nội dung trao đổi và đánh dấu đóng ca chăm sóc này.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          )}
 
         {/* Active Care Card / Linked Order Section */}
         <div className="border-t border-border/50 pt-2 mt-2 space-y-1.5">
@@ -917,7 +1236,7 @@ export function StudentCareFormCard({
             student={student}
             chatRecipient={chatRecipient}
             isCaredStatus={isCaredStatus}
-            mode={careMode}
+            mode={careMode === 'renewal' ? 'renewal' : 'regular'}
             cstpStatus={cstpStatus || renewalStatus}
           />
         </div>

@@ -15,9 +15,10 @@ import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { getFamilyContacts } from '@/mocks/careAlerts'
 import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
-import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getProductSku, getExpiryTier } from './renewalHelpers'
+import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getExpiryTier } from './renewalHelpers'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
 import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
+import { formatRelativeCareTime } from '../AlertRow'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
 import {
   resolveStudentPlacementStatus,
@@ -282,11 +283,17 @@ export function RenewalAlertRow({
       {/* Liên hệ */}
       <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
         <ContactCell
-          name={primaryContact ? `GĐ ${cls.studentName.split(' ').pop()?.toUpperCase()}` : '-'}
+          name={
+            primaryContact
+              ? `${primaryContact.name}${primaryContact.relationship ? ` (${primaryContact.relationship})` : ''}`
+              : '-'
+          }
           phone={primaryContact?.phone}
           studentId={cls.studentId}
           studentName={cls.studentName}
           masked={true}
+          showCallButton={false}
+          showPhoneIcon={false}
           additionalContacts={
             contacts && contacts.length > 1
               ? contacts.map((c) => ({ name: `${c.name} (${c.relationship})`, phone: c.phone }))
@@ -310,10 +317,10 @@ export function RenewalAlertRow({
             >
               <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs px-1 font-bold border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400 rounded animate-in fade-in duration-300">
+                  <span className="text-xs text-muted-foreground font-normal">
                     CS
                   </span>
-                  <span className="text-foreground text-xs hover:text-emerald-600 dark:hover:text-emerald-400 font-medium">{cls.csStaff}</span>
+                  <span className="text-foreground text-xs hover:text-primary font-normal">{cls.csStaff}</span>
                 </div>
               </div>
             </PersonnelHoverCard>
@@ -323,96 +330,6 @@ export function RenewalAlertRow({
         </div>
       </td>
 
-      {/* Lớp học */}
-      <td className="py-3 px-3 min-w-[200px]">
-        {(() => {
-          const studentInfo = mockStudents.find(
-            (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
-          )
-          const placementStatus = resolveStudentPlacementStatus(cls, studentInfo)
-          const isHoldingClass =
-            placementStatus === 'reserve' &&
-            Boolean(cls.classCode && cls.classCode !== '-') &&
-            !cls.studentNote?.toLowerCase().includes('thoát lớp')
-
-          const hasClassCode = Boolean(cls.classCode && cls.classCode !== '-')
-          const showClassHover =
-            hasClassCode &&
-            (placementStatus === 'active' ||
-              placementStatus === 'draft_class' ||
-              placementStatus === 'awaiting_opening' ||
-              placementStatus === 'trial' ||
-              isHoldingClass)
-
-          return (
-            <div className="flex flex-col gap-1 text-left">
-              {/* Hàng 1: Trình độ */}
-              <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="truncate shrink-0 text-zinc-700 dark:text-zinc-300 font-medium text-xs" title={cls.level}>
-                  {cls.level}
-                </span>
-              </div>
-
-              {/* Hàng 2: Mã lớp & Trạng thái */}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {showClassHover ? (
-                  <span onClick={(e) => e.stopPropagation()}>
-                    <RenewalClassCodeHoverCell
-                      classCode={cls.classCode}
-                      subject={cls.subject}
-                      level={cls.level}
-                      teacherCode={cls.teacherCode}
-                      schedule={cls.schedule}
-                    />
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {hasClassCode ? cls.classCode : 'Chưa có mã lớp'}
-                  </span>
-                )}
-
-                <StatusBadge
-                  status={placementStatus}
-                  label={
-                    isHoldingClass
-                      ? 'Bảo lưu (Giữ lớp)'
-                      : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
-                  }
-                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
-                />
-              </div>
-            </div>
-          )
-        })()}
-      </td>
-
-      {/* Gói sản phẩm */}
-      <td className="py-3 px-3">
-        {(() => {
-          const skuName = getProductSku(cls)
-          const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions)
-
-          return (
-            <div className="flex flex-col gap-0.5 min-w-[200px] max-w-[280px]">
-              {/* Hàng 1: Tên gói học mới nhất */}
-              <div className="flex items-center gap-1.5 flex-nowrap">
-                <span className="text-zinc-700 dark:text-zinc-300 font-medium text-xs truncate shrink-0 max-w-[240px]" title={skuName}>
-                  {skuName}
-                </span>
-              </div>
-              {/* Hàng 2: Nhãn kỳ hạn (T1, T2...) & Hạn học phí */}
-              <div className="flex items-center gap-1.5 flex-nowrap text-xs">
-                <span className={cn('font-bold shrink-0', expiryTier.textClass)}>
-                  {expiryTier.label}
-                </span>
-                <span className="text-muted-foreground whitespace-nowrap">
-                  Hạn: {cls.expectedEndDate}
-                </span>
-              </div>
-            </div>
-          )
-        })()}
-      </td>
 
       {/* Lịch sử chăm sóc */}
       <td className="py-3 px-3 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
@@ -463,34 +380,24 @@ export function RenewalAlertRow({
           const logs = isUncared ? [] : renewalLogs
           const latestLog = logs[0]
           const rescheduleInfo = getRescheduleInfo(cls)
-          const attemptCount = logs.length
 
           const cellContent = (
             <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
-              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất với (n) ở trước ngày và nội dung */}
+              {/* Dòng 1 (trên): Lịch sử chăm sóc gần nhất */}
               {isUncared ? (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  <span className="font-bold text-zinc-500 mr-1">(0)</span>
-                  <span className="italic text-amber-600 dark:text-amber-400 font-medium">Chưa chăm sóc</span>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-normal text-muted-foreground">Chưa chăm sóc</span>
                 </div>
               ) : (
                 latestLog && (
                   <div
                     className="text-xs text-muted-foreground truncate group-hover/care:text-foreground transition-colors"
-                    title={`(${attemptCount}) ${latestLog.date}: ${latestLog.note}`}
+                    title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
                   >
-                    <span
-                      className={cn(
-                        'font-bold mr-1',
-                        inProgress
-                          ? 'text-sky-700 dark:text-sky-400'
-                          : 'text-emerald-700 dark:text-emerald-400'
-                      )}
-                    >
-                      ({attemptCount})
+                    <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0">
+                      {formatRelativeCareTime(latestLog.date)}:
                     </span>
-                    <span className="font-mono text-zinc-500 mr-1">{latestLog.date}:</span>
-                    <span>{latestLog.note}</span>
+                    <span className="text-zinc-600 dark:text-zinc-400">{latestLog.note}</span>
                   </div>
                 )
               )}
@@ -524,7 +431,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Trạng thái tái phí */}
-      <td className="py-3 px-3 min-w-[140px]">
+      <td className="py-3 px-3 min-w-[110px]">
         {(() => {
           const classification = getRenewalClassification(cls)
           const label = getRenewalClassificationLabel(classification)
@@ -592,8 +499,85 @@ export function RenewalAlertRow({
                 </>
               ) : (
                 <span className="text-xs italic text-muted-foreground">
-                  Chưa có đơn hàng
+                  Chưa ghép đơn hàng
                 </span>
+              )}
+            </div>
+          )
+        })()}
+      </td>
+
+      {/* Lớp học */}
+      <td className="py-3 px-3 min-w-[180px]">
+        {(() => {
+          const studentInfo = mockStudents.find(
+            (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
+          )
+          const placementStatus = resolveStudentPlacementStatus(cls, studentInfo)
+          const isHoldingClass =
+            placementStatus === 'reserve' &&
+            Boolean(cls.classCode && cls.classCode !== '-') &&
+            !cls.studentNote?.toLowerCase().includes('thoát lớp')
+
+          const hasClassCode = Boolean(cls.classCode && cls.classCode !== '-')
+          const showClassHover =
+            hasClassCode &&
+            (placementStatus === 'active' ||
+              placementStatus === 'draft_class' ||
+              placementStatus === 'awaiting_opening' ||
+              placementStatus === 'trial' ||
+              isHoldingClass)
+          const classification = getRenewalClassification(cls)
+          const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions, classification)
+
+          return (
+            <div className="flex flex-col gap-1 text-left">
+              {/* Hàng 1: Mã lớp cùng trạng thái */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {showClassHover ? (
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <RenewalClassCodeHoverCell
+                      classCode={cls.classCode}
+                      subject={cls.subject}
+                      level={cls.level}
+                      subLevel={cls.subLevel}
+                      teacherCode={cls.teacherCode}
+                      schedule={cls.schedule}
+                    />
+                  </span>
+                ) : hasClassCode ? (
+                  <span className="text-xs text-foreground font-mono font-medium">
+                    {cls.classCode}
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">
+                    Chưa có lớp
+                  </span>
+                )}
+
+                <StatusBadge
+                  status={placementStatus}
+                  label={
+                    isHoldingClass
+                      ? 'Bảo lưu (Giữ lớp)'
+                      : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
+                  }
+                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
+                />
+              </div>
+
+              {/* Hàng 2: Hạn */}
+              {cls.expectedEndDate && (
+                <div className="flex items-center gap-1.5 flex-nowrap text-xs">
+                  {expiryTier.label ? (
+                    <span className={cn('font-bold shrink-0', expiryTier.textClass)}>
+                      {expiryTier.label}
+                    </span>
+                  ) : null}
+                  <span className="text-muted-foreground whitespace-nowrap">
+                    Hạn: {cls.expectedEndDate}
+                  </span>
+                </div>
               )}
             </div>
           )

@@ -54,21 +54,6 @@ export function CareProjectMediaList({
 }: CareProjectMediaListProps) {
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaItem | null>(null)
   const [showAllProjects, setShowAllProjects] = useState(false)
-  const [expandedProjectComments, setExpandedProjectComments] = useState<Record<string, boolean>>({})
-
-  const isProjectCommentExpanded = (id: string) => {
-    if (expandedProjectComments[id] !== undefined) {
-      return expandedProjectComments[id]
-    }
-    return id === 'proj-math-1' || id === 'proj-eng-1'
-  }
-
-  const toggleExpandProjectComment = (id: string) => {
-    setExpandedProjectComments((prev) => ({
-      ...prev,
-      [id]: !isProjectCommentExpanded(id),
-    }))
-  }
 
   // Raw mock media database for project sessions
   const rawProjectSessions: ProjectSession[] = useMemo(() => {
@@ -314,6 +299,20 @@ export function CareProjectMediaList({
           <h3 className="text-xs font-bold text-foreground tracking-tight">
             Buổi Học Dự Án & Media Thực Hành
           </h3>
+          {filteredProjectSessions.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setShowAllProjects(!showAllProjects)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <span>
+                {showAllProjects
+                  ? 'Thu gọn'
+                  : `Xem thêm (${filteredProjectSessions.length - 1} dự án cũ hơn)`}
+              </span>
+              {showAllProjects ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+            </button>
+          )}
         </div>
 
         {/* List of Project Sessions */}
@@ -366,31 +365,6 @@ export function CareProjectMediaList({
                   </div>
                 </div>
 
-                {/* Row 1.5: Nhận xét đánh giá dự án */}
-                {project.description && (
-                  <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40 space-y-1">
-                    <p
-                      className={cn(
-                        'text-xs text-foreground/90 font-normal leading-relaxed',
-                        !isProjectCommentExpanded(project.id) && 'line-clamp-2'
-                      )}
-                    >
-                      {project.description}
-                    </p>
-                  {project.description.length > 80 && (
-                    <div className="flex justify-end pt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => toggleExpandProjectComment(project.id)}
-                        className="text-[10.5px] text-primary hover:underline flex items-center gap-0.5 cursor-pointer font-semibold transition-colors"
-                      >
-                        <span>{isProjectCommentExpanded(project.id) ? 'Thu gọn' : 'Xem thêm nhận xét'}</span>
-                        {isProjectCommentExpanded(project.id) ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Row 2: Grid media ảnh / video */}
               {project.media.length > 0 ? (
@@ -481,23 +455,7 @@ export function CareProjectMediaList({
           })}
         </div>
 
-        {/* Button xem thêm lịch sử các dự án khác */}
-        {filteredProjectSessions.length > 1 && (
-          <div className="pt-2 text-center border-t border-border/40">
-            <button
-              type="button"
-              onClick={() => setShowAllProjects(!showAllProjects)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-muted/30 hover:bg-muted/60 text-foreground border border-border/60 transition-all cursor-pointer shadow-3xs"
-            >
-              <span>
-                {showAllProjects
-                  ? 'Thu gọn lịch sử dự án'
-                  : `Xem thêm lịch sử dự án khác (${filteredProjectSessions.length - 1} dự án cũ hơn)`}
-              </span>
-              {showAllProjects ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-            </button>
-          </div>
-        )}
+
       </div>
 
       {/* Media Lightbox Preview Modal */}

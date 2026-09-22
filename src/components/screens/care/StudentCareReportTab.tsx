@@ -22,6 +22,8 @@ import { StudentCareReportLinkDialogs } from './StudentCareReportLinkDialogs'
 import { StudentCareActiveClassCard } from './StudentCareActiveClassCard'
 import { EmptyState } from '@/components/shared'
 import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
+import { resolveStudentPlacementStatus } from './class-card/studentCareClassCardHelpers'
+import { mockStudents } from '@/mocks/students'
 
 export type { SessionHistory, SemesterEvaluationData }
 
@@ -110,7 +112,7 @@ export function StudentCareReportTab({
   const [customReports, setCustomReports] = useState<{ title: string; date: string; url: string; packageId: string }[]>([])
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
   const [isTestsModalOpen, setIsTestsModalOpen] = useState(false)
-  const [testsModalData, setTestsModalData] = useState<{
+  const [testsModalData] = useState<{
     testSessions: SessionHistory[]
     isEnglish: boolean
     className: string
@@ -128,7 +130,7 @@ export function StudentCareReportTab({
   } | null>(null)
 
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false)
-  const [homeworkModalData, setHomeworkModalData] = useState<{
+  const [homeworkModalData] = useState<{
     regularSessions: SessionHistory[]
     className: string
     packageId?: string
@@ -265,13 +267,6 @@ export function StudentCareReportTab({
 
   const [expandedPackageIds, setExpandedPackageIds] = useState<Record<string, boolean>>({})
 
-  const togglePackage = (id: string) => {
-    setExpandedPackageIds(prev => ({
-      ...prev,
-      [id]: !(prev[id] ?? id === activePackage?.id)
-    }))
-  }
-
   const classDataForPackages = useMemo(() => {
     const listToUse = packagesList.length > 0 ? packagesList : (activePackage ? [activePackage] : [])
     return listToUse.map((pkg) => {
@@ -343,6 +338,18 @@ export function StudentCareReportTab({
     })
   }, [packagesList, activePackage, studentId, oldClassEval, currentClassEval, supplementalClassEval, monthlyReports, customReports, selectedMonth, evalOverrides, reportOverrides])
 
+  const togglePackage = (id: string) => {
+    setExpandedPackageIds((prev) => {
+      const historicalList = classDataForPackages.filter((p) => p.pkg.id !== activePackage?.id)
+      const isMostRecent = id === historicalList[0]?.pkg.id
+      const current = prev[id] !== undefined ? prev[id] : isMostRecent
+      return {
+        ...prev,
+        [id]: !current,
+      }
+    })
+  }
+
   const multiClassData = useMemo(() => {
     return buildMultiClassSessions(classDataForPackages, activePackage?.id || '')
   }, [classDataForPackages, activePackage])
@@ -385,6 +392,24 @@ export function StudentCareReportTab({
             isCurrent: r.isCurrent,
           }))
 
+          const matchedMockStudent = mockStudents.find(
+            (s) =>
+              s.id === studentId ||
+              s.id === currentStudentAlert?.studentId ||
+              s.name.toLowerCase() === studentName?.toLowerCase()
+          ) || null
+
+          const placementStatus = resolveStudentPlacementStatus(currentStudentAlert, matchedMockStudent, pkg)
+
+          const shouldHideTimeline =
+            placementStatus === 'wait_for_assignment' ||
+            placementStatus === 'pending_payment' ||
+            placementStatus === 'enroll_later' ||
+            placementStatus === 'fee_transfer' ||
+            placementStatus === 'pending_transfer' ||
+            placementStatus === 'draft_class' ||
+            placementStatus === 'trial'
+
 
           return (
             <div key={pkg.id} className="space-y-4">
@@ -408,7 +433,7 @@ export function StudentCareReportTab({
 
 
               {/* 1. Nhóm 5 buổi đã học + 2 buổi sắp tới (Dạng dòng/thẻ) & 2. Nhóm Buổi project thực hành (Media Ảnh/Video) */}
-              {!isPending && (
+              {!isPending && !shouldHideTimeline && (
                 <div className="space-y-4">
                   {/* Nhật ký Buổi học với SmartCards đặt bên trong (trên các buổi học) */}
                   <CareSessionTimelineList
@@ -418,78 +443,54 @@ export function StudentCareReportTab({
                     studentId={studentId}
                     studentName={studentName}
                     studentAlert={currentStudentAlert}
+                    placementStatus={placementStatus}
+                    expectedStartDate={pkg.startDate || '21/11/2023'}
+                    onOpenLeave={(date) => {
+                      setSelectedLeaveDate(date)
+                      setLeaveDialogOpen(true)
+                    }}
                     smartCards={
-                      <CareReportSmartCards
-                        pkg={pkg}
-                        regularSessions={regularSessions}
-                        testSessions={testSessions}
-                        pkgIsEnglish={pkgIsEnglish}
-                        avgRating={avgRating}
-                        generalComment={generalComment}
-                        onOpenAttendance={() => {
-                          setAttendanceModalData({
-                            regularSessions,
-                            testSessions,
-                            className: pkg.className,
-                            classCode: pkg.classCode,
-                            packageId: pkg.id,
-                          })
-                          setIsAttendanceModalOpen(true)
-                        }}
-                        onOpenHomework={() => {
-                          setHomeworkModalData({
-                            regularSessions,
-                            className: pkg.className,
-                            packageId: pkg.id,
-                          })
-                          setIsHomeworkModalOpen(true)
-                        }}
-                        onOpenTests={() => {
-                          setTestsModalData({
-                            testSessions,
-                            isEnglish: pkgIsEnglish,
-                            className: pkg.className,
-                            packageId: pkg.id,
-                          })
-                          setIsTestsModalOpen(true)
-                        }}
-                        onOpenEvaluation={() => {
-                          setEvaluationModalData({
-                            regularSessions,
-                            testSessions,
-                            className: pkg.className,
-                            packageId: pkg.id,
-                          })
-                          setIsEvaluationModalOpen(true)
-                        }}
-                      />
+                      placementStatus === 'awaiting_opening' ? null : (
+                        <CareReportSmartCards
+                          pkg={pkg}
+                          regularSessions={regularSessions}
+                          testSessions={testSessions}
+                          pkgIsEnglish={pkgIsEnglish}
+                          avgRating={avgRating}
+                          generalComment={generalComment}
+                        />
+                      )
                     }
                   />
 
-                  {/* Buổi Project Thực hành & Media (Ảnh/Video học viên) */}
-                  <CareProjectMediaList
-                    pkgIsEnglish={pkgIsEnglish}
-                    studentId={studentId}
-                    studentName={studentName}
-                    classCode={pkg.classCode}
-                    className={pkg.className}
-                  />
+                  {/* Buổi Project Thực hành & Media (Ảnh/Video học viên) - Chỉ hiển thị khi lớp đã bắt đầu học */}
+                  {placementStatus !== 'awaiting_opening' && (
+                    <CareProjectMediaList
+                      pkgIsEnglish={pkgIsEnglish}
+                      studentId={studentId}
+                      studentName={studentName}
+                      classCode={pkg.classCode}
+                    />
+                  )}
 
-                  <MonthlyCommentsSection
-                    monthlyComments={monthlyComments}
-                    studentId={studentId}
-                    studentName={studentName}
-                    studentCode={pkg.classCode || 'HV-S4-10'}
-                    onOpenEvaluationTab={() => {
-                      setEvaluationModalData({
-                        regularSessions,
-                        testSessions,
-                        className: pkg.className,
-                        packageId: pkg.id,
-                      })
-                      setIsEvaluationModalOpen(true)
-                    }}
-                  />
+                  {/* Báo cáo Tháng của Học viên - Chỉ hiển thị khi lớp đã bắt đầu học (chờ khai giảng không hiển thị) */}
+                  {placementStatus !== 'awaiting_opening' && (
+                    <MonthlyCommentsSection
+                      monthlyComments={monthlyComments}
+                      studentId={studentId}
+                      studentName={studentName}
+                      studentCode={pkg.classCode || 'HV-S4-10'}
+                      onOpenEvaluationTab={() => {
+                        setEvaluationModalData({
+                          regularSessions,
+                          testSessions,
+                          className: pkg.className,
+                          packageId: pkg.id,
+                        })
+                        setIsEvaluationModalOpen(true)
+                      }}
+                    />
+                  )}
                 </div>
               )}              {isPending && (
                 <div className="py-10 text-center select-none flex flex-col items-center justify-center border border-dashed rounded-xl">
@@ -503,7 +504,7 @@ export function StudentCareReportTab({
           );
         })}
 
-      {/* 2. LỊCH SỬ HỌC TẬP (Placement Test, Trial Class & Lớp cũ) */}
+      {/* 2. LỊCH SỬ HỌC TẬP (Lớp cũ) */}
       <HistoricalClassesList
         classDataForPackages={classDataForPackages}
         activePackageId={activePackage?.id || ''}

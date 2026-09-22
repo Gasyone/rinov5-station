@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -23,23 +24,22 @@ import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSecti
 import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
 import { MonthlyReportRosterSidebar } from './MonthlyReportRosterSidebar'
 import { mockCareAlerts } from '@/mocks/careAlerts'
+import { mockStudents } from '@/mocks/students'
 import {
   MOCK_LESSONS_REVIEW,
   getReviewContentForRange,
   getAiSynthesizedNextMonthPlan,
   getDirectLessonPlanForRange,
-  WeekReviewItem,
-  DEFAULT_SECTION_B2_WEEKS,
   DetailedMonthlyReportForm,
   DEFAULT_FILLED_REPORT_FORM,
   EMPTY_REPORT_FORM,
+  AWARD_BADGES,
+  normalizeAwardBadge,
 } from './monthlyReportHelpers'
 import {
   getStudentMonthlyReports,
   saveStudentMonthlyReport,
   MONTH_OPTIONS,
-  DEFAULT_SECTION_A1_TEXT,
-  DEFAULT_SECTION_A2_TEXT,
 } from '@/mocks/monthlyReports'
 
 interface StudentMonthlyReportDialogProps {
@@ -48,15 +48,8 @@ interface StudentMonthlyReportDialogProps {
   students: RosterStudent[]
   initialStudentId?: string
   initialMonthKey?: string
+  subject?: string
 }
-
-const AWARD_BADGES = [
-  'CHIẾN BINH BỨT PHÁ',
-  'HỌC VIÊN XUẤT SẮC',
-  'NGÔI SAO CHĂM NGOAN',
-  'CHIẾN BINH TIẾN BỘ',
-  'NGÔI SAO SÁNG TẠO',
-]
 
 function resolveMonthValue(key?: string): string {
   if (!key) return '4_5_2026'
@@ -72,6 +65,7 @@ export function StudentMonthlyReportDialog({
   students,
   initialStudentId,
   initialMonthKey,
+  subject,
 }: StudentMonthlyReportDialogProps) {
   const [selectedMonthKey, setSelectedMonthKey] = useState<string>(() => resolveMonthValue(initialMonthKey))
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
@@ -118,7 +112,7 @@ export function StudentMonthlyReportDialog({
     if (existing) {
       return {
         monthPeriod: existing.dateStr,
-        awardBadge: existing.awardBadge,
+        awardBadge: normalizeAwardBadge(existing.awardBadge),
         teacherName: existing.teacherName,
         sectionAContent: existing.sectionAContent || `${existing.sectionA1Content}\n\n${existing.sectionA2Content}`,
         sectionA1Content: existing.sectionA1Content,
@@ -178,6 +172,50 @@ export function StudentMonthlyReportDialog({
   }
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) || students[0]
+
+  const studentDetail = mockStudents.find(
+    (s) => s.id === selectedStudentId || (selectedStudent && s.name === selectedStudent.name)
+  )
+
+  const isMath = useMemo(() => {
+    if (subject) {
+      const s = subject.toLowerCase()
+      if (s.includes('toán') || s.includes('math')) return true
+      if (s.includes('anh') || s.includes('english')) return false
+    }
+    if (studentDetail) {
+      const pkg = (studentDetail.packageName || '').toLowerCase()
+      const path = (studentDetail.learningPath || '').toLowerCase()
+      const lev = (studentDetail.level || '').toLowerCase()
+      if (
+        pkg.includes('toán') ||
+        pkg.includes('math') ||
+        path.includes('toán') ||
+        path.includes('math') ||
+        lev.includes('toán') ||
+        lev.includes('math')
+      )
+        return true
+      if (
+        pkg.includes('anh') ||
+        pkg.includes('english') ||
+        path.includes('anh') ||
+        path.includes('english') ||
+        lev.includes('english')
+      )
+        return false
+    }
+    if (selectedStudent?.level) {
+      const l = selectedStudent.level.toLowerCase()
+      if (l.includes('toán') || l.includes('math')) return true
+      if (l.includes('anh') || l.includes('english')) return false
+    }
+    const textToCheck = (currentForm.sectionA2Content || '').toLowerCase()
+    if (textToCheck.includes('từ vựng') || textToCheck.includes('phonics') || textToCheck.includes('letter')) {
+      return false
+    }
+    return true
+  }, [subject, studentDetail, selectedStudent, currentForm.sectionA2Content])
 
   const studentMetrics = useMemo(() => {
     if (!selectedStudent) {
@@ -271,7 +309,7 @@ export function StudentMonthlyReportDialog({
       studentCode: selectedStudent.code,
       monthKey: activeMonthConfig.current + '/2026',
       monthOptionValue: selectedMonthKey,
-      monthTitle: `BÁO CÁO HỌC TẬP CHUYÊN SÂU ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`,
+      monthTitle: `BÁO CÁO HỌC TẬP ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`,
       dateStr: activeMonthConfig.dateStr,
       awardBadge: currentForm.awardBadge,
       teacherName: currentForm.teacherName,
@@ -288,7 +326,7 @@ export function StudentMonthlyReportDialog({
     })
 
     setIsEditing(false)
-    toast.success(`Đã lưu báo cáo chuyên sâu & kế hoạch học tập cho học viên ${selectedStudent.name}!`)
+    toast.success(`Đã lưu báo cáo học tập & kế hoạch học tập cho học viên ${selectedStudent.name}!`)
   }
 
   const getLandingPageUrl = () => {
@@ -320,7 +358,7 @@ export function StudentMonthlyReportDialog({
           <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between shrink-0 bg-muted/20">
             <div className="space-y-0.5">
               <DialogTitle className="text-base font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>BÁO CÁO HỌC TẬP CHUYÊN SÂU & KẾ HOẠCH HỌC TẬP</span>
+                <span>BÁO CÁO HỌC TẬP</span>
               </DialogTitle>
             </div>
 
@@ -363,29 +401,47 @@ export function StudentMonthlyReportDialog({
                     Kết quả học tập từ <strong className="text-foreground font-bold">{activeMonthConfig.dateStr}</strong>
                   </div>
 
-                  {/* Award Badge: Select khi sửa, Pill tĩnh khi xem */}
+                  {/* Award Badge: Select khi sửa (môn toán), Input khi sửa (môn tiếng anh), Pill tĩnh khi xem */}
                   {isEditing ? (
                     <div className="flex items-center gap-2">
-                      <Select
-                        value={currentForm.awardBadge}
-                        onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
-                      >
-                        <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-full px-4 uppercase tracking-wide">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {AWARD_BADGES.map((badge) => (
-                            <SelectItem key={badge} value={badge} className="text-xs font-bold">
-                              🏆 {badge}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {isMath ? (
+                        <Select
+                          value={currentForm.awardBadge || ''}
+                          onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
+                        >
+                          <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-full px-4 uppercase tracking-wide">
+                            <SelectValue placeholder="Chọn danh hiệu..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AWARD_BADGES.map((badge) => (
+                              <SelectItem key={badge} value={badge} className="text-xs font-bold">
+                                {badge}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none">🏷️</span>
+                          <Input
+                            value={currentForm.awardBadge || ''}
+                            onChange={(e) => handleUpdateForm({ awardBadge: e.target.value })}
+                            placeholder="Nhập danh hiệu vinh danh..."
+                            className="h-8 pl-8 pr-3 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 placeholder:text-amber-950/70 rounded-full w-[240px] uppercase tracking-wide focus-visible:ring-amber-500"
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wide shadow-2xs">
-                      🏆 {currentForm.awardBadge || 'Học viên Chăm chỉ'}
-                    </div>
+                    currentForm.awardBadge ? (
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wide shadow-2xs">
+                        {currentForm.awardBadge}
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-dashed border-amber-400/40 text-xs italic">
+                        Chưa đặt danh hiệu
+                      </div>
+                    )
                   )}
                 </div>
 
@@ -425,10 +481,10 @@ export function StudentMonthlyReportDialog({
                 }}
               />
 
-              {/* SECTION A: BÁO CÁO HỌC TẬP CHUYÊN SÂU (TÁCH THÀNH 2 MỤC) */}
+              {/* SECTION A: BÁO CÁO HỌC TẬP (TÁCH THÀNH 2 MỤC) */}
               <div id="dialog-report-section-a" className="space-y-4 pt-2 border-t">
                 <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-                  A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
+                  A - BÁO CÁO HỌC TẬP {activeMonthConfig.current.toUpperCase()}
                 </h4>
 
                 {/* Sub-section A1: 1. Nhận xét chung */}
@@ -664,16 +720,6 @@ export function StudentMonthlyReportDialog({
                   >
                     <Send className="h-3.5 w-3.5" />
                     <span>Gửi phụ huynh</span>
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onOpenChange(false)}
-                    className="text-xs font-semibold px-4 rounded-lg cursor-pointer"
-                  >
-                    Đóng
                   </Button>
 
                   <Button

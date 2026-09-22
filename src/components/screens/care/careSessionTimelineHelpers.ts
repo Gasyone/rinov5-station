@@ -1,5 +1,4 @@
 import type { StudentCareAlert } from '@/mocks/careAlerts'
-import { getConsecutiveAbsences } from './operationsAlertHelpers'
 
 export interface AssistantInfo {
   id: string
@@ -23,6 +22,8 @@ export interface UnifiedSessionItem {
   preparation?: string
   attendance?: string
   attendanceText?: string
+  isLeaveRequested?: boolean
+  leaveReason?: string
   homeworkCode?: string
   homeworkSubmitted?: boolean
   homeworkScore?: string
@@ -38,7 +39,13 @@ export const getDayOfWeekName = (dateStr: string) => {
     if (match) return match[1]
   }
   const cleanDate = dateStr.split(' ')[0]
-  const d = new Date(cleanDate)
+  let d = new Date(cleanDate)
+  if (isNaN(d.getTime()) && cleanDate.includes('/')) {
+    const parts = cleanDate.split('/')
+    if (parts.length === 3) {
+      d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+    }
+  }
   if (isNaN(d.getTime())) return 'Thứ 4'
   const day = d.getDay()
   const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
@@ -143,13 +150,7 @@ export function getCareSessions(pkgIsEnglish: boolean): UnifiedSessionItem[] {
       homeworkSubmitted: true,
       homeworkScore: '10/10',
       rating: 5,
-      comment: `🎯 Bài học hôm nay có gì:
-- Con đã cùng cô khám phá về chủ đề hình học trong bài học Level G22: Bài 2 Tạo hình lớn hơn. 🟥
-
-🏅 Thành tích nổi bật:
-- Hôm nay con tham gia học tập rất tích cực và nắm được cách ghép hình, hoàn thành tốt các bài tập trong giờ học. ✨
-- Con biết quan sát, so sánh hình đã ghép với hình mẫu và bước đầu hình dung được cách sắp xếp các mảnh ghép. 🧩
-- Khả năng hình dung không gian con cần thêm thời gian để thử nghiệm nhiều cách ghép khác nhau, nhưng luôn có tinh thần cố gắng. 👏`,
+      comment: '',
     },
     {
       id: 'past-18',
@@ -233,8 +234,10 @@ export function getCareSessions(pkgIsEnglish: boolean): UnifiedSessionItem[] {
         ? 'Unit 5: Environmental Conservation & Group Debate'
         : 'Bài 15: Phép chia Số có nhiều chữ số & Bài toán có lời văn',
       // Không có trợ giảng
-      attendance: 'absent_excused',
-      attendanceText: 'Vắng có phép',
+      attendance: 'absent',
+      attendanceText: 'Vắng',
+      isLeaveRequested: true,
+      leaveReason: 'Phụ huynh xin nghỉ phép do học viên bị ốm sốt nhẹ.',
       homeworkCode: 'BT-03',
       homeworkSubmitted: false,
       rating: 5,
@@ -267,7 +270,7 @@ export function getCareSessions(pkgIsEnglish: boolean): UnifiedSessionItem[] {
       homeworkCode: 'BT-02',
       homeworkSubmitted: false,
       rating: 4,
-      comment: 'Học viên vắng mặt không báo trước. CS đã liên hệ với phụ huynh để xác nhận lý do và cập nhật bài học bù.',
+      comment: '',
     },
     {
       id: 'past-13',
@@ -394,22 +397,30 @@ export interface CareSessionNotice {
 /**
  * Tính toán các cảnh báo / lưu ý phát sinh cho phần Nhật ký buổi học
  * Dựa vào:
- * 1. Buổi học chưa nhận xét (comment rỗng, hiển thị rõ số buổi, ngày tháng, hướng xử lý)
- * 2. Buổi học chưa điểm danh (unmarked, hiển thị rõ số buổi, ngày tháng)
- * 3. Chuyên cần / Đang nghỉ liên tiếp (>= 2 buổi, kèm buổi và hướng giải quyết)
- * 4. Bài tập về nhà chưa hoàn thành (kèm mã BTVN, số buổi)
- * 5. Điều kiện Chăm sóc Đặc biệt (C90B, điểm bài kiểm tra thấp <= 6.0)
+ * 1. Buổi học chưa nhận xét (comment rỗng)
+ * 2. Buổi học chưa điểm danh (unmarked)
+ * 3. Chuyên cần / Đang nghỉ liên tiếp (>= 2 buổi)
+ * 4. Bài tập về nhà chưa hoàn thành (chưa nộp BTVN)
+ * 5. Điểm kiểm tra dưới chuẩn (<= 6.0 điểm)
  */
 export function getCareSessionNotices(
   sessions: UnifiedSessionItem[],
-  studentAlert?: StudentCareAlert | null,
-  studentId?: string
+  studentAlert?: StudentCareAlert | null
 ): CareSessionNotice[] {
   const notices: CareSessionNotice[] = []
   const completedSessions = sessions.filter((s) => s.type === 'lesson' || s.type === 'test')
 
-  // 1. Chưa nhận xét (buổi đã học nhưng comment rỗng)
-  const uncommentedList = completedSessions.filter((s) => !s.comment || !s.comment.trim())
+  // 1. Chưa nhận xét (buổi đã học nhưng comment rỗng - CHỈ áp dụng khi KHÔNG có xin nghỉ)
+  const uncommentedList = completedSessions.filter((s) => {
+    const hasLeave = Boolean(
+      s.isLeaveRequested ||
+      s.attendance === 'absent_excused' ||
+      s.attendance === 'excused' ||
+      /có phép|nghỉ phép/i.test(s.attendanceText || '') ||
+      s.leaveReason
+    )
+    return (!s.comment || !s.comment.trim()) && !hasLeave
+  })
   if (uncommentedList.length > 0) {
     const sessionNumbers = uncommentedList.map((s) => `Buổi ${s.sessionNumber}`).join(', ')
     notices.push({
@@ -443,78 +454,35 @@ export function getCareSessionNotices(
   }
 
   // 3. Chuyên cần / Đang nghỉ liên tiếp
-  let consecutiveAbsences = 0
+  // 3. Chuyên cần: Nghỉ học không phép liên tiếp (chuỗi đang tiếp diễn từ buổi gần nhất)
+  let consecutiveUnexcusedAbsences = 0
   for (const s of completedSessions) {
-    const isAbsent =
-      s.attendance === 'absent' ||
-      s.attendance === 'absent_unexcused' ||
-      s.attendance === 'absent_excused' ||
-      /vắng/i.test(s.attendanceText || '')
-    if (isAbsent) {
-      consecutiveAbsences++
+    const isUnexcused =
+      (s.attendance === 'absent_unexcused' || s.attendance === 'absent') &&
+      !s.isLeaveRequested &&
+      !/có phép/i.test(s.attendanceText || '')
+
+    if (isUnexcused) {
+      consecutiveUnexcusedAbsences++
     } else if (s.attendance === 'unmarked' || s.attendanceText === 'Chưa điểm danh') {
+      // Bỏ qua buổi chưa điểm danh để kiểm tra buổi học đã chốt gần nhất
       continue
     } else {
+      // Ngắt chuỗi ngay lập tức khi học viên đi học (present/late) hoặc nghỉ có phép
       break
     }
   }
 
-  // Fallback từ chuỗi buổi nghỉ trong lịch sử hoặc chỉ số học viên
-  const historyConsecutive = (() => {
-    let maxChain = 0
-    let currChain = 0
-    for (const s of completedSessions) {
-      const isAbsent =
-        s.attendance === 'absent' ||
-        s.attendance === 'absent_unexcused' ||
-        s.attendance === 'absent_excused' ||
-        /vắng/i.test(s.attendanceText || '')
-      if (isAbsent) {
-        currChain++
-        if (currChain > maxChain) maxChain = currChain
-      } else {
-        currChain = 0
-      }
-    }
-    return maxChain
-  })()
-
-  const fallbackAbsences = studentId ? getConsecutiveAbsences(studentId) : 0
-  const finalAbsences =
-    consecutiveAbsences >= 2
-      ? consecutiveAbsences
-      : historyConsecutive >= 2
-        ? historyConsecutive
-        : fallbackAbsences >= 2
-          ? fallbackAbsences
-          : 0
-
-  if (finalAbsences >= 2) {
+  if (consecutiveUnexcusedAbsences >= 2) {
     notices.push({
-      id: 'absent',
-      title: 'Nghỉ học liên tiếp',
-      issue: `Nghỉ liên tiếp ${finalAbsences} buổi chưa có lịch học bù.`,
-      action: 'Liên hệ PH xếp lịch học bù sớm.',
-      text: `Nghỉ liên tiếp ${finalAbsences} buổi chưa có lịch học bù, liên hệ PH xếp lịch học bù sớm.`,
+      id: 'absent_unexcused',
+      title: 'Nghỉ không phép liên tiếp',
+      issue: `Nghỉ không phép liên tiếp ${consecutiveUnexcusedAbsences} buổi chưa có lịch học bù.`,
+      action: 'Liên hệ PH xác minh lý do và xếp lịch học bù sớm.',
+      text: `Nghỉ không phép liên tiếp ${consecutiveUnexcusedAbsences} buổi chưa có lịch học bù, liên hệ PH xác minh lý do và xếp lịch học bù sớm.`,
       actionHint: 'Liên hệ PH xếp lịch học bù',
       type: 'absent',
     })
-  } else if (studentAlert && studentAlert.attendanceRatio) {
-    const ratio = studentAlert.attendanceRatio
-    const [attended, total] = ratio.split('/').map(Number)
-    const absentCount = total > 0 ? total - attended : 0
-    if (absentCount >= 2) {
-      const rate = Math.round((attended / total) * 100)
-      notices.push({
-        id: 'absent_ratio',
-        title: 'Cảnh báo chuyên cần',
-        issue: `Nghỉ ${absentCount}/${total} buổi gần nhất (chuyên cần ${rate}%).`,
-        action: 'Theo dõi sát chuyên cần buổi tới.',
-        text: `Nghỉ ${absentCount}/${total} buổi gần nhất (chuyên cần ${rate}%), theo dõi sát chuyên cần buổi tới.`,
-        actionHint: 'Theo dõi sát chuyên cần',
-        type: 'absent',
-      })
-    }
   }
 
   // 4. Chưa làm bài tập về nhà
@@ -537,43 +505,24 @@ export function getCareSessionNotices(
     })
   }
 
-  // 5. Điều kiện Chăm sóc Đặc biệt (CSĐB)
-  if (studentAlert) {
-    if (
-      studentAlert.careAlert === 'C90B' ||
-      studentAlert.confirmC90B === 'ĐÃ CSDB' ||
-      studentAlert.confirmC90B === 'ĐANG XỬ LÝ'
-    ) {
-      notices.push({
-        id: 'csdb_c90b',
-        title: 'Cảnh báo CSĐB',
-        issue: 'Học viên thuộc nhóm CSĐB (C90B) có nguy cơ nghỉ học.',
-        action: 'Phối hợp quản lý can thiệp trong 24h.',
-        text: 'Học viên thuộc nhóm CSĐB (C90B) có nguy cơ nghỉ học, phối hợp quản lý can thiệp trong 24h.',
-        actionHint: 'Phối hợp quản lý can thiệp trong 24h',
-        type: 'special_care',
-      })
-    } else if (studentAlert.lastTestScore > 0 && studentAlert.lastTestScore <= 6.0) {
-      notices.push({
-        id: 'csdb_score',
-        title: 'Học lực sút giảm',
-        issue: `Điểm kiểm tra gần nhất ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0).`,
-        action: 'GV lên kế hoạch phụ đạo 1-1.',
-        text: `Điểm kiểm tra gần nhất ${studentAlert.lastTestScore}/10 (dưới chuẩn 6.0), GV lên kế hoạch phụ đạo 1-1.`,
-        actionHint: 'Lên kế hoạch phụ đạo 1-1',
-        type: 'special_care',
-      })
-    } else if (studentAlert.careAlert && !studentAlert.careAlert.includes('Bình thường')) {
-      notices.push({
-        id: 'csdb_custom',
-        title: 'Cảnh báo CSKH',
-        issue: `Cảnh báo CSKH: ${studentAlert.careAlert}.`,
-        action: 'Liên hệ PH nắm bắt tiến độ tương tác.',
-        text: `Cảnh báo CSKH: ${studentAlert.careAlert}, liên hệ PH nắm bắt tiến độ tương tác.`,
-        actionHint: 'Liên hệ PH nắm bắt tiến độ',
-        type: 'special_care',
-      })
-    }
+  // 5. Sự kiện học tập: Điểm kiểm tra dưới chuẩn (<= 6.0 điểm)
+  const recentTestSession = completedSessions.find(
+    (s) => s.type === 'test' && s.score !== undefined && s.score !== null
+  )
+  const testScore =
+    recentTestSession?.score ??
+    (studentAlert?.lastTestScore && studentAlert.lastTestScore > 0 ? studentAlert.lastTestScore : null)
+
+  if (testScore !== null && testScore <= 6.0) {
+    notices.push({
+      id: 'low_test_score',
+      title: 'Học lực cần hỗ trợ',
+      issue: `Điểm kiểm tra gần nhất ${testScore}/10 (dưới chuẩn 6.0).`,
+      action: 'GV lên kế hoạch phụ đạo và củng cố kiến thức.',
+      text: `Điểm kiểm tra gần nhất ${testScore}/10 (dưới chuẩn 6.0), GV lên kế hoạch phụ đạo và củng cố kiến thức.`,
+      actionHint: 'Lên kế hoạch phụ đạo',
+      type: 'special_care',
+    })
   }
 
   return notices

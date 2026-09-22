@@ -108,19 +108,9 @@ export function StudentCareItemsDialog({
                         colorClass
                       )}
                     >
-                      {!tag.isCompleted && (
-                        <>
-                          {isOverdue && (
-                            <span className="flex h-2.5 w-2.5 shrink-0 rounded-full bg-red-600 shadow-3xs animate-pulse" title="Quá hạn" />
-                          )}
-                          {isDueToday && (
-                            <span className="flex h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500 shadow-3xs" title="Đến hạn hôm nay" />
-                          )}
-                        </>
-                      )}
                       <span className="font-extrabold tracking-wide text-[11.5px]">{tag.label}</span>
-                      <span className="text-[10.5px] font-bold text-muted-foreground shrink-0 ml-1" title={`Phụ trách: ${assignees.join(' · ')}`}>
-                        {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
+                      <span className="text-[10.5px] font-bold text-muted-foreground shrink-0 ml-1" title={`Phụ trách: ${assignees.join(' - ')}`}>
+                        {assignees.length > 1 ? 'CS - GV' : assignees[0] || 'CS'}
                       </span>
                     </Badge>
                   </CareTagHoverCard>

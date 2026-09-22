@@ -573,6 +573,7 @@ export function ClassesDetailView({
                     <TabsContent value="roster" className="m-0 focus-visible:outline-none">
                       <ClassesDetailRoster
                         students={rosterState}
+                        subject={cls.level}
                         onAddStudent={() => setIsStudentSelectOpen(true)}
                         onStudentClick={(id) => setSelectedStudentId(id)}
                         rosterError={validationErrors?.roster}

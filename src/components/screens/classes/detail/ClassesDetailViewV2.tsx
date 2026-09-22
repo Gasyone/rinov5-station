@@ -574,6 +574,7 @@ export function ClassesDetailViewV2({
                     <TabsContent value="roster" className="m-0 focus-visible:outline-none">
                       <ClassesDetailRoster
                         students={rosterState}
+                        subject={cls.level}
                         onAddStudent={() => setIsStudentSelectOpen(true)}
                         onStudentClick={(id) => setSelectedStudentId(id)}
                         onCareClick={(student) => {

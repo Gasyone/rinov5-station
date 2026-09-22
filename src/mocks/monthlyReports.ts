@@ -1,3 +1,6 @@
+import { mockStudents } from './students'
+import { getStudentPhotos, type StudentGalleryPhoto } from './studentPhotos'
+
 export interface WeekReviewItem {
   weekNum: number
   title: string
@@ -22,6 +25,9 @@ export interface StudentMonthlyReport {
   sectionA1Content: string
   sectionA2Content: string
   sectionAContent?: string
+
+  // Thư viện ảnh hoạt động đính kèm báo cáo trong tháng
+  galleryPhotos?: StudentGalleryPhoto[]
 
   // Section B: Kế hoạch học tập cải thiện
   sectionB1Content: string
@@ -139,6 +145,7 @@ function createSeedReport(
     sectionA1Content: sectionA1,
     sectionA2Content: sectionA2,
     sectionAContent: `${sectionA1}\n\n${sectionA2}`,
+    galleryPhotos: getStudentPhotos(studentId).slice(0, 4),
     sectionB1Content: sectionB1,
     sectionB2StartLesson: 8,
     sectionB2EndLesson: 10,
@@ -162,9 +169,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S13-0',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'CHIẾN BINH BỨT PHÁ',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
     true
   ),
@@ -175,9 +182,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S13-0',
     'Tháng 3/2026',
     '3_4_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    'NGÔI SAO CHĂM NGOAN',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
     'Ms.Chloe',
     false,
     'Điểm nổi bật: Con chủ động giơ tay phát biểu và hoàn thành bài tập sớm nhất lớp.\n\nĐiểm cần lưu ý: Cần rèn luyện tính kiên nhẫn khi gặp bài toán suy luận nhiều bước.',
@@ -193,9 +200,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S14-0',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'HỌC VIÊN XUẤT SẮC',
+    '🌟 SIÊU SAO TOÁN HỌC',
     'Teacher Mark & Ms.Chloe',
     true
   ),
@@ -206,9 +213,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S14-0',
     'Tháng 3/2026',
     '3_4_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    'CHIẾN BINH TIẾN BỘ',
+    '🏆 CAO THỦ GIẢI TOÁN',
     'Teacher Mark & Ms.Chloe',
     false
   ),
@@ -221,9 +228,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S4-10',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'CHIẾN BINH BỨT PHÁ',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
     true
   ),
@@ -234,9 +241,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S4-10',
     'Tháng 3/2026',
     '3_4_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    'HỌC VIÊN XUẤT SẮC',
+    '🌟 SIÊU SAO TOÁN HỌC',
     'Ms.Chloe',
     false
   ),
@@ -249,9 +256,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S18-8',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'CHIẾN BINH BỨT PHÁ',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
     true
   ),
@@ -264,9 +271,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S18-2',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'CHIẾN BINH BỨT PHÁ',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
     true
   ),
@@ -277,9 +284,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'HV-S18-2',
     'Tháng 3/2026',
     '3_4_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    'HỌC VIÊN XUẤT SẮC',
+    '🌟 SIÊU SAO TOÁN HỌC',
     'Ms.Chloe',
     false
   ),
@@ -292,9 +299,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     '10700325',
     'Tháng 4/2026',
     '4_5_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    'CHIẾN BINH BỨT PHÁ',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
     true
   ),
@@ -305,9 +312,9 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     '10700325',
     'Tháng 3/2026',
     '3_4_2026',
-    'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    'NGÔI SAO CHĂM NGOAN',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
     'Ms.Chloe',
     false
   ),
@@ -334,7 +341,11 @@ export function getStudentMonthlyReports(studentIdOrName?: string): StudentMonth
 
   // 1. Tìm chính xác theo studentId
   let found = mockMonthlyReports.filter(
-    (r) => r.studentId === target || target.startsWith(r.studentId) || r.studentId.startsWith(target)
+    (r) =>
+      r.studentId === target ||
+      r.studentId.toLowerCase() === target.toLowerCase() ||
+      target.startsWith(`${r.studentId}-`) ||
+      r.studentId.startsWith(`${target}-`)
   )
 
   // 2. Tìm theo studentCode
@@ -354,16 +365,25 @@ export function getStudentMonthlyReports(studentIdOrName?: string): StudentMonth
 
   // 4. Nếu học viên chưa có báo cáo sẵn, tự động sinh báo cáo mặc định chuẩn chỉnh cho học viên đó
   if (found.length === 0) {
+    const matchedStudent = mockStudents.find(
+      (s) =>
+        s.id.toLowerCase() === target.toLowerCase() ||
+        s.name.toLowerCase() === target.toLowerCase() ||
+        normalizeName(s.name) === normTarget
+    )
+    const realName = matchedStudent ? matchedStudent.name : target
+    const realCode = matchedStudent ? `HV-${matchedStudent.id.toUpperCase()}` : 'HV-DEMO'
+
     const defaultCurrent = createSeedReport(
       `mr-${target}-4_5_2026`,
       target,
-      target,
-      'HV-DEMO',
+      realName,
+      realCode,
       'Tháng 4/2026',
       '4_5_2026',
-      'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+      'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
       '01/04/2026 đến 30/04/2026',
-      'CHIẾN BINH BỨT PHÁ',
+      '',
       'Ms.Chloe',
       true
     )
@@ -371,13 +391,13 @@ export function getStudentMonthlyReports(studentIdOrName?: string): StudentMonth
     const defaultPrev = createSeedReport(
       `mr-${target}-3_4_2026`,
       target,
-      target,
-      'HV-DEMO',
+      realName,
+      realCode,
       'Tháng 3/2026',
       '3_4_2026',
-      'BÁO CÁO HỌC TẬP CHUYÊN SÂU THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+      'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
       '01/03/2026 đến 31/03/2026',
-      'NGÔI SAO CHĂM NGOAN',
+      '',
       'Ms.Chloe',
       false
     )
@@ -393,57 +413,33 @@ export function getStudentMonthlyReports(studentIdOrName?: string): StudentMonth
 /**
  * Lấy báo cáo tháng gần nhất của học viên
  */
-export function getLatestStudentMonthlyReport(studentIdOrName?: string): StudentMonthlyReport | undefined {
-  const reports = getStudentMonthlyReports(studentIdOrName)
+export function getLatestStudentMonthlyReport(target: string): StudentMonthlyReport | undefined {
+  const reports = getStudentMonthlyReports(target)
   return reports[0]
 }
 
 /**
- * Lấy báo cáo tháng theo report ID hoặc theo student ID/Name
+ * Lấy báo cáo chi tiết theo id hoặc kết hợp studentId + monthOptionValue
  */
 export function getMonthlyReportById(
-  idOrStudentId?: string,
+  idOrStudentId: string,
   monthOptionValue?: string
 ): StudentMonthlyReport {
-  if (!idOrStudentId) return mockMonthlyReports[0]
-
-  // 1. Tìm chính xác theo Report ID
-  const exactById = mockMonthlyReports.find((r) => r.id === idOrStudentId)
-  if (exactById) {
-    if (monthOptionValue && exactById.monthOptionValue !== monthOptionValue) {
-      const byMonth = mockMonthlyReports.find(
-        (r) => r.studentId === exactById.studentId && r.monthOptionValue === monthOptionValue
-      )
-      if (byMonth) return byMonth
-    }
-    return exactById
+  const reports = getStudentMonthlyReports(idOrStudentId)
+  if (monthOptionValue) {
+    const matched = reports.find(
+      (r) => r.monthOptionValue === monthOptionValue || r.monthKey.includes(monthOptionValue)
+    )
+    if (matched) return matched
   }
-
-  // 2. Tìm theo student ID / student Code / student Name
-  const studentReports = getStudentMonthlyReports(idOrStudentId)
-  if (studentReports.length > 0) {
-    if (monthOptionValue) {
-      const matchMonth = studentReports.find(
-        (r) => r.monthOptionValue === monthOptionValue || r.monthKey.includes(monthOptionValue)
-      )
-      if (matchMonth) return matchMonth
-    }
-    return studentReports[0]
-  }
-
-  return mockMonthlyReports[0]
+  return reports[0] || mockMonthlyReports[0]
 }
 
 /**
- * Thêm mới hoặc Cập nhật báo cáo tháng của học viên
- * Đồng bộ dữ liệu CSDL mock tức thì và kích hoạt notification
+ * Lưu hoặc cập nhật báo cáo tháng của học viên
  */
 export function saveStudentMonthlyReport(
-  data: Partial<StudentMonthlyReport> & {
-    studentId: string
-    monthOptionValue?: string
-    monthKey?: string
-  }
+  data: Partial<StudentMonthlyReport> & { studentId: string; studentName?: string }
 ): StudentMonthlyReport {
   const monthOpt = MONTH_OPTIONS.find(
     (m) => m.value === data.monthOptionValue || m.monthKey === data.monthKey
@@ -451,7 +447,7 @@ export function saveStudentMonthlyReport(
 
   const monthKey = data.monthKey || monthOpt.monthKey
   const monthOptionValue = data.monthOptionValue || monthOpt.value
-  const monthTitle = data.monthTitle || `BÁO CÁO HỌC TẬP CHUYÊN SÂU ${monthOpt.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${monthOpt.next.toUpperCase()}`
+  const monthTitle = data.monthTitle || `BÁO CÁO HỌC TẬP ${monthOpt.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${monthOpt.next.toUpperCase()}`
   const dateStr = data.dateStr || monthOpt.dateStr
 
   const existingIndex = mockMonthlyReports.findIndex(
@@ -471,11 +467,17 @@ export function saveStudentMonthlyReport(
     monthOptionValue,
     monthTitle,
     dateStr,
-    awardBadge: data.awardBadge || 'CHIẾN BINH BỨT PHÁ',
+    awardBadge: data.awardBadge || '🚀 NGÔI SAO BỨT PHÁ',
     teacherName: data.teacherName || 'Ms.Chloe',
     sectionA1Content: data.sectionA1Content !== undefined ? data.sectionA1Content : DEFAULT_SECTION_A1_TEXT,
     sectionA2Content: data.sectionA2Content !== undefined ? data.sectionA2Content : DEFAULT_SECTION_A2_TEXT,
     sectionAContent: data.sectionAContent || `${data.sectionA1Content || DEFAULT_SECTION_A1_TEXT}\n\n${data.sectionA2Content || DEFAULT_SECTION_A2_TEXT}`,
+    galleryPhotos:
+      data.galleryPhotos !== undefined
+        ? data.galleryPhotos
+        : existingIndex >= 0
+        ? mockMonthlyReports[existingIndex].galleryPhotos
+        : getStudentPhotos(data.studentId).slice(0, 4),
     sectionB1Content: data.sectionB1Content !== undefined ? data.sectionB1Content : DEFAULT_SECTION_B1_TEXT,
     sectionB2StartLesson: data.sectionB2StartLesson ?? 8,
     sectionB2EndLesson: data.sectionB2EndLesson ?? 10,

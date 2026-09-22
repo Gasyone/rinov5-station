@@ -21,13 +21,14 @@ import { mockStudents } from '@/mocks/students'
 import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { StudentCareEarlyReturnDialog } from './StudentCareEarlyReturnDialog'
-import { defaultCSStaffList, type CSStaffMember, type SimulatedPackage } from './studentCareDetailTypes'
+import { defaultCSStaffList, type CSStaffMember } from './studentCareDetailTypes'
 import type { ClassRecord } from '@/mocks/classRecords'
 import { cn } from '@/lib/utils'
 
 import {
   resolveStudentPlacementStatus,
   shouldShowClass3Columns,
+  getPackageProgramName,
 } from './class-card/studentCareClassCardHelpers'
 import { StudentCareClassStatusBanner } from './class-card/StudentCareClassStatusBanner'
 import { StudentCareClassActionMenu } from './class-card/StudentCareClassActionMenu'
@@ -57,7 +58,7 @@ export function StudentCareActiveClassCard({
   const [isCsPopoverOpen, setIsCsPopoverOpen] = useState(false)
   const [csSearchQuery, setCsSearchQuery] = useState('')
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
-  const [isPackageDropdownOpen, setIsPackageDropdownOpen] = useState(false)
+  const [isOldPackagesPopoverOpen, setIsOldPackagesPopoverOpen] = useState(false)
 
   // Reset selectedCSName khi chuyển học viên
   const [prevStudentId, setPrevStudentId] = useState<string | null>(student?.studentId || null)
@@ -213,158 +214,202 @@ export function StudentCareActiveClassCard({
 
   const classCode = pkg.classCode || (pkgIsEnglish ? 'LD_TA_00019' : 'LD_TOAN_00010')
 
-  // Lọc chỉ hiển thị các chương trình khác nhau, không lặp lại cùng môn (Tiếng Anh / Toán tư duy)
-  const displayPackages = useMemo(() => {
-    const seenSubjects = new Set<string>()
-    const list: SimulatedPackage[] = []
-
-    for (const pItem of visiblePackages) {
-      const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
-      const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
-        ? 'Tiếng Anh'
-        : /toán|math|LD_TOAN/i.test(text)
-          ? 'Toán tư duy'
-          : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
-
-      if (!seenSubjects.has(shortSubject)) {
-        seenSubjects.add(shortSubject)
-        list.push(pItem)
-      }
-    }
-
-    return list
+  // Phân loại gói: Gói còn hạn / đang học vs. Gói cũ / hết hạn
+  const activePackages = useMemo(() => {
+    const list = visiblePackages.filter(
+      (p) => p.status === 'active' || (p.status !== 'expired' && (p.remainingSessions ?? 0) > 0)
+    )
+    return list.length > 0 ? list : visiblePackages.slice(0, 1)
   }, [visiblePackages])
+
+  const expiredPackages = useMemo(() => {
+    return visiblePackages.filter(
+      (p) => p.status === 'expired' || (p.remainingSessions ?? 0) <= 0
+    )
+  }, [visiblePackages])
+
+  const isOldPackageSelected = useMemo(() => {
+    return expiredPackages.some((p) => p.id === selectedPackageId)
+  }, [expiredPackages, selectedPackageId])
+
+  const selectedOldPackage = useMemo(() => {
+    return expiredPackages.find((p) => p.id === selectedPackageId) || null
+  }, [expiredPackages, selectedPackageId])
 
   return (
     <div className="bg-card dark:bg-zinc-900 border border-border/70 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
-      {/* Header bar: Chương trình selector + Danh sách mở rộng chọn gói + Tên gói hiện tại + Menu Thao tác */}
-      <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex flex-col gap-2 mb-2.5">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-            {displayPackages.map((pItem) => {
-              const isSelected = pItem.id === selectedPackageId
-              const text = `${pItem.packageName} ${pItem.className} ${pItem.classCode}`
-              const shortSubject = /tiếng\s*anh|english|LD_TA/i.test(text)
-                ? 'Tiếng Anh'
-                : /toán|math|LD_TOAN/i.test(text)
-                  ? 'Toán tư duy'
-                  : pItem.packageName.replace(/^Gói\s*/i, '').replace(/\s*Level.*$/i, '').trim() || 'Chương trình'
-              const isPkgActive = pItem.status === 'active'
+      {/* Header bar: Tab Gói học theo Chương trình + Tab Khác (Gói cũ) + Menu Thao tác */}
+      <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-2.5">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          {/* 1. Các gói còn hạn: hiển thị Tên Chương trình và Tên Gói ở dưới (thu nhỏ, để ...) */}
+          {activePackages.map((pItem) => {
+            const isSelected = pItem.id === selectedPackageId
+            const programName = getPackageProgramName(pItem)
 
-              return (
-                <Popover
-                  key={pItem.id}
-                  open={isPackageDropdownOpen && isSelected}
-                  onOpenChange={(open) => {
-                    if (isSelected) {
-                      setIsPackageDropdownOpen(open)
-                    } else {
-                      setSelectedPackageId(pItem.id)
-                    }
-                  }}
+            return (
+              <button
+                key={pItem.id}
+                type="button"
+                onClick={() => {
+                  setSelectedPackageId(pItem.id)
+                  toast.success(`Đang xem gói: ${pItem.packageName}`)
+                }}
+                className={cn(
+                  'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[125px] sm:w-[135px]',
+                  isSelected
+                    ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
+                    : 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
+                )}
+                title={`${programName} - ${pItem.packageName}`}
+              >
+                <div className="flex items-center justify-between gap-1 w-full">
+                  <span className={cn('text-xs font-bold leading-tight truncate', isSelected ? 'text-white' : 'text-foreground')}>
+                    {programName}
+                  </span>
+                  {isSelected && (
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-white ml-auto shrink-0" />
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] leading-tight truncate w-full mt-0.5',
+                    isSelected ? 'text-sky-100 font-medium' : 'text-muted-foreground'
+                  )}
+                  title={pItem.packageName}
                 >
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!isSelected) {
-                          setSelectedPackageId(pItem.id)
-                        } else {
-                          setIsPackageDropdownOpen((prev) => !prev)
-                        }
-                      }}
+                  {pItem.packageName}
+                </span>
+              </button>
+            )
+          })}
+
+          {/* 2. Tab Khác: Chứa các gói cũ, hết hạn (bấm mở ngay menu popover) */}
+          {expiredPackages.length > 0 && (
+            <Popover open={isOldPackagesPopoverOpen} onOpenChange={setIsOldPackagesPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[125px] sm:w-[135px]',
+                    isOldPackageSelected
+                      ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
+                      : 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
+                  )}
+                  title="Bấm để xem danh sách các gói học cũ, hết hạn"
+                >
+                  <div className="flex items-center gap-1 w-full">
+                    <span className={cn('text-xs font-bold leading-tight', isOldPackageSelected ? 'text-white' : 'text-foreground')}>
+                      Khác
+                    </span>
+                    <span
                       className={cn(
-                        'h-8 px-3 py-1 text-xs font-semibold rounded-lg transition-all inline-flex justify-center items-center gap-1.5 text-center cursor-pointer select-none border shrink-0',
-                        isSelected
-                          ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
-                          : isPkgActive
-                            ? 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
-                            : 'bg-transparent text-muted-foreground border-border/40 hover:bg-muted/30'
+                        'text-[9.5px] px-1.5 py-0.2 rounded-full font-semibold',
+                        isOldPackageSelected
+                          ? 'bg-white/20 text-white'
+                          : 'bg-muted dark:bg-zinc-700 text-muted-foreground'
                       )}
-                      title={`Bấm để mở rộng danh sách gói và lọc theo gói môn ${shortSubject}`}
                     >
-                      <span>{shortSubject}</span>
-                      <ChevronDown
-                        className={cn(
-                          'h-3.5 w-3.5 transition-transform duration-200 opacity-80',
-                          isPackageDropdownOpen && isSelected ? 'rotate-180' : ''
-                        )}
-                      />
-                    </button>
-                  </PopoverTrigger>
-
-                  <PopoverContent
-                    align="start"
-                    className="w-80 sm:w-96 p-2 space-y-1.5 z-50 shadow-lg bg-popover text-popover-foreground rounded-xl border border-border"
+                      {expiredPackages.length}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        'h-3.5 w-3.5 ml-auto opacity-70 transition-transform duration-200',
+                        isOldPackagesPopoverOpen && 'rotate-180',
+                        isOldPackageSelected ? 'text-white' : 'text-muted-foreground'
+                      )}
+                    />
+                  </div>
+                  <span
+                    className={cn(
+                      'text-[10px] leading-tight truncate w-full mt-0.5',
+                      isOldPackageSelected ? 'text-sky-100 font-medium' : 'text-muted-foreground'
+                    )}
+                    title={isOldPackageSelected && selectedOldPackage ? selectedOldPackage.packageName : 'Gói cũ, hết hạn'}
                   >
-                    <div className="px-2 py-1.5 border-b border-border/50 flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      <span className="flex items-center gap-1.5">
-                        <Package className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-                        <span>Danh sách gói ({shortSubject})</span>
-                      </span>
-                      <span className="text-[10px] text-muted-foreground/80 normal-case font-normal">
-                        Chọn để lọc dữ liệu
-                      </span>
-                    </div>
+                    {isOldPackageSelected && selectedOldPackage
+                      ? selectedOldPackage.packageName
+                      : 'Gói cũ, hết hạn'}
+                  </span>
+                </button>
+              </PopoverTrigger>
 
-                    <div className="max-h-60 overflow-y-auto space-y-1 pr-0.5">
-                      {visiblePackages.map((pkgItem) => {
-                        const isCurrentPkg = pkgItem.id === selectedPackageId
-                        return (
-                          <div
-                            key={pkgItem.id}
-                            onClick={() => {
-                              setSelectedPackageId(pkgItem.id)
-                              setIsPackageDropdownOpen(false)
-                              toast.success(`Đã chọn lọc theo gói: ${pkgItem.packageName}`)
-                            }}
-                            className={cn(
-                              'flex items-center justify-between gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors',
-                              isCurrentPkg
-                                ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-900 dark:text-sky-100 font-medium border border-sky-200 dark:border-sky-800/60'
-                                : 'hover:bg-muted/60 text-foreground border border-transparent'
-                            )}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-semibold truncate block text-xs">
-                                  {pkgItem.packageName}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
-                                <span>
-                                  {Math.max(0, (pkgItem.totalSessions || 0) - (pkgItem.remainingSessions || 0))}/{pkgItem.totalSessions || 0} buổi
-                                </span>
-                                <span>•</span>
-                                <span>Còn {pkgItem.remainingSessions || 0} buổi</span>
-                                <span>•</span>
-                                <span>Hạn: {pkgItem.endDate || '—'}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {pkgItem.status === 'active' ? (
-                                <StatusBadge status="active" label="Đang học" className="text-[9px] py-0 px-1.5 h-4" />
-                              ) : (
-                                <StatusBadge status="expired" label="Hết buổi" className="text-[9px] py-0 px-1.5 h-4" />
-                              )}
-                              {isCurrentPkg && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 ml-0.5" />}
-                            </div>
+              <PopoverContent
+                align="start"
+                className="w-80 sm:w-96 p-2 space-y-1.5 z-50 shadow-lg bg-popover text-popover-foreground rounded-xl border border-border"
+              >
+                <div className="px-2 py-1.5 border-b border-border/50 flex items-center justify-between text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+                    <span>Gói cũ / Hết hạn ({expiredPackages.length})</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/80 normal-case font-normal">
+                    Chọn để xem dữ liệu
+                  </span>
+                </div>
+
+                <div className="max-h-64 overflow-y-auto space-y-1 pr-0.5">
+                  {expiredPackages.map((pkgItem) => {
+                    const isCurrentPkg = pkgItem.id === selectedPackageId
+                    const programName = getPackageProgramName(pkgItem)
+                    const attendedSessions = Math.max(0, (pkgItem.totalSessions || 0) - (pkgItem.remainingSessions || 0))
+
+                    return (
+                      <div
+                        key={pkgItem.id}
+                        onClick={() => {
+                          setSelectedPackageId(pkgItem.id)
+                          setIsOldPackagesPopoverOpen(false)
+                          toast.success(`Đã chọn xem gói cũ: ${pkgItem.packageName}`)
+                        }}
+                        className={cn(
+                          'flex items-center justify-between gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors',
+                          isCurrentPkg
+                            ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-900 dark:text-sky-100 font-medium border border-sky-200 dark:border-sky-800/60'
+                            : 'hover:bg-muted/60 text-foreground border border-transparent'
+                        )}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted dark:bg-zinc-700 text-foreground font-semibold shrink-0">
+                              {programName}
+                            </span>
+                            <span className="font-semibold truncate block text-xs" title={pkgItem.packageName}>
+                              {pkgItem.packageName}
+                            </span>
                           </div>
-                        )
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              )
-            })}
-          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+                            <span>
+                              {attendedSessions}/{pkgItem.totalSessions || 0} buổi
+                            </span>
+                            <span>•</span>
+                            <span>Còn {pkgItem.remainingSessions || 0} buổi</span>
+                            <span>•</span>
+                            <span>Hạn: {pkgItem.endDate || '—'}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <StatusBadge
+                            status="expired"
+                            label={pkgItem.remainingSessions === 0 ? 'Hết buổi' : 'Hết hạn'}
+                            className="text-[9px] py-0 px-1.5 h-4"
+                          />
+                          {isCurrentPkg && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 ml-0.5" />}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
 
           <div className="flex items-center gap-1 shrink-0">
             {/* Nút Thu gọn / Mở rộng */}
             <button
               type="button"
               onClick={() => setIsExpanded((prev) => !prev)}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium py-1 px-1.5 rounded-md hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
               title={isExpanded ? 'Thu gọn thông tin' : 'Mở rộng xem thêm thông tin'}
             >
               <span>{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
@@ -386,31 +431,6 @@ export function StudentCareActiveClassCard({
               onOpenLeaveReserveDialog={onOpenLeaveReserveDialog}
             />
           </div>
-        </div>
-
-        {/* Dòng hiển thị tên gói hiện tại ở dưới Toán tư duy */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5 border-t border-border/40 flex-wrap">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Package className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span className="text-[11px] text-muted-foreground font-medium shrink-0">Gói hiện tại:</span>
-            <span className="font-semibold text-foreground truncate max-w-[280px] sm:max-w-md" title={pkg.packageName}>
-              {pkg.packageName}
-            </span>
-          </div>
-          <span className="text-border/70">•</span>
-          <span className="text-[11px] text-muted-foreground shrink-0">
-            {attendedSessions}/{totalSessions} buổi (còn {remainingSessions} buổi)
-          </span>
-          <span className="text-border/70">•</span>
-          <span className="text-[11px] text-muted-foreground shrink-0">
-            Hạn: {endDateDisplay}
-          </span>
-          {pkg.status === 'active' ? (
-            <StatusBadge status="active" label="Đang học" className="text-[9.5px] py-0 px-1.5 h-4 shrink-0" />
-          ) : (
-            <StatusBadge status="expired" label="Hết buổi" className="text-[9.5px] py-0 px-1.5 h-4 shrink-0" />
-          )}
-        </div>
       </div>
 
       {/* Cụm Banner / Thông tin trạng thái đặc thù */}
@@ -447,7 +467,8 @@ export function StudentCareActiveClassCard({
               <ClassCodeHoverCell
                 classCode={classCode}
                 subject={pkgIsEnglish ? 'Tiếng Anh' : 'Toán tư duy'}
-                level={pkg.level || 'Level 4'}
+                level={pkg.level || student?.level || 'Level 4'}
+                subLevel={pkg.subLevel || student?.subLevel}
                 teacherCode={pkg.teacherCode || 'GV'}
                 schedule={pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
               />

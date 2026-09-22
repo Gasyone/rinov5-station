@@ -335,8 +335,8 @@ export function RenewalScreen() {
           return diffDays > 30 && diffDays <= 60
         }
         if (selectedExpiryPeriod === '3') {
-          // Hạn T3 (2-3T): > 60 ngày
-          return diffDays > 60
+          // Hạn T3 (2-3T): 61 - 90 ngày
+          return diffDays > 60 && diffDays <= 90
         }
         return true
       })
@@ -457,7 +457,9 @@ export function RenewalScreen() {
       studentId: student.studentId,
       studentName: student.studentName,
       parentPhone: primaryContact?.phone || '0912345678',
-      parentName: primaryContact ? `GĐ ${student.studentName.split(' ').pop()?.toUpperCase()}` : 'Phụ huynh',
+      parentName: primaryContact
+        ? `${primaryContact.name}${primaryContact.relationship ? ` (${primaryContact.relationship})` : ''}`
+        : 'Phụ huynh',
     })
   }
 

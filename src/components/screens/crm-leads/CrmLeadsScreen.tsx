@@ -10,6 +10,7 @@ import { CrmLeadsStatusMatrix } from './CrmLeadsStatusMatrix'
 import { CrmLeadsToolbar } from './CrmLeadsToolbar'
 import { CrmLeadsTable } from './CrmLeadsTable'
 import { CrmCustomerCreateDialog } from './CrmCustomerCreateDialog'
+import { CrmFamilyProfile360Modal } from './family-360/CrmFamilyProfile360Modal'
 import { DraftOrderEditorDialog } from '@/components/screens/care/draft-order/DraftOrderEditorDialog'
 import type { DetailedOrder } from '@/components/screens/care/student-orders/studentOrdersTypes'
 import { formatCurrency } from '@/lib/format'
@@ -486,18 +487,24 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
         }}
       />
 
-      {/* Contact Profile Detail Dialog (Dùng chung modal tạo mới / detail) */}
-      <CrmCustomerCreateDialog
-        key={contactProfileLead?.id || 'contact-profile'}
+      {/* Modal Hồ sơ Gia đình 360° (Family 360 Profile) */}
+      <CrmFamilyProfile360Modal
+        key={contactProfileLead?.id || 'family-profile'}
         open={isContactProfileOpen}
         onOpenChange={(isOpen) => {
           setIsContactProfileOpen(isOpen)
           if (!isOpen) setContactProfileLead(null)
         }}
-        initialLead={contactProfileLead}
-        onSubmit={(updatedLeads) => {
-          setCustomLeads((prev) => [...updatedLeads, ...prev])
-          toast.success('Đã cập nhật thông tin hồ sơ liên hệ thành công!')
+        lead={contactProfileLead}
+        onUpdateLead={(updatedLead) => {
+          setCustomLeads((prev) => {
+            const exists = prev.some((l) => l.id === updatedLead.id)
+            if (exists) {
+              return prev.map((l) => (l.id === updatedLead.id ? updatedLead : l))
+            }
+            return [updatedLead, ...prev]
+          })
+          toast.success('Đã cập nhật thông tin hồ sơ gia đình thành công!')
         }}
       />
 

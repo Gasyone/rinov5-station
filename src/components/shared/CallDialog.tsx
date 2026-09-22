@@ -128,7 +128,7 @@ export function CallDialog() {
       autoConnectRef.current = setTimeout(() => {
         connectCall()
         toast.success('Cuộc gọi đã được kết nối (giả lập)')
-      }, 3000)
+      }, 6500)
     }
 
     if (status === 'idle') {

@@ -1,7 +1,7 @@
 'use client'
 
 import type { Lead } from '@/mocks/crmLeads'
-import { CrmCustomerCreateDialog } from '../CrmCustomerCreateDialog'
+import { CrmFamilyProfile360Modal } from '../family-360/CrmFamilyProfile360Modal'
 
 interface CrmLeadFullProfileModalProps {
   open: boolean
@@ -19,16 +19,12 @@ export function CrmLeadFullProfileModal({
   onSave,
 }: CrmLeadFullProfileModalProps) {
   return (
-    <CrmCustomerCreateDialog
+    <CrmFamilyProfile360Modal
       open={open}
       onOpenChange={onOpenChange}
-      initialLead={lead}
-      initialAction={initialAction}
-      onSubmit={(updatedLeads) => {
-        if (updatedLeads.length > 0 && onSave) {
-          onSave(updatedLeads[0])
-        }
-      }}
+      lead={lead}
+      initialTab={initialAction === 'add_child' ? 'children' : 'parents'}
+      onUpdateLead={onSave}
     />
   )
 }

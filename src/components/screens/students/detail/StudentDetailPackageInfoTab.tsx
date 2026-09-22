@@ -6,18 +6,13 @@ import {
   BookOpen,
   Building,
   FileText,
-  Layers,
-  History,
+  Clock,
 } from 'lucide-react'
-import type { StudentProgram, StudentPackage } from './studentDetailTypes'
+import type { StudentProgram } from './studentDetailTypes'
 import type { Student } from '@/mocks/students'
 import { ChangeCSStaffPopover, AppAvatar } from '@/components/shared'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { StudentDetailSessionsDialog } from './StudentDetailSessionsDialog'
+import { getStudentAvailableSlots } from './studentDetailHelpers'
 import { toast } from 'sonner'
 
 const CSM_OPTIONS_BY_BRANCH: Record<string, string[]> = {
@@ -53,6 +48,10 @@ export function StudentDetailPackageInfoTab({
     return name.includes('toán') || name.includes('math')
   }, [program, student])
 
+  const availableSlots = useMemo(() => {
+    return getStudentAvailableSlots(student)
+  }, [student])
+
   const currentPackage = useMemo(() => {
     if (!program.packages || program.packages.length === 0) return null
     if (program.currentClass) {
@@ -74,7 +73,6 @@ export function StudentDetailPackageInfoTab({
     : (program.studiedSessions || 0)
 
   const studiedSessionsCount = overrideStudied !== null ? overrideStudied : baseStudiedSessions
-  const remainingSessionsCount = Math.max(0, totalSessionsCount - studiedSessionsCount)
 
   const handleSaveSessions = (newStudied: number) => {
     setOverrideStudied(newStudied)
@@ -83,47 +81,6 @@ export function StudentDetailPackageInfoTab({
       onUpdateSessions(targetPkgId, newStudied)
     }
     toast.success('Cập nhật số buổi học thành công!')
-  }
-
-  const pastPackages = useMemo(() => {
-    if (!currentPackage || !program.packages) return []
-    return program.packages.filter((p) => p.id !== currentPackage.id)
-  }, [program.packages, currentPackage])
-
-  const getPackageStatusBadge = (status: StudentPackage['status'], remaining: number) => {
-    if (remaining === 0 || status === 'expired') {
-      return (
-        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-muted text-muted-foreground">
-          Hết hạn
-        </span>
-      )
-    }
-    if (status === 'transferred') {
-      return (
-        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-          Đã chuyển phí
-        </span>
-      )
-    }
-    if (status === 'suspended' || status === 'reserved') {
-      return (
-        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
-          Bảo lưu
-        </span>
-      )
-    }
-    if (status === 'cancelled') {
-      return (
-        <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-          Đã hủy
-        </span>
-      )
-    }
-    return (
-      <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-        Đang học
-      </span>
-    )
   }
 
   return (
@@ -168,128 +125,34 @@ export function StudentDetailPackageInfoTab({
         </div>
       </div>
 
-      {/* 2. Thông tin chương trình: Thời gian & Gói hiện tại */}
+      {/* 2. Khung giờ học viên có thể học (Khung giờ rảnh phục vụ xếp lớp) */}
       <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2.5 shadow-2xs">
         <div className="flex items-center justify-between pb-0.5">
           <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-            <Layers className="h-3.5 w-3.5 text-primary" /> Thông tin chương trình
+            <Clock className="h-3.5 w-3.5 text-primary" /> Khung giờ học viên rảnh
           </span>
-          <button
-            type="button"
-            onClick={() => setIsEditSessionsOpen(true)}
-            className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors p-1 rounded hover:bg-muted"
-            title="Cập nhật số buổi học"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
+          <span className="text-[10.5px] text-muted-foreground font-medium bg-muted/60 px-1.5 py-0.2 rounded border border-border/30">
+            Ưu tiên xếp lịch
+          </span>
         </div>
 
-        <div className="space-y-2 text-xs">
-          {/* Thời gian */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Bắt đầu sớm nhất</div>
-              <strong className="text-foreground font-semibold font-mono">{program.startDate || '—'}</strong>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Kết thúc muộn nhất</div>
-              <strong className="text-foreground font-semibold font-mono">{program.endDate || '—'}</strong>
-            </div>
-          </div>
-        </div>
-
-        {/* Gói hiện tại ở cột trái, Số buổi ở cột phải, Icon (n) nếu có nhiều gói */}
-        <div className="pt-2 border-t border-border/40">
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {/* Cột trái: Gói hiện tại */}
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground font-medium mb-0.5 flex items-center gap-1.5">
-                <span>Gói hiện tại</span>
-                {pastPackages.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        className="px-1.5 py-0.2 rounded text-[10.5px] font-medium text-muted-foreground hover:text-foreground border border-border/40 bg-muted/40 hover:bg-muted transition-all cursor-pointer inline-flex items-center gap-1 shrink-0"
-                        title={`Xem danh sách ${pastPackages.length} gói trước đó`}
-                      >
-                        <History className="h-2.5 w-2.5" />
-                        <span>({pastPackages.length})</span>
-                      </span>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-[340px] p-3 space-y-2 shadow-xl">
-                      <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
-                        <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                          <History className="h-3.5 w-3.5 text-primary" />
-                          Các gói trước đó ({pastPackages.length})
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-medium">
-                          {program.name}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 max-h-[260px] overflow-y-auto pr-0.5">
-                        {pastPackages.map((pkg) => {
-                          const studied = pkg.totalSessions - pkg.remainingSessions
-                          return (
-                            <div
-                              key={pkg.id}
-                              className="rounded-lg border border-border/50 bg-muted/20 p-2 space-y-1 text-xs"
-                            >
-                              <div className="flex items-start justify-between gap-1.5">
-                                <span className="font-semibold text-foreground text-xs truncate max-w-[190px]" title={pkg.packageName}>
-                                  {pkg.packageName}
-                                </span>
-                                {getPackageStatusBadge(pkg.status, pkg.remainingSessions)}
-                              </div>
-                              <div className="flex items-center justify-between text-muted-foreground text-[11px]">
-                                <span>
-                                  Đã học: <strong className="text-foreground">{studied}/{pkg.totalSessions}</strong> buổi
-                                </span>
-                                <span>
-                                  Còn lại: <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{pkg.remainingSessions}</strong> buổi
-                                </span>
-                              </div>
-                              {(pkg.purchaseDate || pkg.endDate) && (
-                                <div className="flex items-center justify-between text-[10px] text-muted-foreground/80 pt-0.5 border-t border-border/30">
-                                  <span>Mua: {pkg.purchaseDate || '—'}</span>
-                                  <span>Hạn: {pkg.endDate || '—'}</span>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-
-              <strong className="text-foreground font-semibold truncate block" title={currentPackage?.packageName}>
-                {currentPackage?.packageName || '—'}
-              </strong>
-            </div>
-
-            {/* Cột phải: Số buổi: xx/xx (Còn xx buổi) */}
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground font-medium mb-0.5">Số buổi</div>
-              <div className="font-semibold text-foreground text-xs">
-                {totalSessionsCount > 0 ? (
-                  <>
-                    <span className="font-mono text-foreground font-medium">
-                      {studiedSessionsCount}/{totalSessionsCount}
-                    </span>{' '}
-                    <span className="text-[11px] font-normal text-muted-foreground">
-                      (Còn <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">{remainingSessionsCount}</strong> buổi)
-                    </span>
-                  </>
-                ) : (
-                  '—'
+        <div className="space-y-1.5">
+          {availableSlots.map((slot) => (
+            <div
+              key={slot.id}
+              className="flex items-start justify-between gap-2 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-xs border border-border/40"
+            >
+              <div className="space-y-0.5">
+                <div className="font-bold text-foreground flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>{slot.dayOfWeek}: {slot.timeRange}</span>
+                </div>
+                {slot.note && (
+                  <p className="text-[10.5px] text-muted-foreground pl-3">{slot.note}</p>
                 )}
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 

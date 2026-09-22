@@ -219,3 +219,28 @@ export const PLACEMENT_STATUS_META: Record<
     description: 'Học viên đã học hết toàn bộ số buổi đăng ký của gói học (Cần tư vấn tái phí).',
   },
 }
+
+/**
+ * Trích xuất Tên Chương trình chuẩn từ thông tin gói học
+ */
+export function getPackageProgramName(pkg: SimulatedPackage): string {
+  const text = `${pkg.packageName} ${pkg.className} ${pkg.classCode} ${pkg.level || ''}`.toLowerCase()
+  if (
+    text.includes('tiếng anh') ||
+    text.includes('english') ||
+    text.includes('ielts') ||
+    text.includes('ld_ta') ||
+    text.includes('ie_')
+  ) {
+    return 'Tiếng Anh'
+  }
+  if (
+    text.includes('toán') ||
+    text.includes('math') ||
+    text.includes('ld_toan')
+  ) {
+    return 'Toán tư duy'
+  }
+  return pkg.level || 'Chương trình'
+}
+

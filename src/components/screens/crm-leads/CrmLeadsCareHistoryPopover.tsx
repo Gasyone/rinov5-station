@@ -40,20 +40,16 @@ export function CrmLeadsCareHistoryPopover({
   }
 
   const formatLogItem = (log: LeadCareLog, index: number) => {
-    const attemptNum = logs.length - index
     const channelInfo = getChannelInfo(log.channel)
-    const showReschedule = index === 0 && isRescheduled
 
     return (
       <div
         key={index}
         className="bg-muted/30 hover:bg-muted/50 border border-border/60 rounded-md p-2.5 text-xs space-y-1.5 transition-colors text-left"
       >
-        {/* Hàng tiêu đề: Lần XX · Tên Sale · Kênh  ---  Ngày */}
+        {/* Hàng tiêu đề: Tên Sale · Kênh  ---  Ngày */}
         <div className="flex items-center justify-between gap-1 text-xs">
           <div className="font-bold text-foreground flex items-center gap-1.5">
-            <span>Lần {attemptNum}</span>
-            <span className="text-muted-foreground">•</span>
             <span>{log.staff}</span>
             <span className="text-muted-foreground">•</span>
             <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
@@ -66,12 +62,6 @@ export function CrmLeadsCareHistoryPopover({
 
         {/* Nội dung ghi chú */}
         <div className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal space-y-0.5">
-          {showReschedule && rescheduleDate && (
-            <div className="font-semibold text-violet-600 dark:text-violet-400 flex items-center gap-1 pb-0.5">
-              <Calendar className="h-3 w-3 shrink-0" />
-              <span>Hẹn gọi lại: {rescheduleDate} ({rescheduleTime || '19:00'})</span>
-            </div>
-          )}
           <div>{log.note}</div>
           {log.parentFeedback && (
             <div className="text-emerald-700 dark:text-emerald-400 font-medium italic pt-0.5">

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import {
   ChevronDown,
   FileText,
@@ -21,13 +21,15 @@ import { type SimulatedPackage } from './studentCareDetailTypes'
 import { type SessionHistory } from './StudentCareReportTab'
 import { type SemesterEvaluationData } from './StudentCareReportTab'
 import { type StudentCareAlert } from '@/mocks/careAlerts'
-import { HistoricalTestCard } from './HistoricalTestCard'
-import { HistoricalTrialCard } from './HistoricalTrialCard'
-import { getStudentHistoricalTest, getStudentHistoricalTrial } from './historicalLearningHelpers'
-import { TrialClassDetailDialog } from '@/components/screens/trial-class/TrialClassDetailDialog'
-import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
-import type { TrialClass } from '@/mocks/trialClasses'
-import type { BookingTest } from '@/mocks/bookingTests'
+import { CareReportSmartCards } from './CareReportSmartCards'
+// Tạm ẩn import phần test và học thử theo yêu cầu
+// import { HistoricalTestCard } from './HistoricalTestCard'
+// import { HistoricalTrialCard } from './HistoricalTrialCard'
+// import { getStudentHistoricalTest, getStudentHistoricalTrial } from './historicalLearningHelpers'
+// import { TrialClassDetailDialog } from '@/components/screens/trial-class/TrialClassDetailDialog'
+// import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
+// import type { TrialClass } from '@/mocks/trialClasses'
+// import type { BookingTest } from '@/mocks/bookingTests'
 
 interface SimulatedReport {
   title: string
@@ -112,15 +114,14 @@ export function HistoricalClassesList({
   handleCopyLink,
   branchName = 'RinoEdu Nguyễn Tuân',
   studentAlert,
-  studentName,
-  isEnglish = true,
   onOpenAttendance,
   onOpenLeaveReserveDialog,
 }: HistoricalClassesListProps) {
   const [showAllHistory, setShowAllHistory] = useState(false)
-  const [historyTab, setHistoryTab] = useState<'all' | 'assessments' | 'classes'>('all')
-  const [selectedTrial, setSelectedTrial] = useState<TrialClass | null>(null)
-  const [selectedBooking, setSelectedBooking] = useState<BookingTest | null>(null)
+  // Tạm ẩn phân hệ tab lọc và đánh giá/học thử theo yêu cầu
+  // const [historyTab, setHistoryTab] = useState<'all' | 'assessments' | 'classes'>('all')
+  // const [selectedTrial, setSelectedTrial] = useState<TrialClass | null>(null)
+  // const [selectedBooking, setSelectedBooking] = useState<BookingTest | null>(null)
   const [earlyReturnPkg, setEarlyReturnPkg] = useState<SimulatedPackage | null>(null)
   const [classRemarks, setClassRemarks] = useState<Record<string, ClassRemarkState>>({
     'pkg-2': {
@@ -137,15 +138,16 @@ export function HistoricalClassesList({
     teacherName: string
   } | null>(null)
 
-  const resolvedStudentName = studentName || studentAlert?.studentName || 'Hoàng Bảo Nam'
+  // const resolvedStudentName = _studentName || studentAlert?.studentName || 'Hoàng Bảo Nam'
 
-  const testData = useMemo(() => {
-    return getStudentHistoricalTest(resolvedStudentName, branchName, isEnglish)
-  }, [resolvedStudentName, branchName, isEnglish])
+  // Tạm ẩn phần test và học thử theo yêu cầu
+  // const testData = useMemo(() => {
+  //   return getStudentHistoricalTest(resolvedStudentName, branchName, _isEnglish)
+  // }, [resolvedStudentName, branchName, _isEnglish])
 
-  const trialData = useMemo(() => {
-    return getStudentHistoricalTrial(resolvedStudentName, branchName, isEnglish)
-  }, [resolvedStudentName, branchName, isEnglish])
+  // const trialData = useMemo(() => {
+  //   return getStudentHistoricalTrial(resolvedStudentName, branchName, _isEnglish)
+  // }, [resolvedStudentName, branchName, _isEnglish])
 
   const handleSaveRemark = (pkgId: string, updated: ClassRemarkState) => {
     setClassRemarks(prev => ({
@@ -157,13 +159,8 @@ export function HistoricalClassesList({
   const historicalPackages = classDataForPackages.filter(({ pkg }) => pkg.id !== activePackageId)
   const visibleHistoricalPackages = showAllHistory ? historicalPackages : historicalPackages.slice(0, 2)
 
-  const isGlobalPendingTransfer =
-    studentAlert?.status === 'Chờ chuyển lớp' ||
-    (studentAlert?.status as string) === 'pending_transfer' ||
-    studentAlert?.realtimeStatus === 'Chờ chuyển lớp'
-
   const isGlobalReserved =
-    studentAlert?.status === 'Hết buổi' && studentAlert?.careAlert?.toLowerCase().includes('bảo lưu') ||
+    (studentAlert?.status === 'Hết buổi' && studentAlert?.careAlert?.toLowerCase().includes('bảo lưu')) ||
     (studentAlert?.status as string) === 'reserve' ||
     (studentAlert?.status as string) === 'Bảo lưu'
 
@@ -175,108 +172,57 @@ export function HistoricalClassesList({
             <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Lịch sử học tập</span>
           </h2>
-          <div className="flex items-center gap-1 text-[10px] font-semibold">
-            <span className="text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200/70 dark:border-sky-800 px-1.5 py-0.2 rounded-full">
-              1 Test
-            </span>
-            <span className="text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800 px-1.5 py-0.2 rounded-full">
-              1 Học thử
-            </span>
-            {historicalPackages.length > 0 && (
+          {historicalPackages.length > 0 && (
+            <div className="flex items-center gap-1 text-[10px] font-semibold">
               <span className="text-muted-foreground/80 bg-muted px-1.5 py-0.2 rounded-full">
                 {historicalPackages.length} lớp cũ
               </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Tabs chuyển đổi phân hệ lịch sử */}
-          <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg border border-border/50 text-[11px]">
-            <button
-              type="button"
-              onClick={() => setHistoryTab('all')}
-              className={cn(
-                'px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer',
-                historyTab === 'all'
-                  ? 'bg-background text-foreground shadow-2xs font-semibold'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Tất cả
-            </button>
-            <button
-              type="button"
-              onClick={() => setHistoryTab('assessments')}
-              className={cn(
-                'px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer',
-                historyTab === 'assessments'
-                  ? 'bg-background text-foreground shadow-2xs font-semibold'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              Đánh giá &amp; Học thử
-            </button>
-            {historicalPackages.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setHistoryTab('classes')}
-                className={cn(
-                  'px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer',
-                  historyTab === 'classes'
-                    ? 'bg-background text-foreground shadow-2xs font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                Lớp cũ ({historicalPackages.length})
-              </button>
-            )}
-          </div>
-
-          {(historyTab === 'all' || historyTab === 'classes') && historicalPackages.length > 2 && (
-            <button
-              type="button"
-              onClick={() => setShowAllHistory(prev => !prev)}
-              className="text-[11px] font-medium text-primary hover:underline cursor-pointer ml-1"
-            >
-              {showAllHistory ? 'Thu gọn' : `Xem tất cả (${historicalPackages.length})`}
-            </button>
+            </div>
           )}
         </div>
+
+        {historicalPackages.length > 2 && (
+          <button
+            type="button"
+            onClick={() => setShowAllHistory((prev) => !prev)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer ml-auto"
+          >
+            {showAllHistory ? 'Thu gọn' : `Xem tất cả (${historicalPackages.length})`}
+          </button>
+        )}
       </div>
 
       <div className="space-y-3.5">
-        {/* KHỐI 1: ĐÁNH GIÁ ĐẦU VÀO & HỌC THỬ */}
-        {(historyTab === 'all' || historyTab === 'assessments') && (
-          <div className="space-y-3">
-            <HistoricalTestCard
-              testData={testData}
-              isEnglish={isEnglish}
-              studentName={resolvedStudentName}
-              onOpenTestDetail={(booking) => {
-                setSelectedBooking(booking || testData.bookingRaw || null)
-              }}
-            />
-            <HistoricalTrialCard
-              trialData={trialData}
-              onOpenTrialDetail={() => {
-                setSelectedTrial(trialData.trialRaw || null)
-              }}
-            />
-          </div>
-        )}
+        {/* Tạm ẩn phần test và học thử theo yêu cầu
+        <div className="space-y-3">
+          <HistoricalTestCard
+            testData={testData}
+            isEnglish={isEnglish}
+            studentName={resolvedStudentName}
+            onOpenTestDetail={(booking) => {
+              setSelectedBooking(booking || testData.bookingRaw || null)
+            }}
+          />
+          <HistoricalTrialCard
+            trialData={trialData}
+            onOpenTrialDetail={() => {
+              setSelectedTrial(trialData.trialRaw || null)
+            }}
+          />
+        </div>
+        */}
 
-        {/* KHỐI 2: CÁC LỚP HỌC TRƯỚC ĐÓ */}
-        {(historyTab === 'all' || historyTab === 'classes') && (
-          <>
-            {historicalPackages.length === 0 && historyTab === 'classes' && (
-              <div className="py-6 px-4 rounded-xl border border-dashed border-border/80 bg-muted/20 text-center">
-                <p className="text-xs font-semibold text-foreground">Chưa có lớp học trước đó</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Học viên chưa tham gia lớp học nào trước đây.</p>
-              </div>
-            )}
-        {visibleHistoricalPackages.map(({ pkg, isEnglish: pkgIsEnglish, regularSessions, testSessions, reports }) => {
-          const isOpen = expandedPackageIds[pkg.id] ?? false
+        {/* CÁC LỚP HỌC TRƯỚC ĐÓ */}
+        {historicalPackages.length === 0 ? (
+          <div className="py-6 px-4 rounded-xl border border-dashed border-border/80 bg-muted/20 text-center">
+            <p className="text-xs font-semibold text-foreground">Chưa có lớp học trước đó</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Học viên chưa tham gia lớp học nào trước đây.</p>
+          </div>
+        ) : (
+          visibleHistoricalPackages.map(({ pkg, isEnglish: pkgIsEnglish, regularSessions, testSessions, reports }) => {
+          // Luôn mở rộng lớp gần nhất trong lịch sử học tập
+          const isMostRecent = pkg.id === historicalPackages[0]?.pkg.id
+          const isOpen = expandedPackageIds[pkg.id] !== undefined ? expandedPackageIds[pkg.id] : isMostRecent
           const isPending = pkg.status === 'pending'
           const teacher = getHistoricalTeacherInfo(pkg, pkgIsEnglish)
           const dateRange = getHistoricalDates(pkg)
@@ -284,7 +230,6 @@ export function HistoricalClassesList({
           const usedSessions = totalSessions - (pkg.remainingSessions || 0)
 
           // Determine class status in history
-          const isTransferredClass = (pkg.status as string) === 'pending_transfer' || (isGlobalPendingTransfer && pkg.id === 'pkg-2')
           const isReservedClass = (pkg.status as string) === 'reserve' || (isGlobalReserved && pkg.id === 'pkg-3')
 
           const currentRemark: ClassRemarkState = classRemarks[pkg.id] || {
@@ -426,74 +371,19 @@ export function HistoricalClassesList({
                     </div>
                   </div>
 
-                  {/* Kết quả học tập tổng kết cuối khóa (4 Metric Cards thu nhỏ, không dùng %) */}
+                  {/* Kết quả học tập tổng kết cuối khóa (Đồng bộ thiết kế SmartCard như buổi hiện tại) */}
                   <div className="space-y-1.5">
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
                       Kết quả học tập tổng kết
                     </span>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {/* 1. Chuyên cần */}
-                      <div className="p-2 sm:p-2.5 rounded-lg border border-border/70 bg-card/60 space-y-1">
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-                            Chuyên cần
-                          </span>
-                          <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 leading-none shrink-0">
-                            {usedSessions}/{totalSessions}
-                          </span>
-                        </div>
-                        <span className="text-[9.5px] text-muted-foreground block truncate">
-                          Vắng 0 buổi
-                        </span>
-                      </div>
-
-                      {/* 2. BTVN */}
-                      <div className="p-2 sm:p-2.5 rounded-lg border border-border/70 bg-card/60 space-y-1">
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-                            BTVN
-                          </span>
-                          <span className="text-sm font-extrabold text-sky-600 dark:text-sky-400 leading-none shrink-0">
-                            8.2 / 10
-                          </span>
-                        </div>
-                        <span className="text-[9.5px] text-muted-foreground block truncate">
-                          Đã nộp: {usedSessions}/{totalSessions} bài
-                        </span>
-                      </div>
-
-                      {/* 3. Điểm thi tổng kết: Điểm gần nhất và điểm cuối cùng */}
-                      <div className="p-2 sm:p-2.5 rounded-lg border border-border/70 bg-card/60 space-y-1">
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-                            Điểm KT
-                          </span>
-                          <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400 leading-none shrink-0">
-                            {pkg.lastTestScore || 9.0}
-                          </span>
-                        </div>
-                        <span className="text-[9.5px] text-muted-foreground block truncate">
-                          {pkg.priorTestScore
-                            ? `Gần nhất: ${pkg.priorTestScore} • Cuối: ${pkg.lastTestScore || 9.0}`
-                            : `Cuối khóa: ${pkg.lastTestScore || 9.0}`}
-                        </span>
-                      </div>
-
-                      {/* 4. Tiến độ bài học */}
-                      <div className="p-2 sm:p-2.5 rounded-lg border border-border/70 bg-card/60 space-y-1">
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">
-                            Tiến độ bài
-                          </span>
-                          <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 leading-none shrink-0">
-                            {usedSessions}/{totalSessions}
-                          </span>
-                        </div>
-                        <span className="text-[9.5px] font-semibold text-emerald-600 dark:text-emerald-400 block truncate">
-                          {isTransferredClass ? `Tích lũy ${usedSessions} bài` : 'Đạt chuẩn đầu ra'}
-                        </span>
-                      </div>
-                    </div>
+                    <CareReportSmartCards
+                      pkg={pkg}
+                      regularSessions={regularSessions}
+                      testSessions={testSessions}
+                      pkgIsEnglish={pkgIsEnglish}
+                      avgRating={4.5}
+                      generalComment=""
+                    />
                   </div>
 
                   {/* Báo cáo học tập (danh sách textlink trực tiếp, không mở modal) */}
@@ -563,12 +453,11 @@ export function HistoricalClassesList({
               )}
             </div>
           )
-        })}
-          </>
-        )}
+        })
+      )}
       </div>
 
-      {/* MODAL CHI TIẾT PHIẾU HỌC THỬ KHI BẤM VÀO LỊCH HỌC THỬ */}
+      {/* MODAL CHI TIẾT PHIẾU HỌC THỬ & BÀI ĐÁNH GIÁ ĐẦU VÀO (Tạm ẩn cùng phân hệ test & học thử)
       {selectedTrial && (
         <TrialClassDetailDialog
           trial={selectedTrial}
@@ -578,7 +467,6 @@ export function HistoricalClassesList({
         />
       )}
 
-      {/* MODAL CHI TIẾT BÀI ĐÁNH GIÁ ĐẦU VÀO KHI BẤM VÀO PHIẾU KẾT QUẢ */}
       {selectedBooking && (
         <BookingTestDetailDialog
           booking={selectedBooking}
@@ -595,6 +483,7 @@ export function HistoricalClassesList({
           onAddNote={() => {}}
         />
       )}
+      */}
 
       {editingRemarkPkg && (
         <HistoricalClassAiRemarkModal

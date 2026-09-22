@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { X, Loader2, Sparkles, Pencil, Copy, Check, ExternalLink } from 'lucide-react'
+import { X, Loader2, Sparkles, Pencil, Copy, Check, ExternalLink, Lock, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -19,23 +20,20 @@ import {
   getDirectLessonPlanForRange,
   WeekReviewItem,
   DEFAULT_SECTION_B2_WEEKS,
+  AWARD_BADGES,
+  normalizeAwardBadge,
+  getMonthlyReportEditStatus,
 } from './monthlyReportHelpers'
 import { getStudentMonthlyReports, saveStudentMonthlyReport } from '@/mocks/monthlyReports'
 import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
 import { mockCareAlerts } from '@/mocks/careAlerts'
+import { mockStudents } from '@/mocks/students'
 
 interface ClassesStudentMonthlyReportOverlayPanelProps {
   student: RosterStudent
   onClose: () => void
+  subject?: string
 }
-
-const AWARD_BADGES = [
-  'CHIẾN BINH BỨT PHÁ',
-  'HỌC VIÊN XUẤT SẮC',
-  'NGÔI SAO CHĂM NGOAN',
-  'CHIẾN BINH TIẾN BỘ',
-  'NGÔI SAO SÁNG TẠO',
-]
 
 const DEFAULT_SECTION_A1_TEXT = `Điểm nổi bật: Con có thái độ học tập tích cực và hợp tác tốt trong lớp. Khi đã hiểu yêu cầu, con vẫn cố gắng hoàn thành task và theo kịp hoạt động của lớp. Con có xu hướng quan sát khá kỹ trước khi tham gia, cho thấy con học theo hướng cẩn thận và muốn làm đúng trước khi trả lời. 
 
@@ -57,9 +55,33 @@ const MONTH_OPTIONS = [
 export function ClassesStudentMonthlyReportOverlayPanel({
   student,
   onClose,
+  subject,
 }: ClassesStudentMonthlyReportOverlayPanelProps) {
   const [selectedMonthKey, setSelectedMonthKey] = useState('4_5_2026')
   const activeMonthConfig = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
+
+  // Xác định môn học (Toán thì chọn, Tiếng Anh thì nhập)
+  const isMath = useMemo(() => {
+    if (subject) {
+      const s = subject.toLowerCase()
+      if (s.includes('toán') || s.includes('math')) return true
+      if (s.includes('anh') || s.includes('english')) return false
+    }
+    const mockSt = mockStudents.find((s) => s.id === student.id)
+    if (mockSt) {
+      const pkg = (mockSt.packageName || '').toLowerCase()
+      const path = (mockSt.learningPath || '').toLowerCase()
+      const lev = (mockSt.level || '').toLowerCase()
+      if (pkg.includes('toán') || pkg.includes('math') || path.includes('toán') || path.includes('math') || lev.includes('toán') || lev.includes('math')) return true
+      if (pkg.includes('anh') || pkg.includes('english') || path.includes('anh') || path.includes('english') || lev.includes('english')) return false
+    }
+    if (student.level) {
+      const l = student.level.toLowerCase()
+      if (l.includes('toán') || l.includes('math')) return true
+      if (l.includes('anh') || l.includes('english')) return false
+    }
+    return false
+  }, [subject, student])
 
   const initialReport = useMemo(() => {
     return getStudentMonthlyReports(student.id || student.name).find(
@@ -67,7 +89,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
     )
   }, [student])
 
-  const [awardBadge, setAwardBadge] = useState(() => initialReport?.awardBadge || 'CHIẾN BINH BỨT PHÁ')
+  const [awardBadge, setAwardBadge] = useState(() => normalizeAwardBadge(initialReport?.awardBadge) || '')
   const [teacherName, setTeacherName] = useState(() => initialReport?.teacherName || 'Ms.Chloe')
   const [sectionA1Content, setSectionA1Content] = useState(() => initialReport?.sectionA1Content || DEFAULT_SECTION_A1_TEXT)
   const [sectionA2Content, setSectionA2Content] = useState(() => initialReport?.sectionA2Content || DEFAULT_SECTION_A2_TEXT)
@@ -78,6 +100,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
   const [isEditing, setIsEditing] = useState(() => !initialReport)
+  const editStatus = useMemo(() => getMonthlyReportEditStatus(selectedMonthKey), [selectedMonthKey])
 
   const studentMetrics = useMemo(() => {
     const alert = mockCareAlerts.find(
@@ -110,6 +133,10 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
   const handleMonthChange = (newKey: string) => {
     setSelectedMonthKey(newKey)
+    const status = getMonthlyReportEditStatus(newKey)
+    if (status.isLocked) {
+      setIsEditing(false)
+    }
     const monthConfig = MONTH_OPTIONS.find((m) => m.value === newKey) || MONTH_OPTIONS[0]
     const report = getStudentMonthlyReports(student.id || student.name).find(
       (r) => r.monthOptionValue === newKey || r.monthKey.includes(monthConfig.current)
@@ -117,7 +144,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
     if (report) {
       setIsSaved(true)
       setIsEditing(false)
-      setAwardBadge(report.awardBadge)
+      setAwardBadge(normalizeAwardBadge(report.awardBadge) || '')
       setTeacherName(report.teacherName)
       setSectionA1Content(report.sectionA1Content)
       setSectionA2Content(report.sectionA2Content)
@@ -128,7 +155,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
     } else {
       setIsSaved(false)
       setIsEditing(true)
-      setAwardBadge('CHIẾN BINH BỨT PHÁ')
+      setAwardBadge('')
       setTeacherName('Ms.Chloe')
       setSectionA1Content(DEFAULT_SECTION_A1_TEXT)
       setSectionA2Content(DEFAULT_SECTION_A2_TEXT)
@@ -203,7 +230,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       studentCode: student.code,
       monthKey: activeMonthConfig.current + '/2026',
       monthOptionValue: selectedMonthKey,
-      monthTitle: `BÁO CÁO HỌC TẬP CHUYÊN SÂU ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`,
+      monthTitle: `BÁO CÁO HỌC TẬP ${activeMonthConfig.current.toUpperCase()} VÀ KẾ HOẠCH HỌC TẬP ${activeMonthConfig.next.toUpperCase()}`,
       dateStr: activeMonthConfig.dateStr,
       awardBadge,
       teacherName,
@@ -218,7 +245,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       isCurrent: selectedMonthKey === '4_5_2026',
     })
 
-    toast.success(`Đã lưu Báo cáo Chuyên sâu ${activeMonthConfig.current} cho học viên ${student.name}`)
+    toast.success(`Đã lưu Báo cáo học tập ${activeMonthConfig.current} cho học viên ${student.name}`)
   }
 
   return (
@@ -227,7 +254,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
         <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2.5 pt-1 mb-2 pr-1">
           <div className="min-w-0 flex items-center gap-2">
             <h3 className="text-xs md:text-sm font-extrabold text-foreground truncate">
-              BÁO CÁO CHUYÊN SÂU
+              BÁO CÁO HỌC TẬP
             </h3>
             {isEditing ? (
               <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
@@ -270,27 +297,71 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             </Select>
           </div>
 
+          {/* Thông báo thời hạn chỉnh sửa khi đang sửa */}
+          {isEditing && (
+            <div className="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] text-amber-950 dark:text-amber-200 flex items-center justify-between gap-2 shadow-3xs">
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>
+                  <strong>Hạn sửa:</strong> Còn <strong>{editStatus.daysRemaining} ngày</strong> (hạn chót: {editStatus.deadlineText}). Sau 5 ngày hệ thống sẽ tự động khóa.
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Thông báo khi kỳ cũ đã khóa chỉnh sửa */}
+          {!isEditing && editStatus.isLocked && (
+            <div className="px-3 py-2 rounded-xl bg-muted/60 border border-border text-[11px] text-muted-foreground flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span>
+                  Báo cáo này đã khóa sau 5 ngày kể từ ngày phát hành tự động ({editStatus.issuedDateText}).
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Teacher Note Line with Pencil Icon */}
           <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-400/30 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-muted-foreground font-semibold">Tuyên dương:</span>
               {isEditing ? (
-                <Select value={awardBadge} onValueChange={setAwardBadge}>
-                  <SelectTrigger className="h-7 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AWARD_BADGES.map((b) => (
-                      <SelectItem key={b} value={b} className="text-xs font-bold">
-                        🏆 {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-1.5">
+                  {isMath ? (
+                    <Select value={awardBadge || ''} onValueChange={setAwardBadge}>
+                      <SelectTrigger className="h-7 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
+                        <SelectValue placeholder="Chọn danh hiệu..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AWARD_BADGES.map((b) => (
+                          <SelectItem key={b} value={b} className="text-xs font-bold">
+                            {b}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs pointer-events-none">🏷️</span>
+                      <Input
+                        value={awardBadge || ''}
+                        onChange={(e) => setAwardBadge(e.target.value)}
+                        placeholder="Nhập danh hiệu vinh danh..."
+                        className="h-7 pl-7 pr-2.5 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 placeholder:text-amber-950/70 rounded-lg w-[200px] uppercase tracking-wide focus-visible:ring-amber-500"
+                      />
+                    </div>
+                  )}
+                </div>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase">
-                  🏆 {awardBadge}
-                </span>
+                awardBadge ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase">
+                    {awardBadge}
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground italic px-2 py-0.5 rounded-full bg-muted/50 border border-dashed">
+                    Chưa đặt danh hiệu
+                  </span>
+                )
               )}
             </div>
 
@@ -298,19 +369,27 @@ export function ClassesStudentMonthlyReportOverlayPanel({
               <div className="pt-2 border-t border-amber-400/20 flex items-start gap-2 text-sm text-muted-foreground italic">
                 <Pencil className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 not-italic stroke-[2.5] mt-0.5" />
                 <span>
-                  Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{student.name}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết từ GV{' '}
+                  Rino Edu xin chúc mừng con{' '}
+                  <strong className="text-primary font-bold not-italic">{student.name}</strong>{' '}
+                  đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi
+                  tiết và định hướng rèn luyện từ giáo viên phụ trách{' '}
                   <input
                     type="text"
                     value={teacherName}
                     onChange={(e) => setTeacherName(e.target.value)}
                     placeholder="Tên Giáo viên"
                     className="inline-block w-28 text-center text-sm font-bold text-primary border-b border-primary/40 bg-transparent focus:outline-none not-italic"
-                  />.
+                  />
+                  .
                 </span>
               </div>
             ) : (
-              <div className="pt-1.5 border-t border-amber-400/20 text-xs text-foreground/90 leading-relaxed">
-                Chúc mừng con <strong className="text-primary font-bold">{student.name}</strong> đã hoàn thành xuất sắc kỳ học từ GV <strong className="text-primary font-bold">{teacherName}</strong>.
+              <div className="pt-2 border-t border-amber-400/20 text-xs text-foreground/90 leading-relaxed">
+                Rino Edu xin chúc mừng con{' '}
+                <strong className="text-primary font-bold">{student.name}</strong> đã hoàn thành
+                xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng
+                rèn luyện từ giáo viên phụ trách{' '}
+                <strong className="text-primary font-bold">{teacherName || 'Ms.Chloe'}</strong>.
               </div>
             )}
           </div>
@@ -332,7 +411,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
           {/* Section A (Tách 2 phần A1 & A2) */}
           <div id="overlay-section-a" className="space-y-3 pt-2 border-t">
             <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-              A - BÁO CÁO HỌC TẬP CHUYÊN SÂU {activeMonthConfig.current.toUpperCase()}
+              A - BÁO CÁO HỌC TẬP {activeMonthConfig.current.toUpperCase()}
             </h4>
 
             {/* Sub-section A1: 1. Nhận xét chung */}
@@ -501,7 +580,19 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             </>
           ) : (
             <>
-              <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-2.5 text-xs flex-wrap">
+                {editStatus.isLocked ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground border">
+                    <Lock className="h-2.5 w-2.5" />
+                    <span>Đã khóa</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                    <Clock className="h-2.5 w-2.5" />
+                    <span>Còn {editStatus.daysRemaining} ngày sửa</span>
+                  </span>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
@@ -536,15 +627,33 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 ) : null}
               </div>
 
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="text-xs font-bold px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-2xs gap-1.5"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                <span>Chỉnh sửa</span>
-              </Button>
+              {editStatus.isLocked ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    toast.warning(
+                      'Báo cáo đã khóa sau 5 ngày kể từ ngày tạo tự động. Vui lòng liên hệ Quản lý cơ sở để mở khóa.'
+                    )
+                  }
+                  className="text-xs font-semibold px-3 rounded-lg cursor-not-allowed opacity-60 gap-1 bg-muted/40 border-dashed"
+                  title="Báo cáo đã khóa sau 5 ngày kể từ ngày tạo tự động."
+                >
+                  <Lock className="h-3 w-3" />
+                  <span>Đã khóa</span>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="text-xs font-bold px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-2xs gap-1.5"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  <span>Chỉnh sửa</span>
+                </Button>
+              )}
             </>
           )}
         </div>

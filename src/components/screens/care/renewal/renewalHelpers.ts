@@ -215,32 +215,37 @@ export function getExpirationCategory(expectedEndDateStr: string): 'T' | 'T1' | 
 }
 
 export interface ExpiryTierInfo {
-  tier: 'T1' | 'T2' | 'T3'
+  tier: 'T1' | 'T2' | 'T3' | 'none'
   label: string
   badgeClass: string
   textClass: string
 }
 
 /**
- * Categorizes a student alert into Expiry Tier (T1, T2, T3) based on expectedEndDate and remainingSessions
+ * Categorizes a student alert into Expiry Tier (T1, T2, T3) based on expectedEndDate and remainingSessions.
+ * For students not yet due (chua_den_han or diffDays > 90), returns tier 'none' and label '' (no T prefix).
  */
-export function getExpiryTier(expectedEndDate?: string, remainingSessions?: number): ExpiryTierInfo {
-  if (!expectedEndDate) {
+export function getExpiryTier(
+  expectedEndDate?: string,
+  remainingSessions?: number,
+  classification?: RenewalClassification
+): ExpiryTierInfo {
+  if (!expectedEndDate || classification === 'chua_den_han') {
     return {
-      tier: 'T1',
-      label: 'T1',
-      badgeClass: getStatusColors('error').badge,
-      textClass: getStatusColors('error').text,
+      tier: 'none',
+      label: '',
+      badgeClass: '',
+      textClass: '',
     }
   }
 
   const parts = expectedEndDate.split('/')
   if (parts.length < 3) {
     return {
-      tier: 'T1',
-      label: 'T1',
-      badgeClass: getStatusColors('error').badge,
-      textClass: getStatusColors('error').text,
+      tier: 'none',
+      label: '',
+      badgeClass: '',
+      textClass: '',
     }
   }
 
@@ -273,12 +278,22 @@ export function getExpiryTier(expectedEndDate?: string, remainingSessions?: numb
     }
   }
 
-  // Hạn T3 (2-3T): > 60 ngày
+  // Hạn T3 (2-3T): 61 - 90 ngày
+  if (diffDays <= 90) {
+    return {
+      tier: 'T3',
+      label: 'T3',
+      badgeClass: getStatusColors('success').badge,
+      textClass: getStatusColors('success').text,
+    }
+  }
+
+  // Ngoài 3 tháng (> 90 ngày) -> Chưa đến hạn, không hiển thị T
   return {
-    tier: 'T3',
-    label: 'T3',
-    badgeClass: getStatusColors('success').badge,
-    textClass: getStatusColors('success').text,
+    tier: 'none',
+    label: '',
+    badgeClass: '',
+    textClass: '',
   }
 }
 
@@ -498,9 +513,19 @@ export interface StudentOrderInfo {
 }
 
 export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
+  // 0. Explicitly marked as no order
+  if (item.hasLinkedOrder === false || item.linkedOrderCode === 'none') {
+    return {
+      orderCode: undefined,
+      packageName: 'Chưa ghép đơn hàng',
+      packageAmount: undefined,
+      paymentTerm: undefined,
+    }
+  }
+
   // 1. Kiểm tra đơn hàng liên kết thực tế của học viên
   const code = item.linkedOrderCode || item.linkedOrder?.orderCode
-  if (code) {
+  if (code && code !== 'none') {
     // Nếu đối tượng linkedOrder đã lưu chi tiết
     if (item.linkedOrder) {
       const amount = item.linkedOrder.totalPaidAmount || item.linkedOrder.finalAmount || 0
@@ -545,37 +570,25 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     }
   }
 
-  // 2. Tra cứu theo mã học viên hoặc tên học viên trong mockOrders
-  const foundByNameOrId = mockOrders.find(
-    (o) => (item.studentId && o.studentId === item.studentId) ||
-           (item.studentName && o.studentName?.toLowerCase() === item.studentName.toLowerCase())
-  )
-  if (foundByNameOrId) {
-    const firstItemName = foundByNameOrId.items[0]?.productName || foundByNameOrId.notes || 'Gói học'
-    const itemsCount = foundByNameOrId.items?.length || 1
-    const pkgName = itemsCount > 1 ? `${firstItemName} (${itemsCount}+)` : firstItemName
-    const amount = foundByNameOrId.paidAmount ?? foundByNameOrId.finalAmount ?? foundByNameOrId.totalAmount ?? 0
+  // 2. Nếu có linkedOrder object
+  if (item.linkedOrder) {
+    const amount = item.linkedOrder.totalPaidAmount || item.linkedOrder.finalAmount || 0
     const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
-    const term =
-      foundByNameOrId.paymentMethodTag ||
-      (foundByNameOrId.paidAmount && foundByNameOrId.paidAmount >= foundByNameOrId.finalAmount
-        ? 'Thanh toán 100%'
-        : 'Đã cọc 1 phần')
     return {
-      orderCode: foundByNameOrId.orderNo,
-      packageName: pkgName,
+      orderCode: item.linkedOrder.orderCode,
+      packageName: item.linkedOrder.packageName || 'Gói học',
       packageAmount: formattedAmount,
-      paymentTerm: term,
+      paymentTerm: item.linkedOrder.paymentTerm || 'Đã thanh toán',
     }
   }
 
-  // 3. Tự động liên kết đơn hàng cho các ca hoàn thành (tai_phi) hoặc hẹn tái (hen_tai)
+  // 3. Tự động liên kết đơn hàng cho các ca đã hoàn tất tái phí (tai_phi)
   const isCstpCompleted = item.completedCareTags?.includes('CSTP')
   const classification = item.renewalClassification
   const hash = stableHash(item.studentId)
   const isMath = item.subject === 'Toán tư duy'
 
-  if (classification === 'tai_phi' || isCstpCompleted || item.interactionNotes?.includes('thành công') || (hash % 6 === 4 && item.activeCSTP !== false)) {
+  if (classification === 'tai_phi' || isCstpCompleted || item.interactionNotes?.includes('thành công')) {
     const orderNum = 832010 + (hash % 40)
     const paid = 18000000 - ((hash % 5) * 1000000)
     return {
@@ -586,21 +599,10 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     }
   }
 
-  if (classification === 'hen_tai' || item.interactionNotes?.includes('Hẹn') || item.interactionNotes?.includes('hẹn') || (hash % 6 === 3 && item.activeCSTP !== false)) {
-    const orderNum = 832050 + (hash % 40)
-    const deposit = 2500000 + ((hash % 6) * 500000)
-    return {
-      orderCode: `OD${orderNum}`,
-      packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Giao tiếp 1:4 (48 buổi)',
-      packageAmount: `${deposit.toLocaleString('vi-VN')}đ`,
-      paymentTerm: `Đã cọc ${(deposit / 1000000).toFixed(1)} triệu (Hẹn tái)`,
-    }
-  }
-
-  // 4. Mặc định ban đầu chưa có đơn hàng liên kết -> Trống
+  // 4. Mặc định chưa có đơn hàng liên kết -> Chưa ghép đơn hàng
   return {
     orderCode: undefined,
-    packageName: 'Chưa có đơn hàng',
+    packageName: 'Chưa ghép đơn hàng',
     packageAmount: undefined,
     paymentTerm: undefined,
   }

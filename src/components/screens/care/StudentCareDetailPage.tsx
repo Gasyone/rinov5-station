@@ -40,7 +40,7 @@ interface StudentCareDetailPageProps {
   alerts: StudentCareAlert[]
   onRefresh?: () => void
   onStudentSelect?: (studentId: string) => void
-  initialTab?: 'learning' | 'orders' | 'regular' | 'renewal'
+  initialTab?: 'learning' | 'orders' | 'packages' | 'regular' | 'renewal'
   headerTitle?: string
 }
 
@@ -61,8 +61,14 @@ export function StudentCareDetailPage({
     }
   }, [setCustomHeaderTitle, headerTitle])
 
-  const initialMode: 'regular' | 'renewal' | 'orders' = 
-    initialTab === 'orders' ? 'orders' : initialTab === 'renewal' ? 'renewal' : 'regular'
+  const initialMode: 'regular' | 'renewal' | 'orders' | 'packages' = 
+    initialTab === 'orders'
+      ? 'orders'
+      : initialTab === 'packages'
+        ? 'packages'
+        : initialTab === 'renewal'
+          ? 'renewal'
+          : 'regular'
 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
@@ -359,7 +365,7 @@ export function StudentCareDetailPage({
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
       {/* Direct direct-split layout without top header bar */}
       <div className="flex-1 min-h-0 px-4 pb-4 pt-3 flex flex-col">
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4 min-h-0 overflow-hidden">
+        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
           
           {/* Left Column: Profile Info Header & Report Tab */}
           <main className="flex min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1.5 scrollbar-thin">
@@ -563,6 +569,7 @@ export function StudentCareDetailPage({
               allLogs={allLogs}
               selectedPackageId={selectedPackageId}
               selectedPackage={activePackage}
+              onSelectPackageId={setSelectedPackageId}
               initialMode={initialMode}
             />
           </aside>

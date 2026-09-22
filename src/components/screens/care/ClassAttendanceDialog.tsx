@@ -67,7 +67,7 @@ export function AttendanceStatusBadge({
             onClick={onOpenLeave}
             className="text-xs font-normal text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
           >
-            <span>Nghỉ phép</span>
+            <span>Nghỉ phép (V)</span>
             <ExternalLink className="h-2.5 w-2.5 shrink-0" />
           </button>
         )}

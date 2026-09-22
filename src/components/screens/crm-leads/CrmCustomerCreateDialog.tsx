@@ -19,8 +19,9 @@ import type { Lead } from '@/mocks/crmLeads'
 import type { ParentItem, ChildItem, HistoricalSalesCycle } from './crmCustomerCreateTypes'
 import { CrmCustomerParentSection } from './CrmCustomerParentSection'
 import { CrmCustomerChildSection } from './CrmCustomerChildSection'
+import { CrmFamilyProfile360Modal } from './family-360/CrmFamilyProfile360Modal'
 
-interface CrmCustomerCreateDialogProps {
+export interface CrmCustomerCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit?: (newLeads: Lead[]) => void
@@ -41,6 +42,9 @@ export function CrmCustomerCreateDialog({
 }: CrmCustomerCreateDialogProps) {
   const effectiveOrdersCount = propTotalOrdersCount ?? initialLead?.ordersCount ?? 0
   const effectiveOrdersAmount = propTotalOrdersAmount ?? initialLead?.totalSpend ?? '0đ'
+
+  // State mở Modal Hồ Sơ Gia Đình 360° độc lập
+  const [isFamily360Open, setIsFamily360Open] = useState(false)
 
   // Cột 1: Danh sách Phụ huynh & Địa chỉ
   const [parents, setParents] = useState<ParentItem[]>([
@@ -85,12 +89,12 @@ export function CrmCustomerCreateDialog({
 
   const [validationError, setValidationError] = useState('')
 
-  // Đồng bộ hóa State khi Dialog mở ra (Hỗ trợ mở mới, xem chi tiết, thêm phụ huynh, thêm con)
+  // Đồng bộ hóa State khi Dialog mở ra
   useEffect(() => {
     if (!open) return
 
     if (initialLead) {
-      // 1. Phụ huynh: Khởi tạo từ initialLead
+      // 1. Phụ huynh
       const loadedParents: ParentItem[] = [
         {
           id: `parent-${initialLead.id}`,
@@ -117,7 +121,6 @@ export function CrmCustomerCreateDialog({
         })
       }
 
-      // Nếu action là add_parent: Đóng phụ huynh trước đó lại, mở ra phụ huynh mới
       if (initialAction === 'add_parent') {
         loadedParents.forEach((p) => {
           p.isCollapsed = true
@@ -135,7 +138,7 @@ export function CrmCustomerCreateDialog({
 
       setParents(loadedParents)
 
-      // 2. Học viên kèm Định vị & Phân bổ tác nghiệp: Khởi tạo từ initialLead
+      // 2. Học viên
       const pastSalesCycles: HistoricalSalesCycle[] = (initialLead.salesCycles || [])
         .filter((c) => c.status !== 'active')
         .map((c) => ({
@@ -153,24 +156,6 @@ export function CrmCustomerCreateDialog({
           ordersCount: initialLead.ordersCount || 1,
           totalAmount: initialLead.totalSpend || '12.000.000đ',
         }))
-
-      if (pastSalesCycles.length === 0 && initialLead.isReturningLead) {
-        pastSalesCycles.push({
-          cycleId: 'cycle-old-1',
-          cycleNumber: 1,
-          title: 'Đợt 1 (Đợt tiếp cận trước đây)',
-          status: 'converted',
-          startDate: '05/10/2025',
-          endDate: '20/01/2026',
-          assignedSales: 'Lê Hoàng Nam (Sales)',
-          branch: initialLead.branch || 'RinoEdu Linh Đàm',
-          channel: initialLead.source || 'Facebook',
-          productInterest: initialLead.targetSubject || 'Anh văn Nhi đồng (SuperKids)',
-          outcomeNote: initialLead.returningReason || 'Cựu học viên hoàn thành đợt trước.',
-          ordersCount: initialLead.ordersCount || 1,
-          totalAmount: initialLead.totalSpend || '12.000.000đ',
-        })
-      }
 
       const loadedChildren: ChildItem[] = [
         {
@@ -197,7 +182,6 @@ export function CrmCustomerCreateDialog({
         },
       ]
 
-      // Nếu action là add_child: Thêm bé mới
       if (initialAction === 'add_child') {
         loadedChildren.push({
           id: `child-new-${Date.now()}`,
@@ -230,7 +214,7 @@ export function CrmCustomerCreateDialog({
       setMapCoordinates(initialLead.mapLink || '')
       setValidationError('')
     } else {
-      // Khi tạo mới từ đầu (Create New Lead)
+      // Khi tạo mới từ đầu
       setParents([
         {
           id: 'parent-1',
@@ -272,7 +256,6 @@ export function CrmCustomerCreateDialog({
     }
   }, [open, initialLead, initialAction])
 
-  // Ghép chuỗi địa chỉ đầy đủ
   const fullAddressSearchQuery = useMemo(() => {
     return [addressDetail, ward, district, province].filter(Boolean).join(', ')
   }, [addressDetail, ward, district, province])
@@ -282,8 +265,8 @@ export function CrmCustomerCreateDialog({
     onOpenChange(false)
   }
 
-  const handleOpenFullDetail = () => {
-    window.open('/app/contact_directory', '_blank')
+  const handleOpenFamily360 = () => {
+    setIsFamily360Open(true)
   }
 
   const handleSubmit = (e: FormEvent) => {
@@ -394,99 +377,110 @@ export function CrmCustomerCreateDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(val) => (!val ? handleResetForm() : onOpenChange(true))}>
-      <DialogContent
-        className="w-[95vw] sm:max-w-[1200px] max-w-[1200px] max-h-[94vh] overflow-y-auto !bg-[#f1f5f9] dark:!bg-zinc-950 p-0 border-border shadow-2xl rounded-xl gap-0 opacity-100"
-        style={{ maxWidth: '1200px', width: '95vw', backgroundColor: '#f1f5f9' }}
-      >
-        {/* Header Tinh Gọn */}
-        <DialogHeader className="sticky top-0 z-30 flex flex-row items-center justify-between px-4 py-2.5 bg-white dark:bg-zinc-900 border-b border-border shadow-2xs">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6.5 w-6.5 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-500/20">
-              <User className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Khách hàng &gt;</span>
-              <DialogTitle className="text-sm font-semibold text-foreground">
-                {initialLead ? 'Thông tin chi tiết khách hàng' : 'Tạo khách hàng mới'}
-              </DialogTitle>
-            </div>
+    <>
+      <Dialog open={open} onOpenChange={(val) => (!val ? handleResetForm() : onOpenChange(true))}>
+        <DialogContent
+          className="w-[95vw] sm:max-w-[1200px] max-w-[1200px] max-h-[94vh] overflow-y-auto !bg-[#f1f5f9] dark:!bg-zinc-950 p-0 border-border shadow-2xl rounded-xl gap-0 opacity-100"
+          style={{ maxWidth: '1200px', width: '95vw', backgroundColor: '#f1f5f9' }}
+        >
+          {/* Header Tinh Gọn */}
+          <DialogHeader className="sticky top-0 z-30 flex flex-row items-center justify-between px-4 py-2.5 bg-white dark:bg-zinc-900 border-b border-border shadow-2xs">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6.5 w-6.5 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-500/20">
+                <User className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Khách hàng &gt;</span>
+                <DialogTitle className="text-sm font-semibold text-foreground">
+                  {initialLead ? 'Chỉnh sửa thông tin khách hàng' : 'Tạo khách hàng mới'}
+                </DialogTitle>
+              </div>
 
-            {/* Icon mở toàn màn hình chi tiết chuyên sâu */}
-            <button
-              type="button"
-              onClick={handleOpenFullDetail}
-              className="flex items-center gap-1 px-2 py-0.5 rounded text-xs text-primary hover:bg-primary/10 transition-colors ml-2 cursor-pointer border border-primary/20"
-              title="Mở toàn màn hình chi tiết khách hàng"
-            >
-              <ExternalLink className="h-3 w-3" />
-              <span>Xem chi tiết hồ sơ</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-7.5 px-3 text-xs font-medium text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
-              onClick={handleResetForm}
-            >
-              <X className="mr-1 h-3 w-3" />
-              <span>Huỷ Bỏ</span>
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="h-7.5 px-4 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
-              onClick={handleSubmit}
-            >
-              <Check className="mr-1 h-3 w-3" />
-              <span>Lưu Khách Hàng</span>
-            </Button>
-          </div>
-        </DialogHeader>
-
-        {/* Thông báo lỗi validation */}
-        {validationError && (
-          <div className="mx-4 mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
-            ⚠️ {validationError}
-          </div>
-        )}
-
-        {/* Body 2 Cột Cân Đối: Cột Trái (Phụ huynh ~42%) + Cột Phải (Học viên & Định vị tác nghiệp ~58%) */}
-        <form onSubmit={handleSubmit} className="p-3 space-y-3 bg-[#f1f5f9] dark:bg-zinc-950">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-            {/* CỘT 1: PHỤ HUYNH & ĐỊA CHỈ MAP (5/12 CỘT) */}
-            <div className="lg:col-span-5">
-              <CrmCustomerParentSection
-                parents={parents}
-                setParents={setParents}
-                province={province}
-                setProvince={setProvince}
-                district={district}
-                setDistrict={setDistrict}
-                ward={ward}
-                setWard={setWard}
-                addressDetail={addressDetail}
-                setAddressDetail={setAddressDetail}
-                mapCoordinates={mapCoordinates}
-                setMapCoordinates={setMapCoordinates}
-              />
+              {/* Nút mở Hồ sơ Gia đình 360° */}
+              {initialLead && (
+                <button
+                  type="button"
+                  onClick={handleOpenFamily360}
+                  className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs text-indigo-700 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 transition-colors ml-2 cursor-pointer border border-indigo-200 dark:border-indigo-800 font-semibold"
+                  title="Mở Hồ sơ gia đình toàn diện"
+                >
+                  <ExternalLink className="h-3 w-3 text-indigo-600" />
+                  <span>Xem Hồ sơ gia đình</span>
+                </button>
+              )}
             </div>
 
-            {/* CỘT 2: HỌC VIÊN & ĐỊNH VỊ PHÂN BỔ (7/12 CỘT) */}
-            <div className="lg:col-span-7">
-              <CrmCustomerChildSection
-                childList={children}
-                setChildren={setChildren}
-                totalOrdersCount={effectiveOrdersCount}
-                totalOrdersAmount={effectiveOrdersAmount}
-              />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7.5 px-3 text-xs font-medium text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                onClick={handleResetForm}
+              >
+                <X className="mr-1 h-3 w-3" />
+                <span>Huỷ Bỏ</span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="h-7.5 px-4 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer"
+                onClick={handleSubmit}
+              >
+                <Check className="mr-1 h-3 w-3" />
+                <span>Lưu Khách Hàng</span>
+              </Button>
             </div>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </DialogHeader>
+
+          {/* Thông báo lỗi validation */}
+          {validationError && (
+            <div className="mx-4 mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
+              ⚠️ {validationError}
+            </div>
+          )}
+
+          {/* Body 2 Cột Cân Đối Tạo Mới Nhanh: Cột Trái (Phụ huynh 5/12) + Cột Phải (Học viên 7/12) */}
+          <form onSubmit={handleSubmit} className="p-3 space-y-3 bg-[#f1f5f9] dark:bg-zinc-950">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+              {/* CỘT 1: PHỤ HUYNH & ĐỊA CHỈ MAP (5/12 CỘT) */}
+              <div className="lg:col-span-5">
+                <CrmCustomerParentSection
+                  parents={parents}
+                  setParents={setParents}
+                  province={province}
+                  setProvince={setProvince}
+                  district={district}
+                  setDistrict={setDistrict}
+                  ward={ward}
+                  setWard={setWard}
+                  addressDetail={addressDetail}
+                  setAddressDetail={setAddressDetail}
+                  mapCoordinates={mapCoordinates}
+                  setMapCoordinates={setMapCoordinates}
+                />
+              </div>
+
+              {/* CỘT 2: HỌC VIÊN & ĐỊNH VỊ PHÂN BỔ (7/12 CỘT) */}
+              <div className="lg:col-span-7">
+                <CrmCustomerChildSection
+                  childList={children}
+                  setChildren={setChildren}
+                  totalOrdersCount={effectiveOrdersCount}
+                  totalOrdersAmount={effectiveOrdersAmount}
+                />
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Hồ sơ Gia đình 360° độc lập */}
+      <CrmFamilyProfile360Modal
+        open={isFamily360Open}
+        onOpenChange={setIsFamily360Open}
+        lead={initialLead}
+      />
+    </>
   )
 }

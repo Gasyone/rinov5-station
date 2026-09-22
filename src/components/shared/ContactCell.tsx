@@ -31,6 +31,8 @@ interface ContactCellProps {
   additionalContacts?: AdditionalContact[]
   /** Hiển thị nút gọi điện thoại hay không */
   showCallButton?: boolean
+  /** Hiển thị biểu tượng điện thoại trước SĐT hay không */
+  showPhoneIcon?: boolean
   className?: string
 }
 
@@ -49,6 +51,7 @@ export function ContactCell({
   masked = false,
   additionalContacts = [],
   showCallButton = true,
+  showPhoneIcon = true,
   className,
 }: ContactCellProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -159,7 +162,7 @@ export function ContactCell({
       {/* Số điện thoại chính */}
       {phone && (
         <div className="flex items-center gap-1.5 font-mono text-xs text-foreground">
-          <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+          {showPhoneIcon && <Phone className="h-3 w-3 text-muted-foreground shrink-0" />}
           <span className="truncate">{masked ? maskPhone(phone) : phone}</span>
 
           {/* Action buttons cho phone */}

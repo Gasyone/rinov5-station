@@ -10,6 +10,7 @@ import {
   ArrowLeftRight,
   Search,
   Check,
+  Package,
 } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { PersonnelHoverCard, AppAvatar, type PersonnelItem } from '@/components/shared'
@@ -40,15 +41,19 @@ export function StudentCareClassExpandedInfo({
 }: StudentCareClassExpandedInfoProps) {
   return (
     <div className="pt-2 mt-1 space-y-2.5 text-left animate-in fade-in-50 duration-200">
+      {/* Hàng 1: Sản phẩm & Đào tạo (Gói • Thời hạn • Trình độ) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* Cột 1: Cơ sở */}
+        {/* Cột 1: Gói hiện tại */}
         <div className="space-y-0.5 min-w-0">
           <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
-            <Building2 className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
-            <span>Cơ sở</span>
+            <Package className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+            <span>{isRenewal ? 'Gói đã học' : 'Gói hiện tại'}</span>
           </span>
-          <p className="text-xs font-medium text-foreground truncate">
-            {currentBranchName}
+          <p
+            className="text-xs font-semibold text-foreground truncate"
+            title={pkg.packageName || (pkgIsEnglish ? 'Tiêu chuẩn Tiếng Anh 48B' : 'Toán Tư Duy STEM Rino')}
+          >
+            {pkg.packageName || (pkgIsEnglish ? 'Tiêu chuẩn Tiếng Anh 48B' : 'Toán Tư Duy STEM Rino')}
           </p>
         </div>
 
@@ -90,10 +95,24 @@ export function StudentCareClassExpandedInfo({
         </div>
       </div>
 
-      {/* Dòng Phụ trách CS và Phụ trách GV */}
-      <div className="pt-2.5 border-t border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* Cột 1: Phụ trách CS */}
-        <div className={cn("space-y-0.5 min-w-0", isRenewal ? "sm:col-span-3" : "")}>
+      {/* Hàng 2: Cơ sở & Nhân sự phụ trách */}
+      <div className={cn(
+        "pt-2.5 border-t border-border/40 grid gap-3",
+        isRenewal ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-3"
+      )}>
+        {/* Cột 1: Cơ sở */}
+        <div className="space-y-0.5 min-w-0">
+          <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
+            <Building2 className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+            <span>{isRenewal ? 'Cơ sở phụ trách' : 'Cơ sở'}</span>
+          </span>
+          <p className="text-xs font-medium text-foreground truncate">
+            {currentBranchName}
+          </p>
+        </div>
+
+        {/* Cột 2: Phụ trách CS */}
+        <div className="space-y-0.5 min-w-0">
           <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
             <Headphones className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
             <span>Phụ trách CS</span>
@@ -182,9 +201,9 @@ export function StudentCareClassExpandedInfo({
           </div>
         </div>
 
-        {/* Cột 2: Phụ trách GV - Ẩn hoàn toàn khi ở màn tái phí */}
+        {/* Cột 3: Phụ trách GV - Ẩn hoàn toàn khi ở màn tái phí */}
         {!isRenewal && (
-          <div className="space-y-0.5 min-w-0 sm:col-span-2">
+          <div className="space-y-0.5 min-w-0">
             <span className="text-xs text-muted-foreground/70 dark:text-zinc-400/80 font-medium flex items-center gap-1.5">
               <Users className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
               <span>Phụ trách GV</span>

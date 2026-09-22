@@ -27,6 +27,7 @@ import {
   getConsecutiveLowScores,
   getUnassignedStaffStatus,
 } from './operationsAlertHelpers'
+import { resolveStudentPlacementStatus } from './class-card/studentCareClassCardHelpers'
 import { OperationsAlertFilterPanel } from './OperationsAlertFilterPanel'
 
 export function OperationsAlertScreen() {
@@ -36,6 +37,7 @@ export function OperationsAlertScreen() {
   const [selectedSubject, setSelectedSubject] = useState('all')
   const [careStatusFilter, setCareStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'cared'>('all')
   const [dueDateFilter, setDueDateFilter] = useState<'all' | 'overdue' | 'today' | 'rescheduled'>('all')
+  const [packageStatusFilter, setPackageStatusFilter] = useState<string>('all')
 
   // CSDB filter state (droplist selection)
   const [csdbFilter, setCsdbFilter] = useState<string>('all')
@@ -427,6 +429,32 @@ export function OperationsAlertScreen() {
     }
   }, [tabFiltered])
 
+  // Compute package / placement status counts from tabFiltered
+  const packageStatusCounts = useMemo(() => {
+    const counts = {
+      all: tabFiltered.length,
+      active: 0,
+      pending_transfer: 0,
+      wait_for_assignment: 0,
+      reserve: 0,
+      session_ended: 0,
+    }
+
+    tabFiltered.forEach((item) => {
+      const studentInfo = mockStudents.find(
+        (s) => s.id === item.studentId || s.name.toLowerCase() === item.studentName.toLowerCase()
+      )
+      const st = resolveStudentPlacementStatus(item, studentInfo)
+      if (st === 'active') counts.active++
+      else if (st === 'pending_transfer') counts.pending_transfer++
+      else if (st === 'wait_for_assignment') counts.wait_for_assignment++
+      else if (st === 'reserve') counts.reserve++
+      else if (st === 'session_ended') counts.session_ended++
+    })
+
+    return counts
+  }, [tabFiltered])
+
   // 3. Apply care progress tab filter & sort by category priority (Đặc biệt -> Warning -> Chăm sóc)
   const filtered = useMemo(() => {
     let result = tabFiltered
@@ -437,6 +465,16 @@ export function OperationsAlertScreen() {
         if (csdbFilter === 'homework' && isHomeworkAlert(item)) return true
         if (csdbFilter === 'lowAttendance' && isLowAttendance(item)) return true
         return false
+      })
+    }
+
+    if (packageStatusFilter !== 'all') {
+      result = result.filter((item) => {
+        const studentInfo = mockStudents.find(
+          (s) => s.id === item.studentId || s.name.toLowerCase() === item.studentName.toLowerCase()
+        )
+        const st = resolveStudentPlacementStatus(item, studentInfo)
+        return st === packageStatusFilter
       })
     }
 
@@ -451,7 +489,7 @@ export function OperationsAlertScreen() {
       }
       return getPriority(b) - getPriority(a)
     })
-  }, [tabFiltered, csdbFilter])
+  }, [tabFiltered, csdbFilter, packageStatusFilter])
 
   // Paginated list
   const paginatedAlerts = useMemo(() => {
@@ -587,6 +625,9 @@ export function OperationsAlertScreen() {
         csdbCounts={csdbCounts}
         csdbFilter={csdbFilter}
         onCsdbFilterChange={(val) => { setCsdbFilter(val); resetPagination() }}
+        packageStatusFilter={packageStatusFilter}
+        onPackageStatusFilterChange={(st) => { setPackageStatusFilter(st); resetPagination() }}
+        packageStatusCounts={packageStatusCounts}
       />
 
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-1.5 lg:px-3 pb-3">

@@ -159,7 +159,7 @@ export function CareTagHoverCard({
           >
             <span>{label || code}</span>
             <span className="text-xs font-bold opacity-85 shrink-0 ml-0.5">
-              {assignees.length > 1 ? 'CS · GV' : assignees[0] || 'CS'}
+              {assignees.length > 1 ? 'CS - GV' : assignees[0] || 'CS'}
             </span>
           </Badge>
         )}

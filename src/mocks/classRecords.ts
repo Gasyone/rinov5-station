@@ -22,6 +22,7 @@ export interface ScheduleSlot {
   teachers?: string[]
   room?: string
   teacherName?: string
+  assistantName?: string
   isLeave?: boolean
   leaveReason?: string
 }

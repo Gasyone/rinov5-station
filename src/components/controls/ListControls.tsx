@@ -66,8 +66,9 @@ export function SegmentedControl<T extends string>({
 
 export interface ToolbarSelectOption {
   value: string
-  label: string
-  selectedLabel?: string
+  label: React.ReactNode | string
+  textValue?: string
+  selectedLabel?: React.ReactNode | string
 }
 
 interface ToolbarSelectProps {
@@ -77,6 +78,7 @@ interface ToolbarSelectProps {
   disabled?: boolean
   className?: string
   ariaLabel?: string
+  placeholder?: string
 }
 
 export function ToolbarSelect({
@@ -86,6 +88,7 @@ export function ToolbarSelect({
   disabled,
   className,
   ariaLabel,
+  placeholder,
 }: ToolbarSelectProps) {
   const EMPTY_SENTINEL = '__empty__'
   const selectedOpt = options.find(
@@ -106,12 +109,16 @@ export function ToolbarSelect({
         {selectedOpt?.selectedLabel ? (
           <span className="line-clamp-1">{selectedOpt.selectedLabel}</span>
         ) : (
-          <SelectValue />
+          <SelectValue placeholder={placeholder} />
         )}
       </SelectTrigger>
       <SelectContent>
         {options.map((option, index) => (
-          <SelectItem key={`${option.value || EMPTY_SENTINEL}-${index}`} value={option.value || EMPTY_SENTINEL}>
+          <SelectItem
+            key={`${option.value || EMPTY_SENTINEL}-${index}`}
+            value={option.value || EMPTY_SENTINEL}
+            textValue={option.textValue ?? (typeof option.label === 'string' ? option.label : undefined)}
+          >
             {option.label}
           </SelectItem>
         ))}
@@ -181,6 +188,7 @@ export function InlineSelect({
             <SelectItem
               key={`${itemVal || EMPTY_SELECT_VALUE}-${index}`}
               value={itemVal || EMPTY_SELECT_VALUE}
+              textValue={option.textValue ?? (typeof option.label === 'string' ? option.label : undefined)}
             >
               {option.label}
             </SelectItem>

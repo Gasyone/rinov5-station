@@ -31,6 +31,7 @@ import { mockCareAlerts } from '@/mocks/careAlerts'
 
 interface ClassesDetailRosterProps {
   students: RosterStudent[]
+  subject?: string
   onAddStudent?: () => void
   onRemoveStudent?: (studentId: string) => void
   onStudentClick?: (studentId: string) => void
@@ -235,6 +236,7 @@ function getStudentMilestoneTag(student: RosterStudent, index: number): StudentM
 
 export function ClassesDetailRoster({ 
   students, 
+  subject,
   onAddStudent,
   onRemoveStudent,
   onStudentClick,
@@ -682,6 +684,7 @@ export function ClassesDetailRoster({
           onOpenChange={setIsMonthlyReportModalOpen}
           students={visibleStudents}
           initialStudentId={selectedMonthlyReportStudentId}
+          subject={subject}
         />
       )}
     </div>

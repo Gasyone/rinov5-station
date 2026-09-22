@@ -49,6 +49,7 @@ export interface StudentHeaderInfoCardProps {
   parents?: ParentMemberInfo[]
   onOpenRoadmap?: () => void
   className?: string
+  actions?: React.ReactNode
   onLeave?: () => void
   onReserve?: () => void
   onResume?: () => void
@@ -78,6 +79,7 @@ export function StudentHeaderInfoCard({
   initialNote = 'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
   parents = [],
   className,
+  actions,
   onLeave,
   onReserve,
   onResume,
@@ -283,12 +285,11 @@ export function StudentHeaderInfoCard({
               />
             ) : null}
 
-            {/* Action buttons:
-                - Case 1: ĐANG BẢO LƯU -> Chỉ hiển thị duy nhất [Đi học lại]
-                - Case 2: CHỜ GHÉP LỚP -> Ẩn toàn bộ (Bảo lưu, Nghỉ phép, Thoát lớp, Chuyển lớp), chỉ hiển thị [Ghép lớp]
-                - Case 3: ĐANG HỌC -> Hiển thị đủ 4 nút [Nghỉ phép], [Bảo lưu], [Chuyển lớp], [Thoát lớp]
-            */}
-            {(onLeave || onReserve || onResume || onTransfer || onDrop || onAssignClass || showActions) && (
+            {actions ? (
+              <div className="flex items-center gap-1.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap">
+                {actions}
+              </div>
+            ) : (onLeave || onReserve || onResume || onTransfer || onDrop || onAssignClass || showActions) ? (
               <div className="flex items-center gap-1.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap">
                 {isReserved ? (
                   onResume && (
@@ -378,7 +379,7 @@ export function StudentHeaderInfoCard({
                   </>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Row Codes CID, UID, SID (khi mở rộng) */}

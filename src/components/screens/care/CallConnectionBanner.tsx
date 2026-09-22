@@ -37,7 +37,7 @@ export function CallConnectionBanner({
 
     const connectTimeout = setTimeout(() => {
       setCallStatus('connected')
-    }, 2200)
+    }, 6500)
 
     return () => clearTimeout(connectTimeout)
   }, [isActive])

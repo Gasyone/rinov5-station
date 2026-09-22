@@ -1,3 +1,6 @@
+import { mockCareAlerts } from '@/mocks/careAlerts'
+import { MONTH_OPTIONS } from '@/mocks/monthlyReports'
+
 export interface LessonReviewContent {
   lessonNumber: number
   title: string
@@ -215,6 +218,8 @@ Tham gia hoạt động CLIL: nhận biết âm nhạc & vận động đếm s�
 Làm mini project: vẽ cây gia đình và làm con vật bằng giấy.`
 }
 
+import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
+
 export interface DetailedMonthlyReportForm {
   monthPeriod: string
   awardBadge: string
@@ -222,6 +227,7 @@ export interface DetailedMonthlyReportForm {
   sectionAContent: string
   sectionA1Content: string
   sectionA2Content: string
+  galleryPhotos?: StudentGalleryPhoto[]
   sectionB1Content: string
   sectionB2StartLesson: number
   sectionB2EndLesson: number
@@ -229,13 +235,71 @@ export interface DetailedMonthlyReportForm {
   sectionB2Content: string
 }
 
+export interface MonthlyAwardCriterion {
+  title: string
+  criteria: string
+  meaning: string
+}
+
+export const MONTHLY_AWARDS_CRITERIA: MonthlyAwardCriterion[] = [
+  {
+    title: '🌟 SIÊU SAO TOÁN HỌC',
+    criteria: 'Chuyên cần 100%, hoàn thành đầy đủ BTVN trên app với kết quả cao, nắm chắc kiến thức đã học, giải bài nhanh – chính xác và biết vận dụng linh hoạt các phương pháp tư duy.',
+    meaning: 'Vinh danh học viên có kết quả học tập toàn diện và nổi bật trong tháng.',
+  },
+  {
+    title: '🚀 NGÔI SAO BỨT PHÁ',
+    criteria: 'Có sự tiến bộ vượt bậc so với tháng trước về kết quả bài tập, tốc độ tư duy và khả năng giải quyết vấn đề; từ còn phụ thuộc vào gợi ý sang chủ động tìm cách giải và trình bày được hướng tư duy của mình.',
+    meaning: 'Động viên tinh thần nỗ lực vượt qua giới hạn và bứt phá năng lực tư duy của học viên.',
+  },
+  {
+    title: '⭐️ NGÔI SAO CHĂM CHỈ',
+    criteria: 'Đi học đầy đủ, đúng giờ, luôn hoàn thành BTVN đúng hạn, chuẩn bị bài nghiêm túc, tập trung trong giờ học và tích cực phối hợp với giáo viên trong các hoạt động tư duy.',
+    meaning: 'Biểu dương ý thức kỷ luật, tinh thần tự giác và thái độ học tập tích cực của học viên.',
+  },
+  {
+    title: '🏆 CAO THỦ GIẢI TOÁN',
+    criteria: 'Có nỗ lực rõ rệt trong việc khắc phục những dạng bài còn yếu; giảm các lỗi tính toán, lỗi suy luận và biết vận dụng tốt hơn các phương pháp tư duy đã được hướng dẫn.',
+    meaning: 'Ghi nhận sự kiên trì, tinh thần không bỏ cuộc và những tiến bộ từng bước của học viên.',
+  },
+  {
+    title: '💡 NHÀ KHÁM PHÁ TOÁN HỌC',
+    criteria: 'Biết tìm tòi nhiều cách giải khác nhau, đưa ra cách tiếp cận riêng cho bài toán, phát hiện quy luật nhanh hoặc có những cách suy luận độc đáo và hợp lý.',
+    meaning: 'Khuyến khích khả năng tư duy mở, sự sáng tạo và thói quen tìm kiếm nhiều hướng giải quyết vấn đề.',
+  },
+  {
+    title: '🧠 THÁM TỬ TOÁN HỌC',
+    criteria: 'Chủ động tham gia các hoạt động tư duy, tích cực trình bày cách giải, biết giải thích vì sao mình chọn phương pháp đó, đặt câu hỏi và sẵn sàng chia sẻ cách suy luận với giáo viên, bạn bè.',
+    meaning: 'Khích lệ học viên chủ động suy nghĩ, diễn đạt tư duy mạch lạc và tự tin trong quá trình giải quyết vấn đề.',
+  },
+]
+
+export const AWARD_BADGES = MONTHLY_AWARDS_CRITERIA.map((a) => a.title)
+
+export function normalizeAwardBadge(badge?: string): string {
+  if (!badge) return ''
+  const found = AWARD_BADGES.find(
+    (b) => b === badge || b.includes(badge) || badge.includes(b.replace(/^[^\s]+\s+/, ''))
+  )
+  if (found) return found
+  const lower = badge.toLowerCase()
+  if (lower.includes('bứt phá') || lower.includes('chiến binh')) return '🚀 NGÔI SAO BỨT PHÁ'
+  if (lower.includes('tiến bộ') || lower.includes('giải toán')) return '🏆 CAO THỦ GIẢI TOÁN'
+  if (lower.includes('chăm')) return '⭐️ NGÔI SAO CHĂM CHỈ'
+  if (lower.includes('xuất sắc') || lower.includes('siêu sao')) return '🌟 SIÊU SAO TOÁN HỌC'
+  if (lower.includes('sáng tạo') || lower.includes('khám phá')) return '💡 NHÀ KHÁM PHÁ TOÁN HỌC'
+  if (lower.includes('thám tử')) return '🧠 THÁM TỬ TOÁN HỌC'
+  return badge
+}
+
 export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
   monthPeriod: '01/04/2026 đến 30/04/2026',
-  awardBadge: 'CHIẾN BINH BỨT PHÁ',
+  awardBadge: '',
   teacherName: 'Ms.Chloe',
   sectionAContent: '',
   sectionA1Content: '',
   sectionA2Content: '',
+  galleryPhotos: [],
   sectionB1Content: getAiSynthesizedNextMonthPlan(8, 10),
   sectionB2StartLesson: 8,
   sectionB2EndLesson: 10,
@@ -245,11 +309,12 @@ export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
 
 export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
   monthPeriod: '01/04/2026 đến 30/04/2026',
-  awardBadge: 'CHIẾN BINH BỨT PHÁ',
+  awardBadge: '',
   teacherName: 'Ms.Chloe',
   sectionAContent: '',
   sectionA1Content: '',
   sectionA2Content: '',
+  galleryPhotos: [],
   sectionB1Content: '',
   sectionB2StartLesson: 8,
   sectionB2EndLesson: 10,
@@ -261,4 +326,120 @@ export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
   ],
   sectionB2Content: '',
 }
+
+export interface ReportEditStatus {
+  canEdit: boolean
+  isLocked: boolean
+  daysRemaining: number
+  deadlineText: string
+  issuedDateText: string
+  statusLabel: string
+  statusMessage: string
+}
+
+export const REPORT_AUTOMATION_INFO = {
+  title: 'Cơ chế Báo cáo Học tập Tự động & Hạn mức Chỉnh sửa',
+  summary:
+    'Hệ thống tự động tổng hợp báo cáo học tập định kỳ hàng tháng từ toàn bộ dữ liệu học tập của học viên, đồng thời áp dụng cơ chế khóa sau 5 ngày để bảo đảm tính thống nhất và minh bạch khi gửi phụ huynh.',
+  sections: [
+    {
+      title: '1. Nguồn dữ liệu tổng hợp tự động',
+      content:
+        'Vào 00:00 ngày đầu tiên của tháng mới, hệ thống tự động quét và tổng hợp dữ liệu học tập tháng trước gồm: (1) Chuyên cần & tỷ lệ có mặt, (2) Điểm trung bình BTVN trên app, (3) Điểm kiểm tra định kỳ, (4) Thư viện hình ảnh & video sản phẩm từ các buổi học Dự án, và (5) Kế hoạch học tập gợi ý từ khung chương trình.',
+    },
+    {
+      title: '2. Thời hạn rà soát & chỉnh sửa (05 ngày)',
+      content:
+        'Giáo viên và nhân viên chăm sóc (CSM) được phép rà soát, cá nhân hóa lời nhận xét, chọn hình ảnh tiêu biểu và cập nhật danh hiệu tuyên dương trong vòng 05 ngày kể từ ngày hệ thống phát hành tự động (từ ngày 01 đến 23:59 ngày 05 hàng tháng).',
+    },
+    {
+      title: '3. Cơ chế tự động khóa dữ liệu',
+      content:
+        'Sau 23:59 ngày thứ 5 của kỳ phát hành, báo cáo sẽ tự động khóa tính năng chỉnh sửa (chế độ chỉ đọc). Toàn bộ dữ liệu được đóng băng để đảm bảo tính nhất quán với bản phụ huynh xem qua Landing Page và tin nhắn. Trường hợp đặc biệt cần điều chỉnh sau hạn, nhân sự cần gửi yêu cầu mở khóa đến Quản lý cơ sở hoặc Ban giám đốc.',
+    },
+  ],
+}
+
+export function getMonthlyReportEditStatus(monthOptionValue: string = '4_5_2026'): ReportEditStatus {
+  // Mốc thời gian hệ thống vận hành demo: Tháng 5/2026
+  if (monthOptionValue === '4_5_2026') {
+    return {
+      canEdit: true,
+      isLocked: false,
+      daysRemaining: 2,
+      deadlineText: '23:59 05/05/2026',
+      issuedDateText: '00:00 01/05/2026',
+      statusLabel: 'Còn 2 ngày chỉnh sửa',
+      statusMessage:
+        'Báo cáo được hệ thống tự động tạo ngày 01/05/2026. Cho phép chỉnh sửa trong vòng 5 ngày (hạn chót: 23:59 05/05/2026 - còn 2 ngày). Sau 5 ngày hệ thống sẽ tự động khóa dữ liệu.',
+    }
+  }
+
+  if (monthOptionValue === '5_6_2026' || monthOptionValue === '6_7_2026' || monthOptionValue === '7_8_2026') {
+    return {
+      canEdit: true,
+      isLocked: false,
+      daysRemaining: 5,
+      deadlineText: '5 ngày kể từ ngày phát hành',
+      issuedDateText: 'Kỳ dự thảo (Chưa chốt)',
+      statusLabel: 'Kỳ dự thảo',
+      statusMessage: 'Kỳ báo cáo đang chuẩn bị, cho phép cập nhật nội dung trước ngày phát hành tự động.',
+    }
+  }
+
+  // Kỳ quá khứ: 3_4_2026, 2_3_2026...
+  const pastDeadline = monthOptionValue === '3_4_2026' ? '05/04/2026' : '05/03/2026'
+  const pastIssued = monthOptionValue === '3_4_2026' ? '01/04/2026' : '01/03/2026'
+  return {
+    canEdit: false,
+    isLocked: true,
+    daysRemaining: 0,
+    deadlineText: pastDeadline,
+    issuedDateText: pastIssued,
+    statusLabel: 'Đã khóa chỉnh sửa',
+    statusMessage: `Báo cáo đã khóa sau 5 ngày kể từ ngày phát hành (${pastIssued}) để bảo toàn dữ liệu đã gửi phụ huynh.`,
+  }
+}
+
+export function getStudentReportMetrics(studentId?: string, studentName?: string, studentCode?: string) {
+  const alert = mockCareAlerts.find(
+    (a) =>
+      (studentId && a.studentId === studentId) ||
+      (a.studentName &&
+        studentName &&
+        a.studentName.toLowerCase().includes(studentName.toLowerCase())) ||
+      (a.classCode && studentCode && a.classCode === studentCode)
+  )
+
+  if (alert) {
+    return {
+      attendanceRatio: alert.attendanceRatio || '5/7',
+      lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
+      homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
+      homeworkAvg: '7.5',
+      testScore: alert.lastTestScore ?? 8.0,
+      priorTestScore: alert.priorTestScore ?? 5.5,
+    }
+  }
+
+  return {
+    attendanceRatio: '5/7',
+    lateCount: 1,
+    homeworkRatio: '7/7',
+    homeworkAvg: '7.5',
+    testScore: 8.0,
+    priorTestScore: 5.5,
+  }
+}
+
+export function resolveMonthValue(key?: string): string {
+  if (!key) return '4_5_2026'
+  const match = MONTH_OPTIONS.find(
+    (m) => m.value === key || m.monthKey === key || m.label.includes(key) || key.includes(m.current)
+  )
+  return match ? match.value : '4_5_2026'
+}
+
+
+
 

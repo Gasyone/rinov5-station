@@ -50,25 +50,6 @@ interface MonthlyCommentsSectionProps {
   studentCode?: string
 }
 
-function getDisplayComment(mc: MonthlyCommentItem): string {
-  if (mc.sectionA1Content) {
-    const marker = 'Điểm nổi bật:'
-    const idx = mc.sectionA1Content.indexOf(marker)
-    if (idx !== -1) {
-      const after = mc.sectionA1Content.substring(idx + marker.length).trim()
-      const firstPeriod = after.indexOf('.')
-      if (firstPeriod > 0) {
-        return `Điểm nổi bật: ${after.substring(0, firstPeriod + 1).trim()}`
-      }
-      return `Điểm nổi bật: ${after.split('\n')[0].trim()}`
-    }
-    return mc.sectionA1Content.split('\n')[0]
-  }
-  if (mc.sectionAContent) {
-    return mc.sectionAContent.split('\n')[0]
-  }
-  return mc.comment || 'Học viên học tập tích cực, hoàn thành tốt các bài tập rèn luyện.'
-}
 
 export function MonthlyCommentsSection({
   monthlyComments,
@@ -132,7 +113,7 @@ export function MonthlyCommentsSection({
     setIsReportDialogOpen(true)
   }
 
-  const visibleComments = showAllHistory ? commentsList : commentsList.slice(0, 2)
+  const visibleComments = showAllHistory ? commentsList : commentsList.slice(0, 1)
 
   const rosterStudent: RosterStudent = useMemo(
     () => ({
@@ -164,27 +145,39 @@ export function MonthlyCommentsSection({
           <h3 className="text-xs font-bold text-foreground tracking-tight">
             Báo cáo Tháng của Học viên
           </h3>
-          <p className="text-[11px] text-muted-foreground font-normal">
-            Xem báo cáo gửi phụ huynh & chỉnh sửa báo cáo chuyên sâu qua cửa sổ modal
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground font-medium bg-background px-2.5 py-1 rounded-full border border-border/60">
-            {visibleComments.length} kỳ báo cáo
+          <span className="text-xs text-muted-foreground font-normal">
+            Hiển thị {visibleComments.length}/{commentsList.length} kỳ báo cáo
           </span>
+          {commentsList.length > 1 && (
+            <>
+              <span className="text-border">•</span>
+              <button
+                type="button"
+                onClick={() => setShowAllHistory(!showAllHistory)}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <span>
+                  {showAllHistory
+                    ? 'Thu gọn'
+                    : `Xem thêm (${commentsList.length - 1} tháng cũ hơn)`}
+                </span>
+                {showAllHistory ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* List of Monthly Report Summary Cards (Compact, Direct Modal Opener) */}
-      <div className="space-y-2.5">
+      <div className="space-y-1.5 pt-0.5">
         {visibleComments.map((mc, idx) => {
-          const displayText = getDisplayComment(mc)
-
           return (
             <div
               key={mc.id || idx}
-              className="p-3 rounded-xl border border-border/70 bg-card dark:bg-zinc-800/40 shadow-3xs hover:border-border transition-all text-xs space-y-1.5"
+              className="p-2.5 rounded-xl border border-transparent bg-transparent hover:border-border/70 hover:bg-muted/30 dark:hover:bg-zinc-800/40 transition-all text-xs"
             >
               {/* Card Header Bar: Toàn bộ chỉ 1 dòng duy nhất */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -259,39 +252,12 @@ export function MonthlyCommentsSection({
                   </button>
                 </div>
               </div>
-
-              {/* Phần nội dung: Nhận xét (phẳng, sát header, không viền, không nền) */}
-              <div
-                onClick={() => handleOpenReport(mc.monthOptionValue || mc.month)}
-                className="cursor-pointer group/cmt transition-colors pt-0.5"
-                title="Nhấp để mở xem báo cáo trong modal"
-              >
-                <p className="text-[11.5px] italic text-muted-foreground/90 group-hover/cmt:text-foreground font-normal leading-relaxed line-clamp-2 transition-colors">
-                  &ldquo;{displayText}&rdquo;
-                </p>
-              </div>
             </div>
           )
         })}
       </div>
 
-      {/* Button xem thêm lịch sử các tháng trước */}
-      {commentsList.length > 2 && (
-        <div className="pt-2 text-center border-t border-border/40">
-          <button
-            type="button"
-            onClick={() => setShowAllHistory(!showAllHistory)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-muted/30 hover:bg-muted/60 text-foreground border border-border/60 transition-all cursor-pointer shadow-3xs"
-          >
-            <span>
-              {showAllHistory
-                ? 'Thu gọn lịch sử báo cáo các tháng trước'
-                : `Xem thêm lịch sử các tháng trước (${commentsList.length - 2} tháng cũ hơn)`}
-            </span>
-            {showAllHistory ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          </button>
-        </div>
-      )}
+
 
       {/* Modal Báo Cáo Tháng Chuyên Sâu (StudentMonthlyReportDialog - Chuẩn bản từ Chi tiết Lớp học) */}
       <StudentMonthlyReportDialog

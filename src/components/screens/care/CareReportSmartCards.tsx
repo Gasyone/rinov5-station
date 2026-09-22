@@ -9,37 +9,51 @@ import { UserCheck, BookOpen, Award } from 'lucide-react'
 
 interface CareReportSmartCardsProps {
   pkg: SimulatedPackage
-  regularSessions: SessionHistory[]
-  testSessions: SessionHistory[]
-  pkgIsEnglish: boolean
-  avgRating: number
-  generalComment: string
-  onOpenAttendance: () => void
-  onOpenHomework: () => void
-  onOpenTests: () => void
+  regularSessions?: SessionHistory[]
+  testSessions?: SessionHistory[]
+  pkgIsEnglish?: boolean
+  avgRating?: number
+  generalComment?: string
+  onOpenAttendance?: () => void
+  onOpenHomework?: () => void
+  onOpenTests?: () => void
   onOpenEvaluation?: () => void
 }
 
 export function CareReportSmartCards({
   pkg,
-  onOpenAttendance,
-  onOpenHomework,
-  onOpenTests,
+  regularSessions = [],
 }: CareReportSmartCardsProps) {
+  // Định dạng chuyên cần luôn luôn là phân số x/x (VD: 6/7, 3/4, 0/0)
+  const attendanceDisplay = React.useMemo(() => {
+    const raw = pkg.attendanceRatio || ''
+    if (raw.includes('/')) return raw
+    if (raw.includes('%')) {
+      const pct = parseFloat(raw) || 0
+      const total = (regularSessions && regularSessions.length > 0) ? regularSessions.length : 7
+      const attended = Math.round(total * (pct / 100))
+      return `${attended}/${total}`
+    }
+    if (regularSessions && regularSessions.length > 0) {
+      const attended = regularSessions.filter((s) => s.attendance === 'present' || s.attendance === 'late').length
+      return `${attended}/${regularSessions.length}`
+    }
+    return '6/7'
+  }, [pkg.attendanceRatio, regularSessions])
+
   return (
     <div className="grid grid-cols-3 gap-2 py-0.5 select-none">
-      {/* Card 1: Chuyên cần — Click to open modal */}
+      {/* Card 1: Chuyên cần — Thuần hiển thị chỉ số, không mở modal */}
       <div
-        onClick={onOpenAttendance}
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs cursor-pointer hover:bg-muted/30 transition-all select-none"
+          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
         )}
       >
         <div className="flex items-center justify-between gap-1.5 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 leading-none">
-              {pkg.attendanceRatio}
+              {attendanceDisplay}
             </span>
           </div>
           <span className="text-xs font-normal text-amber-600 dark:text-amber-400 truncate leading-tight ml-auto text-right">
@@ -51,11 +65,10 @@ export function CareReportSmartCards({
         </span>
       </div>
 
-      {/* Card 2: BTVN — Click to open modal */}
+      {/* Card 2: BTVN — Thuần hiển thị chỉ số, không mở modal */}
       <div
-        onClick={onOpenHomework}
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs cursor-pointer hover:bg-muted/30 transition-all select-none"
+          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
         )}
       >
         <div className="flex items-center justify-between gap-1.5 min-w-0">
@@ -74,11 +87,10 @@ export function CareReportSmartCards({
         </span>
       </div>
 
-      {/* Card 3: Kiểm tra — Click to open modal */}
+      {/* Card 3: Kiểm tra — Thuần hiển thị chỉ số, không mở modal */}
       <div
-        onClick={onOpenTests}
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs cursor-pointer hover:bg-muted/30 transition-all select-none"
+          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
         )}
       >
         <div className="flex items-center justify-between gap-1.5 min-w-0">

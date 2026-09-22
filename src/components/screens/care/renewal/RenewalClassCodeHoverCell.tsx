@@ -6,6 +6,7 @@ interface RenewalClassCodeHoverCellProps {
   classCode: string
   subject: string
   level: string
+  subLevel?: string
   teacherCode: string
   schedule: string
 }
