@@ -11,10 +11,8 @@ import {
   MATH_THINKING_SKILLS,
   MATH_ATTITUDE_LABELS,
   MATH_HOMEWORK_OPTIONS,
-  MATH_EVALUATION_OPTIONS,
   MATH_REMINDERS_COL_1,
   MATH_REMINDERS_COL_2,
-  MathThinkingSkillConfig,
 } from './mathThinkingTypes'
 
 export type { StudentFormState }
@@ -32,175 +30,8 @@ interface ClassesBulkFeedbackMathTestFormProps {
   errors?: Record<string, string>
 }
 
-interface TestThinkingSkillItemProps {
-  skill: MathThinkingSkillConfig
-  formState: StudentFormState
-  onUpdateField: (field: keyof StudentFormState, value: StudentFormState[keyof StudentFormState]) => void
-  readOnly: boolean
-  errorMessage?: string
-}
+import { MathThinkingSkillItem } from './MathThinkingSkillItem'
 
-function TestThinkingSkillItem({
-  skill,
-  formState,
-  onUpdateField,
-  readOnly,
-  errorMessage,
-}: TestThinkingSkillItemProps) {
-  const currentRating = formState[skill.ratingKey] as number | undefined
-  const strengthValue = (formState[skill.strengthKey] as string) || ''
-  const weaknessValue = (formState[skill.weaknessKey] as string) || ''
-
-  // Tạm ẩn gợi ý nhận xét theo yêu cầu
-  /*
-  const handleAddTag = (fieldKey: keyof StudentFormState, tagText: string) => {
-    if (readOnly) return
-    const currentVal = (formState[fieldKey] as string) || ''
-    const newVal = currentVal
-      ? currentVal.endsWith(', ') || currentVal.endsWith(',')
-        ? `${currentVal}${tagText}`
-        : `${currentVal}, ${tagText}`
-      : tagText
-    onUpdateField(fieldKey, newVal)
-  }
-  */
-
-  return (
-    <div
-      className={cn(
-        'space-y-2 py-2.5 border-b border-zinc-100 dark:border-zinc-800/80 last:border-b-0 transition-all rounded-xl',
-        errorMessage && 'bg-rose-50/20 dark:bg-rose-950/10 p-2.5 border border-rose-300/80 dark:border-rose-800/80 shadow-2xs'
-      )}
-    >
-      {/* Dòng trên: Title bên trái, Chỉ số rating bên phải */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <span className="text-sm font-bold text-foreground shrink-0 flex items-center gap-1.5">
-          <span className="text-base leading-none">{skill.icon}</span>
-          <span>{skill.label}</span>
-          <span className="text-rose-500">*</span>
-        </span>
-
-        {/* Rating Options cạnh phải title tư duy */}
-        <div className="flex items-center gap-1.5 sm:gap-2 text-xs shrink-0 flex-nowrap">
-          {MATH_EVALUATION_OPTIONS.map((opt) => {
-            const isChecked = currentRating === opt.value
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                disabled={readOnly}
-                onClick={() => onUpdateField(skill.ratingKey, isChecked ? undefined : opt.value)}
-                className="flex items-center gap-1 text-xs transition-all cursor-pointer select-none disabled:cursor-default hover:text-foreground whitespace-nowrap"
-              >
-                <span
-                  className={cn(
-                    'h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all',
-                    isChecked
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : errorMessage
-                        ? 'border-rose-400 dark:border-rose-600 bg-background'
-                        : 'border-zinc-300 dark:border-zinc-600 bg-background'
-                  )}
-                >
-                  {isChecked && (
-                    <Check className="h-2.5 w-2.5 stroke-[3px]" />
-                  )}
-                </span>
-                <span
-                  className={cn(
-                    isChecked ? 'font-bold text-foreground' : 'text-muted-foreground'
-                  )}
-                >
-                  {opt.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Dòng dưới: Mô tả ở dưới */}
-      <p className="text-xs text-muted-foreground -mt-0.5">
-        {skill.description}
-      </p>
-
-      {/* Thông báo lỗi nếu thiếu đánh giá bắt buộc (*) */}
-      {errorMessage && (
-        <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-semibold bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-2.5 py-1 rounded-lg">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      )}
-
-      {/* Amber callout container for Strength & Weakness */}
-      <div className="border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/40 dark:bg-amber-950/20 rounded-xl p-3.5 space-y-2.5">
-        <p className="text-xs font-medium text-muted-foreground">
-          Thêm nhận xét chi tiết để khích lệ và giúp học sinh cải thiện điểm yếu cho{' '}
-          <strong className="text-foreground">{skill.shortLabel}</strong>:
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {/* Strength */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
-              <Check className="h-4 w-4 stroke-[3px]" />
-              Phần làm tốt & nắm vững dạng bài
-            </label>
-            <Input
-              value={strengthValue}
-              onChange={(e) => onUpdateField(skill.strengthKey, e.target.value)}
-              disabled={readOnly}
-              placeholder="ví dụ: tính toán nhanh, suy luận logic..."
-              className="text-sm h-9 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/45 placeholder:font-normal"
-            />
-            {/* Tạm ẩn Suggestion Chips */}
-            {/* <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {skill.suggestions.strength.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  disabled={readOnly}
-                  onClick={() => handleAddTag(skill.strengthKey, tag)}
-                  className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 rounded-md px-2 py-0.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 cursor-pointer select-none transition-colors disabled:cursor-default"
-                >
-                  + {tag}
-                </button>
-              ))}
-            </div> */}
-          </div>
-
-          {/* Weakness */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-              <span className="text-sm">⚠️</span>
-              Phần cần ôn luyện lại
-            </label>
-            <Input
-              value={weaknessValue}
-              onChange={(e) => onUpdateField(skill.weaknessKey, e.target.value)}
-              disabled={readOnly}
-              placeholder="ví dụ: dạng toán có lời văn, nhầm dấu..."
-              className="text-sm h-9 bg-background border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-muted-foreground/45 placeholder:font-normal"
-            />
-            {/* Tạm ẩn Suggestion Chips */}
-            {/* <div className="flex flex-wrap gap-1.5 pt-0.5">
-              {skill.suggestions.weakness.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  disabled={readOnly}
-                  onClick={() => handleAddTag(skill.weaknessKey, tag)}
-                  className="text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80 rounded-md px-2 py-0.5 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer select-none transition-colors disabled:cursor-default"
-                >
-                  + {tag}
-                </button>
-              ))}
-            </div> */}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export function ClassesBulkFeedbackMathTestForm({
   formState,
@@ -214,6 +45,37 @@ export function ClassesBulkFeedbackMathTestForm({
   readOnly = false,
   errors = {},
 }: ClassesBulkFeedbackMathTestFormProps) {
+  const [customOptionsMap, setCustomOptionsMap] = React.useState<
+    Record<string, { strength: string[]; weakness: string[] }>
+  >({})
+
+  const handleAddCustomOption = (skillId: string, type: 'strength' | 'weakness', text: string) => {
+    setCustomOptionsMap((prev) => {
+      const prevSkill = prev[skillId] || { strength: [], weakness: [] }
+      if (prevSkill[type].includes(text)) return prev
+      return {
+        ...prev,
+        [skillId]: {
+          ...prevSkill,
+          [type]: [...prevSkill[type], text],
+        },
+      }
+    })
+  }
+
+  const handleRemoveCustomOption = (skillId: string, type: 'strength' | 'weakness', text: string) => {
+    setCustomOptionsMap((prev) => {
+      const prevSkill = prev[skillId] || { strength: [], weakness: [] }
+      return {
+        ...prev,
+        [skillId]: {
+          ...prevSkill,
+          [type]: prevSkill[type].filter((item) => item !== text),
+        },
+      }
+    })
+  }
+
   const handleToggleReminder = (item: string) => {
     if (readOnly) return
     const prev = formState.reminders || []
@@ -457,13 +319,16 @@ export function ClassesBulkFeedbackMathTestForm({
         {/* Thinking Skill Sections (Tách thành từng dòng/section riêng biệt) */}
         <div className="space-y-3.5 pt-1">
           {MATH_THINKING_SKILLS.map((skill) => (
-            <TestThinkingSkillItem
+            <MathThinkingSkillItem
               key={skill.id}
               skill={skill}
               formState={formState}
               onUpdateField={onUpdateField}
               readOnly={readOnly}
               errorMessage={errors[skill.ratingKey]}
+              customOptions={customOptionsMap[skill.id]}
+              onAddCustomOption={handleAddCustomOption}
+              onRemoveCustomOption={handleRemoveCustomOption}
             />
           ))}
         </div>

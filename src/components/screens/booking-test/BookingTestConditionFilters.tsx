@@ -3,7 +3,11 @@
 import { SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { getStatusColors, resolveStatusSemantic } from '@/lib/statusColors'
+import {
+  getStatusColors,
+  resolveStatusSemantic,
+  SEMANTIC_COUNT_BG,
+} from '@/lib/statusColors'
 import type { StatusTileId } from './bookingTestTypes'
 
 export interface ConditionFilterItem {
@@ -18,6 +22,9 @@ interface BookingTestConditionFiltersProps {
   activeId: StatusTileId
   onSelect: (id: StatusTileId) => void
   className?: string
+  showDot?: boolean
+  hideDot?: boolean
+  coloredCount?: boolean
 }
 
 export function BookingTestConditionFilters({
@@ -25,7 +32,12 @@ export function BookingTestConditionFilters({
   activeId,
   onSelect,
   className,
+  showDot = false,
+  hideDot = true,
+  coloredCount = true,
 }: BookingTestConditionFiltersProps) {
+  const effectiveShowDot = hideDot ? false : showDot
+
   return (
     <div className={cn('flex items-center gap-1.5 min-w-0', className)}>
       <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0 pr-0.5">
@@ -36,7 +48,8 @@ export function BookingTestConditionFilters({
       <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto custom-scrollbar">
         {items.map((item) => {
           const isActive = item.id === activeId
-          const colors = getStatusColors(resolveStatusSemantic(item.status))
+          const semantic = resolveStatusSemantic(item.status)
+          const colors = getStatusColors(semantic)
 
           return (
             <Button
@@ -52,14 +65,18 @@ export function BookingTestConditionFilters({
                   : 'border-border bg-background text-muted-foreground hover:bg-muted/70 hover:text-foreground'
               )}
             >
-              <span className={cn('h-1.5 w-1.5 rounded-full', colors.dot)} />
+              {effectiveShowDot && (
+                <span className={cn('h-1.5 w-1.5 rounded-full', colors.dot)} />
+              )}
               <span>{item.label}</span>
               <span
                 className={cn(
-                  'rounded px-1.5 py-0.5 text-xs font-bold font-mono',
+                  'rounded px-1.5 py-0.5 text-xs font-bold font-mono transition-colors',
                   isActive
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-muted text-muted-foreground'
+                    ? 'bg-primary text-primary-foreground'
+                    : coloredCount
+                      ? (SEMANTIC_COUNT_BG[semantic] || 'bg-muted text-muted-foreground')
+                      : 'bg-muted text-muted-foreground'
                 )}
               >
                 {item.count}

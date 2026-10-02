@@ -496,6 +496,32 @@ interface OrderDetailItem {
                           </div>
                         )}
                       </div>
+
+                      {/* Item Row 5: Combo Sub-items (if combo) */}
+                      {(item as any).comboItems && (item as any).comboItems.length > 0 && (
+                        <div className="pt-2 border-t space-y-1.5 text-xs">
+                          <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                            THÀNH PHẦN GÓI COMBO ({(item as any).comboItems.length} SẢN PHẨM)
+                          </div>
+                          <div className="space-y-1 pl-2">
+                            {(item as any).comboItems.map((sub: any, sIdx: number) => (
+                              <div
+                                key={sIdx}
+                                className="flex items-center justify-between text-xs py-0.5 text-muted-foreground"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-foreground font-semibold">•</span>
+                                  <span className="font-medium text-foreground">{sub.name}</span>
+                                </div>
+                                <div className="flex items-center gap-6 font-mono text-xs">
+                                  <span>{sub.durationText || '--'}</span>
+                                  <span>{sub.bonusText || '--'}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -24,6 +24,8 @@ export function getStudentPackages(student: Student): StudentPackage[] {
       startSessionDate: mainClass?.scheduleSlots?.[0]
         ? `${mainClass.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
         : '02/06 (Buổi 1: Nhập môn & Định hướng)',
+      orderNo: 'OD800436',
+      leaveQuota: (student.totalSessions ?? 24) >= 96 ? 8 : (student.totalSessions ?? 24) >= 48 ? 4 : 2,
     })
   }
 
@@ -46,6 +48,8 @@ export function getStudentPackages(student: Student): StudentPackage[] {
         startSessionDate: cls.scheduleSlots?.[0]
           ? `${cls.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
           : '02/06 (Buổi 1: Nhập môn & Định hướng)',
+        orderNo: 'OD794023',
+        leaveQuota: 1,
       })
     })
   }
@@ -54,21 +58,47 @@ export function getStudentPackages(student: Student): StudentPackage[] {
   list.push({
     id: `PKG-${student.id}-math-unlinked`,
     packageName: 'Gói Bổ Trợ Hình Học Không Gian & Logic',
-    totalSessions: 8,
-    remainingSessions: 8,
-    price: 1200000,
+    totalSessions: 8, remainingSessions: 8, price: 1200000,
     purchaseDate: new Date(new Date(student.enrollmentDate).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'active',
+    endDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'active', orderNo: 'OD794023', leaveQuota: 0,
+  })
+
+  // Add a 3rd Math package for multi-package list (Ví dụ Gói nhận chuyển)
+  list.push({
+    id: `PKG-${student.id}-math-adv`,
+    packageName: 'Gói Nâng Cao Số Học & Giải Toán Bằng Sơ Đồ',
+    totalSessions: 12, remainingSessions: 4, price: 1800000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'active', packageTag: 'received_transfer', orderNo: 'OD798202', leaveQuota: 1,
+  })
+
+  // Add a 4th Math package to showcase >3 packages expand/collapse (Ví dụ Gói hủy)
+  list.push({
+    id: `PKG-${student.id}-math-prev`,
+    packageName: 'Gói Ôn Luyện Toán Tư Duy Nhập Môn K9',
+    totalSessions: 24, remainingSessions: 0, price: 3600000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'cancelled', packageTag: 'cancelled', orderNo: 'OD780012', leaveQuota: 2,
+  })
+
+  // Add a 5th Math package (Ví dụ Gói chuyển)
+  list.push({
+    id: `PKG-${student.id}-math-transferred`,
+    packageName: 'Gói Toán Tư Duy K8 (Chuyển sang cơ sở mới)',
+    totalSessions: 16, remainingSessions: 6, price: 2400000,
+    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date(new Date(student.enrollmentDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'transferred', packageTag: 'transferred', orderNo: 'OD760089', leaveQuota: 1,
   })
 
   // Add a package with no linked class for demo
   list.push({
     id: `PKG-${student.id}-unlinked`,
     packageName: 'Gói Tiếng Anh Giao Tiếp Bổ Trợ',
-    totalSessions: 16,
-    remainingSessions: 16,
-    price: 2400000,
+    totalSessions: 16, remainingSessions: 16, price: 2400000,
     purchaseDate: student.enrollmentDate,
     endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'active',
@@ -79,14 +109,10 @@ export function getStudentPackages(student: Student): StudentPackage[] {
   list.push({
     id: `PKG-${student.id}-transferred`,
     packageName: 'Gói IELTS Intensive 5.0 (Cũ)',
-    totalSessions: 20,
-    remainingSessions: 8,
-    price: 1800000,
+    totalSessions: 20, remainingSessions: 8, price: 1800000,
     purchaseDate: pTransDate,
     endDate: new Date(new Date(pTransDate).getTime() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'transferred',
-    linkedClassCode: 'CLS-OLD-01',
-    linkedClassName: 'IELTS Intensive 5.0 - K12',
+    status: 'transferred', linkedClassCode: 'CLS-OLD-01', linkedClassName: 'IELTS Intensive 5.0 - K12',
     startSessionDate: '15/11/2024 (Buổi 1: Cam kết đầu ra & Chẩn đoán)',
   })
 
@@ -95,9 +121,7 @@ export function getStudentPackages(student: Student): StudentPackage[] {
   list.push({
     id: `PKG-${student.id}-cancelled`,
     packageName: 'Gói Speaking Club Tháng 3',
-    totalSessions: 8,
-    remainingSessions: 6,
-    price: 800000,
+    totalSessions: 8, remainingSessions: 6, price: 800000,
     purchaseDate: pCancelDate,
     endDate: new Date(new Date(pCancelDate).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'cancelled',
@@ -107,9 +131,7 @@ export function getStudentPackages(student: Student): StudentPackage[] {
   list.push({
     id: `PKG-${student.id}-expired`,
     packageName: 'Gói Tiếng Anh Trẻ Em Standard (Hết hạn)',
-    totalSessions: 24,
-    remainingSessions: 0,
-    price: 3600000,
+    totalSessions: 24, remainingSessions: 0, price: 3600000,
     purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date(new Date(student.enrollmentDate).getTime() - 185 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'expired',
@@ -119,9 +141,7 @@ export function getStudentPackages(student: Student): StudentPackage[] {
   list.push({
     id: `PKG-${student.id}-suspended`,
     packageName: 'Gói Luyện Thi IELTS Target 6.5 (Bảo lưu)',
-    totalSessions: 48,
-    remainingSessions: 32,
-    price: 7200000,
+    totalSessions: 48, remainingSessions: 32, price: 7200000,
     purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: 'suspended',
@@ -468,6 +488,8 @@ export function getStudentPrograms(
         status: 'active' as const,
         linkedClassCode: mathClasses[0]?.classCode || 'LD_TOAN_00032',
         linkedClassName: mathClasses[0]?.className || 'Toán Tư Duy 1:6 (96 buổi)',
+        orderNo: 'OD800436',
+        leaveQuota: 8,
       }
     ]
 
@@ -481,17 +503,14 @@ export function getStudentPrograms(
     const pausedCls = mathClasses.find((c) => c.status === 'paused') || null
 
     let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
-    if (student.status === 'reserve' || pausedCls) {
-      programStatus = 'reserved'
-    } else if (activeCls) {
-      programStatus = 'active'
-    } else if (droppedCls) {
-      programStatus = 'dropped'
-    }
+    if (student.status === 'reserve' || pausedCls) programStatus = 'reserved'
+    else if (activeCls) programStatus = 'active'
+    else if (droppedCls) programStatus = 'dropped'
 
     // Past classes: classes that are dropped or session_ended, or mock historical classes if none
     const actualPast = mathClasses.filter((c) => c.status === 'dropped' || c.status === 'session_ended')
-    const mockPast: EnrolledClass[] = actualPast.length > 0 ? actualPast : [
+    const mockPast: EnrolledClass[] = actualPast.length >= 2 ? actualPast : [
+      ...actualPast,
       {
         classCode: 'LD_TOAN_00018',
         className: 'Toán Tư Duy Nền Tảng K10',
@@ -500,42 +519,59 @@ export function getStudentPrograms(
           { dayOfWeek: 'Thứ 2', date: '15/01', startTime: '17:30', endTime: '19:00' },
           { dayOfWeek: 'Thứ 5', date: '18/01', startTime: '17:30', endTime: '19:00' }
         ],
-        teacherName: 'GV_HuiLT20',
-        status: 'session_ended',
-        progress: '24 / 24 buổi (Hoàn thành)',
-        branch: student.branch || 'RinoEdu Nguyễn Tuân',
-        room: 'B201',
-        level: 'Toán 1:6',
-        subLevel: 'A',
-        startDate: '2024-01-15',
-        endDate: '2024-04-15',
-        startSessionDate: 'Buổi 01 - 15/01/2024 (T2 17:30 - 19:00)',
-        totalSessions: 24,
-        usedSessions: 24,
-        attendanceRate: '95.8%',
-        presentSessions: 23,
-        excusedAbsences: 1,
-        unexcusedAbsences: 0,
-        homeworkRate: '92%',
-        homeworkScore: 8.5,
-        finalScore: 8.8,
-        finalOutcome: 'Đạt chuẩn đầu ra Archimedes 5 - A',
+        teacherName: 'GV_HuiLT20', assistantName: 'Nguyễn Thu Trang', status: 'session_ended', progress: '24 / 24 buổi (Hoàn thành)',
+        branch: student.branch || 'RinoEdu Nguyễn Tuân', room: 'B201', level: 'Toán 1:6', subLevel: 'A',
+        startDate: '2024-01-15', endDate: '2024-04-15', startSessionDate: 'Buổi 01 (15/01/2024)',
+        totalSessions: 24, usedSessions: 24, attendanceRate: '95.8%', presentSessions: 23, excusedAbsences: 1, unexcusedAbsences: 0,
+        homeworkRate: '92%', homeworkScore: 8.5, finalScore: 8.8, finalOutcome: 'Đạt chuẩn đầu ra Archimedes 5 - A',
         teacherFinalFeedback: 'Học viên có tư duy logic sắc bén, chủ động tương tác và hoàn thành tốt tất cả các bài toán dự án.',
-        linkedPackageName: 'Gói Toán tư duy Standard (6 tháng)',
-        finishReason: 'Hoàn thành khóa học',
+        linkedPackageName: 'Gói Toán tư duy Standard (6 tháng)', finishReason: 'Hoàn thành khóa học',
+      },
+      {
+        classCode: 'LD_TOAN_00009',
+        className: 'Toán Tư Duy Khởi Động K9',
+        type: 'tutor',
+        scheduleSlots: [
+          { dayOfWeek: 'Thứ 3', date: '05/09', startTime: '17:30', endTime: '19:00' },
+          { dayOfWeek: 'Thứ 6', date: '08/09', startTime: '17:30', endTime: '19:00' }
+        ],
+        teacherName: 'GV_ThaoNT', assistantName: 'Lê Mai Anh', status: 'session_ended', progress: '24 / 24 buổi (Hoàn thành)',
+        branch: student.branch || 'RinoEdu Nguyễn Tuân', room: 'A102', level: 'Toán 1:6', subLevel: 'B',
+        startDate: '2023-09-05', endDate: '2023-12-15', startSessionDate: 'Buổi 01 (05/09/2023)',
+        totalSessions: 24, usedSessions: 24, attendanceRate: '100%', presentSessions: 24, excusedAbsences: 0, unexcusedAbsences: 0,
+        homeworkRate: '88%', homeworkScore: 8.0, finalScore: 8.4, finalOutcome: 'Đạt chuẩn đầu ra Archimedes 4 - B+',
+        teacherFinalFeedback: 'Nắm vững các phép tính phân số và hình học trực quan, tiếp thu bài nhanh.',
+        linkedPackageName: 'Gói Toán tư duy Standard (6 tháng)', finishReason: 'Hoàn thành khóa học',
+      },
+      {
+        classCode: 'LD_TOAN_00003',
+        className: 'Toán Nhập Môn Mầm Non K8',
+        type: 'offline',
+        scheduleSlots: [
+          { dayOfWeek: 'Thứ 7', date: '10/06', startTime: '09:00', endTime: '10:30' },
+          { dayOfWeek: 'Chủ Nhật', date: '11/06', startTime: '09:00', endTime: '10:30' }
+        ],
+        teacherName: 'GV_HuongTM', assistantName: 'Phạm Quỳnh Nga', status: 'session_ended', progress: '16 / 16 buổi (Hoàn thành)',
+        branch: student.branch || 'RinoEdu Linh Đàm', room: 'A101', level: 'Toán Mầm Non', subLevel: 'K8',
+        startDate: '2023-06-10', endDate: '2023-08-20', startSessionDate: 'Buổi 01 (10/06/2023)',
+        totalSessions: 16, usedSessions: 16, attendanceRate: '93.7%', presentSessions: 15, excusedAbsences: 1, unexcusedAbsences: 0,
+        homeworkRate: '95%', homeworkScore: 9.0, finalScore: 9.2, finalOutcome: 'Đạt chuẩn hoàn thành khóa học',
+        teacherFinalFeedback: 'Bé làm quen tốt với các khối hình và số đếm, tự tin phát biểu trên lớp.',
+        linkedPackageName: 'Gói Ôn Luyện Toán Tư Duy Nhập Môn K9', finishReason: 'Hoàn thành khóa học',
       }
     ]
 
     programs.push({
-      id: 'prog-math',
-      name: 'Toán Tư Duy',
+      id: 'track-math-1-6',
+      name: 'Toán Tư Duy 1:6',
       subject: 'math',
       level: activeCls?.level || (student.level?.toLowerCase().includes('ielts') ? 'Toán Tiền Tiểu Học' : student.level) || 'Toán Tiền Tiểu Học',
       subLevel: activeCls?.subLevel || (student.subLevel?.toLowerCase().includes('ielts') ? 'Kindi 3 (Pre-K)' : student.subLevel) || 'Kindi 3 (Pre-K)',
+      schoolClass: student.schoolClass || 'Lớp 6',
       branch: activeCls?.branch || student.branch || 'RinoEdu Linh Đàm',
       entryScore: '8.5 / 10',
       entryScoreEvaluation: 'Khá giỏi (Tư duy Logic tốt)',
-      assessmentNote: 'Tập trung tốt, phản xạ toán học và tư duy hình học không gian nhạy bén. Cần củng cố thêm kỹ năng giải toán có lời văn.',
+      assessmentNote: 'Tập trung tốt, phản xạ toán học và tư duy hình học không gian nhạy bén.',
       csmName: 'Minh Phương (CSM Toán)',
       saleName: student.saleName || 'Trần Thị Mai (Sales)',
       availableSlots: [
@@ -548,33 +584,25 @@ export function getStudentPrograms(
       remainingSessions,
       startDate: pkgs[0]?.purchaseDate || student.enrollmentDate,
       endDate: pkgs[pkgs.length - 1]?.endDate || '2027-08-14',
-      currentClass: activeCls || pausedCls,
+      currentClass: (activeCls || pausedCls) ? {
+        ...(activeCls || pausedCls)!,
+        assistantName: (activeCls || pausedCls)!.assistantName || 'Nguyễn Thu Trang',
+        startSessionDate: (activeCls || pausedCls)!.startSessionDate || 'Buổi 01 (14/08/2024)',
+      } : null,
       pastClasses: mockPast,
       programStatus,
       droppedClassInfo: droppedCls ? {
-        className: droppedCls.className,
-        classCode: droppedCls.classCode,
-        droppedDate: '01/06/2026',
-        studiedBeforeDrop: droppedCls.progress || '84 / 96 buổi',
-        teacherName: droppedCls.teacherName,
-        room: droppedCls.room,
+        className: droppedCls.className, classCode: droppedCls.classCode, droppedDate: '01/06/2026',
+        studiedBeforeDrop: droppedCls.progress || '84 / 96 buổi', teacherName: droppedCls.teacherName, room: droppedCls.room,
         reason: 'Học viên xin rút khỏi lớp theo nguyện vọng đổi lịch học'
       } : undefined,
       transferInfo: droppedCls ? {
-        sourceClass: droppedCls.classCode,
-        targetClass: 'Chưa ghép lớp',
-        transferredSessions: remainingSessions,
-        transferDate: '01/06/2026',
-        reason: 'Chuyển ca học mới phù hợp lịch sinh hoạt gia đình'
+        sourceClass: droppedCls.classCode, targetClass: 'Chưa ghép lớp', transferredSessions: remainingSessions,
+        transferDate: '01/06/2026', reason: 'Chuyển ca học mới phù hợp lịch sinh hoạt gia đình'
       } : undefined,
       reservedInfo: (programStatus === 'reserved' || pausedCls) ? {
-        reservedSessions: remainingSessions,
-        startDate: '15/06/2026',
-        endDate: '15/09/2026',
-        duration: '3 tháng',
-        isHoldingClass: Boolean(pausedCls),
-        expiryDate: '15/10/2026',
-        reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh do bận thi học kỳ'
+        reservedSessions: remainingSessions, startDate: '15/06/2026', endDate: '15/09/2026', duration: '3 tháng',
+        isHoldingClass: Boolean(pausedCls), expiryDate: '15/10/2026', reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh'
       } : undefined,
     })
   }
@@ -645,37 +673,29 @@ export function getStudentPrograms(
         startDate: '2025-11-15',
         endDate: '2026-03-30',
         startSessionDate: 'Buổi 01 - 15/11/2025 (T3 18:00 - 19:30)',
-        totalSessions: 20,
-        usedSessions: 12,
-        attendanceRate: '91.7%',
-        presentSessions: 11,
-        excusedAbsences: 1,
-        unexcusedAbsences: 0,
-        homeworkRate: '90%',
-        homeworkScore: 8.2,
-        finalScore: 8.0,
-        finalOutcome: 'Hoàn thành 12/20 buổi (Kết chuyển 8 buổi)',
+        totalSessions: 20, usedSessions: 12, attendanceRate: '91.7%', presentSessions: 11, excusedAbsences: 1, unexcusedAbsences: 0,
+        homeworkRate: '90%', homeworkScore: 8.2, finalScore: 8.0, finalOutcome: 'Hoàn thành 12/20 buổi (Kết chuyển 8 buổi)',
         teacherFinalFeedback: 'Học viên tiến bộ tốt kỹ năng Nghe - Nói, phản xạ từ vựng tự nhiên, hoàn thành mục tiêu giai đoạn.',
-        linkedPackageName: 'Gói IELTS Intensive 5.0 (Cũ)',
-        finishReason: 'Chuyển lớp sang gói IELTS VIP',
+        linkedPackageName: 'Gói IELTS Intensive 5.0 (Cũ)', finishReason: 'Chuyển lớp sang gói IELTS VIP',
       }
     ]
 
     programs.push({
-      id: 'prog-english',
-      name: 'Tiếng Anh',
+      id: 'track-eng-1-6',
+      name: 'Tiếng Anh - Lớp nhóm 1:6',
       subject: 'english',
       level: 'IELTS Junior',
       subLevel: 'Band 5.0 – 5.5 (Pre-Intermediate)',
+      schoolClass: student.schoolClass,
       branch: activeCls?.branch || 'RinoEdu Nguyễn Tuân',
       entryScore: '6.0 / 9.0 (IELTS Mock)',
       entryScoreEvaluation: 'Đạt chuẩn đầu vào Lớp Foundation',
-      assessmentNote: 'Kỹ năng Nghe (Listening) và Phát âm (Pronunciation) chuẩn, tự tin giao tiếp với GV bản ngữ. Cần rèn luyện thêm Ngữ pháp viết Task 1.',
+      assessmentNote: 'Kỹ năng Nghe và Phát âm chuẩn. Cần rèn luyện thêm Ngữ pháp viết Task 1.',
       csmName: 'Hoàng Yến (CSM Ngoại ngữ)',
       saleName: 'Đặng Quốc Anh (Sales Tiếng Anh)',
       availableSlots: [
-        { id: `slot-${student.id}-e1`, dayOfWeek: 'Thứ 4 & Thứ 7', timeRange: '18:00 - 19:30', isPreferred: true, note: 'Ưu tiên cơ sở Nguyễn Tuân' },
-        { id: `slot-${student.id}-e2`, dayOfWeek: 'Chủ Nhật', timeRange: '14:30 - 16:00', isPreferred: false, note: 'Lớp kỹ năng mềm & Speaking' },
+        { id: `slot-${student.id}-e1`, dayOfWeek: 'Thứ 4 & Thứ 7', timeRange: '18:00 - 19:30', isPreferred: true, note: 'Cơ sở Nguyễn Tuân' },
+        { id: `slot-${student.id}-e2`, dayOfWeek: 'Chủ Nhật', timeRange: '14:30 - 16:00', isPreferred: false, note: 'Lớp Speaking' },
       ],
       packages: pkgs,
       totalSessions,
@@ -687,49 +707,59 @@ export function getStudentPrograms(
       pastClasses: mockPast,
       programStatus,
       droppedClassInfo: droppedCls ? {
-        className: droppedCls.className,
-        classCode: droppedCls.classCode,
-        droppedDate: '15/04/2026',
-        studiedBeforeDrop: droppedCls.progress || '12 / 20 buổi',
-        teacherName: droppedCls.teacherName,
-        room: droppedCls.room,
+        className: droppedCls.className, classCode: droppedCls.classCode, droppedDate: '15/04/2026',
+        studiedBeforeDrop: droppedCls.progress || '12 / 20 buổi', teacherName: droppedCls.teacherName, room: droppedCls.room,
         reason: 'Học viên chuyển gói học'
       } : undefined,
       transferInfo: droppedCls ? {
-        sourceClass: droppedCls.classCode,
-        targetClass: 'Chưa ghép lớp',
-        transferredSessions: remainingSessions,
-        transferDate: '15/04/2026',
-        reason: 'Chuyển sang gói học IELTS VIP mới'
+        sourceClass: droppedCls.classCode, targetClass: 'Chưa ghép lớp', transferredSessions: remainingSessions,
+        transferDate: '15/04/2026', reason: 'Chuyển sang gói học IELTS VIP mới'
       } : undefined,
       reservedInfo: programStatus === 'reserved' ? {
-        reservedSessions: remainingSessions,
-        startDate: '01/06/2026',
-        endDate: '31/07/2026',
-        duration: '2 tháng',
-        isHoldingClass: false,
-        expiryDate: '15/11/2026',
-        reason: 'Bảo lưu theo nguyện vọng phụ huynh'
+        reservedSessions: remainingSessions, startDate: '01/06/2026', endDate: '31/07/2026', duration: '2 tháng',
+        isHoldingClass: false, expiryDate: '15/11/2026', reason: 'Bảo lưu theo nguyện vọng phụ huynh'
       } : undefined,
+    })
+
+    // 3. Parallel Track: English 1:1 Tutor Track (Minh chứng học song song 2 lộ trình)
+    programs.push({
+      id: 'track-eng-tutor',
+      name: 'Tiếng Anh - Gia sư 1:1',
+      subject: 'english',
+      level: 'IELTS VIP 1:1',
+      subLevel: '1 kèm 1 Cấp tốc',
+      schoolClass: student.schoolClass,
+      branch: 'RinoEdu Nguyễn Tuân',
+      entryScore: '6.5 / 9.0 (IELTS Mock)',
+      entryScoreEvaluation: 'Mục tiêu nâng band cấp tốc trong 3 tháng',
+      assessmentNote: 'Cần giáo viên 1:1 tập trung sửa phát âm và chấm bài viết Task 2 hàng tuần.',
+      csmName: 'Hoàng Yến (CSM Ngoại ngữ)',
+      saleName: 'Đặng Quốc Anh (Sales Tiếng Anh)',
+      availableSlots: [
+        { id: `slot-${student.id}-et1`, dayOfWeek: 'Chủ Nhật', timeRange: '08:30 - 10:00', isPreferred: true, note: 'Lịch học gia sư 1:1 cuối tuần' },
+      ],
+      packages: [
+        {
+          id: `PKG-${student.id}-eng-tutor-vip`, packageName: 'Gói Tiếng Anh Gia Sư 1:1 VIP (24 buổi)',
+          totalSessions: 24, remainingSessions: 24, price: 9600000,
+          purchaseDate: '2026-08-01', endDate: '2027-02-01', status: 'active' as const, orderNo: 'OD992015', leaveQuota: 3,
+        }
+      ],
+      totalSessions: 24,
+      studiedSessions: 0, remainingSessions: 24, startDate: '2026-08-01', endDate: '2027-02-01',
+      currentClass: null, pastClasses: [], programStatus: 'wait_for_assignment',
     })
   }
 
   // Fallback if no programs detected
   if (programs.length === 0) {
     programs.push({
-      id: 'prog-standard',
-      name: 'Chương trình Chuẩn',
-      subject: 'other',
-      level: student.level || 'Chuẩn',
-      subLevel: student.subLevel || 'A',
-      packages: allPackages,
+      id: 'prog-standard', name: 'Chương trình Chuẩn', subject: 'other',
+      level: student.level || 'Chuẩn', subLevel: student.subLevel || 'A', packages: allPackages,
       totalSessions: student.totalSessions || 24,
       studiedSessions: (student.totalSessions || 24) - (student.remainingSessions || 24),
-      remainingSessions: student.remainingSessions || 24,
-      startDate: student.enrollmentDate,
-      endDate: '2026-12-31',
-      currentClass: allClasses[0] || null,
-      pastClasses: [],
+      remainingSessions: student.remainingSessions || 24, startDate: student.enrollmentDate, endDate: '2026-12-31',
+      currentClass: allClasses[0] || null, pastClasses: [],
       programStatus: allClasses[0] ? 'active' : 'wait_for_assignment'
     })
   }
@@ -743,39 +773,14 @@ export function getStudentPrograms(
 export function getStudentAvailableSlots(student?: Student | null): StudentAvailableSlot[] {
   if (student?.id === 's2') {
     return [
-      {
-        id: 'slot-1',
-        dayOfWeek: 'Thứ 2 & Thứ 4',
-        timeRange: '18:00 - 19:30',
-        note: 'Ưu tiên cơ sở Linh Đàm',
-      },
-      {
-        id: 'slot-2',
-        dayOfWeek: 'Thứ 7',
-        timeRange: '09:00 - 10:30',
-        note: 'Học buổi sáng',
-      },
+      { id: 'slot-1', dayOfWeek: 'Thứ 2 & Thứ 4', timeRange: '18:00 - 19:30', note: 'Ưu tiên cơ sở Linh Đàm' },
+      { id: 'slot-2', dayOfWeek: 'Thứ 7', timeRange: '09:00 - 10:30', note: 'Học buổi sáng' },
     ]
   }
 
   return [
-    {
-      id: 'slot-1',
-      dayOfWeek: 'Thứ 3 & Thứ 6',
-      timeRange: '17:30 - 19:00',
-      note: 'Ưu tiên cơ sở Nguyễn Tuân',
-    },
-    {
-      id: 'slot-2',
-      dayOfWeek: 'Thứ 7',
-      timeRange: '09:00 - 10:30',
-      note: 'Khung giờ rảnh cố định',
-    },
-    {
-      id: 'slot-3',
-      dayOfWeek: 'Chủ Nhật',
-      timeRange: 'Cả ngày (08:30 - 17:00)',
-      note: 'Linh hoạt mọi khung giờ',
-    },
+    { id: 'slot-1', dayOfWeek: 'Thứ 3 & Thứ 6', timeRange: '17:30 - 19:00', note: 'Ưu tiên cơ sở Nguyễn Tuân' },
+    { id: 'slot-2', dayOfWeek: 'Thứ 7', timeRange: '09:00 - 10:30', note: 'Khung giờ rảnh cố định' },
+    { id: 'slot-3', dayOfWeek: 'Chủ Nhật', timeRange: 'Cả ngày (08:30 - 17:00)', note: 'Linh hoạt mọi khung giờ' },
   ]
 }

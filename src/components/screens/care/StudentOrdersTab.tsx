@@ -107,36 +107,10 @@ export function StudentOrdersTab({
   // Không có đơn hàng nháp trong hệ thống Rinov5
   const isDraftOrder = useCallback((): boolean => false, [])
 
-  const isCurrentPackageOrder = useCallback(
-    (order: DetailedOrder): boolean => {
-      if (order.isCurrentPackage !== undefined) return order.isCurrentPackage
-      if (order.isExpired) return false
-      return (
-        order.orderNo === 'OD800436' ||
-        order.paymentStatus === 'unpaid' ||
-        order.paymentStatus === 'partial' ||
-        order.status === 'processing' ||
-        order.status === 'pending' ||
-        order.detailedItems?.some((i) => i.orderType === 'Gia Hạn') ||
-        false
-      )
-    },
-    []
-  )
-
-  const isPurchasedOrder = useCallback(
-    (order: DetailedOrder): boolean => {
-      return !isCurrentPackageOrder(order)
-    },
-    [isCurrentPackageOrder]
-  )
-
   const draftOrders = useMemo(() => filteredOrders.filter(isDraftOrder), [filteredOrders, isDraftOrder])
-  const currentOrders = useMemo(() => filteredOrders.filter(isCurrentPackageOrder), [filteredOrders, isCurrentPackageOrder])
-  const purchasedOrders = useMemo(() => filteredOrders.filter(isPurchasedOrder), [filteredOrders, isPurchasedOrder])
 
-  // Merge purchased orders and fee transfers into unified historical timeline items
-  const historyTimelineItems = useMemo(() => {
+  // Merge all orders and fee transfers into unified historical timeline items
+  const timelineItems = useMemo(() => {
     type TimelineItem =
       | { type: 'order'; order: DetailedOrder; timestamp: number }
       | { type: 'transfer'; transfer: FeeTransferRecord; timestamp: number }
@@ -158,7 +132,7 @@ export function StudentOrdersTab({
       return new Date(dateStr).getTime() || 0
     }
 
-    purchasedOrders.forEach((o) => {
+    filteredOrders.forEach((o) => {
       items.push({
         type: 'order',
         order: o,
@@ -176,7 +150,7 @@ export function StudentOrdersTab({
 
     items.sort((a, b) => b.timestamp - a.timestamp)
     return items
-  }, [purchasedOrders, transfers])
+  }, [filteredOrders, transfers])
 
   const toggleExpandPayments = useCallback((orderId: string) => {
     setExpandedPayments((prev) => ({
@@ -306,114 +280,77 @@ export function StudentOrdersTab({
   }, [])
 
   return (
-    <div className="space-y-5 text-left">
-      {/* ── SECTION: GÓI HIỆN TẠI + CHECKBOX CON KHÁC + NÚT TẠO ĐƠN TRÊN CÙNG ── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
-            <span>Gói hiện tại</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-xs font-mono font-bold">
-              {currentOrders.length}
-            </span>
-          </div>
+    <div className="space-y-4 text-left">
+      {/* ── TOP TOOLBAR: Xem đơn các con khác (đưa ra đầu) ── Nút Tạo đơn (bên phải) ── */}
+      <div className="flex items-center justify-between py-1 text-xs flex-wrap gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Checkbox mở rộng xem đơn hàng của các con khác (đưa ra đầu) */}
+          {hasOtherChildrenOrders && (
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer select-none hover:text-foreground">
+              <input
+                type="checkbox"
+                checked={showOtherChildrenOrders}
+                onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
+                className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+              />
+              <span>Xem đơn các con khác</span>
+            </label>
+          )}
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Checkbox mở rộng xem đơn hàng của các con khác (chỉ hiện khi gia đình có con khác có đơn) */}
-            {hasOtherChildrenOrders && (
-              <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-zinc-300 cursor-pointer select-none hover:text-foreground">
-                <input
-                  type="checkbox"
-                  checked={showOtherChildrenOrders}
-                  onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
-                  className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
-                />
-                <span>Xem đơn các con khác</span>
-              </label>
+          <span className="text-xs text-muted-foreground font-normal">
+            Tổng cộng: <strong className="font-semibold text-foreground">{filteredOrders.length}</strong> đơn hàng
+            {transfers.length > 0 && (
+              <> &bull; <strong className="font-semibold text-foreground">{transfers.length}</strong> phiếu chuyển phí</>
             )}
-
-            {/* Button Tạo đơn ở trên cùng */}
-            <Button
-              type="button"
-              onClick={handleCreateNewOrder}
-              className="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white border border-indigo-200/80 dark:border-indigo-800 font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Tạo đơn</span>
-            </Button>
-          </div>
+          </span>
         </div>
 
-        {currentOrders.length > 0 ? (
-          <div className="space-y-3.5">
-            {currentOrders.map((order) => (
-              <StudentOrderCardItem
-                key={order.id}
-                order={order}
-                isDraft={false}
-                isCurrent={true}
-                isPaymentsExpanded={expandedPayments[order.id] ?? false}
-                showOtherChildren={showOtherChildrenOrders}
-                draftOrders={draftOrders}
-                onToggleExpandPayments={toggleExpandPayments}
-                onViewDetail={handleViewDetail}
-                onCreateDraftFromPackage={handleCreateDraftFromPackage}
-                onCreateCompletionOrder={handleCreateCompletionOrder}
-                onAddPayment={handleViewDetail}
-                onScrollToOrder={scrollToOrder}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="p-3.5 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center text-xs text-muted-foreground">
-            Chưa có gói học chính thức đang kích hoạt.
-          </div>
-        )}
+        {/* Button Tạo đơn ở bên phải */}
+        <Button
+          type="button"
+          onClick={handleCreateNewOrder}
+          className="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white border border-indigo-200/80 dark:border-indigo-800 font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Tạo đơn</span>
+        </Button>
       </div>
 
-      {/* ── SECTION 3: GÓI ĐÃ MUA & LỊCH SỬ CHUYỂN ĐỔI (CHÈN TRỰC TIẾP) ── */}
-      {historyTimelineItems.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-0.5 text-xs flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 font-bold text-sky-800 dark:text-sky-300">
-              <span>Gói đã mua & Lịch sử chuyển đổi</span>
-              <span className="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-xs font-mono font-bold">
-                {historyTimelineItems.length}
-              </span>
-            </div>
-            <span className="text-xs font-normal text-muted-foreground italic">
-              ({purchasedOrders.length} gói đã mua &bull; {transfers.length} phiếu chuyển phí)
-            </span>
-          </div>
-          <div className="space-y-3.5">
-            {historyTimelineItems.map((item) => {
-              if (item.type === 'order') {
-                return (
-                  <StudentOrderCardItem
-                    key={item.order.id}
-                    order={item.order}
-                    isDraft={false}
-                    isCurrent={false}
-                    isPaymentsExpanded={expandedPayments[item.order.id] ?? false}
-                    showOtherChildren={showOtherChildrenOrders}
-                    draftOrders={draftOrders}
-                    onToggleExpandPayments={toggleExpandPayments}
-                    onViewDetail={handleViewDetail}
-                    onCreateDraftFromPackage={handleCreateDraftFromPackage}
-                    onCreateCompletionOrder={handleCreateCompletionOrder}
-                    onAddPayment={handleViewDetail}
-                    onScrollToOrder={scrollToOrder}
-                  />
-                )
-              }
+      {/* ── DANH SÁCH TẤT CẢ ĐƠN HÀNG & PHIẾU CHUYỂN PHÍ (DÒNG THỜI GIAN THỐNG NHẤT) ── */}
+      {timelineItems.length > 0 ? (
+        <div className="space-y-3.5">
+          {timelineItems.map((item) => {
+            if (item.type === 'order') {
               return (
-                <StudentFeeTransferItem
-                  key={item.transfer.id}
-                  transfer={item.transfer}
+                <StudentOrderCardItem
+                  key={item.order.id}
+                  order={item.order}
+                  isDraft={false}
+                  isCurrent={false}
+                  isPaymentsExpanded={expandedPayments[item.order.id] ?? false}
+                  showOtherChildren={showOtherChildrenOrders}
+                  draftOrders={draftOrders}
+                  onToggleExpandPayments={toggleExpandPayments}
+                  onViewDetail={handleViewDetail}
+                  onCreateDraftFromPackage={handleCreateDraftFromPackage}
+                  onCreateCompletionOrder={handleCreateCompletionOrder}
+                  onAddPayment={handleViewDetail}
                   onScrollToOrder={scrollToOrder}
                 />
               )
-            })}
-          </div>
+            }
+            return (
+              <StudentFeeTransferItem
+                key={item.transfer.id}
+                transfer={item.transfer}
+                onScrollToOrder={scrollToOrder}
+              />
+            )
+          })}
+        </div>
+      ) : (
+        <div className="p-4 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center text-xs text-muted-foreground">
+          Chưa có đơn hàng nào được ghi nhận.
         </div>
       )}
 

@@ -2,6 +2,7 @@
 
 import { Check, UserX, UserCheck } from 'lucide-react'
 import { PersonnelHoverCard, type PersonnelItem } from '@/components/shared'
+import { InlineSelect, type ToolbarSelectOption } from '@/components/controls'
 import { mockEmployees } from '@/mocks/employees'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +32,9 @@ interface BookingTestCreateStaffSectionProps {
   onTeacherChange: (teacherName: string) => void
   currentSlotStaffList: DutyStaffItem[]
   dayStaffList?: DutyStaffItem[]
+  school?: string
+  onSchoolChange?: (school: string) => void
+  schoolSelectOptions?: ToolbarSelectOption[]
 }
 
 function getPersonnelItem(item: DutyStaffItem): PersonnelItem {
@@ -58,6 +62,9 @@ export function BookingTestCreateStaffSection({
   onTeacherChange,
   currentSlotStaffList,
   dayStaffList = [],
+  school,
+  onSchoolChange,
+  schoolSelectOptions = [],
 }: BookingTestCreateStaffSectionProps) {
   const isTeacherFirst = mode === 'teacher_first'
   const availableStaffCount = currentSlotStaffList.filter((s) => s.isAvailable).length
@@ -66,61 +73,81 @@ export function BookingTestCreateStaffSection({
   const displayList = isTeacherFirst ? dayStaffList : currentSlotStaffList
 
   return (
-    <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-2.5">
-      {/* Tiêu đề Section */}
-      <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between pb-1 border-b">
-        <div className="flex items-center gap-1.5">
-          <UserCheck className="h-3.5 w-3.5 text-primary" />
-          <span>
-            {isTeacherFirst
-              ? 'Chọn Giáo viên / Nhân sự phụ trách (Cả ngày)'
-              : `Phụ trách ca ${selectedSlot}`}
+    <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
+      {/* Tiêu đề Section & Dropdown Chọn Trung tâm */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <UserCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {isTeacherFirst
+                ? 'Chọn Giáo viên / Phụ trách'
+                : `Phụ trách ca ${selectedSlot}`}
+            </span>
+          </div>
+
+          <span className="text-[11px] text-muted-foreground font-normal shrink-0">
+            {isTeacherFirst ? (
+              <span>
+                (Đang chọn:{' '}
+                <span className="font-semibold text-primary">
+                  {teacher ? teacher : 'Chưa gán'}
+                </span>)
+              </span>
+            ) : (
+              <span>
+                (<span className="font-semibold text-foreground">{availableStaffCount}</span>/
+                {currentSlotStaffList.length} rảnh)
+              </span>
+            )}
           </span>
         </div>
 
-        <span className="text-xs text-muted-foreground font-normal">
-          {isTeacherFirst ? (
-            <span>
-              Đang chọn:{' '}
-              <span className="font-semibold text-primary">
-                {teacher ? teacher : 'Chưa gán (Lịch chung)'}
-              </span>
+        {/* Ô chọn Trung tâm cơ sở */}
+        {schoolSelectOptions.length > 0 && onSchoolChange && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">
+              Trung tâm:
             </span>
-          ) : (
-            <span>
-              <span className="font-semibold text-foreground">{availableStaffCount}</span>/
-              {currentSlotStaffList.length} nhân sự rảnh
-            </span>
-          )}
-        </span>
+            <div className="w-[190px] sm:w-[210px]">
+              <InlineSelect
+                value={school || ''}
+                onValueChange={onSchoolChange}
+                options={schoolSelectOptions}
+                placeholder="Chọn trung tâm"
+                ariaLabel="Chọn trung tâm"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {/* Lựa chọn 0: Chưa gán Phụ trách / Bất kỳ giáo viên nào */}
         <div
           onClick={() => onTeacherChange('')}
           className={cn(
-            'flex items-center justify-between rounded-xl border p-2.5 h-[58px] cursor-pointer transition-all',
+            'flex items-center justify-between rounded-lg border p-2 h-[50px] cursor-pointer transition-all',
             teacher === ''
-              ? 'border-amber-500 bg-amber-50/60 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 font-semibold ring-1 ring-amber-500/40 shadow-2xs'
-              : 'border-border bg-muted/20 hover:bg-muted/50 text-muted-foreground'
+              ? 'border-amber-500 bg-amber-50/60 text-amber-900 dark:bg-amber-950/30 dark:text-amber-200 font-semibold ring-1 ring-amber-500/40'
+              : 'border-border/70 bg-background hover:bg-muted/40 text-muted-foreground'
           )}
         >
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground shrink-0">
-              <UserX className="h-4 w-4" />
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground shrink-0">
+              <UserX className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate">
-                {isTeacherFirst ? 'Chưa gán / Bất kỳ GV nào' : 'Chưa gán Phụ trách'}
+              <p className="text-xs font-semibold truncate leading-tight">
+                {isTeacherFirst ? 'Chưa gán / Bất kỳ GV' : 'Chưa gán Phụ trách'}
               </p>
-              <p className="text-xs text-muted-foreground opacity-75 truncate">
-                {isTeacherFirst ? 'Hiển thị tất cả khung giờ chung' : 'Phân công nhân sự sau'}
+              <p className="text-[11px] text-muted-foreground opacity-75 truncate leading-tight mt-0.5">
+                {isTeacherFirst ? 'Khung giờ chung' : 'Phân công sau'}
               </p>
             </div>
           </div>
-          <div className="shrink-0 ml-1.5">
-            {teacher === '' && <Check className="h-4 w-4 text-amber-600 shrink-0" />}
+          <div className="shrink-0 ml-1">
+            {teacher === '' && <Check className="h-3.5 w-3.5 text-amber-600 shrink-0" />}
           </div>
         </div>
 
@@ -140,32 +167,32 @@ export function BookingTestCreateStaffSection({
                   }
                 }}
                 className={cn(
-                  'flex items-center justify-between rounded-xl border p-2.5 h-[58px] transition-all',
+                  'flex items-center justify-between rounded-lg border p-2 h-[50px] transition-all',
                   !isAvailable && !isTeacherFirst
-                    ? 'opacity-65 cursor-not-allowed bg-muted/10 border-dashed'
+                    ? 'opacity-65 cursor-not-allowed bg-background/50 border-dashed'
                     : 'cursor-pointer',
                   isSelectedTeacher
-                    ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/30 shadow-2xs'
+                    ? 'border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/30'
                     : isAvailable
-                    ? 'border-border bg-muted/20 hover:bg-muted/50 text-foreground'
-                    : 'border-border/60 bg-muted/10 text-muted-foreground'
+                    ? 'border-border/70 bg-background hover:bg-muted/40 text-foreground'
+                    : 'border-border/50 bg-background/50 text-muted-foreground'
                 )}
               >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <div
                     className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
+                      'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white',
                       t.colorClass || 'bg-primary'
                     )}
                   >
                     {t.shortName}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <p className="truncate text-xs font-bold">{t.name}</p>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <p className="truncate text-xs font-semibold leading-tight">{t.name}</p>
                       <span
                         className={cn(
-                          'inline-block text-xs px-1.5 py-0.2 rounded font-semibold border shrink-0',
+                          'inline-block text-[10px] px-1 py-0 rounded font-medium border shrink-0 leading-none',
                           t.role === 'CS'
                             ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
                             : t.role === 'Khác'
@@ -178,40 +205,37 @@ export function BookingTestCreateStaffSection({
                     </div>
 
                     {isTeacherFirst ? (
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p
+                        className={cn(
+                          'text-[11px] font-medium truncate leading-tight mt-0.5',
+                          (item.availableSlotsCount ?? 0) > 0
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
+                        )}
+                      >
                         {item.availableSlotsCount !== undefined
-                          ? `${item.availableSlotsCount} ca rảnh trong ngày`
-                          : 'Khả dụng trực ca'}
+                          ? `${item.availableSlotsCount} ca rảnh`
+                          : 'Rảnh'}
                       </p>
                     ) : isAvailable ? (
-                      <p className="text-xs text-muted-foreground truncate">Khả dụng trực ca</p>
+                      <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 truncate leading-tight mt-0.5">
+                        Rảnh
+                      </p>
                     ) : (
                       <p
-                        className="text-xs text-rose-600 dark:text-rose-400 font-medium truncate"
+                        className="text-[11px] font-medium text-rose-600 dark:text-rose-400 truncate leading-tight mt-0.5"
                         title={item.conflictDetail}
                       >
-                        ⚠️ {item.conflictDetail || 'Đang bận lịch khác'}
+                        Bận{item.conflictDetail ? ` · ${item.conflictDetail}` : ''}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="shrink-0 ml-1.5">
-                  {isSelectedTeacher ? (
+                <div className="shrink-0 ml-1">
+                  {isSelectedTeacher && (
                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground shrink-0">
                       <Check className="h-2.5 w-2.5" />
-                    </span>
-                  ) : isTeacherFirst ? (
-                    <span className="text-xs font-semibold text-primary shrink-0">
-                      {item.availableSlotsCount ?? 0} ca
-                    </span>
-                  ) : isAvailable ? (
-                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-                      Rảnh
-                    </span>
-                  ) : (
-                    <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 shrink-0">
-                      Bận
                     </span>
                   )}
                 </div>
@@ -221,7 +245,7 @@ export function BookingTestCreateStaffSection({
         })}
 
         {displayList.length === 0 && (
-          <div className="col-span-full py-4 text-center text-xs text-muted-foreground">
+          <div className="col-span-full py-3 text-center text-xs text-muted-foreground">
             Chưa có nhân sự nào được phân bổ trực ca này tại cơ sở.
           </div>
         )}

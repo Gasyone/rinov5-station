@@ -149,15 +149,11 @@ export function StudentDetailClasses({
                     <span className="font-bold text-sky-900 dark:text-sky-300 text-xs sm:text-sm">
                       Tiến trình chuyển lớp đang diễn ra
                     </span>
-                    <StatusBadge status="wait_for_assignment" label="Chờ xếp lớp" className="text-xs py-0 px-1.5" />
+                    <StatusBadge status="pending_transfer" label="Chờ chuyển lớp" className="text-xs py-0 px-1.5" />
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
                     <span>
-                      Lớp nguồn: <strong className="font-semibold text-foreground">{program.transferInfo?.sourceClass || program.droppedClassInfo?.classCode || 'Lớp cũ'}</strong>
-                    </span>
-                    <span className="text-sky-500">➔</span>
-                    <span>
-                      Lớp đích: <strong className="font-semibold text-foreground">{program.transferInfo?.targetClass || 'Chưa ghép lớp'}</strong>
+                      Lớp cũ: <strong className="font-semibold text-foreground">{program.transferInfo?.sourceClass || program.droppedClassInfo?.classCode || 'Lớp cũ'}</strong>
                     </span>
                     <span className="text-border">•</span>
                     <span>
@@ -174,7 +170,7 @@ export function StudentDetailClasses({
                 className="shrink-0 h-8 px-3.5 text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5"
               >
                 <Plus className="h-4 w-4" />
-                <span>Chọn lớp đích / Ghép lớp</span>
+                <span>Ghép lớp ngay</span>
               </Button>
             </div>
 

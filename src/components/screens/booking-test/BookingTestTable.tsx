@@ -65,7 +65,7 @@ export function BookingTestTable({
       className="min-w-[1550px]"
     >
       <TableHeader className="[&_tr]:border-b-0">
-        <TableRow className="border-b-0 bg-muted hover:bg-muted">
+        <TableRow className="border-b-0 bg-muted hover:bg-muted [&>th]:h-8.5 [&>th]:py-1 text-xs">
           <TableHead className="sticky left-0 z-40 w-12 min-w-12 max-w-12 overflow-hidden bg-muted text-center">
             <Checkbox
               checked={isPageSelected}

@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-interface StudentDetailSessionsDialogProps {
+export interface StudentDetailSessionsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   totalSessions: number
@@ -63,6 +63,7 @@ export function StudentDetailSessionsDialog({
               <Input
                 type="number"
                 min={0}
+                max={totalSessions}
                 value={studiedSessions}
                 onChange={(e) => setStudiedSessions(parseInt(e.target.value) || 0)}
                 className="h-9 text-xs"

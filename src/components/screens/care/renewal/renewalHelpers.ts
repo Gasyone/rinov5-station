@@ -395,7 +395,7 @@ export function getRenewalClassification(item: StudentCareAlert): RenewalClassif
     }
     return 'hen_tai'
   }
-  return 'that_bai'
+  return 'can_nhac'
 }
 
 export function getUpsaleClassification(item: StudentCareAlert): RenewalClassification {
@@ -510,6 +510,51 @@ export interface StudentOrderInfo {
   packageName: string
   packageAmount?: string
   paymentTerm?: string
+  paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
+  paymentStatusLabel?: string
+}
+
+export function resolvePaymentStatusInfo(
+  paymentTerm?: string,
+  paymentStatus?: string,
+  totalPaidAmount?: number,
+  finalAmount?: number
+): { status: 'paid' | 'partial' | 'unpaid' | 'pending_payment'; label: string } {
+  const termLower = (paymentTerm || '').toLowerCase()
+  const statusLower = (paymentStatus || '').toLowerCase()
+
+  if (
+    statusLower === 'paid' ||
+    termLower.includes('100%') ||
+    termLower.includes('đã thu đủ') ||
+    termLower === 'đã thanh toán' ||
+    (totalPaidAmount !== undefined && finalAmount !== undefined && finalAmount > 0 && totalPaidAmount >= finalAmount)
+  ) {
+    return { status: 'paid', label: 'Đã thanh toán' }
+  }
+
+  if (
+    statusLower === 'partial' ||
+    statusLower === 'partially_paid' ||
+    termLower.includes('cọc') ||
+    termLower.includes('1 phần') ||
+    termLower.includes('một phần') ||
+    (totalPaidAmount !== undefined && totalPaidAmount > 0)
+  ) {
+    const isDeposit = termLower.includes('cọc')
+    return { status: 'partial', label: isDeposit ? 'Đã cọc 1 phần' : 'Thanh toán 1 phần' }
+  }
+
+  if (termLower.includes('chờ') || statusLower === 'pending_payment') {
+    return { status: 'pending_payment', label: 'Chờ thanh toán' }
+  }
+
+  if (statusLower === 'unpaid' || termLower.includes('chưa')) {
+    return { status: 'unpaid', label: 'Chưa thanh toán' }
+  }
+
+  // Default fallback if order exists
+  return { status: 'paid', label: 'Đã thanh toán' }
 }
 
 export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
@@ -520,6 +565,8 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
       packageName: 'Chưa ghép đơn hàng',
       packageAmount: undefined,
       paymentTerm: undefined,
+      paymentStatus: undefined,
+      paymentStatusLabel: undefined,
     }
   }
 
@@ -530,11 +577,21 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     if (item.linkedOrder) {
       const amount = item.linkedOrder.totalPaidAmount || item.linkedOrder.finalAmount || 0
       const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
+      const term = item.linkedOrder.paymentTerm || 'Đã thanh toán'
+      const paymentInfo = resolvePaymentStatusInfo(
+        term,
+        item.linkedOrder.paymentStatus,
+        item.linkedOrder.totalPaidAmount,
+        item.linkedOrder.finalAmount
+      )
+
       return {
         orderCode: code,
         packageName: item.linkedOrder.packageName || 'Gói học',
         packageAmount: formattedAmount,
-        paymentTerm: item.linkedOrder.paymentTerm || 'Đã thanh toán',
+        paymentTerm: term,
+        paymentStatus: paymentInfo.status,
+        paymentStatusLabel: paymentInfo.label,
       }
     }
 
@@ -553,11 +610,20 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
         (foundInMock.paidAmount && foundInMock.paidAmount >= foundInMock.finalAmount
           ? 'Thanh toán 100%'
           : 'Đã cọc 1 phần')
+      const paymentInfo = resolvePaymentStatusInfo(
+        foundInMock.paymentMethodTag || term,
+        foundInMock.paymentStatus,
+        foundInMock.paidAmount,
+        foundInMock.finalAmount
+      )
+
       return {
         orderCode: foundInMock.orderNo,
         packageName: pkgName,
         packageAmount: formattedAmount,
         paymentTerm: term,
+        paymentStatus: paymentInfo.status,
+        paymentStatusLabel: paymentInfo.label,
       }
     }
 
@@ -567,6 +633,8 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
       packageName: item.subject === 'Toán tư duy' ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
       packageAmount: '18.000.000đ',
       paymentTerm: 'Thanh toán 100%',
+      paymentStatus: 'paid',
+      paymentStatusLabel: 'Đã thanh toán',
     }
   }
 
@@ -574,11 +642,21 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
   if (item.linkedOrder) {
     const amount = item.linkedOrder.totalPaidAmount || item.linkedOrder.finalAmount || 0
     const formattedAmount = amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : undefined
+    const term = item.linkedOrder.paymentTerm || 'Đã thanh toán'
+    const paymentInfo = resolvePaymentStatusInfo(
+      term,
+      item.linkedOrder.paymentStatus,
+      item.linkedOrder.totalPaidAmount,
+      item.linkedOrder.finalAmount
+    )
+
     return {
       orderCode: item.linkedOrder.orderCode,
       packageName: item.linkedOrder.packageName || 'Gói học',
       packageAmount: formattedAmount,
-      paymentTerm: item.linkedOrder.paymentTerm || 'Đã thanh toán',
+      paymentTerm: term,
+      paymentStatus: paymentInfo.status,
+      paymentStatusLabel: paymentInfo.label,
     }
   }
 
@@ -596,6 +674,8 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
       packageName: isMath ? 'Gói Toán tư duy Archimedes 12T' : 'Gói Tiếng Anh Cambridge Level 5 12T',
       packageAmount: `${paid.toLocaleString('vi-VN')}đ`,
       paymentTerm: 'Thanh toán 100%',
+      paymentStatus: 'paid',
+      paymentStatusLabel: 'Đã thanh toán',
     }
   }
 
@@ -605,6 +685,8 @@ export function getStudentOrderInfo(item: StudentCareAlert): StudentOrderInfo {
     packageName: 'Chưa ghép đơn hàng',
     packageAmount: undefined,
     paymentTerm: undefined,
+    paymentStatus: undefined,
+    paymentStatusLabel: undefined,
   }
 }
 

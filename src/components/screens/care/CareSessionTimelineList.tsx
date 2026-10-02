@@ -511,21 +511,21 @@ export function CareSessionTimelineList({
           </div>
         )}
 
-        {/* Lưu ý phát sinh: Tạm ẩn khỏi thiết kế giao diện theo yêu cầu */}
-        {false && notices.length > 0 && (
-          <div className="space-y-1 pt-0.5 pb-1 select-none">
+        {/* Lưu ý phát sinh (Chuyên cần, Chưa nhận xét, Chưa điểm danh, BTVN): Hiển thị TRÊN Smartcard thống kê */}
+        {notices.length > 0 && (
+          <div className="rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 p-2.5 space-y-1.5 text-xs text-left select-none animate-in fade-in-50 duration-200">
             {notices.map((notice) => (
               <div
                 key={notice.id}
-                className="flex items-center gap-1.5 text-xs py-0.5 leading-tight min-w-0"
+                className="flex items-start gap-2 min-w-0 leading-snug"
                 title={`${notice.issue} ${notice.action}`}
               >
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <div className="min-w-0 flex-1 truncate">
-                  <span className="text-amber-800 dark:text-amber-300 font-medium">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1 text-xs text-amber-950 dark:text-amber-100">
+                  <span className="font-semibold text-amber-800 dark:text-amber-300">
                     {notice.issue}
                   </span>{' '}
-                  <span className="text-muted-foreground">
+                  <span className="text-amber-800/80 dark:text-amber-300/80 font-normal">
                     {notice.action}
                   </span>
                 </div>
@@ -588,9 +588,7 @@ export function CareSessionTimelineList({
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <span>
-                    {showAllHistory
-                      ? 'Thu gọn'
-                      : `Xem thêm (${allSessions.length - 7} buổi cũ hơn)`}
+                    {showAllHistory ? 'Thu gọn' : 'Xem thêm'}
                   </span>
                   {showAllHistory ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
                 </button>
@@ -624,9 +622,7 @@ export function CareSessionTimelineList({
                     className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     <span>
-                      {showAllTests
-                        ? 'Thu gọn'
-                        : `Xem thêm (${allTestSessions.length - 1} bài cũ hơn)`}
+                      {showAllTests ? 'Thu gọn' : 'Xem thêm'}
                     </span>
                     {showAllTests ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
                   </button>

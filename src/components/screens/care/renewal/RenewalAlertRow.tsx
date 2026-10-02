@@ -473,8 +473,8 @@ export function RenewalAlertRow({
                     </a>
                   </div>
 
-                  {/* Dòng 2: Mã đơn • Số tiền tổng đã thanh toán */}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
+                  {/* Dòng 2: Mã đơn • Trạng thái thanh toán */}
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
@@ -485,12 +485,14 @@ export function RenewalAlertRow({
                     >
                       {order.orderCode}
                     </a>
-                    {order.packageAmount && (
+                    {order.paymentStatusLabel && (
                       <>
                         <span>•</span>
-                        <span className="font-mono font-semibold text-emerald-700 dark:text-emerald-400">
-                          TT: {order.packageAmount}
-                        </span>
+                        <StatusBadge
+                          status={order.paymentStatus || 'paid'}
+                          label={order.paymentStatusLabel}
+                          className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                        />
                       </>
                     )}
                   </div>

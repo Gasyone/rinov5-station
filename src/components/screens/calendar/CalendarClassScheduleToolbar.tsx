@@ -1,13 +1,10 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { BranchSelect, SubjectSelect, ExpandableSearch, FilterIconButton, IconActionButton, SegmentedControl, SYSTEM_BRANCHES } from '@/components/controls'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import type { ViewMode } from './calendarClassScheduleTypes'
 import { VIEW_MODES, getMonday } from './calendarClassScheduleHelpers'
 
 interface CalendarClassScheduleToolbarProps {
-  isMySchedule?: boolean
-  onIsMyScheduleChange?: (val: boolean) => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
   selectedDate: Date
@@ -26,8 +23,6 @@ interface CalendarClassScheduleToolbarProps {
 }
 
 export function CalendarClassScheduleToolbar({
-  isMySchedule = false,
-  onIsMyScheduleChange,
   viewMode,
   onViewModeChange,
   selectedDate,
@@ -46,25 +41,8 @@ export function CalendarClassScheduleToolbar({
 }: CalendarClassScheduleToolbarProps) {
   return (
     <div className="flex shrink-0 flex-col gap-2 border-b border-border/40 bg-card px-3 py-2.5 md:flex-row md:items-center md:justify-between lg:px-4">
-      {/* Left side: Switch "Lịch của tôi" & Branch select & Subject select placed at far left */}
+      {/* Left side: Branch select & Subject select placed at far left */}
       <div className="flex flex-wrap items-center gap-2">
-        {onIsMyScheduleChange && (
-          <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-2 py-1">
-            <Switch
-              id="toggle-my-schedule-cs"
-              checked={isMySchedule}
-              onCheckedChange={onIsMyScheduleChange}
-              size="sm"
-            />
-            <label
-              htmlFor="toggle-my-schedule-cs"
-              className="text-xs font-medium cursor-pointer select-none text-foreground whitespace-nowrap"
-            >
-              Lịch của tôi
-            </label>
-          </div>
-        )}
-
         <BranchSelect
           value={activeBranch}
           branches={SYSTEM_BRANCHES}
@@ -81,23 +59,25 @@ export function CalendarClassScheduleToolbar({
           className="h-8 min-w-36"
         />
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onSelectedDateChange(viewMode === 'day' ? new Date() : getMonday(new Date()))}
-        >
-          Hôm nay
-        </Button>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           <IconActionButton icon={ChevronLeft} label="Trước" onClick={() => onNavigate(-1)} className="size-7" />
+          <h2 className="text-sm font-semibold px-1 select-none whitespace-nowrap">{calendarTitle}</h2>
           <IconActionButton icon={ChevronRight} label="Sau" onClick={() => onNavigate(1)} className="size-7" />
         </div>
-        <h2 className="text-sm font-semibold">{calendarTitle}</h2>
       </div>
 
       {/* Right side: View modes, search, filter */}
       <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 px-2.5 text-xs font-medium cursor-pointer"
+          onClick={() => onSelectedDateChange(viewMode === 'day' ? new Date() : getMonday(new Date()))}
+        >
+          Hôm nay
+        </Button>
+
         <SegmentedControl
           value={viewMode}
           options={VIEW_MODES.map((mode) => ({ value: mode.value, label: mode.label }))}

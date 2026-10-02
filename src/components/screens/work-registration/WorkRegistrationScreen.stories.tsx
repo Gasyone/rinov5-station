@@ -26,7 +26,7 @@ export const MyWeek: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Đăng ký' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Cả tuần' })).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Cập nhật đăng ký' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Lưu đăng ký' })).toBeVisible()
   },
 }
 

@@ -16,7 +16,7 @@ function ScoreChip({
   return (
     <span
       className={cn(
-        'inline-flex h-6 items-center rounded-md border px-1.5 text-xs font-medium',
+        'inline-flex h-5 items-center rounded border px-1.5 text-xs font-medium leading-none',
         className
       )}
     >
@@ -45,7 +45,7 @@ export function SpeakingScore({
       <div className={cn('flex flex-wrap items-center gap-1', compact ? '' : 'mt-1')}>
         <ScoreChip label="GV" value={result?.speaking || 'chưa có'} className={warningChip} />
         <ScoreChip label="AI" value={result?.speakingAi || '0/0'} className={infoChip} />
-        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-border px-1.5 text-xs font-medium">
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-border px-1.5 text-xs font-medium leading-none">
           {result?.speakingScore || '0'}
         </span>
       </div>

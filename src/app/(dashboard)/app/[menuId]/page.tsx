@@ -163,6 +163,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     const { RenewalScreen } = await import('@/components/screens/care/renewal/RenewalScreen')
     return { default: RenewalScreen }
   }),
+  tuition_debt: safeLazy(async () => {
+    const { PaymentReceiptsScreen } = await import('@/components/screens/payment-receipts/PaymentReceiptsScreen')
+    return { default: PaymentReceiptsScreen }
+  }),
 
   session_feedback: safeLazy(async () => {
     const { SessionFeedbackScreen } = await import('@/components/screens/session-feedback/SessionFeedbackScreen')

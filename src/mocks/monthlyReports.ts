@@ -1,4 +1,3 @@
-import { mockStudents } from './students'
 import { getStudentPhotos, type StudentGalleryPhoto } from './studentPhotos'
 
 export interface WeekReviewItem {
@@ -59,6 +58,7 @@ export const MONTH_OPTIONS: MonthlyReportMonthOption[] = [
   { value: '7_8_2026', label: 'Báo cáo Tháng 7 & Kế hoạch Tháng 8/2026', current: 'Tháng 7', next: 'Tháng 8', dateStr: '01/07/2026 đến 31/07/2026', monthKey: 'Tháng 7/2026' },
   { value: '3_4_2026', label: 'Báo cáo Tháng 3 & Kế hoạch Tháng 4/2026', current: 'Tháng 3', next: 'Tháng 4', dateStr: '01/03/2026 đến 31/03/2026', monthKey: 'Tháng 3/2026' },
   { value: '2_3_2026', label: 'Báo cáo Tháng 2 & Kế hoạch Tháng 3/2026', current: 'Tháng 2', next: 'Tháng 3', dateStr: '01/02/2026 đến 28/02/2026', monthKey: 'Tháng 2/2026' },
+  { value: '1_2_2026', label: 'Báo cáo Tháng 1 & Kế hoạch Tháng 2/2026', current: 'Tháng 1', next: 'Tháng 2', dateStr: '01/01/2026 đến 31/01/2026', monthKey: 'Tháng 1/2026' },
 ]
 
 export const FIXED_PARENT_NOTICE = `Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to. Ba mẹ hỗ trợ con quay và gửi video qua zalo cho cô hàng tuần. Ba mẹ có thể cho con đến sớm để cô kiểm tra bài con mỗi buổi nhé.
@@ -191,6 +191,22 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'Kiến thức & Tư duy: Nắm chắc các dạng toán tư duy cơ bản, tính nhẩm nhanh và chính xác.',
     'Tháng tới, con tiếp tục nâng cao kỹ năng tư duy hình học và logic phản xạ.'
   ),
+  createSeedReport(
+    'mr-s13-2_3_2026',
+    's13',
+    'Trần Minh Châu',
+    'HV-S13-0',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
+    '🛡️ CHIẾN BINH KIÊN TRÌ',
+    'Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con hòa đồng, bắt nhịp rất nhanh với các hoạt động thảo luận nhóm.\n\nĐiểm cần lưu ý: Cần kiểm tra lại kết quả cẩn thận trước khi nộp bài.',
+    'Kiến thức & Tư duy: Thực hành tốt các bài toán logic que tính và đếm hình phẳng cơ bản.',
+    'Tháng tới, con tiếp tục rèn thói quen tự kiểm tra bài và tính nhẩm nhanh.'
+  ),
 
   // 2. Nguyễn Phương Vy (s14)
   createSeedReport(
@@ -219,6 +235,22 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'Teacher Mark & Ms.Chloe',
     false
   ),
+  createSeedReport(
+    'mr-s14-2_3_2026',
+    's14',
+    'Nguyễn Phương Vy',
+    'HV-S14-0',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
+    '⭐️ NGÔI SAO BỨT PHÁ',
+    'Teacher Mark & Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con học tập chăm chỉ và đạt điểm kiểm tra đầu vào xuất sắc.',
+    'Kiến thức & Kỹ năng: Tiếp thu bài nhanh, khả năng quan sát và suy luận sắc bén.',
+    'Tháng tới con duy trì nhịp độ học tập và thử sức với các bài toán mở rộng.'
+  ),
 
   // 3. Nguyễn An (Alex) (s1 / s1-act-0 / HV-S4-10)
   createSeedReport(
@@ -243,9 +275,28 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     '3_4_2026',
     'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    '🌟 SIÊU SAO TOÁN HỌC',
+    '🌟 SIÊU SAO TIẾNG ANH',
     'Ms.Chloe',
-    false
+    false,
+    'Điểm nổi bật: Con rất hào hứng với các hoạt động đọc truyện và diễn kịch tiếng Anh.\n\nĐiểm cần lưu ý: Cần chú ý thêm phát âm âm đuôi.',
+    'Từ vựng & Phonics: Ghi nhớ tốt các từ vựng chủ đề Animals và Colours.',
+    'Tháng tới con sẽ luyện tập thuyết trình ngắn về chủ đề My Pet.'
+  ),
+  createSeedReport(
+    'mr-s1-2_3_2026',
+    's1',
+    'Alex (Nguyễn An)',
+    'HV-S4-10',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
+    'Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con rất tích cực giao lưu tiếng Anh cùng giáo viên bản ngữ.\n\nĐiểm cần lưu ý: Cần tập trung hơn khi làm bài viết độc lập.',
+    'Từ vựng & Phonics: Nhớ tốt các từ vựng chủ đề School và Family.',
+    'Tháng tới con tiếp tục nâng cao phản xạ giao tiếp tự tin trước lớp.'
   ),
 
   // 4. Phạm Bình Nguyên (Lemon)
@@ -290,21 +341,50 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'Ms.Chloe',
     false
   ),
-
-  // 6. Lê Nguyễn Bảo Hân (Hannah) (học viên đầu danh sách chăm sóc học viên)
   createSeedReport(
-    'mr-baohan-4_5_2026',
-    's-baohan',
-    'Lê Nguyễn Bảo Hân',
-    '10700325',
-    'Tháng 4/2026',
-    '4_5_2026',
-    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
-    '01/04/2026 đến 30/04/2026',
+    'mr-phuc-2_3_2026',
+    's-phuc',
+    'Băng Hồng Phúc',
+    'HV-S18-2',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
     '🚀 NGÔI SAO BỨT PHÁ',
     'Ms.Chloe',
-    true
+    false,
+    'Điểm nổi bật: Con lắng nghe cô giáo và hoàn thành tốt phiếu bài tập trên lớp.',
+    'Tư duy toán học: Hiểu nhanh các quy tắc dãy số có quy luật và hình học trực quan.',
+    'Tháng tới con tiếp tục rèn tính cẩn thận và tốc độ giải bài.'
   ),
+
+  // 6. Lê Nguyễn Bảo Hân (Hannah) (Báo cáo mẫu trắng tinh để người dùng tự điền từ đầu)
+  {
+    id: 'mr-baohan-4_5_2026',
+    studentId: 's-baohan',
+    studentName: 'Lê Nguyễn Bảo Hân',
+    studentCode: '10700325',
+    monthKey: 'Tháng 4/2026',
+    monthOptionValue: '4_5_2026',
+    monthTitle: 'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    dateStr: '01/04/2026 đến 30/04/2026',
+    awardBadge: '', // Trắng để người dùng tự chọn
+    teacherName: 'Ms.Chloe',
+    sectionA1Content: '', // Trắng để người dùng tự điền
+    sectionA2Content: '', // Trắng để người dùng tự điền
+    sectionAContent: '',
+    galleryPhotos: [], // Trắng chưa chọn ảnh
+    sectionB1Content: '', // Trắng để người dùng tự điền
+    sectionB2StartLesson: 8,
+    sectionB2EndLesson: 10,
+    sectionB2Weeks: [],
+    sectionB2Content: '',
+    sectionBContent: '',
+    isCurrent: true,
+    status: 'draft',
+    createdAt: '2026-04-28',
+    updatedAt: '2026-04-28',
+  },
   createSeedReport(
     'mr-baohan-3_4_2026',
     's-baohan',
@@ -316,6 +396,137 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     '01/03/2026 đến 31/03/2026',
     '⭐️ NGÔI SAO CHĂM CHỈ',
     'Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con đi học đầy đủ và tập trung nghe giảng.\n\nĐiểm cần lưu ý: Cần tự tin hơn khi phát biểu.',
+    'Kiến thức & Tư duy: Nắm tốt các phép tính cơ bản trong phạm vi 20.\n\nKỹ năng giải toán: Cần rèn thêm kỹ năng giải toán có lời văn.',
+    'Tháng tới con tiếp tục nâng cao phản xạ tư duy toán học.'
+  ),
+  createSeedReport(
+    'mr-baohan-2_3_2026',
+    's-baohan',
+    'Lê Nguyễn Bảo Hân',
+    '10700325',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
+    '🚀 NGÔI SAO BỨT PHÁ',
+    'Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con rất thích thú với các hình ảnh trực quan và câu đố toán học vui nhộn.\n\nĐiểm cần lưu ý: Cần thêm thời gian để làm quen với các phép so sánh số lớn.',
+    'Kiến thức & Tư duy: Nhận biết tốt các dạng hình học phẳng và số học trong phạm vi 10.',
+    'Tháng tới con sẽ rèn luyện thêm kỹ năng cộng trừ có nhớ trong phạm vi 20.'
+  ),
+
+  // 7. Đặng Thùy Dương (s29 / 30 / 2024029) - Tiếng Anh Level 1
+  createSeedReport(
+    'mr-s29-4_5_2026',
+    's29',
+    'Đặng Thùy Dương',
+    '2024029',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🚀 NGÔI SAO BỨT PHÁ',
+    'Teacher Mark & Ms.Chloe',
+    true,
+    'Điểm nổi bật: Con tự tin phát biểu, ngữ điệu nói tự nhiên và phát âm chuẩn các âm đuôi /s/, /t/, /d/. Trong các hoạt động đóng vai hội thoại nhóm, con luôn chủ động dẫn dắt bạn học.\n\nĐiểm cần lưu ý: Cần chú ý tốc độ nói khi thuyết trình chủ đề dài để tránh nói vấp hoặc nuốt âm.',
+    'Từ vựng & Ngữ pháp: Nắm vững từ vựng chủ đề Environmental Conservation và sử dụng tốt các mẫu câu so sánh hơn, so sánh nhất. Bài kiểm tra giữa kỳ đạt 8.5/10 điểm xuất sắc.',
+    'Tháng 5/2026, con sẽ tiếp tục hoàn thiện kỹ năng thuyết trình tự tin trước đám đông và làm quen với dạng bài viết luận ngắn 80-100 từ theo chuẩn Cambridge Flyers.'
+  ),
+  createSeedReport(
+    'mr-s29-3_4_2026',
+    's29',
+    'Đặng Thùy Dương',
+    '2024029',
+    'Tháng 3/2026',
+    '3_4_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    '01/03/2026 đến 31/03/2026',
+    '🌟 SIÊU SAO TIẾNG ANH',
+    'Teacher Mark & Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con tham gia rất sôi nổi các trò chơi ngôn ngữ, phản xạ nghe hiểu câu hỏi của thầy giáo bản ngữ rất nhanh nhẹn.\n\nĐiểm cần lưu ý: Cần rèn thêm tính kiên nhẫn khi đọc hiểu các đoạn văn dài có nhiều từ mới.',
+    'Phonics & Speaking: Phát âm chuẩn xác các nguyên âm đôi, ngữ điệu câu hỏi và câu cảm thán rất tự nhiên. Đạt điểm 8.0/10 ở bài kiểm tra định kỳ Unit 4.',
+    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).'
+  ),
+  createSeedReport(
+    'mr-s29-2_3_2026',
+    's29',
+    'Đặng Thùy Dương',
+    '2024029',
+    'Tháng 2/2026',
+    '2_3_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
+    '01/02/2026 đến 28/02/2026',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
+    'Teacher Mark & Ms.Chloe',
+    false,
+    'Điểm nổi bật: Con đi học chuyên cần 100%, nộp bài tập về nhà đầy đủ và tương tác rất tích cực với giáo viên nước ngoài.\n\nĐiểm cần lưu ý: Đôi khi còn e dè khi nói chuyện 1-1 với giáo viên bản xứ.',
+    'Từ vựng & Mẫu câu: Ghi nhớ tốt các từ vựng chủ đề Daily Routines và School Activities. Khả năng nghe hiểu câu lệnh cơ bản tốt.',
+    'Tháng tới con tiếp tục mở rộng vốn từ vựng học thuật và rèn phản xạ giao tiếp tự tin hơn.'
+  ),
+
+  // 8. Phan Bảo Ngọc (s30 / 31 / 2024030) - Tiếng Anh Level 1
+  createSeedReport(
+    'mr-s30-4_5_2026',
+    's30',
+    'Phan Bảo Ngọc',
+    '2024030',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🚀 NGÔI SAO BỨT PHÁ',
+    'Teacher Mark & Ms.Chloe',
+    true,
+    'Điểm nổi bật: Con rất tích cực tham gia các hoạt động nghe - nói và đóng kịch tiếng Anh.\n\nĐiểm cần lưu ý: Cần cẩn thận hơn với ngữ pháp thì quá khứ đơn.',
+    'Từ vựng & Kỹ năng: Nhớ từ vựng tốt, phản xạ nghe nói lưu loát và phát âm chuẩn.',
+    'Tháng tới con tiếp tục phát triển kỹ năng đọc hiểu và chuẩn bị cho bài kiểm tra cuối khóa.'
+  ),
+  createSeedReport(
+    'mr-s30-3_4_2026',
+    's30',
+    'Phan Bảo Ngọc',
+    '2024030',
+    'Tháng 3/2026',
+    '3_4_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    '01/03/2026 đến 31/03/2026',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
+    'Teacher Mark & Ms.Chloe',
+    false
+  ),
+
+  // 9. Hoàng Minh Khôi (s15 / 16 / 2024015) - Tiếng Anh Level 4
+  createSeedReport(
+    'mr-s15-4_5_2026',
+    's15',
+    'Hoàng Minh Khôi',
+    '2024015',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🌟 SIÊU SAO TIẾNG ANH',
+    'Teacher Mark & Ms.Chloe',
+    true,
+    'Điểm nổi bật: Kỹ năng tranh biện và thuyết trình tiếng Anh rất chững chạc, vốn từ vựng phong phú.',
+    'Nghe & Đọc: Đạt điểm tối đa phần thi nghe hiểu và đọc hiểu văn bản nâng cao.',
+    'Tháng tới con tiếp tục chuẩn bị luyện thi chứng chỉ Cambridge PET.'
+  ),
+  createSeedReport(
+    'mr-s15-3_4_2026',
+    's15',
+    'Hoàng Minh Khôi',
+    '2024015',
+    'Tháng 3/2026',
+    '3_4_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
+    '01/03/2026 đến 31/03/2026',
+    '🏆 CAO THỦ TIẾNG ANH',
+    'Teacher Mark & Ms.Chloe',
     false
   ),
 ]
@@ -326,6 +537,7 @@ function normalizeName(str: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[()]/g, '')
+    .replace(/[-_]/g, ' ')
     .trim()
 }
 
@@ -333,81 +545,60 @@ function normalizeName(str: string): string {
  * Lấy danh sách các báo cáo tháng của một học viên
  * Hỗ trợ tìm kiếm theo studentId, studentCode hoặc studentName
  */
-export function getStudentMonthlyReports(studentIdOrName?: string): StudentMonthlyReport[] {
-  if (!studentIdOrName) return []
+export function getStudentMonthlyReports(
+  studentIdOrName?: string,
+  secondIdentifier?: string
+): StudentMonthlyReport[] {
+  if (!studentIdOrName && !secondIdentifier) return []
 
-  const target = studentIdOrName.trim()
-  const normTarget = normalizeName(target)
+  const targets = [studentIdOrName, secondIdentifier].filter(Boolean) as string[]
 
-  // 1. Tìm chính xác theo studentId
-  let found = mockMonthlyReports.filter(
-    (r) =>
-      r.studentId === target ||
-      r.studentId.toLowerCase() === target.toLowerCase() ||
-      target.startsWith(`${r.studentId}-`) ||
-      r.studentId.startsWith(`${target}-`)
-  )
+  for (const rawTarget of targets) {
+    const target = rawTarget.trim()
+    const targetNoPrefix = target.replace(/^s-/, '')
+    const normTarget = normalizeName(target)
 
-  // 2. Tìm theo studentCode
-  if (found.length === 0) {
-    found = mockMonthlyReports.filter(
+    // 1. Tìm theo studentId
+    const foundById = mockMonthlyReports.filter((r) => {
+      const rId = r.studentId
+      const rIdNoPrefix = rId.replace(/^s-/, '')
+      return (
+        rId === target ||
+        rId.toLowerCase() === target.toLowerCase() ||
+        rIdNoPrefix.toLowerCase() === targetNoPrefix.toLowerCase() ||
+        target.startsWith(`${rId}-`) ||
+        rId.startsWith(`${target}-`) ||
+        normalizeName(rId) === normTarget
+      )
+    })
+    if (foundById.length > 0) {
+      return [...foundById].sort((a, b) => (b.isCurrent ? 1 : 0) - (a.isCurrent ? 1 : 0))
+    }
+
+    // 2. Tìm theo studentCode
+    const foundByCode = mockMonthlyReports.filter(
       (r) => r.studentCode && r.studentCode.toLowerCase() === target.toLowerCase()
     )
-  }
+    if (foundByCode.length > 0) {
+      return [...foundByCode].sort((a, b) => (b.isCurrent ? 1 : 0) - (a.isCurrent ? 1 : 0))
+    }
 
-  // 3. Tìm theo studentName
-  if (found.length === 0) {
-    found = mockMonthlyReports.filter((r) => {
+    // 3. Tìm theo studentName
+    const foundByName = mockMonthlyReports.filter((r) => {
       const normReportName = normalizeName(r.studentName)
-      return normReportName.includes(normTarget) || normTarget.includes(normReportName)
+      return (
+        normReportName.includes(normTarget) ||
+        normTarget.includes(normReportName) ||
+        normReportName.replace(/\s+/g, '').includes(normTarget.replace(/\s+/g, '')) ||
+        normTarget.replace(/\s+/g, '').includes(normReportName.replace(/\s+/g, ''))
+      )
     })
+    if (foundByName.length > 0) {
+      return [...foundByName].sort((a, b) => (b.isCurrent ? 1 : 0) - (a.isCurrent ? 1 : 0))
+    }
   }
 
-  // 4. Nếu học viên chưa có báo cáo sẵn, tự động sinh báo cáo mặc định chuẩn chỉnh cho học viên đó
-  if (found.length === 0) {
-    const matchedStudent = mockStudents.find(
-      (s) =>
-        s.id.toLowerCase() === target.toLowerCase() ||
-        s.name.toLowerCase() === target.toLowerCase() ||
-        normalizeName(s.name) === normTarget
-    )
-    const realName = matchedStudent ? matchedStudent.name : target
-    const realCode = matchedStudent ? `HV-${matchedStudent.id.toUpperCase()}` : 'HV-DEMO'
-
-    const defaultCurrent = createSeedReport(
-      `mr-${target}-4_5_2026`,
-      target,
-      realName,
-      realCode,
-      'Tháng 4/2026',
-      '4_5_2026',
-      'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
-      '01/04/2026 đến 30/04/2026',
-      '',
-      'Ms.Chloe',
-      true
-    )
-
-    const defaultPrev = createSeedReport(
-      `mr-${target}-3_4_2026`,
-      target,
-      realName,
-      realCode,
-      'Tháng 3/2026',
-      '3_4_2026',
-      'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
-      '01/03/2026 đến 31/03/2026',
-      '',
-      'Ms.Chloe',
-      false
-    )
-
-    mockMonthlyReports.push(defaultCurrent, defaultPrev)
-    found = [defaultCurrent, defaultPrev]
-  }
-
-  // Sắp xếp báo cáo mới nhất (isCurrent) lên đầu
-  return [...found].sort((a, b) => (b.isCurrent ? 1 : 0) - (a.isCurrent ? 1 : 0))
+  return []
 }
 
 /**
@@ -467,23 +658,23 @@ export function saveStudentMonthlyReport(
     monthOptionValue,
     monthTitle,
     dateStr,
-    awardBadge: data.awardBadge || '🚀 NGÔI SAO BỨT PHÁ',
+    awardBadge: data.awardBadge || '',
     teacherName: data.teacherName || 'Ms.Chloe',
-    sectionA1Content: data.sectionA1Content !== undefined ? data.sectionA1Content : DEFAULT_SECTION_A1_TEXT,
-    sectionA2Content: data.sectionA2Content !== undefined ? data.sectionA2Content : DEFAULT_SECTION_A2_TEXT,
-    sectionAContent: data.sectionAContent || `${data.sectionA1Content || DEFAULT_SECTION_A1_TEXT}\n\n${data.sectionA2Content || DEFAULT_SECTION_A2_TEXT}`,
+    sectionA1Content: data.sectionA1Content !== undefined ? data.sectionA1Content : '',
+    sectionA2Content: data.sectionA2Content !== undefined ? data.sectionA2Content : '',
+    sectionAContent: data.sectionAContent || `${data.sectionA1Content || ''}\n\n${data.sectionA2Content || ''}`.trim(),
     galleryPhotos:
       data.galleryPhotos !== undefined
         ? data.galleryPhotos
         : existingIndex >= 0
         ? mockMonthlyReports[existingIndex].galleryPhotos
-        : getStudentPhotos(data.studentId).slice(0, 4),
-    sectionB1Content: data.sectionB1Content !== undefined ? data.sectionB1Content : DEFAULT_SECTION_B1_TEXT,
+        : [],
+    sectionB1Content: data.sectionB1Content !== undefined ? data.sectionB1Content : '',
     sectionB2StartLesson: data.sectionB2StartLesson ?? 8,
     sectionB2EndLesson: data.sectionB2EndLesson ?? 10,
-    sectionB2Weeks: data.sectionB2Weeks && data.sectionB2Weeks.length > 0 ? data.sectionB2Weeks : DEFAULT_SECTION_B2_WEEKS,
-    sectionB2Content: data.sectionB2Content || 'Kế hoạch ôn tập 4 tuần',
-    sectionBContent: data.sectionBContent || `${data.sectionB1Content || DEFAULT_SECTION_B1_TEXT}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,
+    sectionB2Weeks: data.sectionB2Weeks || [],
+    sectionB2Content: data.sectionB2Content || '',
+    sectionBContent: data.sectionBContent || `${data.sectionB1Content || ''}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,
     isCurrent: data.isCurrent !== undefined ? data.isCurrent : monthOptionValue === '4_5_2026',
     status: 'saved',
     createdAt: existingIndex >= 0 ? mockMonthlyReports[existingIndex].createdAt : nowStr,

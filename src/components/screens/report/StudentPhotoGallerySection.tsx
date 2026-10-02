@@ -19,6 +19,7 @@ import { getStudentPhotos, type StudentGalleryPhoto } from '@/mocks/studentPhoto
 interface StudentPhotoGallerySectionProps {
   studentId?: string
   studentName?: string
+  initialPhotos?: StudentGalleryPhoto[]
   className?: string
 }
 
@@ -34,9 +35,13 @@ function formatLightboxDate(rawDate: string = ''): string {
 
 export function StudentPhotoGallerySection({
   studentId,
+  initialPhotos,
   className = '',
 }: StudentPhotoGallerySectionProps) {
-  const mediaList = getStudentPhotos(studentId)
+  const mediaList =
+    initialPhotos && initialPhotos.length > 0
+      ? initialPhotos
+      : getStudentPhotos(studentId)
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false)
   const [currentIndex, setCurrentIndex] = useState<number>(0)
 

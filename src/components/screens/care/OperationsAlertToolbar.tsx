@@ -100,72 +100,48 @@ export function OperationsAlertToolbar({
     {
       value: 'overdue',
       label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
-            <span>Quá hạn</span>
-          </span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold">
-            {dueDateCounts?.overdue ?? 0}
-          </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
+          <span>Quá hạn</span>
         </span>
       ),
-      textValue: `Quá hạn (${dueDateCounts?.overdue ?? 0})`,
+      textValue: 'Quá hạn',
       selectedLabel: (
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-rose-500 shrink-0" />
           <span>Quá hạn</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold">
-            {dueDateCounts?.overdue ?? 0}
-          </span>
         </span>
       ),
     },
     {
       value: 'today',
       label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
-            <span>Đến hạn</span>
-          </span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
-            {dueDateCounts?.today ?? 0}
-          </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+          <span>Đến hạn</span>
         </span>
       ),
-      textValue: `Đến hạn (${dueDateCounts?.today ?? 0})`,
+      textValue: 'Đến hạn',
       selectedLabel: (
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
           <span>Đến hạn</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
-            {dueDateCounts?.today ?? 0}
-          </span>
         </span>
       ),
     },
     {
       value: 'rescheduled',
       label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
-            <span>Hẹn gọi lại</span>
-          </span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
-            {dueDateCounts?.rescheduled ?? 0}
-          </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
+          <span>Hẹn gọi lại</span>
         </span>
       ),
-      textValue: `Hẹn gọi lại (${dueDateCounts?.rescheduled ?? 0})`,
+      textValue: 'Hẹn gọi lại',
       selectedLabel: (
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
           <span>Hẹn gọi lại</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
-            {dueDateCounts?.rescheduled ?? 0}
-          </span>
         </span>
       ),
     },
@@ -174,116 +150,39 @@ export function OperationsAlertToolbar({
   const packageStatusOptions: ToolbarSelectOption[] = [
     {
       value: 'all',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Tất cả trạng thái gói</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
-            {packageStatusCounts?.all ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: 'Tất cả trạng thái gói',
-      selectedLabel: 'Tất cả gói / lớp',
+      label: 'Tất cả gói',
+      textValue: 'Tất cả gói',
+      selectedLabel: 'Tất cả gói',
     },
     {
       value: 'active',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Đang học</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold">
-            {packageStatusCounts?.active ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: `Đang học (${packageStatusCounts?.active ?? 0})`,
-      selectedLabel: (
-        <span className="flex items-center gap-1.5">
-          <span>Đang học</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold">
-            {packageStatusCounts?.active ?? 0}
-          </span>
-        </span>
-      ),
+      label: <span className="text-emerald-600 dark:text-emerald-400 font-medium">Đang học</span>,
+      textValue: 'Đang học',
+      selectedLabel: <span className="text-emerald-600 dark:text-emerald-400 font-medium">Đang học</span>,
     },
     {
       value: 'pending_transfer',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Chờ chuyển lớp</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
-            {packageStatusCounts?.pending_transfer ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: `Chờ chuyển lớp (${packageStatusCounts?.pending_transfer ?? 0})`,
-      selectedLabel: (
-        <span className="flex items-center gap-1.5">
-          <span>Chờ chuyển lớp</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
-            {packageStatusCounts?.pending_transfer ?? 0}
-          </span>
-        </span>
-      ),
+      label: <span className="text-amber-600 dark:text-amber-400 font-medium">Chờ chuyển lớp</span>,
+      textValue: 'Chờ chuyển lớp',
+      selectedLabel: <span className="text-amber-600 dark:text-amber-400 font-medium">Chờ chuyển lớp</span>,
     },
     {
       value: 'wait_for_assignment',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Chờ xếp lớp</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">
-            {packageStatusCounts?.wait_for_assignment ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: `Chờ xếp lớp (${packageStatusCounts?.wait_for_assignment ?? 0})`,
-      selectedLabel: (
-        <span className="flex items-center gap-1.5">
-          <span>Chờ xếp lớp</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">
-            {packageStatusCounts?.wait_for_assignment ?? 0}
-          </span>
-        </span>
-      ),
+      label: <span className="text-sky-600 dark:text-sky-400 font-medium">Chờ xếp lớp</span>,
+      textValue: 'Chờ xếp lớp',
+      selectedLabel: <span className="text-sky-600 dark:text-sky-400 font-medium">Chờ xếp lớp</span>,
     },
     {
       value: 'reserve',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Bảo lưu</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
-            {packageStatusCounts?.reserve ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: `Bảo lưu (${packageStatusCounts?.reserve ?? 0})`,
-      selectedLabel: (
-        <span className="flex items-center gap-1.5">
-          <span>Bảo lưu</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
-            {packageStatusCounts?.reserve ?? 0}
-          </span>
-        </span>
-      ),
+      label: <span className="text-purple-600 dark:text-purple-400 font-medium">Bảo lưu</span>,
+      textValue: 'Bảo lưu',
+      selectedLabel: <span className="text-purple-600 dark:text-purple-400 font-medium">Bảo lưu</span>,
     },
     {
       value: 'session_ended',
-      label: (
-        <span className="flex items-center justify-between w-full gap-3">
-          <span>Hết buổi</span>
-          <span className="px-1.5 py-0.2 rounded-full text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
-            {packageStatusCounts?.session_ended ?? 0}
-          </span>
-        </span>
-      ),
-      textValue: `Hết buổi (${packageStatusCounts?.session_ended ?? 0})`,
-      selectedLabel: (
-        <span className="flex items-center gap-1.5">
-          <span>Hết buổi</span>
-          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
-            {packageStatusCounts?.session_ended ?? 0}
-          </span>
-        </span>
-      ),
+      label: <span className="text-zinc-600 dark:text-zinc-400 font-medium">Hết buổi</span>,
+      textValue: 'Hết buổi',
+      selectedLabel: <span className="text-zinc-600 dark:text-zinc-400 font-medium">Hết buổi</span>,
     },
   ]
 
@@ -319,17 +218,19 @@ export function OperationsAlertToolbar({
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
 
-          {/* 3. CSDB filter droplist */}
+          {/* 3. Loại thẻ CS filter droplist */}
           <ToolbarSelect
             value={csdbFilter}
             options={[
-              { value: 'all', label: 'Tất cả CSĐB', selectedLabel: 'Tất cả CSĐB' },
-              { value: 'weakAcademic', label: `Học lực (${csdbCounts?.weakAcademic ?? 0})` },
-              { value: 'homework', label: `BTVN (${csdbCounts?.homework ?? 0})` },
-              { value: 'lowAttendance', label: `Chuyên cần (${csdbCounts?.lowAttendance ?? 0})` },
+              { value: 'all', label: 'Tất cả Loại thẻ CS', selectedLabel: 'Tất cả Loại thẻ CS' },
+              { value: 'weakAcademic', label: 'Học lực' },
+              { value: 'homework', label: 'BTVN' },
+              { value: 'lowAttendance', label: 'Chuyên cần' },
             ]}
             onValueChange={onCsdbFilterChange}
-            className="h-8 text-xs font-bold min-w-[145px]"
+            className="h-8 text-xs min-w-[155px]"
+            ariaLabel="Lọc theo Loại thẻ CS"
+            placeholder="Loại thẻ CS"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
@@ -396,102 +297,84 @@ export function OperationsAlertToolbar({
 
         {/* Right side: Trạng thái gói học viên (cột Lớp học) - Tự động gom lại nếu màn hình nhỏ */}
         <div className="flex items-center gap-2 select-none shrink-0 pb-0.5">
-          {/* Màn hình lớn (>= xl): Hiển thị trải phẳng dạng Chip Group nổi bật, xóa dot, giữ màu nền thống kê */}
+          {/* Màn hình lớn (>= xl): Hiển thị trải phẳng dạng Chip Group nổi bật, bỏ thống kê, đổ màu text khi chưa chọn, đổi màu khi đang chọn */}
           <div className="hidden xl:flex items-center gap-1 bg-muted/50 dark:bg-muted/30 p-0.5 rounded-md border border-border/50">
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('all')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'all'
-                  ? "bg-background text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 font-medium"
               )}
             >
               <span>Tất cả gói</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
-                {packageStatusCounts?.all ?? 0}
-              </span>
             </button>
 
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('active')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'active'
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800 shadow-xs"
-                  : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400"
+                  ? "bg-emerald-600 text-white dark:bg-emerald-600 dark:text-white font-bold shadow-xs"
+                  : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 font-medium"
               )}
             >
               <span>Đang học</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold">
-                {packageStatusCounts?.active ?? 0}
-              </span>
             </button>
 
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('pending_transfer')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'pending_transfer'
-                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800 shadow-xs"
-                  : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
+                  ? "bg-amber-500 text-white dark:bg-amber-500 dark:text-white font-bold shadow-xs"
+                  : "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50/60 dark:hover:bg-amber-950/40 font-medium"
               )}
             >
               <span>Chờ chuyển lớp</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold">
-                {packageStatusCounts?.pending_transfer ?? 0}
-              </span>
             </button>
 
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('wait_for_assignment')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'wait_for_assignment'
-                  ? "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300 font-bold border border-sky-200 dark:border-sky-800 shadow-xs"
-                  : "text-muted-foreground hover:text-sky-600 dark:hover:text-sky-400"
+                  ? "bg-sky-600 text-white dark:bg-sky-600 dark:text-white font-bold shadow-xs"
+                  : "text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50/60 dark:hover:bg-sky-950/40 font-medium"
               )}
             >
               <span>Chờ xếp lớp</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 font-bold">
-                {packageStatusCounts?.wait_for_assignment ?? 0}
-              </span>
             </button>
 
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('reserve')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'reserve'
-                  ? "bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300 font-bold border border-purple-200 dark:border-purple-800 shadow-xs"
-                  : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400"
+                  ? "bg-purple-600 text-white dark:bg-purple-600 dark:text-white font-bold shadow-xs"
+                  : "text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/40 font-medium"
               )}
             >
               <span>Bảo lưu</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold">
-                {packageStatusCounts?.reserve ?? 0}
-              </span>
             </button>
 
             <button
               type="button"
               onClick={() => onPackageStatusFilterChange('session_ended')}
               className={cn(
-                "h-7 px-2.5 rounded text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5",
+                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
                 packageStatusFilter === 'session_ended'
-                  ? "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 font-bold border border-zinc-300 dark:border-zinc-700 shadow-xs"
-                  : "text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-300"
+                  ? "bg-zinc-600 text-white dark:bg-zinc-400 dark:text-zinc-900 font-bold shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 font-medium"
               )}
             >
               <span>Hết buổi</span>
-              <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-xs bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold">
-                {packageStatusCounts?.session_ended ?? 0}
-              </span>
             </button>
           </div>
 

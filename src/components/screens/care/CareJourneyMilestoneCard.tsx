@@ -4,7 +4,9 @@ import React, { useState } from 'react'
 import { Check, ChevronDown, ChevronUp, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatFullStaffName } from './operationsAlertHelpers'
+import { formatCareHistoryTime } from './studentCareDetailHelpers'
 import { AudioPlayButton } from './AudioPlayButton'
+import { StatusBadge } from '@/components/shared'
 
 export interface MilestoneHistoryLog {
   date: string
@@ -19,7 +21,8 @@ export interface RoadmapMilestoneItem {
   code: string
   title: string
   roleOwner: 'CS PHỤ TRÁCH' | 'GV PHỤ TRÁCH' | 'SALE PHỤ TRÁCH'
-  status: 'completed' | 'overdue' | 'future' | 'in_progress'
+  status: 'completed' | 'overdue' | 'future' | 'in_progress' | 'failed'
+  statusLabel?: string
   date: string
   subtext: string
   historyLogs?: MilestoneHistoryLog[]
@@ -39,11 +42,11 @@ export function getMilestoneTagAbbrev(code: string): { label: string; badgeClass
       textColor: 'text-red-700 dark:text-red-400',
     }
   }
-  if (upper.startsWith('CSTP') || upper.startsWith('TP') || upper.includes('CGH') || upper.includes('CSGH')) {
+  if (upper.startsWith('CTP') || upper.startsWith('CSTP') || upper.startsWith('TP') || upper.includes('CGH') || upper.includes('CSGH')) {
     return {
-      label: upper.includes('-') ? upper : 'CGH',
-      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
-      textColor: 'text-emerald-700 dark:text-emerald-400',
+      label: upper.includes('-') ? upper : (upper.startsWith('CTP') ? 'CTP' : 'CGH'),
+      badgeClass: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900',
+      textColor: 'text-purple-700 dark:text-purple-400',
     }
   }
   if (upper.startsWith('ĐK') || upper.includes('CSĐK') || upper.includes('CĐK')) {
@@ -144,6 +147,10 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
           <div className="h-5 w-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold animate-pulse shadow-2xs">
             !
           </div>
+        ) : item.status === 'failed' ? (
+          <div className="h-5 w-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+            ✕
+          </div>
         ) : (
           <div className="h-5 w-5 rounded-full bg-background border border-border text-muted-foreground flex items-center justify-center text-xs font-semibold shadow-2xs">
             {index + 1}
@@ -157,6 +164,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
           'rounded-xl border p-3 space-y-1.5 transition-colors bg-card text-left shadow-none',
           item.status === 'completed' && 'border-border/60 hover:border-emerald-300 dark:hover:border-emerald-800',
           item.status === 'overdue' && 'border-rose-200 dark:border-rose-900/60 bg-rose-50/10 dark:bg-rose-950/10',
+          item.status === 'failed' && 'border-rose-200 dark:border-rose-900/60 bg-rose-50/10 dark:bg-rose-950/10',
           item.status === 'future' && 'border-border/50 bg-muted/10'
         )}
       >
@@ -181,7 +189,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
 
           <div className="flex items-center gap-2 shrink-0">
             {item.date && (
-              <span className="text-[10.5px] font-mono font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+              <span className="text-xs text-muted-foreground font-normal">
                 Hạn: {item.date}
               </span>
             )}
@@ -197,6 +205,14 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" />
                 Quá hạn
               </span>
+            )}
+
+            {item.status === 'failed' && (
+              <StatusBadge
+                status="that_bai"
+                label={item.statusLabel || 'Thất bại'}
+                className="text-[11px] px-2 py-0 h-5 font-semibold shrink-0"
+              />
             )}
 
             {item.status === 'future' && (
@@ -244,32 +260,43 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                 logItem.channel.toLowerCase().includes('cuộc gọi')
               const isOpen = Boolean(openCardKeys[hIdx])
 
+              const timeInfo = formatCareHistoryTime(logItem.date)
+
               return (
-                <div key={hIdx} className="space-y-1 text-xs text-left">
-                  {/* Log Header Row */}
-                  <div
-                    className="flex items-center justify-between gap-1.5 py-0.5 px-1 rounded-md hover:bg-muted/50 transition-colors cursor-pointer select-none"
-                    onClick={() => toggleLogCard(hIdx)}
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
-                      <span
-                        className={cn(
-                          'px-1.5 py-0.2 rounded text-[9.5px] font-semibold border shrink-0',
-                          isTeacher
-                            ? 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/40 dark:text-purple-300'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        )}
-                      >
-                        {isTeacher ? 'GV' : 'CS'}
-                      </span>
-                      <span className="font-medium text-foreground text-xs shrink-0">{cleanStaff}</span>
-                      <span className="text-muted-foreground text-xs font-normal truncate">
-                        • {logItem.channel} · Người nhận: <span className="text-foreground font-medium">{isTeacher ? 'Học viên' : 'Châu Mẹ Nguyễn Thị Mai (Mẹ)'}</span>
-                      </span>
-                      <span className="font-mono text-xs font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
-                        • {logItem.date}
-                      </span>
-                    </div>
+                <div key={hIdx} className="flex items-start gap-1.5 text-xs text-left">
+                  {/* GV / CS ở ngoài (bên trái) dạng bo tròn, không in đậm */}
+                  <div className="shrink-0 pt-0.5">
+                    <span
+                      className={cn(
+                        'inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-medium select-none',
+                        isTeacher
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
+                          : 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
+                      )}
+                    >
+                      {isTeacher ? 'GV' : 'CS'}
+                    </span>
+                  </div>
+
+                  {/* Cột chính: Bắt đầu từ Tên người chăm sóc, và Nội dung chăm sóc thụt lùi vào thẳng hàng */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {/* Log Header Row */}
+                    <div
+                      className="flex items-center justify-between gap-1.5 py-0.5 px-0.5 rounded-md hover:bg-muted/50 transition-colors cursor-pointer select-none"
+                      onClick={() => toggleLogCard(hIdx)}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">
+                        <span className="font-normal text-foreground text-xs shrink-0">{cleanStaff}</span>
+                        <span className="text-muted-foreground text-xs font-normal truncate">
+                          • {logItem.channel.startsWith('Cuộc gọi') ? 'Đã gọi' : logItem.channel.startsWith('Zalo') ? 'Đã nhắn Zalo' : logItem.channel} <span className="text-foreground font-normal">{isTeacher ? 'Châu Nguyễn Gia Bảo (Học viên)' : 'Châu Mẹ Nguyễn Thị Mai (Mẹ)'}</span>
+                        </span>
+                        <span
+                          className="text-xs text-muted-foreground font-normal shrink-0 cursor-default"
+                          title={timeInfo.full}
+                        >
+                          • {timeInfo.display}
+                        </span>
+                      </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
@@ -290,9 +317,9 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                     </div>
                   </div>
 
-                  {/* Collapsible Inner Card (CLOSED BY DEFAULT) */}
+                  {/* Collapsible Inner Card (CLOSED BY DEFAULT) - Đóng khung */}
                   {isOpen && (
-                    <div className="rounded-lg border border-border bg-background p-1.5 space-y-1 text-xs text-left shadow-2xs animate-in fade-in-50 duration-150">
+                    <div className="rounded-lg border border-border/70 bg-muted/20 p-2 space-y-1 text-xs text-left animate-in fade-in-50 duration-150">
 
                       {/* Continuous Stream: Audio + Note + Parent Feedback Label & Text */}
                       <div className="text-xs text-foreground/90 leading-relaxed font-normal">
@@ -335,23 +362,21 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                           </button>
 
                           {openMissedCalls[hIdx] && (
-                            <div className="mt-1.5 pl-3 border-l-2 border-sky-200 dark:border-sky-800 space-y-1.5 text-[10.5px] text-muted-foreground font-normal animate-in fade-in-50 duration-150">
-                              <div className="p-1.5 rounded-md hover:bg-sky-50/40 transition-colors space-y-1">
+                            <div className="mt-1.5 space-y-2 text-xs text-muted-foreground font-normal animate-in fade-in-50 duration-150 pl-1">
+                              <div className="space-y-1 pt-1 border-t border-border/40 first:border-t-0 first:pt-0">
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="font-normal text-foreground text-xs">
-                                      • {logItem.date.split(' ')[0]} 09:15: Gọi KNM
+                                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                                    <span className="font-normal text-foreground text-xs shrink-0">
+                                      {cleanStaff}
                                     </span>
-                                    <span className="text-muted-foreground">•</span>
-                                    <span className="text-xs font-medium text-foreground">
-                                      CS: <span className="font-semibold">{cleanStaff}</span>
+                                    <span className="text-xs text-muted-foreground font-normal truncate">
+                                      • Gọi KNM - <span className="text-foreground font-normal">Châu Mẹ Nguyễn Thị Mai (Mẹ)</span>
                                     </span>
-                                    <span className="text-muted-foreground">•</span>
-                                    <span className="text-xs text-muted-foreground">
-                                      Người nhận: <span className="text-foreground font-medium">Châu Mẹ Nguyễn Thị Mai (Mẹ)</span>
+                                    <span className="text-xs text-muted-foreground font-normal shrink-0">
+                                      • {logItem.date.split(' ')[0]} 09:15
                                     </span>
                                   </div>
-                                  <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
+                                  <span className="text-xs font-normal text-muted-foreground shrink-0">
                                     📅 Hẹn gọi lại: {logItem.date.split(' ')[0]} 14:00
                                   </span>
                                 </div>
@@ -377,6 +402,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                       )}
                     </div>
                   )}
+                  </div>
                 </div>
               )
             })}

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, Check, X, Pencil, Link2, ShoppingBag } from 'lucide-react'
+import { StatusBadge } from '@/components/shared'
 
 interface StudentRenewalLinkedOrderRowProps {
   orderInfo: {
@@ -10,8 +11,15 @@ interface StudentRenewalLinkedOrderRowProps {
     packageName?: string
     packageAmount?: string
     paymentTerm?: string
+    paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
+    paymentStatusLabel?: string
   } | null
-  suggestedOrders: Array<{ orderNo: string; packageName: string; amountText: string }>
+  suggestedOrders: Array<{
+    orderNo: string
+    packageName: string
+    amountText?: string
+    paymentStatusText?: string
+  }>
   onLinkOrder: (code: string) => void
   onUnlinkOrder: () => void
 }
@@ -81,7 +89,7 @@ export function StudentRenewalLinkedOrderRow({
             <datalist id="renewal-order-suggestions">
               {suggestedOrders.map((ord) => (
                 <option key={ord.orderNo} value={ord.orderNo}>
-                  {ord.packageName} - {ord.amountText}
+                  {ord.packageName} - {ord.paymentStatusText || ord.amountText}
                 </option>
               ))}
             </datalist>
@@ -111,7 +119,7 @@ export function StudentRenewalLinkedOrderRow({
           </div>
         </div>
       ) : orderInfo?.orderCode ? (
-        // Đã liên kết đơn hàng - Hiển thị tên gói, giá trị thanh toán (Tổng thanh toán), có icon sửa trực tiếp trên dòng
+        // Đã liên kết đơn hàng - Hiển thị tên gói, trạng thái thanh toán, có icon sửa trực tiếp trên dòng
         <div className="flex items-center justify-between gap-2 text-xs py-0.5 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap min-w-0 text-xs">
             <span className="font-semibold text-muted-foreground text-xs shrink-0 flex items-center gap-1">
@@ -138,12 +146,14 @@ export function StudentRenewalLinkedOrderRow({
               {orderInfo.packageName}
             </span>
 
-            {orderInfo.packageAmount && (
+            {orderInfo.paymentStatusLabel && (
               <>
                 <span className="text-muted-foreground">•</span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                  TT: {orderInfo.packageAmount}
-                </span>
+                <StatusBadge
+                  status={orderInfo.paymentStatus || 'paid'}
+                  label={orderInfo.paymentStatusLabel}
+                  className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                />
               </>
             )}
           </div>

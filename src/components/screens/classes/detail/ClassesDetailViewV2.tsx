@@ -731,6 +731,7 @@ export function ClassesDetailViewV2({
               <ClassesStudentMonthlyReportOverlayPanel
                 key={activeMonthlyReportStudent.id}
                 student={activeMonthlyReportStudent}
+                subject={cls.level || cls.name}
                 onClose={() => setActiveMonthlyReportStudent(null)}
               />
             ) : (

@@ -48,7 +48,7 @@ export function ClassesSessionAttendanceTab({
   onOpenTestScoreDialog = () => {},
   isCareOnlyFilter = false,
 }: ClassesSessionAttendanceTabProps) {
-  const [isWelcomeExpanded, setIsWelcomeExpanded] = useState(true)
+  const [isWelcomeExpanded, setIsWelcomeExpanded] = useState(false)
   const [rosterState, setRosterState] = useState<RosterStudent[]>(activeRoster)
 
   useEffect(() => {
@@ -150,37 +150,37 @@ export function ClassesSessionAttendanceTab({
     <div className="m-0 h-full flex flex-col focus-visible:outline-none">
       {/* Welcome Banner for Trial or First Session students */}
       {welcomeStudents.length > 0 && (
-        <div className="bg-[#fef3c7] dark:bg-amber-950/20 border border-[#f59e0b]/30 dark:border-amber-900/50 rounded-xl p-3.5 mb-4 shadow-2xs transition-all duration-200">
+        <div className="bg-[#fef3c7] dark:bg-amber-950/20 border border-[#f59e0b]/30 dark:border-amber-900/50 rounded-lg p-1.5 sm:p-2 mb-2 shadow-2xs transition-all duration-200">
           <div 
             className="flex items-center justify-between cursor-pointer select-none"
             onClick={() => setIsWelcomeExpanded(!isWelcomeExpanded)}
           >
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50 text-[#92400e] dark:text-amber-400">
+            <div className="flex items-center gap-1.5">
+              <div className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50 text-[#92400e] dark:text-amber-400">
                 {isWelcomeExpanded ? (
-                  <ChevronUp className="h-4.5 w-4.5" />
+                  <ChevronUp className="h-3 w-3" />
                 ) : (
-                  <ChevronDown className="h-4.5 w-4.5" />
+                  <ChevronDown className="h-3 w-3" />
                 )}
               </div>
-              <span className="font-bold text-[#e11d48] dark:text-rose-400 text-xs flex items-center gap-1.5">
+              <span className="font-bold text-[#e11d48] dark:text-rose-400 text-[11px] flex items-center gap-1">
                 🎉 Welcome new students join in class!
               </span>
             </div>
-            <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase font-mono bg-amber-200/50 dark:bg-amber-900/40 px-2 py-0.5 rounded-md">
+            <span className="text-[9.5px] font-bold text-amber-800 dark:text-amber-400 uppercase font-mono bg-amber-200/50 dark:bg-amber-900/40 px-1.5 py-0.5 rounded">
               {welcomeStudents.length} Học viên
             </span>
           </div>
 
           {isWelcomeExpanded && (
-            <div className="mt-3 overflow-x-auto border-t border-amber-200/40 dark:border-amber-900/30 pt-3">
-              <table className="w-full text-xs text-left border-collapse">
+            <div className="mt-1.5 overflow-x-auto border-t border-amber-200/40 dark:border-amber-900/30 pt-1.5">
+              <table className="w-full text-[10.5px] text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-amber-200/30 dark:border-amber-900/20 text-xs uppercase font-extrabold text-[#92400e]/80 dark:text-amber-400/80 tracking-wider">
-                    <th className="pb-2 pr-4 font-bold text-left w-[200px]">Student</th>
-                    <th className="pb-2 px-4 font-bold text-center w-[120px]">Attendance</th>
-                    <th className="pb-2 px-4 font-bold text-center w-[120px]">Do homework</th>
-                    <th className="pb-2 pl-4 font-bold text-center w-[120px]">Entrance test</th>
+                  <tr className="border-b border-amber-200/30 dark:border-amber-900/20 text-[9.5px] uppercase font-bold text-[#92400e]/80 dark:text-amber-400/80 tracking-wider">
+                    <th className="pb-1 pr-2 font-bold text-left w-[200px]">Student</th>
+                    <th className="pb-1 px-2 font-bold text-center w-[100px]">Attendance</th>
+                    <th className="pb-1 px-2 font-bold text-center w-[100px]">Do homework</th>
+                    <th className="pb-1 pl-2 font-bold text-center w-[100px]">Entrance test</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-amber-200/20 dark:divide-amber-900/10">
@@ -205,16 +205,16 @@ export function ClassesSessionAttendanceTab({
 
                     return (
                       <tr key={student.id} className="text-amber-950 dark:text-amber-100 font-medium">
-                        <td className="py-2.5 pr-4 text-left text-zinc-900 dark:text-zinc-100 font-semibold">
-                          {displayNameStr}, <span className="font-normal text-xs text-muted-foreground">{ageStr}</span>
+                        <td className="py-1 pr-2 text-left text-zinc-900 dark:text-zinc-100 font-semibold text-[10.5px]">
+                          {displayNameStr}, <span className="font-normal text-[10px] text-muted-foreground">{ageStr}</span>
                         </td>
-                        <td className="py-2.5 px-4 text-center text-[#92400e] dark:text-amber-400 font-mono">
+                        <td className="py-1 px-2 text-center text-[#92400e] dark:text-amber-400 font-mono text-[10.5px]">
                           {attLabel}
                         </td>
-                        <td className="py-2.5 px-4 text-center text-[#92400e]/60 dark:text-amber-400/60 font-mono">
+                        <td className="py-1 px-2 text-center text-[#92400e]/60 dark:text-amber-400/60 font-mono text-[10.5px]">
                           —
                         </td>
-                        <td className="py-2.5 pl-4 text-center text-[#92400e]/60 dark:text-amber-400/60 font-mono">
+                        <td className="py-1 pl-2 text-center text-[#92400e]/60 dark:text-amber-400/60 font-mono text-[10.5px]">
                           —
                         </td>
                       </tr>
@@ -236,22 +236,22 @@ export function ClassesSessionAttendanceTab({
               <tr>
                 {isTestSession && !isMath ? (
                   <>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[180px]">Học viên</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[85px]">Điểm danh</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px]">Listening</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px]">Reading</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px]">Writing</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px]">Speaking</th>
-                    <th className="py-2 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[60px]">Overall</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 w-[180px] text-[11px]">Học viên</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[85px] text-[11px]">Điểm danh</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Listening</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Reading</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Writing</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Speaking</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[60px] text-[11px]">Overall</th>
                   </>
                 ) : (
                   <>
-                    <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[35%] min-w-[280px]">Học viên</th>
-                    <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[15%] min-w-[110px]">Điểm danh</th>
-                    <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[15%] min-w-[100px]">
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[28%] min-w-[220px] text-[11px]">Học viên</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[14%] min-w-[100px] text-[11px]">Điểm danh</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[13%] min-w-[90px] text-[11px]">
                       {isProjectSession ? 'Project' : isTestSession && isMath ? 'KTĐK' : 'BTVN'}
                     </th>
-                    <th className="py-2.5 px-3 font-semibold text-zinc-500 dark:text-zinc-400 w-[35%] min-w-[300px]">Nhận xét</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[45%] min-w-[280px] text-[11px]">Nhận xét</th>
                   </>
                 )}
               </tr>

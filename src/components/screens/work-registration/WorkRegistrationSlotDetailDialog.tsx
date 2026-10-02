@@ -1,7 +1,6 @@
 'use client'
 
 import { AppAvatar } from '@/components/shared'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -9,13 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { getStatusBadgeClass } from '@/lib/statusColors'
-import type {
-  WorkRegistrationEmployee,
-  WorkRegistrationRecord,
-  WorkRegistrationStatus,
+import {
+  WORK_TIME_SLOTS,
+  type WorkRegistrationEmployee,
+  type WorkRegistrationRecord,
+  type WorkRegistrationStatus,
 } from '@/mocks/workRegistrations'
-import { formatMinutesShort, getEmployeeRoleLabel, getSlot } from './workRegistrationHelpers'
+import { formatMinutes, getEmployeeRoleLabel, getSlot } from './workRegistrationHelpers'
 
 interface WorkRegistrationSlotDetailDialogProps {
   open: boolean
@@ -48,31 +47,43 @@ export function WorkRegistrationSlotDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg font-bold leading-normal">
+            {title}
+          </DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
 
         <div className="max-h-[60vh] space-y-2 overflow-y-auto">
           {summaries.length > 0 ? (
-            summaries.map(({ employee, totalMinutes, status }) => (
-              <div
-                key={employee.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-border p-3"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <AppAvatar src={employee.avatar} name={employee.name} size="default" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{employee.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {getEmployeeRoleLabel(employee.id, employee.position, employee.department)} · {employee.branch} · {formatMinutesShort(totalMinutes)}
-                    </p>
+            summaries.map(({ employee, totalMinutes, records: empRecords }) => {
+              const timeRange = resolveRegisteredTimeRange(empRecords)
+              return (
+                <div
+                  key={employee.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border/80 bg-card p-2.5 transition-colors hover:bg-muted/30"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <AppAvatar src={employee.avatar} name={employee.name} size="default" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{employee.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {getEmployeeRoleLabel(employee.id, employee.position, employee.department)} · {employee.branch}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 tabular-nums">
+                      {formatMinutes(totalMinutes)}
+                    </span>
+                    {timeRange && (
+                      <span className="text-[11px] font-normal text-muted-foreground tabular-nums">
+                        {timeRange}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <Badge className={getStatusBadgeClass(status)}>
-                  {workRegistrationStatusLabel(status)}
-                </Badge>
-              </div>
-            ))
+              )
+            })
           ) : (
             <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               Chưa có đăng ký phù hợp.
@@ -84,15 +95,49 @@ export function WorkRegistrationSlotDetailDialog({
   )
 }
 
+function resolveRegisteredTimeRange(records: WorkRegistrationRecord[]): string {
+  const uniqueSlotIds = Array.from(new Set(records.map((r) => r.slotId)))
+  const slots = uniqueSlotIds
+    .map((slotId) => WORK_TIME_SLOTS.find((s) => s.id === slotId))
+    .filter((s): s is (typeof WORK_TIME_SLOTS)[number] => Boolean(s))
+    .sort((a, b) => a.start.localeCompare(b.start))
+
+  if (slots.length === 0) return ''
+
+  const intervals: Array<{ start: string; end: string }> = []
+  let current: { start: string; end: string } | null = null
+
+  for (const slot of slots) {
+    if (!current) {
+      current = { start: slot.start, end: slot.end }
+    } else if (slot.start === current.end) {
+      current.end = slot.end
+    } else {
+      intervals.push(current)
+      current = { start: slot.start, end: slot.end }
+    }
+  }
+  if (current) intervals.push(current)
+
+  return intervals.map((i) => `${i.start} - ${i.end}`).join(', ')
+}
+
 function buildEmployeeRegistrationSummaries(
   records: WorkRegistrationRecord[],
   employeeById: Map<string, WorkRegistrationEmployee>
 ): EmployeeRegistrationSummary[] {
   const summaryByEmployee = new Map<string, EmployeeRegistrationSummary>()
+  const employeeSlotSets = new Map<string, Set<string>>()
 
   records.forEach((record) => {
     const employee = employeeById.get(record.employeeId)
     if (!employee) return
+
+    let slotSet = employeeSlotSets.get(employee.id)
+    if (!slotSet) {
+      slotSet = new Set<string>()
+      employeeSlotSets.set(employee.id, slotSet)
+    }
 
     const current = summaryByEmployee.get(employee.id) ?? {
       employee,
@@ -101,8 +146,12 @@ function buildEmployeeRegistrationSummaries(
       status: record.status,
     }
 
+    if (!slotSet.has(record.slotId)) {
+      slotSet.add(record.slotId)
+      current.totalMinutes += getSlot(record.slotId)?.minutes ?? 0
+    }
+
     current.records.push(record)
-    current.totalMinutes += getSlot(record.slotId)?.minutes ?? 0
     current.status = resolveSummaryStatus(current.records)
     summaryByEmployee.set(employee.id, current)
   })
@@ -114,10 +163,4 @@ function resolveSummaryStatus(records: WorkRegistrationRecord[]): WorkRegistrati
   if (records.some((record) => record.status === 'registered')) return 'registered'
   if (records.some((record) => record.status === 'locked')) return 'locked'
   return 'draft'
-}
-
-function workRegistrationStatusLabel(status: WorkRegistrationStatus) {
-  if (status === 'draft') return 'Đã chọn'
-  if (status === 'locked') return 'Đã khóa'
-  return 'Đã đăng ký'
 }

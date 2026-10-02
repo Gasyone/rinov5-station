@@ -395,23 +395,80 @@ export interface CareSessionNotice {
 }
 
 /**
- * Tính toán các cảnh báo / lưu ý phát sinh cho phần Nhật ký buổi học
- * Dựa vào:
- * 1. Buổi học chưa nhận xét (comment rỗng)
- * 2. Buổi học chưa điểm danh (unmarked)
- * 3. Chuyên cần / Đang nghỉ liên tiếp (>= 2 buổi)
- * 4. Bài tập về nhà chưa hoàn thành (chưa nộp BTVN)
- * 5. Điểm kiểm tra dưới chuẩn (<= 6.0 điểm)
+ * Chuyển đổi chuỗi ngày của ca học thành Date object
+ */
+export const parseSessionDate = (dateStr: string): Date => {
+  if (!dateStr) return new Date(2026, 6, 22)
+  const cleanDate = dateStr.split(' ')[0]
+  if (cleanDate.includes('/')) {
+    const parts = cleanDate.split('/')
+    if (parts.length === 3) {
+      return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+    }
+    if (parts.length === 2) {
+      return new Date(2026, Number(parts[1]) - 1, Number(parts[0]))
+    }
+  }
+  const d = new Date(cleanDate)
+  if (!isNaN(d.getTime())) return d
+  return new Date(2026, 6, 22)
+}
+
+/**
+ * Xác định mốc thời gian hiện tại của tiến trình học (anchor date).
+ * Trong môi trường mock với các buổi học tháng 7/2026, mốc hiện tại được neo vào 1 ngày sau buổi học đã hoàn thành gần nhất.
+ */
+export const getTimelineReferenceDate = (sessions: UnifiedSessionItem[]): Date => {
+  const completed = sessions.filter((s) => s.type === 'lesson' || s.type === 'test')
+  if (completed.length > 0) {
+    const latestDate = parseSessionDate(completed[0].date)
+    if (!isNaN(latestDate.getTime())) {
+      const ref = new Date(latestDate)
+      ref.setHours(23, 59, 59, 999)
+      ref.setDate(ref.getDate() + 1)
+      return ref
+    }
+  }
+  return new Date(2026, 6, 23, 23, 59, 59)
+}
+
+/**
+ * Kiểm tra xem buổi học có phát sinh trong vòng `maxDays` (mặc định 7 ngày) từ thời điểm hiện tại hay không.
+ */
+export const isSessionWithinDays = (dateStr: string, refDate: Date, maxDays = 7): boolean => {
+  const sDate = parseSessionDate(dateStr)
+  if (isNaN(sDate.getTime())) return false
+  const diffMs = refDate.getTime() - sDate.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  return diffDays >= 0 && diffDays <= maxDays
+}
+
+/**
+ * Tính toán các cảnh báo / lưu ý phát sinh cho phần Nhật ký buổi học:
+ * 1. Điều kiện hiển thị: Chỉ các sự kiện phát sinh trong vòng 7 ngày gần nhất.
+ * 2. Cùng loại thì gom lại:
+ *    - Các buổi chưa nhận xét -> Gom thành 1 cảnh báo duy nhất
+ *    - Các buổi chưa điểm danh -> Gom thành 1 cảnh báo duy nhất
+ *    - Các BTVN chưa làm -> Gom thành 1 cảnh báo duy nhất
+ *    - Chuyên cần / Nghỉ không phép -> Gom thành 1 cảnh báo duy nhất
+ *    - Điểm kiểm tra dưới chuẩn -> Gom thành 1 cảnh báo duy nhất
  */
 export function getCareSessionNotices(
   sessions: UnifiedSessionItem[],
   studentAlert?: StudentCareAlert | null
 ): CareSessionNotice[] {
+  void studentAlert
   const notices: CareSessionNotice[] = []
   const completedSessions = sessions.filter((s) => s.type === 'lesson' || s.type === 'test')
 
-  // 1. Chưa nhận xét (buổi đã học nhưng comment rỗng - CHỈ áp dụng khi KHÔNG có xin nghỉ)
-  const uncommentedList = completedSessions.filter((s) => {
+  // Mốc thời gian đối chiếu: Neo theo buổi học gần nhất
+  const refDate = getTimelineReferenceDate(sessions)
+
+  // Điều kiện hiển thị: Chỉ xét các ca học phát sinh trong vòng 7 ngày gần nhất
+  const recentSessions = completedSessions.filter((s) => isSessionWithinDays(s.date, refDate, 7))
+
+  // 1. Chưa nhận xét (buổi đã học trong vòng 7 ngày nhưng comment rỗng - CHỈ áp dụng khi KHÔNG có xin nghỉ)
+  const uncommentedList = recentSessions.filter((s) => {
     const hasLeave = Boolean(
       s.isLeaveRequested ||
       s.attendance === 'absent_excused' ||
@@ -421,105 +478,137 @@ export function getCareSessionNotices(
     )
     return (!s.comment || !s.comment.trim()) && !hasLeave
   })
+
+  // Gom lại nếu có nhiều buổi cùng loại chưa nhận xét trong 7 ngày
   if (uncommentedList.length > 0) {
-    const sessionNumbers = uncommentedList.map((s) => `Buổi ${s.sessionNumber}`).join(', ')
+    const sessionDetails = uncommentedList
+      .map((s) => `Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)})`)
+      .join(', ')
+    const issueText =
+      uncommentedList.length === 1
+        ? `${sessionDetails} chưa có nhận xét.`
+        : `${uncommentedList.length} buổi chưa có nhận xét (${sessionDetails}).`
+
     notices.push({
       id: 'uncommented',
       title: 'Chưa có nhận xét',
-      issue: `${sessionNumbers} chưa có nhận xét.`,
+      issue: issueText,
       action: 'Đôn đốc GV hoàn thiện.',
-      text: `${sessionNumbers} chưa có nhận xét, đôn đốc GV hoàn thiện.`,
+      text: `${issueText} Đôn đốc GV hoàn thiện.`,
       actionHint: 'Đôn đốc GV hoàn thiện nhận xét',
       type: 'uncommented',
     })
   }
 
-  // 2. Chưa điểm danh (buổi đã học nhưng chưa điểm danh)
-  const unmarkedList = completedSessions.filter(
+  // 2. Chưa điểm danh (buổi đã học trong vòng 7 ngày nhưng chưa điểm danh)
+  const unmarkedList = recentSessions.filter(
     (s) => s.attendance === 'unmarked' || !s.attendance || s.attendanceText === 'Chưa điểm danh'
   )
+
+  // Gom lại nếu có nhiều buổi cùng loại chưa điểm danh trong 7 ngày
   if (unmarkedList.length > 0) {
     const sessionDetails = unmarkedList
       .map((s) => `Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)})`)
       .join(', ')
+    const issueText =
+      unmarkedList.length === 1
+        ? `${sessionDetails} chưa chốt điểm danh.`
+        : `${unmarkedList.length} buổi chưa chốt điểm danh (${sessionDetails}).`
+
     notices.push({
       id: 'unmarked',
       title: 'Chưa điểm danh',
-      issue: `${sessionDetails} chưa chốt điểm danh.`,
+      issue: issueText,
       action: 'Xác minh GV cập nhật chuyên cần.',
-      text: `${sessionDetails} chưa chốt điểm danh, xác minh GV cập nhật chuyên cần.`,
+      text: `${issueText} Xác minh GV cập nhật chuyên cần.`,
       actionHint: 'Xác minh GV cập nhật chuyên cần',
       type: 'unmarked',
     })
   }
 
-  // 3. Chuyên cần / Đang nghỉ liên tiếp
-  // 3. Chuyên cần: Nghỉ học không phép liên tiếp (chuỗi đang tiếp diễn từ buổi gần nhất)
-  let consecutiveUnexcusedAbsences = 0
-  for (const s of completedSessions) {
-    const isUnexcused =
-      (s.attendance === 'absent_unexcused' || s.attendance === 'absent') &&
-      !s.isLeaveRequested &&
-      !/có phép/i.test(s.attendanceText || '')
+  // 3. Bài tập về nhà chưa hoàn thành (phát sinh trong vòng 7 ngày gần nhất)
+  const missingHwList = recentSessions.filter((s) => s.homeworkSubmitted === false)
 
-    if (isUnexcused) {
-      consecutiveUnexcusedAbsences++
-    } else if (s.attendance === 'unmarked' || s.attendanceText === 'Chưa điểm danh') {
-      // Bỏ qua buổi chưa điểm danh để kiểm tra buổi học đã chốt gần nhất
-      continue
-    } else {
-      // Ngắt chuỗi ngay lập tức khi học viên đi học (present/late) hoặc nghỉ có phép
-      break
-    }
-  }
-
-  if (consecutiveUnexcusedAbsences >= 2) {
-    notices.push({
-      id: 'absent_unexcused',
-      title: 'Nghỉ không phép liên tiếp',
-      issue: `Nghỉ không phép liên tiếp ${consecutiveUnexcusedAbsences} buổi chưa có lịch học bù.`,
-      action: 'Liên hệ PH xác minh lý do và xếp lịch học bù sớm.',
-      text: `Nghỉ không phép liên tiếp ${consecutiveUnexcusedAbsences} buổi chưa có lịch học bù, liên hệ PH xác minh lý do và xếp lịch học bù sớm.`,
-      actionHint: 'Liên hệ PH xếp lịch học bù',
-      type: 'absent',
-    })
-  }
-
-  // 4. Chưa làm bài tập về nhà
-  const missingHwList = completedSessions.filter((s) => s.homeworkSubmitted === false)
+  // Gom lại nếu có nhiều BTVN cùng loại chưa làm trong 7 ngày
   if (missingHwList.length > 0) {
-    const hwCodes = missingHwList
-      .map((s) => s.homeworkCode)
-      .filter(Boolean)
-      .slice(0, 3)
+    const hwDetails = missingHwList
+      .map((s) => {
+        const code = s.homeworkCode ? ` (${s.homeworkCode})` : ''
+        return `Buổi ${s.sessionNumber}${code}`
+      })
       .join(', ')
-    const hwDetail = hwCodes ? ` (${hwCodes})` : ''
+    const issueText =
+      missingHwList.length === 1
+        ? `Chưa hoàn thành BTVN ${hwDetails}.`
+        : `Chưa hoàn thành ${missingHwList.length} BTVN gần nhất (${hwDetails}).`
+
     notices.push({
       id: 'homework',
       title: 'Chưa làm bài tập',
-      issue: `Chưa hoàn thành ${missingHwList.length} BTVN gần nhất${hwDetail}.`,
+      issue: issueText,
       action: 'Đôn đốc PH hỗ trợ con nộp bù.',
-      text: `Chưa hoàn thành ${missingHwList.length} BTVN gần nhất${hwDetail}, đôn đốc PH hỗ trợ con nộp bù.`,
+      text: `${issueText} Đôn đốc PH hỗ trợ con nộp bù.`,
       actionHint: 'Đôn đốc PH hỗ trợ nộp bài',
       type: 'homework',
     })
   }
 
-  // 5. Sự kiện học tập: Điểm kiểm tra dưới chuẩn (<= 6.0 điểm)
-  const recentTestSession = completedSessions.find(
-    (s) => s.type === 'test' && s.score !== undefined && s.score !== null
+  // 4. Chuyên cần: Nghỉ học không phép trong 7 ngày gần nhất
+  const unexcusedList = recentSessions.filter(
+    (s) =>
+      (s.attendance === 'absent_unexcused' || s.attendance === 'absent') &&
+      !s.isLeaveRequested &&
+      !/có phép/i.test(s.attendanceText || '')
   )
-  const testScore =
-    recentTestSession?.score ??
-    (studentAlert?.lastTestScore && studentAlert.lastTestScore > 0 ? studentAlert.lastTestScore : null)
 
-  if (testScore !== null && testScore <= 6.0) {
+  if (unexcusedList.length >= 2) {
+    const sessionDetails = unexcusedList
+      .map((s) => `Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)})`)
+      .join(', ')
+    const issueText = `Nghỉ không phép liên tiếp ${unexcusedList.length} buổi (${sessionDetails}) chưa có lịch học bù.`
+    notices.push({
+      id: 'absent_unexcused',
+      title: 'Nghỉ không phép liên tiếp',
+      issue: issueText,
+      action: 'Liên hệ PH xác minh lý do và xếp lịch học bù sớm.',
+      text: `${issueText} Liên hệ PH xác minh lý do và xếp lịch học bù sớm.`,
+      actionHint: 'Liên hệ PH xếp lịch học bù',
+      type: 'absent',
+    })
+  } else if (unexcusedList.length === 1) {
+    const s = unexcusedList[0]
+    const issueText = `Vắng không phép Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)}) chưa có lịch học bù.`
+    notices.push({
+      id: 'absent_unexcused',
+      title: 'Nghỉ không phép',
+      issue: issueText,
+      action: 'Liên hệ PH xác minh lý do và xếp lịch học bù.',
+      text: `${issueText} Liên hệ PH xác minh lý do và xếp lịch học bù.`,
+      actionHint: 'Liên hệ PH xếp lịch học bù',
+      type: 'absent',
+    })
+  }
+
+  // 5. Sự kiện học tập: Điểm kiểm tra dưới chuẩn (<= 6.0 điểm) phát sinh trong 7 ngày gần nhất
+  const lowTestSessions = recentSessions.filter(
+    (s) => s.type === 'test' && s.score !== undefined && s.score !== null && s.score <= 6.0
+  )
+
+  if (lowTestSessions.length > 0) {
+    const testDetails = lowTestSessions
+      .map((s) => `Buổi ${s.sessionNumber} (${formatDateNoYear(s.date)}: ${s.score}/10)`)
+      .join(', ')
+    const issueText =
+      lowTestSessions.length === 1
+        ? `Điểm kiểm tra ${testDetails} dưới chuẩn 6.0.`
+        : `${lowTestSessions.length} bài kiểm tra gần nhất dưới chuẩn 6.0 (${testDetails}).`
+
     notices.push({
       id: 'low_test_score',
       title: 'Học lực cần hỗ trợ',
-      issue: `Điểm kiểm tra gần nhất ${testScore}/10 (dưới chuẩn 6.0).`,
+      issue: issueText,
       action: 'GV lên kế hoạch phụ đạo và củng cố kiến thức.',
-      text: `Điểm kiểm tra gần nhất ${testScore}/10 (dưới chuẩn 6.0), GV lên kế hoạch phụ đạo và củng cố kiến thức.`,
+      text: `${issueText} GV lên kế hoạch phụ đạo và củng cố kiến thức.`,
       actionHint: 'Lên kế hoạch phụ đạo',
       type: 'special_care',
     })

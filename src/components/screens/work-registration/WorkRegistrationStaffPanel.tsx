@@ -1,7 +1,6 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { DataTableFrame } from '@/components/data-table'
 import { Button } from '@/components/ui/button'
 import {
   type WorkRegistrationEmployee,
@@ -54,8 +53,7 @@ interface WorkRegistrationStaffPanelProps {
     endTime: string,
     multipleRanges?: Array<{ startTime: string; endTime: string }>
   ) => void
-  onOpenSlotDetail: (date: string, slotId: string) => void
-  onClear: () => void
+  onOpenSlotDetail: (date: string, slotId?: string, section?: string) => void
   onSubmit: () => void
 }
 
@@ -81,17 +79,16 @@ export function WorkRegistrationStaffPanel({
   onRemoveSlots,
   onAddRange,
   onOpenSlotDetail,
-  onClear,
   onSubmit,
 }: WorkRegistrationStaffPanelProps) {
   const registeredMinutes = sumRegisteredMinutes(records)
   const draftMinutes = sumDraftMinutes(records)
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
-      {/* THANH ĐĂNG KÝ THAY KHI CHỌN NHÂN VIÊN (2 DÒNG, CÓ VIỀN VÀ NỀN TRẮNG) */}
+    <div className="flex h-full min-h-0 flex-col gap-2">
+      {/* THANH ĐĂNG KÝ THAY KHI CHỌN NHÂN VIÊN (ĐÓNG KHUNG) */}
       {delegateEmployeeId && onAddRange ? (
-        <div className="rounded-xl border border-border/80 bg-card p-3 shadow-2xs">
+        <div className="rounded-xl border border-border/80 bg-card px-3 py-2.5 shadow-2xs">
           <WorkRegistrationTimeRangePicker
             days={weekDays}
             disabled={readonlyWeek || !canMutate}
@@ -100,7 +97,6 @@ export function WorkRegistrationStaffPanel({
             draftMinutes={draftMinutes}
             canMutate={canMutate}
             primaryActionLabel={primaryActionLabel}
-            onClear={onClear}
             onSubmit={onSubmit}
             onAddRange={onAddRange}
             headerPrefix={
@@ -129,9 +125,9 @@ export function WorkRegistrationStaffPanel({
         </div>
       ) : null}
 
-      {/* DANH SÁCH NHÂN VIÊN (THU GỌN 280px) + LƯỚI LỊCH */}
-      <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
-        <div className={cn('h-full min-h-0', delegateEmployeeId ? 'hidden xl:block' : 'block')}>
+      {/* DANH SÁCH NHÂN VIÊN (GIẢM BỀ RỘNG GỌN GÀNG) + LƯỚI LỊCH (PHẲNG FULL) */}
+      <div className="grid min-h-0 flex-1 gap-2 md:grid-cols-[190px_minmax(0,1fr)] lg:grid-cols-[200px_minmax(0,1fr)]">
+        <div className={cn('h-full min-h-0', delegateEmployeeId ? 'hidden md:block' : 'block')}>
           <WorkRegistrationStaffTable
             summaries={filteredSummaries}
             page={page}
@@ -143,7 +139,7 @@ export function WorkRegistrationStaffPanel({
           />
         </div>
 
-        <DataTableFrame className={cn(!delegateEmployeeId && 'hidden xl:flex')}>
+        <div className={cn('flex-1 min-h-0 flex flex-col', !delegateEmployeeId ? 'hidden md:flex' : 'flex')}>
           <WorkRegistrationStaffSectionGrid
             days={weekDays}
             records={records}
@@ -156,7 +152,7 @@ export function WorkRegistrationStaffPanel({
             onRemoveSlots={onRemoveSlots}
             onOpenSlotDetail={onOpenSlotDetail}
           />
-        </DataTableFrame>
+        </div>
       </div>
     </div>
   )

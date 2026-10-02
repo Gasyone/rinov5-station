@@ -1,16 +1,27 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { Check, ChevronDown, Search, UserPlus, X } from 'lucide-react'
+import { Check, ChevronDown, MapPin, Search, UserPlus, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
+export interface ContactChild {
+  id: string
+  name: string
+  dob?: string
+  age?: number | string
+  currentSchool?: string
+  academicPerformance?: string
+}
+
 export interface ContactPerson {
   id: string
   name: string
+  role?: string
   phone: string
-  children: Array<{ id: string; name: string; dob?: string }>
+  address?: string
+  children: ContactChild[]
 }
 
 interface ContactSearchableSelectProps {
@@ -43,7 +54,8 @@ export function ContactSearchableSelect({
 
   const displayLabel = useMemo(() => {
     if (selectedContact) {
-      return `${selectedContact.name} - ${selectedContact.phone}`
+      const roleStr = selectedContact.role ? ` (${selectedContact.role})` : ''
+      return `${selectedContact.name}${roleStr} - ${selectedContact.phone}`
     }
     return ''
   }, [selectedContact])
@@ -104,38 +116,77 @@ export function ContactSearchableSelect({
     <Popover open={open && !disabled} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <div className={cn('relative w-full', className)}>
-          <div className="relative flex items-center">
-            <Input
-              ref={inputRef}
-              disabled={disabled}
-              value={isTyping ? searchTerm : displayLabel}
-              placeholder={placeholder}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              onChange={(e) => {
+          {selectedContact && !isTyping && !open ? (
+            <div
+              onClick={() => {
+                if (disabled) return
                 setIsTyping(true)
-                setSearchTerm(e.target.value)
-                if (!open) setOpen(true)
+                setOpen(true)
+                setTimeout(() => inputRef.current?.focus(), 50)
               }}
-              className="h-9 bg-background pr-14 text-sm font-medium transition-colors cursor-pointer"
-            />
-
-            <div className="absolute right-2 flex items-center gap-1 text-muted-foreground">
-              {isTyping && searchTerm ? (
+              className="relative flex flex-col justify-center min-h-[38px] w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs cursor-pointer transition-colors hover:border-primary/50"
+            >
+              <div className="flex items-center justify-between pr-10">
+                <span className="font-semibold text-foreground text-xs truncate">
+                  {selectedContact.name} - {selectedContact.phone}
+                </span>
+              </div>
+              {selectedContact.address && (
+                <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate pt-0.5 pr-10">
+                  <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                  <span className="truncate">{selectedContact.address}</span>
+                </div>
+              )}
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-muted-foreground">
                 <button
                   type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleClear}
+                  onMouseDown={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    onValueChange('')
+                    setSearchTerm('')
+                  }}
                   className="rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
-              ) : (
-                <Search className="h-3.5 w-3.5 opacity-50" />
-              )}
-              <ChevronDown className={cn('h-3.5 w-3.5 opacity-50 transition-transform', open && 'rotate-180')} />
+                <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative flex items-center w-full">
+              <Input
+                ref={inputRef}
+                disabled={disabled}
+                value={isTyping ? searchTerm : displayLabel}
+                placeholder={placeholder}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                onChange={(e) => {
+                  setIsTyping(true)
+                  setSearchTerm(e.target.value)
+                  if (!open) setOpen(true)
+                }}
+                className="h-9 bg-background pr-14 text-xs font-medium transition-colors cursor-pointer"
+              />
+
+              <div className="absolute right-2 flex items-center gap-1 text-muted-foreground">
+                {isTyping && searchTerm ? (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleClear}
+                    className="rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <Search className="h-3.5 w-3.5 opacity-50" />
+                )}
+                <ChevronDown className={cn('h-3.5 w-3.5 opacity-50 transition-transform', open && 'rotate-180')} />
+              </div>
+            </div>
+          )}
         </div>
       </PopoverTrigger>
 
@@ -215,12 +266,22 @@ export function ContactSearchableSelect({
                         <span className="font-semibold text-xs text-foreground truncate">
                           {contact.name}
                         </span>
+                        {contact.role && (
+                          <span className="text-[11px] text-muted-foreground font-normal">
+                            ({contact.role})
+                          </span>
+                        )}
                         <span className="text-xs text-muted-foreground font-mono">
                           ({contact.phone})
                         </span>
                       </div>
+                      {contact.address && (
+                        <div className="text-[11px] text-muted-foreground/75 truncate mt-0.5">
+                          📍 {contact.address}
+                        </div>
+                      )}
                       {childrenNames && (
-                        <div className="text-[10.5px] text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                        <div className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
                           <span>Con:</span>
                           <span className="font-medium text-foreground/90 bg-muted px-1.5 py-0.2 rounded text-xs">
                             {childrenNames}

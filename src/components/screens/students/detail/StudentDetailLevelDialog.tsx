@@ -21,6 +21,7 @@ interface StudentDetailLevelDialogProps {
   initialSubLevel: string
   initialSchoolClass?: string
   initialEnglishName?: string
+  isEnglish?: boolean
   onSave: (level: string, subLevel: string, schoolClass?: string, englishName?: string) => void
 }
 
@@ -46,6 +47,7 @@ export function StudentDetailLevelDialog({
   initialSubLevel,
   initialSchoolClass = 'Lớp 6',
   initialEnglishName = '',
+  isEnglish = false,
   onSave,
 }: StudentDetailLevelDialogProps) {
   const [level, setLevel] = useState(initialLevel)
@@ -64,7 +66,7 @@ export function StudentDetailLevelDialog({
   }, [open, initialLevel, initialSubLevel, initialSchoolClass, initialEnglishName])
 
   const handleSave = () => {
-    onSave(level, subLevel, schoolClass, englishName.trim())
+    onSave(level, subLevel, isEnglish ? undefined : schoolClass, englishName.trim())
   }
 
   return (
@@ -72,7 +74,7 @@ export function StudentDetailLevelDialog({
       <DialogContent className="sm:max-w-[420px] bg-background p-5 rounded-xl border shadow-lg">
         <DialogHeader className="pb-3 border-b">
           <DialogTitle className="text-sm font-bold flex items-center gap-1.5">
-            <Pencil className="h-4 w-4 text-primary" /> Cập nhật thông tin & Lớp học
+            <Pencil className="h-4 w-4 text-primary" /> Cập nhật thông tin trình độ
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -107,17 +109,19 @@ export function StudentDetailLevelDialog({
               variant="solid"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Lớp (Lớp phổ thông / truyền thống)</label>
-            <InlineSelect
-              value={schoolClass}
-              options={SCHOOL_CLASS_OPTIONS}
-              placeholder="Chọn lớp"
-              onValueChange={setSchoolClass}
-              className="w-full justify-between h-9 bg-background border border-border"
-              variant="solid"
-            />
-          </div>
+          {!isEnglish && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Lớp (Lớp phổ thông / truyền thống)</label>
+              <InlineSelect
+                value={schoolClass}
+                options={SCHOOL_CLASS_OPTIONS}
+                placeholder="Chọn lớp"
+                onValueChange={setSchoolClass}
+                className="w-full justify-between h-9 bg-background border border-border"
+                variant="solid"
+              />
+            </div>
+          )}
         </div>
         <div className="flex justify-end gap-2 pt-2 border-t">
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="text-xs cursor-pointer">

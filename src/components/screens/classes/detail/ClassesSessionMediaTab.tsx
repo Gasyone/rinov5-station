@@ -1,15 +1,9 @@
 'use client'
 
 import React, { useState, useRef, useMemo, useEffect } from 'react'
-import {
-  Film,
-  FileText,
-} from 'lucide-react'
 import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
 import { formatDateWithDay, splitDateWithDay } from './classesSessionDetailHelpers'
-import { ConfirmDialog, PersonnelHoverCard } from '@/components/shared'
+import { ConfirmDialog, PersonnelHoverCard, MediaPreviewModal, type MediaPreviewItem, type TaggedStudentItem } from '@/components/shared'
 
 import {
   RosterStudentOption,
@@ -17,145 +11,27 @@ import {
   SessionMediaItem,
   SessionMediaTeacher,
   UploadingMediaItem,
-  MAX_IMAGE_DOC_SIZE_BYTES,
-  MAX_VIDEO_SIZE_BYTES,
   MAX_FILES_PER_UPLOAD,
+  INITIAL_MOCK_MEDIA,
+  INITIAL_DEMO_UPLOADING,
 } from './media/classesSessionMediaTypes'
 import { ClassesSessionMediaCard } from './media/ClassesSessionMediaCard'
 import { ClassesSessionMediaToolbar } from './media/ClassesSessionMediaToolbar'
 import { ClassesSessionUploadingCard } from './media/ClassesSessionUploadingCard'
+import { ClassesSessionMediaEmptyState } from './media/ClassesSessionMediaEmptyState'
+import { generateInitialSessionMedia, createUploadMediaItems } from './media/classesSessionMediaHelpers'
 
 export type { RosterStudentOption, SessionMediaItem }
-export { DEFAULT_ROSTER_STUDENTS }
+export { DEFAULT_ROSTER_STUDENTS, INITIAL_MOCK_MEDIA, INITIAL_DEMO_UPLOADING }
 
-const INITIAL_MOCK_MEDIA: SessionMediaItem[] = [
-  {
-    id: 'm1',
-    sessionId: 'ses-5',
-    sessionNumber: 5,
-    sessionTitle: 'Reading Strategies & Skimming/Scanning',
-    sessionDate: '09/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Bang_Tu_Vung_Unit4.jpg',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&auto=format&fit=crop&q=80',
-    size: '2.4 MB',
-    uploadedBy: 'Cô Mai',
-    uploadedAt: '09/05/2026 19:15',
-    taggedStudentIds: [], // Cả lớp
-  },
-  {
-    id: 'm2',
-    sessionId: 'ses-5',
-    sessionNumber: 5,
-    sessionTitle: 'Reading Strategies & Skimming/Scanning',
-    sessionDate: '09/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Hoat_Dong_Nhom_Sticker.jpg',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=80',
-    size: '3.1 MB',
-    uploadedBy: 'Cô Mai',
-    uploadedAt: '09/05/2026 19:20',
-    taggedStudentIds: ['s1', 's2'],
-  },
-  {
-    id: 'm3',
-    sessionId: 'ses-5',
-    sessionNumber: 5,
-    sessionTitle: 'Reading Strategies & Skimming/Scanning',
-    sessionDate: '09/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Thuyet_Trinh_Alex.mp4',
-    type: 'video',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
-    size: '18.5 MB',
-    uploadedBy: 'Cô Mai',
-    uploadedAt: '09/05/2026 19:25',
-    duration: '01:45',
-    taggedStudentIds: ['s1'],
-  },
-  {
-    id: 'm4',
-    sessionId: 'ses-4',
-    sessionNumber: 4,
-    sessionTitle: 'Listening & Pronunciation Practice',
-    sessionDate: '07/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Bang_Phien_Am_IPA_Unit3.jpg',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&auto=format&fit=crop&q=80',
-    size: '1.8 MB',
-    uploadedBy: 'Hoàng Thị Mai',
-    uploadedAt: '07/05/2026 19:10',
-    taggedStudentIds: [],
-  },
-  {
-    id: 'm5',
-    sessionId: 'ses-4',
-    sessionNumber: 4,
-    sessionTitle: 'Listening & Pronunciation Practice',
-    sessionDate: '07/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Thao_Luan_Phien_Am_Lop.mp4',
-    type: 'video',
-    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80',
-    size: '24.2 MB',
-    uploadedBy: 'Hoàng Thị Mai',
-    uploadedAt: '07/05/2026 19:22',
-    duration: '03:10',
-    taggedStudentIds: ['s3', 's4'],
-  },
-  {
-    id: 'm6',
-    sessionId: 'ses-3',
-    sessionNumber: 3,
-    sessionTitle: 'Grammar in Use & Sentence Building',
-    sessionDate: '05/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Tai_Lieu_Song_Ngu_Unit2.pdf',
-    type: 'doc',
-    url: 'https://storage.rinoedu.vn/materials/tai-lieu-unit2.pdf',
-    size: '4.5 MB',
-    uploadedBy: 'Hoàng Thị Mai',
-    uploadedAt: '05/05/2026 18:45',
-    taggedStudentIds: [],
-  },
-  {
-    id: 'm7',
-    sessionId: 'ses-3',
-    sessionNumber: 3,
-    sessionTitle: 'Grammar in Use & Sentence Building',
-    sessionDate: '05/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Goc_Hoc_Tap_ThienAn.jpg',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&auto=format&fit=crop&q=80',
-    size: '2.9 MB',
-    uploadedBy: 'Hoàng Thị Mai',
-    uploadedAt: '05/05/2026 19:00',
-    taggedStudentIds: ['s5'],
-  },
-]
-
-const INITIAL_DEMO_UPLOADING: UploadingMediaItem[] = [
-  {
-    id: 'upload-demo-in-progress',
-    sessionId: 'ses-5',
-    sessionNumber: 5,
-    sessionTitle: 'Reading Strategies & Skimming/Scanning',
-    sessionDate: '09/05/2026',
-    sessionTime: '18:00 - 19:30',
-    name: 'Video_Bao_Cao_Nhom1_FullHD.mp4',
-    type: 'video',
-    size: '68.4 MB',
-    totalBytes: Math.round(68.4 * 1024 * 1024),
-    loadedBytes: Math.round(28.7 * 1024 * 1024),
-    progress: 42,
-  },
-]
+const DEFAULT_TEACHER: SessionMediaTeacher = {
+  id: 't1',
+  name: 'Hoàng Thị Mai',
+  code: 'EMP-HTM',
+  role: 'Giáo viên chính',
+  phone: '0901234567',
+  email: 'hongthmai@rinoedu.com',
+}
 
 interface ClassesSessionMediaTabProps {
   className?: string
@@ -172,9 +48,20 @@ export function ClassesSessionMediaTab({
   sessionNumber,
   singleSessionMode = false,
 }: ClassesSessionMediaTabProps) {
-  const [items, setItems] = useState<SessionMediaItem[]>(INITIAL_MOCK_MEDIA)
+  const [items, setItems] = useState<SessionMediaItem[]>(() => {
+    if (singleSessionMode && sessionNumber !== undefined) {
+      const hasCurrent = INITIAL_MOCK_MEDIA.some(
+        (item) => item.sessionNumber === sessionNumber || (sessionId && item.sessionId === sessionId)
+      )
+      if (!hasCurrent) {
+        return [...INITIAL_MOCK_MEDIA, ...generateInitialSessionMedia(sessionNumber, sessionId, rosterStudents)]
+      }
+    }
+    return INITIAL_MOCK_MEDIA
+  })
   const [activePopoverItemId, setActivePopoverItemId] = useState<string | null>(null)
   const [selectedStudentFilter, setSelectedStudentFilter] = useState<string>('all')
+  const [previewMedia, setPreviewMedia] = useState<MediaPreviewItem | null>(null)
 
   const [uploadingItems, setUploadingItems] = useState<UploadingMediaItem[]>(INITIAL_DEMO_UPLOADING)
   const uploadTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
@@ -183,6 +70,39 @@ export function ClassesSessionMediaTab({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handlePreviewItem = (item: SessionMediaItem) => {
+    if (item.type === 'doc') {
+      if (item.url && item.url !== '#') {
+        window.open(item.url, '_blank')
+        toast.success(`Đang mở tài liệu: ${item.name}`)
+      } else {
+        handleDownloadFile(item)
+      }
+      return
+    }
+
+    const taggedStudents: TaggedStudentItem[] =
+      item.taggedStudentIds.length === 0
+        ? []
+        : rosterStudents
+            .filter((st) => item.taggedStudentIds.includes(st.id))
+            .map((st) => ({
+              id: st.id,
+              name: st.name,
+              avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(st.name)}`,
+            }))
+
+    setPreviewMedia({
+      name: item.name,
+      url: item.url,
+      type: item.type,
+      thumbnailUrl: item.thumbnailUrl || item.url,
+      taggedStudents,
+      duration: item.duration,
+      size: item.size,
+    })
+  }
 
   // Start initial demo upload ticker & cleanup timers on unmount
   useEffect(() => {
@@ -201,8 +121,9 @@ export function ClassesSessionMediaTab({
           if (nextProgress >= 100) {
             clearInterval(demoTimer)
             uploadTimersRef.current.delete('upload-demo-in-progress')
+            const completedDemoId = `m-demo-${Date.now()}`
             const completedDemo: SessionMediaItem = {
-              id: 'm-demo-finished',
+              id: completedDemoId,
               sessionId: current.sessionId,
               sessionNumber: current.sessionNumber,
               sessionTitle: current.sessionTitle,
@@ -218,7 +139,12 @@ export function ClassesSessionMediaTab({
               duration: '02:15',
               taggedStudentIds: [],
             }
-            setItems((prev) => [completedDemo, ...prev])
+            setItems((prev) => {
+              if (prev.some((item) => item.id === completedDemoId || item.id === 'm-demo-finished' || item.name === current.name)) {
+                return prev
+              }
+              return [completedDemo, ...prev]
+            })
             toast.success(`Đã tải lên thành công: ${current.name}!`)
             return prev.filter((u) => u.id !== current.id)
           }
@@ -254,76 +180,29 @@ export function ClassesSessionMediaTab({
     })
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files
-    if (!fileList || fileList.length === 0) return
+  const processFiles = (files: File[]) => {
+    if (!files || files.length === 0) return
 
-    const selectedFiles = Array.from(fileList)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
 
-    if (selectedFiles.length > MAX_FILES_PER_UPLOAD) {
+    if (files.length > MAX_FILES_PER_UPLOAD) {
       toast.error(`Mỗi lượt tải lên cho phép tối đa ${MAX_FILES_PER_UPLOAD} tệp. Vui lòng chọn lại!`)
       return
     }
 
-    const targetSessionId = sessionId || 'ses-5'
-    const targetSessionNum = sessionNumber || 5
+    const targetSessionId = sessionId || (sessionNumber !== undefined ? `ses-${sessionNumber}` : 'ses-5')
+    const targetSessionNum = sessionNumber !== undefined ? sessionNumber : 5
 
-    const validNewUploads: UploadingMediaItem[] = []
-
-    for (const file of selectedFiles) {
-      const isImg = file.type.startsWith('image/')
-      const isVid = file.type.startsWith('video/')
-      const isDoc =
-        file.type.startsWith('application/pdf') ||
-        file.type.includes('word') ||
-        file.name.endsWith('.pdf') ||
-        file.name.endsWith('.doc') ||
-        file.name.endsWith('.docx')
-
-      if (!isImg && !isVid && !isDoc) {
-        toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ. Vui lòng chỉ tải tệp ảnh, video hoặc tài liệu!`)
-        continue
-      }
-
-      if ((isImg || isDoc) && file.size > MAX_IMAGE_DOC_SIZE_BYTES) {
-        toast.error(`Tệp "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) vượt quá dung lượng tối đa 25MB cho ảnh/tài liệu!`)
-        continue
-      }
-
-      if (isVid && file.size > MAX_VIDEO_SIZE_BYTES) {
-        toast.error(`Tệp video "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) vượt quá dung lượng tối đa 100MB cho video!`)
-        continue
-      }
-
-      const uploadId = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-      validNewUploads.push({
-        id: uploadId,
-        sessionId: targetSessionId,
-        sessionNumber: targetSessionNum,
-        sessionTitle: 'Nội dung buổi học',
-        sessionDate: '09/05/2026',
-        sessionTime: '18:00 - 19:30',
-        name: file.name,
-        type: isVid ? 'video' : isImg ? 'image' : 'doc',
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        totalBytes: file.size,
-        loadedBytes: Math.round(file.size * 0.12),
-        progress: 12,
-        rawFile: file,
-      })
-    }
-
+    const validNewUploads = createUploadMediaItems(files, targetSessionId, targetSessionNum)
     if (validNewUploads.length === 0) return
 
     setUploadingItems((prev) => [...validNewUploads, ...prev])
 
-    // Progressive simulated upload for each file (tốc độ chậm để người dùng dễ quan sát / chụp ảnh màn hình)
     validNewUploads.forEach((uploadItem) => {
-      const stepIncrement = 2 // Tăng 2% mỗi nhịp
-      const intervalMs = 800  // Nhịp 800ms -> mất ~35-45 giây để hoàn tất tải lên
+      const stepIncrement = 2
+      const intervalMs = 800
 
       const timer = setInterval(() => {
         setUploadingItems((prev) => {
@@ -341,7 +220,6 @@ export function ClassesSessionMediaTab({
             clearInterval(timer)
             uploadTimersRef.current.delete(uploadItem.id)
 
-            // Convert to completed item
             const objectUrl = uploadItem.rawFile
               ? URL.createObjectURL(uploadItem.rawFile)
               : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
@@ -363,7 +241,12 @@ export function ClassesSessionMediaTab({
               taggedStudentIds: [],
             }
 
-            setItems((prevItems) => [completedItem, ...prevItems])
+            setItems((prevItems) => {
+              if (prevItems.some((item) => item.id === completedItem.id)) {
+                return prevItems
+              }
+              return [completedItem, ...prevItems]
+            })
             toast.success(`Đã tải lên thành công: ${uploadItem.name}!`)
 
             return prev.filter((u) => u.id !== uploadItem.id)
@@ -377,6 +260,15 @@ export function ClassesSessionMediaTab({
 
       uploadTimersRef.current.set(uploadItem.id, timer)
     })
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return
+    processFiles(Array.from(e.target.files))
+  }
+
+  const handleDropFiles = (files: FileList) => {
+    processFiles(Array.from(files))
   }
 
   const handleShareLink = (item: SessionMediaItem) => {
@@ -457,22 +349,63 @@ export function ClassesSessionMediaTab({
 
   const handleBatchTagStudents = (studentId: string | 'all' | 'class_wide') => {
     if (selectedItemIds.length === 0) return
-    setItems((prev) =>
-      prev.map((item) => {
-        if (selectedItemIds.includes(item.id)) {
-          if (studentId === 'class_wide') {
+
+    const selectedTargetItems = items.filter((item) => selectedItemIds.includes(item.id))
+    const totalSelected = selectedTargetItems.length
+
+    if (studentId === 'class_wide') {
+      const allClassWide = selectedTargetItems.every((i) => i.taggedStudentIds.length === 0)
+      if (allClassWide) {
+        toast.info('Tất cả các tệp được chọn đã ở trạng thái Dành cho cả lớp')
+        return
+      }
+      setItems((prev) =>
+        prev.map((item) => {
+          if (selectedItemIds.includes(item.id)) {
             return { ...item, taggedStudentIds: [] }
           }
-          if (studentId === 'all') return item
-          const exists = item.taggedStudentIds.includes(studentId)
-          const newIds = exists ? item.taggedStudentIds : [...item.taggedStudentIds, studentId]
-          return { ...item, taggedStudentIds: newIds }
-        }
-        return item
-      })
-    )
-    const label = studentId === 'class_wide' ? 'Cả lớp' : rosterStudents.find((s) => s.id === studentId)?.name || 'Học viên'
-    toast.success(`Đã gắn "${label}" cho ${selectedItemIds.length} tệp được chọn!`)
+          return item
+        })
+      )
+      toast.success(`Đã chuyển ${totalSelected} tệp sang "Dành cho cả lớp"!`)
+      return
+    }
+
+    if (studentId === 'all') return
+
+    // If ALL selected items already have this student -> toggle OFF (remove)
+    // If SOME or NONE have this student -> toggle ON (add to all)
+    const allHaveStudent = selectedTargetItems.every((i) => i.taggedStudentIds.includes(studentId))
+    const stName = rosterStudents.find((s) => s.id === studentId)?.name || 'Học viên'
+
+    if (allHaveStudent) {
+      setItems((prev) =>
+        prev.map((item) => {
+          if (selectedItemIds.includes(item.id)) {
+            return {
+              ...item,
+              taggedStudentIds: item.taggedStudentIds.filter((id) => id !== studentId),
+            }
+          }
+          return item
+        })
+      )
+      toast.info(`Đã gỡ "${stName}" khỏi ${totalSelected} tệp được chọn!`)
+    } else {
+      setItems((prev) =>
+        prev.map((item) => {
+          if (selectedItemIds.includes(item.id)) {
+            const exists = item.taggedStudentIds.includes(studentId)
+            return {
+              ...item,
+              taggedStudentIds: exists ? item.taggedStudentIds : [...item.taggedStudentIds, studentId],
+            }
+          }
+          return item
+        })
+      )
+      toast.success(`Đã gắn "${stName}" cho ${totalSelected} tệp được chọn!`)
+    }
   }
 
   const toggleSelectItem = (itemId: string) => {
@@ -481,17 +414,34 @@ export function ClassesSessionMediaTab({
     )
   }
 
-  const filteredItems = useMemo(() => {
+  // Current session all items (without student filter)
+  const currentSessionItems = useMemo(() => {
+    if (!singleSessionMode && !sessionId && sessionNumber === undefined) return items
     return items.filter((item) => {
-      // In singleSessionMode, strictly filter to current session items only
+      if (sessionNumber !== undefined && item.sessionNumber === sessionNumber) return true
+      if (sessionId && (item.sessionId === sessionId || item.sessionId === `ses-${sessionNumber}`)) return true
+      return false
+    })
+  }, [items, singleSessionMode, sessionId, sessionNumber])
+
+  // Current session uploading items
+  const currentSessionUploadingItems = useMemo(() => {
+    return uploadingItems.filter((u) => {
       if (singleSessionMode || sessionId || sessionNumber !== undefined) {
-        const matchesSession =
-          (sessionId && item.sessionId === sessionId) ||
-          (sessionNumber !== undefined && item.sessionNumber === sessionNumber)
-
-        if (!matchesSession) return false
+        if (sessionNumber !== undefined && u.sessionNumber === sessionNumber) return true
+        if (sessionId && (u.sessionId === sessionId || u.sessionId === `ses-${sessionNumber}`)) return true
+        return false
       }
+      return true
+    })
+  }, [uploadingItems, singleSessionMode, sessionId, sessionNumber])
 
+  const filteredItems = useMemo(() => {
+    const baseItems = singleSessionMode || sessionId || sessionNumber !== undefined
+      ? currentSessionItems
+      : items
+
+    const matched = baseItems.filter((item) => {
       if (selectedStudentFilter === 'class_wide') {
         if (item.taggedStudentIds.length !== 0) return false
       } else if (selectedStudentFilter !== 'all') {
@@ -500,23 +450,21 @@ export function ClassesSessionMediaTab({
 
       return true
     })
-  }, [items, singleSessionMode, sessionId, sessionNumber, selectedStudentFilter])
+
+    const seenIds = new Set<string>()
+    return matched.filter((item) => {
+      if (seenIds.has(item.id)) return false
+      seenIds.add(item.id)
+      return true
+    })
+  }, [items, currentSessionItems, singleSessionMode, sessionId, sessionNumber, selectedStudentFilter])
 
   const selectedStudentFilterLabel = useMemo(() => {
-    if (selectedStudentFilter === 'all') return `Tất cả tệp (${items.length})`
+    if (selectedStudentFilter === 'all') return 'Tất cả tệp'
     if (selectedStudentFilter === 'class_wide') return 'Dành cho cả lớp'
     const found = rosterStudents.find((st) => st.id === selectedStudentFilter)
     return found ? found.name : 'Đã chọn học viên'
-  }, [selectedStudentFilter, items, rosterStudents])
-
-  const DEFAULT_TEACHER: SessionMediaTeacher = {
-    id: 't1',
-    name: 'Hoàng Thị Mai',
-    code: 'EMP-HTM',
-    role: 'Giáo viên chính',
-    phone: '0901234567',
-    email: 'hongthmai@rinoedu.com',
-  }
+  }, [selectedStudentFilter, rosterStudents])
 
   const groupedSessions = useMemo(() => {
     const map = new Map<string, {
@@ -553,13 +501,7 @@ export function ClassesSessionMediaTab({
     // [CASE-10] Automatically sync selectedItemIds to only keep items that match the new filter
     setSelectedItemIds((prevSelected) => {
       if (prevSelected.length === 0) return prevSelected
-      const matchingItems = items.filter((item) => {
-        if (singleSessionMode || sessionId || sessionNumber !== undefined) {
-          const matchesSession =
-            (sessionId && item.sessionId === sessionId) ||
-            (sessionNumber !== undefined && item.sessionNumber === sessionNumber)
-          if (!matchesSession) return false
-        }
+      const matchingItems = currentSessionItems.filter((item) => {
         if (filterId === 'class_wide') {
           return item.taggedStudentIds.length === 0
         } else if (filterId !== 'all') {
@@ -574,6 +516,10 @@ export function ClassesSessionMediaTab({
 
   const isAllSelected = filteredItems.length > 0 && filteredItems.every((i) => selectedItemIds.includes(i.id))
 
+  const isMediaEmpty = singleSessionMode
+    ? filteredItems.length === 0 && currentSessionUploadingItems.length === 0
+    : filteredItems.length === 0 && uploadingItems.length === 0
+
   return (
     <div className="space-y-2">
       {/* ── UNIFIED TOOLBAR ROW ── */}
@@ -586,7 +532,7 @@ export function ClassesSessionMediaTab({
         setSelectedStudentFilter={handleStudentFilterChange}
         selectedStudentFilterLabel={selectedStudentFilterLabel}
         rosterStudents={rosterStudents}
-        items={items}
+        items={singleSessionMode ? currentSessionItems : items}
         fileInputRef={fileInputRef}
         handleFileChange={handleFileChange}
         handleBulkDeleteConfirm={handleBulkDeleteConfirm}
@@ -595,34 +541,27 @@ export function ClassesSessionMediaTab({
       />
 
       {/* ── MEDIA LISTING ── */}
-      {filteredItems.length === 0 && uploadingItems.length === 0 ? (
-        <div className="py-12 text-center rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
-          <Film className="h-10 w-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
-          <p className="text-sm font-semibold text-foreground">Không tìm thấy media phù hợp</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {singleSessionMode
-              ? 'Chưa có media nào cho buổi học này. Nhấp "+ Tải lên" để tải tệp mới.'
-              : 'Vui lòng thay đổi bộ lọc học viên.'}
-          </p>
-        </div>
+      {isMediaEmpty ? (
+        <ClassesSessionMediaEmptyState
+          isFilterActive={selectedStudentFilter !== 'all'}
+          filterLabel={selectedStudentFilterLabel}
+          totalSessionItemsCount={singleSessionMode ? currentSessionItems.length : items.length}
+          onClearFilter={() => setSelectedStudentFilter('all')}
+          onUploadClick={() => fileInputRef.current?.click()}
+          onDropFiles={handleDropFiles}
+          singleSessionMode={singleSessionMode}
+        />
       ) : singleSessionMode ? (
         /* Single Session Mode: Direct Grid without session group header label */
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1">
           {/* In-flight uploading cards */}
-          {uploadingItems
-            .filter((u) => {
-              if (sessionId && u.sessionId === sessionId) return true
-              if (sessionNumber && u.sessionNumber === sessionNumber) return true
-              if (!sessionId && !sessionNumber) return true
-              return false
-            })
-            .map((uploading) => (
-              <ClassesSessionUploadingCard
-                key={uploading.id}
-                item={uploading}
-                onCancel={handleCancelUpload}
-              />
-            ))}
+          {currentSessionUploadingItems.map((uploading) => (
+            <ClassesSessionUploadingCard
+              key={uploading.id}
+              item={uploading}
+              onCancel={handleCancelUpload}
+            />
+          ))}
 
           {filteredItems.map((item) => (
             <ClassesSessionMediaCard
@@ -638,6 +577,7 @@ export function ClassesSessionMediaTab({
               handleDownloadFile={handleDownloadFile}
               handleRemoveStudentTag={handleRemoveStudentTag}
               handleToggleStudentTagInPopover={handleToggleStudentTagInPopover}
+              onPreview={handlePreviewItem}
             />
           ))}
         </div>
@@ -721,6 +661,7 @@ export function ClassesSessionMediaTab({
                       handleDownloadFile={handleDownloadFile}
                       handleRemoveStudentTag={handleRemoveStudentTag}
                       handleToggleStudentTagInPopover={handleToggleStudentTagInPopover}
+                      onPreview={handlePreviewItem}
                     />
                   ))}
                 </div>
@@ -740,6 +681,12 @@ export function ClassesSessionMediaTab({
         cancelLabel="Hủy"
         variant="destructive"
         onConfirm={handleConfirmBulkDelete}
+      />
+
+      {/* ── MEDIA LIGHTBOX PREVIEW MODAL (16:9 Widescreen) ── */}
+      <MediaPreviewModal
+        previewMedia={previewMedia}
+        onClose={() => setPreviewMedia(null)}
       />
     </div>
   )

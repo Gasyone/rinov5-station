@@ -1,6 +1,5 @@
 'use client'
 
-import { DataTableFrame } from '@/components/data-table'
 import {
   type WorkRegistrationEmployee,
   type WorkPrioritySlotRule,
@@ -60,9 +59,9 @@ export function WorkRegistrationEditablePanel({
   const draftMinutes = sumDraftMinutes(records)
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {/* THANH THÊM KHUNG GIỜ LÀM VIỆC THEO NGÀY + THỐNG KÊ & CẬP NHẬT */}
-      <div className="rounded-xl border border-border/80 bg-card p-3 shadow-2xs">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-2">
+      {/* KHỐI ĐÓNG KHUNG PHẦN CHỌN NGÀY & THỜI GIAN */}
+      <div className="rounded-xl border border-border/80 bg-card px-3 py-2.5 shadow-2xs">
         <WorkRegistrationTimeRangePicker
           days={weekDays}
           disabled={readonlyWeek || !canMutate}
@@ -76,8 +75,8 @@ export function WorkRegistrationEditablePanel({
         />
       </div>
 
-      {/* MA TRẬN CA LÀM VIỆC */}
-      <DataTableFrame className="flex-1 min-h-0">
+      {/* MA TRẬN CA LÀM VIỆC (PHẲNG FULL, KHÔNG ĐÓNG KHUNG VIỀN NGOÀI) */}
+      <div className="flex-1 min-h-0 flex flex-col">
         <WorkRegistrationStaffSectionGrid
           days={weekDays}
           records={records}
@@ -89,7 +88,7 @@ export function WorkRegistrationEditablePanel({
           onToggleSection={onToggleSection}
           onRemoveSlots={onRemoveSlots}
         />
-      </DataTableFrame>
+      </div>
     </div>
   )
 }

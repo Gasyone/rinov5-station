@@ -221,11 +221,6 @@ export function CalendarClassScheduleListTable({
                                   {session.typeLabel}
                                 </Badge>
                               )}
-                              {session.isOpeningDay && (
-                                <Badge className="bg-red-500/10 text-red-600 border-red-200 dark:border-red-800 text-xs px-1 py-0 font-bold uppercase shrink-0">
-                                  Khai giảng
-                                </Badge>
-                              )}
                             </div>
                             <span className="text-xs text-muted-foreground line-clamp-1">
                               {session.className}
@@ -272,8 +267,49 @@ export function CalendarClassScheduleListTable({
                         <div className="flex flex-col gap-1">
                           {/* Line 1: Main/Substitute Teacher with PersonnelHoverCard */}
                           {(() => {
-                            const activeTeacher = session.substituteTeacher || session.teacher
-                            const teacherPersonnel = getTeacherPersonnel(activeTeacher, 'Giáo viên Tiếng Anh', Boolean(session.substituteTeacher))
+                            const originalTeacher = session.teacher
+                            const subTeacher = session.substituteTeacher
+                            const activeTeacher = subTeacher || originalTeacher
+                            const teacherPersonnel = getTeacherPersonnel(activeTeacher, 'Giáo viên Tiếng Anh', Boolean(subTeacher))
+                            const origPersonnel = originalTeacher ? getTeacherPersonnel(originalTeacher, 'Giáo viên Tiếng Anh') : null
+
+                            if (subTeacher && origPersonnel) {
+                              return (
+                                <div className="flex items-center gap-1 min-w-0 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                                  <PersonnelHoverCard person={origPersonnel}>
+                                    <div className="flex items-center gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" title={`Giáo viên phân công: ${originalTeacher}`}>
+                                      <Avatar className="size-5 shrink-0 border border-border/60">
+                                        <AvatarImage src={origPersonnel.avatar ?? undefined} alt={originalTeacher} />
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-bold">
+                                          {getInitials(originalTeacher)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="line-through text-xs text-muted-foreground font-normal">
+                                        {originalTeacher}
+                                      </span>
+                                    </div>
+                                  </PersonnelHoverCard>
+                                  <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                                  <PersonnelHoverCard person={teacherPersonnel}>
+                                    <div className="flex items-center gap-1 cursor-pointer hover:opacity-85 transition-opacity" title={`Dạy thay: ${subTeacher}`}>
+                                      <Avatar className="size-5.5 shrink-0 border border-amber-300 dark:border-amber-700">
+                                        <AvatarImage src={teacherPersonnel.avatar ?? undefined} alt={subTeacher} />
+                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-[10px] font-bold">
+                                          {getInitials(subTeacher)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="font-semibold text-xs text-foreground">
+                                        {subTeacher}
+                                      </span>
+                                      <span className="text-[9.5px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                                        Dạy thay
+                                      </span>
+                                    </div>
+                                  </PersonnelHoverCard>
+                                </div>
+                              )
+                            }
+
                             return (
                               <PersonnelHoverCard person={teacherPersonnel}>
                                 <div
@@ -287,14 +323,9 @@ export function CalendarClassScheduleListTable({
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex items-center gap-1 min-w-0">
-                                    <span className={cn("font-medium text-xs", session.substituteTeacher ? "text-sky-700 dark:text-sky-400 font-semibold" : "text-foreground hover:underline")}>
+                                    <span className="font-medium text-xs text-foreground hover:underline">
                                       {activeTeacher}
                                     </span>
-                                    {session.substituteTeacher && (
-                                      <span className="text-xs text-sky-600 dark:text-sky-400 font-semibold truncate max-w-[100px]">
-                                        (Dạy thay cho {session.teacher})
-                                      </span>
-                                    )}
                                   </div>
                                 </div>
                               </PersonnelHoverCard>
@@ -303,9 +334,52 @@ export function CalendarClassScheduleListTable({
 
                           {/* Line 2: Assistant Teacher with PersonnelHoverCard */}
                           {(() => {
-                            const assistantName = session.assistantSubstitute || session.assistantTeacher
+                            const origAssistant = session.assistantTeacher
+                            const subAssistant = session.assistantSubstitute
+                            const assistantName = subAssistant || origAssistant
                             if (!assistantName) return null
-                            const assistantPersonnel = getTeacherPersonnel(assistantName, 'Trợ giảng', Boolean(session.assistantSubstitute))
+
+                            const assistantPersonnel = getTeacherPersonnel(assistantName, 'Trợ giảng', Boolean(subAssistant))
+                            const origPersonnel = origAssistant ? getTeacherPersonnel(origAssistant, 'Trợ giảng') : null
+
+                            if (subAssistant && origPersonnel) {
+                              return (
+                                <div className="flex items-center gap-1 min-w-0 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-xs text-muted-foreground font-medium shrink-0">TG:</span>
+                                  <PersonnelHoverCard person={origPersonnel}>
+                                    <div className="flex items-center gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" title={`Trợ giảng phân công: ${origAssistant}`}>
+                                      <Avatar className="size-4.5 shrink-0 border border-border/60">
+                                        <AvatarImage src={origPersonnel.avatar ?? undefined} alt={origAssistant} />
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-[9px] font-bold">
+                                          {getInitials(origAssistant)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="line-through text-xs text-muted-foreground font-normal">
+                                        {origAssistant}
+                                      </span>
+                                    </div>
+                                  </PersonnelHoverCard>
+                                  <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                                  <PersonnelHoverCard person={assistantPersonnel}>
+                                    <div className="flex items-center gap-1 cursor-pointer hover:opacity-85 transition-opacity" title={`Trực thay: ${subAssistant}`}>
+                                      <Avatar className="size-5 shrink-0 border border-amber-300 dark:border-amber-700">
+                                        <AvatarImage src={assistantPersonnel.avatar ?? undefined} alt={subAssistant} />
+                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-[10px] font-bold">
+                                          {getInitials(subAssistant)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="font-semibold text-xs text-foreground">
+                                        {subAssistant}
+                                      </span>
+                                      <span className="text-[9.5px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                                        Trực thay
+                                      </span>
+                                    </div>
+                                  </PersonnelHoverCard>
+                                </div>
+                              )
+                            }
+
                             return (
                               <PersonnelHoverCard person={assistantPersonnel}>
                                 <div

@@ -240,23 +240,23 @@ export function ClassesSessionOverviewTab({
   const hasOperationalAdjustments = hasTeacherCover || hasTACover || hasRoomChange || hasScheduleChange || isCancelled || isTestSession
 
   return (
-    <div className="h-full flex flex-col space-y-2.5 text-xs overflow-y-auto pr-1">
+    <div className="h-full flex flex-col space-y-2 text-xs overflow-y-auto pr-1">
       {/* ── HÀNG TRÊN: CHIA ĐÔI 50/50 (Bên trái: Thông tin nhanh | Bên phải: Nhiệm vụ) ── */}
-      <div className="shrink-0 grid grid-cols-1 md:grid-cols-2 gap-2.5 items-stretch">
+      <div className="shrink-0 grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
         {/* THẺ BÊN TRÁI (50%): Thông tin nhanh */}
-        <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2.5 shadow-2xs flex flex-col justify-between">
-          <div className="space-y-2">
+        <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2 shadow-2xs flex flex-col justify-between">
+          <div className="space-y-1.5">
             {/* Header Title Bar with Soft Grey Fill */}
-            <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-2 px-2.5 rounded-lg border-none">
+            <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 px-2.5 rounded-lg border-none">
               <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>Thông tin nhanh</span>
               </span>
-              <span className="text-xs text-muted-foreground font-normal">Đầu buổi</span>
+              <span className="text-[11px] text-muted-foreground font-normal">Đầu buổi</span>
             </div>
 
             {/* 4 Nhóm thông tin nhanh (2x2 Grid: HV mới, Xin phép, Học thử, Vận hành) */}
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs px-1">
+            <div className="grid grid-cols-2 gap-x-2.5 gap-y-1.5 text-xs px-1">
               {/* Category 1: HV Mới */}
               <div className="flex items-start gap-1 min-w-0">
                 <span className="text-muted-foreground font-normal shrink-0">HV mới:</span>
@@ -395,9 +395,9 @@ export function ClassesSessionOverviewTab({
         </div>
 
         {/* THẺ BÊN PHẢI (50%): Nhiệm vụ */}
-        <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2.5 shadow-2xs flex flex-col justify-start">
+        <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2 shadow-2xs flex flex-col justify-start">
           {/* Header Title Bar with Soft Grey Fill */}
-          <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-2 px-2.5 rounded-lg border-none">
+          <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 px-2.5 rounded-lg border-none">
             <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
               <CheckSquare className="h-3.5 w-3.5 text-emerald-600" />
               <span>Nhiệm vụ</span>
@@ -410,11 +410,11 @@ export function ClassesSessionOverviewTab({
           {/* Task Grid starting immediately under header */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 px-0.5">
             {/* Task 1: Student Feedbacks */}
-            <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
+            <div className="flex items-center justify-between p-1 px-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-1.5 min-w-0">
                 <MessageSquarePlus className="h-3.5 w-3.5 text-sky-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="font-normal text-foreground text-[10.5px] truncate">Nhận xét học viên</p>
+                  <p className="font-medium text-foreground text-[10.5px] truncate">Nhận xét học viên</p>
                   <p className="text-[9.5px] text-muted-foreground truncate font-normal">Thái độ & kết quả</p>
                 </div>
               </div>
@@ -430,41 +430,41 @@ export function ClassesSessionOverviewTab({
             </div>
 
             {/* Task 2: Session Journal */}
-            <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
+            <div className="flex items-center justify-between p-1 px-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Notebook className="h-3.5 w-3.5 text-purple-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="font-normal text-foreground text-[10.5px] truncate">Nhật ký buổi học</p>
+                  <p className="font-medium text-foreground text-[10.5px] truncate">Nhật ký buổi học</p>
                   <p className="text-[9.5px] text-muted-foreground truncate font-normal">{hasJournal ? 'Đã nhập nhận xét' : 'Chưa ghi nhật ký'}</p>
                 </div>
               </div>
-              <Badge variant="outline" className={cn('text-xs font-normal py-0 shrink-0 ml-1', hasJournal ? 'border-emerald-300 text-emerald-700 bg-emerald-50' : 'border-amber-300 text-amber-700 bg-amber-50')}>
+              <Badge variant="outline" className={cn('text-[9.5px] font-normal py-0 shrink-0 ml-1', hasJournal ? 'border-emerald-300 text-emerald-700 bg-emerald-50' : 'border-amber-300 text-amber-700 bg-amber-50')}>
                 {hasJournal ? 'Đã xong' : 'Chưa xong'}
               </Badge>
             </div>
 
             {/* Task 3: Test Scores / Semester Eval */}
             {isTestSession && (
-              <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
+              <div className="flex items-center justify-between p-1 px-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <ClipboardCheck className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-normal text-foreground text-[10.5px] truncate">Chấm điểm & Eval</p>
+                    <p className="font-medium text-foreground text-[10.5px] truncate">Chấm điểm & Eval</p>
                     <p className="text-[9.5px] text-muted-foreground truncate font-normal">Đánh giá Unit Test</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-xs font-normal border-amber-300 text-amber-700 bg-amber-50 py-0 shrink-0 ml-1">
+                <Badge variant="outline" className="text-[9.5px] font-normal border-amber-300 text-amber-700 bg-amber-50 py-0 shrink-0 ml-1">
                   Cần chấm điểm
                 </Badge>
               </div>
             )}
 
             {/* Task 4: Media Upload */}
-            <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
+            <div className="flex items-center justify-between p-1 px-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Camera className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="font-normal text-foreground text-[10.5px] truncate">Hình ảnh & Media</p>
+                  <p className="font-medium text-foreground text-[10.5px] truncate">Hình ảnh & Media</p>
                   <p className="text-[9.5px] text-muted-foreground truncate font-normal">Tải ảnh lớp học</p>
                 </div>
               </div>
@@ -480,11 +480,11 @@ export function ClassesSessionOverviewTab({
             </div>
 
             {/* Task 5: QC cần đóng/hoàn thành */}
-            <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
+            <div className="flex items-center justify-between p-1 px-1.5 rounded-lg border border-border/60 bg-zinc-50/50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-1.5 min-w-0">
                 <ShieldAlert className="h-3.5 w-3.5 text-rose-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="font-normal text-foreground text-[10.5px] truncate">QC cần đóng/hoàn thành</p>
+                  <p className="font-medium text-foreground text-[10.5px] truncate">QC cần đóng/hoàn thành</p>
                   <p className="text-[9.5px] text-muted-foreground truncate font-normal">Xử lý đợt kiểm tra QC</p>
                 </div>
               </div>
@@ -503,9 +503,9 @@ export function ClassesSessionOverviewTab({
       </div>
 
       {/* ── HÀNG DƯỚI: KHUNG CHĂM SÓC HỌC VIÊN (Care Code in Bold Colored Text, No Box/Border) ── */}
-      <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2.5 shadow-2xs shrink-0">
+      <div className="rounded-xl border border-border/80 bg-card p-2.5 space-y-2 shadow-2xs">
         {/* Header Title Bar with Soft Grey Fill */}
-        <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-2 px-2.5 rounded-lg border-none">
+        <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 px-2.5 rounded-lg border-none">
           <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
             <HeartHandshake className="h-3.5 w-3.5 text-rose-500" />
             <span>Chăm sóc học viên ({careStudentsList.length})</span>
@@ -520,7 +520,7 @@ export function ClassesSessionOverviewTab({
         </div>
 
         {/* Flat list of Care Students */}
-        <div className="space-y-3 px-1 pt-0.5">
+        <div className="space-y-2 px-1 pt-0.5">
           {careStudentsList.map((student) => {
             const avatarColor = getAvatarColor(student.id)
             const initials = student.name
@@ -532,17 +532,17 @@ export function ClassesSessionOverviewTab({
             return (
               <div
                 key={student.id}
-                className="flex items-start gap-3"
+                className="flex items-start gap-2.5"
               >
-                {/* Left: Avatar (Enlarged h-10 w-10, spanning from name line down to end of first badge) */}
-                <div className={cn('h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border border-white dark:border-zinc-800 shadow-2xs mt-0.5', avatarColor)}>
+                {/* Left: Avatar (Compact h-8 w-8) */}
+                <div className={cn('h-8 w-8 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 border border-white dark:border-zinc-800 shadow-2xs mt-0.5', avatarColor)}>
                   {initials}
                 </div>
 
                 {/* Right: Student Name Header + Care Badges stacked underneath aligned straight with the name */}
-                <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex-1 min-w-0 space-y-1">
                   {/* Line 1: Student Name + Code */}
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     <button
                       type="button"
                       onClick={() => setSelectedStudentId(student.id)}
@@ -551,7 +551,7 @@ export function ClassesSessionOverviewTab({
                     >
                       {nameParts.formattedName}
                     </button>
-                    <span className="text-xs text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
+                    <span className="text-[11px] text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
                   </div>
 
                   {/* Line 2+: Care Badge cards left-aligned straight under the student name */}
@@ -560,7 +560,7 @@ export function ClassesSessionOverviewTab({
                       <div
                         key={bIdx}
                         className={cn(
-                          'flex items-center justify-between p-1.5 px-2 rounded-lg border text-xs leading-tight min-w-0',
+                          'flex items-center justify-between p-1 px-2 rounded-md border text-[11px] leading-tight min-w-0',
                           badge.code === 'CSĐB' || badge.code === 'CSKH'
                             ? 'border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200'
                             : badge.code === 'CSBH'
@@ -571,7 +571,7 @@ export function ClassesSessionOverviewTab({
                         {/* Left: Bold Colored Code Text (No box, no border) + Full Reason & Assigned Person */}
                         <div className="flex items-center gap-1.5 min-w-0 flex-1 me-2">
                           <span className={cn(
-                            'font-bold text-xs shrink-0 me-0.5',
+                            'font-bold text-[11px] shrink-0 me-0.5',
                             badge.code === 'CSĐB' || badge.code === 'CSKH'
                               ? 'text-rose-700 dark:text-rose-400'
                               : badge.code === 'CSBH'
@@ -581,8 +581,8 @@ export function ClassesSessionOverviewTab({
                             {badge.code}
                           </span>
 
-                          <div className="min-w-0 flex-1 text-xs truncate">
-                            <span className="font-semibold text-foreground me-1.5">{badge.fullLabel}</span>
+                          <div className="min-w-0 flex-1 text-[11px] truncate">
+                            <span className="font-semibold text-foreground me-1">{badge.fullLabel}</span>
                             <span className="text-muted-foreground font-normal">
                               · Phụ trách: <strong className="font-normal text-foreground">{badge.assigneeText || 'CS Nguyễn Thị Ngọc Anh'}</strong>
                             </span>
@@ -591,7 +591,7 @@ export function ClassesSessionOverviewTab({
 
                         {/* Right: Plain Text SLA */}
                         <span className={cn(
-                          'text-xs font-normal shrink-0',
+                          'text-[10.5px] font-normal shrink-0',
                           badge.isOverdue ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-amber-600 dark:text-amber-400 font-medium'
                         )}>
                           {badge.isOverdue ? `Quá hạn: ${badge.slaText}` : `Đến hạn: ${badge.slaText}`}

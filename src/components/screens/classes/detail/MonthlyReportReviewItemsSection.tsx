@@ -107,18 +107,27 @@ export function MonthlyReportReviewItemsSection({
     toast.success('Đã gỡ tệp đính kèm.')
   }
 
+  // Lọc các mục có nội dung thực tế (bỏ qua các mục rỗng)
+  const validItems = items.filter((it) => it.content && it.content.trim().length > 0)
+
+  // Khi xem báo cáo (readOnly), nếu không có nội dung ôn tập riêng nào thì ẩn hoàn toàn cả mục 2
+  if (readOnly && validItems.length === 0) {
+    return null
+  }
+
+  const displayItems = readOnly ? validItems : items
+
   return (
     <div className="space-y-4 pt-4 border-t border-border/70">
       {/* Header Bar: Tiêu đề & Nút thêm mới */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-primary inline-block" />
             <span>2. NỘI DUNG ÔN TẬP RIÊNG</span>
           </h4>
           {!readOnly && (
             <p className="text-xs text-muted-foreground font-normal mt-0.5">
-              Không cố định theo tuần. Bao gồm các chủ đề, bài tập kèm tài liệu đính kèm.
+              Tùy chọn bổ trợ riêng cho học viên. Khi để trống, mục này sẽ tự động ẩn đi trên báo cáo gửi phụ huynh.
             </p>
           )}
         </div>
@@ -136,26 +145,31 @@ export function MonthlyReportReviewItemsSection({
         )}
       </div>
 
-      {/* Danh sách các nội dung ôn tập (Xóa bỏ hoàn toàn nền và viền khối thô) */}
+      {/* Danh sách các nội dung ôn tập */}
       <div className="space-y-4">
-        {items.length === 0 ? (
-          <div className="p-6 text-center rounded-xl border border-dashed border-border/80 bg-muted/10 space-y-2">
-            <p className="text-sm text-muted-foreground">Chưa có nội dung ôn tập bổ trợ riêng cho tháng này.</p>
+        {displayItems.length === 0 ? (
+          <div className="p-6 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-2.5 select-none">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              Chưa có nội dung ôn tập bổ trợ riêng cho học viên này.
+            </p>
+            <p className="text-[11px] text-muted-foreground/80 max-w-md mx-auto">
+              Nội dung ôn tập riêng là tùy chọn bổ trợ theo năng lực của từng con. Khi để trống, mục này sẽ tự động ẩn đi trên báo cáo gửi phụ huynh.
+            </p>
             {!readOnly && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleAddItem}
-                className="text-xs font-semibold gap-1.5"
+                className="text-xs font-semibold gap-1.5 rounded-xl cursor-pointer mt-1"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Thêm nội dung đầu tiên</span>
+                <span>Thêm nội dung ôn tập</span>
               </Button>
             )}
           </div>
         ) : (
-          items.map((item, idx) => {
+          displayItems.map((item, idx) => {
             const hasAttachment = Boolean(item.thumbnailUrl || item.docLink)
 
             return (

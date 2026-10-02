@@ -229,6 +229,9 @@ export function WorkRegistrationGrid({
                               `${slot.start} - ${slot.end}`,
                               record.branch || 'RinoEdu Linh Đàm'
                             )}
+                            hideRoom={true}
+                            hideStudents={true}
+                            hideBranch={true}
                           >
                             <span className="line-clamp-2 text-xs sm:text-xs text-center leading-tight flex-1 font-semibold hover:underline cursor-pointer">
                               {record.assignedClass}
@@ -242,6 +245,9 @@ export function WorkRegistrationGrid({
                               `${slot.start} - ${slot.end}`,
                               record.branch || 'RinoEdu Linh Đàm'
                             )}
+                            hideRoom={true}
+                            hideStudents={true}
+                            hideBranch={true}
                           >
                             <span
                               onPointerDown={(e) => e.stopPropagation()}

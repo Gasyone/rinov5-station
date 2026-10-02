@@ -187,7 +187,7 @@ export function HistoricalClassesList({
             onClick={() => setShowAllHistory((prev) => !prev)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer ml-auto"
           >
-            {showAllHistory ? 'Thu gọn' : `Xem tất cả (${historicalPackages.length})`}
+            {showAllHistory ? 'Thu gọn' : 'Xem tất cả'}
           </button>
         )}
       </div>

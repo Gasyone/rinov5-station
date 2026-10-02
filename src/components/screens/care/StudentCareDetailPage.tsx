@@ -61,14 +61,12 @@ export function StudentCareDetailPage({
     }
   }, [setCustomHeaderTitle, headerTitle])
 
-  const initialMode: 'regular' | 'renewal' | 'orders' | 'packages' = 
+  const initialMode: 'regular' | 'renewal' | 'orders' = 
     initialTab === 'orders'
       ? 'orders'
-      : initialTab === 'packages'
-        ? 'packages'
-        : initialTab === 'renewal'
-          ? 'renewal'
-          : 'regular'
+      : initialTab === 'renewal'
+        ? 'renewal'
+        : 'regular'
 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)

@@ -27,7 +27,6 @@ import {
 import { BookingTestCreateStudentForm } from './BookingTestCreateStudentForm'
 import { BookingTestCreateScheduleSection } from './BookingTestCreateScheduleSection'
 import { BookingTestCreateStaffSection } from './BookingTestCreateStaffSection'
-import { BookingTestPrioritySwapDivider } from './BookingTestPrioritySwapDivider'
 import { BookingTestAddChildDialog, type NewChildData } from './BookingTestAddChildDialog'
 import type { ContactPerson } from './ContactSearchableSelect'
 
@@ -47,8 +46,14 @@ export function BookingTestCreateScreen() {
       if (lead) {
         return {
           parentName: lead.parentName,
+          parentRole: lead.parentRole || 'Mẹ',
           phone: lead.phone,
+          address: lead.address,
           childName: lead.studentName,
+          dob: lead.birthYear ? `01/01/${lead.birthYear}` : undefined,
+          age: lead.studentAge,
+          currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
+          academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
           school: lead.branch || 'RinoEdu Nguyễn Tuân',
           program: mapLeadSubjectToBookingProgram(lead.targetSubject),
           notes: lead.lastNote || '',
@@ -58,8 +63,14 @@ export function BookingTestCreateScreen() {
     if (paramStudentName && paramParentName) {
       return {
         parentName: paramParentName,
+        parentRole: 'Mẹ',
         phone: paramPhone || '',
+        address: 'Phường Võ Thị Sáu, Quận 3, TP.HCM',
         childName: paramStudentName,
+        age: 8,
+        dob: '15/05/2018',
+        currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
+        academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
         school: paramBranch || 'RinoEdu Nguyễn Tuân',
         program: mapLeadSubjectToBookingProgram(paramSubject || ''),
         notes: '',
@@ -113,6 +124,42 @@ export function BookingTestCreateScreen() {
       map.set(c.id, c)
     })
 
+    // Contact từ mockLeads
+    mockLeads.forEach((lead) => {
+      if (!lead.parentName) return
+      const pName = lead.parentName
+      const pPhone = lead.phone || '0900000000'
+      const key = `${pName}_${pPhone}`
+
+      if (!map.has(key)) {
+        map.set(key, {
+          id: key,
+          name: pName,
+          role: lead.parentRole || 'Mẹ',
+          phone: pPhone,
+          address: lead.address,
+          children: [],
+        })
+      }
+
+      const contact = map.get(key)!
+      if (lead.address && !contact.address) {
+        contact.address = lead.address
+      }
+
+      const childKey = `lead_child_${lead.id}`
+      if (!contact.children.some((c) => c.name === lead.studentName)) {
+        contact.children.push({
+          id: childKey,
+          name: lead.studentName,
+          dob: lead.birthYear ? `01/01/${lead.birthYear}` : undefined,
+          age: lead.studentAge,
+          currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
+          academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
+        })
+      }
+    })
+
     // Contact từ mockStudents
     mockStudents.forEach((student) => {
       const pName = student.parentName || `Phụ huynh ${student.name}`
@@ -123,17 +170,29 @@ export function BookingTestCreateScreen() {
         map.set(key, {
           id: key,
           name: pName,
+          role: 'Mẹ',
           phone: pPhone,
+          address: 'Phường Võ Thị Sáu, Quận 3, TP.HCM',
           children: [],
         })
       }
 
       const contact = map.get(key)!
       if (!contact.children.some((c) => c.id === student.id)) {
+        let calcAge: number | undefined
+        if (student.dob) {
+          const birthYear = parseInt(student.dob.slice(0, 4), 10)
+          if (!isNaN(birthYear)) {
+            calcAge = 2026 - birthYear
+          }
+        }
         contact.children.push({
           id: student.id,
           name: student.name,
           dob: student.dob,
+          age: calcAge || 8,
+          currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
+          academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
         })
       }
     })
@@ -153,12 +212,11 @@ export function BookingTestCreateScreen() {
     setLevel('')
   }
 
-  const [school, setSchool] = useState(leadInfo?.school || '')
+  const [school, setSchool] = useState(leadInfo?.school || 'RinoEdu Linh Đàm')
   const [teacher, setTeacher] = useState('')
   const [testDate, setTestDate] = useState(dateOptions.first3[0]?.dateStr || '')
   const [selectedSlot, setSelectedSlot] = useState(TIME_SLOTS[1] || '08:30')
   const [notes, setNotes] = useState(leadInfo?.notes || '')
-  const [priorityMode, setPriorityMode] = useState<'slot_first' | 'teacher_first'>('slot_first')
 
   // Chi nhánh dùng để tra cứu ca trực (fallback Nguyễn Tuân nếu chưa chọn cơ sở)
   const activeSchoolForRoster = school || 'RinoEdu Nguyễn Tuân'
@@ -202,16 +260,6 @@ export function BookingTestCreateScreen() {
     return foundTeacher?.conflictSlots || {}
   }, [dayStaffList, teacher])
 
-  const handleTogglePriorityMode = () => {
-    const nextMode = priorityMode === 'slot_first' ? 'teacher_first' : 'slot_first'
-    setPriorityMode(nextMode)
-    toast.info(
-      nextMode === 'teacher_first'
-        ? 'Đã chuyển sang chế độ: Ưu tiên chọn Giáo viên trước'
-        : 'Đã chuyển sang chế độ: Ưu tiên chọn Khung giờ trước'
-    )
-  }
-
   const selectedContactObj = contactsList.find((c) => c.id === contactId)
 
   const currentChildName = useMemo(() => {
@@ -252,11 +300,15 @@ export function BookingTestCreateScreen() {
       id: `contact-${newLead.id}`,
       name: newLead.parentName,
       phone: newLead.phone,
+      address: newLead.address,
       children: [
         {
           id: newChildId,
           name: newLead.studentName,
           dob: String(newLead.birthYear || ''),
+          age: newLead.studentAge,
+          currentSchool: newLead.schoolName,
+          academicPerformance: newLead.academicAbility || newLead.academicPerformance,
         },
       ],
     }
@@ -274,6 +326,15 @@ export function BookingTestCreateScreen() {
   const handleAddChildSubmit = (newChild: NewChildData) => {
     if (!selectedContactObj) return
 
+    const childPayload = {
+      id: newChild.id,
+      name: newChild.name,
+      dob: newChild.dob,
+      age: newChild.age,
+      currentSchool: newChild.currentSchool,
+      academicPerformance: newChild.academicPerformance,
+    }
+
     setCustomContacts((prev) => {
       const existing = prev.find((c) => c.id === contactId)
       if (existing) {
@@ -281,20 +342,14 @@ export function BookingTestCreateScreen() {
           c.id === contactId
             ? {
                 ...c,
-                children: [
-                  ...c.children,
-                  { id: newChild.id, name: newChild.name, dob: newChild.dob },
-                ],
+                children: [...c.children, childPayload],
               }
             : c
         )
       } else {
         const updated: ContactPerson = {
           ...selectedContactObj,
-          children: [
-            ...selectedContactObj.children,
-            { id: newChild.id, name: newChild.name, dob: newChild.dob },
-          ],
+          children: [...selectedContactObj.children, childPayload],
         }
         return [updated, ...prev]
       }
@@ -343,7 +398,7 @@ export function BookingTestCreateScreen() {
         return
       }
       if (!school) {
-        toast.error('Vui lòng chọn trường / cơ sở')
+        toast.error('Vui lòng chọn trung tâm')
         return
       }
       if (!program) {
@@ -429,21 +484,67 @@ export function BookingTestCreateScreen() {
     ? [
         ...selectedContactObj.children.map((ch) => ({
           value: ch.id,
-          label: `${ch.name} ${ch.dob ? `(${ch.dob})` : ''}`,
+          label: `${ch.name} ${ch.age ? `(${ch.age} tuổi${ch.dob ? ` - ${ch.dob}` : ''})` : ch.dob ? `(${ch.dob})` : ''}`,
         })),
         { value: 'add_new_child', label: '+ Thêm con / học viên mới' },
       ]
     : []
 
-  const schoolSelectOptions = [
-    'RinoEdu Nguyễn Tuân',
-    'RinoEdu Cầu Giấy',
-    'RinoEdu Linh Đàm',
-    'RinoEdu Đống Đa',
-  ].map((s) => ({
-    value: s,
-    label: s,
-  }))
+  const CENTER_DATA = useMemo(
+    () => [
+      {
+        name: 'RinoEdu Linh Đàm',
+        distance: '1.2 km',
+        address: 'Tầng 3, TTTM Rice City, Linh Đàm, Hoàng Mai',
+      },
+      {
+        name: 'RinoEdu Nguyễn Tuân',
+        distance: '2.8 km',
+        address: 'Số 90 Nguyễn Tuân, Thanh Xuân',
+      },
+      {
+        name: 'RinoEdu Đống Đa',
+        distance: '4.5 km',
+        address: 'Số 142 Hào Nam, Đống Đa',
+      },
+      {
+        name: 'RinoEdu Cầu Giấy',
+        distance: '6.3 km',
+        address: 'Tòa Discovery Complex, 302 Cầu Giấy',
+      },
+    ],
+    []
+  )
+
+  const schoolSelectOptions = useMemo(
+    () =>
+      CENTER_DATA.map((c) => ({
+        value: c.name,
+        textValue: c.name,
+        label: (
+          <div className="flex flex-col w-full py-0.5 min-w-0">
+            <div className="flex items-center justify-between w-full gap-2">
+              <span className="font-medium text-foreground text-xs">{c.name}</span>
+              <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
+                {c.distance}
+              </span>
+            </div>
+            <span className="text-[11.5px] text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
+              {c.address}
+            </span>
+          </div>
+        ),
+        selectedLabel: (
+          <div className="flex items-center justify-between w-full gap-2 text-xs">
+            <span className="truncate font-medium text-foreground">{c.name}</span>
+            <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
+              {c.distance}
+            </span>
+          </div>
+        ),
+      })),
+    [CENTER_DATA]
+  )
 
   const programOptions = Object.keys(PROGRAM_CONFIG).map((p) => ({
     value: p,
@@ -456,20 +557,15 @@ export function BookingTestCreateScreen() {
   }))
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-muted/20">
+    <div className="flex h-full min-h-0 flex-col bg-background">
       {/* Header Bar chuẩn Design System - Thu gọn thẳng hàng Option A */}
-      <div className="border-b bg-card px-4 py-3 lg:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="border-b bg-background px-4 py-1.5 lg:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <div className="flex items-center gap-2.5">
             <BackButton onClick={() => router.push('/app/booking_test')} />
-            <div>
-              <h1 className="text-base font-bold text-foreground">
-                Tạo mới Đặt lịch đánh giá năng lực
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Lên lịch kiểm tra đầu vào và phân bổ nhân sự trực ca tại chi nhánh
-              </p>
-            </div>
+            <h1 className="text-sm font-bold text-foreground">
+              Tạo mới Đặt lịch đánh giá năng lực
+            </h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -478,7 +574,7 @@ export function BookingTestCreateScreen() {
               variant="outline"
               size="sm"
               onClick={() => router.back()}
-              className="cursor-pointer"
+              className="cursor-pointer h-7.5 text-xs px-3"
             >
               Hủy
             </Button>
@@ -486,9 +582,9 @@ export function BookingTestCreateScreen() {
               type="submit"
               form="booking-create-form"
               size="sm"
-              className="gap-1.5 cursor-pointer"
+              className="gap-1.5 cursor-pointer h-7.5 text-xs px-3"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Tạo lịch test</span>
             </Button>
           </div>
@@ -496,16 +592,16 @@ export function BookingTestCreateScreen() {
       </div>
 
       {/* Main Form Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 lg:px-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-1.5 lg:px-6">
         <form
           id="booking-create-form"
           onSubmit={handleSubmit}
-          className="mx-auto max-w-7xl space-y-4"
+          className="mx-auto max-w-5xl space-y-2.5"
         >
-          <div className="flex flex-col lg:flex-row gap-4 items-start">
+          <div className="flex flex-col lg:flex-row gap-2.5 items-start">
             {/* CỘT TRÁI: ĐỐI TƯỢNG & CHƯƠNG TRÌNH (THU GỌN VÀ CỐ ĐỊNH STICKY KHI CUỘN) */}
             <BookingTestCreateStudentForm
-              className="w-full lg:w-[350px] xl:w-[380px] shrink-0 space-y-3 bg-card border rounded-xl p-4 shadow-2xs lg:sticky lg:top-0 self-start"
+              className="w-full lg:w-[280px] xl:w-[290px] shrink-0 space-y-2.5 lg:sticky lg:top-0 self-start"
               leadInfo={leadInfo}
               contactId={contactId}
               onContactChange={handleContactChange}
@@ -516,9 +612,6 @@ export function BookingTestCreateScreen() {
               childSelectOptions={childSelectOptions}
               onAddNewContact={() => setIsAddContactModalOpen(true)}
               onAddNewChild={() => setIsAddChildModalOpen(true)}
-              school={school}
-              onSchoolChange={setSchool}
-              schoolSelectOptions={schoolSelectOptions}
               program={program}
               onProgramChange={handleProgramChange}
               programOptions={programOptions}
@@ -530,37 +623,10 @@ export function BookingTestCreateScreen() {
             />
 
             {/* CỘT PHẢI: LỊCH ĐÁNH GIÁ VÀ NHÂN SỰ TRỰC CA */}
-            {!school ? (
-              <div className="flex-1 min-w-0 flex flex-col items-center justify-center rounded-xl border border-dashed bg-card/60 p-8 min-h-[460px] text-center shadow-2xs">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-3.5 shadow-2xs">
-                  <Building2 className="h-7 w-7" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">
-                  Chưa chọn Trường / Cơ sở
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-md mt-1.5 leading-relaxed">
-                  Lịch kiểm tra và danh sách giáo viên trực ca được quản lý theo từng cơ sở cụ thể. Vui lòng chọn <span className="font-semibold text-foreground">Trường / Cơ sở</span> ở cột bên trái để hệ thống tải lịch đánh giá và phân bổ nhân sự trực ca.
-                </p>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2 max-w-lg">
-                  {schoolSelectOptions.map((opt) => (
-                    <Button
-                      key={opt.value}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSchool(opt.value)}
-                      className="text-xs h-8 gap-1.5 cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-colors"
-                    >
-                      <Building2 className="h-3.5 w-3.5 opacity-70" />
-                      <span>{opt.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ) : !program ? (
-              <div className="flex-1 min-w-0 flex flex-col items-center justify-center rounded-xl border border-dashed bg-card/60 p-8 min-h-[460px] text-center shadow-2xs">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-3.5 shadow-2xs">
-                  <BookOpen className="h-7 w-7" />
+            {!program ? (
+              <div className="flex-1 min-w-0 flex flex-col items-center justify-center rounded-lg border border-dashed bg-background p-8 min-h-[460px] text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-3">
+                  <BookOpen className="h-6 w-6" />
                 </div>
                 <h3 className="text-sm font-bold text-foreground">
                   Chưa chọn Chương trình học
@@ -585,82 +651,32 @@ export function BookingTestCreateScreen() {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 min-w-0 flex flex-col space-y-3">
-                {priorityMode === 'slot_first' ? (
-                  <>
-                    {/* CHẾ ĐỘ 1: KHUNG GIỜ Ở TRÊN ➔ GIÁO VIÊN Ở DƯỚI */}
-                    <BookingTestCreateScheduleSection
-                      mode="slot_first"
-                      testDate={testDate}
-                      onTestDateChange={setTestDate}
-                      selectedSlot={selectedSlot}
-                      onSlotChange={handleSlotSelection}
-                      dateOptions={dateOptions}
-                      dailySlotsSummary={dailySlotsSummary}
-                      selectedTeacher={teacher}
-                      teacherSlotConflicts={teacherSlotConflicts}
-                    />
+              <div className="flex-1 min-w-0 flex flex-col space-y-2.5">
+                {/* 1. LỰA CHỌN NGÀY ĐÁNH GIÁ & KHUNG GIỜ TEST */}
+                <BookingTestCreateScheduleSection
+                  mode="slot_first"
+                  testDate={testDate}
+                  onTestDateChange={setTestDate}
+                  selectedSlot={selectedSlot}
+                  onSlotChange={handleSlotSelection}
+                  dateOptions={dateOptions}
+                  dailySlotsSummary={dailySlotsSummary}
+                  selectedTeacher={teacher}
+                  teacherSlotConflicts={teacherSlotConflicts}
+                />
 
-                    {/* Nút đổi nổi ở giữa (Floating Swap Button) */}
-                    <BookingTestPrioritySwapDivider
-                      priorityMode={priorityMode}
-                      onToggle={handleTogglePriorityMode}
-                    />
-
-                    <BookingTestCreateStaffSection
-                      mode="slot_first"
-                      selectedSlot={selectedSlot}
-                      teacher={teacher}
-                      onTeacherChange={setTeacher}
-                      currentSlotStaffList={currentSlotStaffList}
-                      dayStaffList={dayStaffList}
-                    />
-                  </>
-                ) : (
-                  <>
-                    {/* CHẾ ĐỘ 2: GIÁO VIÊN Ở TRÊN ➔ KHUNG GIỜ Ở DƯỚI */}
-                    <BookingTestCreateStaffSection
-                      mode="teacher_first"
-                      selectedSlot={selectedSlot}
-                      teacher={teacher}
-                      onTeacherChange={(newTeacher) => {
-                        setTeacher(newTeacher)
-                        if (newTeacher) {
-                          const teacherItem = dayStaffList.find(
-                            (s) => s.employee.name.toLowerCase() === newTeacher.toLowerCase()
-                          )
-                          if (teacherItem && teacherItem.conflictSlots[selectedSlot]) {
-                            const allSlots = dailySlotsSummary.map((s) => s.slot)
-                            const firstFreeSlot = allSlots.find((slot) => !teacherItem.conflictSlots[slot])
-                            if (firstFreeSlot) {
-                              setSelectedSlot(firstFreeSlot)
-                            }
-                          }
-                        }
-                      }}
-                      currentSlotStaffList={currentSlotStaffList}
-                      dayStaffList={dayStaffList}
-                    />
-
-                    {/* Nút đổi nổi ở giữa (Floating Swap Button) */}
-                    <BookingTestPrioritySwapDivider
-                      priorityMode={priorityMode}
-                      onToggle={handleTogglePriorityMode}
-                    />
-
-                    <BookingTestCreateScheduleSection
-                      mode="teacher_first"
-                      testDate={testDate}
-                      onTestDateChange={setTestDate}
-                      selectedSlot={selectedSlot}
-                      onSlotChange={handleSlotSelection}
-                      dateOptions={dateOptions}
-                      dailySlotsSummary={dailySlotsSummary}
-                      selectedTeacher={teacher}
-                      teacherSlotConflicts={teacherSlotConflicts}
-                    />
-                  </>
-                )}
+                {/* 2. PHỤ TRÁCH CA ĐÃ CHỌN (KÈM BỘ CHỌN TRUNG TÂM Ở HEADER) */}
+                <BookingTestCreateStaffSection
+                  mode="slot_first"
+                  selectedSlot={selectedSlot}
+                  teacher={teacher}
+                  onTeacherChange={setTeacher}
+                  currentSlotStaffList={currentSlotStaffList}
+                  dayStaffList={dayStaffList}
+                  school={school}
+                  onSchoolChange={setSchool}
+                  schoolSelectOptions={schoolSelectOptions}
+                />
               </div>
             )}
           </div>

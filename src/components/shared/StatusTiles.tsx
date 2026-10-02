@@ -8,8 +8,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { getStatusColors, resolveStatusSemantic, type StatusSemantic } from '@/lib/statusColors'
+import {
+  getStatusColors,
+  resolveStatusSemantic,
+  SEMANTIC_COUNT_BG,
+  type StatusSemantic,
+} from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
+
+export { SEMANTIC_COUNT_BG }
 
 export interface StatusTile<T extends string> {
   id: T
@@ -31,16 +38,6 @@ export interface StatusTilesProps<T extends string> {
   showDot?: boolean
   hideDot?: boolean
   coloredCount?: boolean
-}
-
-const SEMANTIC_COUNT_BG: Record<StatusSemantic, string> = {
-  success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300',
-  info: 'bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300',
-  warning: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300',
-  error: 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300',
-  neutral: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-  purple: 'bg-violet-100 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300',
-  completed: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300',
 }
 
 /* ── Single tile button ───────────────────────────────────── */

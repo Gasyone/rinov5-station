@@ -86,71 +86,64 @@ export function ClassesSessionAttendanceRow({
     >
       {/* Avatar + Name + Level */}
       <td className={cn(
-        "py-2 px-2.5",
-        (isTestSession && !isMath) ? "w-[180px]" : "w-[35%] min-w-[280px]",
+        "py-1.5 px-2",
+        (isTestSession && !isMath) ? "w-[180px]" : "w-[28%] min-w-[220px]",
         hasLeave && "border-l-4 border-l-amber-500 pl-1.5"
       )}>
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <div className="relative shrink-0">
               <div className={cn(
-                "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold",
+                "h-7 w-7 rounded-full flex items-center justify-center text-[10.5px] font-bold shrink-0",
                 getAvatarColor(student.id)
               )}>
                 {getInitials(nameParts.hasEnglishName ? nameParts.englishName! : student.name)}
               </div>
             </div>
-            <div className="min-w-0 flex flex-col justify-center">
-              {/* Dòng 1: Tên tiếng Anh (nếu có) */}
-              {nameParts.hasEnglishName && (
-                <div className="flex items-center gap-1.5 min-w-0 leading-tight mb-0.5">
-                  <span className="font-bold text-foreground text-xs truncate">
-                    {nameParts.englishName}
-                  </span>
-                  {isExcused && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
-                  )}
-                </div>
-              )}
-
-              {/* Dòng 2: Tên tiếng Việt */}
+            <div className="min-w-0 flex flex-col justify-center leading-tight">
+              {/* Dòng 1: Tên tiếng Anh */}
               <div className="flex items-center gap-1.5 min-w-0 leading-tight">
-                <span className={cn(
-                  "text-xs truncate",
-                  nameParts.hasEnglishName ? "text-muted-foreground font-normal" : "text-foreground font-bold"
-                )}>
-                  {nameParts.vietnameseName}
+                <span className="font-bold text-foreground text-xs truncate">
+                  {nameParts.hasEnglishName ? nameParts.englishName : nameParts.vietnameseName}
                 </span>
-
-                {!nameParts.hasEnglishName && isExcused && (
+                {isExcused && (
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" title="Có đơn xin phép" />
-                )}
-
-                {/* Nhãn Học thử (trial) */}
-                {student.status === 'trial' && (
-                  <StatusBadge
-                    status="trial"
-                    label="Học thử"
-                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
-                  />
-                )}
-
-                {/* Nhãn Mới (new) */}
-                {student.status === 'new' && (
-                  <StatusBadge
-                    status="new"
-                    label="Mới"
-                    className="rounded text-[10px] px-1.5 py-0 font-normal shrink-0 leading-tight"
-                  />
                 )}
               </div>
 
-              {/* Trình độ (nếu có) - Không viền, không nền, để dưới tên học viên */}
-              {student.level && (
-                <div className="mt-0.5 leading-tight">
-                  <span className="text-[11px] text-muted-foreground font-normal">
-                    {student.level}
+              {/* Dòng 2: Tên tiếng Việt */}
+              {nameParts.hasEnglishName && (
+                <div className="flex items-center gap-1.5 min-w-0 leading-tight mt-0.5">
+                  <span className="text-[11px] text-muted-foreground truncate font-normal">
+                    {nameParts.vietnameseName}
                   </span>
+                </div>
+              )}
+
+              {/* Dòng 3: Trình độ học viên + Nhãn Mới / Học thử cùng dòng */}
+              {(student.level || student.status === 'new' || student.status === 'trial') && (
+                <div className="flex items-center gap-1.5 mt-0.5 leading-none">
+                  {student.level && (
+                    <span className="text-[10px] text-muted-foreground font-normal">
+                      {student.level}
+                    </span>
+                  )}
+
+                  {student.status === 'trial' && (
+                    <StatusBadge
+                      status="trial"
+                      label="Học thử"
+                      className="rounded text-[9.5px] px-1 py-0 font-normal shrink-0 leading-none h-3.5"
+                    />
+                  )}
+
+                  {student.status === 'new' && (
+                    <StatusBadge
+                      status="new"
+                      label="Mới"
+                      className="rounded text-[9.5px] px-1 py-0 font-normal shrink-0 leading-none h-3.5"
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -160,11 +153,11 @@ export function ClassesSessionAttendanceRow({
 
       {/* Attendance buttons column */}
       <td className={cn(
-        "py-2 px-2.5",
-        (isTestSession && !isMath) ? "w-[85px] text-center" : "w-[15%] min-w-[110px]"
+        "py-1.5 px-2",
+        (isTestSession && !isMath) ? "w-[85px] text-center" : "w-[14%] min-w-[100px]"
       )}>
-        <div className="flex flex-col items-center gap-1.5 justify-center">
-          <div className="inline-flex items-center gap-2">
+        <div className="flex flex-col items-center justify-center">
+          <div className="inline-flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 {(() => {
@@ -174,9 +167,9 @@ export function ClassesSessionAttendanceRow({
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-xs h-6 px-2.5 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Check className="h-3 w-3 stroke-[3px]" />
+                        <Check className="h-2.5 w-2.5 stroke-[3px]" />
                         <span>Đã đến</span>
                       </Button>
                     )
@@ -187,31 +180,19 @@ export function ClassesSessionAttendanceRow({
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs h-6 px-2.5 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span>Đến muộn</span>
                       </Button>
                     )
                   }
-                  if (att === 'absent') {
+                  if (att === 'absent' || att === 'excused') {
                     return (
                       <Button
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-xs h-6 px-2.5 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span>Vắng</span>
-                      </Button>
-                    )
-                  }
-                  if (att === 'excused') {
-                    return (
-                      <Button
-                        type="button"
-                        size="xs"
-                        disabled={isAttendanceDisabled}
-                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-xs h-6 px-2.5 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span>Vắng</span>
                       </Button>
@@ -222,7 +203,7 @@ export function ClassesSessionAttendanceRow({
                       type="button"
                       size="xs"
                       disabled={isAttendanceDisabled}
-                      className="bg-zinc-50 border border-zinc-200 text-zinc-400 hover:bg-zinc-100 font-semibold text-xs h-6 px-2.5 rounded-md cursor-pointer transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-zinc-50 border border-zinc-200 text-zinc-400 hover:bg-zinc-100 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span>+ Điểm danh</span>
                     </Button>
@@ -259,10 +240,10 @@ export function ClassesSessionAttendanceRow({
           {isExcused && (
             <button
               onClick={() => handleOpenLeaveDialog(student)}
-              className="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-1 shrink-0"
+              className="text-[10px] font-semibold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
             >
               <span>Nghỉ phép</span>
-              <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+              <ExternalLink className="h-2 w-2 shrink-0" />
             </button>
           )}
         </div>
@@ -275,7 +256,7 @@ export function ClassesSessionAttendanceRow({
             const skScore = testScores[student.id]?.[sk]
             
             return (
-              <td key={sk} className="py-2 px-2.5 text-center w-[68px]">
+              <td key={sk} className="py-1.5 px-2 text-center w-[68px]">
                 {skScore?.status === 'graded' && skScore.score !== null ? (
                   sk === 'Speaking' ? (
                     <button
@@ -285,7 +266,7 @@ export function ClassesSessionAttendanceRow({
                         if (isScoreDisabled) return
                         onOpenTestScoreDialog?.(student.id, sk)
                       }}
-                      className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
                       title="Chấm điểm / Đánh giá kỹ năng Nói"
                     >
                       <span>{skScore.score}/10</span>
@@ -302,7 +283,7 @@ export function ClassesSessionAttendanceRow({
                         }
                         toast.info(`Đang mở bài làm ${sk} của học viên ${student.name} trong tab mới`)
                       }}
-                      className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
                       title={`Mở tab xem chi tiết bài thi ${sk} của học viên ${student.name}`}
                     >
                       <span>{skScore.score}/10</span>
@@ -316,7 +297,7 @@ export function ClassesSessionAttendanceRow({
                       size="xs"
                       disabled={isScoreDisabled}
                       onClick={() => onOpenTestScoreDialog?.(student.id, sk)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs uppercase h-5 px-1.5 rounded-md border-none cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] uppercase h-5 px-1.5 rounded-md border-none cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Score
                     </Button>
@@ -331,7 +312,7 @@ export function ClassesSessionAttendanceRow({
                         }
                         toast.info(`Đang mở bài thi ${sk} của học viên ${student.name} trong tab mới`)
                       }}
-                      className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
+                      className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-[11px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
                       title={`Mở tab làm bài thi ${sk}`}
                     >
                       <span>Score</span>
@@ -339,7 +320,7 @@ export function ClassesSessionAttendanceRow({
                     </button>
                   )
                 ) : (
-                  <span className="text-zinc-400 dark:text-zinc-500 font-bold text-xs uppercase select-none tracking-wide">
+                  <span className="text-zinc-400 dark:text-zinc-500 font-bold text-[11px] uppercase select-none tracking-wide">
                     Not Start
                   </span>
                 )}
@@ -348,13 +329,13 @@ export function ClassesSessionAttendanceRow({
           })}
           
           {/* Overall Score */}
-          <td className="py-2 px-2.5 text-center w-[60px]">
+          <td className="py-1.5 px-2 text-center w-[60px]">
             {(() => {
               const skills = ['Listening', 'Reading', 'Writing', 'Speaking']
               const gradedSkills = skills.map(sk => testScores[student.id]?.[sk]).filter(s => s?.status === 'graded' && s.score !== null)
               
               if (gradedSkills.length === 0) {
-                return <span className="text-zinc-300 text-xs font-mono font-bold">- -</span>
+                return <span className="text-zinc-300 text-[11px] font-mono font-bold">- -</span>
               }
               
               const sum = gradedSkills.reduce((acc, curr) => acc + (curr.score ?? 0), 0)
@@ -362,7 +343,7 @@ export function ClassesSessionAttendanceRow({
               const rounded = Math.round(avg * 10) / 10
               
               return (
-                <span className="font-extrabold text-xs text-foreground font-mono">
+                <span className="font-extrabold text-[11px] text-foreground font-mono">
                   {rounded}/10
                 </span>
               )
@@ -372,26 +353,26 @@ export function ClassesSessionAttendanceRow({
       ) : (
         <>
           {/* Homework link / KTĐK score / Mini project link */}
-          <td className="py-2.5 px-3 w-[15%] min-w-[100px]">
+          <td className="py-1.5 px-2 w-[13%] min-w-[90px]">
             {isProjectSession ? (
               <a
                 href={projectUrl || 'https://scratch.mit.edu/projects/612048882'}
                 target="_blank"
                 rel="noreferrer"
-                className="text-primary hover:underline text-xs font-semibold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400"
+                className="text-primary hover:underline text-[11px] font-semibold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400"
                 onClick={(e) => {
                   e.stopPropagation()
                   toast.info(`Đang mở bài mini project của học viên ${student.name}`)
                 }}
                 title="Mở bài mini project"
               >
-                <ExternalLink className="h-3 w-3 shrink-0" />
+                <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                 <span>Project: Link</span>
               </a>
             ) : isTestSession && isMath ? (
               <button
                 type="button"
-                className="text-primary hover:underline text-xs font-extrabold inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer font-mono"
+                className="text-primary hover:underline text-[11px] font-extrabold inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer font-mono"
                 onClick={() => {
                   if (onOpenTestScoreDialog) {
                     onOpenTestScoreDialog(student.id, 'KTĐK')
@@ -408,77 +389,77 @@ export function ClassesSessionAttendanceRow({
             ) : hwLink ? (
               <a
                 href={hwLink}
-                className="text-primary hover:underline text-xs font-medium inline-flex items-center gap-1"
+                className="text-primary hover:underline text-[11px] font-medium inline-flex items-center gap-1"
                 onClick={(e) => {
                   e.preventDefault()
                   toast.info(`Mở bài tập về nhà của học viên ${student.name}`)
                 }}
               >
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-2.5 w-2.5" />
                 BT1 - 6/6
               </a>
             ) : (
-              <span className="text-zinc-300 text-xs">—</span>
+              <span className="text-zinc-300 text-[11px]">—</span>
             )}
           </td>
 
           {/* Feedback column (always show comments) */}
-          <td className="py-2.5 px-3 w-[35%] min-w-[300px]">
+          <td className="py-1.5 px-2 w-[45%] min-w-[280px]">
             {(() => {
               const isCommentDisabled = isSessionInactive || sessionStatus === 'upcoming'
               
               if (isTestSession && isMath) {
                 return fb ? (
-                  <div className="flex flex-col min-w-0 w-full">
-                    <div className="flex items-center justify-between gap-2 mb-1.5 w-full">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">Nhận xét bài kiểm tra</span>
+                  <div className="flex flex-col min-w-0 w-full gap-0.5">
+                    <div className="flex items-center justify-between gap-1.5 w-full">
+                      <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">Nhận xét bài kiểm tra</span>
                       <Button
                         variant="ghost"
                         size="icon"
                         disabled={isCommentDisabled}
-                        className="h-6 w-6 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setIsBulkFeedbackOpen(true)}
-                        title="Nhận xét học viên"
-                      >
-                        <MessageSquarePlus className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-normal line-clamp-3 w-full" title={fb}>
-                      {fb}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col min-w-0 w-full">
-                    <div className="flex items-center justify-between gap-2 mb-1.5 w-full">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">Nhận xét bài kiểm tra</span>
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        disabled={isCommentDisabled}
-                        className="h-6 px-2 rounded-md bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-5 w-5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => setIsBulkFeedbackOpen(true)}
                         title="Nhận xét học viên"
                       >
                         <MessageSquarePlus className="h-3 w-3" />
-                        <span>Nhận xét</span>
                       </Button>
                     </div>
-                    <span className="text-zinc-400 dark:text-zinc-600 italic text-xs">Chưa nhận xét</span>
+                    <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
+                      {fb}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[10.5px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">KTĐK:</span>
+                      <span className="text-zinc-400 dark:text-zinc-500 italic text-[10.5px] truncate">Chưa nhận xét</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      disabled={isCommentDisabled}
+                      className="h-5 px-1.5 rounded-md bg-amber-50/80 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-[10.5px] cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setIsBulkFeedbackOpen(true)}
+                      title="Nhận xét học viên"
+                    >
+                      <MessageSquarePlus className="h-2.5 w-2.5" />
+                      <span>Nhận xét</span>
+                    </Button>
                   </div>
                 )
               }
 
               return fb ? (
-                <div className="flex flex-col min-w-0 w-full">
-                  <div className="flex items-center justify-between gap-2 mb-1.5 w-full">
+                <div className="flex flex-col min-w-0 w-full gap-0.5">
+                  <div className="flex items-center justify-between gap-1.5 w-full">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground shrink-0">Thái độ học tập:</span>
+                      <span className="text-[11px] font-medium text-muted-foreground shrink-0">Thái độ:</span>
                       <div className="flex items-center gap-0.5 text-amber-400">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
                             className={cn(
-                              "h-4 w-4",
+                              "h-3 w-3",
                               i < rating ? "fill-amber-400 text-amber-400" : "text-zinc-200 dark:text-zinc-700"
                             )}
                           />
@@ -489,44 +470,42 @@ export function ClassesSessionAttendanceRow({
                       variant="ghost"
                       size="icon"
                       disabled={isCommentDisabled}
-                      className="h-6 w-6 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={() => setIsBulkFeedbackOpen(true)}
-                      title="Nhận xét hàng loạt"
-                    >
-                      <MessageSquarePlus className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-normal line-clamp-3 w-full" title={fb}>
-                    {fb}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col min-w-0 w-full">
-                  <div className="flex items-center justify-between gap-2 mb-1.5 w-full">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground shrink-0">Thái độ học tập:</span>
-                      <div className="flex items-center gap-0.5 text-zinc-200 dark:text-zinc-700">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-4 w-4 text-zinc-200 dark:text-zinc-800"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      disabled={isCommentDisabled}
-                      className="h-6 px-2 rounded-md bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-5 w-5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => setIsBulkFeedbackOpen(true)}
                       title="Nhận xét học viên"
                     >
                       <MessageSquarePlus className="h-3 w-3" />
-                      <span>Nhận xét</span>
                     </Button>
                   </div>
-                  <span className="text-zinc-400 dark:text-zinc-600 italic text-xs">Chưa nhận xét</span>
+                  <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
+                    {fb}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[11px] font-medium text-muted-foreground shrink-0">Thái độ:</span>
+                    <div className="flex items-center gap-0.5 text-zinc-200 dark:text-zinc-700 shrink-0">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className="h-3 w-3 text-zinc-200 dark:text-zinc-800"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-zinc-400 dark:text-zinc-500 italic text-[10.5px] truncate ml-1">Chưa nhận xét</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    disabled={isCommentDisabled}
+                    className="h-5 px-1.5 rounded-md bg-amber-50/80 hover:bg-amber-100 border-amber-200 text-amber-700 hover:text-amber-800 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-[10.5px] cursor-pointer shrink-0 transition-all flex items-center gap-1 shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setIsBulkFeedbackOpen(true)}
+                    title="Nhận xét học viên"
+                  >
+                    <MessageSquarePlus className="h-2.5 w-2.5" />
+                    <span>Nhận xét</span>
+                  </Button>
                 </div>
               )
             })()}

@@ -11,10 +11,10 @@ import {
   SubjectSelect,
 } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
-import type { BookingSubject, BookingTest } from '@/mocks/bookingTests'
+import type { BookingTest } from '@/mocks/bookingTests'
 import { BookingTestConditionFilters, type ConditionFilterItem } from './BookingTestConditionFilters'
 import { STATUS_CONFIG } from './bookingTestConstants'
-import { countStatus, getSubjectLabel } from './bookingTestHelpers'
+import { countStatus } from './bookingTestHelpers'
 import type { StatusTileId } from './bookingTestTypes'
 
 interface BookingTestToolbarProps {
@@ -93,7 +93,7 @@ export function BookingTestToolbar({
   })
 
   return (
-    <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-3 lg:px-3">
+    <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-2 lg:px-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <SubjectSelect
@@ -149,6 +149,9 @@ export function BookingTestToolbar({
           activeId={activeStatus}
           onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
           noOverflowCollapse
+          showDot={false}
+          hideDot={true}
+          coloredCount={true}
         />
 
         <BookingTestConditionFilters

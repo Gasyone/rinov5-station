@@ -16,6 +16,7 @@ export interface SimulatedPackage {
   level: string
   subLevel: string
   status: 'active' | 'expired' | 'pending'
+  studentStatus?: string
 }
 
 export type CareTopicStatus = 'completed' | 'overdue' | 'in_progress' | 'pending'

@@ -11,13 +11,13 @@ export interface LessonContent {
 
 export interface ClassSession {
   id: string; classCode: string; className: string; kctName?: string; subject: string; teacher: string;
-  branch: string; schoolRoom: string; level: string; date: string; dateDisplay: string;
+  branch: string; schoolRoom: string; level: string; subLevel?: string; date: string; dateDisplay: string;
   dateBucket: 'past' | 'today' | 'upcoming'; timeLabel: string; endTimeLabel: string;
   statusLabel: string; type: 'class_session' | 'test_session' | 'supplementary' | 'workshop' | 'project' | 'planned' | 'digi_session';
   typeLabel: string; title: string; lessonSubtitle: string;
   lessonNumber?: number | string;
   lessonContent?: LessonContent;
-  totalStudents: number; officialStudents: number; trialStudents: number;
+  totalStudents: number; officialStudents: number; trialStudents: number; makeUpStudents?: number;
   attendedStudents?: number; isRecurring?: boolean;
   substituteTeacher?: string;
   assistantTeacher?: string;
@@ -66,6 +66,8 @@ const CLASSES = [
   { id: 'SA2_TA_014', name: 'Tiếng Anh SA2 Level 3', kctName: 'Tiếng Anh SA2 Level 3', subject: 'Tiếng Anh', level: 'Level 3', schedule: 'T3,T6', time: '17:45-19:15' },
   { id: 'AK_TOAN_021', name: 'Toán tư duy AK Archimedes 5', kctName: 'Toán tư duy AK Archimedes 5', subject: 'Toán tư duy', level: 'Archimedes 5', schedule: 'T6', time: '19:15-21:15' },
   { id: 'STEM_ROBO_003', name: 'STEM Robotics S1', kctName: 'STEM Robotics S1', subject: 'STEM Robotics', level: 'S1', schedule: 'T4', time: '15:30-17:30' },
+  { id: 'AK_TA_WK01', name: 'Tiếng Anh Primary 1', kctName: 'Tiếng Anh Primary 1', subject: 'Tiếng Anh', level: 'Level 1', schedule: 'T7,CN', time: '08:30-10:00' },
+  { id: 'AK_TOAN_WK02', name: 'Toán tư duy Columbus 2', kctName: 'Toán tư duy Columbus 2', subject: 'Toán tư duy', level: 'Columbus 2', schedule: 'T7,CN', time: '09:00-10:30' },
 ]
 
 interface LessonItem {
@@ -472,6 +474,7 @@ export function getMockClassSessions(): ClassSession[] {
       const trialStudents = isTrialClass 
         ? 2 + (seed % 2) 
         : (seed % 3 === 0 ? 0 : seed % 3)
+      const makeUpStudents = seed % 5 === 0 ? 1 : (seed % 7 === 0 ? 2 : 0)
       const attendedStudents = bucket === 'past' && sts !== 'cancelled' ? totalStudents - (seed % 3) : undefined
       const statusLabelMap: Record<string, string> = {
         confirmed: 'Đã xác nhận',
@@ -481,12 +484,12 @@ export function getMockClassSessions(): ClassSession[] {
         rescheduled: 'Đổi ngày',
       }
       
-      const teacher = PICK(['Thu Hà', 'Mỹ Linh', 'Coenrad Redman'], seed)
-      const substituteTeacher = (seed % 7 === 0 && sts !== 'cancelled') ? PICK(['Hương Ly', 'Thanh Bình', 'David John'], seed) : undefined
+      const teacher = PICK(['Thu Hà', 'Mỹ Linh', 'Coenrad Redman', 'Sarah Johnson', 'Thanh Bình', 'Hương Ly'], seed)
+      const substituteTeacher = (seed % 7 === 0 && sts !== 'cancelled') ? PICK(['Hương Ly', 'Thanh Bình', 'David John', 'Quỳnh Trang'], seed) : undefined
       const assistantTeacher = PICK(['Hoàng Nam', 'Lan Anh', 'Minh Trang', 'Đức Anh'], seed + 3)
       const assistantSubstitute = (seed % 9 === 0 && sts !== 'cancelled') ? PICK(['Phương Thảo', 'Gia Huy'], seed + 5) : undefined
 
-      // Guaranteed opening day and substitute teacher in active week
+      // Guaranteed opening day and substitute teacher across branches in active & adjacent weeks
       const getMon = (input: Date) => {
         const date = new Date(input)
         const day = date.getDay()
@@ -495,11 +498,66 @@ export function getMockClassSessions(): ClassSession[] {
         return date
       }
       const curMonday = getMon(today)
+      const tueKey = toDateKey(addDays(curMonday, 1))
       const wedKey = toDateKey(addDays(curMonday, 2))
       const thuKey = toDateKey(addDays(curMonday, 3))
+      const friKey = toDateKey(addDays(curMonday, 4))
+      const satKey = toDateKey(addDays(curMonday, 5))
 
-      const isOpening = (toDateKey(d) === wedKey && cls.id === 'AK_TA_012') || (cls.id === 'SA1_TA_001' && d.getDay() === days[0] && i > 14 && i <= 21)
-      const subTeacher = (toDateKey(d) === thuKey && cls.id === 'SA1_TA_001')
+      const prevWedKey = toDateKey(addDays(curMonday, -5))
+      const prevFriKey = toDateKey(addDays(curMonday, -3))
+      const nextTueKey = toDateKey(addDays(curMonday, 8))
+      const nextWedKey = toDateKey(addDays(curMonday, 9))
+      const nextFriKey = toDateKey(addDays(curMonday, 11))
+      const nextSatKey = toDateKey(addDays(curMonday, 12))
+
+      const dateStr = toDateKey(d)
+
+      // Guaranteed opening day sessions covering all branches throughout the week
+      const isOpening =
+        (dateStr === tueKey && cls.id === 'SA1_KD_000') ||     // RinoEdu Linh Đàm (Tuesday 29/09)
+        (dateStr === tueKey && cls.id === 'AK_TOAN_017') ||    // RinoEdu Smart City (Tuesday 29/09)
+        (dateStr === wedKey && cls.id === 'AK_TA_012') ||      // RinoEdu Nguyễn Tuân (Wednesday 30/09)
+        (dateStr === wedKey && cls.id === 'STEM_ROBO_003') ||  // RinoEdu Linh Đàm (Wednesday 30/09)
+        (dateStr === thuKey && cls.id === 'SA1_TA_001') ||     // RinoEdu Smart City (Thursday 01/10)
+        (dateStr === friKey && cls.id === 'SA2_TA_014') ||     // RinoEdu Linh Đàm (Friday 02/10)
+        (dateStr === friKey && cls.id === 'AK_TOAN_016') ||    // RinoEdu Nguyễn Tuân (Friday 02/10)
+        (dateStr === satKey && cls.id === 'AK_TA_WK01') ||     // RinoEdu Linh Đàm (Saturday 03/10)
+        (dateStr === satKey && cls.id === 'AK_TOAN_WK02') ||   // RinoEdu Smart City (Saturday 03/10)
+        (dateStr === prevWedKey && cls.id === 'AK_TA_012') ||
+        (dateStr === prevFriKey && cls.id === 'AK_TOAN_021') ||
+        (dateStr === nextTueKey && cls.id === 'SA1_KD_000') ||
+        (dateStr === nextWedKey && cls.id === 'STEM_ROBO_003') ||
+        (dateStr === nextFriKey && cls.id === 'SA2_TA_014') ||
+        (dateStr === nextSatKey && cls.id === 'AK_TA_WK01')
+
+      let assignedBranch = PICK(BRANCHES, seed)
+      // Pin branch for guaranteed opening day sessions to ensure multi-branch coverage
+      if ((dateStr === tueKey || dateStr === nextTueKey) && cls.id === 'SA1_KD_000') {
+        assignedBranch = 'RinoEdu Linh Đàm'
+      } else if (dateStr === tueKey && cls.id === 'AK_TOAN_017') {
+        assignedBranch = 'RinoEdu Smart City'
+      } else if ((dateStr === wedKey || dateStr === prevWedKey) && cls.id === 'AK_TA_012') {
+        assignedBranch = 'RinoEdu Nguyễn Tuân'
+      } else if ((dateStr === wedKey || dateStr === nextWedKey) && cls.id === 'STEM_ROBO_003') {
+        assignedBranch = 'RinoEdu Linh Đàm'
+      } else if (dateStr === thuKey && cls.id === 'SA1_TA_001') {
+        assignedBranch = 'RinoEdu Smart City'
+      } else if ((dateStr === friKey || dateStr === nextFriKey) && cls.id === 'SA2_TA_014') {
+        assignedBranch = 'RinoEdu Linh Đàm'
+      } else if ((dateStr === friKey || dateStr === prevFriKey) && (cls.id === 'AK_TOAN_016' || cls.id === 'AK_TOAN_021')) {
+        assignedBranch = 'RinoEdu Nguyễn Tuân'
+      } else if ((dateStr === satKey || dateStr === nextSatKey) && cls.id === 'AK_TA_WK01') {
+        assignedBranch = 'RinoEdu Linh Đàm'
+      } else if (dateStr === satKey && cls.id === 'AK_TOAN_WK02') {
+        assignedBranch = 'RinoEdu Smart City'
+      }
+
+      if (isOpening && sts === 'cancelled') {
+        sts = bucket === 'past' ? 'completed' : 'confirmed'
+      }
+
+      const subTeacher = (dateStr === thuKey && cls.id === 'SA1_TA_001')
         ? 'Thanh Bình'
         : substituteTeacher
 
@@ -507,21 +565,25 @@ export function getMockClassSessions(): ClassSession[] {
       const ratingAverage = ratingCount > 0 ? Number((4.5 + ((seed % 6) * 0.1)).toFixed(1)) : undefined
       const homeworkSubmitted = bucket === 'upcoming' || sts === 'cancelled' ? 0 : Math.max(0, totalStudents - (seed % 5))
 
+      const lessonTitle = lesson.title
+      const lessonSubtitle = lesson.subtitle
+      const lessonNumber = isOpening ? 1 : lesson.sessionNumber
+
       return {
-        id: `CLS-${cls.id}-${toDateKey(d)}`, classCode: cls.id, className: cls.name,
+        id: `CLS-${cls.id}-${dateStr}`, classCode: cls.id, className: cls.name,
         kctName: cls.kctName,
         subject: cls.subject, teacher,
-        branch: PICK(BRANCHES, seed), schoolRoom: PICK(['Phòng 1', 'Phòng 2', 'Phòng 3'], seed),
+        branch: assignedBranch, schoolRoom: PICK(['Phòng 1', 'Phòng 2', 'Phòng 3'], seed),
         level: cls.level,
-        date: toDateKey(d), dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
+        date: dateStr, dateDisplay: `${PAD(d.getDate())}/${PAD(d.getMonth() + 1)}/${d.getFullYear()}`,
         dateBucket: bucket, timeLabel: `${PAD(sh)}:${PAD(sm)}`, endTimeLabel: `${PAD(eh)}:${PAD(em)}`,
         scheduleLabel: cls.schedule, status: sts as ClassSession['status'], statusLabel: statusLabelMap[sts],
         type, typeLabel,
-        title: lesson.title, lessonSubtitle: lesson.subtitle,
-        lessonNumber: lesson.sessionNumber,
+        title: lessonTitle, lessonSubtitle,
+        lessonNumber,
         lessonContent: lesson.content,
         projectUrl: lesson.projectUrl,
-        totalStudents, officialStudents: 8 + (seed % 5), trialStudents,
+        totalStudents, officialStudents: 8 + (seed % 5), trialStudents, makeUpStudents,
         attendedStudents, isRecurring: true, substituteTeacher: subTeacher,
         assistantTeacher, assistantSubstitute,
         isOpeningDay: isOpening || undefined,

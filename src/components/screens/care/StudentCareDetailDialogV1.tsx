@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
-  ShieldAlert,
   X,
   Info,
   Copy,
@@ -20,8 +19,6 @@ import {
   Check,
   Pencil,
   Search,
-  GraduationCap,
-  Receipt,
   ChevronDown,
   ChevronUp,
   History,
@@ -37,7 +34,6 @@ import { stableHash } from './operationsAlertHelpers'
 import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
-import { StudentOrdersTab, getStudentOrders } from './StudentOrdersTab'
 import { StudentDetailDialog } from '../students/detail/StudentDetailDialog'
 import {
   getCareTopicsForStudent,
@@ -65,8 +61,6 @@ export function StudentCareDetailDialogV1({
   version,
   onChangeVersion,
 }: StudentCareDetailDialogV1Props) {
-  const [leftTab, setLeftTab] = useState<'learning' | 'orders'>('learning')
-  const [closedBanners, setClosedBanners] = useState<string[]>([])
   const [csSearchQuery, setCsSearchQuery] = useState('')
 
   const [localStudentId, setLocalStudentId] = useState<string | null>(null)
@@ -93,9 +87,6 @@ export function StudentCareDetailDialogV1({
 
   const handleAssignedCSChange = (newCS: string) => {
     setAssignedCS(newCS)
-    if (student) {
-      student.csStaff = newCS
-    }
     const foundAlert = alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId)
     if (foundAlert) {
       foundAlert.csStaff = newCS
@@ -200,49 +191,7 @@ export function StudentCareDetailDialogV1({
 
 
 
-  // Get active condition triggers that have not been closed as banners
-  const activeConditions = useMemo(() => {
-    if (!student) return []
-    const hash = stableHash(student.studentId)
-    const list: Array<{ code: string; text: string; severity: 'high' | 'medium' | 'low' }> = []
-    
-    if (hash % 3 === 0) {
-      list.push({
-        code: 'COND_LATE',
-        text: 'Học viên đi muộn 2 buổi liên tiếp (Buổi 11, Buổi 12)',
-        severity: 'medium',
-      })
-      list.push({
-        code: 'COND_ATT_LOW',
-        text: 'Tỷ lệ chuyên cần giảm dưới 80% (Hiện tại: 75% trong 30 ngày qua)',
-        severity: 'high',
-      })
-    } else if (hash % 3 === 1) {
-      list.push({
-        code: 'COND_SCORE_LOW',
-        text: 'Điểm kiểm tra định kỳ trung bình dưới 5.0 (Điểm: 4.8 môn Tiếng Anh)',
-        severity: 'high',
-      })
-      list.push({
-        code: 'COND_HW_MISSING',
-        text: 'Không nộp bài tập về nhà 3 buổi liên tiếp (Buổi 15, 16, 17)',
-        severity: 'medium',
-      })
-    } else {
-      list.push({
-        code: 'COND_ABSENT_UNEXCUSED',
-        text: 'Nghỉ học không phép 2 buổi liên tiếp (Buổi 20, 21)',
-        severity: 'high',
-      })
-      list.push({
-        code: 'COND_SESSIONS_LOW',
-        text: 'Số buổi học còn lại của gói học dưới 5 buổi (Còn lại: 3 buổi)',
-        severity: 'medium',
-      })
-    }
-    
-    return list.filter((item) => !closedBanners.includes(item.code))
-  }, [student, closedBanners])
+
 
   const topicsList = useMemo(() => {
     if (!student) return []
@@ -299,39 +248,10 @@ export function StudentCareDetailDialogV1({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[94vw] lg:max-w-[1260px] w-full h-[88vh] max-h-[860px] p-3.5 flex flex-col overflow-hidden bg-background text-foreground border border-border shadow-xl rounded-2xl">
+      <DialogContent className="max-w-[95vw] lg:max-w-[1380px] w-full h-[90vh] max-h-[900px] p-4 flex flex-col overflow-hidden bg-background text-foreground border border-border shadow-2xl rounded-2xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Chi tiết học viên - {student.studentName}</DialogTitle>
         </DialogHeader>
-
-        {/* Dynamic Warning Banners Section */}
-        {activeConditions.length > 0 && (
-          <div className="shrink-0 space-y-1.5 mb-2 select-none">
-            {activeConditions.map((cond) => {
-              return (
-                <div
-                  key={cond.code}
-                  className="flex items-center justify-between gap-3 px-3 py-2 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 rounded-xl text-xs transition-all animate-in fade-in-50 duration-200"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                    <p className="truncate text-xs font-semibold text-foreground">
-                      {cond.text}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setClosedBanners((prev) => [...prev, cond.code])}
-                    className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors shrink-0 cursor-pointer"
-                    title="Đóng cảnh báo"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
 
         <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
           
@@ -403,66 +323,19 @@ export function StudentCareDetailDialogV1({
               </div>
             </div>
 
-            <div className="w-full pt-2.5 flex flex-col">
-              {/* Left Column Navigation Tabs */}
-              <div className="w-full bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-lg flex items-center gap-1 mb-2.5 border border-slate-200/60 dark:border-zinc-700/60 shrink-0 h-9">
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('learning')}
-                  className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
-                    leftTab === 'learning'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
-                  )}
-                >
-                  <GraduationCap className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'learning' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
-                  <span>Học tập</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLeftTab('orders')}
-                  className={cn(
-                    'flex-1 h-7 px-3 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 select-none',
-                    leftTab === 'orders'
-                      ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-2xs border border-slate-200/60 dark:border-zinc-700/60 font-semibold'
-                      : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/40 dark:hover:bg-zinc-700/40 font-medium'
-                  )}
-                >
-                  <Receipt className={cn('h-3.5 w-3.5 shrink-0', leftTab === 'orders' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-zinc-400')} />
-                  <span>Đơn hàng</span>
-                  <span
-                    className={cn(
-                      'inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
-                      leftTab === 'orders'
-                        ? 'bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200'
-                        : 'bg-slate-200/80 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300'
-                    )}
-                  >
-                    {getStudentOrders(student.studentId, student.studentName).length}
-                  </span>
-                </button>
-              </div>
-
-              {leftTab === 'learning' ? (
-                <StudentCareReportTab
-                  studentId={student.studentId}
-                  studentName={student.studentName}
-                  activePackage={activePackage}
-                  packagesList={packagesList}
-                  selectedPackageId={selectedPackageId}
-                  setSelectedPackageId={setSelectedPackageId}
-                  staffInfo={staffInfo}
-                  assignedCS={assignedCS}
-                  onAssignedCSChange={handleAssignedCSChange}
-                  branchName="RinoEdu Nguyễn Tuân"
-                />
-              ) : (
-                <StudentOrdersTab
-                  studentId={student.studentId}
-                  studentName={student.studentName}
-                />
-              )}
+            <div className="w-full pt-1 flex flex-col">
+              <StudentCareReportTab
+                studentId={student.studentId}
+                studentName={student.studentName}
+                activePackage={activePackage}
+                packagesList={packagesList}
+                selectedPackageId={selectedPackageId}
+                setSelectedPackageId={setSelectedPackageId}
+                staffInfo={staffInfo}
+                assignedCS={assignedCS}
+                onAssignedCSChange={handleAssignedCSChange}
+                branchName="RinoEdu Nguyễn Tuân"
+              />
             </div>
           </main>
 

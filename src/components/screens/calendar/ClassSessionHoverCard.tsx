@@ -1,9 +1,10 @@
 'use client'
 
-import type { ReactNode } from 'react'
-import { BookOpen, Clock, Info, MapPin, UserCheck, UserPlus, Users, AlertTriangle, ExternalLink, FolderGit2 } from 'lucide-react'
+import { useMemo, type ReactNode } from 'react'
+import { BookOpen, Clock, Info, MapPin, Users, AlertTriangle, ExternalLink, FolderGit2, GraduationCap, CheckCircle2 } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { AppAvatar } from '@/components/shared'
+import { StaffProfilePopover, getStaffPersonnel } from './StaffProfilePopover'
 import { getStatusBadgeClass } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import type { GenericSessionData } from './SessionHoverCard'
@@ -14,6 +15,9 @@ interface ClassSessionHoverCardProps {
   openDelay?: number
   closeDelay?: number
   side?: 'top' | 'right' | 'bottom' | 'left'
+  hideRoom?: boolean
+  hideStudents?: boolean
+  hideBranch?: boolean
 }
 
 export function ClassSessionHoverCard({
@@ -22,33 +26,136 @@ export function ClassSessionHoverCard({
   openDelay = 150,
   closeDelay = 100,
   side = 'right',
+  hideRoom = false,
+  hideStudents = false,
+  hideBranch = false,
 }: ClassSessionHoverCardProps) {
   const isCancelled = session.status === 'cancelled'
   const isDigi = session.type === 'digi_session'
 
-  // Standardize values for Class Session
-  const title = isDigi ? 'Ca tự học Digi tại trạm' : session.title || session.className || 'Buổi học'
+  // Standardize Lesson Title (Tên Bài học trên đầu, tối đa 2 dòng)
+  const lessonTitle = isDigi
+    ? 'Ca tự học Digi tại trạm'
+    : session.title && session.className && session.title.trim().toLowerCase() !== session.className.trim().toLowerCase()
+    ? session.title
+    : session.lessonSubtitle ||
+      (typeof session.lessonContent === 'string' && session.lessonContent ? session.lessonContent : '') ||
+      session.subtitle ||
+      session.title ||
+      session.className ||
+      'Buổi học'
+
+  // Standardize Class Code
   const classCode = session.classCode
-  const className = session.className || session.subtitle
+
+  // Math vs other subject detection
+  const isMath = Boolean(
+    session.subject?.toLowerCase().includes('toán') ||
+    session.subject?.toLowerCase().includes('math') ||
+    session.className?.toLowerCase().includes('toán') ||
+    session.classCode?.toLowerCase().includes('toan')
+  )
+
+  // Standardize Level Display (Math: Lớp 1, 2, 3...; English/Other: Trình độ • Trình độ phụ)
+  const levelDisplay = useMemo(() => {
+    if (isMath) {
+      const matchNum = (session.level || session.className || '').match(/\d+/)
+      if (matchNum) {
+        return `Lớp ${matchNum[0]}`
+      }
+      return session.level || 'Lớp 1'
+    }
+
+    const mainLevel = session.level || 'Pre-K'
+    let subLevel = session.subLevel
+    if (!subLevel && classCode) {
+      const parts = classCode.split('_')
+      if (parts.length > 1 && parts[0].length <= 4) {
+        subLevel = parts[0]
+      }
+    }
+
+    if (subLevel && subLevel.toLowerCase() !== mainLevel.toLowerCase()) {
+      return `${mainLevel} • ${subLevel}`
+    }
+
+    return mainLevel
+  }, [isMath, session.level, session.className, session.subLevel, classCode])
+
+  // Session Type Detection (Project / Kiểm tra / Buổi thường)
+  const isProjectSession = Boolean(
+    session.type === 'project' ||
+      session.type === 'project_session' ||
+      session.typeLabel?.toLowerCase().includes('project') ||
+      session.typeLabel?.toLowerCase().includes('dự án') ||
+      session.title?.toLowerCase().includes('project') ||
+      session.title?.toLowerCase().includes('dự án') ||
+      session.lessonSubtitle?.toLowerCase().includes('project') ||
+      session.lessonSubtitle?.toLowerCase().includes('dự án')
+  )
+
+  const isTestSession = Boolean(
+    session.type === 'test_session' ||
+      session.type === 'placement_test' ||
+      session.type === 'test' ||
+      session.typeLabel?.toLowerCase().includes('kiểm tra') ||
+      session.typeLabel?.toLowerCase().includes('test') ||
+      session.title?.toLowerCase().includes('kiểm tra') ||
+      session.title?.toLowerCase().includes('unit test') ||
+      session.lessonSubtitle?.toLowerCase().includes('kiểm tra') ||
+      session.lessonSubtitle?.toLowerCase().includes('unit test')
+  )
+
   const kctName = session.kctName
-  const subject = session.subject
-  const level = session.level
-  const room = session.schoolRoom || session.roomName || session.location
-  const branch = session.branch
+  const room = hideRoom ? undefined : (session.schoolRoom || session.roomName || session.location)
+  const branch = hideBranch ? undefined : session.branch
 
   // Time & Duration
-  const timeDisplay = session.timeSlot 
-    ? session.timeSlot 
-    : session.timeLabel && session.endTimeLabel 
-    ? `${session.timeLabel} - ${session.endTimeLabel}` 
+  const timeDisplay = session.timeSlot
+    ? session.timeSlot
+    : session.timeLabel && session.endTimeLabel
+    ? `${session.timeLabel} - ${session.endTimeLabel}`
     : session.timeLabel || 'N/A'
 
   // Teaching Staff
   const primaryTeacher = session.teacher || session.teacherName || session.organizer || session.personLabel
   const subTeacher = session.substituteTeacher
   const taTeacher = session.assistantTeacher || session.taName
+  const subAssistant = session.assistantSubstitute || session.taSubstituteName
 
-  const hasNewStudents = Boolean(session.trialStudents && session.trialStudents > 0)
+  // Headcount calculation (Đưa sĩ số lên trên cùng, góc phải, nếu có thêm thì hiển thị + phía sau, sĩ số ở trước +)
+  const baseStudents = isDigi
+    ? session.totalStudents
+    : session.totalStudents !== undefined
+    ? session.totalStudents
+    : session.studentCount !== undefined
+    ? session.studentCount
+    : session.officialStudents
+  const extraStudents = ((session.trialStudents || 0) + (session.makeUpStudents || 0)) || 0
+  const hasStudents = baseStudents !== undefined
+
+  // Standardize Lesson Content (Nội dung bài học)
+  const lessonContentDisplay = useMemo(() => {
+    if (typeof session.lessonContent === 'string' && session.lessonContent.trim()) {
+      return session.lessonContent.trim()
+    }
+    if (typeof session.lessonContent === 'object' && session.lessonContent) {
+      const c = session.lessonContent
+      if (c.rawText && c.rawText.trim()) return c.rawText.trim()
+      const parts = [c.sentences, c.words, c.phonics].filter(Boolean)
+      if (parts.length > 0) return parts.join(' • ')
+    }
+    if (session.subtitle && session.subtitle.trim().toLowerCase() !== lessonTitle.trim().toLowerCase()) {
+      return session.subtitle.trim()
+    }
+    if (session.lessonSubtitle && session.lessonSubtitle.trim().toLowerCase() !== lessonTitle.trim().toLowerCase()) {
+      return session.lessonSubtitle.trim()
+    }
+    if (session.note && session.note.trim()) {
+      return session.note.trim()
+    }
+    return 'Luyện tập kỹ năng và hoàn thành bài tập trên lớp theo kế hoạch đào tạo.'
+  }, [session, lessonTitle])
 
   // Location formatting: avoid repeating branch if room already contains branch
   let locationDisplay = ''
@@ -69,12 +176,12 @@ export function ClassSessionHoverCard({
         side={side}
         align="start"
         sideOffset={8}
-        className="w-[350px] p-0 overflow-hidden rounded-lg shadow-xl border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
+        className="w-[290px] sm:w-[320px] p-0 overflow-hidden rounded-xl shadow-lg border border-border/80 bg-popover z-50 animate-in fade-in-0 zoom-in-95"
       >
         {/* Top Header Ribbon */}
         <div
           className={cn(
-            'px-3.5 py-2.5 flex items-center justify-between border-b text-xs font-semibold',
+            'px-3 py-1.5 flex items-center justify-between border-b text-[11px] font-semibold gap-2',
             isCancelled
               ? 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'
               : session.isOpeningDay
@@ -89,308 +196,338 @@ export function ClassSessionHoverCard({
           )}
         >
           {/* Time & Slot */}
-          <div className="flex items-center gap-1.5 font-bold">
-            <Clock className="h-3.5 w-3.5 shrink-0" />
+          <div className="flex items-center gap-1.5 font-bold shrink-0">
+            <Clock className="h-3 w-3 shrink-0" />
             <span>{timeDisplay}</span>
           </div>
 
-          {/* Type & Special Status Badges */}
-          <div className="flex items-center gap-1.5">
-            {hasNewStudents && (
+          {/* Sĩ số lên trên cùng, góc phải; Nếu có thêm thì hiển thị + phía sau, sĩ số ở trước + */}
+          <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+            {hasStudents && !hideStudents && (
               <div
-                title="Có học viên mới / học thử trong lớp"
-                className="flex items-center justify-center p-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 shrink-0"
+                className="flex items-center gap-1 text-[11px] font-medium"
+                title={
+                  extraStudents > 0
+                    ? `${baseStudents} học viên (+${extraStudents} học viên mới / học thử / học bù)`
+                    : `${baseStudents} học viên`
+                }
               >
-                <UserPlus className="h-4 w-4 text-amber-700 dark:text-amber-400 shrink-0 stroke-[2.8]" />
-              </div>
-            )}
-            {session.isOpeningDay && (
-              <span className="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700 uppercase tracking-wider border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800">
-                Khai giảng
-              </span>
-            )}
-            {session.typeLabel &&
-              session.type !== 'class_session' &&
-              session.type !== 'project' &&
-              session.typeLabel !== 'Chính thức' &&
-              session.typeLabel !== 'Buổi thường' &&
-              session.typeLabel !== 'Buổi dự án' &&
-              !session.isOpeningDay &&
-              !subTeacher && (
-              <span
-                className={cn(
-                  'inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold',
-                  getStatusBadgeClass(session.type || 'class_session')
+                {session.attendedStudents !== undefined && (
+                  <span title="Buổi học đã hoàn thành điểm danh" className="inline-flex items-center">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  </span>
                 )}
-              >
-                {session.typeLabel}
-              </span>
+                <Users className="h-3 w-3 text-muted-foreground shrink-0" />
+                <span className="text-foreground">
+                  <strong
+                    className={cn(
+                      'font-bold',
+                      isDigi && session.capacity && (session.totalStudents || 0) >= session.capacity
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : 'text-foreground'
+                    )}
+                  >
+                    {isDigi
+                      ? `${session.totalStudents}/${session.capacity || 10}`
+                      : session.attendedStudents !== undefined
+                      ? `${session.attendedStudents}/${baseStudents}`
+                      : baseStudents}
+                  </strong>
+                  {extraStudents > 0 && (
+                    <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                      (+{extraStudents})
+                    </span>
+                  )}
+                  <span className="ml-0.5 text-[10px] text-muted-foreground font-semibold">HV</span>
+                </span>
+                {isDigi && session.capacity && (session.totalStudents || 0) >= session.capacity && (
+                  <span className="text-rose-600 dark:text-rose-400 font-bold text-[10px] ml-0.5 flex items-center gap-0.5">
+                    <AlertTriangle className="h-2.5 w-2.5" />
+                    Hết
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
 
         {/* Content Body */}
-        <div className="p-3.5 space-y-2.5 text-xs">
-          {/* 1. Tên buổi học - Để phẳng, in đậm */}
+        <div className="p-3 space-y-2 text-xs">
+          {/* 1. Tên Bài học trên đầu, tối đa 2 dòng */}
           <div>
-            <h4 className="text-sm font-bold text-foreground leading-snug">
-              {title}
+            <h4
+              className="text-xs sm:text-[13px] font-bold text-foreground leading-snug line-clamp-2"
+              title={lessonTitle}
+            >
+              {lessonTitle}
             </h4>
           </div>
 
-          {/* 2. Bên dưới: Mã lớp và Tên lớp (Chỉ hiển thị cho lớp học, không áp dụng cho Ca tự học Digi) */}
-          {!isDigi && (
-            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-              {classCode && (
-                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-bold text-foreground border border-border/60">
-                  {classCode}
-                </span>
-              )}
-              <span className="font-bold text-xs text-foreground leading-tight">
-                {className}
-              </span>
-            </div>
-          )}
+          {/* 2. Mã lớp ở dưới (Textlink mở tab mới) + Nhãn loại buổi (Project / Kiểm tra) */}
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            {classCode && !isDigi && (
+              <a
+                href={`/app/classes?id=${encodeURIComponent(classCode)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-0.5 font-mono text-[11px] font-normal text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:underline group/classlink shrink-0 cursor-pointer"
+                title={`Mở chi tiết lớp học ${classCode} trong tab mới`}
+              >
+                <span>{classCode}</span>
+                <ExternalLink className="h-2.5 w-2.5 opacity-60 group-hover/classlink:opacity-100 transition-opacity ml-0.5" />
+              </a>
+            )}
 
-          {/* 3. Dòng KCT riêng 1 dòng (Chỉ cho lớp học) */}
-          {!isDigi && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-              <span className="text-muted-foreground font-normal">KCT:</span>
-              <span className="font-semibold text-foreground truncate">
-                {kctName || 'Chương trình tiêu chuẩn'}
+            {session.subject && (
+              <span className="text-[11px] font-normal text-muted-foreground">
+                • {session.subject}
               </span>
-            </div>
-          )}
+            )}
 
-          {/* 4. Dòng Tên môn học - Level (Chỉ cho lớp học) */}
-          {!isDigi && (subject || level) && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-              <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
-              <span className="font-medium text-foreground/90">
-                {subject}
-                {level && (
-                  <>
-                    {' - '}
-                    <span className="font-bold text-emerald-700 dark:text-emerald-400 underline">
-                      {level}
-                    </span>
-                  </>
+            {isProjectSession && (
+              <span
+                className={cn(
+                  'inline-flex items-center rounded border px-1.5 py-0.2 text-[10px] font-bold shrink-0',
+                  getStatusBadgeClass('project')
                 )}
+              >
+                Project
               </span>
+            )}
+
+            {!isProjectSession && isTestSession && (
+              <span
+                className={cn(
+                  'inline-flex items-center rounded border px-1.5 py-0.2 text-[10px] font-bold shrink-0',
+                  getStatusBadgeClass('test_session')
+                )}
+              >
+                Kiểm tra
+              </span>
+            )}
+          </div>
+
+          {/* 3. KCT & Trình độ */}
+          {!isDigi && (
+            <div className="space-y-1.5 text-[11px] text-muted-foreground">
+              {/* 1. KCT (Khung chương trình) */}
+              <div className="flex items-center gap-1.5 truncate" title={`Khung chương trình: ${kctName || session.className || 'Khung chương trình chuẩn'}`}>
+                <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <div className="truncate flex items-center gap-1 min-w-0">
+                  <span className="text-muted-foreground font-medium shrink-0">KCT:</span>
+                  <a
+                    href={`/app/classes?id=${encodeURIComponent(classCode || '')}&tab=syllabus`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-primary hover:underline font-semibold inline-flex items-center gap-0.5 truncate group/kctlink cursor-pointer"
+                    title={`Mở chi tiết Khung chương trình ${kctName || session.className || 'chuẩn'} trong tab mới`}
+                  >
+                    <span className="truncate">{kctName || session.className || 'Khung chương trình chuẩn'}</span>
+                    <ExternalLink className="h-2.5 w-2.5 opacity-60 group-hover/kctlink:opacity-100 transition-opacity ml-0.5 shrink-0" />
+                  </a>
+                </div>
+              </div>
+
+              {/* 2. Trình độ (Toán: Lớp 1, 2, 3...; Tiếng Anh: Trình độ • Trình độ phụ) */}
+              <div className="flex items-center gap-1.5 truncate" title={`Trình độ: ${levelDisplay}`}>
+                <GraduationCap className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                <span className="truncate">
+                  <span className="text-muted-foreground font-medium">Trình độ: </span>
+                  <span className="text-foreground font-semibold">{levelDisplay}</span>
+                </span>
+              </div>
             </div>
           )}
 
-          {/* 5. Phòng & Cơ sở */}
-          {locationDisplay && (
-            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
-              <span className="font-medium text-foreground">{locationDisplay}</span>
-            </div>
-          )}
+          {/* 4. Địa điểm & Nhân sự: Cơ sở, phòng + Tách dòng GV & Trợ giảng */}
+          <div className="border-t border-border/40 pt-1.5 space-y-1.5 text-xs">
+            {locationDisplay && (
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground min-w-0 truncate" title={locationDisplay}>
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                <span className="truncate text-foreground/90 font-medium">{locationDisplay}</span>
+              </div>
+            )}
 
-          {/* 6. Staff Section: Đối với Digi chỉ hiển thị Trợ giảng trực ca, không có GV */}
-          {isDigi ? (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                Trợ giảng trực ca:
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                  <UserCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-                  <span>Trợ giảng:</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <AppAvatar name={taTeacher || session.teacher || 'Nguyễn Thu Hà'} size="xs" />
-                  <span className="font-semibold text-foreground">{taTeacher || session.teacher || 'Nguyễn Thu Hà'}</span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                Đội ngũ giảng dạy & Quản lý:
-              </div>
-
-              {/* Primary Staff / Teacher / Substitute Teacher */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                  <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>GV:</span>
-                </div>
-                {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
-                  <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-2 py-0.5 rounded text-xs">
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                    <span>Chưa gán GV</span>
+            {isDigi ? (
+              /* Ca tự học Digi */
+              <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                <span className="text-muted-foreground font-medium shrink-0">Trực:</span>
+                {subAssistant ? (
+                  <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                    {/* Người cũ bị gạch ngang */}
+                    <StaffProfilePopover person={getStaffPersonnel(taTeacher || session.teacher || 'Thu Hà', 'Trợ giảng')}>
+                      <div className="flex items-center gap-1 min-w-0 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
+                        <AppAvatar name={taTeacher || session.teacher || 'Thu Hà'} size="xs" />
+                        <span className="line-through text-muted-foreground font-normal truncate max-w-[85px]">
+                          {taTeacher || session.teacher || 'Thu Hà'}
+                        </span>
+                      </div>
+                    </StaffProfilePopover>
+                    <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                    {/* Người trực thay */}
+                    <StaffProfilePopover person={getStaffPersonnel(subAssistant, 'Trợ giảng trực thay', true)}>
+                      <div className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity">
+                        <AppAvatar name={subAssistant} size="xs" isSubstitute={true} />
+                        <span className="font-semibold text-foreground truncate max-w-[95px]">
+                          {subAssistant}
+                        </span>
+                        <span className="text-[9.5px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                          Trực thay
+                        </span>
+                      </div>
+                    </StaffProfilePopover>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1.5">
-                    {subTeacher ? (
-                      <div className="flex items-center gap-1.5">
-                        {primaryTeacher && (
-                          <span className="line-through text-muted-foreground">{primaryTeacher}</span>
-                        )}
-                        <AppAvatar name={subTeacher} size="xs" isSubstitute />
-                        <span className="font-semibold text-foreground">{subTeacher}</span>
+                  <StaffProfilePopover person={getStaffPersonnel(taTeacher || session.teacher || 'Thu Hà', 'Trợ giảng')}>
+                    <div className="flex items-center gap-1.5 min-w-0 cursor-pointer hover:opacity-85 transition-opacity">
+                      <AppAvatar name={taTeacher || session.teacher || 'Thu Hà'} size="xs" />
+                      <span className="font-semibold text-foreground truncate max-w-[150px]">
+                        {taTeacher || session.teacher || 'Thu Hà'}
+                      </span>
+                    </div>
+                  </StaffProfilePopover>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* Dòng 1: Giáo viên (GV) */}
+                <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                  <span className="text-muted-foreground font-medium shrink-0">GV:</span>
+                  {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
+                    <span className="text-amber-600 dark:text-amber-400 font-medium text-[10px]">Chưa gán</span>
+                  ) : subTeacher ? (
+                    /* Có dạy thay: Gạch người cũ + Hiển thị người mới */
+                    <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                      <StaffProfilePopover person={getStaffPersonnel(primaryTeacher, 'Giáo viên Tiếng Anh')}>
+                        <div
+                          className="flex items-center gap-1 min-w-0 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+                          title={`Giáo viên phân công: ${primaryTeacher}`}
+                        >
+                          <AppAvatar name={primaryTeacher} size="xs" />
+                          <span className="line-through text-muted-foreground font-normal truncate max-w-[85px]">
+                            {primaryTeacher}
+                          </span>
+                        </div>
+                      </StaffProfilePopover>
+                      <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                      <StaffProfilePopover person={getStaffPersonnel(subTeacher, 'Giáo viên dạy thay', true)}>
+                        <div
+                          className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity"
+                          title={`Dạy thay: ${subTeacher}`}
+                        >
+                          <AppAvatar name={subTeacher} size="xs" isSubstitute={true} />
+                          <span className="font-semibold text-foreground truncate max-w-[95px]">
+                            {subTeacher}
+                          </span>
+                          <span className="text-[9.5px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                            Dạy thay
+                          </span>
+                        </div>
+                      </StaffProfilePopover>
+                    </div>
+                  ) : (
+                    /* Giáo viên chính bình thường */
+                    <StaffProfilePopover person={getStaffPersonnel(primaryTeacher, 'Giáo viên Tiếng Anh')}>
+                      <div className="flex items-center gap-1.5 min-w-0 cursor-pointer hover:opacity-85 transition-opacity">
+                        <AppAvatar name={primaryTeacher} size="xs" />
+                        <span className="font-semibold text-foreground truncate max-w-[150px]" title={primaryTeacher}>
+                          {primaryTeacher}
+                        </span>
+                      </div>
+                    </StaffProfilePopover>
+                  )}
+                </div>
+
+                {/* Dòng 2: Trợ giảng (TG) - Tách dòng riêng */}
+                {taTeacher && (
+                  <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                    <span className="text-muted-foreground font-medium shrink-0">TG:</span>
+                    {subAssistant ? (
+                      /* Có trợ giảng thay: Gạch người cũ + Hiển thị người mới */
+                      <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                        <StaffProfilePopover person={getStaffPersonnel(taTeacher, 'Trợ giảng')}>
+                          <div
+                            className="flex items-center gap-1 min-w-0 opacity-60 hover:opacity-100 transition-opacity cursor-pointer"
+                            title={`Trợ giảng phân công: ${taTeacher}`}
+                          >
+                            <AppAvatar name={taTeacher} size="xs" />
+                            <span className="line-through text-muted-foreground font-normal truncate max-w-[85px]">
+                              {taTeacher}
+                            </span>
+                          </div>
+                        </StaffProfilePopover>
+                        <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                        <StaffProfilePopover person={getStaffPersonnel(subAssistant, 'Trợ giảng trực thay', true)}>
+                          <div
+                            className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity"
+                            title={`Trực thay: ${subAssistant}`}
+                          >
+                            <AppAvatar name={subAssistant} size="xs" isSubstitute={true} />
+                            <span className="font-semibold text-foreground truncate max-w-[95px]">
+                              {subAssistant}
+                            </span>
+                            <span className="text-[9.5px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                              Trực thay
+                            </span>
+                          </div>
+                        </StaffProfilePopover>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1">
-                        <AppAvatar name={primaryTeacher} size="xs" />
-                        <span className="font-semibold text-foreground">{primaryTeacher}</span>
-                      </div>
+                      /* Trợ giảng chính bình thường */
+                      <StaffProfilePopover person={getStaffPersonnel(taTeacher, 'Trợ giảng')}>
+                        <div className="flex items-center gap-1.5 min-w-0 cursor-pointer hover:opacity-85 transition-opacity">
+                          <AppAvatar name={taTeacher} size="xs" />
+                          <span className="font-semibold text-foreground truncate max-w-[150px]" title={taTeacher}>
+                            {taTeacher}
+                          </span>
+                        </div>
+                      </StaffProfilePopover>
                     )}
                   </div>
                 )}
-              </div>
+              </>
+            )}
+          </div>
 
-              {/* Teaching Assistant */}
-              {taTeacher && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-                    <UserCheck className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-                    <span>TG:</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <AppAvatar name={taTeacher} size="xs" />
-                    <span className="font-semibold text-foreground">{taTeacher}</span>
-                  </div>
-                </div>
-              )}
+          {/* 5. Nội dung bài học */}
+          {!isDigi && lessonContentDisplay && (
+            <div className="border-t border-border/40 pt-1.5 text-[11px] text-muted-foreground">
+              <p className="line-clamp-2 leading-relaxed break-words" title={lessonContentDisplay}>
+                <span className="font-semibold text-foreground/80 not-italic">Nội dung: </span>
+                <span className="italic">{lessonContentDisplay}</span>
+              </p>
             </div>
           )}
 
-          {/* 7. Students & Attendance */}
-          {session.totalStudents !== undefined && (
-            <div className="flex items-center justify-between border-t border-border/40 pt-2 text-xs">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Users className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span>
-                  Sĩ số:{' '}
-                  <strong className={cn("font-bold", isDigi && session.capacity && session.totalStudents >= session.capacity ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
-                    {isDigi
-                      ? `${session.totalStudents}/${session.capacity || 10} chỗ`
-                      : session.attendedStudents !== undefined
-                      ? `${session.attendedStudents}/${session.totalStudents} học viên`
-                      : `${session.totalStudents} học viên`}
-                  </strong>
-                  {!isDigi && session.trialStudents && session.trialStudents > 0 ? (
-                    <span className="text-amber-600 dark:text-amber-400 font-medium inline-flex items-center gap-0.5 ml-1">
-                      <UserPlus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-500 shrink-0 stroke-[2.2]" />
-                      ({session.trialStudents} học thử)
-                    </span>
-                  ) : null}
-                </span>
-              </div>
-
-              {isDigi && session.capacity && session.totalStudents >= session.capacity ? (
-                <span className="font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-                  Hết chỗ
-                </span>
-              ) : session.attendedStudents !== undefined ? (
-                <span className="font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                  Đã điểm danh
-                </span>
-              ) : null}
-            </div>
-          )}
-
-          {/* 8. Nội dung bài học (ở dưới sĩ số) - Chỉ cho lớp học */}
-          {!isDigi && (session.lessonContent || session.lessonSubtitle || session.note || session.type === 'project') && (
-            <div className="border-t border-border/40 pt-2.5 space-y-1.5 text-xs">
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-                <div className="flex items-center gap-1.5">
-                  <span>Nội dung buổi học</span>
-                  {(session.type === 'project' || session.typeLabel === 'Buổi dự án') && (
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal',
-                        getStatusBadgeClass('project')
-                      )}
-                    >
-                      Buổi dự án
-                    </span>
-                  )}
-                </div>
-                {session.lessonNumber && (
-                  <span className="font-semibold text-xs text-primary/80 lowercase">
-                    (Buổi {session.lessonNumber})
-                  </span>
-                )}
-              </div>
-              <div className="rounded-md bg-muted/40 p-2.5 text-xs text-foreground space-y-1.5 border border-border/40">
-                {session.lessonSubtitle && (
-                  <p className="font-medium text-foreground/90 italic pb-0.5 border-b border-border/30">
-                    {session.lessonSubtitle}
-                  </p>
-                )}
-                {session.lessonContent ? (
-                  typeof session.lessonContent === 'string' ? (
-                    <p className="whitespace-pre-line leading-relaxed">{session.lessonContent}</p>
-                  ) : session.lessonContent.rawText ? (
-                    <p className="whitespace-pre-line leading-relaxed">{session.lessonContent.rawText}</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {session.lessonContent.words && (
-                        <div className="leading-relaxed">
-                          <span className="font-bold text-foreground">• Words: </span>
-                          <span className="text-muted-foreground">{session.lessonContent.words}</span>
-                        </div>
-                      )}
-                      {session.lessonContent.sentences && (
-                        <div className="leading-relaxed">
-                          <span className="font-bold text-foreground">• Sentences: </span>
-                          <span className="text-muted-foreground">{session.lessonContent.sentences}</span>
-                        </div>
-                      )}
-                      {session.lessonContent.phonics && (
-                        <div className="leading-relaxed">
-                          <span className="font-bold text-foreground">• Phonics: </span>
-                          <span className="text-muted-foreground">{session.lessonContent.phonics}</span>
-                        </div>
-                      )}
-                      {session.lessonContent.sections?.map((sec, idx) => (
-                        <div key={idx} className="leading-relaxed">
-                          <span className="font-bold text-foreground">• {sec.label}: </span>
-                          <span className="text-muted-foreground">{sec.text}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )
-                ) : (
-                  !session.lessonSubtitle && session.note && (
-                    <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
-                      {session.note}
-                    </p>
-                  )
-                )}
-
-                {session.type === 'project' && session.projectUrl && (
-                  <div className="mt-2 pt-2 border-t border-border/40 flex items-center justify-between bg-violet-50/60 dark:bg-violet-950/20 px-2.5 py-1.5 rounded text-xs">
-                    <span className="font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
-                      <FolderGit2 className="h-3.5 w-3.5" />
-                      Project:
-                    </span>
-                    <a
-                      href={session.projectUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 underline inline-flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Link mở bài mini project
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                )}
-              </div>
+          {/* 6. Project link if applicable */}
+          {session.type === 'project' && session.projectUrl && (
+            <div className="border-t border-border/40 pt-1.5 flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1">
+                <FolderGit2 className="h-3 w-3" />
+                Project:
+              </span>
+              <a
+                href={session.projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 underline inline-flex items-center gap-1 text-[10px]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Mở mini project
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
             </div>
           )}
         </div>
 
         {/* Footer Hint */}
-        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-xs text-muted-foreground flex items-center gap-1.5">
-          <Info className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-          <span>Nhấp vào thẻ để mở chi tiết & thao tác</span>
+        <div className="bg-muted/30 border-t border-border/50 px-3 py-1 text-[10px] text-muted-foreground/80 flex items-center">
+          <span className="flex items-center gap-1">
+            <Info className="h-2.5 w-2.5 text-muted-foreground/60 shrink-0" />
+            <span>Nhấp để mở chi tiết buổi học</span>
+          </span>
         </div>
       </HoverCardContent>
     </HoverCard>

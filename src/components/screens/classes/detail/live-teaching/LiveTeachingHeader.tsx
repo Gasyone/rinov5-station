@@ -20,12 +20,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { TeachingMaterial } from './liveTeachingTypes'
 
@@ -72,6 +67,7 @@ export function LiveTeachingHeader({
 
   // Dropdown state for materials
   const [isMaterialOpen, setIsMaterialOpen] = useState(false)
+  const [isClassRecording, setIsClassRecording] = useState(true)
 
   const formatTimer = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600)
@@ -98,7 +94,7 @@ export function LiveTeachingHeader({
   }
 
   return (
-    <header className="h-12 border-b bg-white dark:bg-zinc-900 px-3 flex items-center justify-between gap-3 shrink-0 select-none z-20">
+    <header className="h-11 border-b bg-white dark:bg-zinc-900 px-3 flex items-center justify-between gap-2.5 shrink-0 select-none z-20">
       {/* ── Left: Breadcrumb + Session info ── */}
       <div className="flex items-center gap-2 min-w-0">
         <Button
@@ -106,14 +102,14 @@ export function LiveTeachingHeader({
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="h-8 w-8 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 shrink-0 cursor-pointer"
+          className="h-7.5 w-7.5 rounded-lg text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 shrink-0 cursor-pointer"
           title="Thoát chế độ giảng dạy"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-bold text-xs px-2 py-0.5 rounded-md gap-1 shrink-0">
+          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-bold text-[11px] px-1.5 py-0.5 rounded-md gap-1 shrink-0">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             Đang dạy
           </Badge>
@@ -135,27 +131,27 @@ export function LiveTeachingHeader({
           variant="outline"
           size="sm"
           onClick={onOpenLessonGuide}
-          className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-foreground cursor-pointer shadow-2xs"
+          className="h-7.5 gap-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-foreground cursor-pointer shadow-2xs px-2.5"
           title="Mở bảng giáo án, mục tiêu kiến thức và tiến trình tiết dạy"
         >
           <BookOpen className="h-3.5 w-3.5 text-amber-500" />
           <span>Giáo án & Mục tiêu</span>
         </Button>
 
-        {/* Robust Inline Material Dropdown (Guaranteed to click & display without portal z-index bug) */}
+        {/* Robust Inline Material Dropdown */}
         <div className="relative">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => setIsMaterialOpen((prev) => !prev)}
-            className="h-8 gap-2 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer shadow-2xs max-w-[280px]"
+            className="h-7.5 gap-1.5 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer shadow-2xs max-w-[260px] px-2.5"
             title="Danh mục học liệu của buổi học"
           >
             <FolderOpen className="h-3.5 w-3.5 text-primary shrink-0" />
             <div className="flex items-center gap-1.5 truncate">
               {getMaterialIcon(activeMaterial.type)}
-              <span className="truncate max-w-[170px] text-left">{activeMaterial.title}</span>
+              <span className="truncate max-w-[160px] text-left">{activeMaterial.title}</span>
             </div>
             <ChevronDown className={cn('h-3 w-3 text-muted-foreground shrink-0 transition-transform', isMaterialOpen && 'rotate-180')} />
           </Button>
@@ -219,13 +215,36 @@ export function LiveTeachingHeader({
         </div>
       </div>
 
-      {/* ── Right: Timer, Roster Drawer Toggle, Fullscreen & End Session ── */}
+      {/* ── Right: Timer, Recording, Roster Drawer Toggle, Fullscreen & End Session ── */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Stopwatch */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/50 text-xs font-mono font-bold text-foreground">
+        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/50 text-xs font-mono font-bold text-foreground h-7.5">
           <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
           <span>{formatTimer(elapsedSeconds)}</span>
         </div>
+
+        {/* Nút Thu âm / Ghi âm toàn ca dạy */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsClassRecording((prev) => !prev)
+            if (isClassRecording) {
+              toast.info('Đã tạm dừng thu âm ca dạy')
+            } else {
+              toast.success('Đang tiếp tục thu âm ca dạy!')
+            }
+          }}
+          className={cn(
+            'hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border transition-all cursor-pointer h-7.5 select-none',
+            isClassRecording
+              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+              : 'bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'
+          )}
+          title="Trạng thái thu âm / ghi hình toàn bộ ca dạy (Bấm để bật/tắt)"
+        >
+          <span className={cn('h-2 w-2 rounded-full', isClassRecording ? 'bg-rose-500 animate-pulse' : 'bg-zinc-400')} />
+          <span className="text-[11px]">{isClassRecording ? 'Đang thu âm' : 'Tạm dừng thu'}</span>
+        </button>
 
         {/* Toggle Roster Drawer */}
         <Button
@@ -234,7 +253,7 @@ export function LiveTeachingHeader({
           size="sm"
           onClick={onToggleRoster}
           className={cn(
-            'h-8 gap-1.5 text-xs font-semibold rounded-lg px-2.5 transition-all cursor-pointer',
+            'h-7.5 gap-1.5 text-xs font-semibold rounded-lg px-2.5 transition-all cursor-pointer',
             isRosterOpen
               ? 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/15'
               : 'text-zinc-700 dark:text-zinc-300'
@@ -260,17 +279,17 @@ export function LiveTeachingHeader({
           variant="ghost"
           size="icon"
           onClick={onToggleFullScreen}
-          className="h-8 w-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+          className="h-7.5 w-7.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           title={isFullScreen ? 'Thoát toàn màn hình' : 'Phóng to toàn màn hình'}
         >
-          {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          {isFullScreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
         </Button>
 
         {/* End Session Button */}
         <Button
           type="button"
           onClick={onEndSession}
-          className="h-8 px-3 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white font-bold text-xs gap-1.5 shadow-sm cursor-pointer"
+          className="h-7.5 px-3 rounded-lg bg-[#e11d48] hover:bg-[#be123c] text-white font-bold text-xs gap-1.5 shadow-sm cursor-pointer"
         >
           <Sparkles className="h-3.5 w-3.5" />
           <span>Kết thúc ca dạy</span>
@@ -281,7 +300,7 @@ export function LiveTeachingHeader({
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 ml-0.5 cursor-pointer"
+          className="h-7.5 w-7.5 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 ml-0.5 cursor-pointer"
           title="Đóng"
         >
           <X className="h-4 w-4" />

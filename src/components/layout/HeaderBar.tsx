@@ -99,38 +99,38 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   }
 
   return (
-    <header className="ui-shell-header sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between bg-background/90 px-4 backdrop-blur-md md:pl-4 md:pr-6">
-      <div className="flex items-center gap-2 md:gap-4">
+    <header className="ui-shell-header sticky top-0 z-50 flex h-11 flex-shrink-0 items-center justify-between bg-background/90 px-3 backdrop-blur-md md:pl-3 md:pr-4">
+      <div className="flex items-center gap-2 md:gap-3">
         <Button
           type="button"
           variant="ghost"
-          size="icon-lg"
+          size="icon-sm"
           aria-label="Open navigation"
-          className="ui-icon-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+          className="ui-icon-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
           onClick={onOpenMobileSidebar}
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </Button>
 
         <HeaderBrand />
 
         {menuLabel && (
-          <div className="flex items-center gap-2 border-l border-border pl-3 md:pl-4">
-            {GroupIcon && <GroupIcon className="h-4 w-4 text-muted-foreground/80 shrink-0" />}
-            <span className="text-sm font-semibold text-foreground tracking-tight truncate max-w-[140px] sm:max-w-none">
+          <div className="flex items-center gap-1.5 border-l border-border pl-2.5 md:pl-3">
+            {GroupIcon && <GroupIcon className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />}
+            <span className="text-xs font-semibold text-foreground tracking-tight truncate max-w-[140px] sm:max-w-none">
               {menuLabel}
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-1.5 md:gap-2">
         <div
           className={cn(
-            'hidden h-10 items-center rounded-full border transition-[width,background-color,border-color,box-shadow] duration-200 md:flex',
+            'hidden h-8 items-center rounded-full border transition-[width,background-color,border-color,box-shadow] duration-200 md:flex',
             isSearchOpen
-              ? 'w-72 border-border bg-background shadow-xs'
-              : 'w-10 border-transparent bg-transparent shadow-none'
+              ? 'w-64 border-border bg-background shadow-xs'
+              : 'w-8 border-transparent bg-transparent shadow-none'
           )}
           onMouseEnter={() => setIsSearchOpen(true)}
           onMouseLeave={closeSearchIfIdle}
@@ -138,15 +138,15 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
           <Button
             type="button"
             variant="ghost"
-            size="icon-lg"
+            size="icon-sm"
             aria-label="Search"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
             onClick={() => {
               setIsSearchOpen(true)
               window.requestAnimationFrame(() => searchInputRef.current?.focus())
             }}
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-3.5 w-3.5" />
           </Button>
           <div
             className={cn(
@@ -161,7 +161,7 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
               onFocus={() => setIsSearchOpen(true)}
               onBlur={closeSearchIfIdle}
               placeholder="Search..."
-              className="h-auto min-w-0 border-0 bg-transparent p-0 pr-3 text-sm shadow-none outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0"
+              className="h-auto min-w-0 border-0 bg-transparent p-0 pr-3 text-xs shadow-none outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0"
             />
           </div>
         </div>
@@ -175,11 +175,11 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
             <Button
               type="button"
               variant="ghost"
-              size="icon-lg"
+              size="icon-sm"
               aria-label="Cài đặt"
-              className="ui-icon-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
+              className="ui-icon-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72">
@@ -254,11 +254,11 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
             <Button
               type="button"
               variant="ghost"
-              size="icon-lg"
+              size="icon-sm"
               aria-label="Tài khoản"
-              className="group inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent p-1 leading-none transition-colors hover:bg-accent data-[state=open]:bg-accent"
+              className="group inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none transition-colors hover:bg-accent data-[state=open]:bg-accent"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-sm">
                 {initial}
               </div>
             </Button>

@@ -8,7 +8,7 @@ import {
   type WorkRegistrationRecord,
   type WorkRegistrationStatus,
 } from '@/mocks/workRegistrations'
-import { ALL_DUTY_EMPLOYEES } from '@/mocks/shiftRoster'
+import { ALL_DUTY_EMPLOYEES, type ShiftSection } from '@/mocks/shiftRoster'
 import type {
   BranchWeekSummary,
   EmployeeWeekSummary,
@@ -64,6 +64,34 @@ export const formatMinutesShort = (minutes: number) => {
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
   return `${hours}:${rest.toString().padStart(2, '0')}`
+}
+
+/**
+ * Rút gọn hiển thị thời gian trong badge nhân viên của ma trận ca:
+ * - Nếu full ca: hiển thị "Full" (thay vì "Full ca" chiếm diện tích)
+ * - Nếu tròn giờ: "08:00 - 10:00" -> "8-10h" (chỉ 5 ký tự)
+ * - Nếu nửa giờ: "08:30 - 10:30" -> "8:30-10:30"
+ * - Nếu một đầu tròn: "14:00 - 16:30" -> "14h-16:30"
+ */
+export function formatCompactTimeLabel(rawLabel: string | null | undefined): string | null {
+  if (!rawLabel) return null
+  const trimmed = rawLabel.trim()
+  if (trimmed === 'Full ca' || trimmed === 'Full' || trimmed === 'Cả ca') {
+    return 'Full'
+  }
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/)
+  if (match) {
+    const [, startH, startM, endH, endM] = match
+    const sH = parseInt(startH, 10)
+    const eH = parseInt(endH, 10)
+    if (startM === '00' && endM === '00') {
+      return `${sH}-${eH}h`
+    }
+    const sStr = startM === '00' ? `${sH}h` : `${sH}:${startM}`
+    const eStr = endM === '00' ? `${eH}h` : `${eH}:${endM}`
+    return `${sStr}-${eStr}`
+  }
+  return trimmed.replace(/\s+/g, '')
 }
 
 export const getInitials = (name: string) =>
@@ -262,7 +290,7 @@ export function resolveWeekActionState(
     return {
       readonlyWeek,
       canMutate: false,
-      primaryActionLabel: 'Cập nhật đăng ký',
+      primaryActionLabel: 'Lưu đăng ký',
       actionHelperText: 'Tuần đã qua chỉ được xem',
     }
   }
@@ -271,7 +299,7 @@ export function resolveWeekActionState(
     return {
       readonlyWeek,
       canMutate: true,
-      primaryActionLabel: 'Cập nhật đăng ký',
+      primaryActionLabel: 'Lưu đăng ký',
       actionHelperText: 'Tuần đã đăng ký; thay đổi sẽ cập nhật khả dụng',
     }
   }
@@ -303,6 +331,117 @@ export function resolveClassCode(className?: string, assignedCode?: string): str
   return 'CLS-ENG-001'
 }
 
+export function resolveDynamicLessonInfo(
+  classCode: string,
+  className: string,
+  dateStr?: string
+) {
+  let sessionNum = 12
+  if (dateStr) {
+    const d = new Date(dateStr)
+    if (!isNaN(d.getTime())) {
+      const startOfYear = new Date(d.getFullYear(), 0, 1)
+      const pastDaysOfYear = (d.getTime() - startOfYear.getTime()) / 86400000
+      const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7)
+      sessionNum = ((weekNum * 2) % 24) || 12
+    }
+  }
+
+  const isIELTS = classCode.includes('IELTS') || className.toLowerCase().includes('ielts')
+  const isKids = classCode.includes('KIDS') || className.toLowerCase().includes('kids')
+  const isMath = classCode.includes('MATH') || className.toLowerCase().includes('toán')
+  const isStem = classCode.includes('STEM') || className.toLowerCase().includes('stem')
+
+  if (isIELTS) {
+    const ieltsTopics = [
+      {
+        title: `Lesson ${sessionNum}: Writing Task 2 - Problem & Solution Essay`,
+        subtitle: 'Phân tích đề bài & lập luận logic',
+        content: 'Cấu trúc bài viết nguyên nhân - giải pháp, phân tích đề bài, lập dàn ý 4 đoạn & vận dụng từ vựng học thuật band 6.5+ chủ đề Urbanization & Environment.',
+      },
+      {
+        title: `Lesson ${sessionNum}: Speaking Part 3 - Abstract Discussion & Speculation`,
+        subtitle: 'Kỹ năng phản xạ & mở rộng câu trả lời',
+        content: 'Luyện tập kỹ thuật trả lời đa chiều, mở rộng lập luận với cấu trúc nhượng bộ và thành ngữ học thuật chủ đề Technology in Education.',
+      },
+      {
+        title: `Lesson ${sessionNum}: Reading Academic - Matching Headings & True/False/Not Given`,
+        subtitle: 'Chiến thuật Skimming & Scanning nâng cao',
+        content: 'Phương pháp định vị từ khóa paraphrasing, phân biệt Fact vs Opinion và xử lý các câu bẫy thông tin đối với dạng bài Matching Headings.',
+      },
+    ]
+    const topic = ieltsTopics[sessionNum % ieltsTopics.length]!
+    return {
+      sessionNum,
+      title: topic.title,
+      subtitle: topic.subtitle,
+      content: topic.content,
+      subject: 'IELTS Academic',
+      level: 'Band 5.5 - 6.5',
+    }
+  }
+
+  if (isKids) {
+    const kidsTopics = [
+      {
+        title: 'Story time: My Family Adventure',
+        subtitle: 'Đọc tranh theo nhóm & Kể chuyện',
+        content: 'Đọc tranh theo nhóm: Giới thiệu các thành viên trong gia đình, luyện mẫu câu hỏi đáp & từ vựng mở rộng.',
+      },
+      {
+        title: `Interactive Phonics: Sound & Word Play (Buổi ${sessionNum})`,
+        subtitle: 'Phát âm chuẩn & ghép vần tương tác',
+        content: 'Nhận diện phụ âm đầu /b/, /p/, /d/, ghép từ qua trò chơi thẻ hình và luyện nói câu chào hỏi theo ngữ cảnh sinh hoạt.',
+      },
+      {
+        title: `My Colorful World: Animals & Shapes (Buổi ${sessionNum})`,
+        subtitle: 'Từ vựng chủ đề thế giới động vật',
+        content: 'Nhận biết tên các loài động vật thân quen, đếm số lượng từ 1-10 và mô tả màu sắc hình khối qua bài hát vui nhộn.',
+      },
+    ]
+    const topic = kidsTopics[sessionNum % kidsTopics.length]!
+    return {
+      sessionNum,
+      title: topic.title,
+      subtitle: topic.subtitle,
+      content: topic.content,
+      subject: 'Tiếng Anh',
+      level: 'Kids Level 1',
+    }
+  }
+
+  if (isMath) {
+    return {
+      sessionNum,
+      title: `Buổi ${sessionNum}: Tư duy hình học không gian & Phép tính logic`,
+      subtitle: 'Tư duy logic & giải quyết vấn đề',
+      content: 'Luyện tập phương pháp chia nhỏ bài toán, nhận diện quy luật dãy số và mô hình hóa hình học bằng trực quan sinh động.',
+      subject: 'Toán tư duy',
+      level: 'Tiểu học',
+    }
+  }
+
+  if (isStem) {
+    return {
+      sessionNum,
+      title: `Session ${sessionNum}: Robotics Architecture & Block Coding`,
+      subtitle: 'Lập trình robot & cơ chế chuyển động',
+      content: 'Lắp ráp mô hình cảm biến tiệm cận, lập trình khối điều khiển động cơ bước và thực hành vượt chướng ngại vật theo nhóm.',
+      subject: 'STEM Robotics',
+      level: 'Level 2',
+    }
+  }
+
+  return {
+    sessionNum,
+    title: `Lesson ${sessionNum}: Communication & Practical Speaking`,
+    subtitle: 'Thực hành giao tiếp chủ đề đời sống',
+    content: 'Mở rộng vốn từ vựng thông dụng, luyện ngữ điệu hội thoại tự nhiên và phản xạ xử lý tình huống giao tiếp thực tế.',
+    subject: 'Tiếng Anh',
+    level: 'Tiêu chuẩn',
+  }
+}
+
 export function resolveClassSessionHoverData(
   record: WorkRegistrationRecord,
   employeeName: string,
@@ -311,22 +450,18 @@ export function resolveClassSessionHoverData(
 ) {
   const className = record.assignedClass || 'Tiếng Anh Trial Level 2'
   const classCode = resolveClassCode(className, record.assignedClassCode)
+  const dynamicLesson = resolveDynamicLessonInfo(classCode, className, record.date)
 
   return {
     id: `session-${record.id}`,
-    title: className,
+    title: dynamicLesson.title,
     className: className,
     classCode: classCode,
-    subject: className.includes('Toán')
-      ? 'Toán tư duy'
-      : className.includes('STEM')
-      ? 'STEM Robotics'
-      : 'Tiếng Anh',
-    level: className.includes('Level')
-      ? className.split('Level')[1]?.trim() || 'Level 2'
-      : 'Kindie 1',
-    subtitle: 'Story time: My Family Adventure',
-    lessonSubtitle: 'Story time: My Family Adventure',
+    subject: dynamicLesson.subject,
+    level: dynamicLesson.level,
+    subtitle: dynamicLesson.subtitle,
+    lessonSubtitle: dynamicLesson.title,
+    lessonContent: dynamicLesson.content,
     timeSlot: slotLabel || '15:30 - 17:30',
     timeLabel: slotLabel?.split('-')[0]?.trim() || '15:30',
     endTimeLabel: slotLabel?.split('-')[1]?.trim() || '17:30',
@@ -375,44 +510,46 @@ export function groupConsecutiveSlots(
     start: string
     end: string
     slotIds: string[]
-    status: WorkRegistrationStatus
+    hasDraft: boolean
+    hasLocked: boolean
   } | null = null
 
   for (const slot of sectionSlots) {
     const record = employeeSlotMap.get(slot.id)
     if (record) {
-      const recordStatus = record.status || 'draft'
+      const isDraft = record.status === 'draft'
+      const isLocked = record.status === 'locked'
+
       if (!currentInterval) {
         currentInterval = {
           start: slot.start,
           end: slot.end,
           slotIds: [slot.id],
-          status: recordStatus,
+          hasDraft: isDraft,
+          hasLocked: isLocked,
         }
-      } else if (currentInterval.status === recordStatus) {
+      } else {
         currentInterval.end = slot.end
         currentInterval.slotIds.push(slot.id)
-      } else {
-        intervals.push({
-          ...currentInterval,
-          isDraft: currentInterval.status === 'draft',
-          isRegistered: currentInterval.status === 'registered',
-          isLocked: currentInterval.status === 'locked',
-        })
-        currentInterval = {
-          start: slot.start,
-          end: slot.end,
-          slotIds: [slot.id],
-          status: recordStatus,
-        }
+        if (isDraft) currentInterval.hasDraft = true
+        if (isLocked) currentInterval.hasLocked = true
       }
     } else {
       if (currentInterval) {
+        const status: WorkRegistrationStatus = currentInterval.hasDraft
+          ? 'draft'
+          : currentInterval.hasLocked
+          ? 'locked'
+          : 'registered'
+
         intervals.push({
-          ...currentInterval,
-          isDraft: currentInterval.status === 'draft',
-          isRegistered: currentInterval.status === 'registered',
-          isLocked: currentInterval.status === 'locked',
+          start: currentInterval.start,
+          end: currentInterval.end,
+          slotIds: currentInterval.slotIds,
+          status,
+          isDraft: status === 'draft',
+          isRegistered: status === 'registered',
+          isLocked: status === 'locked',
         })
         currentInterval = null
       }
@@ -420,13 +557,109 @@ export function groupConsecutiveSlots(
   }
 
   if (currentInterval) {
+    const status: WorkRegistrationStatus = currentInterval.hasDraft
+      ? 'draft'
+      : currentInterval.hasLocked
+      ? 'locked'
+      : 'registered'
+
     intervals.push({
-      ...currentInterval,
-      isDraft: currentInterval.status === 'draft',
-      isRegistered: currentInterval.status === 'registered',
-      isLocked: currentInterval.status === 'locked',
+      start: currentInterval.start,
+      end: currentInterval.end,
+      slotIds: currentInterval.slotIds,
+      status,
+      isDraft: status === 'draft',
+      isRegistered: status === 'registered',
+      isLocked: status === 'locked',
     })
   }
 
   return intervals
 }
+
+export function timeToMinutes(time: string): number {
+  if (!time) return 0
+  const [hours = 0, minutes = 0] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+export function calculateSlotPosition(
+  startTime: string,
+  endTime: string,
+  sectionStartTime: string,
+  sectionEndTime: string
+): { topPercent: number; heightPercent: number } {
+  const startMin = timeToMinutes(startTime)
+  const endMin = timeToMinutes(endTime)
+  const secStartMin = timeToMinutes(sectionStartTime)
+  const secEndMin = timeToMinutes(sectionEndTime)
+  const totalDuration = Math.max(1, secEndMin - secStartMin)
+
+  const topPercent = Math.max(0, Math.min(100, ((startMin - secStartMin) / totalDuration) * 100))
+  const heightPercent = Math.max(0, Math.min(100 - topPercent, ((endMin - startMin) / totalDuration) * 100))
+
+  return { topPercent, heightPercent }
+}
+
+export function getSectionHourTicks(sectionId: ShiftSection): Array<{ time: string; topPercent: number }> {
+  if (sectionId === 'morning') {
+    return [
+      { time: '09:00', topPercent: 25 },
+      { time: '10:00', topPercent: 50 },
+      { time: '11:00', topPercent: 75 },
+    ]
+  }
+  if (sectionId === 'afternoon') {
+    return [
+      { time: '14:00', topPercent: (60 / 270) * 100 },
+      { time: '15:00', topPercent: (120 / 270) * 100 },
+      { time: '16:00', topPercent: (180 / 270) * 100 },
+      { time: '17:00', topPercent: (240 / 270) * 100 },
+    ]
+  }
+  return [
+    { time: '18:30', topPercent: (60 / 270) * 100 },
+    { time: '19:30', topPercent: (120 / 270) * 100 },
+    { time: '20:30', topPercent: (180 / 270) * 100 },
+    { time: '21:30', topPercent: (240 / 270) * 100 },
+  ]
+}
+
+export function formatDurationShort(minutes: number): string {
+  if (minutes <= 0) return '0h'
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  if (hours === 0) return `${rest}p`
+  if (rest === 0) return `${hours}h`
+  return `${hours}h${rest < 10 ? '0' : ''}${rest}`
+}
+
+export function calculateDailyRegistrationMinutes(
+  records: WorkRegistrationRecord[],
+  employeeId: string,
+  dateKey: string
+): number {
+  return records
+    .filter((r) => r.employeeId === employeeId && r.date === dateKey)
+    .reduce((sum, r) => {
+      const slot = WORK_TIME_SLOTS.find((s) => s.id === r.slotId)
+      return sum + (slot?.minutes || 0)
+    }, 0)
+}
+
+export function calculateSectionRegistrationMinutes(
+  records: WorkRegistrationRecord[],
+  employeeId: string,
+  sectionId: string
+): { totalMinutes: number; shiftCount: number } {
+  const sectionRecords = records.filter(
+    (r) => r.employeeId === employeeId && r.slotId.startsWith(sectionId)
+  )
+  const uniqueDays = new Set(sectionRecords.map((r) => r.date))
+  const totalMinutes = sectionRecords.reduce((sum, r) => {
+    const slot = WORK_TIME_SLOTS.find((s) => s.id === r.slotId)
+    return sum + (slot?.minutes || 0)
+  }, 0)
+  return { totalMinutes, shiftCount: uniqueDays.size }
+}
+

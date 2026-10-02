@@ -14,7 +14,7 @@ import { isCared } from './operationsAlertHelpers'
 import { HistoryLogCardItem } from './HistoryLogCardItem'
 import { CareJourneyMilestoneCard } from './CareJourneyMilestoneCard'
 import type { SimulatedPackage } from './studentCareDetailTypes'
-import { getStudentOrderInfo } from './renewal/renewalHelpers'
+import { getStudentOrderInfo, getRenewalClassification } from './renewal/renewalHelpers'
 
 interface HistoryLogItemData {
   log: CareInteractionLog
@@ -31,6 +31,8 @@ interface HistoryLogItemData {
     packageName: string
     totalPaidAmount?: number
     amountText?: string
+    paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
+    paymentStatusText?: string
   }
 }
 
@@ -40,6 +42,7 @@ interface StudentCareTimelineProps {
   stickyTopOffset?: number
   selectedPackageId?: string
   selectedPackage?: SimulatedPackage | null
+  cstpStatus?: string
 }
 
 interface RoadmapMilestone {
@@ -47,7 +50,8 @@ interface RoadmapMilestone {
   code: string
   title: string
   roleOwner: 'CS PHỤ TRÁCH' | 'GV PHỤ TRÁCH' | 'SALE PHỤ TRÁCH'
-  status: 'completed' | 'overdue' | 'future' | 'in_progress'
+  status: 'completed' | 'overdue' | 'future' | 'in_progress' | 'failed'
+  statusLabel?: string
   date: string
   subtext: string
   historyCount?: number
@@ -66,9 +70,14 @@ export function StudentCareTimeline({
   stickyTopOffset = 160,
   selectedPackageId = 'pkg-1',
   selectedPackage,
+  cstpStatus,
 }: StudentCareTimelineProps) {
   const [activeTab, setActiveTab] = useState<'history' | 'roadmap'>('history')
   const [staffRoleFilter, setStaffRoleFilter] = useState<string>('all')
+
+  const effectiveRenewalStatus = cstpStatus || (student ? getRenewalClassification(student) : 'moi')
+  const isRenewalFailed = effectiveRenewalStatus === 'that_bai'
+  const isRenewalPaid = effectiveRenewalStatus === 'tai_phi'
 
   const isMath = useMemo(() => {
     if (selectedPackage?.packageName) {
@@ -85,7 +94,7 @@ export function StudentCareTimeline({
       {
         log: {
           id: 'gv-log-01',
-          date: '2026-07-05',
+          date: '2026-07-05 15:00',
           staffName: 'Hoàng Thị Mai',
           callConfirmation: 'Đã gọi',
           notes: '[HT-01] Giáo viên chủ nhiệm trao đổi tình hình bài tập Buổi 14 & hướng dẫn con ôn tập',
@@ -107,7 +116,7 @@ export function StudentCareTimeline({
         cleanNotes: 'Giáo viên chủ nhiệm trao đổi tình hình bài tập Buổi 14 & hướng dẫn con ôn tập',
         staffRole: 'GV',
         staffName: 'Hoàng Thị Mai',
-        date: '2026-07-05',
+        date: '2026-07-05 15:00',
         channel: 'Đã gọi',
         subject: student?.subject || subjectName,
       },
@@ -138,12 +147,16 @@ export function StudentCareTimeline({
             packageName: student.linkedOrder.packageName,
             totalPaidAmount: amt,
             amountText: amt > 0 ? `${amt.toLocaleString('vi-VN')}đ` : undefined,
+            paymentStatus: student.linkedOrder.paymentStatus || studentOrder?.paymentStatus || 'paid',
+            paymentStatusText: studentOrder?.paymentStatusLabel || 'Đã thanh toán',
           }
         } else if (studentOrder?.orderCode) {
           effectiveLinkedOrder = {
             orderCode: studentOrder.orderCode,
             packageName: studentOrder.packageName,
             amountText: studentOrder.packageAmount,
+            paymentStatus: studentOrder.paymentStatus,
+            paymentStatusText: studentOrder.paymentStatusLabel,
           }
         }
       }
@@ -170,7 +183,7 @@ export function StudentCareTimeline({
       list.unshift({
         log: {
           id: `cstp-auto-${student?.studentId || 'def'}`,
-          date: '2026-07-04',
+          date: '2026-07-06 14:30',
           staffName: student?.csStaff || 'Ngọc Mai (Sale)',
           callConfirmation: 'Đã gọi',
           audioDuration: '02:15',
@@ -188,6 +201,8 @@ export function StudentCareTimeline({
             orderCode: studentOrder.orderCode,
             packageName: studentOrder.packageName,
             amountText: studentOrder.packageAmount,
+            paymentStatus: studentOrder.paymentStatus || (isCompleted ? 'paid' : isDeposit ? 'partial' : 'paid'),
+            paymentStatusText: studentOrder.paymentStatusLabel || (isCompleted ? 'Đã thanh toán' : isDeposit ? 'Đã cọc 1 phần' : 'Đã thanh toán'),
           },
         },
         topic: 'CSTP',
@@ -199,19 +214,43 @@ export function StudentCareTimeline({
           : `Đã liên kết đơn hàng ${studentOrder.orderCode} (${studentOrder.packageName}) cho kỳ tái phí khóa học mới.`,
         staffRole: 'CS',
         staffName: student?.csStaff || 'Ngọc Mai',
-        date: '2026-07-04',
+        date: '2026-07-06 14:30',
         channel: 'Cuộc gọi',
         subject: student?.subject || subjectName,
         linkedOrder: {
           orderCode: studentOrder.orderCode,
           packageName: studentOrder.packageName,
           amountText: studentOrder.packageAmount,
+          paymentStatus: studentOrder.paymentStatus || (isCompleted ? 'paid' : isDeposit ? 'partial' : 'paid'),
+          paymentStatusText: studentOrder.paymentStatusLabel || (isCompleted ? 'Đã thanh toán' : isDeposit ? 'Đã cọc 1 phần' : 'Đã thanh toán'),
         },
       })
     }
 
+    if (isRenewalFailed) {
+      list.unshift({
+        log: {
+          id: `ctp-failed-${student?.studentId || 'def'}`,
+          date: '2026-07-06 13:45',
+          staffName: student?.csStaff || 'Trần Thảo Anh 20',
+          callConfirmation: 'Đã gọi',
+          audioDuration: '04:12',
+          notes: '[CTP] [Đối tượng: Phụ huynh] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình có kế hoạch chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại.',
+          parentOpinion: 'Gia đình chuyển sang định cư nước ngoài nên xin phép dừng học sau khi kết thúc khóa này, cảm ơn trung tâm đã hỗ trợ bé suốt thời gian qua.',
+        },
+        topic: 'CTP',
+        recipient: 'Nguyễn Văn Hùng (Bố)',
+        cleanNotes: 'Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình có kế hoạch chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại.',
+        staffRole: 'CS',
+        staffName: student?.csStaff || 'Trần Thảo Anh 20',
+        date: '2026-07-06 13:45',
+        channel: 'Cuộc gọi',
+        subject: student?.subject || subjectName,
+      })
+    }
+
     return list
-  }, [filteredCombinedLogs, student, subjectName])
+  }, [filteredCombinedLogs, student, subjectName, isRenewalFailed])
 
   const pkg2Logs: HistoryLogItemData[] = useMemo(() => [
     {
@@ -228,6 +267,8 @@ export function StudentCareTimeline({
           packageName: isMath ? 'Gói Toán tư duy 1:4 (60 buổi)' : 'Gói Tiếng Anh Level 4 (60 buổi)',
           totalPaidAmount: 12500000,
           amountText: '12.500.000đ',
+          paymentStatus: 'paid',
+          paymentStatusText: 'Đã thanh toán',
         },
       },
       topic: 'CSTP',
@@ -243,6 +284,8 @@ export function StudentCareTimeline({
         packageName: isMath ? 'Gói Toán tư duy 1:4 (60 buổi)' : 'Gói Tiếng Anh Level 4 (60 buổi)',
         totalPaidAmount: 12500000,
         amountText: '12.500.000đ',
+        paymentStatus: 'paid',
+        paymentStatusText: 'Đã thanh toán',
       },
     },
     {
@@ -338,6 +381,8 @@ export function StudentCareTimeline({
           packageName: isMath ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
           totalPaidAmount: 18000000,
           amountText: '18.000.000đ',
+          paymentStatus: 'paid',
+          paymentStatusText: 'Đã thanh toán',
         },
       },
       topic: 'CSTP',
@@ -353,6 +398,8 @@ export function StudentCareTimeline({
         packageName: isMath ? 'Gói Toán Archimedes 12T' : 'Gói Tiếng Anh Level 5 12T',
         totalPaidAmount: 18000000,
         amountText: '18.000.000đ',
+        paymentStatus: 'paid',
+        paymentStatusText: 'Đã thanh toán',
       },
     },
     {
@@ -423,6 +470,8 @@ export function StudentCareTimeline({
           packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Kindy 0 (48 buổi)',
           totalPaidAmount: 14500000,
           amountText: '14.500.000đ',
+          paymentStatus: 'paid',
+          paymentStatusText: 'Đã thanh toán',
         },
       },
       topic: 'CSTP',
@@ -438,6 +487,8 @@ export function StudentCareTimeline({
         packageName: isMath ? 'Gói Toán tư duy 1:6 (48 buổi)' : 'Gói Tiếng Anh Kindy 0 (48 buổi)',
         totalPaidAmount: 14500000,
         amountText: '14.500.000đ',
+        paymentStatus: 'paid',
+        paymentStatusText: 'Đã thanh toán',
       },
     },
   ], [isMath])
@@ -565,6 +616,15 @@ export function StudentCareTimeline({
       date: '15/09/2026',
       subtext: 'Gửi video & nhận xét sản phẩm 1',
     },
+    {
+      id: 'm7',
+      code: 'CTP',
+      title: 'Chăm sóc Tái phí',
+      roleOwner: 'CS PHỤ TRÁCH',
+      status: 'future',
+      date: '30/09/2026',
+      subtext: 'Tư vấn tái tục & gia hạn khóa học',
+    },
   ], [])
 
   const roadmapMilestonesPkg2: RoadmapMilestone[] = useMemo(() => [
@@ -614,6 +674,15 @@ export function StudentCareTimeline({
       status: 'in_progress',
       date: '10/08/2026',
       subtext: 'Tổng kết kết quả học phần nâng cao',
+    },
+    {
+      id: 'p2-m5',
+      code: 'CTP',
+      title: 'Chăm sóc Tái phí',
+      roleOwner: 'CS PHỤ TRÁCH',
+      status: 'future',
+      date: '30/09/2026',
+      subtext: 'Tư vấn tái tục & gia hạn khóa học',
     },
   ], [])
 
@@ -705,6 +774,53 @@ export function StudentCareTimeline({
     }
 
     return milestones.map((item) => {
+      // Xử lý riêng cho mốc Chăm sóc tái phí (CTP)
+      if (item.code === 'CTP' || item.code.startsWith('CTP')) {
+        if (isRenewalFailed) {
+          return {
+            ...item,
+            status: 'failed' as const,
+            statusLabel: 'Thất bại',
+            date: student?.expectedEndDate || item.date,
+            historyCount: 1,
+            historyLogs: [
+              {
+                date: '20/07/2026 15:00',
+                staffName: student?.csStaff ? `${student.csStaff} (CS)` : 'Trần Thảo Anh 20 (CS)',
+                channel: 'Cuộc gọi: Phụ huynh',
+                note: 'Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình có kế hoạch chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc với kết quả thất bại.',
+                quote: '“Gia đình chuyển sang định cư nước ngoài nên xin phép dừng học sau khi kết thúc khóa này, cảm ơn trung tâm đã hỗ trợ bé suốt thời gian qua.”',
+              },
+            ],
+          }
+        }
+        if (isRenewalPaid) {
+          return {
+            ...item,
+            status: 'completed' as const,
+            statusLabel: 'Hoàn thành',
+            historyCount: 1,
+            historyLogs: [
+              {
+                date: '15/07/2026 10:30',
+                staffName: student?.csStaff ? `${student.csStaff} (CS)` : 'Trần Thảo Anh 20 (CS)',
+                channel: 'Cuộc gọi: Phụ huynh',
+                note: 'Tư vấn tái tục khóa học tiếp theo thành công. Phụ huynh đã hoàn tất đóng học phí gia hạn khóa mới.',
+                quote: '“Mẹ đã chuyển khoản học phí gói tiếp theo cho con rồi nhé.”',
+              },
+            ],
+          }
+        }
+        // Trường hợp khác (hẹn tái, cân nhắc, tiềm năng, mới...):
+        // KHÔNG hiển thị nhãn thất bại, hiển thị mốc tương lai bình thường
+        return {
+          ...item,
+          status: 'future' as const,
+          statusLabel: undefined,
+          historyLogs: undefined,
+        }
+      }
+
       if (isCaredStatus && item.status === 'overdue') {
         return {
           ...item,
@@ -720,6 +836,9 @@ export function StudentCareTimeline({
     roadmapMilestonesPkg3,
     roadmapMilestonesPkg4,
     isCaredStatus,
+    isRenewalFailed,
+    isRenewalPaid,
+    student,
   ])
 
   const totalHistoryCount = currentPackageLogs.length

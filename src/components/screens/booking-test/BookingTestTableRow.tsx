@@ -80,7 +80,10 @@ export function BookingTestTableRow({
 
   return (
     <TableRow
-      className={cn("group cursor-pointer border-b-0 transition-colors", isCheckedIn && "bg-muted/20")}
+      className={cn(
+        "group cursor-pointer border-b border-border/30 transition-colors [&>td]:py-1.5 [&>td]:px-2.5",
+        isCheckedIn && "bg-muted/20"
+      )}
       onClick={() => onRowClick(booking.id)}
     >
       <TableCell
@@ -94,23 +97,23 @@ export function BookingTestTableRow({
       </TableCell>
       <TableCell className={cn("sticky left-12 z-20 w-[280px] min-w-[280px] max-w-[280px] overflow-hidden transition-colors", rowHighlightClass)}>
         <div className="relative z-10 max-w-full overflow-hidden pr-16">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-bold text-foreground">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground">
               {booking.childName.charAt(0)}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="truncate font-semibold text-foreground" title={booking.childName}>
+                <p className="truncate text-xs font-semibold text-foreground leading-tight" title={booking.childName}>
                   {booking.childName}
                 </p>
                 {isCheckedIn && (
                   <span title="Đã đến" className="inline-flex shrink-0">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 fill-emerald-100" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 fill-emerald-100" />
                   </span>
                 )}
               </div>
-              <div className="flex min-w-0 items-center gap-2 mt-0.5">
-                <Badge variant="outline" className="rounded-md text-xs font-bold">
+              <div className="flex min-w-0 items-center gap-1.5 mt-0.5">
+                <Badge variant="outline" className="h-4 rounded px-1 text-[11px] font-medium leading-none">
                   {getSubjectLabel(booking.subject)}
                 </Badge>
               </div>
@@ -178,6 +181,7 @@ export function BookingTestTableRow({
           phone={booking.phone}
           studentName={booking.childName}
           masked={true}
+          className="gap-0"
           additionalContacts={
             booking.familyMembers && booking.familyMembers.length > 1
               ? booking.familyMembers.map((m) => ({ name: m.name, phone: m.phone }))
@@ -187,20 +191,20 @@ export function BookingTestTableRow({
       </TableCell>
       <TableCell>
         <div className="min-w-0 space-y-0.5">
-          <p className="truncate text-xs font-normal text-foreground" title={booking.program}>
+          <p className="truncate text-xs font-medium text-foreground leading-tight" title={booking.program}>
             {booking.program}
           </p>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground leading-tight">
             <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>{formatTestTimeWithDay(booking.testTime)}</span>
           </div>
         </div>
       </TableCell>
       <TableCell>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <PersonnelCell
             items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
-            size="sm"
+            size="xs"
             mode="single"
             showRole={false}
           />
@@ -244,10 +248,10 @@ export function BookingTestTableRow({
         )}
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
-        <div className="flex max-w-44 items-center gap-2">
-          <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <div className="flex max-w-44 items-center gap-1.5">
+          <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <p
-            className="truncate text-xs italic text-muted-foreground"
+            className="truncate text-xs italic text-muted-foreground leading-tight"
             title={booking.notes?.at(-1)?.text ?? booking.msg}
           >
             {booking.notes?.at(-1)?.text ?? booking.msg ?? '-'}

@@ -8,7 +8,7 @@ export { getFeeTransfers }
 export function getStudentOrders(studentId: string, studentName?: string): DetailedOrder[] {
   const displayStudentName = studentName || 'Hà Phương'
 
-  const primaryOrders = getPrimaryStudentOrders(studentId)
+  const primaryOrders = getPrimaryStudentOrders(studentId, displayStudentName)
   const secondaryOrders = getSecondaryStudentOrders(studentId, displayStudentName)
 
   return [...primaryOrders, ...secondaryOrders]

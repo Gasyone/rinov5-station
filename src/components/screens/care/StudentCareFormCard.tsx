@@ -6,7 +6,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Phone, ChevronDown, Check, Copy, CheckCircle, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { isCSDBTag } from './operationsAlertHelpers'
 import {
   type StudentCareAlert,
@@ -18,10 +17,9 @@ import type { CareTopic } from './studentCareDetailTypes'
 import { CallConnectionBanner } from './CallConnectionBanner'
 import { StudentActiveCareCard } from './StudentActiveCareCard'
 import { StudentRenewalLinkedOrderRow } from './StudentRenewalLinkedOrderRow'
-import { ConfirmDialog } from '@/components/shared'
-import { getStudentOrderInfo } from './renewal/renewalHelpers'
+import { ConfirmDialog, StatusBadge } from '@/components/shared'
+import { getStudentOrderInfo, resolvePaymentStatusInfo } from './renewal/renewalHelpers'
 import { getStudentOrders } from './StudentOrdersTab'
-import { getStudentEnrolledPackages } from './student-packages/studentPackagesMock'
 import { mockOrders } from '@/mocks/orders'
 
 export function formatContactDisplayName(name: string, relationship: string): string {
@@ -205,6 +203,7 @@ interface StudentCareFormCardProps {
   careMode: CareMode
   onCareModeChange: (mode: CareMode) => void
   onRefresh?: () => void
+  hideOrdersMode?: boolean
 }
 
 export function StudentCareFormCard({
@@ -253,6 +252,7 @@ export function StudentCareFormCard({
   careMode,
   onCareModeChange,
   onRefresh,
+  hideOrdersMode = false,
 }: StudentCareFormCardProps) {
   const [isCallActive, setIsCallActive] = useState(false)
   const [renewalStatus, setRenewalStatus] = useState<string>('')
@@ -266,13 +266,13 @@ export function StudentCareFormCard({
     return getStudentOrders(student.studentId, student.studentName).length
   }, [student])
 
-  const packagesCount = useMemo(() => {
-    if (!student?.studentId) return 0
-    return getStudentEnrolledPackages(student.studentId, student.studentName).filter((p) => !(p as any).isOtherChild && p.status !== 'expired').length
-  }, [student])
-
   const suggestedOrders = useMemo(() => {
-    const list: Array<{ orderNo: string; packageName: string; amountText: string }> = []
+    const list: Array<{
+      orderNo: string
+      packageName: string
+      amountText?: string
+      paymentStatusText?: string
+    }> = []
     const seen = new Set<string>()
 
     if (student?.studentId) {
@@ -281,10 +281,17 @@ export function StudentCareFormCard({
         if (o.orderNo && !seen.has(o.orderNo)) {
           seen.add(o.orderNo)
           const amount = o.totalPaidAmount || o.paidAmount || o.finalAmount || 0
+          const paymentInfo = resolvePaymentStatusInfo(
+            o.paymentMethodTag,
+            o.paymentStatus,
+            o.totalPaidAmount || o.paidAmount,
+            o.finalAmount
+          )
           list.push({
             orderNo: o.orderNo,
             packageName: o.detailedItems?.[0]?.productName || o.items?.[0]?.productName || 'Gói học',
             amountText: amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : 'Chưa đóng phí',
+            paymentStatusText: paymentInfo.label,
           })
         }
       })
@@ -294,10 +301,17 @@ export function StudentCareFormCard({
       if (o.orderNo && !seen.has(o.orderNo)) {
         seen.add(o.orderNo)
         const amount = o.paidAmount || o.finalAmount || 0
+        const paymentInfo = resolvePaymentStatusInfo(
+          o.paymentMethodTag,
+          o.paymentStatus,
+          o.paidAmount,
+          o.finalAmount
+        )
         list.push({
           orderNo: o.orderNo,
           packageName: o.items?.[0]?.productName || 'Gói học',
           amountText: amount > 0 ? `${amount.toLocaleString('vi-VN')}đ` : 'Chưa đóng phí',
+          paymentStatusText: paymentInfo.label,
         })
       }
     })
@@ -332,15 +346,29 @@ export function StudentCareFormCard({
       foundInMock?.finalAmount ||
       18000000
 
+    const final =
+      foundInStudent?.finalAmount ||
+      foundInMock?.finalAmount ||
+      18000000
+
     const term =
       foundInStudent?.paymentMethodTag ||
       foundInMock?.paymentMethodTag ||
       'Thanh toán 100%'
 
+    const paymentInfo = resolvePaymentStatusInfo(
+      term,
+      foundInStudent?.paymentStatus || foundInMock?.paymentStatus,
+      paid,
+      final
+    )
+
     linkOrderToStudentCareAlert(student.id, foundInMock?.orderNo || foundInStudent?.orderNo || trimmed, {
       packageName: pkgName,
       totalPaidAmount: paid,
+      finalAmount: final,
       paymentTerm: term,
+      paymentStatus: paymentInfo.status,
     })
 
     toast.success(`Đã liên kết đơn hàng ${foundInMock?.orderNo || trimmed} thành công!`)
@@ -417,18 +445,6 @@ export function StudentCareFormCard({
             )}
           >
             <span>Chăm sóc</span>
-            {(() => {
-              const regTopics = displayPinnedTopics.filter(t => t.code !== 'CSTP' && !(t.isCompleted || isCaredStatus))
-              const statusKey = isCaredStatus || regTopics.length === 0 ? 'da_cham_soc' : 'dang_xu_ly'
-              const statusLabel = isCaredStatus || regTopics.length === 0 ? 'Đã chăm sóc' : 'Đang xử lý'
-              const badgeClass = getStatusBadgeClass(statusKey)
-
-              return (
-                <span className={cn('inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
-                  {statusLabel} ({regTopics.length})
-                </span>
-              )
-            })()}
           </button>
 
           <button
@@ -442,68 +458,35 @@ export function StudentCareFormCard({
             )}
           >
             <span>Tái phí</span>
-            {(() => {
-              const isNotDueYet = student?.activeCSTP === false
-              const statusKey = isNotDueYet ? 'chua_den_han' : (cstpStatus || 'moi')
-              const statusLabel = getRenewalStatusLabel(statusKey)
-              const badgeClass = getStatusBadgeClass(statusKey)
-
-              return (
-                <span className={cn('inline-flex items-center justify-center text-xs font-bold h-4 px-1.5 rounded-full border transition-colors shadow-3xs', badgeClass)}>
-                  {statusLabel}
-                </span>
-              )
-            })()}
           </button>
 
-          <button
-            type="button"
-            onClick={() => onCareModeChange('orders')}
-            className={cn(
-              'flex-1 h-7 px-2 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
-              careMode === 'orders'
-                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
-                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
-            )}
-          >
-            <span>Đơn hàng</span>
-            <span
+          {!hideOrdersMode && (
+            <button
+              type="button"
+              onClick={() => onCareModeChange('orders')}
               className={cn(
-                'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                'flex-1 h-7 px-2 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
                 careMode === 'orders'
-                  ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
-                  : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300 font-medium'
+                  ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
+                  : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
               )}
             >
-              {ordersCount}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onCareModeChange('packages')}
-            className={cn(
-              'flex-1 h-7 px-2 rounded-md text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
-              careMode === 'packages'
-                ? 'bg-white dark:bg-zinc-900 text-foreground dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700 font-bold'
-                : 'text-slate-700 dark:text-zinc-300 hover:text-foreground dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-semibold'
-            )}
-          >
-            <span>Gói đăng ký</span>
-            <span
-              className={cn(
-                'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
-                careMode === 'packages'
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold'
-                  : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300 font-medium'
-              )}
-            >
-              {packagesCount}
-            </span>
-          </button>
+              <span>Đơn hàng</span>
+              <span
+                className={cn(
+                  'inline-flex items-center justify-center text-[10.5px] font-bold h-4 px-1.5 rounded-full min-w-[16px] transition-colors',
+                  careMode === 'orders'
+                    ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 font-bold'
+                    : 'bg-slate-200 text-slate-700 dark:bg-zinc-700 dark:text-zinc-300 font-medium'
+                )}
+              >
+                {ordersCount}
+              </span>
+            </button>
+          )}
         </div>
 
-        {careMode !== 'orders' && careMode !== 'packages' && (
+        {careMode !== 'orders' && (
           <div className="space-y-1">
           {visibleTopics.length === 0 ? (
             <div className="py-3 text-center text-xs text-muted-foreground italic bg-white dark:bg-zinc-900 rounded-lg border border-border/40">
@@ -583,7 +566,7 @@ export function StudentCareFormCard({
       </div>
 
       {/* Main Section Card: Form nhập liệu tương tác - Phủ toàn bộ màu nền Xanh Sky Light */}
-      {careMode !== 'orders' && careMode !== 'packages' && (
+      {careMode !== 'orders' && (
         <div className="bg-sky-50/40 dark:bg-sky-950/25 rounded-2xl border border-sky-200/80 dark:border-sky-900/60 shadow-2xs p-3.5 space-y-2">
           <CallConnectionBanner
             isActive={isCallActive}
@@ -598,7 +581,7 @@ export function StudentCareFormCard({
           {isRenewalMode ? (
             <div className="select-none animate-in fade-in-50 duration-150 space-y-2.5 w-full">
               {/* Header của cả section chăm sóc: Thông tin liên hệ phụ huynh */}
-              <div className="flex items-center justify-between gap-3 pb-2 border-b border-sky-200/70 dark:border-sky-800/60 px-0.5 flex-wrap">
+              <div className="flex items-center justify-between gap-3 px-0.5 flex-wrap">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                     Liên hệ:
@@ -1266,12 +1249,14 @@ export function StudentCareFormCard({
                     {orderInfo.packageName}
                   </span>
                 </div>
-                {orderInfo.packageAmount && (
+                {orderInfo.paymentStatusLabel && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">TT:</span>
-                    <strong className="font-mono text-emerald-600 dark:text-emerald-400">
-                      {orderInfo.packageAmount}
-                    </strong>
+                    <span className="text-muted-foreground">Trạng thái thanh toán:</span>
+                    <StatusBadge
+                      status={orderInfo.paymentStatus || 'paid'}
+                      label={orderInfo.paymentStatusLabel}
+                      className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                    />
                   </div>
                 )}
               </div>

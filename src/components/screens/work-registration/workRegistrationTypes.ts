@@ -36,7 +36,7 @@ export const WORK_REGISTRATION_GRID_SECTIONS: WorkRegistrationGridSection[] = [
   },
 ]
 
-export type WorkRegistrationTab = 'mine' | 'roster' | 'staff' | 'center'
+export type WorkRegistrationTab = 'mine' | 'roster' | 'staff'
 export type WorkRegistrationViewMode = 'week' | 'month'
 export type WorkRegistrationStatusFilter =
   | 'all'
@@ -76,7 +76,8 @@ export interface WorkRegistrationActionState {
 
 export interface SlotDetailTarget {
   date: string
-  slotId: string
+  slotId?: string
+  section?: string
   branch?: string
 }
 
@@ -90,7 +91,6 @@ export const WORK_TAB_OPTIONS: Array<{ value: WorkRegistrationTab; label: string
   { value: 'mine', label: 'Đăng ký' },
   { value: 'staff', label: 'Lịch làm việc' },
   { value: 'roster', label: 'Lịch trực test' },
-  { value: 'center', label: 'Trường' },
 ]
 
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import type { StudentProgram } from './studentDetailTypes'
+import type { StudentProgram, HistoricalTrack } from './studentDetailTypes'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,12 +19,17 @@ import {
   ArrowRightLeft,
   LogOut,
   Plus,
+  History,
 } from 'lucide-react'
+import { defaultHistoricalTracks } from './studentDetailTypes'
 
 export interface StudentDetailProgramsBarProps {
   programs: StudentProgram[]
   selectedProgramId: string
   onSelectProgram: (id: string) => void
+  historicalTracks?: HistoricalTrack[]
+  studentName?: string
+  onOpenClassDetail?: (classCode: string) => void
   onOpenAssignClass?: () => void
   onLeave?: () => void
   onReserve?: () => void
@@ -40,6 +45,9 @@ export function StudentDetailProgramsBar({
   programs,
   selectedProgramId,
   onSelectProgram,
+  historicalTracks,
+  studentName,
+  onOpenClassDetail,
   onOpenAssignClass,
   onLeave,
   onReserve,
@@ -50,42 +58,12 @@ export function StudentDetailProgramsBar({
   isReserved = false,
   isWaitingForAssignment = false,
 }: StudentDetailProgramsBarProps) {
-  const getStatusPill = (status: StudentProgram['programStatus']) => {
-    switch (status) {
-      case 'active':
-        return (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-            Đang học
-          </span>
-        )
-      case 'wait_for_assignment':
-        return (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
-            Chờ ghép
-          </span>
-        )
-      case 'reserved':
-        return (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300">
-            Bảo lưu
-          </span>
-        )
-      case 'dropped':
-        return (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300">
-            Đã thoát
-          </span>
-        )
-      default:
-        return null
-    }
-  }
-
+  const tracksToDisplay = historicalTracks || defaultHistoricalTracks
   const hasActions = Boolean(onLeave || onReserve || onResume || onTransfer || onDrop || onAssignClass || onOpenAssignClass)
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2.5 pb-1.5 select-none border-b border-border/40">
-      {/* Program Tabs: không có icon */}
+      {/* Program Tabs: chỉ có tên lộ trình, không có icon, không có số gói, không có trạng thái */}
       <div className="flex flex-wrap items-center gap-2">
         {programs.map((prog) => {
           const isSelected = selectedProgramId === prog.id
@@ -95,29 +73,84 @@ export function StudentDetailProgramsBar({
               type="button"
               onClick={() => onSelectProgram(prog.id)}
               className={cn(
-                'flex h-9 items-center gap-2 rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer shadow-2xs',
+                'flex h-9 items-center rounded-lg px-3.5 text-xs font-bold transition-all cursor-pointer shadow-2xs',
                 isSelected
                   ? 'bg-primary text-primary-foreground shadow-xs'
                   : 'bg-background border border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted/50'
               )}
             >
               <span>{prog.name}</span>
-              {prog.packages && prog.packages.length > 0 && (
-                <span
-                  className={cn(
-                    'text-[10.5px] font-medium px-1.5 py-0.2 rounded-full',
-                    isSelected
-                      ? 'bg-primary-foreground/20 text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  {prog.packages.length} gói
-                </span>
-              )}
-              {getStatusPill(prog.programStatus)}
             </button>
           )
         })}
+
+        {/* Nút Khác: hiển thị menu các lộ trình đào tạo cũ / khác, không mở modal */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 text-xs font-semibold gap-1 text-muted-foreground hover:text-foreground border border-border/80 hover:bg-muted/50 rounded-lg cursor-pointer shadow-3xs"
+              title="Danh sách các lộ trình khác / lộ trình cũ"
+            >
+              <span>Khác</span>
+              <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-80 p-2 space-y-1">
+            <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between gap-1.5">
+              <span className="flex items-center gap-1.5">
+                <History className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>Lộ trình đào tạo trước đó</span>
+              </span>
+              {studentName && (
+                <span className="text-[10px] lowercase font-normal opacity-70 truncate max-w-[100px]">
+                  {studentName}
+                </span>
+              )}
+            </div>
+            <DropdownMenuSeparator />
+            {tracksToDisplay.map((track) => (
+              <div
+                key={track.id}
+                className="p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-default text-left space-y-1"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-xs text-foreground truncate">{track.name}</span>
+                  <span className="text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                    {track.completedSessions}/{track.totalSessions}b
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span className="truncate">{track.level}</span>
+                  <span className="shrink-0 text-[10px] text-muted-foreground/80">{track.startDate} – {track.endDate}</span>
+                </div>
+                {track.finalOutcome && (
+                  <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium leading-tight">
+                    ✓ {track.finalOutcome}
+                  </div>
+                )}
+                {track.classes && track.classes.length > 0 && (
+                  <div className="text-[10px] text-muted-foreground pt-0.5 border-t border-border/30 flex items-center gap-1 flex-wrap">
+                    <span>Lớp:</span>
+                    {track.classes.map((c, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => onOpenClassDetail?.(c.classCode)}
+                        className="font-mono bg-muted hover:bg-primary/10 hover:text-primary px-1 py-0.2 rounded text-[9.5px] cursor-pointer transition-colors"
+                        title="Xem chi tiết lớp học"
+                      >
+                        {c.classCode}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Nút Thao tác dạng dropdown ở cạnh phải dòng Chương trình/môn học */}

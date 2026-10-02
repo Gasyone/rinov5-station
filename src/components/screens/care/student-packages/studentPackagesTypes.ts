@@ -57,6 +57,7 @@ export interface StudentEnrolledPackage {
   status: PackageOperationalStatus
   statusLabel?: string
   isCurrentPackage?: boolean
+  isOtherChild?: boolean
 }
 
 export interface StudentPackagesTabProps {

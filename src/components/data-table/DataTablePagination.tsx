@@ -1,20 +1,18 @@
 'use client'
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 export const DEFAULT_PAGE_SIZE = 20
 export const DEFAULT_PAGE_SIZE_OPTIONS = [20, 50, 100]
 
-interface DataTablePaginationProps {
+export interface DataTablePaginationProps {
   /** Current page (1-based) */
   page: number
   /** Total record count */
@@ -26,12 +24,18 @@ interface DataTablePaginationProps {
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   className?: string
+  /** Selected count (optional) */
+  selectedCount?: number
+  /** Clear selection callback (optional) */
+  onClearSelection?: () => void
 }
 
 /**
  * Standard pagination footer for List Page Pattern.
  *
- * Defaults to page size 20 with options [20, 50, 100] per DS §4.2 L1.
+ * Minimalist Connected design (Linear / Notion style):
+ * - Left: Total records or selection state
+ * - Right: Compact page size selector + Connected segmented pagination
  *
  * @see docs/DESIGN_SYSTEM.md §4.2 List Page Pattern
  */
@@ -43,6 +47,8 @@ export function DataTablePagination({
   onPageChange,
   onPageSizeChange,
   className,
+  selectedCount = 0,
+  onClearSelection,
 }: DataTablePaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const safePage = Math.min(Math.max(1, page), totalPages)
@@ -52,21 +58,44 @@ export function DataTablePagination({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-between gap-3 px-4 py-2 text-xs text-muted-foreground',
+        'flex flex-wrap items-center justify-between gap-3 px-3.5 py-1.5 text-xs text-muted-foreground bg-muted/20 select-none min-h-10',
         className
       )}
     >
-      <div className="flex items-center gap-2">
-        <span>
-          {total === 0
-            ? 'Chưa có bản ghi'
-            : `Hiển thị ${firstRecord}–${lastRecord} / ${total}`}
-        </span>
+      {/* Bên trái: Thông tin hiển thị / Trạng thái chọn */}
+      <div className="flex items-center gap-2 min-w-0">
+        {selectedCount > 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+              Đã chọn <strong className="font-mono">{selectedCount}</strong> / {total} dòng
+            </span>
+            {onClearSelection && (
+              <button
+                type="button"
+                onClick={onClearSelection}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer transition-colors"
+              >
+                Bỏ chọn
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span>Hiển thị</span>
+            <span className="font-mono font-medium text-foreground">
+              {total === 0 ? '0' : `${firstRecord}–${lastRecord}`}
+            </span>
+            <span>trên</span>
+            <span className="font-mono font-semibold text-foreground">{total}</span>
+            <span>kết quả</span>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span>Dòng</span>
+      {/* Bên phải: Cụm điều khiển Linear Connected */}
+      <div className="flex items-center gap-2">
+        {/* Bộ chọn số dòng: [ 20 / trang ▾ ] */}
+        <div className="flex items-center">
           <Select
             value={String(pageSize)}
             onValueChange={(value) => {
@@ -74,59 +103,76 @@ export function DataTablePagination({
               onPageChange(1)
             }}
           >
-            <SelectTrigger size="sm" className="h-8 w-[72px]">
-              <SelectValue />
+            <SelectTrigger
+              size="sm"
+              className="h-7.5 px-2.5 text-xs font-medium bg-background border-border/80 shadow-2xs hover:bg-muted/50 w-auto gap-1 rounded-md"
+            >
+              <span className="font-mono font-semibold">{pageSize}</span>
+              <span className="text-muted-foreground">/ trang</span>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               {pageSizeOptions.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
+                <SelectItem key={size} value={String(size)} className="text-xs">
+                  {size} / trang
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Trang đầu"
-            disabled={safePage === 1}
-            onClick={() => onPageChange(1)}
-          >
-            <ChevronsLeft className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
+        {/* Cụm phân trang nối liền khối (Connected Group Linear) */}
+        <div className="inline-flex items-center rounded-md border border-border/80 bg-background shadow-2xs overflow-hidden divide-x divide-border/60 h-7.5">
+          {totalPages > 3 && (
+            <button
+              type="button"
+              aria-label="Trang đầu"
+              disabled={safePage === 1}
+              onClick={() => onPageChange(1)}
+              className="h-full px-2 text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer flex items-center justify-center"
+              title="Trang đầu"
+            >
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </button>
+          )}
+
+          <button
+            type="button"
             aria-label="Trang trước"
             disabled={safePage === 1}
             onClick={() => onPageChange(safePage - 1)}
+            className="h-full px-2 text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer flex items-center justify-center"
+            title="Trang trước"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-          <span className="px-2 font-medium text-foreground">
+          </button>
+
+          <div className="h-full px-3 flex items-center justify-center font-mono text-xs font-medium text-foreground bg-muted/20">
             {safePage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="icon-sm"
+          </div>
+
+          <button
+            type="button"
             aria-label="Trang sau"
             disabled={safePage === totalPages}
             onClick={() => onPageChange(safePage + 1)}
+            className="h-full px-2 text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer flex items-center justify-center"
+            title="Trang sau"
           >
             <ChevronRight className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Trang cuối"
-            disabled={safePage === totalPages}
-            onClick={() => onPageChange(totalPages)}
-          >
-            <ChevronsRight className="h-3.5 w-3.5" />
-          </Button>
+          </button>
+
+          {totalPages > 3 && (
+            <button
+              type="button"
+              aria-label="Trang cuối"
+              disabled={safePage === totalPages}
+              onClick={() => onPageChange(totalPages)}
+              className="h-full px-2 text-muted-foreground hover:bg-muted/70 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer flex items-center justify-center"
+              title="Trang cuối"
+            >
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

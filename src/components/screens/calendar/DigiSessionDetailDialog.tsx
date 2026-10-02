@@ -234,7 +234,7 @@ export function DigiSessionDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="w-[96vw] max-w-[1360px] sm:max-w-[1360px] h-[92vh] max-h-[92vh] flex flex-col p-4 gap-3.5 bg-zinc-100 dark:bg-zinc-950 overflow-hidden shadow-2xl border-border select-none"
+        className="w-[92vw] max-w-[1140px] xl:max-w-[1180px] h-[86vh] max-h-[820px] flex flex-col p-1.5 sm:p-2 gap-1.5 bg-zinc-100/95 dark:bg-zinc-950 overflow-hidden shadow-2xl border-border select-none rounded-2xl"
       >
         <div className="flex items-center justify-between w-full shrink-0">
           <div className="flex items-center gap-1.5">

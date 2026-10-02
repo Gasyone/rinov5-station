@@ -12,6 +12,7 @@ export interface GenericSessionData {
   kctName?: string
   subject?: string
   level?: string
+  subLevel?: string
   teacher?: string
   teacherName?: string
   organizer?: string
@@ -36,6 +37,7 @@ export interface GenericSessionData {
   totalStudents?: number
   officialStudents?: number
   trialStudents?: number
+  makeUpStudents?: number
   attendedStudents?: number
   studentCount?: number
   capacity?: number

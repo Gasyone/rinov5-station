@@ -10,7 +10,6 @@ import {
   Video,
   HelpCircle,
   X,
-  Target,
   Sparkles,
   Layers,
 } from 'lucide-react'

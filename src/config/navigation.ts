@@ -59,7 +59,7 @@ export const navigationGroups: NavigationGroup[] = [
       { id: 'crm_my_leads', label: 'Lead của tôi', href: '/app/crm_my_leads' },
       { id: 'crm_leads', label: 'Quản lý Lead', href: '/app/crm_leads' },
       { id: 'orders', label: 'Quản lý đơn hàng', href: '/app/orders' },
-      { id: 'payment_receipts', label: 'Thanh toán', href: '/app/payment_receipts' },
+      { id: 'payment_receipts', label: 'Thu phí & Công nợ', href: '/app/payment_receipts' },
     ],
   },
   {

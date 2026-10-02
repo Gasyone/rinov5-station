@@ -66,7 +66,7 @@ export function WorkRegistrationAssignStaffDialog({
   const isDigi = section === 'evening_digi'
   const [selectedIds, setSelectedIds] = useState<string[]>(currentAssignedIds)
   const [searchQuery, setSearchQuery] = useState('')
-  const [roleFilter, setRoleFilter] = useState<'all' | 'Trợ giảng' | 'Giáo viên' | 'CS' | 'Khác'>('all')
+  const [roleFilter, setRoleFilter] = useState<'all' | 'Giáo viên' | 'Khác'>('all')
 
   // Nhân sự đang được chọn xem lịch ở Panel phải
   const [focusedStaffId, setFocusedStaffId] = useState<string>(() => {
@@ -82,8 +82,10 @@ export function WorkRegistrationAssignStaffDialog({
 
   const filteredStaff = useMemo(() => {
     let list = allStaff
-    if (roleFilter !== 'all') {
-      list = list.filter((staff) => staff.role === roleFilter)
+    if (roleFilter === 'Giáo viên') {
+      list = list.filter((staff) => staff.role === 'Giáo viên')
+    } else if (roleFilter === 'Khác') {
+      list = list.filter((staff) => staff.role !== 'Giáo viên')
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
@@ -206,7 +208,7 @@ export function WorkRegistrationAssignStaffDialog({
             <div className="flex items-center justify-between gap-1.5 shrink-0">
               {/* TABS LỌC VAI TRÒ */}
               <div className="flex items-center gap-1 flex-wrap">
-                {(['all', 'Trợ giảng', 'Giáo viên', 'CS', 'Khác'] as const).map((r) => (
+                {(['all', 'Giáo viên', 'Khác'] as const).map((r) => (
                   <button
                     key={r}
                     type="button"
@@ -280,16 +282,12 @@ export function WorkRegistrationAssignStaffDialog({
                           <span
                             className={cn(
                               'text-[10.5px] font-normal leading-tight',
-                              staff.role === 'Trợ giảng'
-                                ? 'text-purple-600 dark:text-purple-400'
-                                : staff.role === 'CS'
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : staff.role === 'Khác'
-                                ? 'text-muted-foreground'
-                                : 'text-blue-600 dark:text-blue-400'
+                              staff.role === 'Giáo viên'
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-muted-foreground'
                             )}
                           >
-                            {staff.role}
+                            {staff.role === 'Giáo viên' ? 'Giáo viên' : 'Khác'}
                           </span>
                         </div>
                       </div>
@@ -347,7 +345,7 @@ export function WorkRegistrationAssignStaffDialog({
                 <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-border/50 shrink-0">
                   <div className="min-w-0 flex-1">
                     <h4 className="text-xs font-semibold text-foreground truncate">{focusedStaff.name}</h4>
-                    <p className="text-xs text-muted-foreground">{focusedStaff.role} · {focusedStaff.branch}</p>
+                    <p className="text-xs text-muted-foreground">{focusedStaff.role === 'Giáo viên' ? 'Giáo viên' : 'Khác'} · {focusedStaff.branch}</p>
                   </div>
 
                   <div className="text-right shrink-0">

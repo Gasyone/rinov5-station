@@ -48,6 +48,7 @@ interface MonthlyCommentsSectionProps {
   studentId?: string
   studentName?: string
   studentCode?: string
+  subject?: string
 }
 
 
@@ -56,6 +57,7 @@ export function MonthlyCommentsSection({
   studentId = 'HV-S4-10',
   studentName = 'Alex (Nguyễn An)',
   studentCode = 'HV-S4-10',
+  subject,
 }: MonthlyCommentsSectionProps) {
   const [showAllHistory, setShowAllHistory] = useState(false)
   // State mở Modal Báo Cáo Tháng (chuẩn đồng bộ từ detail lớp: StudentMonthlyReportDialog)
@@ -78,7 +80,7 @@ export function MonthlyCommentsSection({
   const commentsList = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     syncCounter
-    const storeReports = getStudentMonthlyReports(studentId || studentName)
+    const storeReports = getStudentMonthlyReports(studentId, studentName)
     if (storeReports && storeReports.length > 0) {
       return storeReports.map((r) => ({
         id: r.id,
@@ -90,7 +92,7 @@ export function MonthlyCommentsSection({
         teacherName: r.teacherName,
         comment: r.sectionA1Content
           ? (r.sectionA1Content.split('\n')[0] || r.sectionAContent || 'Đánh giá năng lực học tập')
-          : (r.sectionAContent || 'Đánh giá năng lực học tập'),
+          : (r.sectionAContent || 'Chưa có nhận xét - Bấm để điền báo cáo'),
         sectionA1Content: r.sectionA1Content,
         sectionA2Content: r.sectionA2Content,
         sectionAContent: r.sectionAContent,
@@ -105,7 +107,32 @@ export function MonthlyCommentsSection({
         isCurrent: r.isCurrent,
       }))
     }
-    return monthlyComments
+    if (monthlyComments && monthlyComments.length > 0) {
+      return monthlyComments
+    }
+    // Fallback: nếu chưa có báo cáo nào, vẫn luôn hiển thị kỳ hiện tại (Tháng 4/2026) để người dùng có thể bấm vào tạo/sửa
+    return [
+      {
+        id: `draft-${studentId}-4_5_2026`,
+        month: 'Tháng 4/2026',
+        monthOptionValue: '4_5_2026',
+        monthTitle: 'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+        dateStr: '01/04/2026 đến 30/04/2026',
+        awardBadge: '',
+        teacherName: 'Ms.Chloe',
+        comment: 'Chưa có nhận xét - Bấm "Xem & sửa" để cập nhật báo cáo',
+        sectionA1Content: '',
+        sectionA2Content: '',
+        sectionAContent: '',
+        sectionB1Content: '',
+        sectionB2StartLesson: 8,
+        sectionB2EndLesson: 10,
+        sectionB2Weeks: [],
+        evaluator: 'Ms.Chloe',
+        date: '28/04/2026',
+        isCurrent: true,
+      },
+    ]
   }, [monthlyComments, studentId, studentName, syncCounter])
 
   const handleOpenReport = (monthKeyOrValue?: string) => {
@@ -135,8 +162,6 @@ export function MonthlyCommentsSection({
     [studentId, studentCode, studentName]
   )
 
-  if (!commentsList || commentsList.length === 0) return null
-
   return (
     <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
       {/* Header with soft background tint */}
@@ -160,9 +185,7 @@ export function MonthlyCommentsSection({
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 <span>
-                  {showAllHistory
-                    ? 'Thu gọn'
-                    : `Xem thêm (${commentsList.length - 1} tháng cũ hơn)`}
+                  {showAllHistory ? 'Thu gọn' : `Xem thêm (${commentsList.length - 1} kỳ)`}
                 </span>
                 {showAllHistory ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
               </button>
@@ -205,6 +228,13 @@ export function MonthlyCommentsSection({
                       )}
                     >
                       Hiện tại
+                    </span>
+                  )}
+
+                  {/* Draft Badge if report is empty */}
+                  {!mc.sectionA1Content && !mc.sectionAContent && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 leading-none shrink-0">
+                      Bản dự thảo
                     </span>
                   )}
 
@@ -266,6 +296,7 @@ export function MonthlyCommentsSection({
         students={[rosterStudent]}
         initialStudentId={studentId}
         initialMonthKey={selectedReportMonthKey}
+        subject={subject}
       />
     </div>
   )

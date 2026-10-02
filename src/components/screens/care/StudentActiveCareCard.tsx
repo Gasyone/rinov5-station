@@ -4,6 +4,11 @@ import { useState } from 'react'
 import { History, ChevronUp, ChevronDown } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
 import { formatFullStaffName } from './operationsAlertHelpers'
+import {
+  cleanMessageNotes,
+  parseRecipient,
+  formatCareHistoryTime,
+} from './studentCareDetailHelpers'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
 
 import { PersonnelHoverCard } from '@/components/shared'
@@ -123,46 +128,99 @@ export function StudentActiveCareCard({
     }
   }
 
+  const effectiveCareNote = cleanMessageNotes(careNote)
+  const parsedRec = parseRecipient(student?.interactionNotes)
+  const effectiveRecipient = parsedRec || chatRecipient || 'Châu Mẹ Nguyễn Thị Mai (Mẹ)'
+  const timeInfo = formatCareHistoryTime('2026-07-20 14:00')
+
+  const missedLogs = [
+    {
+      time: '18/07 09:30',
+      status: 'Đã trao đổi',
+      nextCallback: '18/07 14:15',
+      duration: '01:45',
+      note: isRenewal
+        ? isMath
+          ? 'Liên hệ trao đổi lần 1 về kết quả học Toán tư duy giữa kỳ và giới thiệu chương trình nâng cấp lên Level 2.'
+          : 'Liên hệ trao đổi lần 1 về tiến độ học Tiếng Anh của con và chính sách ưu đãi tái phí sớm 10%.'
+        : 'Trao đổi về tình hình làm bài tập về nhà và sự tập trung của con trong các tiết học gần đây.',
+      parentOpinion: isRenewal
+        ? 'Phụ huynh rất quan tâm nhưng muốn xem lại bảng điểm chi tiết của con trước khi quyết định.'
+        : 'Mẹ cảm ơn cô giáo đã kèm cặp sát sao, dạo này con ở nhà tự giác học hơn.',
+    },
+    {
+      time: '18/07 14:15',
+      status: 'Đã trao đổi',
+      nextCallback: '19/07 10:00',
+      duration: '02:10',
+      note: isRenewal
+        ? isMath
+          ? 'Gọi lại gửi phân tích điểm số các bài kiểm tra tuần. Giải đáp thắc mắc về phương pháp tư duy giải toán nhanh.'
+          : 'Gọi lại tư vấn xếp lịch học thứ 7 phù hợp với lịch học chính khóa trên trường của con.'
+        : 'Thông báo kết quả kiểm tra định kỳ chuyên cần và gửi nhận xét chi tiết của giáo viên.',
+      parentOpinion: isRenewal
+        ? 'Mẹ chia sẻ gia đình rất hài lòng với sự tiến bộ của con, đang cân nhắc giữa gói 6 tháng và 12 tháng.'
+        : 'Gia đình rất vui vì con có tiến bộ rõ rệt ở kỹ năng thuyết trình trước lớp.',
+    },
+    ...(isRenewal
+      ? [
+          {
+            time: '19/07 10:00',
+            status: 'Đã trao đổi',
+            nextCallback: '20/07 14:00',
+            duration: '01:30',
+            note: 'Gửi bảng tính học phí sau khi áp dụng mã giảm giá và đối chiếu số buổi học còn lại của gói hiện tại.',
+            parentOpinion:
+              'Bố mẹ đồng ý cho con học tiếp, đề xuất chiều nay hoặc ngày mai sẽ ra quầy hoàn tất thủ tục đăng ký.',
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div className="space-y-1 text-left select-none pt-1">
       {/* Active Care Card Item */}
       <div className="space-y-1">
-        {/* Header row */}
+        {/* Header row: Status + CS circle badge + Staff name + Channel & Recipient + Relative time & Next appointment */}
         <div className="flex items-center justify-between flex-wrap gap-2 pt-0.5 pb-1 select-none">
           <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-            <span className={cn("px-1.5 py-0.5 rounded-md text-xs font-bold border shrink-0", statusBadgeClass)}>
+            <span className={cn('px-1.5 py-0.5 rounded-md text-xs font-bold border shrink-0', statusBadgeClass)}>
               {statusLabel}
             </span>
-            <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-extrabold bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950 dark:text-sky-300 flex items-center gap-1">
-              <span>CS</span>
+            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-medium select-none bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 shrink-0">
+              CS
             </span>
             <PersonnelHoverCard person={getCSStaffPerson(csStaffName)}>
-              <span className="font-bold text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+              <span className="font-normal text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
                 {csStaffName}
               </span>
             </PersonnelHoverCard>
-            <span className="text-muted-foreground text-xs font-medium">• Cuộc gọi · Người nhận: <span className="text-foreground font-semibold">{chatRecipient}</span></span>
-            <span className="font-mono text-[10.5px] font-semibold text-muted-foreground bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded-md shrink-0">
-              2026-07-20 14:00
+            <span className="text-xs text-muted-foreground font-normal truncate">
+              • Đã gọi <span className="text-foreground font-normal">{effectiveRecipient}</span>
+            </span>
+            <span
+              className="text-xs text-muted-foreground font-normal shrink-0"
+              title="2026-07-20 14:00"
+            >
+              • {timeInfo.display}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-              {appointmentText}
+            <span className="text-xs font-normal text-muted-foreground">
+              📅 {appointmentText}
             </span>
           </div>
         </div>
 
-        {/* Active Care Card Body */}
-        <div className="rounded-lg border border-amber-200/80 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20 p-2 shadow-2xs space-y-1.5 text-xs text-left">
-
-          {/* Continuous Stream: Audio + Note + Parent Feedback Label & Text */}
+        {/* Active Care Card Body - Đóng khung ngoài */}
+        <div className="rounded-lg border border-amber-200/80 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20 p-2 space-y-1.5 text-xs text-left">
+          {/* Continuous Stream: Audio + Clean Note + Parent Feedback Label & Text */}
           <div className="text-xs text-foreground/90 font-normal leading-relaxed">
             <span className="inline-flex items-center align-middle mr-2">
               <AudioPlayButton duration={audioDuration} />
             </span>
-            <span className="align-middle">{careNote}</span>
+            <span className="align-middle">{effectiveCareNote}</span>
             {parentOpinion && (
               <span className="align-middle">
                 {' '}
@@ -176,164 +234,77 @@ export function StudentActiveCareCard({
             )}
           </div>
 
-          {/* Lịch sử ghi nhận chăm sóc trước đó */}
+          {/* Lịch sử ghi nhận chăm sóc trước đó (Accordion) - Bên trong không đóng khung lồng nhau */}
           <div className="pt-1 select-none border-t border-amber-200/60 dark:border-amber-900/30">
             <button
               type="button"
               onClick={() => setShowMissedCalls(!showMissedCalls)}
-              className="w-full text-left text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+              className="w-full text-left text-xs font-normal italic text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
             >
               <span className="flex items-center gap-1.5 underline decoration-sky-300 dark:decoration-sky-700">
-                <History className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0 no-underline" />
+                <History className="h-3.5 w-3.5 text-sky-500 shrink-0 no-underline" />
                 <span>
-                  Lịch sử ({isRenewal ? 3 : 2}) lần ghi nhận chăm sóc trước đó
+                  Lịch sử ({missedLogs.length}) lần ghi nhận chăm sóc trước đó
                 </span>
                 <span className="font-mono text-[9.5px] text-muted-foreground font-normal ml-1">
                   18/07 - 19/07
                 </span>
               </span>
               {showMissedCalls ? (
-                <ChevronUp className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                <ChevronUp className="h-3.5 w-3.5 text-sky-500 shrink-0" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                <ChevronDown className="h-3.5 w-3.5 text-sky-500 shrink-0" />
               )}
             </button>
 
             {showMissedCalls && (
-              <div className="mt-2 pl-2.5 border-l-2 border-sky-300 dark:border-sky-800 space-y-2 text-xs animate-in fade-in-50 duration-150">
-                {/* Lần 1 */}
-                <div className="p-2 rounded-lg bg-background/90 dark:bg-zinc-900/80 border border-border/70 hover:border-sky-300 transition-colors space-y-1 text-xs text-left shadow-3xs">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-1.5 text-xs text-foreground flex-wrap">
-                      <span>• 18/07 09:30</span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                      <span className="text-muted-foreground font-normal text-xs">
-                        Đã trao đổi
-                      </span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-xs font-medium text-foreground">
-                        CS: <span className="font-semibold">{csStaffName}</span>
-                      </span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-xs text-muted-foreground font-normal">
-                        Người nhận: <span className="text-foreground font-medium">{chatRecipient}</span>
-                      </span>
-                    </div>
-                    <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
-                      📅 Hẹn gọi lại: 18/07 14:15
-                    </span>
-                  </div>
-                  <div className="text-xs text-foreground/90 leading-relaxed font-normal">
-                    <span className="inline-flex items-center align-middle mr-2">
-                      <AudioPlayButton duration="01:45" />
-                    </span>
-                    <span className="align-middle">
-                      {isRenewal
-                        ? (isMath
-                            ? 'Liên hệ trao đổi lần 1 về kết quả học Toán tư duy giữa kỳ và giới thiệu chương trình nâng cấp lên Level 2.'
-                            : 'Liên hệ trao đổi lần 1 về tiến độ học Tiếng Anh của con và chính sách ưu đãi tái phí sớm 10%.')
-                        : 'Trao đổi về tình hình làm bài tập về nhà và sự tập trung của con trong các tiết học gần đây.'}
-                    </span>
-                    {' '}
-                    <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
-                      • Phụ huynh phản hồi:
-                    </span>{' '}
-                    <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
-                      “{isRenewal
-                        ? 'Phụ huynh rất quan tâm nhưng muốn xem lại bảng điểm chi tiết của con trước khi quyết định.'
-                        : 'Mẹ cảm ơn cô giáo đã kèm cặp sát sao, dạo này con ở nhà tự giác học hơn.'}”
-                    </span>
-                  </div>
-                </div>
-
-                {/* Lần 2 */}
-                <div className="p-2 rounded-lg bg-background/90 dark:bg-zinc-900/80 border border-border/70 hover:border-sky-300 transition-colors space-y-1 text-xs text-left shadow-3xs">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-1.5 text-xs text-foreground flex-wrap">
-                      <span>• 18/07 14:15</span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                      <span className="text-muted-foreground font-normal text-xs">
-                        Đã trao đổi
-                      </span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-xs font-medium text-foreground">
-                        CS: <span className="font-semibold">{csStaffName}</span>
-                      </span>
-                      <span className="text-muted-foreground font-normal">•</span>
-                      <span className="text-xs text-muted-foreground font-normal">
-                        Người nhận: <span className="text-foreground font-medium">{chatRecipient}</span>
-                      </span>
-                    </div>
-                    <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
-                      📅 Hẹn gọi lại: 19/07 10:00
-                    </span>
-                  </div>
-                  <div className="text-xs text-foreground/90 leading-relaxed font-normal">
-                    <span className="inline-flex items-center align-middle mr-2">
-                      <AudioPlayButton duration="02:10" />
-                    </span>
-                    <span className="align-middle">
-                      {isRenewal
-                        ? (isMath
-                            ? 'Gọi lại gửi phân tích điểm số các bài kiểm tra tuần. Giải đáp thắc mắc về phương pháp tư duy giải toán nhanh.'
-                            : 'Gọi lại tư vấn xếp lịch học thứ 7 phù hợp với lịch học chính khóa trên trường của con.')
-                        : 'Thông báo kết quả kiểm tra định kỳ chuyên cần và gửi nhận xét chi tiết của giáo viên.'}
-                    </span>
-                    {' '}
-                    <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
-                      • Phụ huynh phản hồi:
-                    </span>{' '}
-                    <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
-                      “{isRenewal
-                        ? 'Mẹ chia sẻ gia đình rất hài lòng với sự tiến bộ của con, đang cân nhắc giữa gói 6 tháng và 12 tháng.'
-                        : 'Gia đình rất vui vì con có tiến bộ rõ rệt ở kỹ năng thuyết trình trước lớp.'}”
-                    </span>
-                  </div>
-                </div>
-
-                {/* Lần 3 (Dành cho Tái phí) */}
-                {isRenewal && (
-                  <div className="p-2 rounded-lg bg-background/90 dark:bg-zinc-900/80 border border-border/70 hover:border-sky-300 transition-colors space-y-1 text-xs text-left shadow-3xs">
+              <div className="mt-1.5 space-y-2 text-xs text-muted-foreground font-normal animate-in fade-in-50 duration-150 pl-1">
+                {missedLogs.map((mCall, mIdx) => (
+                  <div key={mIdx} className="space-y-1 pt-1 border-t border-border/40 first:border-t-0 first:pt-0">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5 text-xs text-foreground flex-wrap">
-                        <span>• 19/07 10:00</span>
-                        <span className="text-muted-foreground font-normal">•</span>
-                        <span className="text-muted-foreground font-normal">Cuộc gọi</span>
-                        <span className="text-muted-foreground font-normal text-xs">
-                          Đã trao đổi
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <PersonnelHoverCard person={getCSStaffPerson(csStaffName)}>
+                          <span className="font-normal text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+                            {csStaffName}
+                          </span>
+                        </PersonnelHoverCard>
+
+                        <span className="text-xs text-muted-foreground font-normal truncate">
+                          • {mCall.status} - <span className="text-foreground font-normal">{effectiveRecipient}</span>
                         </span>
-                        <span className="text-muted-foreground font-normal">•</span>
-                        <span className="text-xs font-medium text-foreground">
-                          CS: <span className="font-semibold">{csStaffName}</span>
-                        </span>
-                        <span className="text-muted-foreground font-normal">•</span>
-                        <span className="text-xs text-muted-foreground font-normal">
-                          Người nhận: <span className="text-foreground font-medium">{chatRecipient}</span>
+                        <span className="text-xs text-muted-foreground font-normal shrink-0">
+                          • {mCall.time}
                         </span>
                       </div>
-                      <span className="text-xs font-medium text-sky-700 dark:text-sky-400 shrink-0">
-                        📅 Hẹn liên hệ: 20/07 14:00
-                      </span>
+                      {mCall.nextCallback && (
+                        <span className="text-xs font-normal text-muted-foreground shrink-0">
+                          📅 Hẹn gọi lại: {mCall.nextCallback}
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-foreground/90 leading-relaxed font-normal">
-                      <span className="inline-flex items-center align-middle mr-2">
-                        <AudioPlayButton duration="01:30" />
+                      {mCall.duration && (
+                        <span className="inline-flex items-center align-middle mr-2">
+                          <AudioPlayButton duration={mCall.duration} />
+                        </span>
+                      )}
+                      <span className="align-middle text-muted-foreground/90">
+                        {mCall.note}
                       </span>
-                      <span className="align-middle">
-                        Gửi bảng tính học phí sau khi áp dụng mã giảm giá và đối chiếu số buổi học còn lại của gói hiện tại.
-                      </span>
-                      {' '}
-                      <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
-                        • Phụ huynh phản hồi:
-                      </span>{' '}
-                      <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
-                        “Bố mẹ đồng ý cho con học tiếp, đề xuất chiều nay hoặc ngày mai sẽ ra quầy hoàn tất thủ tục đăng ký.”
-                      </span>
+                      {mCall.parentOpinion && (
+                        <span>
+                          {' '}
+                          <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
+                            • Phụ huynh phản hồi:
+                          </span>{' '}
+                          <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
+                            “{mCall.parentOpinion}”
+                          </span>
+                        </span>
+                      )}
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             )}
           </div>

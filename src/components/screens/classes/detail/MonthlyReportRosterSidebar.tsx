@@ -73,11 +73,13 @@ export function MonthlyReportRosterSidebar({
               {/* Status indicator */}
               <div className="shrink-0 ms-1">
                 {isDone ? (
-                  <div className="h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <div className="h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center" title="Đã lập báo cáo">
                     <Check className="h-3 w-3 stroke-[3]" />
                   </div>
                 ) : (
-                  <span className="text-xs text-muted-foreground/50 italic">—</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                    Chưa lập
+                  </span>
                 )}
               </div>
             </button>

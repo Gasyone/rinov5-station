@@ -69,6 +69,124 @@ export function formatRelativeDate(isoDate: string): string {
   return `${d}/${m}/${date.getFullYear()}`
 }
 
+/**
+ * Định dạng thời gian chăm sóc học viên theo quy chuẩn:
+ * - Trong ngày: giờ (VD: "2 giờ trước")
+ * - Trong tuần: ngày (VD: "3 ngày trước")
+ * - Trong 2 tuần: tuần (VD: "1 tuần trước")
+ * - Từ 2 tuần: ngày/tháng (Không có năm, VD: "20/06")
+ */
+export function formatCareHistoryTime(
+  dateStr?: string,
+  baseDate: Date = new Date(2026, 6, 6, 17, 0, 0)
+): { display: string; full: string } {
+  if (!dateStr) return { display: '', full: '' }
+
+  const trimmed = dateStr.trim()
+  let targetDate: Date | null = null
+
+  // Xử lý các định dạng ngày giờ: "YYYY-MM-DD HH:mm", "YYYY-MM-DD", "DD/MM/YYYY HH:mm", "DD/MM/YYYY", ISO
+  if (trimmed.includes('T')) {
+    const d = new Date(trimmed)
+    if (!isNaN(d.getTime())) targetDate = d
+  } else if (trimmed.includes('-')) {
+    const parts = trimmed.split(/\s+/)
+    const dateParts = parts[0].split('-').map((v) => parseInt(v, 10))
+    if (dateParts.length === 3) {
+      let y = dateParts[0]
+      const m = dateParts[1]
+      let d = dateParts[2]
+      if (y < 100 && d > 1000) {
+        const tmp = y
+        y = d
+        d = tmp
+      }
+      let hour = 14
+      let minute = 30
+      if (parts[1]) {
+        const timeParts = parts[1].split(':').map((v) => parseInt(v, 10))
+        if (!isNaN(timeParts[0])) hour = timeParts[0]
+        if (!isNaN(timeParts[1])) minute = timeParts[1]
+      }
+      targetDate = new Date(y, m - 1, d, hour, minute)
+    }
+  } else if (trimmed.includes('/')) {
+    const parts = trimmed.split(/\s+/)
+    const dateParts = parts[0].split('/').map((v) => parseInt(v, 10))
+    if (dateParts.length === 3) {
+      const [d, m, y] = dateParts
+      let hour = 14
+      let minute = 30
+      if (parts[1]) {
+        const timeParts = parts[1].split(':').map((v) => parseInt(v, 10))
+        if (!isNaN(timeParts[0])) hour = timeParts[0]
+        if (!isNaN(timeParts[1])) minute = timeParts[1]
+      }
+      targetDate = new Date(y, m - 1, d, hour, minute)
+    }
+  }
+
+  if (!targetDate || isNaN(targetDate.getTime())) {
+    const fallback = new Date(trimmed)
+    targetDate = isNaN(fallback.getTime()) ? null : fallback
+  }
+
+  if (!targetDate) return { display: dateStr, full: dateStr }
+
+  const realNow = new Date()
+  let effectiveBase = baseDate
+  // Nếu mốc thời gian lớn hơn ngày mô phỏng và được tạo trong phiên làm việc hiện tại
+  if (targetDate.getTime() > baseDate.getTime() && Math.abs(realNow.getTime() - targetDate.getTime()) < 24 * 60 * 60 * 1000) {
+    effectiveBase = realNow
+  }
+
+  const d = String(targetDate.getDate()).padStart(2, '0')
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0')
+  const y = targetDate.getFullYear()
+  const hh = String(targetDate.getHours()).padStart(2, '0')
+  const mm = String(targetDate.getMinutes()).padStart(2, '0')
+  const full = `${hh}:${mm} ${d}/${m}/${y}`
+
+  // Tính khoảng cách thời gian theo ngày lịch (calendar days)
+  const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
+  const baseDay = new Date(effectiveBase.getFullYear(), effectiveBase.getMonth(), effectiveBase.getDate())
+  const diffDays = Math.round((baseDay.getTime() - targetDay.getTime()) / (1000 * 60 * 60 * 24))
+
+  // 1. Trong ngày -> giờ (cấu trúc giờ)
+  if (diffDays <= 0) {
+    const diffMs = effectiveBase.getTime() - targetDate.getTime()
+    const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)))
+    return {
+      display: `${diffHours} giờ trước`,
+      full,
+    }
+  }
+
+  // 2. Trong tuần -> ngày (từ 1 đến 6 ngày)
+  if (diffDays < 7) {
+    return {
+      display: `${diffDays} ngày trước`,
+      full,
+    }
+  }
+
+  // 3. Trong 2 tuần -> tuần (từ 7 đến 13 ngày)
+  if (diffDays < 14) {
+    const diffWeeks = Math.max(1, Math.floor(diffDays / 7))
+    return {
+      display: `${diffWeeks} tuần trước`,
+      full,
+    }
+  }
+
+  // 4. Từ 2 tuần trở đi (>= 14 ngày) -> ngày/tháng (Không có năm)
+  return {
+    display: `${d}/${m}`,
+    full,
+  }
+}
+
+
 // Derive care topic status based on completion, SLA, and interaction data
 export function deriveCareStatus(topic: CareTopic, logCount: number): CareTopicStatus {
   if (topic.isCompleted) return 'completed'
@@ -269,7 +387,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
       if (topic.code === 'ĐB1') {
         logs.push({
           id: `sim-db-1`,
-          date: '2026-07-08',
+          date: '2026-07-06 11:30',
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã gọi',
           audioDuration: '02:45',
@@ -278,7 +396,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-db-2`,
-          date: '2026-07-09',
+          date: '2026-07-05 15:45',
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã nhắn Zalo',
           parentOpinion: 'Mẹ phản hồi sẽ nhắc nhở con làm bài tập 14 trong tối nay.',
@@ -286,7 +404,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-db-teacher`,
-          date: '2026-07-07',
+          date: '2026-07-04 14:00',
           staffName: 'GV. Nguyễn Huy Hoàng',
           callConfirmation: 'Đã tương tác',
           notes: `[ĐB1] [Đối tượng: Học viên] Giáo viên bộ môn đã kèm riêng 15 phút cuối giờ để giải đáp thắc mắc về các phần bài tập về nhà chưa đạt yêu cầu. Con đã nắm vững lại kiến thức cốt lõi.`,
@@ -294,7 +412,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
       } else if (topic.code === 'TB1') {
         logs.push({
           id: `sim-tb-1`,
-          date: '2026-07-04',
+          date: '2026-07-04 14:15',
           staffName: 'Ngọc Mai (Sale)',
           callConfirmation: 'Đã gọi',
           audioDuration: '01:30',
@@ -307,7 +425,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-tb-teacher`,
-          date: '2026-07-03',
+          date: '2026-07-03 16:30',
           staffName: 'GV. Nguyễn Huy Hoàng',
           callConfirmation: 'Đã tương tác',
           notes: `[TB1] [Đối tượng: Học viên] Đã kèm cặp học viên 15 phút đầu giờ để hướng dẫn bổ trợ kiến thức. Con chăm chú nghe giảng và hoàn thành tốt bài luyện tập tại lớp.`,
@@ -315,14 +433,14 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
       } else if (topic.code === 'TB2') {
         logs.push({
           id: `sim-tb2-1`,
-          date: '2026-07-02',
+          date: '2026-07-02 08:30',
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã nhắn Zalo',
           notes: `[TB2] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Báo cáo tình hình thiếu bài tập về nhà buổi 2. Mẹ đã tiếp nhận thông tin và sẽ kiểm tra.`,
         })
         logs.push({
           id: `sim-tb2-teacher`,
-          date: '2026-07-01',
+          date: '2026-07-01 16:15',
           staffName: 'GV. Nguyễn Huy Hoàng',
           callConfirmation: 'Đã tương tác',
           notes: `[TB2] [Đối tượng: Học viên] Đã giao thêm phiếu bài tập củng cố riêng biệt cho con làm bù phần kiến thức bị rỗng. Con hứa sẽ hoàn thành trước buổi học sau.`,
@@ -330,7 +448,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
       } else if (topic.code === 'ĐK1') {
         logs.push({
           id: `sim-dk1-1`,
-          date: '2026-06-28',
+          date: '2026-06-28 09:30',
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã gọi',
           audioDuration: '03:15',
@@ -338,7 +456,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-dk1-teacher`,
-          date: '2026-06-25',
+          date: '2026-06-25 17:00',
           staffName: 'GV. Nguyễn Huy Hoàng',
           callConfirmation: 'Đã tương tác',
           notes: `[ĐK1] [Đối tượng: Học viên] Trao đổi nhanh cuối giờ học. Con hoàn thành tốt bài thuyết trình Speaking định kỳ trên lớp, tự tin tương tác với các bạn.`,
@@ -346,7 +464,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
       } else if (topic.code === 'ĐK2') {
         logs.push({
           id: `sim-dk2-1`,
-          date: '2026-06-20',
+          date: '2026-06-20 10:45',
           staffName: 'Ngọc Mai (Sale)',
           callConfirmation: 'Đã gọi',
           parentOpinion: 'Bố sẽ chuyển khoản đóng phí trước ngày 15/07.',
@@ -360,12 +478,14 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
               packageName: orderInfo.packageName,
               amountText: orderInfo.packageAmount,
               totalPaidAmount: student.linkedOrder?.totalPaidAmount,
+              paymentStatus: orderInfo.paymentStatus,
+              paymentStatusText: orderInfo.paymentStatusLabel,
             }
           : undefined
 
         logs.push({
           id: `sim-cstp-1`,
-          date: '2026-07-05',
+          date: '2026-07-06 14:30',
           staffName: 'Ngọc Mai (Sale)',
           callConfirmation: 'Đã gọi',
           audioDuration: '02:10',
@@ -378,7 +498,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-cstp-2`,
-          date: '2026-07-01',
+          date: '2026-07-01 10:30',
           staffName: 'Lan Anh (CSM)',
           callConfirmation: 'Đã nhắn Zalo',
           notes: `[CSTP] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Gửi thông tin các gói học mới kèm ưu đãi đăng ký sớm qua Zalo. Mẹ đã xem và phản hồi cảm ơn.`,
@@ -386,7 +506,7 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
         })
         logs.push({
           id: `sim-cstp-teacher`,
-          date: '2026-07-03',
+          date: '2026-07-03 15:00',
           staffName: 'GV. Nguyễn Huy Hoàng',
           callConfirmation: 'Đã tương tác',
           notes: `[CSTP] [Đối tượng: Học viên] Đã trực tiếp trao đổi và động viên học viên trong giờ ra chơi về kế hoạch tiếp tục học lên lớp nâng cao. Con rất hào hứng và bày tỏ mong muốn được tiếp tục học cùng các bạn.`,
@@ -403,19 +523,24 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
   const isMath = student.subject === 'Toán tư duy'
   const skuName = getProductSku(student)
   
+  const isPendingTransfer = student.status === 'Chờ chuyển lớp' || student.realtimeStatus === 'Chờ chuyển lớp'
+  const isReserve = student.status === 'Bảo lưu' || student.realtimeStatus === 'Bảo lưu'
+  const isSessionEnded = student.status === 'Hết buổi' || student.realtimeStatus === 'Hết buổi' || (student.remainingSessions !== undefined && student.remainingSessions <= 0)
+  const isUnassigned = !student.classCode || student.classCode === '-' || student.status === 'Chưa ghép lớp' || student.realtimeStatus === 'Chưa ghép lớp'
+
   // Gói 1: Gói chính hiện tại (khớp 100% với cột Gói sản phẩm ngoài danh sách)
   const pkg1: SimulatedPackage = {
     id: 'pkg-1',
     packageName: skuName,
     totalSessions: student.totalSessions || 96,
-    remainingSessions: student.remainingSessions ?? 12,
+    remainingSessions: isSessionEnded ? 0 : (student.remainingSessions ?? 12),
     classCode: student.classCode,
     className: student.classCode
       ? (isMath ? `Lớp Toán Tư Duy ${student.classCode.slice(-5)}` : `Lớp Tiếng Anh Giao Tiếp ${student.classCode.slice(-5)}`)
       : (isMath ? 'Lớp Toán Tư Duy (Chờ xếp)' : 'Lớp Tiếng Anh (Chờ xếp)'),
     teacherCode: student.teacherCode,
     schedule: student.schedule || 'T3 - 17:30-19:30, T6 - 17:30-19:30',
-    attendanceRatio: student.attendanceRatio?.includes('%') ? '6/7' : (student.attendanceRatio || '6/7'),
+    attendanceRatio: isSessionEnded ? `${student.totalSessions || 96}/${student.totalSessions || 96}` : (student.attendanceRatio || '6/7'),
     homeworkCompletion: student.homeworkCompletion ?? 85,
     lastTestScore: student.lastTestScore ?? 8.5,
     priorTestScore: student.priorTestScore ?? 8.0,
@@ -423,7 +548,16 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     endDate: student.expectedEndDate || '14/08/2027',
     level: student.level,
     subLevel: student.subLevel,
-    status: !student.classCode || student.status === 'Chưa ghép lớp' ? 'pending' : (student.remainingSessions > 0 ? 'active' : 'expired'),
+    status: isSessionEnded ? 'expired' : (isPendingTransfer || isReserve || isUnassigned ? 'pending' : 'active'),
+    studentStatus: isSessionEnded
+      ? 'Hết buổi'
+      : isPendingTransfer
+        ? 'Chờ chuyển lớp'
+        : isReserve
+          ? 'Bảo lưu'
+          : isUnassigned
+            ? 'Chưa ghép lớp'
+            : undefined,
   }
 
   // Gói 2: Gói nâng cao / giai đoạn 2 của cùng môn học để chọn lọc
@@ -433,9 +567,13 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
       ? `[MATH_ARCH] Toán Tư Duy Archimedes_${student.totalSessions || 48} buổi`
       : `[IE_MOVERS] Tiếng Anh SuperKids Level 4_${student.totalSessions || 48} buổi`,
     totalSessions: 48,
-    remainingSessions: 36,
-    classCode: isMath ? 'LD_TOAN_00088' : 'LD_ANH_00201',
-    className: isMath ? 'Lớp Toán Tư Duy Archimedes G2' : 'Lớp Tiếng Anh SuperKids B2',
+    remainingSessions: isSessionEnded ? 0 : 36,
+    classCode: (isPendingTransfer || isReserve || isUnassigned || isSessionEnded)
+      ? ''
+      : (isMath ? 'LD_TOAN_00088' : 'SA1 TA 00003'),
+    className: (isPendingTransfer || isReserve || isUnassigned || isSessionEnded)
+      ? (isMath ? 'Lớp Toán Tư Duy (Chờ xếp)' : 'Lớp Tiếng Anh (Chờ xếp)')
+      : (isMath ? 'Lớp Toán Tư Duy Archimedes G2' : 'SA1 MOVA 01 Tiếng Anh'),
     teacherCode: student.teacherCode || 'GV_HuiLT20',
     schedule: 'T4 - 18:00-19:30, T7 - 09:00-10:30',
     attendanceRatio: '46/48',
@@ -446,7 +584,12 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     endDate: '10/01/2027',
     level: isMath ? 'Archimedes 1' : 'Level 4',
     subLevel: 'B',
-    status: 'active',
+    status: isSessionEnded ? 'expired' : 'active',
+    studentStatus: isSessionEnded
+      ? 'Hết buổi'
+      : (isPendingTransfer || isReserve || isUnassigned)
+        ? 'Chờ xếp lớp'
+        : undefined,
   }
 
   // Gói 3: Gói giai đoạn trước đã hoàn thành (Lịch sử gói)
@@ -470,9 +613,82 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     level: isMath ? 'Einstein 0' : 'Level 0',
     subLevel: 'A',
     status: 'expired',
+    studentStatus: 'Hết buổi',
   }
 
-  return [pkg1, pkg2, pkg3]
+  // Gói 4: Gói cũ liên môn (Tiếng Anh/Toán) đã hoàn thành hết buổi
+  const pkg4: SimulatedPackage = {
+    id: 'pkg-4',
+    packageName: isMath
+      ? `[IE_SUPER] Tiếng Anh SuperKids Level 3_36 buổi`
+      : `[MATH_TUTOR] Toán Tư Duy Tiểu Học Cơ Bản_36 buổi`,
+    totalSessions: 36,
+    remainingSessions: 0,
+    classCode: isMath ? 'LD_ANH_00012' : 'LD_TOAN_00015',
+    className: isMath ? 'Lớp Tiếng Anh SuperKids 3' : 'Lớp Toán Tiểu Học Cơ Bản',
+    teacherCode: 'GV_Sarah',
+    schedule: 'T3 - 18:00-19:30, T6 - 18:00-19:30',
+    attendanceRatio: '36/36',
+    homeworkCompletion: 95,
+    lastTestScore: 8.8,
+    priorTestScore: 8.0,
+    startDate: '15/01/2023',
+    endDate: '15/06/2023',
+    level: isMath ? 'Level 3' : 'Cơ bản',
+    subLevel: 'A',
+    status: 'expired',
+    studentStatus: 'Hết buổi',
+  }
+
+  // Gói 5: Gói cũ hết hạn (còn buổi nhưng đã hết thời hạn)
+  const pkg5: SimulatedPackage = {
+    id: 'pkg-5',
+    packageName: isMath
+      ? `[MATH_KINDY] Toán Mầm Non Archimedes_24 buổi`
+      : `[IE_STARTER] Tiếng Anh Cambridge Starters_24 buổi`,
+    totalSessions: 24,
+    remainingSessions: 2,
+    classCode: isMath ? 'LD_TOAN_00002' : 'LD_ANH_00001',
+    className: isMath ? 'Lớp Toán Mầm Non E1' : 'Lớp Tiếng Anh Starters S1',
+    teacherCode: 'GV_MaiAnh',
+    schedule: 'T7 - 09:00-10:30, CN - 09:00-10:30',
+    attendanceRatio: '22/24',
+    homeworkCompletion: 80,
+    lastTestScore: 9.0,
+    priorTestScore: 8.5,
+    startDate: '01/06/2022',
+    endDate: '31/12/2022',
+    level: isMath ? 'Mầm non' : 'Starters',
+    subLevel: '1',
+    status: 'expired',
+    studentStatus: 'Hết hạn',
+  }
+
+  // Gói 6: Gói dự án hè / Trải nghiệm kỹ năng
+  const pkg6: SimulatedPackage = {
+    id: 'pkg-6',
+    packageName: isMath
+      ? `[STEM_ROBOT] Lập Trình Robot & STEM Khám Phá_12 buổi`
+      : `[ENG_CAMP] Tiếng Anh Trại Hè Summer Camp_12 buổi`,
+    totalSessions: 12,
+    remainingSessions: 0,
+    classCode: isMath ? 'LD_STEM_00004' : 'LD_ENG_CAMP_01',
+    className: isMath ? 'Lớp STEM Robotics Hè' : 'Lớp Trại Hè Tiếng Anh',
+    teacherCode: 'GV_MinhDuc',
+    schedule: 'T7 - 14:00-16:00',
+    attendanceRatio: '12/12',
+    homeworkCompletion: 100,
+    lastTestScore: 9.5,
+    priorTestScore: 9.0,
+    startDate: '01/06/2022',
+    endDate: '30/07/2022',
+    level: 'Trải nghiệm',
+    subLevel: 'A',
+    status: 'expired',
+    studentStatus: 'Hết buổi',
+  }
+
+  return [pkg1, pkg2, pkg3, pkg4, pkg5, pkg6]
 }
 
 // Generate orders list

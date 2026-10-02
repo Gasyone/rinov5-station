@@ -23,7 +23,7 @@ export interface FilterGroupAsidePanelProps {
   groups: readonly FilterGroupConfig[]
   onClose: () => void
   onToggle: (sectionId: string, value: string) => void
-  onClearAll: () => void
+  onClearAll?: () => void
   onClearSection?: (sectionId: string) => void
   activeCount?: number
   resetLabel?: string
@@ -111,8 +111,8 @@ export function FilterGroupAsidePanel({
             }
           >
             <div className="space-y-1 pt-1">
-              {/* Ô tìm kiếm nhanh cho nhóm có cờ searchable hoặc nhiều hơn 7 lựa chọn */}
-              {(section.searchable || section.options.length > 7) && (
+              {/* Ô tìm kiếm nhanh: hiển thị nếu searchable=true hoặc nếu không cấu hình tắt (searchable !== false) và có > 7 lựa chọn */}
+              {(section.searchable === true || (section.searchable !== false && section.options.length > 7)) && (
                 <div className="relative mb-1.5 px-0.5">
                   <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input

@@ -29,6 +29,7 @@ import {
   resolveStudentPlacementStatus,
   shouldShowClass3Columns,
   getPackageProgramName,
+  getTabLine2Display,
 } from './class-card/studentCareClassCardHelpers'
 import { StudentCareClassStatusBanner } from './class-card/StudentCareClassStatusBanner'
 import { StudentCareClassActionMenu } from './class-card/StudentCareClassActionMenu'
@@ -241,10 +242,11 @@ export function StudentCareActiveClassCard({
       {/* Header bar: Tab Gói học theo Chương trình + Tab Khác (Gói cũ) + Menu Thao tác */}
       <div className="-mx-3.5 -mt-3.5 sm:-mx-4 sm:-mt-4 p-2.5 px-3.5 sm:px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-2.5">
         <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-          {/* 1. Các gói còn hạn: hiển thị Tên Chương trình và Tên Gói ở dưới (thu nhỏ, để ...) */}
+          {/* 1. Các gói còn hạn / đang xem: Dòng 1 là Tên gói, Dòng 2: Chờ ghép lớp -> Trạng thái gói, Đã kết thúc -> Mã lớp cũ, Đang học -> Mã lớp */}
           {activePackages.map((pItem) => {
             const isSelected = pItem.id === selectedPackageId
-            const programName = getPackageProgramName(pItem)
+            const displayPackageName = pItem.packageName
+            const line2Info = getTabLine2Display(pItem, student, matchedMockStudent)
 
             return (
               <button
@@ -252,19 +254,19 @@ export function StudentCareActiveClassCard({
                 type="button"
                 onClick={() => {
                   setSelectedPackageId(pItem.id)
-                  toast.success(`Đang xem gói: ${pItem.packageName}`)
+                  toast.success(`Đang xem gói: ${displayPackageName}`)
                 }}
                 className={cn(
-                  'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[125px] sm:w-[135px]',
+                  'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[130px] sm:w-[145px]',
                   isSelected
                     ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
                     : 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
                 )}
-                title={`${programName} - ${pItem.packageName}`}
+                title={`${displayPackageName} - ${line2Info.isStatus ? `Trạng thái: ${line2Info.text}` : `Mã lớp: ${line2Info.text}`}`}
               >
                 <div className="flex items-center justify-between gap-1 w-full">
                   <span className={cn('text-xs font-bold leading-tight truncate', isSelected ? 'text-white' : 'text-foreground')}>
-                    {programName}
+                    {displayPackageName}
                   </span>
                   {isSelected && (
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-white ml-auto shrink-0" />
@@ -273,11 +275,15 @@ export function StudentCareActiveClassCard({
                 <span
                   className={cn(
                     'text-[10px] leading-tight truncate w-full mt-0.5',
-                    isSelected ? 'text-sky-100 font-medium' : 'text-muted-foreground'
+                    isSelected
+                      ? 'text-sky-100 font-medium'
+                      : line2Info.isStatus
+                        ? 'text-amber-600 dark:text-amber-400 font-medium'
+                        : 'text-muted-foreground'
                   )}
-                  title={pItem.packageName}
+                  title={line2Info.text}
                 >
-                  {pItem.packageName}
+                  {line2Info.text}
                 </span>
               </button>
             )
@@ -290,7 +296,7 @@ export function StudentCareActiveClassCard({
                 <button
                   type="button"
                   className={cn(
-                    'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[125px] sm:w-[135px]',
+                    'px-2.5 py-1.5 rounded-xl transition-all inline-flex flex-col justify-center items-start text-left cursor-pointer select-none border shrink-0 w-[130px] sm:w-[145px]',
                     isOldPackageSelected
                       ? 'bg-sky-600 text-white shadow-2xs border-sky-600'
                       : 'bg-background dark:bg-zinc-800 text-foreground border-border/70 hover:bg-muted/60'
@@ -351,7 +357,6 @@ export function StudentCareActiveClassCard({
                   {expiredPackages.map((pkgItem) => {
                     const isCurrentPkg = pkgItem.id === selectedPackageId
                     const programName = getPackageProgramName(pkgItem)
-                    const attendedSessions = Math.max(0, (pkgItem.totalSessions || 0) - (pkgItem.remainingSessions || 0))
 
                     return (
                       <div
@@ -362,36 +367,25 @@ export function StudentCareActiveClassCard({
                           toast.success(`Đã chọn xem gói cũ: ${pkgItem.packageName}`)
                         }}
                         className={cn(
-                          'flex items-center justify-between gap-2.5 p-2 rounded-lg text-xs cursor-pointer transition-colors',
+                          'flex items-center justify-between gap-2.5 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors',
                           isCurrentPkg
                             ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-900 dark:text-sky-100 font-medium border border-sky-200 dark:border-sky-800/60'
                             : 'hover:bg-muted/60 text-foreground border border-transparent'
                         )}
                       >
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted dark:bg-zinc-700 text-foreground font-semibold shrink-0">
-                              {programName}
-                            </span>
-                            <span className="font-semibold truncate block text-xs" title={pkgItem.packageName}>
-                              {pkgItem.packageName}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
-                            <span>
-                              {attendedSessions}/{pkgItem.totalSessions || 0} buổi
-                            </span>
-                            <span>•</span>
-                            <span>Còn {pkgItem.remainingSessions || 0} buổi</span>
-                            <span>•</span>
-                            <span>Hạn: {pkgItem.endDate || '—'}</span>
-                          </div>
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted dark:bg-zinc-700 text-foreground font-semibold shrink-0">
+                            {programName}
+                          </span>
+                          <span className="font-semibold truncate block text-xs" title={pkgItem.packageName}>
+                            {pkgItem.packageName}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <StatusBadge
                             status="expired"
                             label={pkgItem.remainingSessions === 0 ? 'Hết buổi' : 'Hết hạn'}
-                            className="text-[9px] py-0 px-1.5 h-4"
+                            className="text-[9.5px] py-0 px-1.5 h-4"
                           />
                           {isCurrentPkg && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0 ml-0.5" />}
                         </div>
@@ -483,6 +477,9 @@ export function StudentCareActiveClassCard({
               )}
               {placementStatus === 'trial' && (
                 <StatusBadge status="trial" label="Học thử" className="text-[9.5px] py-0 px-1.5" />
+              )}
+              {placementStatus === 'session_ended' && (
+                <StatusBadge status="expired" label="Hết buổi (Lớp cũ)" className="text-[9.5px] py-0 px-1.5" />
               )}
               {isHoldingClass && (
                 <StatusBadge status="reserve" label="Bảo lưu (Giữ lớp)" className="text-[9.5px] py-0 px-1.5" />

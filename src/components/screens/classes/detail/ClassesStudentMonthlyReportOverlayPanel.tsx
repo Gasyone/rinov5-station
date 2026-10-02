@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { X, Loader2, Sparkles, Pencil, Copy, Check, ExternalLink, Lock, Clock } from 'lucide-react'
+import { X, Loader2, BookOpen, Pencil, Copy, Check, ExternalLink, Lock, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -14,13 +13,16 @@ import {
 import type { RosterStudent } from './classesDetailTypes'
 import { toast } from 'sonner'
 import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSection'
+import { MonthlyAwardCriteriaPopover } from './MonthlyAwardCriteriaPopover'
+import { MonthlyReportAcademicSection } from './MonthlyReportAcademicSection'
+import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
 import {
-  MOCK_LESSONS_REVIEW,
   getAiSynthesizedNextMonthPlan,
   getDirectLessonPlanForRange,
+  getLessonsReviewBySubject,
   WeekReviewItem,
-  DEFAULT_SECTION_B2_WEEKS,
   AWARD_BADGES,
+  ENGLISH_AWARD_BADGES,
   normalizeAwardBadge,
   getMonthlyReportEditStatus,
 } from './monthlyReportHelpers'
@@ -34,16 +36,6 @@ interface ClassesStudentMonthlyReportOverlayPanelProps {
   onClose: () => void
   subject?: string
 }
-
-const DEFAULT_SECTION_A1_TEXT = `Điểm nổi bật: Con có thái độ học tập tích cực và hợp tác tốt trong lớp. Khi đã hiểu yêu cầu, con vẫn cố gắng hoàn thành task và theo kịp hoạt động của lớp. Con có xu hướng quan sát khá kỹ trước khi tham gia, cho thấy con học theo hướng cẩn thận và muốn làm đúng trước khi trả lời. 
-
-Điểm cần lưu ý: Hiện tại tốc độ phản xạ lại câu hỏi và tham gia hoạt động của con còn chậm hơn so với nhịp chung của lớp, đặc biệt ở các hoạt động luyện tập hội thoại. Con khá sợ nói sai và ngại trả lời dù đã biết đáp án. Qua quan sát, cô nhận thấy con có tâm lý sợ bị chú ý và thiếu tự tin khi bị nhận xét góp ý, nên thường chọn im lặng để tránh sai thay vì thử trả lời. Điều này khiến khả năng phản xạ ngôn ngữ của con chưa phát huy hết khả năng thật sự.`
-
-const DEFAULT_SECTION_A2_TEXT = `Từ vựng & Phonics: Con nhớ khá tốt các từ vựng: touch, smell và Letter U: umbrella, up. Tuy nhiên con vẫn còn nhầm lẫn các từ see, hear và chưa nhớ chắc Letter T: tiger, tent.
-
-Cấu trúc & Mẫu câu: Con hiện chưa phản xạ được mẫu câu I see with my … và vẫn cần cô nhắc lại nhiều lần trước khi có thể sử dụng đúng cấu trúc.`
-
-const DEFAULT_SECTION_B1_TEXT = getAiSynthesizedNextMonthPlan(8, 10)
 
 const MONTH_OPTIONS = [
   { value: '4_5_2026', label: 'Báo cáo Tháng 4 & Kế hoạch Tháng 5/2026', current: 'Tháng 4', next: 'Tháng 5', dateStr: '01/04/2026 đến 30/04/2026' },
@@ -62,6 +54,16 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
   // Xác định môn học (Toán thì chọn, Tiếng Anh thì nhập)
   const isMath = useMemo(() => {
+    const rep = getStudentMonthlyReports(student.id || student.name).find(
+      (r) => r.monthOptionValue === selectedMonthKey || r.monthKey.includes('Tháng 4')
+    )
+    const textToCheck = (rep?.sectionA2Content || '').toLowerCase()
+    if (textToCheck.includes('từ vựng') || textToCheck.includes('phonics') || textToCheck.includes('letter') || textToCheck.includes('mẫu câu')) {
+      return false
+    }
+    if (textToCheck.includes('toán') || textToCheck.includes('hình học') || textToCheck.includes('không gian') || textToCheck.includes('giải toán')) {
+      return true
+    }
     if (subject) {
       const s = subject.toLowerCase()
       if (s.includes('toán') || s.includes('math')) return true
@@ -81,7 +83,11 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       if (l.includes('anh') || l.includes('english')) return false
     }
     return false
-  }, [subject, student])
+  }, [subject, student, selectedMonthKey])
+
+  const activeLessons = useMemo(() => {
+    return getLessonsReviewBySubject(subject, isMath)
+  }, [subject, isMath])
 
   const initialReport = useMemo(() => {
     return getStudentMonthlyReports(student.id || student.name).find(
@@ -91,16 +97,26 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
   const [awardBadge, setAwardBadge] = useState(() => normalizeAwardBadge(initialReport?.awardBadge) || '')
   const [teacherName, setTeacherName] = useState(() => initialReport?.teacherName || 'Ms.Chloe')
-  const [sectionA1Content, setSectionA1Content] = useState(() => initialReport?.sectionA1Content || DEFAULT_SECTION_A1_TEXT)
-  const [sectionA2Content, setSectionA2Content] = useState(() => initialReport?.sectionA2Content || DEFAULT_SECTION_A2_TEXT)
-  const [sectionB1Content, setSectionB1Content] = useState(() => initialReport?.sectionB1Content || DEFAULT_SECTION_B1_TEXT)
-  const [sectionB2StartLesson, setSectionB2StartLesson] = useState(() => initialReport?.sectionB2StartLesson || 8)
-  const [sectionB2EndLesson, setSectionB2EndLesson] = useState(() => initialReport?.sectionB2EndLesson || 10)
-  const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(() => initialReport?.sectionB2Weeks || DEFAULT_SECTION_B2_WEEKS)
+  const [sectionA1Content, setSectionA1Content] = useState(() => initialReport?.sectionA1Content || '')
+  const [sectionA2Content, setSectionA2Content] = useState(() => initialReport?.sectionA2Content || '')
+  const [galleryPhotos, setGalleryPhotos] = useState<StudentGalleryPhoto[]>(
+    () => initialReport?.galleryPhotos || []
+  )
+  const [sectionB1Content, setSectionB1Content] = useState(() => initialReport?.sectionB1Content || '')
+  const [sectionB2StartLesson, setSectionB2StartLesson] = useState(() => initialReport?.sectionB2StartLesson || (isMath ? 1 : 8))
+  const [sectionB2EndLesson, setSectionB2EndLesson] = useState(() => initialReport?.sectionB2EndLesson || (isMath ? 4 : 10))
+  const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(() => initialReport?.sectionB2Weeks || [])
   const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
   const [isEditing, setIsEditing] = useState(() => !initialReport)
   const editStatus = useMemo(() => getMonthlyReportEditStatus(selectedMonthKey), [selectedMonthKey])
+
+  const startLessonObj = activeLessons.find(
+    (l) => l.lessonNumber === sectionB2StartLesson
+  )
+  const endLessonObj = activeLessons.find(
+    (l) => l.lessonNumber === sectionB2EndLesson
+  )
 
   const studentMetrics = useMemo(() => {
     const alert = mockCareAlerts.find(
@@ -157,12 +173,18 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       setIsEditing(true)
       setAwardBadge('')
       setTeacherName('Ms.Chloe')
-      setSectionA1Content(DEFAULT_SECTION_A1_TEXT)
-      setSectionA2Content(DEFAULT_SECTION_A2_TEXT)
-      setSectionB1Content(DEFAULT_SECTION_B1_TEXT)
-      setSectionB2StartLesson(8)
-      setSectionB2EndLesson(10)
-      setSectionB2Weeks(DEFAULT_SECTION_B2_WEEKS)
+      setSectionA1Content('')
+      setSectionA2Content('')
+      setGalleryPhotos([])
+      setSectionB1Content('')
+      setSectionB2StartLesson(isMath ? 1 : 8)
+      setSectionB2EndLesson(isMath ? 4 : 10)
+      setSectionB2Weeks([
+        { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
+        { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
+        { weekNum: 3, title: 'Tuần 3', content: '', docLink: '', thumbnailUrl: '' },
+        { weekNum: 4, title: 'Tuần 4', content: '', docLink: '', thumbnailUrl: '' },
+      ])
     }
   }
 
@@ -197,26 +219,26 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   // Step 1: Start lesson change
   const handleStartLessonChange = (startNum: number) => {
     setSectionB2StartLesson(startNum)
-    const newB1Content = getDirectLessonPlanForRange(startNum, sectionB2EndLesson)
+    const newB1Content = getDirectLessonPlanForRange(startNum, sectionB2EndLesson, isMath)
     setSectionB1Content(newB1Content)
   }
 
   // Step 1: End lesson change
   const handleEndLessonChange = (endNum: number) => {
     setSectionB2EndLesson(endNum)
-    const newB1Content = getDirectLessonPlanForRange(sectionB2StartLesson, endNum)
+    const newB1Content = getDirectLessonPlanForRange(sectionB2StartLesson, endNum, isMath)
     setSectionB1Content(newB1Content)
   }
 
-  // Step 2: AI Synthesize next month plan for Section 1
-  const handleAiSynthesizeNextMonthPlan = () => {
+  // Load sample lesson plan for Section 1
+  const handleLoadNextMonthPlan = () => {
     setIsSynthesizingAi(true)
     setTimeout(() => {
       setIsSynthesizingAi(false)
-      const synthesizedText = getAiSynthesizedNextMonthPlan(sectionB2StartLesson, sectionB2EndLesson)
+      const synthesizedText = getAiSynthesizedNextMonthPlan(sectionB2StartLesson, sectionB2EndLesson, isMath)
       setSectionB1Content(synthesizedText)
-      toast.success(`✨ AI đã tổng hợp thành công nội dung bài học tháng tới (Bài ${sectionB2StartLesson} đến Bài ${sectionB2EndLesson})!`)
-    }, 400)
+      toast.success(`Đã nạp nội dung bài học tháng tới (Buổi ${sectionB2StartLesson} đến Buổi ${sectionB2EndLesson})!`)
+    }, 300)
   }
 
   const handleSave = () => {
@@ -237,6 +259,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       sectionA1Content,
       sectionA2Content,
       sectionAContent: `${sectionA1Content}\n\n${sectionA2Content}`,
+      galleryPhotos,
       sectionB1Content,
       sectionB2StartLesson,
       sectionB2EndLesson,
@@ -327,41 +350,46 @@ export function ClassesStudentMonthlyReportOverlayPanel({
               <span className="text-xs text-muted-foreground font-semibold">Tuyên dương:</span>
               {isEditing ? (
                 <div className="flex items-center gap-1.5">
-                  {isMath ? (
-                    <Select value={awardBadge || ''} onValueChange={setAwardBadge}>
-                      <SelectTrigger className="h-7 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
-                        <SelectValue placeholder="Chọn danh hiệu..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AWARD_BADGES.map((b) => (
-                          <SelectItem key={b} value={b} className="text-xs font-bold">
-                            {b}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs pointer-events-none">🏷️</span>
-                      <Input
-                        value={awardBadge || ''}
-                        onChange={(e) => setAwardBadge(e.target.value)}
-                        placeholder="Nhập danh hiệu vinh danh..."
-                        className="h-7 pl-7 pr-2.5 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 placeholder:text-amber-950/70 rounded-lg w-[200px] uppercase tracking-wide focus-visible:ring-amber-500"
-                      />
-                    </div>
-                  )}
+                  <Select value={awardBadge || ''} onValueChange={setAwardBadge}>
+                    <SelectTrigger className="h-7 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-lg">
+                      <SelectValue placeholder="Chọn danh hiệu..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(isMath ? AWARD_BADGES : ENGLISH_AWARD_BADGES).map((b) => (
+                        <SelectItem key={b} value={b} className="text-xs font-bold">
+                          {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <MonthlyAwardCriteriaPopover
+                    selectedBadge={awardBadge}
+                    onSelectBadge={setAwardBadge}
+                    isEditing={true}
+                    isMath={isMath}
+                    className="h-7 w-7"
+                  />
                 </div>
               ) : (
-                awardBadge ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase">
-                    {awardBadge}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-muted-foreground italic px-2 py-0.5 rounded-full bg-muted/50 border border-dashed">
-                    Chưa đặt danh hiệu
-                  </span>
-                )
+                <div className="flex items-center gap-1.5">
+                  {awardBadge ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase">
+                      {awardBadge}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-muted-foreground italic px-2 py-0.5 rounded-full bg-muted/50 border border-dashed">
+                      Chưa đặt danh hiệu
+                    </span>
+                  )}
+
+                  <MonthlyAwardCriteriaPopover
+                    selectedBadge={awardBadge}
+                    isEditing={false}
+                    isMath={isMath}
+                    className="h-6 w-6"
+                  />
+                </div>
               )}
             </div>
 
@@ -408,66 +436,21 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             }}
           />
 
-          {/* Section A (Tách 2 phần A1 & A2) */}
-          <div id="overlay-section-a" className="space-y-3 pt-2 border-t">
-            <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-              A - BÁO CÁO HỌC TẬP {activeMonthConfig.current.toUpperCase()}
-            </h4>
-
-            {/* Sub-section A1: 1. Nhận xét chung */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
-                  1. Nhận xét chung
-                </label>
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
-                  <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                  Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
-                </span>
-              </div>
-              {isEditing ? (
-                <textarea
-                  rows={5}
-                  value={sectionA1Content}
-                  onChange={(e) => setSectionA1Content(e.target.value)}
-                  placeholder="Nhập 'Điểm nổi bật: ...' và 'Điểm cần lưu ý: ...'"
-                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
-                />
-              ) : (
-                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
-                  {sectionA1Content || <span className="italic text-muted-foreground/60">Chưa có nhận xét.</span>}
-                </div>
-              )}
-            </div>
-
-            {/* Sub-section A2: 2. Nhận xét về kết quả học tập */}
-            <div className="space-y-1.5 pt-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                  2. Nhận xét về kết quả học tập
-                </label>
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
-                  <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                  Nội dung AI được tổng hợp từ các BTVN trong tháng của học viên.
-                </span>
-              </div>
-              {isEditing ? (
-                <textarea
-                  rows={4}
-                  value={sectionA2Content}
-                  onChange={(e) => setSectionA2Content(e.target.value)}
-                  placeholder="Nhập 'Từ vựng & Phonics: ...' và 'Cấu trúc & Mẫu câu: ...'"
-                  className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
-                />
-              ) : (
-                <div className="w-full text-sm p-3.5 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
-                  {sectionA2Content || <span className="italic text-muted-foreground/60">Chưa có nhận xét.</span>}
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Section A: Báo cáo học tập & Khoảnh khắc */}
+          <MonthlyReportAcademicSection
+            isEditing={isEditing}
+            isMath={isMath}
+            monthTitle={activeMonthConfig.current}
+            studentId={student.id}
+            studentName={student.name}
+            sectionA1Content={sectionA1Content}
+            sectionA2Content={sectionA2Content}
+            onUpdateA1={(content) => setSectionA1Content(content)}
+            onUpdateA2={(content) => setSectionA2Content(content)}
+            galleryPhotos={galleryPhotos}
+            onChangePhotos={setGalleryPhotos}
+            idPrefix="overlay"
+          />
 
           {/* Section B */}
           <div className="space-y-3 pt-2 border-t">
@@ -477,55 +460,64 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
             {/* Sub-section 1: Nội dung bài học tháng tới (Ô 01) */}
             <div className="space-y-2 pt-1">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
-                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-primary inline-block" />
+              <div className="flex items-center justify-between gap-2 pb-1">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5 shrink-0">
                   1. Nội dung bài học tháng tới
                 </label>
 
                 {/* Step 1 & Step 2 Controls chỉ hiện khi isEditing */}
                 {isEditing && (
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs font-bold text-muted-foreground">Bài:</span>
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                    <span className="text-xs font-bold text-muted-foreground shrink-0">Chọn bài:</span>
                     <Select value={String(sectionB2StartLesson)} onValueChange={(v) => handleStartLessonChange(Number(v))}>
-                      <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
-                        <SelectValue />
+                      <SelectTrigger
+                        className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                        title={startLessonObj ? `Buổi ${startLessonObj.lessonNumber}: ${startLessonObj.title}` : undefined}
+                      >
+                        <SelectValue placeholder="Bắt đầu" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {MOCK_LESSONS_REVIEW.map((l) => (
-                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                            Bài {l.lessonNumber}
+                      <SelectContent className="max-w-[380px] w-[320px]">
+                        {activeLessons.map((l) => (
+                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs py-1.5 cursor-pointer">
+                            <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                              Buổi {l.lessonNumber}: {l.title}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
-                    <span className="text-xs font-bold text-muted-foreground">→</span>
+                    <span className="text-xs font-bold text-muted-foreground shrink-0">→</span>
 
                     <Select value={String(sectionB2EndLesson)} onValueChange={(v) => handleEndLessonChange(Number(v))}>
-                      <SelectTrigger className="h-7 text-xs w-16 bg-background px-2">
-                        <SelectValue />
+                      <SelectTrigger
+                        className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                        title={endLessonObj ? `Buổi ${endLessonObj.lessonNumber}: ${endLessonObj.title}` : undefined}
+                      >
+                        <SelectValue placeholder="Kết thúc" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {MOCK_LESSONS_REVIEW.map((l) => (
-                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                            Bài {l.lessonNumber}
+                      <SelectContent className="max-w-[380px] w-[320px]">
+                        {activeLessons.map((l) => (
+                          <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs py-1.5 cursor-pointer">
+                            <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                              Buổi {l.lessonNumber}: {l.title}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
 
-                    {/* AI Synthesize Button */}
+                    {/* Load sample lesson content button */}
                     <Button
                       type="button"
                       size="sm"
-                      onClick={handleAiSynthesizeNextMonthPlan}
+                      onClick={handleLoadNextMonthPlan}
                       disabled={isSynthesizingAi}
-                      className="h-7 text-xs font-bold px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1"
-                      title="Tự động biên tập nội dung ngôn ngữ tự nhiên"
+                      className="h-7.5 text-xs font-bold px-2 sm:px-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md gap-1.5 shrink-0"
+                      title="Nạp nội dung khung chương trình cho các buổi học đã chọn"
                     >
-                      {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300" />}
-                      <span>AI Tổng hợp</span>
+                      {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <BookOpen className="h-3 w-3" />}
+                      <span>Nạp bài học mẫu</span>
                     </Button>
                   </div>
                 )}
@@ -536,7 +528,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                   rows={6}
                   value={sectionB1Content}
                   onChange={(e) => setSectionB1Content(e.target.value)}
-                  placeholder="Nhập hoặc bấm 'Cập nhật' / 'AI Tổng hợp' để biên tập nội dung..."
+                  placeholder="Nhập hoặc chọn bài học rồi bấm 'Nạp bài học mẫu' để biên tập nội dung..."
                   className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
                 />
               ) : (

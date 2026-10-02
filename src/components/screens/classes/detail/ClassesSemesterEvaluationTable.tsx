@@ -23,17 +23,17 @@ export function ClassesSemesterEvaluationTable({
   onEditStudent,
 }: ClassesSemesterEvaluationTableProps) {
   return (
-    <div className="flex-1 overflow-auto p-6 bg-white dark:bg-zinc-950">
+    <div className="flex-1 overflow-auto p-3.5 sm:p-4 bg-white dark:bg-zinc-950">
       <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs">
         <table className="w-full text-xs text-left border-collapse">
           <thead className="bg-zinc-50 dark:bg-zinc-800/50 sticky top-0 border-b border-zinc-200 dark:border-zinc-800 z-10">
             <tr>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400">Student Name</th>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400">Attitude / Ý thức</th>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400">Knowledge / Kiến thức</th>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400">Skills / Kỹ năng</th>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400">Interaction / Tương tác</th>
-              <th className="py-3 px-4 font-bold text-zinc-600 dark:text-zinc-400 text-center w-[100px]">Action</th>
+              <th className="py-2.5 px-3.5 font-bold text-zinc-600 dark:text-zinc-400">Student Name</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Attitude / Ý thức</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Knowledge / Kiến thức</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Skills / Kỹ năng</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400">Interaction / Tương tác</th>
+              <th className="py-2.5 px-3 font-bold text-zinc-600 dark:text-zinc-400 text-center w-[90px]">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -46,11 +46,11 @@ export function ClassesSemesterEvaluationTable({
                   key={student.id}
                   className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors"
                 >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
+                  <td className="py-2 px-3.5">
+                    <div className="flex items-center gap-2.5">
                       <Info className="h-4 w-4 text-cyan-500 fill-cyan-500/10 shrink-0" />
                       <div className={cn(
-                        "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden",
+                        "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden",
                         getAvatarColor(student.id)
                       )}>
                         {student.avatar ? (
@@ -63,28 +63,28 @@ export function ClassesSemesterEvaluationTable({
                       <div>
                         {vietnamese ? (
                           <>
-                            <p className="font-bold text-zinc-900 dark:text-zinc-100 leading-snug max-w-[120px] break-words whitespace-normal mb-0.5">{english}</p>
-                            <p className="font-semibold text-blue-600 dark:text-blue-400 leading-snug max-w-[120px] break-words whitespace-normal">{vietnamese}</p>
+                            <p className="font-bold text-zinc-900 dark:text-zinc-100 text-xs leading-tight mb-0.5">{english}</p>
+                            <p className="font-normal text-muted-foreground text-[11px] leading-tight">{vietnamese}</p>
                           </>
                         ) : (
-                          <p className="font-semibold text-blue-600 dark:text-blue-400 leading-snug max-w-[120px] break-words whitespace-normal">{english}</p>
+                          <p className="font-semibold text-foreground text-xs leading-tight">{english}</p>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">
                     {ev?.conductRating ? `${ev.conductRating}/5` : <span className="text-zinc-300 dark:text-zinc-700 font-normal">—</span>}
                   </td>
-                  <td className="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">
                     {ev?.knowledgeRating ? `${ev.knowledgeRating}/5` : <span className="text-zinc-300 dark:text-zinc-700 font-normal">—</span>}
                   </td>
-                  <td className="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">
                     {ev?.skillsRating ? `${ev.skillsRating}/5` : <span className="text-zinc-300 dark:text-zinc-700 font-normal">—</span>}
                   </td>
-                  <td className="py-3 px-4 font-semibold text-blue-600 dark:text-blue-400">
+                  <td className="py-2 px-3 font-semibold text-blue-600 dark:text-blue-400">
                     {ev?.interactionRating ? `${ev.interactionRating}/5` : <span className="text-zinc-300 dark:text-zinc-700 font-normal">—</span>}
                   </td>
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-2 px-3 text-center">
                     <div className="flex items-center justify-center">
                       <Button
                         type="button"

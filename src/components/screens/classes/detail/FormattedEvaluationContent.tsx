@@ -2,6 +2,152 @@
 
 import React from 'react'
 
+export interface ParsedItem {
+  label: string
+  body: string
+  colorClass: string
+}
+
+/**
+ * Phân tích nội dung nhận xét có cấu trúc nhãn (Title/Label) để highlight màu tương ứng.
+ * - Mục Nhận xét chung:
+ *   + Tiêu đề tích cực (Điểm nổi bật, Điểm mạnh, Ưu điểm...): Xanh lá (Emerald)
+ *   + Tiêu đề lưu ý (Điểm cần lưu ý, Cần lưu ý, Cần cải thiện...): Cam / Hổ phách (Amber)
+ * - Mục Nhận xét kết quả học tập:
+ *   + Tiêu đề kiến thức/từ vựng (Từ vựng & Phonics, Kiến thức & Tư duy...): Xanh da trời (Sky)
+ *   + Tiêu đề kỹ năng/cấu trúc (Cấu trúc & Mẫu câu, Kỹ năng giải toán...): Tím (Purple)
+ */
+export function parseEvaluationContent(
+  content: string = '',
+  type: 'general' | 'academic'
+): ParsedItem[] {
+  if (!content || !content.trim()) return []
+
+  const trimmed = content.trim()
+
+  const defaultColor1 =
+    type === 'general'
+      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      : 'text-sky-600 dark:text-sky-400 font-semibold'
+
+  const defaultColor2 =
+    type === 'general'
+      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+      : 'text-purple-600 dark:text-purple-400 font-semibold'
+
+  const getColorForLabel = (rawLabel: string, index: number): string => {
+    const lower = rawLabel.toLowerCase()
+    if (type === 'general') {
+      if (
+        lower.includes('nổi bật') ||
+        lower.includes('mạnh') ||
+        lower.includes('ưu điểm') ||
+        lower.includes('tốt') ||
+        lower.includes('tích cực')
+      ) {
+        return 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      }
+      if (
+        lower.includes('lưu ý') ||
+        lower.includes('cải thiện') ||
+        lower.includes('hạn chế') ||
+        lower.includes('yếu') ||
+        lower.includes('nhược điểm') ||
+        lower.includes('khó khăn')
+      ) {
+        return 'text-amber-600 dark:text-amber-400 font-semibold'
+      }
+      return index === 0 ? defaultColor1 : defaultColor2
+    }
+
+    // Academic
+    if (
+      lower.includes('từ vựng') ||
+      lower.includes('phonics') ||
+      lower.includes('kiến thức') ||
+      lower.includes('tư duy') ||
+      lower.includes('lý thuyết') ||
+      lower.includes('khái niệm')
+    ) {
+      return 'text-sky-600 dark:text-sky-400 font-semibold'
+    }
+    if (
+      lower.includes('cấu trúc') ||
+      lower.includes('mẫu câu') ||
+      lower.includes('ngữ pháp') ||
+      lower.includes('kỹ năng') ||
+      lower.includes('phương pháp') ||
+      lower.includes('bài tập')
+    ) {
+      return 'text-purple-600 dark:text-purple-400 font-semibold'
+    }
+    return index === 0 ? defaultColor1 : defaultColor2
+  }
+
+  // Tách các khối theo dòng bắt đầu bằng "Nhãn:"
+  // Hỗ trợ cả ngắt dòng đôi \n\n lẫn ngắt dòng đơn \n
+  const blocks = trimmed.split(/\n(?=[^\n\r:]{2,35}:)/).map((b) => b.trim()).filter(Boolean)
+
+  const items: ParsedItem[] = []
+
+  blocks.forEach((block) => {
+    // Kiểm tra xem block có bắt đầu bằng nhãn không
+    const match = block.match(/^([^:\n\r]{2,35}:)\s*([\s\S]*)$/)
+    if (match) {
+      const rawLabel = match[1].trim()
+      const rawBody = match[2].trim()
+
+      // Trường hợp người dùng gõ cả 2 nhãn trên 1 dòng đơn mà không ngắt dòng
+      // Ví dụ: Điểm nổi bật: ... Điểm cần lưu ý: ...
+      const secondaryMarkerRegex =
+        type === 'general'
+          ? /(?:^|\s)(Điểm cần lưu ý:|Cần lưu ý:|Điểm cần cải thiện:|Lưu ý:)\s*/i
+          : /(?:^|\s)(Cấu trúc & Mẫu câu:|Cấu trúc:|Mẫu câu:|Kỹ năng giải toán:|Kỹ năng:)\s*/i
+
+      const inlineSplit = rawBody.search(secondaryMarkerRegex)
+      if (inlineSplit !== -1) {
+        const firstBody = rawBody.slice(0, inlineSplit).trim()
+        const remainder = rawBody.slice(inlineSplit).trim()
+        const matchSecond = remainder.match(secondaryMarkerRegex)
+
+        items.push({
+          label: rawLabel,
+          body: firstBody,
+          colorClass: getColorForLabel(rawLabel, items.length),
+        })
+
+        if (matchSecond) {
+          const secondLabel = matchSecond[1]
+          const secondBody = remainder.slice(matchSecond[0].length).trim()
+          items.push({
+            label: secondLabel,
+            body: secondBody,
+            colorClass: getColorForLabel(secondLabel, items.length),
+          })
+        }
+      } else {
+        items.push({
+          label: rawLabel,
+          body: rawBody,
+          colorClass: getColorForLabel(rawLabel, items.length),
+        })
+      }
+    } else {
+      // Đoạn text tự do không có nhãn
+      items.push({
+        label: '',
+        body: block,
+        colorClass: '',
+      })
+    }
+  })
+
+  return items
+}
+
+/**
+ * Hàm phân tách 2 phần đánh giá theo marker (giữ để backward-compatible)
+ */
 export function parseEvaluationPair(
   content: string = '',
   marker1: string,
@@ -9,23 +155,31 @@ export function parseEvaluationPair(
 ): { part1: string; part2: string } {
   if (!content) return { part1: '', part2: '' }
 
-  const index2 = content.indexOf(marker2)
-  if (index2 !== -1) {
-    const rawPart1 = content.slice(0, index2).trim()
-    const rawPart2 = content.slice(index2 + marker2.length).trim()
+  const escapeReg = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const reg1 = new RegExp(escapeReg(marker1), 'i')
+  const reg2 = new RegExp(escapeReg(marker2), 'i')
 
-    const cleanPart1 = rawPart1.startsWith(marker1)
-      ? rawPart1.slice(marker1.length).trim()
-      : rawPart1.replace(new RegExp(`^${marker1}\\s*`, 'i'), '').trim()
+  const match1 = content.match(reg1)
+  const match2 = content.match(reg2)
 
+  if (!match1 && !match2) {
+    return { part1: '', part2: '' }
+  }
+
+  if (match2 && match2.index !== undefined) {
+    const rawPart1 = content.slice(0, match2.index).trim()
+    const rawPart2 = content.slice(match2.index + match2[0].length).trim()
+
+    const cleanPart1 = rawPart1.replace(reg1, '').trim()
     return { part1: cleanPart1, part2: rawPart2 }
   }
 
-  const cleanPart1 = content.startsWith(marker1)
-    ? content.slice(marker1.length).trim()
-    : content.replace(new RegExp(`^${marker1}\\s*`, 'i'), '').trim()
+  if (match1 && match1.index !== undefined) {
+    const cleanPart1 = content.slice(match1.index + match1[0].length).trim()
+    return { part1: cleanPart1, part2: '' }
+  }
 
-  return { part1: cleanPart1, part2: '' }
+  return { part1: '', part2: '' }
 }
 
 interface FormattedEvaluationContentProps {
@@ -39,7 +193,7 @@ export function FormattedEvaluationContent({
   type,
   className = '',
 }: FormattedEvaluationContentProps) {
-  if (!content) {
+  if (!content || !content.trim()) {
     return (
       <div className="text-sm text-muted-foreground/60 italic font-sans">
         Chưa có nội dung đánh giá.
@@ -47,53 +201,11 @@ export function FormattedEvaluationContent({
     )
   }
 
-  if (type === 'general') {
-    const { part1: diemNoiBat, part2: diemCanLuuY } = parseEvaluationPair(
-      content,
-      'Điểm nổi bật:',
-      'Điểm cần lưu ý:'
-    )
+  const items = parseEvaluationContent(content, type)
 
-    // Nếu văn bản không theo cấu trúc trên, hiển thị nguyên bản dạng text
-    if (!diemNoiBat && !diemCanLuuY) {
-      return (
-        <div className={`text-sm text-foreground leading-relaxed font-sans whitespace-pre-line ${className}`}>
-          {content}
-        </div>
-      )
-    }
-
-    return (
-      <div className={`space-y-4 font-sans ${className}`}>
-        {diemNoiBat && (
-          <p className="text-sm text-foreground leading-relaxed">
-            <span className="text-emerald-600 dark:text-emerald-400">
-              Điểm nổi bật:{' '}
-            </span>
-            <span>{diemNoiBat}</span>
-          </p>
-        )}
-
-        {diemCanLuuY && (
-          <p className="text-sm text-foreground leading-relaxed">
-            <span className="text-amber-600 dark:text-amber-400">
-              Điểm cần lưu ý:{' '}
-            </span>
-            <span>{diemCanLuuY}</span>
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  // Loại academic (Từ vựng & Phonics, Cấu trúc & Mẫu câu)
-  const { part1: tuVungPhonics, part2: cauTrucMauCau } = parseEvaluationPair(
-    content,
-    'Từ vựng & Phonics:',
-    'Cấu trúc & Mẫu câu:'
-  )
-
-  if (!tuVungPhonics && !cauTrucMauCau) {
+  // Nếu không có nhãn nào được phát hiện, hiển thị nguyên bản text thông thường
+  const hasAnyLabel = items.some((it) => !!it.label)
+  if (!hasAnyLabel) {
     return (
       <div className={`text-sm text-foreground leading-relaxed font-sans whitespace-pre-line ${className}`}>
         {content}
@@ -102,24 +214,17 @@ export function FormattedEvaluationContent({
   }
 
   return (
-    <div className={`space-y-4 font-sans ${className}`}>
-      {tuVungPhonics && (
-        <p className="text-sm text-foreground leading-relaxed">
-          <span className="text-sky-600 dark:text-sky-400">
-            Từ vựng & Phonics:{' '}
-          </span>
-          <span>{tuVungPhonics}</span>
+    <div className={`space-y-3.5 font-sans ${className}`}>
+      {items.map((item, idx) => (
+        <p key={idx} className="text-sm text-foreground leading-relaxed">
+          {item.label && (
+            <span className={`${item.colorClass} select-none`}>
+              {item.label}{' '}
+            </span>
+          )}
+          <span className="whitespace-pre-line">{item.body}</span>
         </p>
-      )}
-
-      {cauTrucMauCau && (
-        <p className="text-sm text-foreground leading-relaxed">
-          <span className="text-purple-600 dark:text-purple-400">
-            Cấu trúc & Mẫu câu:{' '}
-          </span>
-          <span>{cauTrucMauCau}</span>
-        </p>
-      )}
+      ))}
     </div>
   )
 }

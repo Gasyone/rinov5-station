@@ -226,20 +226,15 @@ export function BookingEventHoverCard({
             </span>
           </div>
 
-          {/* Location */}
-          {locationDisplay && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
-              <span className="font-medium text-foreground">{locationDisplay}</span>
-            </div>
-          )}
-
-          {/* Staff Section: PHỤ TRÁCH */}
-          <div className="border-t border-border/40 pt-2 space-y-1 text-xs">
-            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-              PHỤ TRÁCH:
-            </div>
-            <div className="flex items-center justify-between">
+          {/* Staff & Location Section */}
+          <div className="border-t border-border/40 pt-2 space-y-1.5 text-xs">
+            {locationDisplay && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
+                <span className="font-medium text-foreground">{locationDisplay}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-0.5">
               <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
                 <UserCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                 <span>Phụ trách:</span>

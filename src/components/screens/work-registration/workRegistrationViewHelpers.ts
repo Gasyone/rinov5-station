@@ -2,6 +2,7 @@ import { createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { type StatusTile } from '@/components/shared'
 import { getSlot } from './workRegistrationHelpers'
 import {
+  WORK_REGISTRATION_GRID_SECTIONS,
   WORK_STATUS_LABELS,
   type EmployeeWeekSummary,
   type SlotDetailTarget,
@@ -65,8 +66,33 @@ export function resolveCurrentEmployeeId(role?: string) {
   return 'e1'
 }
 
+export function resolveSlotDetailTitle(
+  target: SlotDetailTarget | null,
+  branchDetail?: { branch: string; date?: string; dayLabel?: string } | null
+): string {
+  if (branchDetail?.branch) return branchDetail.branch
+
+  const baseTitle = 'Chi tiết nhân viên đăng ký ca'
+  if (!target) return baseTitle
+
+  let sessionInfo = ''
+  if (target.section) {
+    const sec = WORK_REGISTRATION_GRID_SECTIONS.find((s) => s.id === target.section)
+    if (sec) {
+      sessionInfo = `${sec.label} (${sec.start} - ${sec.end})`
+    }
+  } else if (target.slotId) {
+    const slot = getSlot(target.slotId)
+    if (slot) {
+      sessionInfo = slot.label
+    }
+  }
+
+  return sessionInfo ? `${baseTitle} - ${sessionInfo}` : baseTitle
+}
+
 export function slotDetailDescription(target: SlotDetailTarget | null) {
   if (!target) return undefined
-  const slot = getSlot(target.slotId)
-  return `${target.date} · ${slot?.label ?? target.slotId}`
+  // Đã đưa thông tin buổi lên dòng tiêu đề và bỏ hiển thị ngày
+  return undefined
 }

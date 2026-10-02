@@ -11,7 +11,7 @@ tags: [class-session, media, upload, gallery]
 
 # US-CLS05-07: Quản lý media upload buổi học (Class Session Media Gallery & Upload)
 
-> **Tham chiếu:** `BF-CLS-05` · `SR-CLS-005` · `ENTERPRISE_STANDARDS.md` · Giao diện Mẫu §4.3 (Hộp thoại chi tiết & Danh sách tư liệu đa phương tiện)  
+> **Tham chiếu:** `BF-CLS-05` · `US-CLS05-11` (Cơ chế xem, phát tư liệu & tài liệu) · `SR-CLS-005` · `ENTERPRISE_STANDARDS.md` · Giao diện Mẫu §4.3 (Hộp thoại chi tiết & Danh sách tư liệu đa phương tiện)  
 > **Đường dẫn màn hình & Trạng thái liên quan:**  
 > - `Lịch học lớp (/app/calendar_class_schedule)` -> Nhấp vào ca học lớp -> Mở Hộp thoại Chi tiết buổi học -> Chuyển sang thẻ tab `Media`  
 > - `Danh sách lớp học (/app/classes)` -> Mở Chi tiết lớp học -> Lịch trình buổi học -> Thẻ tab `Media`  
@@ -27,6 +27,7 @@ tags: [class-session, media, upload, gallery]
 | 15/09/2026 | Khởi tạo tài liệu đặc tả nghiệp vụ chi tiết cho tab Media trong hộp thoại Chi tiết buổi học | Chuẩn hóa tài liệu phát triển chức năng quản lý, tải lên, gán học viên và chia sẻ tư liệu học tập buổi học theo chuẩn Enterprise |
 | 16/09/2026 | Lược bỏ tính năng lọc thời gian trên thanh công cụ do tư liệu được tải lên theo từng buổi học cụ thể | Chuẩn hóa trải nghiệm người dùng, tinh gọn thanh công cụ theo đúng bản chất nghiệp vụ ca học |
 | 16/09/2026 | Làm rõ phạm vi phân hệ chỉ là Media buổi học (không bao gồm học liệu khung chương trình), đổi nút Thêm thành Gắn học viên và chuẩn hóa 12 trường hợp góc cạnh | Tách bạch kiến trúc phân hệ theo đúng chỉ đạo sản phẩm, chuẩn hóa luồng tải lên và bảo vệ dữ liệu |
+| 24/09/2026 | Bổ sung liên kết tham chiếu sang US-CLS05-11 đặc tả chi tiết cơ chế xem/phát tư liệu đa phương tiện & tài liệu qua hộp thoại nổi và luồng streaming | Đồng bộ tài liệu phân hệ Media buổi học theo cấu trúc mới |
 
 ### Bối cảnh & Vấn đề nghiệp vụ (Context & Problem)
 * **Bối cảnh:** Trong mỗi buổi học tại các cơ sở đào tạo, giáo viên và nhân sự vận hành lớp thường xuyên ghi nhận các tư liệu thực tế: hình ảnh bảng từ vựng, hình ảnh hoạt động nhóm, video bài tập thuyết trình hoặc clip thực hành của học viên. Những tư liệu này cần được lưu trữ tập trung theo từng buổi học và phân bổ chính xác cho cả lớp hoặc riêng cho từng học viên.
@@ -369,5 +370,6 @@ Giao diện áp dụng cơ chế kiểm soát hiển thị theo **Mã Quyền Đ
 ### 6.2. Kết nối dữ liệu dịch vụ hệ thống (Service & Data Contract)
 * **Luồng truy vấn danh sách tệp:** Gọi đến cơ sở dữ liệu media buổi học theo định danh buổi học (`sessionId`), trả về danh sách tệp kèm các thuộc tính phân loại, tên tệp, dung lượng, đường dẫn và danh sách mã học viên được gắn.
 * **Luồng lưu trữ tệp mới:** Gọi đến dịch vụ lưu trữ tệp và cơ sở dữ liệu media để ghi nhận bản ghi tệp đính kèm mới với thuộc tính mặc định dành cho cả lớp (`taggedStudentIds = []`).
+* **Luồng tiền xử lý tệp ngầm sau khi lưu trữ (Background Ingestion Pipeline):** Ngay sau khi lưu tệp gốc thành công, dịch vụ kích hoạt hàng đợi ngầm để tự động tiền xử lý phục vụ cho cơ chế xem phát theo `US-CLS05-11`: với ảnh tự động sinh 3 phiên bản tĩnh (`thumbnailUrl`, `previewUrl`, `originalUrl`) và mã màu đại diện (`blurHash`); với video tự động tối ưu hóa chỉ mục đầu tệp (`Fast-Start`), trích xuất ảnh bìa (`posterUrl`) và phân đoạn phát luồng thích ứng (`HLS`).
 * **Luồng cập nhật học viên được gắn:** Gọi đến cơ sở dữ liệu media để cập nhật trường `taggedStudentIds` cho một hoặc nhiều tệp được chỉ định.
 * **Luồng xóa tệp:** Gọi đến cơ sở dữ liệu media để đánh dấu xóa hoặc loại bỏ vĩnh viễn các bản ghi tệp đã chọn sau khi người dùng xác nhận trên hộp thoại.

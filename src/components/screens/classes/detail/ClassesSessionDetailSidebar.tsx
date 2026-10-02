@@ -80,201 +80,199 @@ export function ClassesSessionDetailSidebar({
   const syllabusTitle = cls.syllabus || cls.learningPath || 'IELTS Junior v2.1'
 
   return (
-    <div className="flex-[3] flex flex-col min-h-0 overflow-y-auto gap-3 pt-0.5 px-1 pr-1.5">
+    <div className="flex-[30] flex flex-col min-h-0 overflow-y-auto gap-2.5 pt-0.5 px-0.5 pr-1">
       {/* ── SMART CARDS THỐNG KÊ (NẰM TRÊN KHUNG THÔNG TIN BUỔI HỌC - 5 CARDS ON 1 ROW, NO ICONS) ── */}
-      <div className="shrink-0 grid grid-cols-5 gap-1.5">
+      <div className="shrink-0 grid grid-cols-5 gap-1">
         <div className="flex flex-col items-center justify-center rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-800 p-1.5 text-center shadow-2xs">
-          <p className="text-xs text-muted-foreground font-medium leading-none">Sĩ số</p>
-          <p className="text-xs font-bold font-mono text-foreground leading-tight mt-1">{activeRosterCount}</p>
+          <p className="text-[10px] text-muted-foreground font-medium leading-none">Sĩ số</p>
+          <p className="text-xs sm:text-[13px] font-bold font-mono text-foreground leading-tight mt-1">{activeRosterCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
-          <p className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-1">{presentCount}/{activeRosterCount}</p>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium leading-none">Có mặt</p>
+          <p className="text-xs sm:text-[13px] font-bold font-mono text-emerald-700 dark:text-emerald-300 leading-tight mt-1">{presentCount}/{activeRosterCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-xs text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
-          <p className="text-xs font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-1">{excusedCount}·{absentCount}</p>
+          <p className="text-[10px] text-red-600 dark:text-red-400 font-medium leading-none">Phép/Vắng</p>
+          <p className="text-xs sm:text-[13px] font-bold font-mono text-red-700 dark:text-red-300 leading-tight mt-1">{excusedCount}·{absentCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
-          <p className="text-xs font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-1">{lateCount}</p>
+          <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium leading-none">Trễ</p>
+          <p className="text-xs sm:text-[13px] font-bold font-mono text-amber-700 dark:text-amber-300 leading-tight mt-1">{lateCount}</p>
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-lg border border-violet-200 bg-violet-50/60 dark:border-violet-900/50 dark:bg-violet-950/20 p-1.5 text-center shadow-2xs">
-          <p className="text-xs text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
-          <p className="text-xs font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-1">{sessionTrialCount}</p>
+          <p className="text-[10px] text-violet-600 dark:text-violet-400 font-medium leading-none">Trial</p>
+          <p className="text-xs sm:text-[13px] font-bold font-mono text-violet-700 dark:text-violet-300 leading-tight mt-1">{sessionTrialCount}</p>
         </div>
       </div>
 
       {/* ── KHUNG THÔNG TIN BUỔI HỌC ── */}
-          <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs p-3.5 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-              Thông tin buổi học
-            </h3>
-            <div className="space-y-3 text-xs pt-0.5">
-              {/* 1. Lịch học & Giờ học */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5">
-                  <Calendar className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
-                  <div className="leading-tight">
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Lịch học</p>
-                    <span className="font-semibold text-foreground font-mono block">
-                      {session.date}
-                    </span>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {dayOfWeek}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="leading-tight">
-                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Giờ học</p>
-                  <span className="font-semibold text-foreground font-mono block">
-                    {session.startTime}–{session.endTime}
-                  </span>
-                </div>
+      <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs p-2.5 px-3 space-y-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+          Thông tin buổi học
+        </h3>
+        <div className="space-y-2 text-xs pt-0.5">
+          {/* 1. Lịch học & Giờ học */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-start gap-2">
+              <Calendar className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+              <div className="leading-tight">
+                <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Lịch học</p>
+                <span className="font-semibold text-foreground font-mono block text-xs">
+                  {session.date}
+                </span>
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {dayOfWeek}
+                </span>
               </div>
+            </div>
 
-              {/* 2. Cơ sở & Phòng học */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5">
-                  <Building2 className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
-                  <div className="leading-tight min-w-0">
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Cơ sở</p>
-                    <span className="font-semibold text-foreground truncate block">
-                      {cls.branch || 'RinoEdu Linh Đàm'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="leading-tight">
-                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Phòng học</p>
-                  <span className="font-semibold text-foreground flex items-center gap-1 flex-wrap">
-                    <span>{session.room}</span>
-                    {session.defaultRoom && session.room !== session.defaultRoom && (
-                      <span className="text-[9.5px] text-amber-600 font-normal">(gốc: {session.defaultRoom})</span>
-                    )}
-                    <button
-                      onClick={() => toast.info('Tính năng báo cáo sự cố phòng học đang được phát triển!')}
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-rose-50 text-rose-500 cursor-pointer border-none p-0 shrink-0"
-                      title="Báo cáo sự cố phòng học"
-                    >
-                      <AlertTriangle className="h-3 w-3 fill-rose-100/50" />
-                    </button>
-                  </span>
-                </div>
-              </div>
-
-              {/* 3. Tên lớp & Mã lớp */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5">
-                  <BookOpen className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
-                  <div className="leading-tight min-w-0">
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Tên lớp</p>
-                    <span className="font-semibold text-foreground truncate block" title={cls.name}>
-                      {cls.name || 'Lớp học'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="leading-tight">
-                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Mã lớp</p>
-                  {isOpenedFromClassScreen ? (
-                    <span className="font-semibold text-foreground font-mono">{cls.code}</span>
-                  ) : (
-                    <ClassCodeHoverCell
-                      classCode={cls.code}
-                      subject={cls.level}
-                      level={cls.subLevel || ''}
-                      teacherCode={cls.teacher}
-                      schedule={cls.schedule}
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* 4. Giáo viên & Trợ giảng */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5">
-                  <User className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
-                  <div className="leading-tight min-w-0">
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Giáo viên</p>
-                    {session.substituteTeacherName ? (
-                      <span className="inline-flex items-center gap-0.5 font-semibold text-xs truncate max-w-full">
-                        <span className="line-through text-muted-foreground/50">{cleanTeacherName(session.teacherName)}</span>
-                        <ArrowRight className="h-2.5 w-2.5 mx-0.5 text-muted-foreground/40 shrink-0" />
-                        <span className="text-amber-600 font-bold">{cleanTeacherName(session.substituteTeacherName)}</span>
-                      </span>
-                    ) : (
-                      <span className="font-semibold text-foreground truncate block">{cleanTeacherName(session.teacherName)}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="leading-tight min-w-0">
-                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Trợ giảng</p>
-                  <span className="font-semibold text-foreground truncate block">
-                    {assistantInfo ? cleanTeacherName(assistantInfo) : '—'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 5. Quy mô & Trình độ */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2.5">
-                  <Users className="h-4 w-4 text-zinc-400 shrink-0 mt-0.5" />
-                  <div className="leading-tight">
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Quy mô</p>
-                    <span className="font-semibold text-foreground">
-                      {cls.classRatio || '1:10'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="leading-tight">
-                  <p className="text-xs text-muted-foreground font-medium mb-0.5">Trình độ</p>
-                  <span className="font-semibold text-foreground">
-                    {cls.level || 'TOEIC'}
-                  </span>
-                </div>
-              </div>
+            <div className="leading-tight">
+              <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Giờ học</p>
+              <span className="font-semibold text-foreground font-mono block text-xs">
+                {session.startTime}–{session.endTime}
+              </span>
             </div>
           </div>
 
-
-
-          {/* ── KHUNG CHƯƠNG TRÌNH ── */}
-          <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs p-3.5 space-y-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-bold text-zinc-500 text-xs uppercase tracking-wide truncate" title={`KCT: ${syllabusTitle}`}>
-                KCT: {syllabusTitle}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  toast.info('Tính năng góp ý giáo trình đang được phát triển!')
-                }}
-                className="text-xs text-muted-foreground hover:text-amber-500 font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 shrink-0"
-                title="Góp ý giáo trình"
-              >
-                <MessageSquareWarning className="h-3.5 w-3.5" />
-                <span>Góp ý</span>
-              </button>
+          {/* 2. Cơ sở & Phòng học */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-start gap-2">
+              <Building2 className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+              <div className="leading-tight min-w-0">
+                <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Cơ sở</p>
+                <span className="font-semibold text-foreground truncate block text-xs">
+                  {cls.branch || 'RinoEdu Linh Đàm'}
+                </span>
+              </div>
             </div>
-            <div>
-              <ClassesSessionSyllabusTab session={session} sessions={sessions} />
+
+            <div className="leading-tight">
+              <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Phòng học</p>
+              <span className="font-semibold text-foreground flex items-center gap-1 flex-wrap text-xs">
+                <span>{session.room}</span>
+                {session.defaultRoom && session.room !== session.defaultRoom && (
+                  <span className="text-[9.5px] text-amber-600 font-normal">(gốc: {session.defaultRoom})</span>
+                )}
+                <button
+                  onClick={() => toast.info('Tính năng báo cáo sự cố phòng học đang được phát triển!')}
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-rose-50 text-rose-500 cursor-pointer border-none p-0 shrink-0"
+                  title="Báo cáo sự cố phòng học"
+                >
+                  <AlertTriangle className="h-3 w-3 fill-rose-100/50" />
+                </button>
+              </span>
             </div>
           </div>
 
-          {/* ── KHUNG CHẤT LƯỢNG ── */}
-          <ClassesSessionQualityEvaluation
-            sessionId={session.id}
-            sessionTopic={session.topic}
-            sessionStatus={session.status}
-          />
+          {/* 3. Tên lớp & Mã lớp */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-start gap-2">
+              <BookOpen className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+              <div className="leading-tight min-w-0">
+                <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Tên lớp</p>
+                <span className="font-semibold text-foreground truncate block text-xs" title={cls.name}>
+                  {cls.name || 'Lớp học'}
+                </span>
+              </div>
+            </div>
+
+            <div className="leading-tight">
+              <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Mã lớp</p>
+              {isOpenedFromClassScreen ? (
+                <span className="font-semibold text-foreground font-mono text-xs">{cls.code}</span>
+              ) : (
+                <ClassCodeHoverCell
+                  classCode={cls.code}
+                  subject={cls.level}
+                  level={cls.subLevel || ''}
+                  teacherCode={cls.teacher}
+                  schedule={cls.schedule}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* 4. Giáo viên & Trợ giảng */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-start gap-2">
+              <User className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+              <div className="leading-tight min-w-0">
+                <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Giáo viên</p>
+                {session.substituteTeacherName ? (
+                  <span className="inline-flex items-center gap-0.5 font-semibold text-xs truncate max-w-full">
+                    <span className="line-through text-muted-foreground/50">{cleanTeacherName(session.teacherName)}</span>
+                    <ArrowRight className="h-2.5 w-2.5 mx-0.5 text-muted-foreground/40 shrink-0" />
+                    <span className="text-amber-600 font-bold">{cleanTeacherName(session.substituteTeacherName)}</span>
+                  </span>
+                ) : (
+                  <span className="font-semibold text-foreground truncate block text-xs">{cleanTeacherName(session.teacherName)}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="leading-tight min-w-0">
+              <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Trợ giảng</p>
+              <span className="font-semibold text-foreground truncate block text-xs">
+                {assistantInfo ? cleanTeacherName(assistantInfo) : '—'}
+              </span>
+            </div>
+          </div>
+
+          {/* 5. Quy mô & Trình độ */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-start gap-2">
+              <Users className="h-3.5 w-3.5 text-zinc-400 shrink-0 mt-0.5" />
+              <div className="leading-tight">
+                <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Quy mô</p>
+                <span className="font-semibold text-foreground text-xs">
+                  {cls.classRatio || '1:10'}
+                </span>
+              </div>
+            </div>
+
+            <div className="leading-tight">
+              <p className="text-[10px] text-muted-foreground font-medium mb-0.5">Trình độ</p>
+              <span className="font-semibold text-foreground text-xs">
+                {cls.level || 'TOEIC'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── KHUNG CHƯƠNG TRÌNH ── */}
+      <div className="shrink-0 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs p-2.5 px-3 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-bold text-zinc-500 text-[11px] uppercase tracking-wide truncate" title={`KCT: ${syllabusTitle}`}>
+            KCT: {syllabusTitle}
+          </h3>
+          <button
+            type="button"
+            onClick={() => {
+              toast.info('Tính năng góp ý giáo trình đang được phát triển!')
+            }}
+            className="text-xs text-muted-foreground hover:text-amber-500 font-medium flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 shrink-0"
+            title="Góp ý giáo trình"
+          >
+            <MessageSquareWarning className="h-3.5 w-3.5" />
+            <span>Góp ý</span>
+          </button>
+        </div>
+        <div>
+          <ClassesSessionSyllabusTab session={session} sessions={sessions} />
+        </div>
+      </div>
+
+      {/* ── KHUNG CHẤT LƯỢNG ── */}
+      <ClassesSessionQualityEvaluation
+        sessionId={session.id}
+        sessionTopic={session.topic}
+        sessionStatus={session.status}
+      />
     </div>
   )
 }

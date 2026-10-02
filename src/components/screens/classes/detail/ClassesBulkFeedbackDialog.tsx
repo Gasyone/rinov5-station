@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Check, Sparkles, Star } from 'lucide-react'
+import { Check, Star } from 'lucide-react'
 import type { RosterStudent } from './classesDetailTypes'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -316,21 +316,20 @@ export function ClassesBulkFeedbackDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="flex flex-col h-[90vh] max-h-[900px] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1380px] bg-background border rounded-2xl shadow-2xl">
+      <DialogContent className="flex flex-col h-[92vh] max-h-[920px] gap-0 overflow-hidden p-0 sm:max-w-[90vw] md:max-w-[920px] lg:max-w-[980px] xl:max-w-[1020px] bg-background border rounded-2xl shadow-2xl">
         {/* Header section with Stats */}
-        <DialogHeader className="px-5 py-3 border-b shrink-0 bg-background flex flex-row items-center justify-between">
-          <div className="space-y-1">
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+        <DialogHeader className="px-4 py-2 border-b shrink-0 bg-background flex flex-row items-center justify-between">
+          <div className="flex items-center gap-3">
+            <DialogTitle className="text-sm font-bold text-foreground">
               Nhận xét buổi học
             </DialogTitle>
-            <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5 bg-muted/60 px-2 py-0.5 rounded-lg border">
-                Đã hoàn thành: <strong className="text-foreground">{completedCount}</strong> / {totalCount}
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <span className="flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border text-[11px]">
+                Đã hoàn thành: <strong className="text-foreground">{completedCount}</strong>/{totalCount}
               </span>
               {!(isMath && isTestSession) && (
-                <span className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg border border-amber-200/50">
-                  Tổng điểm đánh giá: <strong className="font-bold">{totalStars}</strong> <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
+                <span className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-200/50 text-[11px]">
+                  Tổng điểm: <strong className="font-bold">{totalStars}</strong> <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
                 </span>
               )}
             </div>
@@ -340,11 +339,11 @@ export function ClassesBulkFeedbackDialog({
         {/* Dialog Split View Body */}
         <div className="flex-1 min-h-0 flex overflow-hidden">
           {/* Left Student List Sidebar */}
-          <aside className="w-[280px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
-            <div className="px-3 py-2 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <aside className="w-[240px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
+            <div className="px-3 py-1.5 border-b text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Học sinh ({totalCount})
             </div>
-            <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
               {students.map(({ student }) => {
                 const isSelected = student.id === selectedStudentId
                 const state = formStates[student.id]
@@ -355,15 +354,15 @@ export function ClassesBulkFeedbackDialog({
                     key={student.id}
                     onClick={() => setSelectedStudentId(student.id)}
                     className={cn(
-                      "w-full flex items-center justify-between p-2 rounded-lg text-left transition-all border text-xs cursor-pointer group",
+                      "w-full flex items-center justify-between p-1.5 px-2 rounded-lg text-left transition-all border text-xs cursor-pointer group",
                       isSelected
                         ? "bg-primary/10 text-primary border-primary/20 font-bold"
                         : "hover:bg-muted/80 text-foreground border-transparent hover:border-zinc-200 dark:hover:border-zinc-800"
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className={cn(
-                        "h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border",
+                        "h-6.5 w-6.5 rounded-full flex items-center justify-center text-[10.5px] font-bold shrink-0 border",
                         isSelected
                           ? "bg-primary/20 border-primary/20 text-primary"
                           : "bg-muted border-transparent text-muted-foreground group-hover:bg-background"
@@ -376,19 +375,19 @@ export function ClassesBulkFeedbackDialog({
                           if (np.hasEnglishName) {
                             return (
                               <div className="flex flex-col min-w-0 leading-tight">
-                                <span className="truncate font-bold text-xs">{np.englishName}</span>
-                                <span className="truncate text-xs text-muted-foreground font-normal">{np.vietnameseName}</span>
+                                <span className="truncate font-bold text-[11.5px]">{np.englishName}</span>
+                                <span className="truncate text-[10.5px] text-muted-foreground font-normal">{np.vietnameseName}</span>
                               </div>
                             )
                           }
-                          return <p className="truncate font-semibold leading-tight">{np.vietnameseName}</p>
+                          return <p className="truncate font-semibold text-xs leading-tight">{np.vietnameseName}</p>
                         })()}
-                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{student.code}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5">{student.code}</p>
                       </div>
                     </div>
                     {state?.isSent && (
-                      <span className="h-5 w-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm border border-emerald-400">
-                        <Check className="h-3 w-3 stroke-[3px]" />
+                      <span className="h-4.5 w-4.5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs border border-emerald-400">
+                        <Check className="h-2.5 w-2.5 stroke-[3px]" />
                       </span>
                     )}
                   </button>
@@ -398,7 +397,7 @@ export function ClassesBulkFeedbackDialog({
           </aside>
 
           {/* Right Form Container */}
-          <main className="flex-1 overflow-y-auto p-4 space-y-4 bg-background custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3 bg-background custom-scrollbar">
             {selectedStudent && currentFormState ? (
               isMath && isTestSession ? (
                 <ClassesBulkFeedbackMathTestForm

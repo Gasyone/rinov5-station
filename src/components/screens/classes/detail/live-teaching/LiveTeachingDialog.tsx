@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -16,12 +16,9 @@ import { LiveShorthandRosterDrawer } from './LiveShorthandRosterDrawer'
 import { LiveLessonGuideDrawer } from './LiveLessonGuideDrawer'
 import { LiveTeachingConclusionView } from './LiveTeachingConclusionView'
 import {
-  type TeachingMaterial,
   type StudentLiveLog,
   MATH_MATERIALS,
   ENGLISH_MATERIALS,
-  MATH_LESSON_GUIDE,
-  ENGLISH_LESSON_GUIDE,
 } from './liveTeachingTypes'
 
 interface LiveTeachingDialogProps {
@@ -64,20 +61,22 @@ export function LiveTeachingDialog({
     return isMath ? MATH_MATERIALS : ENGLISH_MATERIALS
   }, [isMath])
 
-  const [activeMaterial, setActiveMaterial] = useState<TeachingMaterial>(materials[0])
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
+  const activeMaterial = useMemo(() => {
+    return materials.find((m) => m.id === selectedMaterialId) || materials[0]
+  }, [materials, selectedMaterialId])
+
   const [isRosterOpen, setIsRosterOpen] = useState(true)
   const [isLessonGuideOpen, setIsLessonGuideOpen] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [studentLogs, setStudentLogs] = useState<Record<string, StudentLiveLog>>({})
   const [viewStage, setViewStage] = useState<'teaching' | 'concluding'>('teaching')
 
-  // Reset stage & active material whenever the dialog opens or subject changes
-  useEffect(() => {
-    if (isOpen) {
-      setViewStage('teaching')
-      setActiveMaterial(materials[0])
-    }
-  }, [isOpen, materials])
+  const handleClose = () => {
+    setViewStage('teaching')
+    setSelectedMaterialId(null)
+    onClose()
+  }
 
   const handleUpdateStudentLog = (studentId: string, updatedLog: StudentLiveLog) => {
     setStudentLogs((prev) => ({
@@ -111,7 +110,7 @@ export function LiveTeachingDialog({
   if (!isOpen) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent
         showCloseButton={false}
         className="!fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 !transform-none !w-screen !h-screen !max-w-none !max-h-none !m-0 !p-0 !rounded-none !border-none bg-background flex flex-col min-h-0 overflow-hidden z-[99999]"
@@ -132,14 +131,14 @@ export function LiveTeachingDialog({
               sessionNumber={session.sessionNumber || 2}
               materials={materials}
               activeMaterial={activeMaterial}
-              onSelectMaterial={setActiveMaterial}
+              onSelectMaterial={(mat) => setSelectedMaterialId(mat.id)}
               onOpenLessonGuide={() => setIsLessonGuideOpen(true)}
               isRosterOpen={isRosterOpen}
               onToggleRoster={() => setIsRosterOpen((prev) => !prev)}
               isFullScreen={isFullScreen}
               onToggleFullScreen={handleToggleFullScreen}
               onEndSession={handleStartConclusion}
-              onClose={onClose}
+              onClose={handleClose}
             />
 
             {/* ── Body: Viewer (Canvas for PDF/Video/Audio) + Collapsible Shorthand Drawer ── */}

@@ -52,7 +52,7 @@ export function ClassesSessionCommentBox({
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
-      const baseMin = rows === 1 ? 28 : 56
+      const baseMin = rows === 1 ? 22 : 48
       textareaRef.current.style.height = `${Math.max(baseMin, textareaRef.current.scrollHeight)}px`
     }
   }, [rows])
@@ -147,7 +147,7 @@ export function ClassesSessionCommentBox({
             }
           }}
           placeholder={placeholder || 'Nhật ký buổi học: Giáo viên nhập nhận xét chung về buổi học tại đây... (Gõ @ để tag học viên)'}
-          className={`text-xs ${minHeight} resize-y border-transparent shadow-none hover:border-zinc-200/80 focus:border-zinc-300 dark:focus:border-zinc-700 focus-visible:ring-1 bg-transparent px-1 py-1 transition-colors placeholder:italic placeholder:text-muted-foreground/70`}
+          className={`text-[11.5px] leading-relaxed ${minHeight} resize-y border-transparent shadow-none hover:border-zinc-200/80 focus:border-zinc-300 dark:focus:border-zinc-700 focus-visible:ring-1 bg-transparent px-1 py-0.5 transition-colors placeholder:italic placeholder:text-muted-foreground/70`}
           rows={rows}
         />
 

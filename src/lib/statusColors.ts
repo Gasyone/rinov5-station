@@ -76,6 +76,16 @@ const STATUS_COLORS: Record<StatusSemantic, StatusColorSet> = {
   },
 }
 
+export const SEMANTIC_COUNT_BG: Record<StatusSemantic, string> = {
+  success: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300',
+  info: 'bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300',
+  warning: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300',
+  error: 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300',
+  neutral: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+  purple: 'bg-violet-100 text-violet-800 dark:bg-violet-950/80 dark:text-violet-300',
+  completed: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950/80 dark:text-cyan-300',
+}
+
 /**
  * Get the full color set for a semantic status.
  *
@@ -174,9 +184,9 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   dang_dien_ra: 'info',
   ket_thuc: 'completed',
 
-  // Students
+  // Students & Student Packages
   graduated: 'completed',
-  transferred: 'neutral',
+  transferred: 'warning',
   pending_payment: 'warning',
   draft_class: 'neutral',
   fee_transfer: 'info',
@@ -188,6 +198,9 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   buoi_2: 'info',
   buoi_3: 'info',
   buoi_cuoi: 'error',
+  goi_chuyen: 'warning',
+  goi_huy: 'error',
+  goi_nhan_chuyen: 'info',
 
   // Products & Promotions & Campaigns
   archived: 'neutral',
@@ -260,6 +273,19 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   hen_test_hoc_thu: 'purple',
   da_test_hoc_thu: 'warning',
   tiem_nang_cao: 'info',
+
+  // Tuition Debt Lifecycle (Pure Lifecycle States)
+  debt_cho_thu: 'warning',
+  debt_thu_mot_phan: 'info',
+  debt_da_thu_du: 'success',
+  debt_da_huy: 'neutral',
+  // Backward compatibility aliases
+  debt_moi: 'warning',
+  debt_trong_han: 'info',
+  debt_qua_han: 'error',
+  debt_coc_hoc: 'purple',
+  debt_da_thu: 'success',
+  debt_that_bai: 'neutral',
 
   // Class Session (BF-OPS-02 / FLOW-OPS-01)
   // scheduled, in_progress, completed, cancelled already registered above
@@ -406,6 +432,13 @@ export function getStatusDotClass(status: string): string {
 
 export function getStatusTextColor(status: string): string {
   return getStatusColors(resolveStatusSemantic(status)).text
+}
+
+export function getStatusCountBadgeClass(statusOrSemantic: string): string {
+  const semantic = (statusOrSemantic in STATUS_COLORS)
+    ? (statusOrSemantic as StatusSemantic)
+    : resolveStatusSemantic(statusOrSemantic)
+  return SEMANTIC_COUNT_BG[semantic] || SEMANTIC_COUNT_BG.neutral
 }
 
 /**

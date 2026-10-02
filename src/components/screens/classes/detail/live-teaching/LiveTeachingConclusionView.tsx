@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   ChevronLeft,
   Sparkles,
@@ -44,7 +44,7 @@ export function LiveTeachingConclusionView({
   onCompleteAndSave,
 }: LiveTeachingConclusionViewProps) {
   // Build exact feedback text grounded in individual skill notes, live tags, BTVN, reminders
-  const buildFeedbackText = (student: RosterStudent, evalData: LiveConclusionStudentEval) => {
+  const buildFeedbackText = useCallback((student: RosterStudent, evalData: LiveConclusionStudentEval) => {
     const log = studentLogs[student.id]
     const tagsLookup = isMath ? MATH_LIVE_TAGS : ENGLISH_LIVE_TAGS
     const appliedTags = (log?.tags || []).map((tId) => tagsLookup.find((t) => t.id === tId)).filter(Boolean)
@@ -131,7 +131,7 @@ export function LiveTeachingConclusionView({
     }
 
     return lines.join('\n')
-  }
+  }, [sessionTopic, isMath, studentLogs])
 
   // Initialize evaluations pre-populated with live logs & pre-generated feedback
   const initialEvals = useMemo(() => {
@@ -211,7 +211,7 @@ export function LiveTeachingConclusionView({
       map[student.id] = evalDraft
     })
     return map
-  }, [students, studentLogs, isMath, sessionTopic])
+  }, [students, studentLogs, isMath, buildFeedbackText])
 
   const [evaluations, setEvaluations] = useState<Record<string, LiveConclusionStudentEval>>(initialEvals)
   const [manualEditedStudents, setManualEditedStudents] = useState<Record<string, boolean>>({})

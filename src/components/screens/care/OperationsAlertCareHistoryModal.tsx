@@ -15,6 +15,7 @@ import {
   type HistoryLog,
 } from './operationsAlertHelpers'
 import { getStatusBadgeClass } from '@/lib/statusColors'
+import { StatusBadge } from '@/components/shared'
 import { getStudentOrderInfo } from './renewal/renewalHelpers'
 
 interface OperationsAlertCareHistoryModalProps {
@@ -178,12 +179,14 @@ export function OperationsAlertCareHistoryModal({
             <span className="font-medium text-foreground truncate max-w-[180px]" title={orderInfo.packageName}>
               {orderInfo.packageName}
             </span>
-            {orderInfo.packageAmount && (
+            {orderInfo.paymentStatusLabel && (
               <>
                 <span>•</span>
-                <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                  TT: {orderInfo.packageAmount}
-                </span>
+                <StatusBadge
+                  status={orderInfo.paymentStatus || 'paid'}
+                  label={orderInfo.paymentStatusLabel}
+                  className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                />
               </>
             )}
           </div>

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
-  ShieldAlert,
   X,
   Info,
   Copy,
@@ -60,7 +59,6 @@ export function StudentCareDetailDialogV2({
   alerts,
   onRefresh,
 }: StudentCareDetailDialogV2Props) {
-  const [closedBanners, setClosedBanners] = useState<string[]>([])
   const [csSearchQuery, setCsSearchQuery] = useState('')
 
   const [localStudentId, setLocalStudentId] = useState<string | null>(null)
@@ -87,9 +85,6 @@ export function StudentCareDetailDialogV2({
 
   const handleAssignedCSChange = (newCS: string) => {
     setAssignedCS(newCS)
-    if (student) {
-      student.csStaff = newCS
-    }
     const foundAlert = alerts.find((a) => a.id === localStudentId || a.studentId === localStudentId)
     if (foundAlert) {
       foundAlert.csStaff = newCS
@@ -124,7 +119,6 @@ export function StudentCareDetailDialogV2({
   // Sync when student changes
   if (student && student.studentId !== prevStudentId) {
     setPrevStudentId(student.studentId)
-    setClosedBanners([])
     const pkgs = getSimulatedPackagesList(student)
     if (pkgs.length > 0) {
       setSelectedPackageId(pkgs[0].id)
@@ -187,49 +181,7 @@ export function StudentCareDetailDialogV2({
     return getCareTopicsForStudent(student)
   }, [student])
 
-  // Get active condition triggers that have not been closed as banners
-  const activeConditions = useMemo(() => {
-    if (!student) return []
-    const hash = stableHash(student.studentId)
-    const list: Array<{ code: string; text: string; severity: 'high' | 'medium' | 'low' }> = []
-    
-    if (hash % 3 === 0) {
-      list.push({
-        code: 'COND_LATE',
-        text: 'Học viên đi muộn 2 buổi liên tiếp (Buổi 11, Buổi 12)',
-        severity: 'medium',
-      })
-      list.push({
-        code: 'COND_ATT_LOW',
-        text: 'Tỷ lệ chuyên cần giảm dưới 80% (Hiện tại: 75% trong 30 ngày qua)',
-        severity: 'high',
-      })
-    } else if (hash % 3 === 1) {
-      list.push({
-        code: 'COND_SCORE_LOW',
-        text: 'Điểm kiểm tra định kỳ trung bình dưới 5.0 (Điểm: 4.8 môn Tiếng Anh)',
-        severity: 'high',
-      })
-      list.push({
-        code: 'COND_HW_MISSING',
-        text: 'Không nộp bài tập về nhà 3 buổi liên tiếp (Buổi 15, 16, 17)',
-        severity: 'medium',
-      })
-    } else {
-      list.push({
-        code: 'COND_ABSENT_UNEXCUSED',
-        text: 'Nghỉ học không phép 2 buổi liên tiếp (Buổi 20, 21)',
-        severity: 'high',
-      })
-      list.push({
-        code: 'COND_SESSIONS_LOW',
-        text: 'Số buổi học còn lại của gói học dưới 5 buổi (Còn lại: 3 buổi)',
-        severity: 'medium',
-      })
-    }
-    
-    return list.filter((item) => !closedBanners.includes(item.code))
-  }, [student, closedBanners])
+
 
   // Get merged simulated/realistic logs
   const allLogs = useMemo(() => {
@@ -298,53 +250,8 @@ export function StudentCareDetailDialogV2({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid h-[88vh] max-h-[860px] overflow-hidden p-3.5 sm:max-w-[94vw] lg:max-w-[1260px] bg-background">
+      <DialogContent className="max-w-[95vw] lg:max-w-[1380px] w-full h-[90vh] max-h-[900px] p-4 flex flex-col overflow-hidden bg-background text-foreground border border-border shadow-2xl rounded-2xl">
         
-        {/* Active condition banners */}
-        {activeConditions.length > 0 && (
-          <div className="mb-2 flex flex-col gap-1.5 shrink-0 select-none">
-            {activeConditions.map((cond) => {
-              let colorClasses = "border-zinc-200 bg-transparent text-zinc-900 dark:border-zinc-800 dark:text-zinc-200"
-              let IconComponent = Info
-              let iconColor = "text-zinc-500"
-
-              if (cond.severity === 'high') {
-                colorClasses = "bg-transparent text-rose-900 dark:text-rose-250"
-                IconComponent = ShieldAlert
-                iconColor = "text-rose-600 dark:text-rose-400"
-              } else if (cond.severity === 'medium') {
-                colorClasses = "bg-transparent text-amber-900 dark:text-amber-250"
-                IconComponent = Clock
-                iconColor = "text-amber-600 dark:text-amber-400"
-              }
-
-              return (
-                <div
-                  key={cond.code}
-                  className={cn(
-                    "flex items-center justify-between gap-3 py-1.5 px-3 rounded-lg border-none shadow-none text-xs leading-none relative transition-all duration-200",
-                    colorClasses
-                  )}
-                >
-                  <div className="flex gap-2 min-w-0 items-center">
-                    <IconComponent className={cn("h-3.5 w-3.5 shrink-0", iconColor)} />
-                    <span className="truncate py-0.5 select-text font-normal">
-                      <span className="font-medium text-muted-foreground">Kích hoạt điều kiện:</span> {cond.text}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setClosedBanners((prev) => [...prev, cond.code])}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground hover:bg-muted/40 p-1 rounded-md cursor-pointer transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
         <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
           
           {/* Column Left (50%): Profile Info Header & Report Tab */}

@@ -52,150 +52,312 @@ export const DEFAULT_SECTION_B2_WEEKS: WeekReviewItem[] = [
   },
 ]
 
-export const MOCK_LESSONS_REVIEW: LessonReviewContent[] = [
+export const MOCK_MATH_LESSONS_REVIEW: LessonReviewContent[] = [
   {
     lessonNumber: 1,
-    title: 'Unit 1 - Hello & Friends',
+    title: 'Level: 401_Lesson 3: Trò chơi cơ bản: Tay trái, tay phải - Nhận diện không gian',
+    words: 'Tay trái, tay phải, định vị không gian, phản xạ phương hướng',
+    sentences: 'Xác định chính xác bên trái / bên phải của bản thân và đồ vật đối diện.',
+    phonics: 'Tư duy không gian & phản xạ vận động',
+  },
+  {
+    lessonNumber: 2,
+    title: 'Level: 401_Lesson 4: Trò chơi Nâng cao: Tay trái, tay phải - Nhận diện không gian',
+    words: 'Góc nhìn đảo ngược, định vị đa chiều, đối xứng cơ bản',
+    sentences: 'Ứng dụng định vị không gian trong mê cung và bản đồ tương tác đa chiều.',
+    phonics: 'Tư duy đa chiều & định hướng giải quyết vấn đề',
+  },
+  {
+    lessonNumber: 3,
+    title: 'Level: 402_Lesson 1: Câu chuyện Chiếc vòng vảy cá óng ánh',
+    words: 'Quy luật màu sắc, sắp xếp tuần hoàn, phân loại đặc tính',
+    sentences: 'Nhận diện và hoàn thành chuỗi lặp lại theo quy luật: A-B, A-B-C.',
+    phonics: 'Tư duy phân tích quy luật & quan sát chi tiết',
+  },
+  {
+    lessonNumber: 4,
+    title: 'Level: 402_Lesson 2: Trò chơi cơ bản + Sách hoạt động',
+    words: 'Số lượng, đếm nhanh, so sánh nhiều hơn - ít hơn',
+    sentences: 'Ghép cặp tương ứng 1-1 và so sánh nhóm lượng trong phạm vi 10.',
+    phonics: 'Khái niệm số học nền tảng & ghép nối logic',
+  },
+  {
+    lessonNumber: 5,
+    title: 'Level: 402: Lesson 3: Trò chơi nâng cao 1 + Sách hoạt động',
+    words: 'Tập hợp, phân loại nâng cao, gộp nhóm đối tượng',
+    sentences: 'Phân loại vật thể theo 2 tiêu chí đồng thời (màu sắc + hình dạng).',
+    phonics: 'Tư duy tập hợp & logic loại trừ',
+  },
+  {
+    lessonNumber: 6,
+    title: 'Level: 402_Lesson 4: Trò chơi nâng cao 2 + Sách hoạt động',
+    words: 'Quy luật ma trận 2x2, điền hình còn thiếu, suy luận logic',
+    sentences: 'Tìm mảnh ghép quy luật theo hàng ngang và cột dọc trong ma trận.',
+    phonics: 'Tư duy suy luận ma trận & kiểm chứng giả thuyết',
+  },
+  {
+    lessonNumber: 7,
+    title: 'Level: 403_Lesson 1: Câu chuyện Vương quốc Hình khối kỳ diệu',
+    words: 'Hình vuông, hình tròn, tam giác, chữ nhật, khối lập phương',
+    sentences: 'Nhận biết và gọi tên đặc điểm hình học phẳng & khối không gian.',
+    phonics: 'Tư duy hình học trực quan & biểu đạt không gian',
+  },
+  {
+    lessonNumber: 8,
+    title: 'Level: 403_Lesson 2: Trò chơi cơ bản: Ghép hình tư duy Tangram',
+    words: 'Tách - ghép hình học, xoay hướng không gian, tỉ lệ tương đối',
+    sentences: 'Sáng tạo các mô hình động vật và đồ vật từ mảnh ghép Tangram.',
+    phonics: 'Trí tưởng tượng không gian & óc sáng tạo cấu trúc',
+  },
+  {
+    lessonNumber: 9,
+    title: 'Level: 403_Lesson 3: Trò chơi nâng cao: Thử thách Cân thăng bằng',
+    words: 'Nặng hơn, nhẹ hơn, bằng nhau, bảo toàn khối lượng',
+    sentences: 'So sánh trọng lượng gián tiếp thông qua cân thăng bằng logic.',
+    phonics: 'Tư duy suy luận định lượng & bảo toàn đại lượng',
+  },
+  {
+    lessonNumber: 10,
+    title: 'Level: 403_Lesson 4: Hoạt động trải nghiệm: Mê cung số học',
+    words: 'Đường đi ngắn nhất, lập kế hoạch di chuyển, rẽ trái / rẽ phải',
+    sentences: 'Tìm lộ trình tối ưu qua các trạm thử thách số học trên sa bàn.',
+    phonics: 'Tư duy thuật toán sơ khai & chiến lược giải quyết vấn đề',
+  },
+  {
+    lessonNumber: 11,
+    title: 'Level: 404_Lesson 1: Khám phá Quy luật dãy số tăng dần',
+    words: 'Dãy số cách đều, số liền trước, liền sau, bước nhảy +1, +2',
+    sentences: 'Phát hiện quy luật và điền số thích hợp vào dãy số còn khuyết.',
+    phonics: 'Tư duy số học tuần tự & quy nạp logic',
+  },
+  {
+    lessonNumber: 12,
+    title: 'Level: 404_Lesson 2: Trò chơi cơ bản: Xếp tháp logic & Thứ tự kích thước',
+    words: 'Lớn nhất, nhỏ nhất, trung gian, trật tự sắp xếp',
+    sentences: 'Sắp xếp dãy đối tượng theo thứ tự tăng/giảm dần theo nhiều tiêu chí.',
+    phonics: 'Tư duy quan hệ thứ tự & phân cấp logic',
+  },
+  {
+    lessonNumber: 13,
+    title: 'Level: 404_Lesson 3: Trò chơi nâng cao: Thử thách Tháp Hà Nội mini',
+    words: 'Di chuyển tuần tự, tối ưu số bước, điều kiện ràng buộc',
+    sentences: 'Chuyển tháp đĩa tuân thủ quy tắc không đặt đĩa lớn lên đĩa nhỏ.',
+    phonics: 'Tư duy đệ quy & lập kế hoạch hành động từng bước',
+  },
+  {
+    lessonNumber: 14,
+    title: 'Level: 404_Lesson 4: Sách hoạt động tư duy & Bài tập logic tổng hợp',
+    words: 'Giải mã quy luật, nối điểm tư duy, bài toán tình huống thực tế',
+    sentences: 'Vận dụng tổng hợp kỹ năng suy luận vào giải quyết bài tập dự án.',
+    phonics: 'Tư duy tích hợp & giải quyết vấn đề toàn diện',
+  },
+  {
+    lessonNumber: 15,
+    title: 'Level: 405_Lesson 1: Ôn tập chuyên đề: Không gian & Số học ứng dụng',
+    words: 'Hệ thống hóa kiến thức, củng cố phản xạ, phối hợp nhóm',
+    sentences: 'Thuyết trình giải thích phương pháp tư duy và cách tìm đáp án.',
+    phonics: 'Giao tiếp toán học & tự tin diễn đạt tư duy',
+  },
+  {
+    lessonNumber: 16,
+    title: 'Level: 405_Lesson 2: Đánh giá năng lực tư duy cuối kỳ & Dự án sáng tạo',
+    words: 'Bài test năng lực, trao huy hiệu, tổng kết tiến trình',
+    sentences: 'Tự hào thể hiện năng lực tư duy vượt trội sau toàn khóa học.',
+    phonics: 'Tự nhận thức năng lực & khích lệ động lực bứt phá',
+  },
+]
+
+export const MOCK_ENGLISH_LESSONS_REVIEW: LessonReviewContent[] = [
+  {
+    lessonNumber: 1,
+    title: 'Kindie A - Unit 1A - Lesson 1',
     words: 'hello, goodbye, sing, stand up, sit down, thank you',
     sentences: "How are you? I'm fine. Thank you.",
     phonics: 'Aa: alligator, ant, apple / Bb: bear, bird, banana',
   },
   {
     lessonNumber: 2,
-    title: 'Unit 1 - School Supplies',
+    title: 'Kindie A - Unit 1A - Lesson 2',
     words: 'pen, pencil, book, eraser, ruler, school bag',
     sentences: "What's this? It's a pencil. Is it a book? Yes, it is.",
     phonics: 'Cc: cat, cup, car / Dd: dog, duck, doll',
   },
   {
     lessonNumber: 3,
-    title: 'Unit 2 - My Family',
+    title: 'Kindie A - Unit 1A - Lesson 3',
     words: 'family, father, mother, brother, sister, baby',
     sentences: 'Who is this? This is my father. She is my mother.',
     phonics: 'Ee: elephant, egg, elbow / Ff: fish, farm, frog',
   },
   {
     lessonNumber: 4,
-    title: 'Unit 2 - Colors & Shapes',
+    title: 'Kindie A - Unit 1A - Lesson 4',
     words: 'red, blue, yellow, green, circle, square, triangle',
     sentences: "What color is it? It's blue. I see a yellow circle.",
     phonics: 'Gg: gorilla, goat, guitar / Hh: hat, house, horse',
   },
   {
     lessonNumber: 5,
-    title: 'Unit 3 - Toys & Games',
+    title: 'Kindie A - Unit 2A - Lesson 1',
     words: 'ball, doll, car, robot, puzzle, teddy bear',
     sentences: 'I have a robot. Do you like toys? Yes, I do.',
     phonics: 'Ii: iguana, ink, insect / Jj: jet, jam, juice',
   },
   {
     lessonNumber: 6,
-    title: 'Unit 3 - Numbers & Counting',
+    title: 'Kindie A - Unit 2A - Lesson 2',
     words: 'one, two, three, four, five, six, seven, eight, nine, ten',
     sentences: 'How many apples? Three apples. Count with me!',
     phonics: 'Kk: kangaroo, kite, king / Ll: lion, lemon, leaf',
   },
   {
     lessonNumber: 7,
-    title: 'Unit 4 - Body Parts',
+    title: 'Kindie A - Unit 2A - Lesson 3',
     words: 'head, shoulders, knees, toes, eyes, ears, mouth, nose',
     sentences: 'Touch your nose. Open your mouth. I have two eyes.',
     phonics: 'Mm: monkey, moon, milk / Nn: nest, nut, net',
   },
   {
     lessonNumber: 8,
-    title: 'Unit 4 - Animals & Pets',
+    title: 'Kindie A - Unit 2A - Lesson 4',
     words: 'dog, cat, rabbit, bird, hamster, fish, puppy',
     sentences: 'What animal do you like? I like rabbits. It can run.',
     phonics: 'Oo: octopus, ostrich, ox / Pp: panda, pig, pen',
   },
   {
     lessonNumber: 9,
-    title: 'Unit 5 - Food & Drinks',
+    title: 'Kindie A - Unit 3A - Lesson 1',
     words: 'apple, banana, milk, bread, cheese, water, juice',
     sentences: 'Do you want milk? Yes, please. I like bananas.',
     phonics: 'Qq: queen, quilt, quiet / Rr: rabbit, ring, rain',
   },
   {
     lessonNumber: 10,
-    title: 'Unit 5 - My House',
+    title: 'Kindie A - Unit 3A - Lesson 2',
     words: 'house, bedroom, kitchen, living room, door, window',
     sentences: 'Where is Mom? She is in the kitchen.',
     phonics: 'Ss: sun, star, snake / Tt: tiger, tree, train',
   },
   {
     lessonNumber: 11,
-    title: 'Unit 6 - Clothes',
+    title: 'Kindie A - Unit 3A - Lesson 3',
     words: 'shirt, pants, shoes, socks, hat, coat, dress',
     sentences: 'Put on your shoes. I wear a red shirt.',
     phonics: 'Uu: umbrella, uncle, up / Vv: van, violin, vase',
   },
   {
     lessonNumber: 12,
-    title: 'Unit 6 - Weather & Seasons',
+    title: 'Kindie A - Unit 3A - Lesson 4',
     words: 'sunny, rainy, windy, snowy, hot, cold, summer, winter',
     sentences: "How's the weather today? It's sunny and warm.",
     phonics: 'Ww: water, watch, wind / Xx: fox, box, six',
   },
   {
     lessonNumber: 13,
-    title: 'Unit 7 - Action Verbs',
+    title: 'Kindie A - Unit 4A - Lesson 1',
     words: 'run, jump, swim, fly, dance, walk, read, write',
     sentences: 'Can you swim? Yes, I can. He is running fast.',
     phonics: 'Yy: yellow, yo-yo, yak / Zz: zebra, zoo, zero',
   },
   {
     lessonNumber: 14,
-    title: 'Unit 7 - Transportation',
+    title: 'Kindie A - Unit 4A - Lesson 2',
     words: 'bus, car, bicycle, train, plane, boat, taxi',
     sentences: 'I go to school by bus. Look at the train!',
     phonics: 'Bl: blue, black, block / Cl: clock, cloud, clap',
   },
   {
     lessonNumber: 15,
-    title: 'Unit 8 - Feelings & Emotions',
+    title: 'Kindie A - Unit 4A - Lesson 3',
     words: 'happy, sad, angry, tired, hungry, thirsty, excited',
     sentences: 'Are you happy? Yes, I am. I feel hungry.',
     phonics: 'Fl: flower, flag, fly / Pl: plane, plum, play',
   },
   {
     lessonNumber: 16,
-    title: 'Unit 8 - Review & Integration',
+    title: 'Kindie A - Unit 4A - Lesson 4',
     words: 'friend, teacher, classroom, story, song, game',
     sentences: 'We love English! Let me tell a story.',
     phonics: 'Gl: glass, glove, glue / Sl: slide, sleep, sled',
   },
 ]
 
-export function getReviewContentForRange(startNum: number, endNum: number): string {
+export const MOCK_LESSONS_REVIEW: LessonReviewContent[] = MOCK_ENGLISH_LESSONS_REVIEW
+
+export function getLessonsReviewBySubject(subject?: string, isMath?: boolean): LessonReviewContent[] {
+  if (isMath !== undefined) {
+    return isMath ? MOCK_MATH_LESSONS_REVIEW : MOCK_ENGLISH_LESSONS_REVIEW
+  }
+  if (!subject) return MOCK_ENGLISH_LESSONS_REVIEW
+  const lower = subject.toLowerCase()
+  if (lower.includes('toán') || lower.includes('math')) {
+    return MOCK_MATH_LESSONS_REVIEW
+  }
+  return MOCK_ENGLISH_LESSONS_REVIEW
+}
+
+export function getReviewContentForRange(startNum: number, endNum: number, isMath?: boolean): string {
   const min = Math.min(startNum, endNum)
   const max = Math.max(startNum, endNum)
-  const filtered = MOCK_LESSONS_REVIEW.filter(
+  const list = isMath ? MOCK_MATH_LESSONS_REVIEW : MOCK_ENGLISH_LESSONS_REVIEW
+  const filtered = list.filter(
     (l) => l.lessonNumber >= min && l.lessonNumber <= max
   )
+
+  if (isMath) {
+    return filtered
+      .map(
+        (l) =>
+          `📌 Buổi ${l.lessonNumber}:\n- Trọng tâm: ${l.words}\n- Kỹ năng tư duy: ${l.sentences}\n- Phương pháp: ${l.phonics}`
+      )
+      .join('\n\n')
+  }
 
   return filtered
     .map(
       (l) =>
-        `📌 Bài ${l.lessonNumber} (${l.title}):\n- Words: ${l.words}\n- Sentences: ${l.sentences}\n- Phonics: ${l.phonics}`
+        `📌 Buổi ${l.lessonNumber}:\n- Words: ${l.words}\n- Sentences: ${l.sentences}\n- Phonics: ${l.phonics}`
     )
     .join('\n\n')
 }
 
-export function getDirectLessonPlanForRange(startNum: number, endNum: number): string {
+export function getDirectLessonPlanForRange(startNum: number, endNum: number, isMath?: boolean): string {
   const min = Math.min(startNum, endNum)
   const max = Math.max(startNum, endNum)
-  const filtered = MOCK_LESSONS_REVIEW.filter(
+  const list = isMath ? MOCK_MATH_LESSONS_REVIEW : MOCK_ENGLISH_LESSONS_REVIEW
+  const filtered = list.filter(
     (l) => l.lessonNumber >= min && l.lessonNumber <= max
   )
 
-  return `KẾ HOẠCH BÀI HỌC TRỌNG TÂM (BÀI ${min} DẾN BÀI ${max}):\n` +
-    filtered.map((l) => `• Bài ${l.lessonNumber} (${l.title}): ${l.words}`).join('\n')
+  return `KẾ HOẠCH BÀI HỌC TRỌNG TÂM (BUỔI ${min} ĐẾN BUỔI ${max}):\n` +
+    filtered.map((l) => `• Buổi ${l.lessonNumber}: ${l.words}`).join('\n')
 }
 
-export function getAiSynthesizedNextMonthPlan(startNum: number, endNum: number): string {
+export function getAiSynthesizedNextMonthPlan(startNum: number, endNum: number, isMath?: boolean): string {
   const min = Math.min(startNum, endNum)
   const max = Math.max(startNum, endNum)
+
+  if (isMath) {
+    if (min <= 6) {
+      return `Tháng tới, các con sẽ tiếp tục chương trình Toán tư duy Columbus với các chủ đề trọng tâm:
+1. Nhận diện không gian & Định vị đa chiều: Phân biệt chính xác tay trái - tay phải của bản thân và vật thể đối diện; ứng dụng vào mê cung logic và bản đồ tương tác.
+2. Tư duy quy luật & Sắp xếp tuần hoàn: Khám phá câu chuyện Chiếc vòng vảy cá óng ánh, nhận biết và hoàn thành các chuỗi quy luật màu sắc, hình khối A-B, A-B-C.
+3. Hoạt động bổ trợ: Thực hành trò chơi cơ bản, sách hoạt động tư duy và các thử thách ghép nối logic theo nhóm.
+Mục tiêu giúp con hình thành phản xạ không gian nhanh nhạy, rèn luyện tính kiên nhẫn và tự tin trình bày hướng tư duy của mình.`
+    }
+    if (min <= 12) {
+      return `Tháng tới, các con sẽ tiếp tục chương trình Toán tư duy Columbus với các chủ đề trọng tâm:
+1. Hình học tư duy & Cấu trúc không gian: Khám phá các hình học cơ bản (vuông, tròn, tam giác, chữ nhật), ứng dụng bộ ghép hình Tangram để sáng tạo mô hình con vật và nhận thức không gian đa chiều.
+2. Đo lường logic & Cân thăng bằng: Làm quen với khái niệm nặng hơn - nhẹ hơn - bằng nhau thông qua cán cân logic; rèn luyện tư duy bảo toàn khối lượng và suy luận so sánh gián tiếp.
+3. Dãy số & Quy luật logic: Rèn luyện tìm kiếm quy luật dãy số tăng dần, điền số còn thiếu và giải mã mê cung số học.
+Mục tiêu giúp con nâng cao khả năng phân tích logic, liên kết hình khối và phát triển tư duy định lượng vững chắc.`
+    }
+    return `Tháng tới, các con sẽ bước vào giai đoạn nâng cao và hoàn thiện chuyên đề Toán tư duy Columbus:
+1. Tư duy thuật toán & Kế hoạch nhiều bước: Chinh phục thử thách Tháp Hà Nội mini, rèn luyện năng lực tư duy tuần tự và lập chiến lược tối ưu số bước di chuyển.
+2. Tư duy tích hợp & Giải quyết vấn đề: Vận dụng toàn diện các kiến thức về không gian, hình học và số học vào các bài tập logic thực tế trong sách hoạt động chuyên sâu.
+3. Đánh giá năng lực & Dự án sáng tạo: Tham gia bài đánh giá năng lực tư duy cuối kỳ, thuyết trình giải pháp và vinh danh sự bứt phá của con.
+Mục tiêu giúp con làm chủ phương pháp tư duy độc lập, tự tin phản biện và sẵn sàng bứt phá ở các cấp độ tiếp theo.`
+  }
 
   if (min >= 8 || max >= 8) {
     return `Tháng tới, các con sẽ học 2 chủ đề mới: Zoo Animals và Fun Shapes với nhiều hoạt động hấp dẫn:
@@ -219,6 +381,7 @@ Làm mini project: vẽ cây gia đình và làm con vật bằng giấy.`
 }
 
 import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
+import { parseEvaluationPair } from './FormattedEvaluationContent'
 
 export interface DetailedMonthlyReportForm {
   monthPeriod: string
@@ -227,12 +390,86 @@ export interface DetailedMonthlyReportForm {
   sectionAContent: string
   sectionA1Content: string
   sectionA2Content: string
+  sectionA1Highlight?: string
+  sectionA1Note?: string
+  sectionA2Knowledge?: string
+  sectionA2Skill?: string
   galleryPhotos?: StudentGalleryPhoto[]
   sectionB1Content: string
   sectionB2StartLesson: number
   sectionB2EndLesson: number
   sectionB2Weeks: WeekReviewItem[]
   sectionB2Content: string
+}
+
+export function composeSectionA1(highlight: string = '', note: string = ''): string {
+  const parts: string[] = []
+  const cleanHighlight = highlight.trim()
+  const cleanNote = note.trim()
+  if (cleanHighlight) {
+    parts.push(`Điểm nổi bật: ${cleanHighlight}`)
+  }
+  if (cleanNote) {
+    parts.push(`Điểm cần lưu ý: ${cleanNote}`)
+  }
+  return parts.join('\n\n')
+}
+
+export function decomposeSectionA1(content: string = ''): { highlight: string; note: string } {
+  if (!content) return { highlight: '', note: '' }
+  const { part1, part2 } = parseEvaluationPair(content, 'Điểm nổi bật:', 'Điểm cần lưu ý:')
+  if (!part1 && !part2 && content.trim()) {
+    return { highlight: content.trim(), note: '' }
+  }
+  return { highlight: part1, note: part2 }
+}
+
+export function composeSectionA2(
+  knowledge: string = '',
+  skill: string = '',
+  isMath: boolean = false
+): string {
+  const marker1 = isMath ? 'Kiến thức & Tư duy:' : 'Từ vựng & Phonics:'
+  const marker2 = isMath ? 'Kỹ năng giải toán:' : 'Cấu trúc & Mẫu câu:'
+  const parts: string[] = []
+  const cleanKnowledge = knowledge.trim()
+  const cleanSkill = skill.trim()
+  if (cleanKnowledge) {
+    parts.push(`${marker1} ${cleanKnowledge}`)
+  }
+  if (cleanSkill) {
+    parts.push(`${marker2} ${cleanSkill}`)
+  }
+  return parts.join('\n\n')
+}
+
+export function decomposeSectionA2(
+  content: string = '',
+  isMath: boolean = false
+): { knowledge: string; skill: string } {
+  if (!content) return { knowledge: '', skill: '' }
+
+  const lower = content.toLowerCase()
+  const isActuallyEnglish = lower.includes('từ vựng') || lower.includes('phonics') || lower.includes('mẫu câu')
+  const isActuallyMath = lower.includes('kiến thức') || lower.includes('tư duy') || lower.includes('giải toán')
+
+  const effectiveIsMath = isActuallyEnglish ? false : isActuallyMath ? true : isMath
+
+  const marker1 = effectiveIsMath ? 'Kiến thức & Tư duy:' : 'Từ vựng & Phonics:'
+  const marker2 = effectiveIsMath ? 'Kỹ năng giải toán:' : 'Cấu trúc & Mẫu câu:'
+
+  let res = parseEvaluationPair(content, marker1, marker2)
+  if (!res.part1 && !res.part2) {
+    const alt1 = effectiveIsMath ? 'Từ vựng & Phonics:' : 'Kiến thức & Tư duy:'
+    const alt2 = effectiveIsMath ? 'Cấu trúc & Mẫu câu:' : 'Kỹ năng giải toán:'
+    res = parseEvaluationPair(content, alt1, alt2)
+  }
+
+  if (!res.part1 && !res.part2 && content.trim()) {
+    return { knowledge: content.trim(), skill: '' }
+  }
+
+  return { knowledge: res.part1, skill: res.part2 }
 }
 
 export interface MonthlyAwardCriterion {
@@ -274,22 +511,80 @@ export const MONTHLY_AWARDS_CRITERIA: MonthlyAwardCriterion[] = [
   },
 ]
 
+export const ENGLISH_MONTHLY_AWARDS_CRITERIA: MonthlyAwardCriterion[] = [
+  {
+    title: '🌟 SIÊU SAO TIẾNG ANH',
+    criteria: 'Chuyên cần 100%, tự tin giao tiếp cùng giáo viên bản ngữ, phát âm chuẩn, từ vựng phong phú và bài kiểm tra định kỳ đạt điểm xuất sắc.',
+    meaning: 'Vinh danh học viên có thành tích học tập toàn diện và phản xạ tiếng Anh nổi bật trong tháng.',
+  },
+  {
+    title: '🚀 NGÔI SAO BỨT PHÁ',
+    criteria: 'Tiến bộ vượt bậc về sự tự tin, phát âm ngữ điệu tự nhiên và chủ động tham gia các hoạt động hội thoại nhóm trên lớp.',
+    meaning: 'Động viên tinh thần nỗ lực bứt phá năng lực ngôn ngữ của học viên.',
+  },
+  {
+    title: '⭐️ NGÔI SAO CHĂM CHỈ',
+    criteria: 'Đi học đầy đủ, đúng giờ, hoàn thành bài tập về nhà và phiếu luyện tập đầy đủ, tích cực tương tác trong giờ học.',
+    meaning: 'Biểu dương tinh thần tự giác và ý thức rèn luyện tiếng Anh chuyên cần.',
+  },
+  {
+    title: '🏆 CAO THỦ TIẾNG ANH',
+    criteria: 'Có nỗ lực rõ rệt trong việc cải thiện phát âm âm đuôi, ngữ pháp và mở rộng vốn từ vựng học thuật.',
+    meaning: 'Ghi nhận sự kiên trì và tiến bộ vững chắc của học viên.',
+  },
+  {
+    title: '💡 NHÀ KHÁM PHÁ NGÔN NGỮ',
+    criteria: 'Yêu thích đọc truyện tiếng Anh, tò mò tìm hiểu từ mới và sáng tạo trong các bài thuyết trình, dự án.',
+    meaning: 'Khuyến khích niềm đam mê khám phá ngôn ngữ và thế giới.',
+  },
+  {
+    title: '🗣️ ĐẠI SỨ GIAO TIẾP',
+    criteria: 'Tự tin thuyết trình trước đám đông, diễn đạt ý kiến mạch lạc và truyền cảm hứng tiếng Anh tới các bạn trong lớp.',
+    meaning: 'Khích lệ năng lực diễn thuyết và khả năng sử dụng tiếng Anh tự tin.',
+  },
+]
+
 export const AWARD_BADGES = MONTHLY_AWARDS_CRITERIA.map((a) => a.title)
+export const ENGLISH_AWARD_BADGES = ENGLISH_MONTHLY_AWARDS_CRITERIA.map((a) => a.title)
 
 export function normalizeAwardBadge(badge?: string): string {
   if (!badge) return ''
-  const found = AWARD_BADGES.find(
-    (b) => b === badge || b.includes(badge) || badge.includes(b.replace(/^[^\s]+\s+/, ''))
-  )
-  if (found) return found
-  const lower = badge.toLowerCase()
+  const trimmed = badge.trim()
+  if (!trimmed) return ''
+
+  // 1. Nếu badge đã có sẵn chính xác trong danh mục Tiếng Anh hoặc Toán học thì giữ nguyên
+  const allKnownBadges = [...ENGLISH_AWARD_BADGES, ...AWARD_BADGES]
+  const exactMatch = allKnownBadges.find((b) => b === trimmed)
+  if (exactMatch) return exactMatch
+
+  const lower = trimmed.toLowerCase()
+
+  // 2. Nhóm danh hiệu Tiếng Anh
+  if (lower.includes('tiếng anh') || lower.includes('anh') || lower.includes('english')) {
+    if (lower.includes('siêu sao') || lower.includes('xuất sắc')) return '🌟 SIÊU SAO TIẾNG ANH'
+    if (lower.includes('cao thủ')) return '🏆 CAO THỦ TIẾNG ANH'
+    if (lower.includes('bứt phá') || lower.includes('chiến binh')) return '🚀 NGÔI SAO BỨT PHÁ'
+    if (lower.includes('chăm')) return '⭐️ NGÔI SAO CHĂM CHỈ'
+    if (lower.includes('khám phá')) return '💡 NHÀ KHÁM PHÁ NGÔN NGỮ'
+    if (lower.includes('giao tiếp') || lower.includes('đại sứ')) return '🗣️ ĐẠI SỨ GIAO TIẾP'
+    return trimmed
+  }
+
+  // 3. Nhóm danh hiệu Toán học
+  if (lower.includes('toán') || lower.includes('math')) {
+    if (lower.includes('siêu sao') || lower.includes('xuất sắc')) return '🌟 SIÊU SAO TOÁN HỌC'
+    if (lower.includes('giải toán') || lower.includes('cao thủ')) return '🏆 CAO THỦ GIẢI TOÁN'
+    if (lower.includes('khám phá')) return '💡 NHÀ KHÁM PHÁ TOÁN HỌC'
+    if (lower.includes('thám tử')) return '🧠 THÁM TỬ TOÁN HỌC'
+    return trimmed
+  }
+
+  // 4. Nhóm danh hiệu chung
   if (lower.includes('bứt phá') || lower.includes('chiến binh')) return '🚀 NGÔI SAO BỨT PHÁ'
-  if (lower.includes('tiến bộ') || lower.includes('giải toán')) return '🏆 CAO THỦ GIẢI TOÁN'
   if (lower.includes('chăm')) return '⭐️ NGÔI SAO CHĂM CHỈ'
-  if (lower.includes('xuất sắc') || lower.includes('siêu sao')) return '🌟 SIÊU SAO TOÁN HỌC'
-  if (lower.includes('sáng tạo') || lower.includes('khám phá')) return '💡 NHÀ KHÁM PHÁ TOÁN HỌC'
-  if (lower.includes('thám tử')) return '🧠 THÁM TỬ TOÁN HỌC'
-  return badge
+
+  // 5. Nếu người dùng tự gõ danh hiệu riêng -> Giữ nguyên tuyệt đối (Tự điền)
+  return trimmed
 }
 
 export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
@@ -318,12 +613,7 @@ export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
   sectionB1Content: '',
   sectionB2StartLesson: 8,
   sectionB2EndLesson: 10,
-  sectionB2Weeks: [
-    { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 3, title: 'Tuần 3', content: '', docLink: '', thumbnailUrl: '' },
-    { weekNum: 4, title: 'Tuần 4', content: '', docLink: '', thumbnailUrl: '' },
-  ],
+  sectionB2Weeks: [],
   sectionB2Content: '',
 }
 

@@ -24,6 +24,8 @@ export interface CareInteractionLog {
     packageName: string
     totalPaidAmount?: number
     amountText?: string
+    paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
+    paymentStatusText?: string
   }
 }
 
@@ -77,6 +79,7 @@ export interface StudentCareAlert {
     totalPaidAmount: number
     finalAmount?: number
     paymentTerm?: string
+    paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
   }
   hasLinkedOrder?: boolean // Có đơn hàng liên kết hay không (false: Chưa ghép đơn hàng)
   renewalClassification?: string // Phân loại trạng thái tái phí thực tế
@@ -1021,14 +1024,14 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentName: "Nguyễn Hoàng Dũng",
     startDate: "07/12/2023",
     subject: "Tiếng Anh",
-    status: "Đang học",
+    status: "Hết buổi",
     level: "Level 4",
     subLevel: "A",
     classCode: "LD_TA_00019",
     teacherCode: "GV_F010",
     schedule: "T3 - 17:45-19:15, CN - 17:45-19:15",
     totalSessions: 70,
-    remainingSessions: 5,
+    remainingSessions: 0,
     expectedEndDate: "23/05/2026",
     attendanceRatio: "5/7",
     homeworkCompletion: 100.0,
@@ -1105,21 +1108,21 @@ export const mockCareAlerts: StudentCareAlert[] = [
     studentName: "Nguyễn Hoàng Nam",
     startDate: "20/12/2023",
     subject: "Toán tư duy",
-    status: "Đang học",
+    status: "Hết buổi",
     level: "Archimedes 5",
     subLevel: "A",
     classCode: "LD_TOAN_00011",
     teacherCode: "GV_HuiLT20",
     schedule: "T3 - 18:30-20:30",
     totalSessions: 80,
-    remainingSessions: 45,
+    remainingSessions: 0,
     expectedEndDate: "15/06/2027",
-    attendanceRatio: "8/8",
+    attendanceRatio: "80/80",
     homeworkCompletion: 92.5,
     lastTestScore: 8.8,
     priorTestScore: 7.5,
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
-    realtimeStatus: "Đang học",
+    realtimeStatus: "Hết buổi",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
     csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
@@ -1155,26 +1158,26 @@ export const mockCareAlerts: StudentCareAlert[] = [
   },
   {
     id: "21",
-    studentId: "s20",
-    customerCode: "10999888",
-    studentName: "Nguyễn Hoàng Nam",
+    studentId: "s-lebaongoc",
+    customerCode: "10999889",
+    studentName: "Lê Bảo Ngọc",
     startDate: "22/12/2023",
     subject: "Tiếng Anh",
-    status: "Đang học",
-    level: "Tutor Level 4",
+    status: "Chưa ghép lớp",
+    level: "Level 4",
     subLevel: "B",
-    classCode: "TUTOR_TA_002",
-    teacherCode: "GV_TUTOR_02",
-    schedule: "T7 - 19:30-21:00",
-    totalSessions: 40,
-    remainingSessions: 28,
+    classCode: "",
+    teacherCode: "",
+    schedule: "",
+    totalSessions: 48,
+    remainingSessions: 48,
     expectedEndDate: "18/12/2026",
-    attendanceRatio: "6/6",
-    homeworkCompletion: 100.0,
-    lastTestScore: 9.0,
-    priorTestScore: 8.5,
-    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-nam",
-    realtimeStatus: "Đang học",
+    attendanceRatio: "0/0",
+    homeworkCompletion: 0,
+    lastTestScore: 0,
+    priorTestScore: 0,
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-ngoc",
+    realtimeStatus: "Chưa ghép lớp",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-nam",
     csStaff: "Lê Hoàng Long",
     callConfirmation: "Chưa gọi",
@@ -1769,6 +1772,92 @@ export const mockCareAlerts: StudentCareAlert[] = [
       paymentTerm: "Thanh toán 100%"
     },
     renewalClassification: 'tai_phi'
+  },
+  {
+    id: "37",
+    studentId: "s36",
+    customerCode: "2024036",
+    studentName: "Nguyễn Gia Hưng",
+    englishName: "Lucas",
+    startDate: "10/01/2024",
+    subject: "Toán tư duy",
+    status: "Đang học",
+    level: "Toán 1:6",
+    subLevel: "Level B",
+    classCode: "LD_TOAN_00015",
+    teacherCode: "GV_HuiLT20",
+    schedule: "T4 - 18:00-20:00, T7 - 09:00-11:00",
+    totalSessions: 48,
+    remainingSessions: 2,
+    expectedEndDate: "28/07/2026",
+    attendanceRatio: "5/7",
+    homeworkCompletion: 70.0,
+    lastTestScore: 6.5,
+    priorTestScore: 7.0,
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-37",
+    realtimeStatus: "Đang học",
+    learningResultsLink: "https://docs.google.com/document/d/learning-result-37",
+    csStaff: "Trần Thảo Anh 20",
+    callConfirmation: "Đã gọi",
+    completedCareTags: ['CTP'],
+    studentNote: 'Gia đình có kế hoạch định cư nước ngoài từ tháng 8/2026.',
+    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại.",
+    interactionLogs: [
+      {
+        id: "log-37-1",
+        date: "2026-07-20",
+        staffName: "Trần Thảo Anh 20 (CS)",
+        callConfirmation: "Đã gọi",
+        audioDuration: "04:12",
+        notes: "[CTP] [Đối tượng: Phụ huynh] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại."
+      }
+    ],
+    hasLinkedOrder: false,
+    linkedOrderCode: "none",
+    renewalClassification: 'that_bai'
+  },
+  {
+    id: "38",
+    studentId: "s37",
+    customerCode: "2024037",
+    studentName: "Đỗ Hoàng Long",
+    englishName: "Leo",
+    startDate: "01/03/2024",
+    subject: "Tiếng Anh",
+    status: "Đang học",
+    level: "Level 3",
+    subLevel: "Level 3",
+    classCode: "NT_TA_00008",
+    teacherCode: "GV_F010",
+    schedule: "T2 - 18:30-20:00, T5 - 18:30-20:00",
+    totalSessions: 48,
+    remainingSessions: 3,
+    expectedEndDate: "05/08/2026",
+    attendanceRatio: "6/7",
+    homeworkCompletion: 75.0,
+    lastTestScore: 7.0,
+    priorTestScore: 7.5,
+    studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-38",
+    realtimeStatus: "Đang học",
+    learningResultsLink: "https://docs.google.com/document/d/learning-result-38",
+    csStaff: "Nguyễn Thị Ngọc Anh",
+    callConfirmation: "Đã gọi",
+    completedCareTags: ['CTP'],
+    studentNote: 'Phụ huynh bận lịch học ở trường chuyên nên dừng học thêm.',
+    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh. Đóng ca thất bại.",
+    interactionLogs: [
+      {
+        id: "log-38-1",
+        date: "2026-07-22",
+        staffName: "Nguyễn Thị Ngọc Anh",
+        callConfirmation: "Đã gọi",
+        audioDuration: "03:40",
+        notes: "[CTP] [Đối tượng: Phụ huynh] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh. Đóng ca thất bại."
+      }
+    ],
+    hasLinkedOrder: false,
+    linkedOrderCode: "none",
+    renewalClassification: 'that_bai'
   }
 ]
 
@@ -1807,10 +1896,16 @@ export function updateCareAlertInteraction(
 ): boolean {
   const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
   if (item) {
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
     const newLog: CareInteractionLog = {
       ...log,
       id: `log-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0]
+      date: `${y}-${m}-${d} ${hh}:${mm}`,
     }
     item.interactionLogs = [...item.interactionLogs, newLog]
     item.callConfirmation = log.callConfirmation
@@ -1936,6 +2031,7 @@ export function linkOrderToStudentCareAlert(
     totalPaidAmount: number
     finalAmount?: number
     paymentTerm?: string
+    paymentStatus?: 'paid' | 'partial' | 'unpaid' | 'pending_payment'
   }
 ): boolean {
   const item = mockCareAlerts.find((i) => i.id === id || i.studentId === id)
@@ -1948,6 +2044,7 @@ export function linkOrderToStudentCareAlert(
         totalPaidAmount: orderDetails.totalPaidAmount,
         finalAmount: orderDetails.finalAmount,
         paymentTerm: orderDetails.paymentTerm,
+        paymentStatus: orderDetails.paymentStatus,
       }
     }
     return true

@@ -1,6 +1,22 @@
 'use client'
 
-import { Bell, AlertTriangle, ArrowRight, Clock, Settings, Check, Trash2, CheckCheck } from 'lucide-react'
+import {
+  Bell,
+  Check,
+  Trash2,
+  CheckCheck,
+  GraduationCap,
+  CalendarDays,
+  CalendarX,
+  CreditCard,
+  ClipboardCheck,
+  MessageSquareWarning,
+  CircleDollarSign,
+  FileText,
+  AlertTriangle,
+  RotateCcw,
+  type LucideIcon,
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -10,37 +26,74 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { getStatusDotClass } from '@/lib/statusColors'
 import { ConfirmDialog, EmptyState } from '@/components/shared'
-import { SegmentedControl } from '@/components/controls'
 import { toast } from 'sonner'
 import { useNotificationStore } from '@/stores/useNotificationStore'
 import {
   getRelativeTime,
-  NotificationCategory,
-  NotificationPriority,
   NotificationItem,
 } from './notificationHelpers'
 
-type FilterCategory = 'all' | NotificationCategory
-type FilterStatus = 'all' | 'unread'
+/**
+ * Resolver mapping exact business notification events to semantic Lucide icons & colors
+ * Directly grounded in Rinov5 Station modules (Classes, Students, Orders, Schedule, Tickets).
+ */
+function getBusinessIconConfig(notif: NotificationItem): { icon: LucideIcon; color: string } {
+  const title = notif.title.toLowerCase()
+  const msg = notif.message.toLowerCase()
 
-const CATEGORY_ICONS = {
-  system: Settings,
-  workflow: ArrowRight,
-  reminder: Clock,
-  alert: AlertTriangle,
+  // 1. Buổi học bị hủy / Thay đổi lịch đột xuất (Lịch biểu)
+  if (title.includes('hủy') || msg.includes('hủy')) {
+    return { icon: CalendarX, color: 'text-rose-500 dark:text-rose-400' }
+  }
+
+  // 2. Điểm danh lớp học (Vận hành lớp học)
+  if (title.includes('điểm danh') || msg.includes('điểm danh')) {
+    return { icon: ClipboardCheck, color: 'text-blue-500 dark:text-blue-400' }
+  }
+
+  // 3. Đơn hàng mới / Thanh toán học phí (CRM & Thương mại)
+  if (notif.category === 'commercial' && (title.includes('đơn hàng') || title.includes('ord-') || title.includes('phiếu thu'))) {
+    return { icon: CreditCard, color: 'text-emerald-500 dark:text-emerald-400' }
+  }
+
+  // 4. Tái phí học viên (Tái phí & Công nợ)
+  if (title.includes('tái phí') || msg.includes('tái phí')) {
+    return { icon: CircleDollarSign, color: 'text-amber-500 dark:text-amber-400' }
+  }
+
+  // 5. Đơn bảo lưu / Nghỉ phép (Bảo lưu & Nghỉ phép)
+  if (title.includes('bảo lưu') || title.includes('nghỉ phép') || msg.includes('bảo lưu')) {
+    return { icon: FileText, color: 'text-indigo-500 dark:text-indigo-400' }
+  }
+
+  // 6. Ticket phản ánh & Khiếu nại (Ticket & Chất lượng)
+  if (notif.category === 'ticket' || title.includes('ticket') || title.includes('phàn nàn') || title.includes('khiếu nại')) {
+    return { icon: MessageSquareWarning, color: 'text-amber-500 dark:text-amber-400' }
+  }
+
+  // 7. Học vụ & Chăm sóc học viên (Vắng học, Điểm thi, Xếp lớp)
+  if (notif.category === 'student_care' || title.includes('vắng') || title.startsWith('hv')) {
+    return { icon: GraduationCap, color: 'text-indigo-500 dark:text-indigo-400' }
+  }
+
+  // 8. Lịch học mới / Lịch test (Lịch biểu trung tâm)
+  if (notif.category === 'schedule' || title.includes('lịch')) {
+    return { icon: CalendarDays, color: 'text-sky-500 dark:text-sky-400' }
+  }
+
+  // Fallbacks
+  return { icon: AlertTriangle, color: 'text-zinc-500 dark:text-zinc-400' }
 }
 
 export function NotificationDropdown() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const [categoryFilter, setCategoryFilter] = useState<FilterCategory>('all')
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>('all')
+  const [onlyUnread, setOnlyUnread] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   // Zustand Store states and actions
-  const { notifications, markAsRead, markAllAsRead, removeNotification } = useNotificationStore()
+  const { notifications, markAsRead, markAllAsRead, removeNotification, resetNotifications } = useNotificationStore()
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,7 +105,7 @@ export function NotificationDropdown() {
   // Safely get unread count
   const unreadCount = mounted ? notifications.filter((n) => !n.read).length : 0
 
-  // Filter and sort notifications
+  // Filter and sort notifications (newest first)
   const sortedNotifications = [...notifications].sort((a, b) => {
     const timeA = new Date(a.timestamp).getTime()
     const timeB = new Date(b.timestamp).getTime()
@@ -60,34 +113,9 @@ export function NotificationDropdown() {
   })
 
   const filteredNotifications = sortedNotifications.filter((notif) => {
-    const matchesCategory = categoryFilter === 'all' || notif.category === categoryFilter
-    const matchesStatus = statusFilter === 'all' || (!notif.read && statusFilter === 'unread')
-    return matchesCategory && matchesStatus
+    if (onlyUnread && notif.read) return false
+    return true
   })
-
-  // Dynamic counts for Category tabs
-  const getCategoryUnreadCount = (category: NotificationCategory) => {
-    return notifications.filter((n) => n.category === category && !n.read).length
-  }
-
-  const systemUnread = getCategoryUnreadCount('system')
-  const workflowUnread = getCategoryUnreadCount('workflow')
-  const reminderUnread = getCategoryUnreadCount('reminder')
-  const alertUnread = getCategoryUnreadCount('alert')
-
-  const categoryOptions = [
-    { value: 'all' as FilterCategory, label: `Tất cả${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
-    { value: 'system' as FilterCategory, label: `Hệ thống${systemUnread > 0 ? ` (${systemUnread})` : ''}` },
-    { value: 'workflow' as FilterCategory, label: `Nghiệp vụ${workflowUnread > 0 ? ` (${workflowUnread})` : ''}` },
-    { value: 'reminder' as FilterCategory, label: `Nhắc nhở${reminderUnread > 0 ? ` (${reminderUnread})` : ''}` },
-    { value: 'alert' as FilterCategory, label: `Cảnh báo${alertUnread > 0 ? ` (${alertUnread})` : ''}` },
-  ]
-
-  const getPriorityDot = (priority: NotificationPriority) => {
-    if (priority === 'high') return getStatusDotClass('high') // bg-red-500
-    if (priority === 'medium') return getStatusDotClass('medium') // bg-amber-500
-    return getStatusDotClass('inactive') // bg-zinc-400
-  }
 
   const handleItemClick = (notif: NotificationItem) => {
     markAsRead(notif.id)
@@ -107,43 +135,87 @@ export function NotificationDropdown() {
             <Button
               type="button"
               variant="ghost"
-              size="icon-lg"
+              size="icon-sm"
               aria-label="Thông báo"
-              className="ui-icon-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
+              className="ui-icon-button inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent p-0 leading-none text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
             >
-              <Bell className="h-5 w-5" />
+              <Bell className="h-4 w-4" />
             </Button>
             {mounted && unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4">
+              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                <span className="relative inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               </span>
             )}
           </div>
         </DropdownMenuTrigger>
-        
-        <DropdownMenuContent align="end" className="w-[380px] sm:w-[410px] p-0 shadow-lg border border-border bg-popover text-popover-foreground rounded-lg overflow-hidden">
+
+        <DropdownMenuContent
+          align="end"
+          className="w-[340px] sm:w-[360px] p-0 shadow-xl border border-border/80 bg-popover text-popover-foreground rounded-xl overflow-hidden"
+        >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-muted/20">
-            <span className="text-sm font-semibold tracking-tight text-foreground">Thông báo</span>
-            {mounted && unreadCount > 0 && (
+          <div className="flex items-center justify-between border-b border-border/70 px-3.5 py-2.5 bg-muted/15">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold tracking-tight text-foreground">Thông báo</span>
+              {mounted && unreadCount > 0 && (
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {/* Filter unread toggle pill button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setOnlyUnread((prev) => !prev)
+                }}
+                className={cn(
+                  'h-6 px-2.5 text-[11px] font-medium rounded-full border transition-all flex items-center gap-1.5 select-none',
+                  onlyUnread
+                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                    : 'bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/50'
+                )}
+              >
+                <span
+                  className={cn(
+                    'h-1.5 w-1.5 rounded-full transition-colors',
+                    onlyUnread ? 'bg-white' : 'bg-primary'
+                  )}
+                />
+                <span>Chưa đọc</span>
+              </button>
+
+              {/* Mark all as read button - ALWAYS VISIBLE */}
               <Button
                 type="button"
                 variant="ghost"
                 size="xs"
-                className="h-7 px-2 text-xs font-semibold text-primary hover:bg-primary/5 hover:text-primary transition-all duration-200 flex items-center gap-1 rounded-md"
+                disabled={!mounted || unreadCount === 0}
+                className={cn(
+                  'h-6 px-1.5 text-[11px] font-medium transition-colors flex items-center gap-1 rounded-md',
+                  mounted && unreadCount > 0
+                    ? 'text-muted-foreground hover:text-primary cursor-pointer'
+                    : 'text-muted-foreground/35 cursor-not-allowed opacity-50'
+                )}
                 onClick={(e) => {
                   e.stopPropagation()
-                  markAllAsRead()
-                  toast.success('Đã đánh dấu tất cả đã đọc')
+                  if (unreadCount > 0) {
+                    markAllAsRead()
+                    toast.success('Đã đánh dấu tất cả đã đọc')
+                  }
                 }}
+                title={unreadCount > 0 ? 'Đánh dấu tất cả đã đọc' : 'Đã đọc tất cả thông báo'}
               >
                 <CheckCheck className="h-3.5 w-3.5 shrink-0" />
-                Đọc tất cả
+                <span>Đọc tất cả</span>
               </Button>
-            )}
+            </div>
           </div>
 
           {!mounted ? (
@@ -153,109 +225,105 @@ export function NotificationDropdown() {
             </div>
           ) : (
             <>
-              {/* Category Filter */}
-              <div className="border-b border-border px-3 py-2 bg-muted/5">
-                <SegmentedControl
-                  value={categoryFilter}
-                  options={categoryOptions}
-                  onValueChange={(val) => setCategoryFilter(val)}
-                  className="w-full flex"
-                  itemClassName="flex-1 text-xs font-semibold py-1 h-7 text-center justify-center"
-                />
-              </div>
-
-              {/* Status Filter */}
-              <div className="border-b border-border px-3 py-1.5 flex items-center justify-between bg-muted/5">
-                <span className="text-xs text-muted-foreground font-medium">Lọc theo trạng thái</span>
-                <SegmentedControl
-                  value={statusFilter}
-                  options={[
-                    { value: 'all', label: 'Tất cả' },
-                    { value: 'unread', label: 'Chưa đọc' }
-                  ]}
-                  onValueChange={(val) => setStatusFilter(val)}
-                  className="w-40 flex"
-                  itemClassName="flex-1 text-xs py-1 h-6 font-semibold text-center justify-center"
-                />
-              </div>
-
-              {/* Notifications List */}
-              <div className="max-h-[380px] overflow-y-auto divide-y divide-border/60">
+              {/* Notifications scrollable list */}
+              <div className="p-1.5 space-y-0.5 max-h-[350px] sm:max-h-[370px] overflow-y-auto overscroll-contain">
                 {filteredNotifications.length === 0 ? (
                   <EmptyState
-                    title="Chưa có thông báo nào"
+                    title={onlyUnread ? 'Không có thông báo chưa đọc' : 'Chưa có thông báo nào'}
                     description={
-                      categoryFilter !== 'all' || statusFilter !== 'all'
-                        ? 'Không tìm thấy thông báo phù hợp với bộ lọc hiện tại'
+                      onlyUnread
+                        ? 'Bạn đã đọc hết tất cả các thông báo mới'
                         : 'Hệ thống sẽ gửi thông báo khi có hoạt động mới'
                     }
-                    className="py-10 px-4"
-                    icon={<Bell className="h-7 w-7 text-muted-foreground/30" />}
+                    className="py-8 px-4"
+                    icon={
+                      onlyUnread ? (
+                        <CheckCheck className="h-6 w-6 text-primary/40" />
+                      ) : (
+                        <Bell className="h-6 w-6 text-muted-foreground/30" />
+                      )
+                    }
+                    action={
+                      onlyUnread
+                        ? {
+                            label: 'Xem tất cả thông báo',
+                            onClick: () => setOnlyUnread(false),
+                          }
+                        : {
+                            label: 'Khôi phục dữ liệu mẫu',
+                            onClick: () => {
+                              resetNotifications()
+                              toast.success('Đã khôi phục dữ liệu thông báo mẫu')
+                            },
+                          }
+                    }
                   />
                 ) : (
                   filteredNotifications.map((notif) => {
-                    const Icon = CATEGORY_ICONS[notif.category] || Bell
+                    const { icon: Icon, color: iconColor } = getBusinessIconConfig(notif)
+
                     return (
                       <div
                         key={notif.id}
                         role="button"
                         tabIndex={0}
                         className={cn(
-                          'group relative flex cursor-pointer gap-3 border-l-4 px-4 py-3 transition-all duration-200 hover:bg-muted/50',
+                          'group relative flex items-start gap-2.5 p-2 rounded-lg transition-all duration-150 cursor-pointer select-none',
                           notif.read
-                            ? 'border-l-transparent bg-transparent'
-                            : 'border-l-primary bg-primary/[0.02]'
+                            ? 'bg-transparent hover:bg-muted/60'
+                            : 'bg-primary/[0.04] hover:bg-primary/[0.08]'
                         )}
                         onClick={() => handleItemClick(notif)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') handleItemClick(notif)
                         }}
                       >
-                        {/* Icon Block with Priority Dot */}
-                        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-background transition-colors">
-                          <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span
-                            className={cn(
-                              "absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-popover shadow-xs",
-                              getPriorityDot(notif.priority)
-                            )}
-                            title={`Ưu tiên: ${notif.priority}`}
-                          />
+                        {/* Standalone Domain Icon (No border, no background circle) */}
+                        <div className="relative shrink-0 mt-0.5 flex items-center justify-center">
+                          <Icon className={cn('h-4 w-4 shrink-0 transition-transform group-hover:scale-110', iconColor)} />
+                          {!notif.read && (
+                            <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
                         </div>
 
-                        {/* Title & Message */}
+                        {/* Content: Exactly 2 rows maximum */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2 mb-0.5">
-                            <p
-                              className={cn(
-                                'text-xs leading-snug line-clamp-2 pr-6',
-                                notif.read ? 'font-normal text-muted-foreground' : 'font-semibold text-foreground'
-                              )}
-                              title={notif.title}
+                          {/* Dòng chính: Tiêu đề (Nội dung chính, tối đa 2 dòng) */}
+                          <p
+                            className={cn(
+                              'text-xs leading-snug line-clamp-2 pr-5',
+                              notif.read
+                                ? 'font-normal text-muted-foreground'
+                                : 'font-semibold text-foreground'
+                            )}
+                            title={notif.title}
+                          >
+                            {notif.title}
+                          </p>
+
+                          {/* Dòng phụ: Nội dung phụ (truncate ... nếu dài) + Thời gian */}
+                          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground/80 mt-1 min-w-0">
+                            <span
+                              className="truncate min-w-0"
+                              title={notif.message}
                             >
-                              {notif.title}
-                            </p>
-                            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground/85">
+                              {notif.message}
+                            </span>
+                            <span className="shrink-0 text-[10px] text-muted-foreground/60 font-medium">
                               {getRelativeTime(notif.timestamp)}
                             </span>
                           </div>
-                          <p 
-                            className="text-xs text-muted-foreground line-clamp-1 leading-normal" 
-                            title={notif.message}
-                          >
-                            {notif.message}
-                          </p>
                         </div>
 
-                        {/* Hover Actions Panel */}
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-popover/95 p-1 border border-border/80 shadow-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                        {/* Hover action buttons */}
+                        <div className="absolute right-1.5 top-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-popover/90 backdrop-blur-xs p-0.5 rounded-md border border-border/60 shadow-xs z-10">
                           {!notif.read && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon-xs"
                               title="Đánh dấu đã đọc"
-                              className="h-6 w-6 text-primary hover:bg-muted"
+                              className="h-5 w-5 text-primary hover:bg-muted rounded"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 markAsRead(notif.id)
@@ -270,7 +338,7 @@ export function NotificationDropdown() {
                             variant="ghost"
                             size="icon-xs"
                             title="Xóa thông báo"
-                            className="h-6 w-6 text-destructive hover:bg-muted"
+                            className="h-5 w-5 text-destructive hover:bg-muted rounded"
                             onClick={(e) => {
                               e.stopPropagation()
                               setDeleteTargetId(notif.id)
@@ -283,6 +351,40 @@ export function NotificationDropdown() {
                     )
                   })
                 )}
+              </div>
+
+              {/* Fixed Footer Bar */}
+              <div className="border-t border-border/70 px-3 py-2 bg-muted/15 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-muted-foreground/80">
+                  {filteredNotifications.length} thông báo
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    title="Khôi phục lại danh sách dữ liệu mẫu"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      resetNotifications()
+                      toast.success('Đã nạp lại dữ liệu mẫu thông báo đầy đủ')
+                    }}
+                    className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    <span>Nạp lại</span>
+                  </button>
+                  <span className="h-3 w-px bg-border/60" />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toast.info('Hệ thống đang hiển thị toàn bộ 16 thông báo mới nhất')
+                    }}
+                    className="text-[11px] font-medium text-primary hover:underline hover:text-primary/80 transition-colors flex items-center gap-0.5"
+                  >
+                    <span>Xem tất cả</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </button>
+                </div>
               </div>
             </>
           )}

@@ -3,8 +3,6 @@
 import React, { useState } from 'react'
 import { Clock, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { toWorkDateKey } from '@/mocks/workRegistrations'
 import { WEEKDAYS } from '@/mocks/shiftRoster'
@@ -57,21 +55,18 @@ export function WorkRegistrationTimeRangePicker({
   onSubmit,
   onAddRange,
 }: WorkRegistrationTimeRangePickerProps) {
-  // Dòng 1: Chọn ngày trong tuần (mặc định không tự động chọn, để user tự chọn)
+  // Dòng 1: Chọn ngày trong tuần (mỗi thứ là 1 ô tách biệt)
   const [selectedDayIndexes, setSelectedDayIndexes] = useState<number[]>([])
 
-  // Dòng 2: Cấu hình 3 ca (Sáng: 08:00-12:00, Chiều: 13:00-17:30, Tối: 17:30-22:00, mặc định không tự động chọn)
-  const [morningEnabled, setMorningEnabled] = useState(false)
+  // Dòng 2: 3 ca Sáng, Chiều, Tối chọn giờ trực tiếp
   const [morningStart, setMorningStart] = useState('08:00')
   const [morningEnd, setMorningEnd] = useState('12:00')
 
-  const [afternoonEnabled, setAfternoonEnabled] = useState(false)
-  const [afternoonStart, setAfternoonStart] = useState('13:00')
-  const [afternoonEnd, setAfternoonEnd] = useState('17:30')
+  const [afternoonStart, setAfternoonStart] = useState('')
+  const [afternoonEnd, setAfternoonEnd] = useState('')
 
-  const [eveningEnabled, setEveningEnabled] = useState(false)
-  const [eveningStart, setEveningStart] = useState('17:30')
-  const [eveningEnd, setEveningEnd] = useState('22:00')
+  const [eveningStart, setEveningStart] = useState('')
+  const [eveningEnd, setEveningEnd] = useState('')
 
   const allSelected = selectedDayIndexes.length === days.length && days.length > 0
 
@@ -91,39 +86,75 @@ export function WorkRegistrationTimeRangePicker({
 
   const handleMorningStartChange = (val: string) => {
     setMorningStart(val)
-    if (morningEnd <= val) {
-      const next = MORNING_TIMES.find((t) => t > val)
-      if (next) setMorningEnd(next)
+    if (!val) {
+      setMorningEnd('')
+      return
+    }
+    if (!morningEnd || morningEnd <= val) {
+      setMorningEnd('12:00')
     }
   }
 
   const handleAfternoonStartChange = (val: string) => {
     setAfternoonStart(val)
-    if (afternoonEnd <= val) {
-      const next = AFTERNOON_TIMES.find((t) => t > val)
-      if (next) setAfternoonEnd(next)
+    if (!val) {
+      setAfternoonEnd('')
+      return
+    }
+    if (!afternoonEnd || afternoonEnd <= val) {
+      setAfternoonEnd('17:30')
     }
   }
 
   const handleEveningStartChange = (val: string) => {
     setEveningStart(val)
-    if (eveningEnd <= val) {
-      const next = EVENING_TIMES.find((t) => t > val)
-      if (next) setEveningEnd(next)
+    if (!val) {
+      setEveningEnd('')
+      return
+    }
+    if (!eveningEnd || eveningEnd <= val) {
+      setEveningEnd('22:00')
+    }
+  }
+
+  const handleToggleMorning = () => {
+    if (morningStart) {
+      setMorningStart('')
+      setMorningEnd('')
+    } else {
+      setMorningStart('08:00')
+      setMorningEnd('12:00')
+    }
+  }
+
+  const handleToggleAfternoon = () => {
+    if (afternoonStart) {
+      setAfternoonStart('')
+      setAfternoonEnd('')
+    } else {
+      setAfternoonStart('13:00')
+      setAfternoonEnd('17:30')
+    }
+  }
+
+  const handleToggleEvening = () => {
+    if (eveningStart) {
+      setEveningStart('')
+      setEveningEnd('')
+    } else {
+      setEveningStart('17:30')
+      setEveningEnd('22:00')
     }
   }
 
   const resetSelection = () => {
     setSelectedDayIndexes([])
-    setMorningEnabled(false)
-    setAfternoonEnabled(false)
-    setEveningEnabled(false)
     setMorningStart('08:00')
     setMorningEnd('12:00')
-    setAfternoonStart('13:00')
-    setAfternoonEnd('17:30')
-    setEveningStart('17:30')
-    setEveningEnd('22:00')
+    setAfternoonStart('')
+    setAfternoonEnd('')
+    setEveningStart('')
+    setEveningEnd('')
   }
 
   const handleAdd = () => {
@@ -134,13 +165,13 @@ export function WorkRegistrationTimeRangePicker({
       .filter(Boolean)
 
     const ranges: TimeRangeItem[] = []
-    if (morningEnabled) {
+    if (morningStart && morningEnd && morningEnd > morningStart) {
       ranges.push({ startTime: morningStart, endTime: morningEnd })
     }
-    if (afternoonEnabled) {
+    if (afternoonStart && afternoonEnd && afternoonEnd > afternoonStart) {
       ranges.push({ startTime: afternoonStart, endTime: afternoonEnd })
     }
-    if (eveningEnabled) {
+    if (eveningStart && eveningEnd && eveningEnd > eveningStart) {
       ranges.push({ startTime: eveningStart, endTime: eveningEnd })
     }
 
@@ -157,7 +188,11 @@ export function WorkRegistrationTimeRangePicker({
     }
   }
 
-  const hasAnyShiftSelected = morningEnabled || afternoonEnabled || eveningEnabled
+  const hasAnyShiftSelected =
+    Boolean(morningStart && morningEnd && morningEnd > morningStart) ||
+    Boolean(afternoonStart && afternoonEnd && afternoonEnd > afternoonStart) ||
+    Boolean(eveningStart && eveningEnd && eveningEnd > eveningStart)
+
   const isAddDisabled = disabled || selectedDayIndexes.length === 0 || !hasAnyShiftSelected
 
   return (
@@ -169,13 +204,13 @@ export function WorkRegistrationTimeRangePicker({
         </div>
       )}
 
-      {/* CỘT PHẢI / CHÍNH: 2 DÒNG (DÒNG 1: CHỌN NGÀY, DÒNG 2: THỜI GIAN THEO CA CÙNG CỘT) */}
+      {/* CỘT PHẢI / CHÍNH: 2 DÒNG */}
       <div className="flex-1 min-w-0 space-y-2">
-        {/* DÒNG 1: CHỌN NGÀY VÀ TỔNG KHUNG GIỜ Ở TRÊN */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* DÒNG 1: CHỌN NGÀY (CÁC THỨ TÁCH BIỆT THÀNH TỪNG Ô) VÀ TỔNG KHUNG GIỜ */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-foreground shrink-0">Chọn ngày:</span>
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {WEEKDAYS.map((day, idx) => {
                 const isSelected = selectedDayIndexes.includes(idx)
                 return (
@@ -185,10 +220,10 @@ export function WorkRegistrationTimeRangePicker({
                     disabled={disabled}
                     onClick={() => handleToggleDay(idx)}
                     className={cn(
-                      'h-7 px-2.5 rounded-md text-xs font-semibold transition-all cursor-pointer select-none',
+                      'h-7 w-8.5 rounded-md text-xs font-semibold border transition-all cursor-pointer select-none flex items-center justify-center',
                       isSelected
-                        ? 'bg-primary text-primary-foreground shadow-2xs'
-                        : 'bg-muted/50 hover:bg-muted text-foreground border border-border/50'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-2xs font-bold ring-1 ring-primary/30'
+                        : 'border-border/80 bg-background text-foreground/80 hover:border-border hover:bg-muted/60 hover:text-foreground'
                     )}
                   >
                     {day.short}
@@ -200,10 +235,10 @@ export function WorkRegistrationTimeRangePicker({
                 disabled={disabled}
                 onClick={handleToggleAll}
                 className={cn(
-                  'h-7 px-2 rounded-md text-xs font-medium transition-all cursor-pointer select-none ml-0.5',
+                  'h-7 px-2.5 rounded-md text-xs font-medium border transition-all cursor-pointer select-none ml-0.5',
                   allSelected
-                    ? 'bg-primary/20 text-primary border border-primary/40'
-                    : 'bg-transparent text-muted-foreground hover:bg-muted/50'
+                    ? 'border-primary/50 bg-primary/10 text-primary font-bold'
+                    : 'border-dashed border-border/80 bg-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 )}
               >
                 {allSelected ? 'Bỏ chọn' : 'Cả tuần'}
@@ -213,9 +248,9 @@ export function WorkRegistrationTimeRangePicker({
 
           <div className="flex items-center gap-2 ml-auto shrink-0 flex-wrap">
             {typeof totalMinutes === 'number' ? (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge variant="outline" className="h-7 gap-1.5 px-2.5 text-xs font-medium border-border/60 bg-muted/30">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground/80" />
                   <span>
                     Tổng khung giờ: <strong className="font-semibold text-foreground">{formatMinutes(totalMinutes)}</strong>
                     {typeof registeredMinutes === 'number' && draftMinutes > 0 ? (
@@ -224,11 +259,11 @@ export function WorkRegistrationTimeRangePicker({
                       </span>
                     ) : null}
                   </span>
-                </Badge>
+                </div>
                 {typeof draftMinutes === 'number' && draftMinutes > 0 ? (
-                  <Badge variant="outline" className="h-7 gap-1 px-2 text-xs font-semibold border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 animate-in fade-in">
-                    <span>✨ Mới chọn: +{formatMinutes(draftMinutes)}</span>
-                  </Badge>
+                  <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 animate-in fade-in">
+                    ✨ Mới chọn: +{formatMinutes(draftMinutes)}
+                  </span>
                 ) : null}
               </div>
             ) : null}
@@ -237,94 +272,55 @@ export function WorkRegistrationTimeRangePicker({
           </div>
         </div>
 
-        {/* DÒNG 2: 3 CA (SÁNG, CHIỀU, TỐI) + THÊM KHUNG GIỜ SÁT CA TỐI + NÚT CẬP NHẬT CẠNH PHẢI */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-1.5 border-t border-border/40">
-          <div className="flex flex-wrap items-center gap-4 min-w-0">
-            {/* CA SÁNG (08:00 - 12:00) */}
-            <div
-              className={cn(
-                'flex items-center gap-2 px-2.5 py-1 rounded-lg border transition-all',
-                morningEnabled
-                  ? 'bg-amber-500/10 border-amber-400/50 text-amber-950 dark:text-amber-200'
-                  : 'bg-muted/30 border-border/40 text-muted-foreground'
-              )}
-            >
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <Checkbox
-                  checked={morningEnabled}
-                  onCheckedChange={(checked) => setMorningEnabled(Boolean(checked))}
-                  disabled={disabled}
-                  className={cn(
-                    morningEnabled &&
-                      'border-amber-600 data-[state=checked]:bg-amber-600 data-[state=checked]:text-white'
-                  )}
-                />
-                <span
-                  className={cn(
-                    'text-xs font-bold transition-colors flex items-center gap-1',
-                    morningEnabled ? 'text-amber-800 dark:text-amber-300' : 'text-muted-foreground'
-                  )}
-                >
-                  Sáng
-                </span>
-              </label>
+        {/* DÒNG 2: 3 CA (SÁNG, CHIỀU, TỐI) CHỌN GIỜ TRỰC TIẾP Ở MỖI Ô, KHÔNG (X), KHÔNG NÚT CHỌN RIÊNG */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/30">
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+            <span className="text-xs font-semibold text-foreground shrink-0 mr-0.5">Chọn ca:</span>
 
-              <div
+            {/* CA SÁNG */}
+            <div className="inline-flex items-center gap-1.5 text-xs select-none">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleToggleMorning}
                 className={cn(
-                  'flex items-center gap-1 text-xs transition-opacity',
-                  morningEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'
+                  'text-xs font-semibold cursor-pointer transition-colors hover:opacity-80 select-none',
+                  morningStart ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-muted-foreground'
                 )}
+                title="Bấm để bật/tắt ca Sáng"
               >
-                <span
-                  className={cn(
-                    'text-xs',
-                    morningEnabled
-                      ? 'text-amber-800/80 dark:text-amber-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Từ:
-                </span>
+                Sáng
+              </button>
+
+              <div className="inline-flex items-center gap-1">
                 <select
-                  disabled={disabled || !morningEnabled}
+                  disabled={disabled}
                   value={morningStart}
                   onChange={(e) => handleMorningStartChange(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    morningEnabled
-                      ? 'border-amber-300 dark:border-amber-700/60 bg-background text-amber-950 dark:text-amber-100 hover:bg-amber-50/50 dark:hover:bg-amber-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    morningStart ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
+                  <option value="">Chọn</option>
                   {MORNING_TIMES.slice(0, -1).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </select>
-
-                <span
-                  className={cn(
-                    'text-xs',
-                    morningEnabled
-                      ? 'text-amber-800/80 dark:text-amber-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Đến:
-                </span>
+                <span className="text-muted-foreground text-xs">–</span>
                 <select
-                  disabled={disabled || !morningEnabled}
+                  disabled={disabled || !morningStart}
                   value={morningEnd}
                   onChange={(e) => setMorningEnd(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    morningEnabled
-                      ? 'border-amber-300 dark:border-amber-700/60 bg-background text-amber-950 dark:text-amber-100 hover:bg-amber-50/50 dark:hover:bg-amber-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    morningEnd ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
-                  {MORNING_TIMES.filter((t) => t > morningStart).map((time) => (
+                  <option value="">Chọn</option>
+                  {MORNING_TIMES.filter((t) => !morningStart || t > morningStart).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
@@ -333,91 +329,52 @@ export function WorkRegistrationTimeRangePicker({
               </div>
             </div>
 
-            {/* CA CHIỀU (13:00 - 17:30) */}
-            <div
-              className={cn(
-                'flex items-center gap-2 px-2.5 py-1 rounded-lg border transition-all',
-                afternoonEnabled
-                  ? 'bg-sky-500/10 border-sky-400/50 text-sky-950 dark:text-sky-200'
-                  : 'bg-muted/30 border-border/40 text-muted-foreground'
-              )}
-            >
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <Checkbox
-                  checked={afternoonEnabled}
-                  onCheckedChange={(checked) => setAfternoonEnabled(Boolean(checked))}
-                  disabled={disabled}
-                  className={cn(
-                    afternoonEnabled &&
-                      'border-sky-600 data-[state=checked]:bg-sky-600 data-[state=checked]:text-white'
-                  )}
-                />
-                <span
-                  className={cn(
-                    'text-xs font-bold transition-colors flex items-center gap-1',
-                    afternoonEnabled ? 'text-sky-800 dark:text-sky-300' : 'text-muted-foreground'
-                  )}
-                >
-                  Chiều
-                </span>
-              </label>
+            <div className="h-4 w-px bg-border/60 mx-0.5" />
 
-              <div
+            {/* CA CHIỀU */}
+            <div className="inline-flex items-center gap-1.5 text-xs select-none">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleToggleAfternoon}
                 className={cn(
-                  'flex items-center gap-1 text-xs transition-opacity',
-                  afternoonEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'
+                  'text-xs font-semibold cursor-pointer transition-colors hover:opacity-80 select-none',
+                  afternoonStart ? 'text-sky-600 dark:text-sky-400 font-bold' : 'text-muted-foreground'
                 )}
+                title="Bấm để bật/tắt ca Chiều"
               >
-                <span
-                  className={cn(
-                    'text-xs',
-                    afternoonEnabled
-                      ? 'text-sky-800/80 dark:text-sky-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Từ:
-                </span>
+                Chiều
+              </button>
+
+              <div className="inline-flex items-center gap-1">
                 <select
-                  disabled={disabled || !afternoonEnabled}
+                  disabled={disabled}
                   value={afternoonStart}
                   onChange={(e) => handleAfternoonStartChange(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    afternoonEnabled
-                      ? 'border-sky-300 dark:border-sky-700/60 bg-background text-sky-950 dark:text-sky-100 hover:bg-sky-50/50 dark:hover:bg-sky-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    afternoonStart ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
+                  <option value="">Chọn</option>
                   {AFTERNOON_TIMES.slice(0, -1).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </select>
-
-                <span
-                  className={cn(
-                    'text-xs',
-                    afternoonEnabled
-                      ? 'text-sky-800/80 dark:text-sky-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Đến:
-                </span>
+                <span className="text-muted-foreground text-xs">–</span>
                 <select
-                  disabled={disabled || !afternoonEnabled}
+                  disabled={disabled || !afternoonStart}
                   value={afternoonEnd}
                   onChange={(e) => setAfternoonEnd(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    afternoonEnabled
-                      ? 'border-sky-300 dark:border-sky-700/60 bg-background text-sky-950 dark:text-sky-100 hover:bg-sky-50/50 dark:hover:bg-sky-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    afternoonEnd ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
-                  {AFTERNOON_TIMES.filter((t) => t > afternoonStart).map((time) => (
+                  <option value="">Chọn</option>
+                  {AFTERNOON_TIMES.filter((t) => !afternoonStart || t > afternoonStart).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
@@ -426,91 +383,52 @@ export function WorkRegistrationTimeRangePicker({
               </div>
             </div>
 
-            {/* CA TỐI (17:30 - 22:00) */}
-            <div
-              className={cn(
-                'flex items-center gap-2 px-2.5 py-1 rounded-lg border transition-all',
-                eveningEnabled
-                  ? 'bg-purple-500/10 border-purple-400/50 text-purple-950 dark:text-purple-200'
-                  : 'bg-muted/30 border-border/40 text-muted-foreground'
-              )}
-            >
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <Checkbox
-                  checked={eveningEnabled}
-                  onCheckedChange={(checked) => setEveningEnabled(Boolean(checked))}
-                  disabled={disabled}
-                  className={cn(
-                    eveningEnabled &&
-                      'border-purple-600 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white'
-                  )}
-                />
-                <span
-                  className={cn(
-                    'text-xs font-bold transition-colors flex items-center gap-1',
-                    eveningEnabled ? 'text-purple-800 dark:text-purple-300' : 'text-muted-foreground'
-                  )}
-                >
-                  Tối
-                </span>
-              </label>
+            <div className="h-4 w-px bg-border/60 mx-0.5" />
 
-              <div
+            {/* CA TỐI */}
+            <div className="inline-flex items-center gap-1.5 text-xs select-none">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleToggleEvening}
                 className={cn(
-                  'flex items-center gap-1 text-xs transition-opacity',
-                  eveningEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'
+                  'text-xs font-semibold cursor-pointer transition-colors hover:opacity-80 select-none',
+                  eveningStart ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-muted-foreground'
                 )}
+                title="Bấm để bật/tắt ca Tối"
               >
-                <span
-                  className={cn(
-                    'text-xs',
-                    eveningEnabled
-                      ? 'text-purple-800/80 dark:text-purple-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Từ:
-                </span>
+                Tối
+              </button>
+
+              <div className="inline-flex items-center gap-1">
                 <select
-                  disabled={disabled || !eveningEnabled}
+                  disabled={disabled}
                   value={eveningStart}
                   onChange={(e) => handleEveningStartChange(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    eveningEnabled
-                      ? 'border-purple-300 dark:border-purple-700/60 bg-background text-purple-950 dark:text-purple-100 hover:bg-purple-50/50 dark:hover:bg-purple-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    eveningStart ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
+                  <option value="">Chọn</option>
                   {EVENING_TIMES.slice(0, -1).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </select>
-
-                <span
-                  className={cn(
-                    'text-xs',
-                    eveningEnabled
-                      ? 'text-purple-800/80 dark:text-purple-300/80 font-medium'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  Đến:
-                </span>
+                <span className="text-muted-foreground text-xs">–</span>
                 <select
-                  disabled={disabled || !eveningEnabled}
+                  disabled={disabled || !eveningStart}
                   value={eveningEnd}
                   onChange={(e) => setEveningEnd(e.target.value)}
                   className={cn(
-                    'h-7 rounded-md border px-1.5 text-xs font-semibold outline-none cursor-pointer',
-                    eveningEnabled
-                      ? 'border-purple-300 dark:border-purple-700/60 bg-background text-purple-950 dark:text-purple-100 hover:bg-purple-50/50 dark:hover:bg-purple-950/40'
-                      : 'border-input bg-background text-foreground'
+                    'h-6.5 rounded border border-border/70 bg-background px-1.5 text-xs font-medium outline-none cursor-pointer hover:border-border',
+                    eveningEnd ? 'text-foreground' : 'text-muted-foreground font-normal'
                   )}
                 >
-                  {EVENING_TIMES.filter((t) => t > eveningStart).map((time) => (
+                  <option value="">Chọn</option>
+                  {EVENING_TIMES.filter((t) => !eveningStart || t > eveningStart).map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
@@ -519,21 +437,21 @@ export function WorkRegistrationTimeRangePicker({
               </div>
             </div>
 
-            {/* NÚT THÊM KHUNG GIỜ (NỀN XANH NHẠT, HOVER/CLICK HIGHLIGHT, SÁT CHỌN GIỜ CA TỐI) */}
+            {/* NÚT THÊM KHUNG GIỜ */}
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               disabled={isAddDisabled}
               onClick={handleAdd}
-              className="h-7.5 shrink-0 cursor-pointer font-semibold gap-1.5 px-3 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border-primary/30 hover:border-primary/50 active:scale-[0.98] transition-all shadow-2xs"
+              className="h-7.5 shrink-0 cursor-pointer font-semibold gap-1.5 px-3 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border-0 active:scale-[0.98] transition-all ml-1"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               Thêm khung giờ
             </Button>
           </div>
 
-          {/* NÚT HÀNH ĐỘNG: XÓA TUẦN (NẾU CÓ) + CẬP NHẬT ĐĂNG KÝ (DÒNG DƯỚI, CẠNH PHẢI) */}
+          {/* NÚT HÀNH ĐỘNG: XÓA TUẦN (NẾU CÓ) + LƯU ĐĂNG KÝ (DÒNG DƯỚI, CẠNH PHẢI) */}
           <div className="flex items-center gap-2 ml-auto shrink-0">
             {onClear ? (
               <Button
@@ -562,8 +480,8 @@ export function WorkRegistrationTimeRangePicker({
                 )}
               >
                 {draftMinutes > 0
-                  ? `Cập nhật đăng ký (+${formatMinutes(draftMinutes)})`
-                  : primaryActionLabel || 'Cập nhật đăng ký'}
+                  ? `Lưu đăng ký (+${formatMinutes(draftMinutes)})`
+                  : primaryActionLabel || 'Lưu đăng ký'}
               </Button>
             ) : null}
           </div>

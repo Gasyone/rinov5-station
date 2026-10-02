@@ -9,7 +9,10 @@ import {
   X,
   Share2,
   UserPlus,
+  Eye,
+  ExternalLink,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
@@ -28,6 +31,7 @@ export interface ClassesSessionMediaCardProps {
   handleDownloadFile: (item: SessionMediaItem) => void
   handleRemoveStudentTag: (itemId: string, studentId: string, studentName: string) => void
   handleToggleStudentTagInPopover: (itemId: string, studentId: string | 'all' | 'class_wide') => void
+  onPreview?: (item: SessionMediaItem) => void
 }
 
 export function ClassesSessionMediaCard({
@@ -42,20 +46,35 @@ export function ClassesSessionMediaCard({
   handleDownloadFile,
   handleRemoveStudentTag,
   handleToggleStudentTagInPopover,
+  onPreview,
 }: ClassesSessionMediaCardProps) {
   const taggedNames = rosterStudents.filter((st) => item.taggedStudentIds.includes(st.id))
 
+  const handleCardClick = () => {
+    if (item.type === 'doc') {
+      if (item.url && item.url !== '#') {
+        window.open(item.url, '_blank')
+        toast.success(`Đang mở tài liệu: ${item.name}`)
+      } else {
+        handleDownloadFile(item)
+      }
+    } else if (onPreview) {
+      onPreview(item)
+    }
+  }
+
   return (
     <div
+      onClick={handleCardClick}
       className={cn(
-        'group/card relative rounded-2xl border overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-900 text-white shadow-2xs hover:shadow-xs',
+        'group/card relative rounded-2xl border overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-900 text-white shadow-2xs hover:shadow-xs cursor-pointer',
         isSelected
           ? 'border-sky-500 ring-2 ring-sky-500/30'
           : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
       )}
     >
-      {/* Image/Video Media Box */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+      {/* Image/Video/Doc Media Box (16:9 standard aspect ratio) */}
+      <div className="relative aspect-video w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
         {item.type === 'image' || item.thumbnailUrl ? (
           <img
             src={item.thumbnailUrl || item.url}
@@ -70,15 +89,24 @@ export function ClassesSessionMediaCard({
               <Film className="h-12 w-12 text-zinc-600" />
             )}
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-xs flex items-center justify-center text-white border border-white/20">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onPreview?.(item)
+                }}
+                className="h-11 w-11 rounded-full bg-sky-600/90 hover:bg-sky-500 text-white flex items-center justify-center shadow-lg border border-white/20 transition-transform group-hover/card:scale-110 cursor-pointer"
+                title="Phát video"
+              >
                 <Play className="h-5 w-5 fill-white ml-0.5" />
-              </div>
+              </button>
             </div>
           </div>
         ) : (
           <div className="p-4 text-center">
             <FileText className="h-10 w-10 mx-auto text-sky-400 mb-1" />
-            <span className="text-xs font-semibold text-zinc-300 block truncate">{item.name}</span>
+            <span className="text-xs font-semibold text-zinc-200 block truncate" title={item.name}>{item.name}</span>
+            <span className="text-[10px] text-zinc-400 block mt-0.5">{item.size || 'Tài liệu'} • Nhấp để mở</span>
           </div>
         )}
 
@@ -116,6 +144,36 @@ export function ClassesSessionMediaCard({
         {/* Hover Overlay with Action Buttons */}
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2 z-20">
           <div className="flex items-center gap-2">
+            {item.type !== 'doc' ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onPreview?.(item)
+                }}
+                className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
+                title={item.type === 'video' ? 'Xem video' : 'Xem ảnh lớn'}
+              >
+                {item.type === 'video' ? <Play className="h-4 w-4 fill-white ml-0.5" /> : <Eye className="h-4.5 w-4.5" />}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (item.url && item.url !== '#') {
+                    window.open(item.url, '_blank')
+                    toast.success(`Đang mở tài liệu: ${item.name}`)
+                  } else {
+                    handleDownloadFile(item)
+                  }
+                }}
+                className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
+                title="Mở trong tab mới"
+              >
+                <ExternalLink className="h-4.5 w-4.5" />
+              </button>
+            )}
             <button
               type="button"
               onClick={(e) => {
@@ -177,6 +235,7 @@ export function ClassesSessionMediaCard({
                 subtitle={`Danh sách thuộc lớp ${className}`}
                 rosterStudents={rosterStudents}
                 selectedStudentIds={item.taggedStudentIds}
+                targetItems={[item]}
                 showClassWideOption={true}
                 onSelectOption={(id) => handleToggleStudentTagInPopover(item.id, id)}
               />

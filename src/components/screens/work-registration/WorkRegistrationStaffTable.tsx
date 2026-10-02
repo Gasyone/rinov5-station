@@ -42,24 +42,24 @@ export function WorkRegistrationStaffTable({
   return (
     <DataTableFrame
       footer={
-        <div className="flex items-center justify-between px-3 py-2 text-xs text-muted-foreground border-t bg-muted/15">
-          <span className="text-xs font-medium tabular-nums">
+        <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] text-muted-foreground border-t bg-muted/15">
+          <span className="text-[11px] font-medium tabular-nums">
             {total > 0 ? `${firstRecord}–${lastRecord} / ${total} NV` : '0 nhân viên'}
           </span>
 
           {totalPages > 1 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <Button
                 variant="outline"
                 size="icon-sm"
                 disabled={safePage <= 1}
                 onClick={() => onPageChange(safePage - 1)}
-                className="h-6 w-6 cursor-pointer"
+                className="h-5.5 w-5.5 cursor-pointer"
                 aria-label="Trang trước"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
-              <span className="text-xs font-medium px-1 tabular-nums">
+              <span className="text-[11px] font-medium px-1 tabular-nums">
                 {safePage}/{totalPages}
               </span>
               <Button
@@ -67,7 +67,7 @@ export function WorkRegistrationStaffTable({
                 size="icon-sm"
                 disabled={safePage >= totalPages}
                 onClick={() => onPageChange(safePage + 1)}
-                className="h-6 w-6 cursor-pointer"
+                className="h-5.5 w-5.5 cursor-pointer"
                 aria-label="Trang sau"
               >
                 <ChevronRight className="h-3 w-3" />
@@ -81,8 +81,8 @@ export function WorkRegistrationStaffTable({
         <Table containerClassName="h-full">
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="py-2.5 px-3">Nhân viên</TableHead>
-              <TableHead className="py-2.5 px-3 text-right">Giờ</TableHead>
+              <TableHead className="py-2 px-2.5 text-xs font-semibold">Nhân viên</TableHead>
+              <TableHead className="py-2 px-2 text-right text-xs font-semibold w-12">Giờ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -93,23 +93,23 @@ export function WorkRegistrationStaffTable({
                 className="cursor-pointer hover:bg-muted/40 transition-colors"
                 onClick={() => onViewEmployee(summary.employee.id)}
               >
-                <td className="py-2.5 px-3">
+                <td className="py-2 px-2.5">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-xs text-foreground">
+                    <p className="truncate font-semibold text-xs text-foreground" title={summary.employee.name}>
                       {summary.employee.name}
                     </p>
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate text-[10.5px] text-muted-foreground leading-tight">
                       {summary.employee.code} · {getEmployeeRoleLabel(summary.employee.id, summary.employee.position, summary.employee.department)}
                     </p>
                   </div>
                 </td>
-                <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                <td className="py-2 px-2 text-right whitespace-nowrap w-12">
                   {summary.totalMinutes > 0 ? (
                     <span className="font-semibold text-xs text-primary tabular-nums">
                       {formatMinutesShort(summary.totalMinutes)}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground/60 text-xs font-normal tabular-nums">
+                    <span className="text-muted-foreground/50 text-xs font-normal tabular-nums">
                       0:00
                     </span>
                   )}

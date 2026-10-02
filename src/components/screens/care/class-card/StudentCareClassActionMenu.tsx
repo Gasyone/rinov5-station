@@ -7,7 +7,6 @@ import {
   UserPlus,
   ExternalLink,
   Snowflake,
-  ArrowRightLeft,
   RotateCcw,
   FileText,
   CalendarOff,
@@ -83,9 +82,9 @@ export function StudentCareClassActionMenu({
               onClick={onOpenPlacementTab}
               className="cursor-pointer gap-2 font-medium text-sky-600 dark:text-sky-400 focus:text-sky-700"
             >
-              <ArrowRightLeft className="h-4 w-4 text-sky-500 shrink-0" />
+              <UserPlus className="h-4 w-4 text-sky-500 shrink-0" />
               <div className="flex flex-col min-w-0">
-                <span>Ghép lớp đích</span>
+                <span>Ghép lớp ngay</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />

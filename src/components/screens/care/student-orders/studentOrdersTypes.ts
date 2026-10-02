@@ -42,6 +42,15 @@ export interface OrderPaymentTransaction {
   showCompletePaymentLink?: boolean
 }
 
+export interface DetailedOrderComboItem {
+  id?: string
+  name: string
+  durationText?: string // e.g. "288 buổi", "96 buổi", "12 tháng"
+  bonusText?: string // e.g. "--", "Tặng thêm 2 buổi"
+  studentName?: string
+  quantity?: number
+}
+
 export interface DetailedOrderItem {
   productId: string
   productName: string
@@ -61,6 +70,8 @@ export interface DetailedOrderItem {
   expiryDate?: string // Deprecated, replaced by bonusText
   bonusText?: string // e.g. "Tặng thêm 2 buổi", "Tăng thêm 6 buổi", "--"
   giftText?: string // e.g. "1 x [IELTS] Khóa 5.0", "--"
+  isCombo?: boolean
+  comboItems?: DetailedOrderComboItem[]
 }
 
 export interface OrderFeeTransferSummary {
@@ -85,6 +96,7 @@ export interface OrderFeeTransferSummary {
 }
 
 export interface DetailedOrder extends Order {
+  orderAmountHeader?: string // e.g. "45,528,750" displayed after orderNo in header
   paymentMethodTag?: string // e.g. "T5-Đã nhận bank", "T2-Hủy", "COD / T5-Đã nhận COD", "T3-COD"
   saleRep?: string // e.g. "Vũ Thị Lan 1"
   saleDate?: string // e.g. "25-07-2026"

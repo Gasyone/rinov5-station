@@ -331,7 +331,7 @@ export function ClassesSessionDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseAttempt()}>
-      <DialogContent showCloseButton={false} className="flex flex-col min-h-0 h-[90vh] max-h-[900px] overflow-hidden p-4 gap-3 sm:max-w-[95vw] lg:max-w-[1380px] rounded-2xl border bg-zinc-100 dark:bg-zinc-950 shadow-xl">
+      <DialogContent showCloseButton={false} className="flex flex-col min-h-0 h-[86vh] max-h-[820px] overflow-hidden p-1.5 sm:p-2 gap-1.5 sm:max-w-[92vw] lg:max-w-[1140px] xl:max-w-[1180px] rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/95 dark:bg-zinc-950 shadow-2xl">
         {/* ── TOP HEADER BAR: BREADCRUMB (LEFT) + SESSION NAV & CLOSE BUTTON (RIGHT) (NO BORDER LINE) ── */}
         <div className="flex items-center justify-between w-full shrink-0">
           {/* Left: Icon trở lại + Tên lớp học / Chi tiết buổi học */}
@@ -346,7 +346,7 @@ export function ClassesSessionDetailDialog({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5 text-[11.5px]">
               <span className="font-bold text-foreground">{cls.name || 'IELTS Junior 1A'}</span>
               <span className="text-muted-foreground font-normal">/</span>
               <span className="text-muted-foreground font-medium">Chi tiết buổi học</span>
@@ -354,15 +354,15 @@ export function ClassesSessionDetailDialog({
           </div>
 
           {/* Right: Vào ca dạy (Live) + Semester Eval + Buổi trước / Selection buổi / Buổi sau + Icon X */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <Button
               type="button"
               size="xs"
               onClick={() => setIsLiveTeachingOpen(true)}
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-xs transition-all px-2.5 h-7 text-xs rounded-lg cursor-pointer mr-1"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-[11px] rounded-lg cursor-pointer mr-0.5"
               title="Khởi chạy màn hình giảng dạy và tốc ký học viên"
             >
-              <Play className="h-3.5 w-3.5 fill-current shrink-0" />
+              <Play className="h-3 w-3 fill-current shrink-0" />
               <span>Vào ca dạy (Live)</span>
             </Button>
             {isTestSession && !isMath && (
@@ -371,21 +371,21 @@ export function ClassesSessionDetailDialog({
                 size="xs"
                 onClick={() => setIsSemesterEvalOpen(true)}
                 disabled={session.status === 'cancelled' || session.status === 'absent'}
-                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2.5 h-7 text-xs rounded-md cursor-pointer mr-1"
+                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-[11px] rounded-md cursor-pointer mr-0.5"
               >
-                <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />
+                <ClipboardCheck className="h-3 w-3 shrink-0" />
                 Semester Eval ({completedEvalCount}/{activeRoster.length})
               </Button>
             )}
 
-            <Button variant="ghost" size="sm" disabled={!hasPrev} onClick={() => navigateTo(currentIndex - 1)} className="h-7 rounded-lg text-xs gap-1 px-2">
-              <ChevronLeft className="h-3.5 w-3.5" /> Buổi trước
+            <Button variant="ghost" size="sm" disabled={!hasPrev} onClick={() => navigateTo(currentIndex - 1)} className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2">
+              <ChevronLeft className="h-3 w-3" /> <span className="hidden sm:inline">Buổi trước</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 rounded-lg text-xs gap-1.5 px-2 font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 cursor-pointer">
+                <Button variant="ghost" size="sm" className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2 font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 cursor-pointer">
                   <span>{session.date} ({session.startTime}–{session.endTime})</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="max-h-[300px] overflow-y-auto w-[360px] rounded-xl p-1 z-[9999]" align="start">
@@ -427,8 +427,8 @@ export function ClassesSessionDetailDialog({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="ghost" size="sm" disabled={!hasNext} onClick={() => navigateTo(currentIndex + 1)} className="h-7 rounded-lg text-xs gap-1 px-2">
-              Buổi sau <ChevronRight className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="sm" disabled={!hasNext} onClick={() => navigateTo(currentIndex + 1)} className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2">
+              <span className="hidden sm:inline">Buổi sau</span> <ChevronRight className="h-3 w-3" />
             </Button>
 
             <Button
@@ -436,7 +436,7 @@ export function ClassesSessionDetailDialog({
               variant="ghost"
               size="icon"
               onClick={handleCloseAttempt}
-              className="h-7 w-7 rounded-lg text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer ml-1"
+              className="h-7 w-7 rounded-lg text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer ml-0.5"
               title="Đóng"
             >
               <X className="h-4 w-4" />
@@ -444,21 +444,21 @@ export function ClassesSessionDetailDialog({
           </div>
         </div>
 
-        {/* ── MAIN MODAL BODY: LEFT PANEL (70%) + RIGHT PANEL (30%) ── */}
-        <div className="flex-1 flex min-h-0 overflow-hidden gap-4">
+        {/* ── MAIN MODAL BODY: LEFT PANEL (63%) + RIGHT PANEL (37%) ── */}
+        <div className="flex-1 flex min-h-0 overflow-hidden gap-2.5 sm:gap-3">
           {/* Left Panel: Header + Attendance Table (70%) */}
-          <div className="flex-[7] flex flex-col min-h-0 overflow-hidden gap-3">
+          <div className="flex-[70] flex flex-col min-h-0 overflow-hidden gap-1.5">
             {/* Header Card in Left Panel */}
-            <div className="shrink-0 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-3 space-y-2 shadow-2xs">
+            <div className="shrink-0 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-2 px-2.5 space-y-1 shadow-2xs">
               {/* Row 1: Title & Status */}
               <div>
-                <DialogTitle className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
+                <DialogTitle className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold text-foreground">
                   <span>{session.topic}</span>
-                  <Badge variant="outline" className={cn("rounded-full text-xs font-bold px-1.5 py-0", getStatusBadgeClass(getSessionStatusBadgeKey(session.status)))}>
+                  <Badge variant="outline" className={cn("rounded-full text-[10px] font-semibold px-1.5 py-0", getStatusBadgeClass(getSessionStatusBadgeKey(session.status)))}>
                     {getSessionStatusLabel(session.status)}
                   </Badge>
                   {isTestSession && (
-                    <Badge variant="outline" className="rounded-full text-xs font-bold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                    <Badge variant="outline" className="rounded-full text-[10px] font-semibold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                       Buổi kiểm tra
                     </Badge>
                   )}
@@ -466,13 +466,13 @@ export function ClassesSessionDetailDialog({
               </div>
 
               {/* Row 2: Full-width Session Log input box directly under session title */}
-              <div className="w-full pt-1">
+              <div className="w-full">
                 <ClassesSessionCommentBox
                   value={commentText}
                   onChange={setCommentText}
                   students={activeRoster}
                   rows={1}
-                  minHeight="min-h-[28px]"
+                  minHeight="min-h-[22px]"
                   placeholder="Nhật ký buổi học: Giáo viên nhập nhận xét chung về buổi học tại đây... (Gõ @ để tag học viên)"
                 />
               </div>
@@ -513,11 +513,11 @@ export function ClassesSessionDetailDialog({
             )}
 
             {/* ── LEFT PANEL TABS: TỔNG QUAN, HỌC VIÊN & TÀI LIỆU & MEDIA ── */}
-            <div className="shrink-0 flex items-center justify-start gap-1 bg-zinc-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 w-fit">
+            <div className="shrink-0 flex items-center justify-start gap-1 bg-zinc-200/60 dark:bg-zinc-800/60 p-0.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60 w-fit">
               <button
                 type="button"
                 onClick={() => setLeftPanelTab('overview')}
-                className={`h-7 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`h-6.5 px-2.5 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   leftPanelTab === 'overview'
                     ? 'bg-white dark:bg-zinc-900 text-foreground font-bold shadow-2xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground'
@@ -530,7 +530,7 @@ export function ClassesSessionDetailDialog({
               <button
                 type="button"
                 onClick={() => setLeftPanelTab('roster')}
-                className={`h-7 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`h-6.5 px-2.5 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   leftPanelTab === 'roster'
                     ? 'bg-white dark:bg-zinc-900 text-foreground font-bold shadow-2xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground'
@@ -538,7 +538,7 @@ export function ClassesSessionDetailDialog({
               >
                 <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                 <span>Học viên</span>
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-xs font-bold ${
+                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[11px] font-bold ${
                   leftPanelTab === 'roster'
                     ? 'bg-zinc-100 dark:bg-zinc-800 text-foreground'
                     : 'bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-400'
@@ -550,7 +550,7 @@ export function ClassesSessionDetailDialog({
               <button
                 type="button"
                 onClick={() => setLeftPanelTab('media')}
-                className={`h-7 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`h-6.5 px-2.5 rounded-md text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   leftPanelTab === 'media'
                     ? 'bg-white dark:bg-zinc-900 text-foreground font-bold shadow-2xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-foreground'
@@ -563,7 +563,7 @@ export function ClassesSessionDetailDialog({
 
             {/* Tab Content Container */}
             {leftPanelTab === 'overview' ? (
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden pt-1">
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ClassesSessionOverviewTab
                   session={session}
                   activeRoster={activeRoster}

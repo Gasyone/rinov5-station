@@ -156,6 +156,10 @@ export function InlineSelect({
   // If there's an empty option, use the sentinel value. Otherwise, use raw value or undefined to show placeholder.
   const selectValue = hasEmptyOption ? (value || EMPTY_SELECT_VALUE) : (value || undefined)
 
+  const selectedOpt = options.find(
+    (o) => (o.value || EMPTY_SELECT_VALUE) === (selectValue || EMPTY_SELECT_VALUE)
+  )
+
   return (
     <Select
       value={selectValue}
@@ -177,8 +181,12 @@ export function InlineSelect({
           className
         )}
       >
-        <span className="block truncate text-left max-w-[calc(100%-12px)]">
-          <SelectValue placeholder={placeholder} />
+        <span className="block truncate text-left w-full max-w-[calc(100%-12px)]">
+          {selectedOpt?.selectedLabel ? (
+            selectedOpt.selectedLabel
+          ) : (
+            <SelectValue placeholder={placeholder} />
+          )}
         </span>
       </SelectTrigger>
       <SelectContent>
@@ -189,6 +197,7 @@ export function InlineSelect({
               key={`${itemVal || EMPTY_SELECT_VALUE}-${index}`}
               value={itemVal || EMPTY_SELECT_VALUE}
               textValue={option.textValue ?? (typeof option.label === 'string' ? option.label : undefined)}
+              className="[&>span:last-child]:w-full [&>span:last-child]:flex-1"
             >
               {option.label}
             </SelectItem>

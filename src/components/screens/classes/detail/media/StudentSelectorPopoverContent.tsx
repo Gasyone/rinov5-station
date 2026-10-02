@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Check, Search } from 'lucide-react'
+import { Check, Minus, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { RosterStudentOption, SessionMediaItem } from './classesSessionMediaTypes'
@@ -16,7 +16,32 @@ export interface StudentSelectorPopoverContentProps {
   showClassWideOption?: boolean
   allCount?: number
   items?: SessionMediaItem[]
+  targetItems?: SessionMediaItem[]
   onSelectOption: (id: string | 'all' | 'class_wide') => void
+}
+
+function TriStateCheckbox({
+  state,
+}: {
+  state: 'checked' | 'indeterminate' | 'unchecked'
+}) {
+  if (state === 'checked') {
+    return (
+      <div className="h-4.5 w-4.5 rounded-md bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+        <Check className="h-3.5 w-3.5 stroke-[3]" />
+      </div>
+    )
+  }
+  if (state === 'indeterminate') {
+    return (
+      <div className="h-4.5 w-4.5 rounded-md bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-400 dark:border-sky-600 flex items-center justify-center shrink-0 shadow-2xs">
+        <Minus className="h-3.5 w-3.5 stroke-[3]" />
+      </div>
+    )
+  }
+  return (
+    <div className="h-4.5 w-4.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 shrink-0 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors" />
+  )
 }
 
 export function StudentSelectorPopoverContent({
@@ -29,6 +54,7 @@ export function StudentSelectorPopoverContent({
   showClassWideOption = true,
   allCount = 0,
   items = [],
+  targetItems,
   onSelectOption,
 }: StudentSelectorPopoverContentProps) {
   const [searchQuery, setSearchQuery] = useState('')
@@ -40,6 +66,19 @@ export function StudentSelectorPopoverContent({
       (st) => st.name.toLowerCase().includes(q) || (st.code && st.code.toLowerCase().includes(q))
     )
   }, [rosterStudents, searchQuery])
+
+  // Compute multi-item or single-item tagging state for "Dành cho cả lớp"
+  const { cwState, cwCount } = useMemo(() => {
+    if (isFilterMode) return { cwState: 'unchecked' as const, cwCount: 0 }
+    if (targetItems && targetItems.length > 0) {
+      const count = targetItems.filter((i) => i.taggedStudentIds.length === 0).length
+      if (count === targetItems.length) return { cwState: 'checked' as const, cwCount: count }
+      if (count > 0) return { cwState: 'indeterminate' as const, cwCount: count }
+      return { cwState: 'unchecked' as const, cwCount: 0 }
+    }
+    const isChecked = selectedStudentIds.length === 0
+    return { cwState: isChecked ? ('checked' as const) : ('unchecked' as const), cwCount: isChecked ? 1 : 0 }
+  }, [isFilterMode, targetItems, selectedStudentIds])
 
   return (
     <div className="w-72 p-3 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 text-left">
@@ -75,7 +114,7 @@ export function StudentSelectorPopoverContent({
           >
             <div className="flex items-center gap-2">
               <span className="text-sm">📁</span>
-              <span>Tất cả tệp ({allCount})</span>
+              <span>Tất cả tệp</span>
             </div>
             {selectedSingleId === 'all' && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />}
           </div>
@@ -86,45 +125,74 @@ export function StudentSelectorPopoverContent({
           <div
             onClick={() => onSelectOption('class_wide')}
             className={cn(
-              'flex items-center justify-between p-2 rounded-xl cursor-pointer transition-colors text-xs font-semibold',
+              'flex items-center justify-between p-2 rounded-xl cursor-pointer transition-colors text-xs font-semibold select-none',
               isFilterMode
                 ? selectedSingleId === 'class_wide'
                   ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold'
                   : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-foreground'
-                : selectedStudentIds.length === 0
-                ? 'bg-zinc-100 dark:bg-zinc-800 font-bold text-foreground'
-                : 'hover:bg-zinc-50 dark:hover:bg-zinc-800 text-foreground'
+                : cwState === 'checked'
+                ? 'bg-sky-50/80 dark:bg-sky-950/40 text-foreground font-semibold'
+                : cwState === 'indeterminate'
+                ? 'bg-zinc-50 dark:bg-zinc-800/50 text-foreground'
+                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-foreground'
             )}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="text-sm">🌐</span>
-              <span>
-                Dành cho cả lớp {isFilterMode ? `(${items.filter((i) => i.taggedStudentIds.length === 0).length})` : ''}
+              <span className="truncate">
+                Dành cho cả lớp
               </span>
             </div>
-            {((isFilterMode && selectedSingleId === 'class_wide') || (!isFilterMode && selectedStudentIds.length === 0)) && (
-              <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
-            )}
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isFilterMode ? (
+                selectedSingleId === 'class_wide' && (
+                  <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                )
+              ) : (
+                <TriStateCheckbox state={cwState} />
+              )}
+            </div>
           </div>
         )}
 
         {/* Individual Students */}
         {filtered.map((st) => {
-          const isSelected = isFilterMode
-            ? selectedSingleId === st.id
-            : selectedStudentIds.includes(st.id)
           const bg = st.colorBg || 'bg-amber-100 dark:bg-amber-950/60'
           const text = st.colorText || 'text-amber-800 dark:text-amber-300'
-          const count = items.filter((i) => i.taggedStudentIds.includes(st.id)).length
+
+          let stState: 'checked' | 'indeterminate' | 'unchecked' = 'unchecked'
+          let stCount = 0
+
+          if (targetItems && targetItems.length > 0) {
+            stCount = targetItems.filter((i) => i.taggedStudentIds.includes(st.id)).length
+            if (stCount === targetItems.length) {
+              stState = 'checked'
+            } else if (stCount > 0) {
+              stState = 'indeterminate'
+            } else {
+              stState = 'unchecked'
+            }
+          } else {
+            stState = selectedStudentIds.includes(st.id) ? 'checked' : 'unchecked'
+          }
+
+          const isFilterActive = isFilterMode && selectedSingleId === st.id
 
           return (
             <div
               key={st.id}
               onClick={() => onSelectOption(st.id)}
               className={cn(
-                'flex items-center justify-between p-1.5 rounded-xl cursor-pointer transition-colors text-xs',
-                isSelected
-                  ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold'
+                'flex items-center justify-between p-1.5 rounded-xl cursor-pointer transition-colors text-xs select-none',
+                isFilterMode
+                  ? isFilterActive
+                    ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-foreground'
+                  : stState === 'checked'
+                  ? 'bg-sky-50/80 dark:bg-sky-950/40 text-foreground font-semibold'
+                  : stState === 'indeterminate'
+                  ? 'bg-zinc-50 dark:bg-zinc-800/50 text-foreground'
                   : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-foreground'
               )}
             >
@@ -134,17 +202,16 @@ export function StudentSelectorPopoverContent({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="truncate block font-semibold text-xs">{st.name}</span>
-                  {st.code && <span className="text-xs text-muted-foreground font-mono">{st.code}</span>}
+                  {st.code && <span className="text-[11px] text-muted-foreground font-mono">{st.code}</span>}
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                {isFilterMode && (
-                  <span className="text-xs font-mono text-muted-foreground bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                    {count}
-                  </span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {isFilterMode ? (
+                  isFilterActive && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                ) : (
+                  <TriStateCheckbox state={stState} />
                 )}
-                {isSelected && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />}
               </div>
             </div>
           )
@@ -157,3 +224,4 @@ export function StudentSelectorPopoverContent({
     </div>
   )
 }
+

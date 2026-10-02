@@ -152,6 +152,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
         {roadmapMilestones.map((m, idx) => {
           const isCompleted = m.status === 'completed'
           const isOverdue = m.status === 'overdue'
+          const isFailed = m.status === 'failed'
 
           return (
             <div
@@ -161,6 +162,8 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
                   ? 'bg-emerald-500 border-emerald-600'
                   : isOverdue
                   ? 'bg-rose-500 border-rose-600 animate-pulse scale-125'
+                  : isFailed
+                  ? 'bg-rose-500 border-rose-600'
                   : 'bg-muted border-border'
               }`}
               title={`${m.code}: ${m.title} (${m.date})`}
@@ -196,6 +199,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
         {roadmapMilestones.slice(0, 8).map((m, idx) => {
           const isCompleted = m.status === 'completed'
           const isOverdue = m.status === 'overdue'
+          const isFailed = m.status === 'failed'
 
           return (
             <div key={idx} className="flex-1 min-w-[110px] flex flex-col items-center text-center group relative">
@@ -205,10 +209,12 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
                     ? 'bg-emerald-500 text-white'
                     : isOverdue
                     ? 'bg-rose-500 text-white animate-pulse scale-110 shadow-xs'
+                    : isFailed
+                    ? 'bg-rose-500 text-white shadow-xs'
                     : 'bg-muted text-muted-foreground border border-border'
                 }`}
               >
-                {isCompleted ? <Check className="h-4 w-4" /> : idx + 1}
+                {isCompleted ? <Check className="h-4 w-4" /> : isFailed ? '✕' : idx + 1}
               </div>
 
               <span className={cn('font-mono text-xs font-bold px-1.5 py-0.2 rounded border mt-1.5', getMilestoneTagAbbrev(m.code).badgeClass)}>

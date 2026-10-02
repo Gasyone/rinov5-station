@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Clock, Users, ArrowLeftRight, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'

@@ -65,9 +65,8 @@ export function MonthlyReportActivityPhotosSection({
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block" />
             <span>
-              HÌNH ẢNH & VIDEO HOẠT ĐỘNG TRONG THÁNG {monthName ? monthName.toUpperCase() : ''}
+              3. KHOẢNH KHẮC HỌC TẬP (ẢNH & VIDEO TRONG THÁNG)
             </span>
           </h4>
         </div>
@@ -164,7 +163,6 @@ export function MonthlyReportActivityPhotosSection({
                     {item.name || item.title}
                   </p>
                   <div className="flex items-center gap-1 text-[10.5px] text-zinc-300 font-medium mt-0.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block shrink-0" />
                     <span className="truncate">
                       {item.isClassWide ? 'Dành cho cả lớp' : studentName || 'Học viên'}
                     </span>

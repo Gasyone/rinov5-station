@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -16,24 +15,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sparkles, Loader2, Check, Pencil, Send, ExternalLink } from 'lucide-react'
+import { BookOpen, Loader2, Check, Pencil, Send, ExternalLink, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { RosterStudent } from './classesDetailTypes'
 import { MonthlyReportReviewItemsSection } from './MonthlyReportReviewItemsSection'
 import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
 import { MonthlyReportRosterSidebar } from './MonthlyReportRosterSidebar'
-import { mockCareAlerts } from '@/mocks/careAlerts'
+import { MonthlyAwardCriteriaPopover } from './MonthlyAwardCriteriaPopover'
+import { MonthlyReportAcademicSection } from './MonthlyReportAcademicSection'
 import { mockStudents } from '@/mocks/students'
+import { getStudentPhotos } from '@/mocks/studentPhotos'
 import {
-  MOCK_LESSONS_REVIEW,
   getReviewContentForRange,
   getAiSynthesizedNextMonthPlan,
   getDirectLessonPlanForRange,
+  getLessonsReviewBySubject,
+  getStudentReportMetrics,
   DetailedMonthlyReportForm,
-  DEFAULT_FILLED_REPORT_FORM,
   EMPTY_REPORT_FORM,
   AWARD_BADGES,
+  ENGLISH_AWARD_BADGES,
   normalizeAwardBadge,
 } from './monthlyReportHelpers'
 import {
@@ -83,27 +85,39 @@ export function StudentMonthlyReportDialog({
       if (sId) {
         setSelectedStudentId(sId)
       }
-      setIsEditing(false)
-      if (initialMonthKey) setSelectedMonthKey(resolveMonthValue(initialMonthKey))
+      const targetMKey = initialMonthKey ? resolveMonthValue(initialMonthKey) : selectedMonthKey
+      if (initialMonthKey) setSelectedMonthKey(targetMKey)
+      const monthOpt = MONTH_OPTIONS.find((m) => m.value === targetMKey) || MONTH_OPTIONS[0]
+      const hasReport = getStudentMonthlyReports(sId).some(
+        (r) => r.monthOptionValue === targetMKey || r.monthKey.includes(monthOpt.current)
+      )
+      setIsEditing(!hasReport)
     }
   }
 
   const activeMonthConfig = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
 
-  // Track created status per student ID
-  const [reportStatusMap, setReportStatusMap] = useState<Record<string, boolean>>(() => {
+  const computeStatusMap = (mKey: string) => {
+    const monthOpt = MONTH_OPTIONS.find((m) => m.value === mKey) || MONTH_OPTIONS[0]
     const map: Record<string, boolean> = {}
     students.forEach((s) => {
       const existing = getStudentMonthlyReports(s.id || s.name)
-      map[s.id] = existing.length > 0
+      map[s.id] = existing.some(
+        (r) => r.monthOptionValue === mKey || r.monthKey.includes(monthOpt.current)
+      )
     })
     return map
-  })
+  }
+
+  // Track created status per student ID for currently selected month
+  const [reportStatusMap, setReportStatusMap] = useState<Record<string, boolean>>(() =>
+    computeStatusMap(initialMonthKey ? resolveMonthValue(initialMonthKey) : '4_5_2026')
+  )
 
   // Helper to load report form from mock database
   const getFormForStudentAndMonth = (sId: string, mKey: string): DetailedMonthlyReportForm => {
     const s = students.find((item) => item.id === sId) || students[0]
-    if (!s) return { ...DEFAULT_FILLED_REPORT_FORM }
+    if (!s) return { ...EMPTY_REPORT_FORM }
     const reports = getStudentMonthlyReports(s.id || s.name)
     const monthOpt = MONTH_OPTIONS.find((m) => m.value === mKey) || MONTH_OPTIONS[0]
     const existing = reports.find(
@@ -117,6 +131,7 @@ export function StudentMonthlyReportDialog({
         sectionAContent: existing.sectionAContent || `${existing.sectionA1Content}\n\n${existing.sectionA2Content}`,
         sectionA1Content: existing.sectionA1Content,
         sectionA2Content: existing.sectionA2Content,
+        galleryPhotos: existing.galleryPhotos || [],
         sectionB1Content: existing.sectionB1Content,
         sectionB2StartLesson: existing.sectionB2StartLesson,
         sectionB2EndLesson: existing.sectionB2EndLesson,
@@ -124,7 +139,11 @@ export function StudentMonthlyReportDialog({
         sectionB2Content: existing.sectionB2Content || '',
       }
     }
-    return { ...DEFAULT_FILLED_REPORT_FORM }
+    return {
+      ...EMPTY_REPORT_FORM,
+      monthPeriod: monthOpt.dateStr,
+      galleryPhotos: [],
+    }
   }
 
   // Report forms per student
@@ -149,6 +168,12 @@ export function StudentMonthlyReportDialog({
       ...prev,
       [selectedStudentId]: newForm,
     }))
+    const monthOpt = MONTH_OPTIONS.find((m) => m.value === newMonthKey) || MONTH_OPTIONS[0]
+    const hasReport = getStudentMonthlyReports(selectedStudentId).some(
+      (r) => r.monthOptionValue === newMonthKey || r.monthKey.includes(monthOpt.current)
+    )
+    setIsEditing(!hasReport)
+    setReportStatusMap(computeStatusMap(newMonthKey))
   }
 
   const handleSelectStudent = (sId: string) => {
@@ -158,7 +183,11 @@ export function StudentMonthlyReportDialog({
       ...prev,
       [sId]: newForm,
     }))
-    setIsEditing(false)
+    const monthOpt = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
+    const hasReport = getStudentMonthlyReports(sId).some(
+      (r) => r.monthOptionValue === selectedMonthKey || r.monthKey.includes(monthOpt.current)
+    )
+    setIsEditing(!hasReport)
   }
 
   const handleCancelEdit = () => {
@@ -178,10 +207,17 @@ export function StudentMonthlyReportDialog({
   )
 
   const isMath = useMemo(() => {
+    const textToCheck = (currentForm.sectionA2Content || '').toLowerCase()
+    if (textToCheck.includes('từ vựng') || textToCheck.includes('phonics') || textToCheck.includes('letter') || textToCheck.includes('mẫu câu')) {
+      return false
+    }
+    if (textToCheck.includes('toán') || textToCheck.includes('hình học') || textToCheck.includes('không gian') || textToCheck.includes('giải toán')) {
+      return true
+    }
     if (subject) {
       const s = subject.toLowerCase()
       if (s.includes('toán') || s.includes('math')) return true
-      if (s.includes('anh') || s.includes('english')) return false
+      if (s.includes('anh') || s.includes('english') || s.includes('ielts') || s.includes('toeic')) return false
     }
     if (studentDetail) {
       const pkg = (studentDetail.packageName || '').toLowerCase()
@@ -199,6 +235,7 @@ export function StudentMonthlyReportDialog({
       if (
         pkg.includes('anh') ||
         pkg.includes('english') ||
+        pkg.includes('ielts') ||
         path.includes('anh') ||
         path.includes('english') ||
         lev.includes('english')
@@ -210,60 +247,29 @@ export function StudentMonthlyReportDialog({
       if (l.includes('toán') || l.includes('math')) return true
       if (l.includes('anh') || l.includes('english')) return false
     }
-    const textToCheck = (currentForm.sectionA2Content || '').toLowerCase()
-    if (textToCheck.includes('từ vựng') || textToCheck.includes('phonics') || textToCheck.includes('letter')) {
-      return false
-    }
-    return true
+    return false
   }, [subject, studentDetail, selectedStudent, currentForm.sectionA2Content])
 
+  const activeLessons = useMemo(() => {
+    return getLessonsReviewBySubject(subject, isMath)
+  }, [subject, isMath])
+
+  const startLessonObj = activeLessons.find(
+    (l) => l.lessonNumber === (currentForm.sectionB2StartLesson || (isMath ? 1 : 8))
+  )
+  const endLessonObj = activeLessons.find(
+    (l) => l.lessonNumber === (currentForm.sectionB2EndLesson || (isMath ? 4 : 10))
+  )
+
   const studentMetrics = useMemo(() => {
-    if (!selectedStudent) {
-      return {
-        attendanceRatio: '5/7',
-        lateCount: 1,
-        homeworkRatio: '7/7',
-        homeworkAvg: '7.5',
-        testScore: 8.0,
-        priorTestScore: 5.5,
-      }
-    }
-
-    const alert = mockCareAlerts.find(
-      (a) =>
-        a.studentId === selectedStudent.id ||
-        (a.studentName &&
-          selectedStudent.name &&
-          a.studentName.toLowerCase().includes(selectedStudent.name.toLowerCase())) ||
-        (a.classCode && selectedStudent.code && a.classCode === selectedStudent.code)
-    )
-
-    if (alert) {
-      return {
-        attendanceRatio: alert.attendanceRatio || '5/7',
-        lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
-        homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
-        homeworkAvg: '7.5',
-        testScore: alert.lastTestScore ?? 8.0,
-        priorTestScore: alert.priorTestScore ?? 5.5,
-      }
-    }
-
-    return {
-      attendanceRatio: '5/7',
-      lateCount: 1,
-      homeworkRatio: '7/7',
-      homeworkAvg: '7.5',
-      testScore: 8.0,
-      priorTestScore: 5.5,
-    }
+    return getStudentReportMetrics(selectedStudent?.id, selectedStudent?.name, selectedStudent?.code)
   }, [selectedStudent])
 
   // Step 1: Handle Start Lesson change
   const handleStartLessonChange = (startNum: number) => {
-    const endNum = currentForm.sectionB2EndLesson || 10
-    const newReviewContent = getReviewContentForRange(startNum, endNum)
-    const newB1Content = getDirectLessonPlanForRange(startNum, endNum)
+    const endNum = currentForm.sectionB2EndLesson || (isMath ? 4 : 10)
+    const newReviewContent = getReviewContentForRange(startNum, endNum, isMath)
+    const newB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
     handleUpdateForm({
       sectionB2StartLesson: startNum,
       sectionB2Content: newReviewContent,
@@ -273,9 +279,9 @@ export function StudentMonthlyReportDialog({
 
   // Step 1: Handle End Lesson change
   const handleEndLessonChange = (endNum: number) => {
-    const startNum = currentForm.sectionB2StartLesson || 8
-    const newReviewContent = getReviewContentForRange(startNum, endNum)
-    const newB1Content = getDirectLessonPlanForRange(startNum, endNum)
+    const startNum = currentForm.sectionB2StartLesson || (isMath ? 1 : 8)
+    const newReviewContent = getReviewContentForRange(startNum, endNum, isMath)
+    const newB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
     handleUpdateForm({
       sectionB2EndLesson: endNum,
       sectionB2Content: newReviewContent,
@@ -283,17 +289,17 @@ export function StudentMonthlyReportDialog({
     })
   }
 
-  // Step 2: Handle AI Synthesis button click for Section 1
-  const handleAiSynthesizeNextMonthPlan = () => {
+  // Handle loading sample lesson plan for Section B1
+  const handleLoadNextMonthPlan = () => {
     setIsSynthesizingAi(true)
     setTimeout(() => {
       setIsSynthesizingAi(false)
-      const startNum = currentForm.sectionB2StartLesson || 8
-      const endNum = currentForm.sectionB2EndLesson || 10
-      const synthesizedText = getAiSynthesizedNextMonthPlan(startNum, endNum)
+      const startNum = currentForm.sectionB2StartLesson || (isMath ? 1 : 8)
+      const endNum = currentForm.sectionB2EndLesson || (isMath ? 4 : 10)
+      const synthesizedText = getAiSynthesizedNextMonthPlan(startNum, endNum, isMath)
       handleUpdateForm({ sectionB1Content: synthesizedText })
-      toast.success(`✨ AI đã tổng hợp thành công nội dung bài học tháng tới (Bài ${startNum} đến Bài ${endNum})!`)
-    }, 400)
+      toast.success(`Đã nạp nội dung bài học tháng tới (Buổi ${startNum} đến Buổi ${endNum})!`)
+    }, 300)
   }
 
   const handleSave = () => {
@@ -316,6 +322,7 @@ export function StudentMonthlyReportDialog({
       sectionA1Content: currentForm.sectionA1Content,
       sectionA2Content: currentForm.sectionA2Content,
       sectionAContent: `${currentForm.sectionA1Content}\n\n${currentForm.sectionA2Content}`,
+      galleryPhotos: currentForm.galleryPhotos || [],
       sectionB1Content: currentForm.sectionB1Content,
       sectionB2StartLesson: currentForm.sectionB2StartLesson,
       sectionB2EndLesson: currentForm.sectionB2EndLesson,
@@ -342,9 +349,7 @@ export function StudentMonthlyReportDialog({
       .catch(() => toast.error('Không thể sao chép liên kết.'))
   }
 
-  const currentWeeks = currentForm.sectionB2Weeks && currentForm.sectionB2Weeks.length > 0
-    ? currentForm.sectionB2Weeks
-    : EMPTY_REPORT_FORM.sectionB2Weeks
+  const currentWeeks = currentForm.sectionB2Weeks || []
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -401,47 +406,50 @@ export function StudentMonthlyReportDialog({
                     Kết quả học tập từ <strong className="text-foreground font-bold">{activeMonthConfig.dateStr}</strong>
                   </div>
 
-                  {/* Award Badge: Select khi sửa (môn toán), Input khi sửa (môn tiếng anh), Pill tĩnh khi xem */}
+                  {/* Award Badge: Select danh hiệu theo môn học, Pill tĩnh khi xem */}
                   {isEditing ? (
                     <div className="flex items-center gap-2">
-                      {isMath ? (
-                        <Select
-                          value={currentForm.awardBadge || ''}
-                          onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
-                        >
-                          <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-full px-4 uppercase tracking-wide">
-                            <SelectValue placeholder="Chọn danh hiệu..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {AWARD_BADGES.map((badge) => (
-                              <SelectItem key={badge} value={badge} className="text-xs font-bold">
-                                {badge}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none">🏷️</span>
-                          <Input
-                            value={currentForm.awardBadge || ''}
-                            onChange={(e) => handleUpdateForm({ awardBadge: e.target.value })}
-                            placeholder="Nhập danh hiệu vinh danh..."
-                            className="h-8 pl-8 pr-3 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 placeholder:text-amber-950/70 rounded-full w-[240px] uppercase tracking-wide focus-visible:ring-amber-500"
-                          />
-                        </div>
-                      )}
+                      <Select
+                        value={currentForm.awardBadge || ''}
+                        onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
+                      >
+                        <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-full px-4 uppercase tracking-wide">
+                          <SelectValue placeholder="Chọn danh hiệu..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(isMath ? AWARD_BADGES : ENGLISH_AWARD_BADGES).map((badge) => (
+                            <SelectItem key={badge} value={badge} className="text-xs font-bold">
+                              {badge}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <MonthlyAwardCriteriaPopover
+                        selectedBadge={currentForm.awardBadge}
+                        onSelectBadge={(val) => handleUpdateForm({ awardBadge: val })}
+                        isEditing={true}
+                        isMath={isMath}
+                      />
                     </div>
                   ) : (
-                    currentForm.awardBadge ? (
-                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wide shadow-2xs">
-                        {currentForm.awardBadge}
-                      </div>
-                    ) : (
-                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-dashed border-amber-400/40 text-xs italic">
-                        Chưa đặt danh hiệu
-                      </div>
-                    )
+                    <div className="flex items-center gap-2">
+                      {currentForm.awardBadge ? (
+                        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wide shadow-2xs">
+                          {currentForm.awardBadge}
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-dashed border-amber-400/40 text-xs italic">
+                          Chưa đặt danh hiệu
+                        </div>
+                      )}
+
+                      <MonthlyAwardCriteriaPopover
+                        selectedBadge={currentForm.awardBadge}
+                        isEditing={false}
+                        isMath={isMath}
+                      />
+                    </div>
                   )}
                 </div>
 
@@ -481,70 +489,33 @@ export function StudentMonthlyReportDialog({
                 }}
               />
 
-              {/* SECTION A: BÁO CÁO HỌC TẬP (TÁCH THÀNH 2 MỤC) */}
-              <div id="dialog-report-section-a" className="space-y-4 pt-2 border-t">
-                <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-                  A - BÁO CÁO HỌC TẬP {activeMonthConfig.current.toUpperCase()}
-                </h4>
-
-                {/* Sub-section A1: 1. Nhận xét chung */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-blue-500 inline-block" />
-                      1. Nhận xét chung
-                    </label>
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
-                      <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                      Nội dung được AI tổng hợp từ các buổi học trong tháng của học viên.
-                    </span>
-                  </div>
-                  {isEditing ? (
-                    <textarea
-                      rows={6}
-                      value={currentForm.sectionA1Content}
-                      onChange={(e) => handleUpdateForm({ sectionA1Content: e.target.value })}
-                      placeholder="Nhập 'Điểm nổi bật: ...' và 'Điểm cần lưu ý: ...'"
-                      className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
-                    />
-                  ) : (
-                    <div className="w-full text-sm p-4 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
-                      {currentForm.sectionA1Content || (
-                        <span className="italic text-muted-foreground/60">Chưa có nhận xét chung.</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Sub-section A2: 2. Nhận xét về kết quả học tập */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                      2. Nhận xét về kết quả học tập
-                    </label>
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5 font-normal">
-                      <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
-                      Nội dung AI được tổng hợp từ các BTVN trong tháng của học viên.
-                    </span>
-                  </div>
-                  {isEditing ? (
-                    <textarea
-                      rows={5}
-                      value={currentForm.sectionA2Content}
-                      onChange={(e) => handleUpdateForm({ sectionA2Content: e.target.value })}
-                      placeholder="Nhập 'Từ vựng & Phonics: ...' và 'Cấu trúc & Mẫu câu: ...'"
-                      className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
-                    />
-                  ) : (
-                    <div className="w-full text-sm p-4 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
-                      {currentForm.sectionA2Content || (
-                        <span className="italic text-muted-foreground/60">Chưa có nhận xét kết quả học tập.</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* SECTION A: BÁO CÁO HỌC TẬP (TÁCH THÀNH CÁC MỤC VÀ MEDIA) */}
+              <MonthlyReportAcademicSection
+                isEditing={isEditing}
+                isMath={isMath}
+                monthTitle={activeMonthConfig.current}
+                studentId={selectedStudent.id}
+                studentName={selectedStudent.name}
+                sectionA1Content={currentForm.sectionA1Content}
+                sectionA2Content={currentForm.sectionA2Content}
+                onUpdateA1={(content, highlight, note) => {
+                  handleUpdateForm({
+                    sectionA1Highlight: highlight,
+                    sectionA1Note: note,
+                    sectionA1Content: content,
+                  })
+                }}
+                onUpdateA2={(content, knowledge, skill) => {
+                  handleUpdateForm({
+                    sectionA2Knowledge: knowledge,
+                    sectionA2Skill: skill,
+                    sectionA2Content: content,
+                  })
+                }}
+                galleryPhotos={currentForm.galleryPhotos || getStudentPhotos(selectedStudent.id).slice(0, 6)}
+                onChangePhotos={(newPhotos) => handleUpdateForm({ galleryPhotos: newPhotos })}
+                idPrefix="dialog-report"
+              />
 
               {/* SECTION B: KẾ HOẠCH HỌC TẬP CẢI THIỆN */}
               <div className="space-y-4 pt-3 border-t">
@@ -553,74 +524,91 @@ export function StudentMonthlyReportDialog({
                     B - KẾ HOẠCH HỌC TẬP CẢI THIỆN {activeMonthConfig.next.toUpperCase()}
                   </h4>
                   {isEditing && (
-                    <span className="text-xs font-semibold text-primary">Quy trình 2 bước: Step 1 Chọn bài → Step 2 AI Tổng hợp</span>
+                    <span className="text-xs font-semibold text-muted-foreground">Chọn khoảng bài học để nạp nội dung mẫu</span>
                   )}
                 </div>
 
                 {/* Sub-section 1: Nội dung bài học tháng tới (Ô 01) */}
                 <div className="space-y-2 pt-1">
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
-                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-primary inline-block" />
+                  <div className="flex items-center justify-between gap-2 pb-1">
+                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5 shrink-0">
                       1. Nội dung bài học tháng tới
                     </label>
 
                     {/* Step 1 & Step 2 Controls chỉ hiện khi đang ở chế độ chỉnh sửa (isEditing) */}
                     {isEditing && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold text-muted-foreground">Chọn bài:</span>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                        <span className="text-xs font-bold text-muted-foreground shrink-0">Chọn bài:</span>
 
                         {/* Start Lesson Select */}
                         <Select
-                          value={String(currentForm.sectionB2StartLesson || 8)}
+                          value={String(currentForm.sectionB2StartLesson || (isMath ? 1 : 8))}
                           onValueChange={(val) => handleStartLessonChange(Number(val))}
                         >
-                          <SelectTrigger className="h-8 text-xs font-semibold w-24 bg-background border-border/80 shadow-2xs">
-                            <SelectValue placeholder="Bài bắt đầu" />
+                          <SelectTrigger
+                            className="h-7.5 text-xs font-semibold w-28 sm:w-32 max-w-[130px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                            title={startLessonObj ? `Buổi ${startLessonObj.lessonNumber}: ${startLessonObj.title}` : undefined}
+                          >
+                            <SelectValue placeholder="Bắt đầu" />
                           </SelectTrigger>
-                          <SelectContent>
-                            {MOCK_LESSONS_REVIEW.map((l) => (
-                              <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                                Bài {l.lessonNumber}
+                          <SelectContent className="max-w-[420px] w-[340px]">
+                            {activeLessons.map((l) => (
+                              <SelectItem
+                                key={l.lessonNumber}
+                                value={String(l.lessonNumber)}
+                                className="text-xs py-1.5 cursor-pointer"
+                              >
+                                <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                                  Buổi {l.lessonNumber}: {l.title}
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
 
-                        <span className="text-xs font-bold text-muted-foreground">→</span>
+                        <span className="text-xs font-bold text-muted-foreground shrink-0">→</span>
 
                         {/* End Lesson Select */}
                         <Select
-                          value={String(currentForm.sectionB2EndLesson || 10)}
+                          value={String(currentForm.sectionB2EndLesson || (isMath ? 4 : 10))}
                           onValueChange={(val) => handleEndLessonChange(Number(val))}
                         >
-                          <SelectTrigger className="h-8 text-xs font-semibold w-24 bg-background border-border/80 shadow-2xs">
-                            <SelectValue placeholder="Bài kết thúc" />
+                          <SelectTrigger
+                            className="h-7.5 text-xs font-semibold w-28 sm:w-32 max-w-[130px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                            title={endLessonObj ? `Buổi ${endLessonObj.lessonNumber}: ${endLessonObj.title}` : undefined}
+                          >
+                            <SelectValue placeholder="Kết thúc" />
                           </SelectTrigger>
-                          <SelectContent>
-                            {MOCK_LESSONS_REVIEW.map((l) => (
-                              <SelectItem key={l.lessonNumber} value={String(l.lessonNumber)} className="text-xs">
-                                Bài {l.lessonNumber}
+                          <SelectContent className="max-w-[420px] w-[340px]">
+                            {activeLessons.map((l) => (
+                              <SelectItem
+                                key={l.lessonNumber}
+                                value={String(l.lessonNumber)}
+                                className="text-xs py-1.5 cursor-pointer"
+                              >
+                                <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                                  Buổi {l.lessonNumber}: {l.title}
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
 
-                        {/* Step 2: AI Synthesize Button */}
+                        {/* Step 2: Load sample lesson content button */}
                         <Button
                           type="button"
                           size="sm"
-                          onClick={handleAiSynthesizeNextMonthPlan}
+                          onClick={handleLoadNextMonthPlan}
                           disabled={isSynthesizingAi}
-                          className="h-8 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-3.5 shadow-2xs cursor-pointer gap-1.5"
-                          title="Tự động biên tập ngôn ngữ tự nhiên cho bài học tháng tới"
+                          className="h-7.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-2.5 sm:px-3 shadow-2xs cursor-pointer gap-1.5 shrink-0"
+                          title="Nạp nội dung khung chương trình cho các buổi học đã chọn"
                         >
                           {isSynthesizingAi ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <Sparkles className="h-3.5 w-3.5 text-amber-300 fill-amber-300 animate-pulse" />
+                            <BookOpen className="h-3.5 w-3.5" />
                           )}
-                          <span>AI Tổng hợp</span>
+                          <span>Nạp bài học mẫu</span>
                         </Button>
                       </div>
                     )}
@@ -631,7 +619,7 @@ export function StudentMonthlyReportDialog({
                       rows={8}
                       value={currentForm.sectionB1Content}
                       onChange={(e) => handleUpdateForm({ sectionB1Content: e.target.value })}
-                      placeholder="Nhập hoặc bấm 'Cập nhật' / 'AI Tổng hợp' để tự động cập nhật nội dung bài học..."
+                      placeholder="Nhập hoặc chọn bài học rồi bấm 'Nạp bài học mẫu' để tự động điền nhanh..."
                       className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
                     />
                   ) : (
@@ -664,16 +652,34 @@ export function StudentMonthlyReportDialog({
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>Báo cáo tự động hàng tháng</span>
                 </div>
               )}
             </div>
 
             {/* Nhóm nút hành động bên phải */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               {isEditing ? (
                 <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      handleUpdateForm({
+                        ...EMPTY_REPORT_FORM,
+                        monthPeriod: activeMonthConfig.dateStr,
+                        galleryPhotos: [],
+                      })
+                      toast.info('Đã xóa trắng form báo cáo để bạn tự điền nội dung mới.')
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground px-2.5 rounded-lg cursor-pointer gap-1.5"
+                    title="Xóa trắng toàn bộ nội dung để tự điền báo cáo mới từ đầu"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Xóa trắng</span>
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"

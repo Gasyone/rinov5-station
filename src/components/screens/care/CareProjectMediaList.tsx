@@ -306,9 +306,7 @@ export function CareProjectMediaList({
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <span>
-                {showAllProjects
-                  ? 'Thu gọn'
-                  : `Xem thêm (${filteredProjectSessions.length - 1} dự án cũ hơn)`}
+                {showAllProjects ? 'Thu gọn' : 'Xem thêm'}
               </span>
               {showAllProjects ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
             </button>
@@ -467,6 +465,16 @@ export function CareProjectMediaList({
                 url: selectedMedia.url,
                 thumbnailUrl: selectedMedia.thumbnailUrl || selectedMedia.url,
                 type: selectedMedia.type,
+                duration: selectedMedia.duration,
+                taggedStudents: selectedMedia.isTaggedForStudent
+                  ? [
+                      {
+                        id: studentId,
+                        name: studentName,
+                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(studentName)}`,
+                      },
+                    ]
+                  : [],
               }
             : null
         }

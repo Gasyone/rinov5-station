@@ -172,8 +172,13 @@ export function getStudentNameParts(student: { name: string; englishName?: strin
   let eng = student.englishName?.trim()
   let vn = student.name?.trim() || ''
 
-  // Strip (Trial) or (Học thử) if present
-  vn = vn.replace(/\s*\(Trial\)$/i, '').replace(/\s*\(Học thử\)$/i, '').trim()
+  // Strip (Trial), (Học thử), (Mới), (New) if present
+  vn = vn
+    .replace(/\s*\(Trial\)$/i, '')
+    .replace(/\s*\(Học thử\)$/i, '')
+    .replace(/\s*\(Mới\)$/i, '')
+    .replace(/\s*\(New\)$/i, '')
+    .trim()
 
   // If student.name is in format "Alex (Nguyễn An)", split it automatically
   if (vn.includes('(') && vn.includes(')')) {
@@ -332,7 +337,7 @@ export function generateMockRoster(cls: ClassRecord): RosterStudent[] {
       const pPhone3 = '0901112223'
       roster.push({
         id: `${s3.id}-new-1`,
-        name: `${s3.name} (Mới)`,
+        name: s3.name,
         code: `HV-${s3.id.toUpperCase()}-N1`,
         status: 'new',
         dob: s3.dob || '2009-01-10',
@@ -350,7 +355,7 @@ export function generateMockRoster(cls: ClassRecord): RosterStudent[] {
       const pPhone4 = '0903334445'
       roster.push({
         id: `${s4.id}-new-2`,
-        name: `${s4.name} (Mới)`,
+        name: s4.name,
         code: `HV-${s4.id.toUpperCase()}-N2`,
         status: 'new',
         dob: s4.dob || '2008-12-15',

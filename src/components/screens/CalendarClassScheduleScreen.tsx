@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
 import { SYSTEM_BRANCHES } from '@/components/controls'
 import { getMockClassSessions, type ClassSession } from '@/mocks/calendarSchedule'
 import { ModuleLoadingSkeleton } from '@/components/shared'
@@ -12,19 +11,19 @@ import { CalendarClassScheduleToolbar } from './calendar/CalendarClassScheduleTo
 import { CalendarClassScheduleWeekView } from './calendar/CalendarClassScheduleWeekView'
 import { CalendarClassScheduleDayView } from './calendar/CalendarClassScheduleDayView'
 import { CalendarClassScheduleFooter } from './calendar/CalendarClassScheduleFooter'
-import { MyScheduleScreen } from './MyScheduleScreen'
+import { CalendarClassScheduleFilterPanel } from './calendar/CalendarClassScheduleFilterPanel'
 import type { ViewMode, FilterState } from './calendar/calendarClassScheduleTypes'
+import { DEFAULT_FILTER_STATE } from './calendar/calendarClassScheduleTypes'
 import {
   filterSessions,
   formatLabel,
   getMonday,
-  getSessionPeriod,
   getWeekDays,
+  countActiveFilters,
 } from './calendar/calendarClassScheduleHelpers'
 
 export function CalendarClassScheduleScreen() {
   const [mounted, setMounted] = useState(false)
-  const [isMySchedule, setIsMySchedule] = useState(false)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
@@ -49,48 +48,22 @@ export function CalendarClassScheduleScreen() {
   const [activeSubject, setActiveSubject] = useState('all')
   const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
 
-  // Filter States
-  const [branchFilters, setBranchFilters] = useState<string[]>([])
-  const [levelFilters, setLevelFilters] = useState<string[]>([])
-  const [sessionTypeFilters, setSessionTypeFilters] = useState<string[]>([])
-  const [conditionFilters, setConditionFilters] = useState<string[]>([])
-  const [subjectFilters, setSubjectFilters] = useState<string[]>([])
-  const [teacherFilters, setTeacherFilters] = useState<string[]>([])
-  const [periodFilters, setPeriodFilters] = useState<string[]>([])
-  const [roomFilters, setRoomFilters] = useState<string[]>([])
-  const [trialFilters, setTrialFilters] = useState<string[]>([])
-  const [attendanceFilters, setAttendanceFilters] = useState<string[]>([])
-  const [capacityFilters, setCapacityFilters] = useState<string[]>([])
+  // Bộ lọc đã áp dụng (Chỉ cập nhật khi bấm 'Áp dụng', không lọc realtime)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(DEFAULT_FILTER_STATE)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
-  const filterState: FilterState = useMemo(
-    () => ({
-      branchFilters,
-      levelFilters,
-      sessionTypeFilters,
-      conditionFilters,
-      subjectFilters,
-      teacherFilters,
-      periodFilters,
-      roomFilters,
-      trialFilters,
-      attendanceFilters,
-      capacityFilters,
-    }),
-    [
-      branchFilters,
-      levelFilters,
-      sessionTypeFilters,
-      conditionFilters,
-      subjectFilters,
-      teacherFilters,
-      periodFilters,
-      roomFilters,
-      trialFilters,
-      attendanceFilters,
-      capacityFilters,
-    ]
-  )
+  const branches = SYSTEM_BRANCHES
+
+  const roomsByBranch = useMemo(() => {
+    const map: Record<string, string[]> = {}
+    branches.forEach((b) => {
+      const branchRooms = [...new Set(allSessions.filter((s) => s.branch === b).map((s) => s.schoolRoom))].sort()
+      map[b] = branchRooms.length > 0 ? branchRooms : ['Phòng 1', 'Phòng 2', 'Phòng 3']
+    })
+    return map
+  }, [branches, allSessions])
+
+  const activeFilterCount = useMemo(() => countActiveFilters(appliedFilters), [appliedFilters])
 
   const today = useMemo(() => {
     const value = new Date()
@@ -99,178 +72,15 @@ export function CalendarClassScheduleScreen() {
   }, [])
 
   const filtered = useMemo(() => {
-    let list = filterSessions(allSessions, search, activeBranch, filterState)
+    let list = filterSessions(allSessions, search, activeBranch, appliedFilters)
     if (activeSubject && activeSubject !== 'all') {
       list = list.filter((session) => session.subject === activeSubject)
     }
     return list
-  }, [allSessions, search, activeBranch, activeSubject, filterState])
+  }, [allSessions, search, activeBranch, activeSubject, appliedFilters])
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate])
-
   const subjects = useMemo(() => [...new Set(allSessions.map((session) => session.subject))].sort(), [allSessions])
-  const teachers = useMemo(() => [...new Set(allSessions.map((session) => session.teacher))].sort(), [allSessions])
-  const branches = SYSTEM_BRANCHES
-  const levels = useMemo(() => [...new Set(allSessions.map((session) => session.level))].sort(), [allSessions])
-  const rooms = useMemo(() => [...new Set(allSessions.map((session) => session.schoolRoom))].sort(), [allSessions])
-
-  const sessionTypeOptions = useMemo(() => {
-    const typeLabelMap: Record<string, string> = {
-      class_session: 'Buổi thường',
-      test_session: 'Buổi kiểm tra',
-      project: 'Buổi dự án',
-      supplementary: 'Buổi bổ trợ',
-      workshop: 'Workshop',
-    }
-    const standardOrder = ['class_session', 'test_session', 'project', 'supplementary', 'workshop']
-    return standardOrder
-      .filter((type) => allSessions.some((s) => s.type === type))
-      .map((type) => ({
-        value: type,
-        label: typeLabelMap[type] || type,
-        count: allSessions.filter((s) => s.type === type).length,
-      }))
-  }, [allSessions])
-
-  const activeFilterCount =
-    branchFilters.length +
-    levelFilters.length +
-    sessionTypeFilters.length +
-    subjectFilters.length +
-    teacherFilters.length +
-    periodFilters.length +
-    conditionFilters.length +
-    roomFilters.length +
-    trialFilters.length +
-    attendanceFilters.length +
-    capacityFilters.length
-
-  const filterGroups = useMemo<FilterGroupConfig[]>(
-    () => [
-      createFilterGroup({
-        id: 'branches',
-        options: branches,
-        selectedValues: branchFilters,
-        getOptionCount: (branch) => allSessions.filter((session) => session.branch === branch).length,
-      }),
-      createFilterGroup({
-        id: 'sessionTypes',
-        title: 'Loại buổi học',
-        options: sessionTypeOptions,
-        selectedValues: sessionTypeFilters,
-      }),
-      createFilterGroup({
-        id: 'levels',
-        options: levels,
-        selectedValues: levelFilters,
-        getOptionCount: (level) => allSessions.filter((session) => session.level === level).length,
-      }),
-      createFilterGroup({
-        id: 'rooms',
-        options: rooms,
-        selectedValues: roomFilters,
-        getOptionCount: (room) => allSessions.filter((session) => session.schoolRoom === room).length,
-      }),
-      createFilterGroup({
-        id: 'trial_students',
-        options: [
-          {
-            value: 'has_trial',
-            label: 'Có học viên học thử',
-            count: allSessions.filter((session) => session.trialStudents > 0).length,
-          },
-          {
-            value: 'no_trial',
-            label: 'Không có học viên học thử',
-            count: allSessions.filter((session) => session.trialStudents === 0).length,
-          },
-        ],
-        selectedValues: trialFilters,
-      }),
-      createFilterGroup({
-        id: 'attendance',
-        title: 'Tình trạng điểm danh',
-        options: [
-          {
-            value: 'attended',
-            label: 'Đã điểm danh',
-            count: allSessions.filter((session) => session.attendedStudents !== undefined).length,
-          },
-          {
-            value: 'unattended',
-            label: 'Chưa điểm danh',
-            count: allSessions.filter((session) => session.attendedStudents === undefined).length,
-          },
-        ],
-        selectedValues: attendanceFilters,
-      }),
-      createFilterGroup({
-        id: 'capacity',
-        options: [
-          {
-            value: 'under_15',
-            label: 'Dưới 15 học sinh',
-            count: allSessions.filter((session) => session.totalStudents < 15).length,
-          },
-          {
-            value: 'over_15',
-            label: 'Từ 15 học sinh trở lên',
-            count: allSessions.filter((session) => session.totalStudents >= 15).length,
-          },
-        ],
-        selectedValues: capacityFilters,
-      }),
-      createFilterGroup({
-        id: 'conditions',
-        options: [
-          {
-            value: 'substitute',
-            label: 'Dạy thay',
-            count: allSessions.filter((session) => session.substituteTeacher).length,
-          },
-          {
-            value: 'opening',
-            label: 'Khai giảng',
-            count: allSessions.filter((session) => session.isOpeningDay).length,
-          },
-          {
-            value: 'cancelled',
-            label: 'Buổi học đã hủy',
-            count: allSessions.filter((session) => session.status === 'cancelled').length,
-          },
-        ],
-        selectedValues: conditionFilters,
-      }),
-      createFilterGroup({
-        id: 'subjects',
-        title: 'Chương trình học',
-        options: subjects,
-        selectedValues: subjectFilters,
-        getOptionCount: (subject) => allSessions.filter((session) => session.subject === subject).length,
-      }),
-      createFilterGroup({
-        id: 'periods',
-        options: [
-          { value: 'morning', label: 'Sáng' },
-          { value: 'afternoon', label: 'Chiều' },
-          { value: 'evening', label: 'Tối' },
-        ],
-        selectedValues: periodFilters,
-        getOptionCount: (period) => allSessions.filter((session) => getSessionPeriod(session.timeLabel) === period).length,
-      }),
-      createFilterGroup({
-        id: 'teachers',
-        options: teachers,
-        selectedValues: teacherFilters,
-        getOptionCount: (teacher) => allSessions.filter((session) => session.teacher === teacher).length,
-      }),
-    ],
-    [
-      allSessions, branchFilters, levelFilters, sessionTypeFilters, sessionTypeOptions,
-      subjectFilters, teacherFilters, periodFilters, conditionFilters, branches, levels,
-      subjects, teachers, rooms, roomFilters, trialFilters, attendanceFilters, capacityFilters,
-    ]
-  )
 
   const calendarTitle =
     viewMode === 'day'
@@ -305,20 +115,9 @@ export function CalendarClassScheduleScreen() {
     return <ModuleLoadingSkeleton className="h-full" />
   }
 
-  if (isMySchedule) {
-    return (
-      <MyScheduleScreen
-        isMySchedule={isMySchedule}
-        onIsMyScheduleChange={setIsMySchedule}
-      />
-    )
-  }
-
   return (
     <div className="flex h-full min-h-0 flex-col">
       <CalendarClassScheduleToolbar
-        isMySchedule={isMySchedule}
-        onIsMyScheduleChange={setIsMySchedule}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         selectedDate={selectedDate}
@@ -333,7 +132,7 @@ export function CalendarClassScheduleScreen() {
         search={search}
         onSearchChange={setSearch}
         activeFilterCount={activeFilterCount}
-        onOpenFilter={() => setIsFilterOpen(true)}
+        onOpenFilter={() => setIsFilterOpen((prev) => !prev)}
       />
 
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
@@ -362,40 +161,15 @@ export function CalendarClassScheduleScreen() {
         </div>
 
         {isFilterOpen && (
-          <FilterGroupAsidePanel
-            title="Bộ lọc lịch học trung tâm"
-            description="Lọc buổi học theo chi nhánh, trình độ, môn học và khoảng thời gian."
-            groups={filterGroups}
-            onToggle={(sectionId, value) => {
-              const toggleHandler = (setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-                setter((current) => (current.includes(value) ? current.filter((i) => i !== value) : [...current, value]))
-              }
-              if (sectionId === 'branches') toggleHandler(setBranchFilters)
-              else if (sectionId === 'sessionTypes') toggleHandler(setSessionTypeFilters)
-              else if (sectionId === 'levels') toggleHandler(setLevelFilters)
-              else if (sectionId === 'conditions') toggleHandler(setConditionFilters)
-              else if (sectionId === 'periods') toggleHandler(setPeriodFilters)
-              else if (sectionId === 'subjects') toggleHandler(setSubjectFilters)
-              else if (sectionId === 'teachers') toggleHandler(setTeacherFilters)
-              else if (sectionId === 'rooms') toggleHandler(setRoomFilters)
-              else if (sectionId === 'trial_students') toggleHandler(setTrialFilters)
-              else if (sectionId === 'attendance') toggleHandler(setAttendanceFilters)
-              else if (sectionId === 'capacity') toggleHandler(setCapacityFilters)
-            }}
-            onClearAll={() => {
-              setBranchFilters([])
-              setSessionTypeFilters([])
-              setLevelFilters([])
-              setConditionFilters([])
-              setSubjectFilters([])
-              setTeacherFilters([])
-              setPeriodFilters([])
-              setRoomFilters([])
-              setTrialFilters([])
-              setAttendanceFilters([])
-              setCapacityFilters([])
-            }}
+          <CalendarClassScheduleFilterPanel
             onClose={() => setIsFilterOpen(false)}
+            appliedFilters={appliedFilters}
+            onApply={(newFilters) => {
+              setAppliedFilters(newFilters)
+            }}
+            allSessions={allSessions}
+            branches={branches}
+            roomsByBranch={roomsByBranch}
           />
         )}
       </div>

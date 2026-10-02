@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { useCallStore } from '@/stores/useCallStore'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { updateCareAlertInteraction, completeCareTag, updateRenewalClassification, type StudentCareAlert, type CareInteractionLog, type FamilyContact } from '@/mocks/careAlerts'
@@ -18,7 +19,6 @@ import {
 import { StudentCareTimeline } from './StudentCareTimeline'
 import { StudentCareFormCard, type CareMode } from './StudentCareFormCard'
 import { StudentOrdersTab } from './StudentOrdersTab'
-import { StudentPackagesTab } from './StudentPackagesTab'
 
 const getTagColorClass = (code: string, isExpanded: boolean) => {
   if (code.startsWith('ĐB')) {
@@ -58,6 +58,8 @@ interface StudentCareChatFeedProps {
   selectedPackage?: SimulatedPackage | null
   onSelectPackageId?: (packageId: string) => void
   initialMode?: CareMode
+  hideOrdersMode?: boolean
+  className?: string
 }
 
 export function StudentCareChatFeed({
@@ -69,8 +71,9 @@ export function StudentCareChatFeed({
   allLogs = [],
   selectedPackageId = 'pkg-1',
   selectedPackage,
-  onSelectPackageId,
   initialMode,
+  hideOrdersMode = false,
+  className,
 }: StudentCareChatFeedProps) {
   const startCall = useCallStore((state) => state.startCall)
   const currentUser = useAuthStore((state) => state.user)
@@ -362,7 +365,7 @@ export function StudentCareChatFeed({
   }
 
   return (
-    <div className="flex-1 min-h-0 bg-transparent flex flex-col border-none shadow-none overflow-y-auto custom-scrollbar relative">
+    <div className={cn("flex-1 min-h-0 bg-transparent flex flex-col border-none shadow-none overflow-y-auto custom-scrollbar relative", className)}>
       {/* Chat Stream (Right - Full Width) */}
       <div className="flex flex-col min-w-0 bg-transparent text-left relative border-none shadow-none">
         {/* Conversation Header Care Form (Card 1) - STICKY ONLY UP TO Ý KIẾN PHỤ HUYNH */}
@@ -417,29 +420,15 @@ export function StudentCareChatFeed({
           careMode={careMode}
           onCareModeChange={setCareMode}
           onRefresh={onRefresh}
+          hideOrdersMode={hideOrdersMode}
         />
 
-        {/* Message timelines & history below care form OR StudentOrdersTab OR StudentPackagesTab */}
+        {/* Message timelines & history below care form OR StudentOrdersTab */}
         {careMode === 'orders' ? (
           <div className="flex-1 min-h-0 pt-1">
             <StudentOrdersTab
               studentId={student.studentId}
               studentName={student.studentName}
-            />
-          </div>
-        ) : careMode === 'packages' ? (
-          <div className="flex-1 min-h-0 pt-1">
-            <StudentPackagesTab
-              studentId={student.studentId}
-              studentName={student.studentName}
-              selectedPackageId={selectedPackageId}
-              onSelectPackageId={onSelectPackageId}
-              onNavigateToOrder={() => {
-                setCareMode('orders')
-              }}
-              onRenewalClick={() => {
-                setCareMode('renewal')
-              }}
             />
           </div>
         ) : (
@@ -450,6 +439,7 @@ export function StudentCareChatFeed({
               stickyTopOffset={careFormHeight}
               selectedPackageId={selectedPackageId}
               selectedPackage={selectedPackage}
+              cstpStatus={cstpStatus}
             />
           </div>
         )}

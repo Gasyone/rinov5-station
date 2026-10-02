@@ -20,7 +20,6 @@ import type {
   FilterState,
   StatusTileId,
 } from './bookingTestTypes'
-import { toast } from 'sonner'
 import { BookingTestToolbar } from './BookingTestToolbar'
 import { BookingTestTable } from './BookingTestTable'
 import { BookingTestDetailDialog } from './BookingTestDetailDialog'
@@ -62,7 +61,6 @@ export function BookingTestScreen() {
 
   const {
     schoolOptions,
-    teacherOptions,
     studentOptions,
     baseForStatus,
     filteredBookings,
@@ -134,7 +132,7 @@ export function BookingTestScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-2 pt-1 lg:px-3 lg:pb-2">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
           <DataTableFrame
             footer={
@@ -144,6 +142,8 @@ export function BookingTestScreen() {
                 pageSize={pageSize}
                 onPageChange={setPage}
                 onPageSizeChange={setPageSize}
+                selectedCount={selectedIds.size}
+                onClearSelection={() => setSelectedIds(new Set())}
               />
             }
           >

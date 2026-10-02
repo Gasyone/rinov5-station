@@ -7,17 +7,17 @@ interface NotificationState {
   markAsRead: (id: string) => void
   markAllAsRead: () => void
   removeNotification: (id: string) => void
+  resetNotifications: () => void
   addNotification: (notification: Omit<NotificationItem, 'id' | 'timestamp' | 'read'>) => void
 }
 
 export const useNotificationStore = create<NotificationState>()(
   persist(
     (set) => ({
-      // Default to initial mock data. If empty/first load, this is used.
-      notifications: MOCK_NOTIFICATIONS.map(n => ({
+      // Default to initial mock data (contains 6 unread and 10 read items)
+      notifications: MOCK_NOTIFICATIONS.map((n) => ({
         ...n,
-        // Ensure timestamp is stored in ISO string format for consistent storage
-        timestamp: n.timestamp instanceof Date ? n.timestamp.toISOString() : n.timestamp
+        timestamp: n.timestamp instanceof Date ? n.timestamp.toISOString() : n.timestamp,
       })),
 
       markAsRead: (id: string) => {
@@ -32,6 +32,15 @@ export const useNotificationStore = create<NotificationState>()(
         set((state) => ({
           notifications: state.notifications.map((n) => ({ ...n, read: true })),
         }))
+      },
+
+      resetNotifications: () => {
+        set({
+          notifications: MOCK_NOTIFICATIONS.map((n) => ({
+            ...n,
+            timestamp: n.timestamp instanceof Date ? n.timestamp.toISOString() : n.timestamp,
+          })),
+        })
       },
 
       removeNotification: (id: string) => {
@@ -49,7 +58,7 @@ export const useNotificationStore = create<NotificationState>()(
             timestamp: new Date().toISOString(),
           }
           let updatedList = [newNotif, ...state.notifications]
-          
+
           // FIFO check if list exceeds 100 items (removes oldest read ones first)
           if (updatedList.length > 100) {
             const unread = updatedList.filter((n) => !n.read)
@@ -67,7 +76,7 @@ export const useNotificationStore = create<NotificationState>()(
       },
     }),
     {
-      name: 'rinov5-notifications',
+      name: 'rinov5-notifications-v5',
       storage: createJSONStorage(() => localStorage),
     }
   )

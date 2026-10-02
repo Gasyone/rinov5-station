@@ -1,8 +1,8 @@
 'use client'
 
-import { ArrowLeftRight, Clock, Repeat, Users, AlertTriangle, UserPlus } from 'lucide-react'
+import { useMemo } from 'react'
+import { Users, AlertTriangle, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { PersonnelHoverCard } from '@/components/shared'
 import { SessionHoverCard } from './SessionHoverCard'
 import type { ClassSession } from '@/mocks/calendarSchedule'
@@ -60,7 +60,6 @@ const getTeacherPersonnel = (name: string) => {
 export function SessionCard({
   session,
   onClick,
-  hideBranch = false,
   className,
 }: {
   session: ClassSession
@@ -87,39 +86,66 @@ export function SessionCard({
     session.totalStudents >= session.roomCapacity
   )
   
-  const hasNewStudents = Boolean(session.trialStudents && session.trialStudents > 0)
+  const trialCount = session.trialStudents || 0
+  const makeUpCount = session.makeUpStudents || 0
+  const newStudentsCount = trialCount + makeUpCount
+
+  const isPast = useMemo(() => {
+    if (session.status === 'completed' || session.dateBucket === 'past') return true
+    if (session.date) {
+      const now = new Date()
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      return session.date < todayKey
+    }
+    return false
+  }, [session.dateBucket, session.status, session.date])
+
+  const isToday = useMemo(() => {
+    if (session.dateBucket === 'today') return true
+    if (session.date) {
+      const now = new Date()
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      return session.date === todayKey
+    }
+    return false
+  }, [session.dateBucket, session.date])
   
   let bgClass = 'bg-card hover:bg-accent/60'
   let borderLeftColor = ''
 
   if (isCancelled) {
-    bgClass = 'bg-zinc-50/40 dark:bg-zinc-900/20 opacity-50 border border-zinc-200/40 dark:border-zinc-800/40 cursor-not-allowed select-none pointer-events-none'
+    bgClass = 'bg-zinc-100/50 dark:bg-zinc-900/30 opacity-60 border border-zinc-200/50 dark:border-zinc-800/50 cursor-not-allowed select-none pointer-events-none'
+  } else if (isPast) {
+    bgClass = 'bg-zinc-100 hover:bg-zinc-200/70 dark:bg-zinc-800/70 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/80 shadow-2xs'
+    borderLeftColor = session.substituteTeacher ? 'bg-sky-400' : session.isOpeningDay ? 'bg-red-400' : 'bg-zinc-400 dark:bg-zinc-500'
   } else if (session.isOpeningDay) {
     bgClass = 'bg-red-50/80 hover:bg-red-100/80 dark:bg-red-950/30 dark:hover:bg-red-950/50 border border-red-300 dark:border-red-800 shadow-sm'
     borderLeftColor = 'bg-red-500'
   } else if (session.substituteTeacher && session.type !== 'digi_session') {
     bgClass = 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/30 dark:hover:bg-sky-950/50 border border-sky-200 dark:border-sky-800/60 shadow-xs'
     borderLeftColor = 'bg-sky-500'
-  } else if (session.dateBucket === 'today') {
+  } else if (isToday) {
     bgClass = 'bg-emerald-50/90 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 shadow-xs'
     borderLeftColor = 'bg-emerald-500'
-  } else if (session.dateBucket === 'upcoming') {
+  } else {
+    // upcoming / default
     bgClass = 'bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-border/80 dark:border-zinc-800 shadow-xs'
-  } else if (session.dateBucket === 'past' || session.status === 'completed') {
-    bgClass = 'bg-zinc-50/70 hover:bg-zinc-100/70 dark:bg-zinc-900/40 dark:hover:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800/60 text-zinc-500'
-    borderLeftColor = 'bg-zinc-300 dark:bg-zinc-600'
   }
 
-  const showBranchLine = !hideBranch || (session.type !== 'digi_session' && Boolean(session.schoolRoom))
   const timeDisplay = session.endTimeLabel ? `${session.timeLabel} - ${session.endTimeLabel}` : session.timeLabel
+
+  const timeColorClass = isCancelled
+    ? 'text-zinc-400 line-through dark:text-zinc-500'
+    : isPast
+    ? 'text-zinc-500 dark:text-zinc-400'
+    : 'text-blue-600 dark:text-blue-400'
 
   return (
     <SessionHoverCard session={session}>
       <div
         onClick={onClick}
         className={cn(
-          "group relative flex flex-col overflow-hidden rounded-md text-left shadow-sm transition cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary/40",
-          session.type === 'digi_session' ? "min-h-[58px]" : "min-h-[76px]",
+          "group relative flex flex-col overflow-hidden rounded-md text-left shadow-2xs transition cursor-pointer hover:shadow-md hover:ring-1 hover:ring-primary/40",
           bgClass,
           className
         )}
@@ -127,60 +153,37 @@ export function SessionCard({
       {borderLeftColor && (
         <span className={cn("absolute left-0 top-0 bottom-0 w-1", borderLeftColor)} />
       )}
-      <div className={cn("p-2.5 flex flex-col h-full justify-between flex-1", Boolean(borderLeftColor) && "pl-3.5")}>
+      <div className={cn("p-2 flex flex-col h-full justify-between flex-1", Boolean(borderLeftColor) && "pl-2.5")}>
         <div>
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <div className={cn(
-              "flex items-center gap-1 text-xs font-bold",
-              session.dateBucket === 'today' ? "text-emerald-700 dark:text-emerald-300" : "text-primary",
-              isCancelled && "text-muted-foreground"
+          <div className="mb-1 flex items-center justify-between gap-1.5">
+            <span className={cn(
+              "text-xs font-normal tracking-tight shrink-0",
+              timeColorClass
             )}>
-              {session.status === 'rescheduled' ? (
-                <span title="Đổi ngày học" className="shrink-0 flex items-center">
-                  <ArrowLeftRight className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                </span>
-              ) : session.isRecurring ? (
-                <span title="Lớp học lặp lại" className="shrink-0 flex items-center">
-                  <Repeat className="h-3 w-3 text-primary/70" />
-                </span>
-              ) : (
-                <Clock className="h-3 w-3 shrink-0" />
-              )}
-              <span>{timeDisplay}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {hasNewStudents && (
+              {timeDisplay}
+            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              {newStudentsCount > 0 && (
                 <div
-                  title={`Có ${session.trialStudents} học viên học thử / mới`}
-                  className="flex items-center justify-center p-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 shrink-0"
+                  title={`Có ${newStudentsCount} học sinh thêm mới${
+                    trialCount > 0 && makeUpCount > 0
+                      ? ` (${trialCount} học thử, ${makeUpCount} học bù)`
+                      : trialCount > 0
+                      ? ` (${trialCount} học thử)`
+                      : ` (${makeUpCount} học bù)`
+                  }`}
+                  className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0"
                 >
-                  <UserPlus className="h-3 w-3 text-amber-700 dark:text-amber-400 shrink-0 stroke-[2.8]" />
+                  <UserPlus className="h-2.5 w-2.5 shrink-0 stroke-[2.2]" />
                 </div>
-              )}
-              {session.isOpeningDay && (
-                <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-red-700 border border-red-200 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800 shrink-0">
-                  Khai giảng
-                </span>
               )}
               {isFull && (
                 <span
                   title="Ca học đã đầy chỗ"
-                  className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800 shrink-0"
+                  className="inline-flex items-center gap-0.5 rounded px-1 py-0.2 text-[9.5px] font-semibold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800 shrink-0"
                 >
                   <AlertTriangle className="h-2.5 w-2.5 text-rose-600 dark:text-rose-400 shrink-0" />
                   Hết chỗ
-                </span>
-              )}
-              {session.typeLabel &&
-                session.type !== 'class_session' &&
-                session.type !== 'digi_session' &&
-                session.type !== 'project' &&
-                session.typeLabel !== 'Buổi dự án' && (
-                <span className={cn(
-                  "inline-flex items-center rounded px-1 py-0.5 text-xs font-bold border shrink-0",
-                  getStatusBadgeClass(session.type)
-                )}>
-                  {session.typeLabel}
                 </span>
               )}
             </div>
@@ -248,77 +251,70 @@ export function SessionCard({
             <>
               <h4
                 className={cn(
-                  'text-xs font-bold leading-tight block truncate text-foreground',
-                  isCancelled && 'line-through text-muted-foreground'
+                  'text-xs font-semibold leading-snug block truncate',
+                  isCancelled
+                    ? 'line-through text-muted-foreground'
+                    : isPast
+                    ? 'text-zinc-700 dark:text-zinc-300'
+                    : 'text-foreground'
                 )}
                 title={session.title || session.kctName || session.className}
               >
                 {session.title || session.kctName || session.className}
               </h4>
 
-              {/* Dòng 3: Mã lớp, môn học - Trình độ ở cạnh phải */}
-              <div className="mt-1 flex items-center justify-between gap-1 text-[9.5px] min-w-0">
+              {/* Dòng 3: Mã lớp - Trình độ ở cạnh phải */}
+              <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px] min-w-0">
                 <span
-                  className="truncate flex-1 min-w-0 font-medium text-muted-foreground"
-                  title={`${session.classCode || ''}${session.classCode && session.subject ? ', ' : ''}${session.subject || ''}`}
+                  className="truncate flex-1 min-w-0 font-normal text-muted-foreground"
+                  title={session.classCode || ''}
                 >
-                  {session.classCode ? `${session.classCode}, ${session.subject}` : session.subject}
+                  {session.classCode}
                 </span>
                 {session.level && (
                   <span
-                    className="font-semibold text-foreground/80 shrink-0 text-xs"
+                    className="font-medium text-foreground/75 shrink-0 text-[10px]"
                     title={`Trình độ: ${session.level}`}
                   >
                     {session.level}
                   </span>
                 )}
               </div>
-
-              {/* Dòng 4: Trường - Cạnh phải là Phòng */}
-              {showBranchLine && (
-                <div className="mt-1 flex items-center justify-between gap-1 min-w-0 w-full overflow-hidden whitespace-nowrap text-xs">
-                  {!hideBranch && (
-                    <span
-                      className="text-muted-foreground font-medium truncate flex-1 min-w-0"
-                      title={session.branch}
-                    >
-                      {session.branch}
-                    </span>
-                  )}
-                  {session.schoolRoom && (
-                    <span
-                      className="text-amber-700 dark:text-amber-400 text-[8.5px] font-bold shrink-0 ml-1"
-                      title={session.schoolRoom}
-                    >
-                      {session.schoolRoom}
-                    </span>
-                  )}
-                </div>
-              )}
             </>
           )}
         </div>
 
         {/* Footer: Sĩ số & Giáo viên / Trợ giảng */}
-        <div className="mt-2 pt-1.5 space-y-0.5 text-xs text-muted-foreground border-t border-border/20">
+        <div className="mt-1.5 pt-1 space-y-0.5 text-xs text-muted-foreground border-t border-border/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 shrink-0 text-foreground/80" />
-              <span className={cn("text-[9.5px] font-bold", isFull ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
-                {session.type === 'digi_session'
-                  ? `${session.totalStudents}/${session.roomCapacity || 15} chỗ`
-                  : `${session.attendedStudents !== undefined 
-                      ? `${session.attendedStudents}/${session.totalStudents} HS`
-                      : `${session.totalStudents} HS`}`}
-                {session.type !== 'digi_session' && session.trialStudents > 0 && (
-                  <span className="text-violet-600 dark:text-violet-400 font-semibold ml-1">
-                    ({session.trialStudents} học thử)
-                  </span>
+              <Users className="h-3 w-3 shrink-0 text-foreground/70" />
+              <span className={cn("text-[10px] font-medium", isFull ? "text-rose-600 dark:text-rose-400 font-bold" : "text-foreground")}>
+                {session.type === 'digi_session' ? (
+                  `${session.totalStudents}/${session.roomCapacity || 15} chỗ`
+                ) : session.attendedStudents !== undefined ? (
+                  <>
+                    <span>{session.attendedStudents}/{session.totalStudents}</span>
+                    {newStudentsCount > 0 && (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                        (+{newStudentsCount})
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span>{session.totalStudents}</span>
+                    {newStudentsCount > 0 && (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                        (+{newStudentsCount})
+                      </span>
+                    )}
+                  </>
                 )}
               </span>
             </div>
             {!activeTeacher || activeTeacher === 'Chưa gán' ? (
-              <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 px-1.5 py-0.5 rounded text-[8.5px] shrink-0" title="Chưa gán giáo viên">
+              <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 px-1 py-0.2 rounded text-[8.5px] shrink-0" title="Chưa gán giáo viên">
                 <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0" />
                 <span>Chưa gán GV</span>
               </div>
@@ -326,7 +322,7 @@ export function SessionCard({
               <div className="flex items-center gap-1.5 min-w-0 max-w-[55%]" onClick={(e) => e.stopPropagation()}>
                 <PersonnelHoverCard person={getTeacherPersonnel(activeTeacher)} align="end">
                   <div className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full border text-xs font-bold shrink-0 cursor-pointer",
+                    "flex h-4.5 w-4.5 items-center justify-center rounded-full border text-[9px] font-bold shrink-0 cursor-pointer",
                     session.substituteTeacher
                       ? "border-amber-200 bg-amber-100 text-amber-700"
                       : "border-border bg-muted text-muted-foreground"
@@ -334,7 +330,7 @@ export function SessionCard({
                     {activeInitials}
                   </div>
                 </PersonnelHoverCard>
-                <span className="text-[9.5px] text-muted-foreground font-medium truncate" title={activeTeacher}>
+                <span className="text-[10px] text-muted-foreground font-normal truncate" title={activeTeacher}>
                   {activeTeacher}
                 </span>
               </div>

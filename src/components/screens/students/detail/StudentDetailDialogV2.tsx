@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import { EmptyState, ConfirmDialog } from '@/components/shared'
 import { Button } from '@/components/ui/button'
-import { Printer, Edit3 } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { mockStudents, type EnrolledClass } from '@/mocks/students'
 import { toast } from 'sonner'
 
@@ -19,13 +19,17 @@ import { StudentDetailLevelDialog } from './StudentDetailLevelDialog'
 import { StudentDetailProgramsBar } from './StudentDetailProgramsBar'
 import { StudentClassAssignmentDialog } from './StudentClassAssignmentDialog'
 import { StudentDetailProfilePanel } from './StudentDetailProfilePanel'
+import { StudentDetailScheduleSlotsDialog } from './StudentDetailScheduleSlotsDialog'
+import { StudentDetailSessionsDialog } from './StudentDetailSessionsDialog'
 
 // Import Helper utilities
 import { getStudentPackages, getStudentPrograms } from './studentDetailHelpers'
-import type { StudentPackage } from './studentDetailTypes'
+import type { StudentPackage, StudentAvailableSlot } from './studentDetailTypes'
 import { mockClassRecords } from '@/mocks/classRecords'
 import { LeaveReserveCreateDialog } from '@/components/screens/leave-reserve/LeaveReserveCreateDialog'
 import { StudentCareEarlyReturnDialog } from '@/components/screens/care/StudentCareEarlyReturnDialog'
+import { StudentCareDetailDialog } from '@/components/screens/care/StudentCareDetailDialog'
+import { mockCareAlerts } from '@/mocks/careAlerts'
 import { formatDateISO } from '@/components/screens/leave-reserve/leaveReserveHelpers'
 import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leaveReserve'
 
@@ -43,7 +47,7 @@ export function StudentDetailDialogV2({
   open,
   onOpenChange,
 }: StudentDetailDialogV2Props) {
-  const [selectedProgramId, setSelectedProgramId] = useState<string>('prog-math')
+  const [selectedProgramId, setSelectedProgramId] = useState<string>('track-math-1-6')
 
   const [revision, setRevision] = useState(0)
 
@@ -53,13 +57,18 @@ export function StudentDetailDialogV2({
   const [enrolledClasses, setEnrolledClasses] = useState<EnrolledClass[]>([])
 
   // Dialog States
+  const [customScheduleSlots, setCustomScheduleSlots] = useState<Record<string, StudentAvailableSlot[]>>({})
+  const [customProgramSessions, setCustomProgramSessions] = useState<Record<string, number>>({})
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false)
+  const [isEditScheduleSlotsOpen, setIsEditScheduleSlotsOpen] = useState(false)
+  const [isEditSessionsOpen, setIsEditSessionsOpen] = useState(false)
   const [isAssignOpen, setIsAssignOpen] = useState(false)
   const [assignTargetPkgId, setAssignTargetPkgId] = useState<string | null>(null)
   const [isConfirmDropOpen, setIsConfirmDropOpen] = useState(false)
   const [isCreateLeaveReserveOpen, setIsCreateLeaveReserveOpen] = useState(false)
   const [createLeaveReserveType, setCreateLeaveReserveType] = useState<'off' | 'reservation'>('off')
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+  const [isRenewalDetailOpen, setIsRenewalDetailOpen] = useState(false)
 
   const student = useMemo(() => {
     if (!studentId) return null
@@ -126,8 +135,25 @@ export function StudentDetailDialogV2({
 
   const selectedProgram = useMemo(() => {
     if (programs.length === 0) return null
-    return programs.find((p) => p.id === selectedProgramId) || programs[0]
-  }, [programs, selectedProgramId])
+    const base = programs.find((p) => p.id === selectedProgramId) || programs[0]
+    let result = base
+    if (customScheduleSlots[base.id]) {
+      result = {
+        ...result,
+        availableSlots: customScheduleSlots[base.id],
+      }
+    }
+    if (customProgramSessions[base.id] !== undefined) {
+      const studied = customProgramSessions[base.id]
+      const total = base.totalSessions || 44
+      result = {
+        ...result,
+        studiedSessions: studied,
+        remainingSessions: Math.max(0, total - studied),
+      }
+    }
+    return result
+  }, [programs, selectedProgramId, customScheduleSlots, customProgramSessions])
 
   const isStudentReserved = useMemo(() => {
     return selectedProgram?.programStatus === 'reserved' || student?.status === 'reserve'
@@ -231,6 +257,29 @@ export function StudentDetailDialogV2({
     setRevision((r) => r + 1)
     setIsEditLevelOpen(false)
     toast.success('Cập nhật thông tin thành công!')
+  }
+
+  const handleSaveScheduleSlots = (newSlots: StudentAvailableSlot[]) => {
+    if (selectedProgram) {
+      setCustomScheduleSlots((prev) => ({
+        ...prev,
+        [selectedProgram.id]: newSlots,
+      }))
+    }
+    setRevision((r) => r + 1)
+    toast.success('Cập nhật khung giờ học viên rảnh thành công!')
+  }
+
+  const handleSaveSessions = (newStudied: number) => {
+    if (selectedProgram) {
+      setCustomProgramSessions((prev) => ({
+        ...prev,
+        [selectedProgram.id]: newStudied,
+      }))
+    }
+    setRevision((r) => r + 1)
+    setIsEditSessionsOpen(false)
+    toast.success('Cập nhật số buổi học thành công!')
   }
 
   const handleCreateLeaveReserveSubmit = (newReq: Omit<LeaveReserveRequest, 'id' | 'status' | 'requestedDate'>) => {
@@ -375,18 +424,6 @@ export function StudentDetailDialogV2({
               <Printer className="h-3.5 w-3.5 mr-1" />
               <span>In hồ sơ</span>
             </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleOpenEditLevel}
-              className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer shadow-3xs"
-              title="Chỉnh sửa thông tin học viên & trình độ"
-            >
-              <Edit3 className="h-3.5 w-3.5 mr-1" />
-              <span>Chỉnh sửa</span>
-            </Button>
           </div>
         </div>
 
@@ -401,8 +438,9 @@ export function StudentDetailDialogV2({
             <div className="pt-0.5 pb-0.5">
               <StudentDetailProgramsBar
                 programs={programs}
-                selectedProgramId={selectedProgram?.id || 'prog-math'}
+                selectedProgramId={selectedProgram?.id || 'track-math-1-6'}
                 onSelectProgram={setSelectedProgramId}
+                studentName={student.name}
                 onOpenAssignClass={() => handleOpenAssignForPackage()}
                 onLeave={() => {
                   setCreateLeaveReserveType('off')
@@ -462,11 +500,34 @@ export function StudentDetailDialogV2({
                   setIsCreateLeaveReserveOpen(true)
                 }}
                 onOpenAssignClass={(pkgId) => handleOpenAssignForPackage(pkgId)}
+                onEditScheduleSlots={() => setIsEditScheduleSlotsOpen(true)}
+                onEditLevel={handleOpenEditLevel}
+                onEditSessions={() => setIsEditSessionsOpen(true)}
+                onOpenRenewalDetail={() => setIsRenewalDetailOpen(true)}
               />
             )}
           </div>
         </div>
       </DialogContent>
+
+      {/* Dialog: Chi tiết màn Tái phí (StudentCareDetailDialog) */}
+      {student && (
+        <StudentCareDetailDialog
+          studentId={student.id}
+          open={isRenewalDetailOpen}
+          onOpenChange={setIsRenewalDetailOpen}
+          alerts={mockCareAlerts}
+          onRefresh={() => setRevision((r) => r + 1)}
+        />
+      )}
+
+      {/* Dialog: Chỉnh sửa Khung giờ học viên rảnh */}
+      <StudentDetailScheduleSlotsDialog
+        open={isEditScheduleSlotsOpen}
+        onOpenChange={setIsEditScheduleSlotsOpen}
+        initialSlots={selectedProgram?.availableSlots || []}
+        onSave={handleSaveScheduleSlots}
+      />
 
       {/* Dialog: Chỉnh sửa Trình độ & Thông tin */}
       <StudentDetailLevelDialog
@@ -476,7 +537,20 @@ export function StudentDetailDialogV2({
         initialSubLevel={selectedProgram?.subLevel || student?.subLevel || ''}
         initialSchoolClass={student?.schoolClass || 'Lớp 6'}
         initialEnglishName={student?.englishName || ''}
+        isEnglish={
+          selectedProgram?.subject === 'english' ||
+          Boolean(selectedProgram?.name.toLowerCase().includes('tiếng anh'))
+        }
         onSave={handleSaveLevel}
+      />
+
+      {/* Dialog: Cập nhật số buổi học ở TỔNG chương trình */}
+      <StudentDetailSessionsDialog
+        open={isEditSessionsOpen}
+        onOpenChange={setIsEditSessionsOpen}
+        totalSessions={selectedProgram?.totalSessions || 44}
+        initialStudiedSessions={selectedProgram?.studiedSessions ?? 32}
+        onSave={handleSaveSessions}
       />
 
       {/* Dialog: Chọn ghép / chuyển lớp học */}

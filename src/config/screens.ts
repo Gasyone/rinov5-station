@@ -62,8 +62,8 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Quản lý danh sách bàn giao sách giáo trình, học liệu, quà tặng tại cơ sở và theo dõi vận đơn giao tận nơi',
   },
   payment_receipts: {
-    label: 'Thanh toán',
-    description: 'Quản lý danh sách các phiếu thanh toán (phiếu thu, phiếu chi/hoàn tiền), lịch sử giao dịch và biên nhận',
+    label: 'Thu phí & Công nợ',
+    description: 'Theo dõi các khoản học phí theo gói, hạn thu, đôn đốc nhắc nợ và thu tiền các đợt tiếp theo',
   },
   products: {
     label: 'Quản lý sản phẩm',

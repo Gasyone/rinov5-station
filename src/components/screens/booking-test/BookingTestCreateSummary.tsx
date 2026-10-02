@@ -48,7 +48,7 @@ export function BookingTestCreateSummary({
       : phone || '---'
 
   return (
-    <div className="rounded-xl border border-border/80 bg-slate-50/70 dark:bg-zinc-900/50 p-3 shadow-2xs transition-all">
+    <div className="rounded-lg border border-border/70 bg-background p-3 transition-all">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/60">
         <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />

@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useRef, useMemo } from 'react'
 import { EmptyState } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import type { ClassSession } from './calendarClassScheduleTypes'
 import { SessionCard } from './SessionCardV2'
 import { getSessionPeriod, toDateKey } from './calendarClassScheduleHelpers'
-import { formatMinute } from '@/components/screens/schedule/ScheduleTimeGrid'
 
 interface CalendarClassScheduleDayViewProps {
   selectedDate: Date
@@ -15,27 +14,10 @@ interface CalendarClassScheduleDayViewProps {
 
 export function CalendarClassScheduleDayView({
   selectedDate,
-  today,
   filteredSessions,
   onSelectSession,
 }: CalendarClassScheduleDayViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-
-  // Real-time clock for current time indicator (updates every 30s)
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date())
-    }, 30000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const isToday =
-    selectedDate.getDate() === today.getDate() &&
-    selectedDate.getMonth() === today.getMonth() &&
-    selectedDate.getFullYear() === today.getFullYear()
-
-  const currentMinute = now.getHours() * 60 + now.getMinutes()
 
   // Filter sessions for the selected day only and sort chronologically
   const dayKey = toDateKey(selectedDate)
@@ -95,34 +77,6 @@ export function CalendarClassScheduleDayView({
 
   return (
     <div ref={containerRef} className="relative flex flex-1 flex-col overflow-y-auto min-h-0 bg-background/50 p-4 space-y-6">
-      {/* Date Header Info Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-3">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-lg font-bold text-sm",
-            isToday ? "bg-primary text-primary-foreground shadow-xs" : "bg-muted text-foreground"
-          )}>
-            {selectedDate.getDate()}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-foreground">
-                {selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </h3>
-              {isToday && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 px-2 py-0.5 text-xs font-bold text-red-600 dark:text-red-400 shadow-2xs">
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-                  Hôm nay: {formatMinute(currentMinute)}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tổng cộng {daySessions.length} lớp học trong ngày
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Sections for Ca Sáng, Ca Chiều, Ca Tối */}
       <div className="space-y-6">
         {periods.map((p) => {
@@ -134,7 +88,7 @@ export function CalendarClassScheduleDayView({
               <div className={cn("flex items-center justify-between px-3.5 py-2 rounded-md font-bold text-xs border select-none", p.colorClass)}>
                 <div className="flex items-center gap-2">
                   <span className={cn("h-2 w-2 rounded-full shrink-0", p.dotClass)} />
-                  <span>{p.label} ({p.sessions.length} lớp)</span>
+                  <span>{p.label} ({p.sessions.length} buổi)</span>
                 </div>
               </div>
 

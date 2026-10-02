@@ -33,40 +33,40 @@ export function ClassesSessionSyllabusTab({
   )
 
   return (
-    <div className="space-y-4 text-xs">
+    <div className="space-y-2.5 text-xs">
       {/* ── 1. Nội dung buổi học ── */}
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <div className="flex items-center justify-between pb-0.5">
-          <span className="font-normal text-foreground text-xs flex items-center gap-1.5">
-            <BookOpen className="h-4 w-4 text-primary shrink-0 opacity-80" />
+          <span className="font-medium text-foreground text-xs flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5 text-primary shrink-0 opacity-80" />
             <span>Nội dung buổi học</span>
           </span>
-          <span className="text-xs text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
+          <span className="text-[11px] text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
         </div>
 
-        {/* Data list aligned flush left under 'Nội dung buổi học' text title (pl-[22px]), wrapped text flush to left without flex indent */}
-        <div className="space-y-1 text-xs pl-[22px]">
+        {/* Data list aligned flush left under 'Nội dung buổi học' text title (pl-5) */}
+        <div className="space-y-0.5 text-xs pl-5">
           {syllabusContent.words && (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-normal text-foreground me-1 font-medium">- Words:</span>
+            <p className="text-xs leading-snug text-muted-foreground">
+              <span className="font-medium text-foreground me-1">- Words:</span>
               <span>{syllabusContent.words.join(', ')}</span>
             </p>
           )}
           {syllabusContent.sentences && (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-normal text-foreground me-1 font-medium">- Sentences:</span>
+            <p className="text-xs leading-snug text-muted-foreground">
+              <span className="font-medium text-foreground me-1">- Sentences:</span>
               <span>{syllabusContent.sentences.join(', ')}</span>
             </p>
           )}
           {syllabusContent.phonics && (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-normal text-foreground me-1 font-medium">- Phonics:</span>
+            <p className="text-xs leading-snug text-muted-foreground">
+              <span className="font-medium text-foreground me-1">- Phonics:</span>
               <span>{syllabusContent.phonics.join(', ')}</span>
             </p>
           )}
           {syllabusContent.grammar && (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-normal text-foreground me-1 font-medium">- Grammar:</span>
+            <p className="text-xs leading-snug text-muted-foreground">
+              <span className="font-medium text-foreground me-1">- Grammar:</span>
               <span>{syllabusContent.grammar.join(', ')}</span>
             </p>
           )}
@@ -74,23 +74,23 @@ export function ClassesSessionSyllabusTab({
       </div>
 
       {/* ── 2. Tài liệu & nhiệm vụ học tập ── */}
-      <div className="space-y-3 pt-2 border-t border-border/30">
-        <h4 className="text-xs font-normal text-muted-foreground">
+      <div className="space-y-2 pt-1.5 border-t border-border/30">
+        <h4 className="text-[11px] font-normal text-muted-foreground">
           Tài liệu & nhiệm vụ học tập
         </h4>
 
         {lessons.length > 0 ? (
           lessons.map((lesson) => (
-            <div key={lesson.id} className="space-y-2">
+            <div key={lesson.id} className="space-y-1.5">
               {/* Lesson Header Title */}
               <div className="py-0.5">
-                <span className="text-xs font-bold text-foreground">
+                <span className="text-xs font-semibold text-foreground">
                   {lesson.title}
                 </span>
               </div>
 
               {/* Lesson Components List (Always Visible) */}
-              <div className="space-y-2.5 pl-1 py-1">
+              <div className="space-y-1.5 pl-1">
                 {lesson.components.map((c, cIdx) => {
                   let iconColor = 'text-primary'
                   let iconBg = 'bg-primary/10'

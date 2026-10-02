@@ -105,7 +105,7 @@ export function StudentCareReportTab({
   const studentMonthlyReports = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     reportSyncVersion
-    return getStudentMonthlyReports(studentId || studentName)
+    return getStudentMonthlyReports(studentId, studentName)
   }, [studentId, studentName, reportSyncVersion])
   const visiblePackages = packagesList
   const selectedMonth = 'all'
@@ -480,6 +480,7 @@ export function StudentCareReportTab({
                       studentId={studentId}
                       studentName={studentName}
                       studentCode={pkg.classCode || 'HV-S4-10'}
+                      subject={pkgIsEnglish ? 'Tiếng Anh' : 'Toán tư duy'}
                       onOpenEvaluationTab={() => {
                         setEvaluationModalData({
                           regularSessions,

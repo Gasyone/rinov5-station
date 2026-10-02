@@ -28,6 +28,9 @@ export interface ClassesSessionMediaToolbarProps {
   handleBulkDeleteConfirm: () => void
   handleBatchTagStudents: (studentId: string | 'all' | 'class_wide') => void
   className: string
+  mediaTypeFilter?: 'all' | 'image' | 'video' | 'doc'
+  setMediaTypeFilter?: (type: 'all' | 'image' | 'video' | 'doc') => void
+  countsByType?: { all: number; image: number; video: number; doc: number }
 }
 
 export function ClassesSessionMediaToolbar({
@@ -49,7 +52,7 @@ export function ClassesSessionMediaToolbar({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 px-1 py-1">
-      {/* Left: Checkbox Select All + Filters (Student & Date Range) */}
+      {/* Left: Checkbox Select All + Filters (Student & Type) */}
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-medium shrink-0">
         <Checkbox
           checked={isAllSelected}
@@ -73,7 +76,7 @@ export function ClassesSessionMediaToolbar({
               type="button"
               variant="outline"
               size="xs"
-              className="h-8 px-2.5 text-xs font-semibold border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl gap-1.5 shadow-2xs cursor-pointer text-foreground"
+              className="h-7.5 px-2.5 text-xs font-semibold border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg gap-1.5 shadow-2xs cursor-pointer text-foreground"
             >
               <Users className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
               <span className="truncate max-w-[150px]">{selectedStudentFilterLabel}</span>
@@ -138,6 +141,7 @@ export function ClassesSessionMediaToolbar({
                   title={`Gắn học viên cho ${selectedItemIds.length} tệp đã chọn`}
                   subtitle={`Danh sách thuộc lớp ${className}`}
                   rosterStudents={rosterStudents}
+                  targetItems={items.filter((item) => selectedItemIds.includes(item.id))}
                   showClassWideOption={true}
                   onSelectOption={(id) => handleBatchTagStudents(id)}
                 />

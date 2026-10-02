@@ -26,7 +26,7 @@ export function ClassesSessionUploadingCard({
   const loadedMb = (item.loadedBytes / (1024 * 1024)).toFixed(1)
 
   return (
-    <div className="relative aspect-16/10 rounded-2xl border-2 border-dashed border-sky-300 dark:border-sky-700 bg-sky-50/50 dark:bg-sky-950/30 overflow-hidden shadow-xs flex flex-col justify-between p-3.5 select-none transition-all">
+    <div className="relative aspect-video rounded-2xl border-2 border-dashed border-sky-300 dark:border-sky-700 bg-sky-50/50 dark:bg-sky-950/30 overflow-hidden shadow-xs flex flex-col justify-between p-3.5 select-none transition-all">
       {/* Top Header: Badge + Cancel Button */}
       <div className="flex items-center justify-between gap-2 z-10">
         <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/90 dark:bg-zinc-900/90 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-2xs">

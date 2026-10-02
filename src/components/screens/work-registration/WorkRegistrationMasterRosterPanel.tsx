@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { getStatusColors } from '@/lib/statusColors'
 import { WorkRegistrationAssignStaffDialog } from './WorkRegistrationAssignStaffDialog'
 import {
   DUTY_SECTIONS,
@@ -21,6 +20,7 @@ import {
   type WorkRegistrationRecord,
 } from '@/mocks/workRegistrations'
 import { checkDateHoliday } from '@/mocks/holidays'
+import { formatCompactTimeLabel } from './workRegistrationHelpers'
 
 interface WorkRegistrationMasterRosterPanelProps {
   activeBranch: string
@@ -190,6 +190,12 @@ export function WorkRegistrationMasterRosterPanel({
                   {WEEKDAYS.map((day) => {
                     const assignedStaff = getSlotAssignedStaff(day.index, sec.id)
                     const hasMatchingStaff = hasSearch && assignedStaff.some(isStaffMatch)
+                    const MAX_DISPLAY = 4
+                    const hasMoreThanMax = assignedStaff.length > MAX_DISPLAY
+                    const displayedStaff = hasMoreThanMax
+                      ? assignedStaff.slice(0, MAX_DISPLAY)
+                      : assignedStaff
+                    const remainingCount = assignedStaff.length - MAX_DISPLAY
 
                     return (
                       <div
@@ -203,7 +209,7 @@ export function WorkRegistrationMasterRosterPanel({
                           })
                         }
                         className={cn(
-                          'flex flex-col justify-between p-2.5 h-full min-h-[105px] overflow-hidden cursor-pointer transition-all hover:bg-muted/20 group relative',
+                          'flex flex-col justify-between p-1.5 h-full min-h-[92px] overflow-hidden cursor-pointer transition-all hover:bg-muted/20 group relative',
                           isDigi && 'bg-purple-500/[0.02]',
                           hasSearch && hasMatchingStaff
                             ? 'bg-primary/5 ring-1 ring-primary/40'
@@ -214,7 +220,7 @@ export function WorkRegistrationMasterRosterPanel({
                             : 'bg-muted/5'
                         )}
                       >
-                        <div className="space-y-1.5 flex-1 min-h-0 flex flex-col">
+                        <div className="space-y-1 flex-1 min-h-0 flex flex-col">
                           <div className="shrink-0 flex items-center justify-between text-xs">
                             <span
                               className={cn(
@@ -246,52 +252,72 @@ export function WorkRegistrationMasterRosterPanel({
                             </span>
                           </div>
 
-                          {/* Danh sách nhân sự trong ca */}
-                          <div className="space-y-1 pt-0.5 flex-1 min-h-0 overflow-y-auto pr-0.5">
-                            {assignedStaff.map((staff) => {
+                          {/* Danh sách nhân sự trong ca (tối đa 4 + dòng +N) */}
+                          <div className="space-y-0.5 pt-0.5 flex-1 min-h-0 overflow-hidden">
+                            {displayedStaff.map((staff) => {
                               const isMatched = isStaffMatch(staff)
 
                               return (
                                 <div
                                   key={staff.id}
+                                  title={`${staff.name}${getStaffRegisteredTime(staff.id, day.index, sec.id) ? ` • ${getStaffRegisteredTime(staff.id, day.index, sec.id)}` : ''}`}
                                   className={cn(
-                                    'flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors',
+                                    'flex items-center justify-between gap-1 rounded hover:bg-muted/60 px-1 py-0.5 text-xs transition-colors',
                                     isMatched
-                                      ? 'bg-primary text-primary-foreground font-semibold shadow-2xs ring-1 ring-primary-foreground/20'
-                                      : isDigi
-                                      ? 'bg-purple-100/50 dark:bg-purple-950/40 text-foreground border border-purple-200/40 dark:border-purple-800/40'
-                                      : 'bg-muted/40 text-foreground'
+                                      ? 'bg-primary text-primary-foreground shadow-2xs ring-1 ring-primary-foreground/20'
+                                      : 'text-foreground'
                                   )}
                                 >
                                   <span
                                     className={cn(
-                                      'truncate text-xs font-medium',
-                                      isMatched ? 'text-primary-foreground font-bold' : 'text-foreground'
+                                      'truncate text-[11.5px] font-normal flex-1 min-w-0',
+                                      isMatched ? 'text-primary-foreground font-medium' : 'text-foreground'
                                     )}
+                                    title={staff.name}
                                   >
                                     {staff.name}
                                   </span>
                                   {(() => {
                                     const regTime = getStaffRegisteredTime(staff.id, day.index, sec.id)
                                     const isFull = regTime === 'Full ca' || regTime === 'Full' || regTime === 'Cả ca'
-                                    return regTime ? (
+                                    const compactTime = formatCompactTimeLabel(regTime)
+                                    return compactTime ? (
                                       <span
                                         className={cn(
-                                          'ml-auto shrink-0 text-xs tabular-nums font-normal',
+                                          'shrink-0 tabular-nums leading-tight',
                                           isMatched
-                                            ? 'text-primary-foreground/90'
+                                            ? 'text-primary-foreground font-medium text-[11px]'
                                             : isFull
-                                            ? 'text-emerald-600 dark:text-emerald-400'
-                                            : 'text-muted-foreground'
+                                            ? 'text-[11px] font-medium text-emerald-600 dark:text-emerald-400'
+                                            : 'text-[9.5px] font-normal text-muted-foreground'
                                         )}
                                       >
-                                        {isFull ? 'Full ca' : regTime}
+                                        {compactTime}
                                       </span>
                                     ) : null
                                   })()}
                                 </div>
                               )
                             })}
+
+                            {hasMoreThanMax && (
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setEditingSlot({
+                                    dayIndex: day.index,
+                                    dayLabel: day.label,
+                                    section: sec.id,
+                                    sectionLabel: sec.label,
+                                  })
+                                }}
+                                className="text-[11px] font-semibold text-primary hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-0.5 border-t border-border/30 mt-0.5"
+                              >
+                                <span>+{remainingCount} khác...</span>
+                                <span className="text-[10px] font-normal text-muted-foreground">Chi tiết →</span>
+                              </div>
+                            )}
+
                             {assignedStaff.length === 0 && (
                               <div className="py-3 text-center text-xs text-muted-foreground italic">
                                 {isDigi ? 'Chưa gán trợ giảng / GV' : 'Chưa có người trực'}

@@ -6,6 +6,7 @@ export interface EnrolledClass {
   type: 'offline' | 'online_tutor' | 'tutor' | 'station' | 'online'
   scheduleSlots: ScheduleSlot[]
   teacherName: string
+  assistantName?: string
   status: 'active' | 'inactive' | 'pending_transfer' | 'session_ended' | 'wait_for_assignment' | 'absent' | 'excused' | 'paused' | 'dropped'
   progress: string
   branch?: string       // Trường học của lớp
@@ -477,7 +478,7 @@ export const mockStudents: Student[] = [
     phone: "0914141414",
     gender: "Male",
     dob: "2003-06-30",
-    status: "fee_transfer",
+    status: "session_ended",
     enrolledClass: "TOEIC A2",
     branch: "RinoEdu Linh Đàm",
     level: "TOEIC",
@@ -756,7 +757,7 @@ export const mockStudents: Student[] = [
     phone: "0931609992",
     gender: "Male",
     dob: "2015-03-25",
-    status: "active",
+    status: "session_ended",
     branch: "RinoEdu Smart City",
     level: "Math",
     subLevel: "Archimedes 5",
@@ -766,7 +767,7 @@ export const mockStudents: Student[] = [
     parentPhone: "0901609992",
     enrollmentDate: "2023-12-20",
     packageName: "Gói Toán tư duy Archimedes",
-    remainingSessions: 45,
+    remainingSessions: 0,
     totalSessions: 80,
     enrolledClasses: []
   },
@@ -788,6 +789,27 @@ export const mockStudents: Student[] = [
     enrollmentDate: "2024-01-10",
     packageName: "Gói Tiếng Anh Cambridge 48 buổi",
     remainingSessions: 6,
+    totalSessions: 48,
+    enrolledClasses: []
+  },
+  {
+    id: "s-lebaongoc",
+    name: "Lê Bảo Ngọc",
+    email: "baongoc.le@email.com",
+    phone: "0932111025",
+    gender: "Female",
+    dob: "2015-08-20",
+    status: "wait_for_assignment",
+    branch: "RinoEdu Linh Đàm",
+    level: "Level 4",
+    subLevel: "B",
+    learningPath: "Lộ trình Tiếng Anh SuperKids",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Lê Văn Tuấn",
+    parentPhone: "0903111025",
+    enrollmentDate: "2023-12-22",
+    packageName: "Gói Tiếng Anh Level 4 48 buổi",
+    remainingSessions: 48,
     totalSessions: 48,
     enrolledClasses: []
   },
@@ -1083,6 +1105,48 @@ export const mockStudents: Student[] = [
     packageName: "Gói Tiếng Anh Cambridge 72 buổi",
     remainingSessions: 4,
     totalSessions: 72,
+    enrolledClasses: []
+  },
+  {
+    id: "s36",
+    name: "Nguyễn Gia Hưng",
+    email: "giahung.nguyen@email.com",
+    phone: "0932111036",
+    gender: "Male",
+    dob: "2013-05-15",
+    status: "active",
+    branch: "RinoEdu Linh Đàm",
+    level: "Toán 1:6",
+    subLevel: "Level B",
+    learningPath: "Lộ trình Toán tư duy Archimedes",
+    curriculum: "Khung chương trình Toán tư duy 1:6",
+    parentName: "Nguyễn Văn Hùng",
+    parentPhone: "0903111036",
+    enrollmentDate: "2024-01-10",
+    packageName: "Khóa Toán tư duy 1:6 (48 buổi)",
+    remainingSessions: 2,
+    totalSessions: 48,
+    enrolledClasses: []
+  },
+  {
+    id: "s37",
+    name: "Đỗ Hoàng Long",
+    email: "hoanglong.do@email.com",
+    phone: "0932111037",
+    gender: "Male",
+    dob: "2014-08-20",
+    status: "active",
+    branch: "RinoEdu Nguyễn Tuân",
+    level: "Tiếng Anh",
+    subLevel: "Level 3",
+    learningPath: "Lộ trình Tiếng Anh Cambridge",
+    curriculum: "Khung chương trình Cambridge English Scale",
+    parentName: "Đỗ Quốc Cường",
+    parentPhone: "0903111037",
+    enrollmentDate: "2024-03-01",
+    packageName: "Tiếng Anh Cambridge Level 3 (48 buổi)",
+    remainingSessions: 3,
+    totalSessions: 48,
     enrolledClasses: []
   }
 ]

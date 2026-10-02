@@ -97,8 +97,17 @@ export function StudentCareClassStatusBanner({
 
   // 2. Trạng thái CHỜ CHUYỂN LỚP
   if (placementStatus === 'pending_transfer') {
+    const sourceClassCode =
+      student?.classCode && student.classCode !== '-'
+        ? student.classCode
+        : classCode && classCode !== '-'
+        ? classCode
+        : pkg.classCode && pkg.classCode !== '-'
+        ? pkg.classCode
+        : 'Lớp cũ'
+
     return (
-      <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
+      <div className="pt-0.5 space-y-1.5 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <span className="p-1 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400">
             <ArrowRightLeft className="h-3.5 w-3.5" />
@@ -107,27 +116,27 @@ export function StudentCareClassStatusBanner({
             Tiến trình chuyển lớp đang diễn ra
           </span>
           <StatusBadge
-            status={assignedTargetClass ? 'dang_hoc' : 'pending_transfer'}
-            label={assignedTargetClass ? 'Đã xếp lớp đích' : 'Chờ chuyển lớp'}
+            status="pending_transfer"
+            label="Chờ chuyển lớp"
             className="text-xs py-0 px-1.5"
           />
         </div>
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground flex-wrap pt-0.5 text-center">
           <div>
-            <span>Lớp nguồn: </span>
-            <strong className="font-semibold text-foreground">{student?.classCode || classCode}</strong>
-            <span className="mx-1.5 text-sky-500">➔</span>
-            <span>Lớp đích: </span>
-            <strong
-              className={
-                assignedTargetClass
-                  ? 'font-semibold text-emerald-600 dark:text-emerald-400'
-                  : 'font-semibold text-foreground'
-              }
-            >
-              {assignedTargetClass || student?.targetClass || student?.destinationClass || 'Chưa ghép lớp'}
-            </strong>
+            <span>Lớp cũ: </span>
+            <strong className="font-semibold text-foreground">{sourceClassCode}</strong>
           </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={onOpenPlacementTab}
+            className="h-6 px-2 text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 ml-1 cursor-pointer"
+          >
+            <UserPlus className="h-3 w-3 mr-1 text-sky-600 dark:text-sky-400" />
+            <span>Ghép lớp ngay</span>
+            <ExternalLink className="h-2.5 w-2.5 ml-1 opacity-60" />
+          </Button>
         </div>
       </div>
     )
@@ -169,7 +178,7 @@ export function StudentCareClassStatusBanner({
               size="sm"
               variant="outline"
               onClick={onOpenPlacementTab}
-              className="h-6 px-2 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 hover:bg-indigo-100 ml-1 cursor-pointer"
+              className="h-6 px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 hover:bg-indigo-100 ml-1 cursor-pointer"
             >
               <UserPlus className="h-3 w-3 mr-1 text-indigo-500" />
               <span>Ghép lớp ngay</span>

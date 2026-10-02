@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel } from '@/components/filters'
 import { ConfirmDialog } from '@/components/shared'
 import {
@@ -25,7 +24,6 @@ import {
   toggleWorkSection,
   upsertWorkSlot,
 } from './workRegistrationActions'
-import { WorkRegistrationCenterOverview } from './WorkRegistrationCenterOverview'
 import { WorkRegistrationEditablePanel } from './WorkRegistrationEditablePanel'
 import { WorkRegistrationMasterRosterPanel } from './WorkRegistrationMasterRosterPanel'
 import { WorkRegistrationSlotDetailDialog } from './WorkRegistrationSlotDetailDialog'
@@ -33,7 +31,6 @@ import { WorkRegistrationStaffPanel } from './WorkRegistrationStaffPanel'
 import { WorkRegistrationToolbar } from './WorkRegistrationToolbar'
 import { WorkRegistrationWarningDialog } from './WorkRegistrationWarningDialog'
 import {
-  buildBranchSummaries,
   buildEmployeeSummaries,
   filterEmployeeSummaries,
   getEmployeeWeekRecords,
@@ -43,7 +40,12 @@ import {
   sumRegistrationMinutes,
 } from './workRegistrationHelpers'
 import type { SlotDetailTarget, WorkRegistrationStatusFilter, WorkRegistrationTab } from './workRegistrationTypes'
-import { buildFilterGroups, resolveCurrentEmployeeId, slotDetailDescription } from './workRegistrationViewHelpers'
+import {
+  buildFilterGroups,
+  resolveCurrentEmployeeId,
+  resolveSlotDetailTitle,
+  slotDetailDescription,
+} from './workRegistrationViewHelpers'
 
 export function WorkRegistrationScreen() {
   const userRole = useAuthStore((state) => state.user?.role)
@@ -66,8 +68,6 @@ export function WorkRegistrationScreen() {
   const [branchDetail, setBranchDetail] = useState<{ branch: string; date?: string; dayLabel?: string } | null>(null)
   const [staffPage, setStaffPage] = useState(1)
   const [staffPageSize, setStaffPageSize] = useState(50)
-  const [centerPage, setCenterPage] = useState(1)
-  const [centerPageSize, setCenterPageSize] = useState(DEFAULT_PAGE_SIZE)
 
   const todayKey = toWorkDateKey(new Date())
   const currentWeekStart = useMemo(() => getWorkWeekStart(new Date()), [])
@@ -116,20 +116,22 @@ export function WorkRegistrationScreen() {
   const staffGridRecords = delegateEmployeeId
     ? activeEmployeeRecords
     : weekRecords.filter((record) => visibleStaffIds.has(record.employeeId))
-  const centerSummaries = useMemo(
-    () => buildBranchSummaries(employees, records, weekStart, activeTab === 'center' ? 'all' : activeBranch, priorityRules),
-    [activeTab, activeBranch, employees, priorityRules, records, weekStart]
-  )
 
   const priorityMinutes = activeEmployeeRecords
     .filter((record) => isPriorityWorkSlot(record.date, record.slotId, priorityRules))
     .reduce((total, record) => total + (getSlot(record.slotId)?.minutes ?? 0), 0)
   const slotDetailRecords = slotDetail
-    ? weekRecords.filter((record) =>
-        record.date === slotDetail.date &&
-        record.slotId === slotDetail.slotId &&
-        (!slotDetail.branch || record.branch === slotDetail.branch)
-      )
+    ? weekRecords.filter((record) => {
+        if (record.date !== slotDetail.date) return false
+        if (slotDetail.branch && record.branch !== slotDetail.branch) return false
+        if (slotDetail.section) {
+          return record.slotId.startsWith(slotDetail.section)
+        }
+        if (slotDetail.slotId) {
+          return record.slotId === slotDetail.slotId
+        }
+        return true
+      })
     : []
   const branchDetailRecords = branchDetail
     ? weekRecords.filter((record) => record.branch === branchDetail.branch && (!branchDetail.date || record.date === branchDetail.date))
@@ -215,7 +217,7 @@ export function WorkRegistrationScreen() {
           setActiveTab(tab)
           if (tab !== 'staff') setDelegateEmployeeId(undefined)
         }}
-        onBranchChange={(branch) => { setActiveBranch(branch); setCenterPage(1) }}
+        onBranchChange={(branch) => setActiveBranch(branch)}
         onSubjectChange={(subject) => {
           setSubjectFilter(subject)
           setStaffPage(1)
@@ -224,7 +226,7 @@ export function WorkRegistrationScreen() {
         onOpenWarnings={() => setWarningsOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 lg:px-3 lg:pb-3">
+      <div className="flex flex-1 min-h-0 w-full gap-2 overflow-hidden px-3 pb-2.5 lg:px-3 lg:pb-2.5">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           {activeTab === 'mine' ? (
           <WorkRegistrationEditablePanel
@@ -283,21 +285,8 @@ export function WorkRegistrationScreen() {
             onRemoveSlots={handleRemoveSlots}
             onAddRange={handleAddRange}
             onSetSlot={handleSetSlot}
-            onOpenSlotDetail={(date, slotId) => setSlotDetail({ date, slotId })}
-            onClear={() => setClearConfirmOpen(true)}
+            onOpenSlotDetail={(date, slotId, section) => setSlotDetail({ date, slotId, section })}
             onSubmit={submitActiveRegistration}
-          />
-        ) : null}
-
-        {activeTab === 'center' ? (
-          <WorkRegistrationCenterOverview
-            summaries={centerSummaries}
-            page={centerPage}
-            pageSize={centerPageSize}
-            onPageChange={setCenterPage}
-            onPageSizeChange={setCenterPageSize}
-            onOpenBranch={(branch) => setBranchDetail({ branch })}
-            onOpenBranchDay={(branch, date, dayLabel) => setBranchDetail({ branch, date, dayLabel })}
           />
         ) : null}
         </div>
@@ -332,7 +321,7 @@ export function WorkRegistrationScreen() {
       <WorkRegistrationWarningDialog open={warningsOpen} onOpenChange={setWarningsOpen} />
       <WorkRegistrationSlotDetailDialog
         open={Boolean(slotDetail || branchDetail)}
-        title={branchDetail?.branch ?? 'Đăng ký theo khung giờ'}
+        title={resolveSlotDetailTitle(slotDetail, branchDetail)}
         description={branchDetail ? branchDetail.dayLabel : slotDetailDescription(slotDetail)}
         records={detailRecords}
         employees={employees}

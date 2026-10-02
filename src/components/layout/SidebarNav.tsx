@@ -172,7 +172,7 @@ export function SidebarNav({
       </aside>
 
       {mobileOpen ? (
-        <div className="fixed inset-x-0 bottom-0 top-16 z-40 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 top-11 z-40 md:hidden">
           <Button
             type="button"
             variant="ghost"

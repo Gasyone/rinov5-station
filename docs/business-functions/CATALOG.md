@@ -152,6 +152,10 @@ Hệ thống được chia thành 3 phân lớp (Layers) như sau:
 ### 5. Chăm sóc học viên (`CAP-CARE`)
 - `BF-CARE-01`: Student Care & Ticket Lifecycle (✅ Chuẩn vàng)
 - `BF-CARE-02`: Renewal & Retention Campaign (✅ Chuẩn vàng)
+- `BF-CARE-03`: Monthly Student Academic & Growth Reporting (✅ Mới tạo)
+  - `US-CARE-03-01`: Section Báo cáo Tháng của Học viên
+  - `US-CARE-03-02`: Bảng nổi chi tiết Báo cáo tháng học viên
+  - `US-CARE-03-03`: Landing Page Báo cáo Tháng học viên
 
 ### 6. Quản trị Tài chính (`CAP-FIN`)
 - `BF-FIN-01`: Thiết lập Chính sách Tài chính (✅ Mới tạo)

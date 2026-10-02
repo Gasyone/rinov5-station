@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Clock,
   Copy,
@@ -53,8 +53,9 @@ export function FeedbackPopover() {
     customHeaderTitle || (currentMenuId ? screens[currentMenuId]?.label || currentMenuId : 'Màn hình chung')
 
   // Update URL, Timestamp, and pre-fill requester name when Popover opens
-  useEffect(() => {
-    if (isOpen) {
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (open) {
       if (typeof window !== 'undefined') {
         setCurrentUrl(window.location.href)
       }
@@ -73,7 +74,7 @@ export function FeedbackPopover() {
         setRequesterName(user?.name || '')
       }
     }
-  }, [isOpen, user?.name, requesterName])
+  }
 
   const handleCopyUrl = async () => {
     if (!currentUrl) return
@@ -132,16 +133,16 @@ export function FeedbackPopover() {
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="ui-btn-feedback inline-flex h-9 items-center gap-1.5 rounded-full border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary shadow-xs transition-all hover:bg-primary hover:text-primary-foreground focus-visible:ring-1 focus-visible:ring-primary"
+          className="ui-btn-feedback inline-flex h-8 items-center gap-1.5 rounded-full border-primary/30 bg-primary/10 px-2.5 text-xs font-semibold text-primary shadow-xs transition-all hover:bg-primary hover:text-primary-foreground focus-visible:ring-1 focus-visible:ring-primary"
           title="Gửi yêu cầu điều chỉnh giao diện / tính năng"
         >
-          <MessageSquarePlus className="h-4 w-4 shrink-0 text-primary group-hover:text-primary-foreground" />
+          <MessageSquarePlus className="h-3.5 w-3.5 shrink-0 text-primary group-hover:text-primary-foreground" />
           <span className="hidden sm:inline">Yêu cầu điều chỉnh</span>
         </Button>
       </PopoverTrigger>
