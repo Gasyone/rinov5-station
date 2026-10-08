@@ -209,8 +209,8 @@ export function CrmLeadDropDialog({
                 <AlertCircle className="h-3.5 w-3.5 text-sky-600 shrink-0" />
                 <span>Hướng xử lý tự động của hệ thống:</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">{activeReason.suggestedAction}</p>
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-violet-700 dark:text-violet-300 pt-0.5">
+              <p className="text-xs text-muted-foreground">{activeReason.suggestedAction}</p>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-violet-700 dark:text-violet-300 pt-0.5">
                 <Calendar className="h-3 w-3 shrink-0" />
                 <span>Thời gian nuôi dưỡng lại: {calculateReCareDate(activeReason.coolingOffDays)}</span>
               </div>

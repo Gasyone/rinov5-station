@@ -285,7 +285,7 @@ export function OrgPositionAssignDialog({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[11px] cursor-pointer"
+                className="h-6 px-2 text-xs cursor-pointer"
                 onClick={isAllVisibleSelected ? handleDeselectAllVisible : handleSelectAllVisible}
               >
                 {isAllVisibleSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả đang xem'}
@@ -370,7 +370,7 @@ export function OrgPositionAssignDialog({
                             {candidate.avatar ? (
                               <AvatarImage src={candidate.avatar} alt={candidate.name} />
                             ) : null}
-                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                            <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                               {initial}
                             </AvatarFallback>
                           </Avatar>
@@ -380,13 +380,13 @@ export function OrgPositionAssignDialog({
                               {candidate.isCurrentlyInUnit ? (
                                 <Badge
                                   variant="secondary"
-                                  className="text-[9px] px-1 py-0 h-4 font-normal text-muted-foreground"
+                                  className="text-xs px-1 py-0 h-4 font-normal text-muted-foreground"
                                 >
                                   Đang ở đơn vị
                                 </Badge>
                               ) : null}
                             </div>
-                            <div className="text-[11px] text-muted-foreground font-mono">
+                            <div className="text-xs text-muted-foreground font-mono">
                               {candidate.id}
                             </div>
                           </div>
@@ -397,16 +397,16 @@ export function OrgPositionAssignDialog({
                         <div className="font-medium text-foreground truncate max-w-[200px]">
                           {candidate.position || 'Chưa gán chức danh'}
                         </div>
-                        <div className="text-[11px] text-muted-foreground truncate max-w-[200px]">
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                           {candidate.department}
                         </div>
                       </td>
 
                       <td className="py-2.5 px-3 text-muted-foreground">
-                        <div className="font-mono text-[11px]">
+                        <div className="font-mono text-xs">
                           {maskPhone(candidate.phone)}
                         </div>
-                        <div className="text-[11px] truncate max-w-[180px]">
+                        <div className="text-xs truncate max-w-[180px]">
                           {candidate.email}
                         </div>
                       </td>

@@ -1,47 +1,43 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Link from 'next/link'
 import {
   CheckCircle2,
-  Clock,
   ExternalLink,
   FileText,
-  MessageSquare,
-  Phone,
   UserCheck,
   UserPlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { StatusBadge, ContactCell, PersonnelCell, LocationCell } from '@/components/shared'
+import { StatusBadge, ContactCell, PersonnelCell } from '@/components/shared'
 import { type BookingTest } from '@/mocks/bookingTests'
 import {
   resolveBookingBranch,
   getActiveEmployeesBySchool,
+  getDutyRosterEmployees,
 } from './bookingTestStaffHelpers'
 import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDialog'
 import { BookingTestLevelPopover } from './BookingTestLevelPopover'
+import { BookingTestScheduleHoverCard } from './BookingTestScheduleHoverCard'
 import {
   applyBookingCheckIn,
+  formatStudentAgeDob,
+  formatStudentMetaLine,
   formatTestTimeWithDay,
+  getParentDisplayName,
   getStatusLabel,
-  getSubjectLabel,
   isBookingCheckedIn,
   shouldShowCheckInAction,
 } from './bookingTestHelpers'
-import {
-  getBookingResultHref,
-  hasBookingAssessmentResult,
-} from './bookingTestAssessmentStorage'
 import { SpeakingScore, LwrScore } from './BookingTestScoreDisplay'
 
 interface BookingTestTableRowProps {
   booking: BookingTest
   bookings: BookingTest[]
+  index?: number
   isSelected: boolean
   copiedKey: string
   onToggle: (id: string, checked: boolean) => void
@@ -49,45 +45,65 @@ interface BookingTestTableRowProps {
   onOpenAssessment: (id: string) => void
   onUpdateBooking: (id: string, updater: (booking: BookingTest) => BookingTest) => void
   onCopy: (text: string, key: string) => Promise<void>
-  onCall: (phone?: string) => void
+  onCall?: (phone?: string) => void
 }
 
 export function BookingTestTableRow({
   booking,
   bookings,
+  index = 0,
   isSelected,
   onToggle,
   onRowClick,
   onOpenAssessment,
   onUpdateBooking,
-  onCall,
 }: BookingTestTableRowProps) {
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const branchName = resolveBookingBranch(booking.school)
   const branchEmployees = useMemo(
-    () => getActiveEmployeesBySchool(booking.school),
+    () => getActiveEmployeesBySchool(booking.school, booking.testTime),
+    [booking.school, booking.testTime]
+  )
+  const allRosterEmployees = useMemo(
+    () => getDutyRosterEmployees(booking.school),
     [booking.school]
   )
 
-  const hasResult = hasBookingAssessmentResult(booking)
-  const resultHref = booking.resultLink?.startsWith('/app/')
-    ? booking.resultLink
-    : getBookingResultHref(booking.id)
-
   const isCheckedIn = isBookingCheckedIn(booking)
   const canCheckIn = shouldShowCheckInAction(booking)
-  const rowHighlightClass = "bg-background group-hover:bg-muted"
+  const parentDisplayName = getParentDisplayName(booking)
+
+  const isEven = index % 2 === 1
+  const rowBgClass = isEven ? 'bg-muted/30 dark:bg-muted/15' : 'bg-background'
+  const hoverBgClass = 'group-hover:bg-accent/40 dark:group-hover:bg-accent/30'
+
+  // Opaque solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
+  const stickyBgClass = isEven
+    ? 'bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] dark:bg-[color-mix(in_srgb,var(--muted)_25%,var(--background))]'
+    : 'bg-background'
+  const stickyHoverClass = 'group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
+
+  const selectedBgClass = isSelected ? 'bg-primary/5 dark:bg-primary/10' : ''
+  const stickySelectedClass = isSelected
+    ? 'bg-[color-mix(in_srgb,var(--primary)_8%,var(--background))]'
+    : stickyBgClass
 
   return (
     <TableRow
       className={cn(
-        "group cursor-pointer border-b border-border/30 transition-colors [&>td]:py-1.5 [&>td]:px-2.5",
-        isCheckedIn && "bg-muted/20"
+        "group cursor-pointer border-b border-border/60 transition-colors h-[48px] [&>td]:py-1.5 [&>td]:px-2.5",
+        rowBgClass,
+        hoverBgClass,
+        selectedBgClass
       )}
       onClick={() => onRowClick(booking.id)}
     >
       <TableCell
-        className={cn("sticky left-0 z-30 w-12 min-w-12 max-w-12 overflow-hidden text-center transition-colors", rowHighlightClass)}
+        className={cn(
+          "sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors",
+          stickySelectedClass,
+          stickyHoverClass
+        )}
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
@@ -95,10 +111,16 @@ export function BookingTestTableRow({
           onCheckedChange={(checked) => onToggle(booking.id, Boolean(checked))}
         />
       </TableCell>
-      <TableCell className={cn("sticky left-12 z-20 w-[280px] min-w-[280px] max-w-[280px] overflow-hidden transition-colors", rowHighlightClass)}>
-        <div className="relative z-10 max-w-full overflow-hidden pr-16">
+      <TableCell
+        className={cn(
+          "sticky left-8 z-30 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden transition-colors",
+          stickySelectedClass,
+          stickyHoverClass
+        )}
+      >
+        <div className="relative z-10 max-w-full overflow-hidden pr-2 group-hover:pr-14">
           <div className="flex min-w-0 items-center gap-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-bold text-foreground">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-medium text-foreground">
               {booking.childName.charAt(0)}
             </div>
             <div className="min-w-0">
@@ -113,9 +135,12 @@ export function BookingTestTableRow({
                 )}
               </div>
               <div className="flex min-w-0 items-center gap-1.5 mt-0.5">
-                <Badge variant="outline" className="h-4 rounded px-1 text-[11px] font-medium leading-none">
-                  {getSubjectLabel(booking.subject)}
-                </Badge>
+                <span
+                  className="truncate text-xs text-muted-foreground leading-tight"
+                  title={`Thông tin học viên: ${formatStudentMetaLine(booking)}`}
+                >
+                  {formatStudentMetaLine(booking)}
+                </span>
               </div>
             </div>
           </div>
@@ -127,61 +152,54 @@ export function BookingTestTableRow({
             {canCheckIn && (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon-xs"
                 title="Check-in (Xác nhận đến)"
                 aria-label="Check-in học viên"
                 onClick={() =>
                   onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
                 }
-                className="rounded-full"
+                className="h-6 w-6 p-0 rounded-md"
               >
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             )}
-            {booking.subject === 'english' && booking.teacher?.trim() && booking.status === 'checkin' && (
+            {booking.subject === 'english' && booking.teacher?.trim() && (booking.status === 'checkin' || booking.status === 'assessing') && (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon-xs"
                 title="Mở đánh giá"
                 aria-label={`Mở đánh giá cho ${booking.childName}`}
                 onClick={() => onOpenAssessment(booking.id)}
-                className="rounded-full"
+                className="h-6 w-6 p-0 rounded-md"
               >
-                <FileText className="h-4 w-4 text-primary" />
+                <FileText className="h-3.5 w-3.5 text-primary" />
               </Button>
             )}
             {booking.subject !== 'math' && !booking.teacher?.trim() && (
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon-xs"
                 title="Gán giáo viên"
                 aria-label={`Gán giáo viên cho ${booking.childName}`}
                 onClick={() => setTeacherPickerOpen(true)}
-                className="rounded-full text-amber-500 hover:text-amber-600"
+                className="h-6 w-6 p-0 rounded-md text-amber-500 hover:text-amber-600"
               >
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="h-3.5 w-3.5" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              title="Gọi điện"
-              aria-label={`Gọi ${booking.familyName}`}
-              onClick={() => onCall(booking.phone)}
-              className="rounded-full"
-            >
-              <Phone className="h-4 w-4 text-muted-foreground" />
-            </Button>
           </div>
         </div>
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <ContactCell
-          name={booking.familyName}
+          name={parentDisplayName}
           phone={booking.phone}
           studentName={booking.childName}
           masked={true}
           className="gap-0"
+          showPhoneIcon={false}
+          showCallButton={false}
+          showFamilyIcon={false}
           additionalContacts={
             booking.familyMembers && booking.familyMembers.length > 1
               ? booking.familyMembers.map((m) => ({ name: m.name, phone: m.phone }))
@@ -189,40 +207,49 @@ export function BookingTestTableRow({
           }
         />
       </TableCell>
-      <TableCell>
-        <div className="min-w-0 space-y-0.5">
-          <p className="truncate text-xs font-medium text-foreground leading-tight" title={booking.program}>
-            {booking.program}
-          </p>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground leading-tight">
-            <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span>{formatTestTimeWithDay(booking.testTime)}</span>
+      <TableCell onClick={(event) => event.stopPropagation()}>
+        <BookingTestScheduleHoverCard booking={booking} side="right" align="start">
+          <div
+            onClick={() => {
+              window.open(
+                `/app/calendar_event_schedule?search=${encodeURIComponent(booking.childName)}&bookingId=${encodeURIComponent(booking.id)}`,
+                '_blank'
+              )
+            }}
+            className="group/sch min-w-0 space-y-0.5 cursor-pointer text-left"
+          >
+            <p
+              className="truncate text-xs font-normal text-sky-600 dark:text-sky-400 group-hover/sch:text-sky-700 dark:group-hover/sch:text-sky-300 group-hover/sch:underline leading-tight flex items-center gap-1"
+              title={`${formatTestTimeWithDay(booking.testTime)} - Nhấp để mở Lịch test`}
+            >
+              <span>{formatTestTimeWithDay(booking.testTime)}</span>
+              <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover/sch:opacity-80 transition-opacity" />
+            </p>
+            <p
+              className="truncate text-xs text-muted-foreground leading-tight"
+              title={
+                booking.expectedLevel?.trim()
+                  ? `${booking.program} • Level dự kiến: ${booking.expectedLevel.trim()}`
+                  : booking.program
+              }
+            >
+              <span>{booking.program}</span>
+              {booking.expectedLevel?.trim() && (
+                <span> • {booking.expectedLevel.trim()}</span>
+              )}
+            </p>
           </div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <div className="space-y-0.5">
-          <PersonnelCell
-            items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
-            size="xs"
-            mode="single"
-            showRole={false}
-          />
-          <LocationCell branch={booking.school} />
-        </div>
+        </BookingTestScheduleHoverCard>
       </TableCell>
       <TableCell>
         {booking.subject === 'english' ? (
-          <SpeakingScore result={booking.testResult} compact />
+          <div className="min-w-0 space-y-1">
+            <SpeakingScore result={booking.testResult} compact />
+            <LwrScore result={booking.testResult} compact />
+          </div>
         ) : (
           <span className="text-muted-foreground">-</span>
         )}
-      </TableCell>
-      <TableCell>
-        <LwrScore result={booking.testResult} compact />
-      </TableCell>
-      <TableCell>
-        <StatusBadge status={booking.status} label={getStatusLabel(booking.status)} />
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <BookingTestLevelPopover
@@ -230,29 +257,24 @@ export function BookingTestTableRow({
           onUpdateBooking={onUpdateBooking}
         />
       </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
-        {hasResult ? (
-          <Link
-            href={resultHref}
-            target="_blank"
-            rel="noreferrer"
-            title="Mở trang kết quả nhận xét"
-            aria-label={`Mở trang kết quả nhận xét của ${booking.childName}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-          >
-            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-            Nhận xét
-          </Link>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        )}
+      <TableCell className="w-28 min-w-28 max-w-32">
+        <StatusBadge
+          status={booking.status}
+          label={getStatusLabel(booking.status)}
+          className="font-normal whitespace-nowrap"
+        />
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
-        <div className="flex max-w-44 items-center gap-1.5">
-          <MessageSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <div className="space-y-0.5 min-w-0">
+          <PersonnelCell
+            items={booking.teacher ? [{ name: booking.teacher, role: 'Giáo viên' }] : []}
+            size="xs"
+            mode="single"
+            showRole={false}
+          />
           <p
-            className="truncate text-xs italic text-muted-foreground leading-tight"
-            title={booking.notes?.at(-1)?.text ?? booking.msg}
+            className="truncate text-xs italic text-muted-foreground leading-tight max-w-[180px]"
+            title={booking.notes?.at(-1)?.text ?? booking.msg ?? undefined}
           >
             {booking.notes?.at(-1)?.text ?? booking.msg ?? '-'}
           </p>
@@ -262,6 +284,7 @@ export function BookingTestTableRow({
           <BookingTestEmployeePickerDialog
             open={teacherPickerOpen}
             employees={branchEmployees}
+            allRosterEmployees={allRosterEmployees}
             branchName={branchName}
             selectedName={booking.teacher}
             bookings={bookings}

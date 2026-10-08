@@ -203,9 +203,9 @@ export function TimeRangePicker({
     }
   }
 
-  // Tọa độ mặt đồng hồ đơn (1 vòng duy nhất)
-  const CENTER = 100
-  const RADIUS = 72
+  // Tọa độ mặt đồng hồ đơn (1 vòng duy nhất) - Giản lược kích thước nhỏ gọn vừa vặn
+  const CENTER = 75
+  const RADIUS = 54
 
   // 12 vị trí giờ
   const hourNumbers = Array.from({ length: 12 }, (_, i) => {
@@ -249,15 +249,15 @@ export function TimeRangePicker({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="z-[70] w-[280px] p-3 rounded-2xl bg-popover border border-border/80 shadow-2xl space-y-2.5"
+        className="z-[70] w-[216px] p-2 rounded-xl bg-popover border border-border/80 shadow-xl space-y-1.5"
       >
-        {/* Header: Hai thẻ Giờ bắt đầu & Giờ kết thúc - BỎ VIỀN NGOÀI CÙNG, HỖ TRỢ NHẬP TAY TRỰC TIẾP */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Header: Hai thẻ Giờ bắt đầu & Giờ kết thúc - Tinh gọn, nhỏ nhắn */}
+        <div className="grid grid-cols-2 gap-1">
           {/* Thẻ Giờ bắt đầu */}
           <div
             onClick={() => setActiveTarget('start')}
             className={cn(
-              'p-1.5 rounded-xl transition-all cursor-pointer flex flex-col items-center gap-1 select-none',
+              'p-1 rounded-lg transition-all cursor-pointer flex flex-col items-center gap-0.5 select-none',
               activeTarget === 'start'
                 ? 'bg-primary/8 text-primary ring-1 ring-primary/30'
                 : 'hover:bg-muted/30 text-muted-foreground'
@@ -265,14 +265,14 @@ export function TimeRangePicker({
           >
             <span
               className={cn(
-                'text-[10px] uppercase font-bold tracking-wider',
+                'text-[9.5px] uppercase font-bold tracking-tight',
                 activeTarget === 'start' ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               Giờ bắt đầu
             </span>
 
-            <div className="flex items-center gap-0.5 text-sm font-bold font-mono">
+            <div className="flex items-center gap-0.5 text-xs font-bold font-mono">
               {/* Ô nhập Giờ bắt đầu */}
               <input
                 type="text"
@@ -285,7 +285,7 @@ export function TimeRangePicker({
                   setActiveUnit('hour')
                 }}
                 className={cn(
-                  'w-7 h-7 text-center rounded-lg font-mono text-sm font-bold transition-all outline-none cursor-pointer',
+                  'w-6 h-6 text-center rounded-md font-mono text-xs font-bold transition-all outline-none cursor-pointer',
                   activeTarget === 'start' && activeUnit === 'hour'
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-background hover:bg-muted text-foreground border border-border/60'
@@ -307,7 +307,7 @@ export function TimeRangePicker({
                   setActiveUnit('minute')
                 }}
                 className={cn(
-                  'w-7 h-7 text-center rounded-lg font-mono text-sm font-bold transition-all outline-none cursor-pointer',
+                  'w-6 h-6 text-center rounded-md font-mono text-xs font-bold transition-all outline-none cursor-pointer',
                   activeTarget === 'start' && activeUnit === 'minute'
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-background hover:bg-muted text-foreground border border-border/60'
@@ -321,7 +321,7 @@ export function TimeRangePicker({
           <div
             onClick={() => setActiveTarget('end')}
             className={cn(
-              'p-1.5 rounded-xl transition-all cursor-pointer flex flex-col items-center gap-1 select-none',
+              'p-1 rounded-lg transition-all cursor-pointer flex flex-col items-center gap-0.5 select-none',
               activeTarget === 'end'
                 ? 'bg-primary/8 text-primary ring-1 ring-primary/30'
                 : 'hover:bg-muted/30 text-muted-foreground'
@@ -329,14 +329,14 @@ export function TimeRangePicker({
           >
             <span
               className={cn(
-                'text-[10px] uppercase font-bold tracking-wider',
+                'text-[9.5px] uppercase font-bold tracking-tight',
                 activeTarget === 'end' ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               Giờ kết thúc
             </span>
 
-            <div className="flex items-center gap-0.5 text-sm font-bold font-mono">
+            <div className="flex items-center gap-0.5 text-xs font-bold font-mono">
               {/* Ô nhập Giờ kết thúc */}
               <input
                 type="text"
@@ -349,7 +349,7 @@ export function TimeRangePicker({
                   setActiveUnit('hour')
                 }}
                 className={cn(
-                  'w-7 h-7 text-center rounded-lg font-mono text-sm font-bold transition-all outline-none cursor-pointer',
+                  'w-6 h-6 text-center rounded-md font-mono text-xs font-bold transition-all outline-none cursor-pointer',
                   activeTarget === 'end' && activeUnit === 'hour'
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-background hover:bg-muted text-foreground border border-border/60'
@@ -371,7 +371,7 @@ export function TimeRangePicker({
                   setActiveUnit('minute')
                 }}
                 className={cn(
-                  'w-7 h-7 text-center rounded-lg font-mono text-sm font-bold transition-all outline-none cursor-pointer',
+                  'w-6 h-6 text-center rounded-md font-mono text-xs font-bold transition-all outline-none cursor-pointer',
                   activeTarget === 'end' && activeUnit === 'minute'
                     ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-background hover:bg-muted text-foreground border border-border/60'
@@ -383,7 +383,7 @@ export function TimeRangePicker({
         </div>
 
         {/* Thanh trạng thái mỏng: Hiển thị chế độ hiện tại + Nút đổi Sáng/Chiều */}
-        <div className="flex items-center justify-between px-1 text-[11px] select-none">
+        <div className="flex items-center justify-between px-0.5 text-[10px] select-none">
           <span className="text-muted-foreground">
             Đang chọn:{' '}
             <strong className="text-primary font-bold">
@@ -396,7 +396,7 @@ export function TimeRangePicker({
             <button
               type="button"
               onClick={handleTogglePeriod}
-              className="h-5 px-1.5 text-[10px] font-bold rounded-md border border-border/50 hover:bg-muted/50 text-foreground transition-all cursor-pointer"
+              className="h-4.5 px-1.5 text-[9.5px] font-bold rounded border border-border/50 hover:bg-muted/50 text-foreground transition-all cursor-pointer"
               title="Đổi ca Sáng (00-11h) hoặc Chiều-Tối (12-23h)"
             >
               {currentPeriod === 'morning' ? '☀️ Sáng' : '🌙 Chiều'}
@@ -404,29 +404,29 @@ export function TimeRangePicker({
           )}
         </div>
 
-        {/* MẶT ĐỒNG HỒ ĐƠN - HOÀN TOÀN PHẲNG, KHÔNG NỀN XÁM, KHÔNG VIỀN NGOÀI */}
-        <div className="relative w-[200px] h-[200px] mx-auto select-none flex items-center justify-center">
+        {/* MẶT ĐỒNG HỒ ĐƠN - THU GỌN 150px x 150px */}
+        <div className="relative w-[150px] h-[150px] mx-auto select-none flex items-center justify-center">
           {/* Kim đồng hồ SVG */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none z-10"
-            viewBox="0 0 200 200"
+            viewBox="0 0 150 150"
           >
             {/* Tâm đồng hồ */}
-            <circle cx={CENTER} cy={CENTER} r="3.5" className="fill-primary" />
+            <circle cx={CENTER} cy={CENTER} r="2.5" className="fill-primary" />
             {/* Đường kim */}
             <line
               x1={CENTER}
               y1={CENTER}
               x2={handX}
               y2={handY}
-              className="stroke-primary stroke-[2.5]"
+              className="stroke-primary stroke-[2]"
               strokeLinecap="round"
             />
             {/* Vòng bao số đang chọn */}
             <circle
               cx={handX}
               cy={handY}
-              r="13"
+              r="10.5"
               className="fill-primary stroke-primary stroke-[1]"
             />
           </svg>
@@ -451,7 +451,7 @@ export function TimeRangePicker({
                     transform: 'translate(-50%, -50%)',
                   }}
                   className={cn(
-                    'w-7 h-7 rounded-full text-xs font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
+                    'w-5.5 h-5.5 rounded-full text-[10px] font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
                     isSelected
                       ? 'text-primary-foreground scale-105'
                       : 'text-foreground/85 hover:bg-muted/70 hover:scale-110'
@@ -484,7 +484,7 @@ export function TimeRangePicker({
                     transform: 'translate(-50%, -50%)',
                   }}
                   className={cn(
-                    'w-7 h-7 rounded-full text-xs font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
+                    'w-5.5 h-5.5 rounded-full text-[10px] font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
                     isSelected
                       ? 'text-primary-foreground scale-105'
                       : isMajor
@@ -505,9 +505,9 @@ export function TimeRangePicker({
             type="button"
             size="sm"
             onClick={() => setOpen(false)}
-            className="w-full h-7 text-xs bg-primary text-primary-foreground font-semibold rounded-lg gap-1 cursor-pointer"
+            className="w-full h-6.5 text-[11px] bg-primary text-primary-foreground font-semibold rounded-md gap-1 cursor-pointer"
           >
-            <Check className="h-3.5 w-3.5" />
+            <Check className="h-3 w-3" />
             <span>Xong</span>
           </Button>
         </div>

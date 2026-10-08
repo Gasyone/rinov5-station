@@ -116,7 +116,7 @@ export function PaymentReceiptOrderPopover({
                 <span className="truncate font-mono font-medium text-foreground group-hover/pkg:text-primary group-hover/pkg:underline text-[12px]">
                   {primaryOrderCode}
                 </span>
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
                   +{extraOrdersCount}
                 </span>
               </>

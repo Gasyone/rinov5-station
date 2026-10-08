@@ -41,7 +41,7 @@ export function ClassesSessionSyllabusTab({
             <BookOpen className="h-3.5 w-3.5 text-primary shrink-0 opacity-80" />
             <span>Nội dung buổi học</span>
           </span>
-          <span className="text-[11px] text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
+          <span className="text-xs text-muted-foreground font-normal">Buổi {session.sessionNumber}</span>
         </div>
 
         {/* Data list aligned flush left under 'Nội dung buổi học' text title (pl-5) */}
@@ -75,7 +75,7 @@ export function ClassesSessionSyllabusTab({
 
       {/* ── 2. Tài liệu & nhiệm vụ học tập ── */}
       <div className="space-y-2 pt-1.5 border-t border-border/30">
-        <h4 className="text-[11px] font-normal text-muted-foreground">
+        <h4 className="text-xs font-normal text-muted-foreground">
           Tài liệu & nhiệm vụ học tập
         </h4>
 

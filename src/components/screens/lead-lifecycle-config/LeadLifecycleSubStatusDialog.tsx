@@ -140,7 +140,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
         {stage && (
           <p className="text-xs text-muted-foreground mt-0.5">
             Giai đoạn: <span className="font-semibold text-foreground">{stage.name}</span>{' '}
-            <span className="font-mono text-[11px]">({stage.code})</span>
+            <span className="font-mono text-xs">({stage.code})</span>
           </p>
         )}
       </DialogHeader>
@@ -155,7 +155,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
               <div className="font-semibold text-blue-950 dark:text-blue-200">
                 Nhãn liên kết hệ thống cố định
               </div>
-              <div className="text-blue-800 dark:text-blue-300 text-[11px] mt-0.5 leading-relaxed">
+              <div className="text-blue-800 dark:text-blue-300 text-xs mt-0.5 leading-relaxed">
                 Nhãn này được tự động kích hoạt bởi phân hệ{' '}
                 <strong className="underline underline-offset-2">
                   {initialSubStatus.systemModuleLabel || 'Nghiệp vụ cốt lõi'}
@@ -169,7 +169,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
           <div className="space-y-2.5 bg-muted/20 p-3.5 rounded-lg border border-border/70">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-muted-foreground text-[11px] block">Tên nhãn trạng thái</span>
+                <span className="text-muted-foreground text-xs block">Tên nhãn trạng thái</span>
                 <div className="flex items-center gap-1.5 font-medium text-xs text-foreground mt-0.5">
                   <span
                     className="h-2 w-2 rounded-full shrink-0"
@@ -179,7 +179,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
                 </div>
               </div>
               <div>
-                <span className="text-muted-foreground text-[11px] block">Mã kỹ thuật (Code)</span>
+                <span className="text-muted-foreground text-xs block">Mã kỹ thuật (Code)</span>
                 <span className="font-mono text-xs font-semibold text-foreground mt-0.5 block">
                   {initialSubStatus.code}
                 </span>
@@ -188,14 +188,14 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
 
             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
               <div>
-                <span className="text-muted-foreground text-[11px] block">Phân hệ liên kết</span>
+                <span className="text-muted-foreground text-xs block">Phân hệ liên kết</span>
                 <div className="flex items-center gap-1 text-xs text-blue-700 dark:text-blue-300 font-medium mt-0.5">
                   <Link2 className="h-3 w-3" />
                   <span>{initialSubStatus.systemModuleLabel || 'Tự động hệ thống'}</span>
                 </div>
               </div>
               <div>
-                <span className="text-muted-foreground text-[11px] block">Sự kiện kích hoạt</span>
+                <span className="text-muted-foreground text-xs block">Sự kiện kích hoạt</span>
                 <span className="text-xs text-foreground mt-0.5 block">
                   {initialSubStatus.systemEventTrigger || 'Khi phát sinh giao dịch/lịch hẹn'}
                 </span>
@@ -204,7 +204,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
 
             {initialSubStatus.description && (
               <div className="pt-2 border-t border-border/50">
-                <span className="text-muted-foreground text-[11px] block">Mô tả / Hướng dẫn</span>
+                <span className="text-muted-foreground text-xs block">Mô tả / Hướng dẫn</span>
                 <p className="text-xs text-foreground mt-0.5 italic">
                   {initialSubStatus.description}
                 </p>
@@ -261,7 +261,7 @@ const LeadLifecycleSubStatusInner: React.FC<LeadLifecycleSubStatusInnerProps> = 
                   title={preset.label}
                 />
               ))}
-              <div className="ml-2 flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+              <div className="ml-2 flex items-center gap-1 font-mono text-xs text-muted-foreground">
                 <span>Mã:</span>
                 <span className="font-semibold text-foreground">{color}</span>
               </div>

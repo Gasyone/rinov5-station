@@ -153,11 +153,11 @@ export function SessionCard({
       {borderLeftColor && (
         <span className={cn("absolute left-0 top-0 bottom-0 w-1", borderLeftColor)} />
       )}
-      <div className={cn("p-2 flex flex-col h-full justify-between flex-1", Boolean(borderLeftColor) && "pl-2.5")}>
+      <div className={cn("p-1.5 flex flex-col h-full justify-between flex-1", Boolean(borderLeftColor) && "pl-2")}>
         <div>
-          <div className="mb-1 flex items-center justify-between gap-1.5">
+          <div className="mb-0.5 flex items-center justify-between gap-1">
             <span className={cn(
-              "text-xs font-normal tracking-tight shrink-0",
+              "text-[11px] font-medium tracking-tight shrink-0",
               timeColorClass
             )}>
               {timeDisplay}
@@ -172,7 +172,7 @@ export function SessionCard({
                       ? ` (${trialCount} học thử)`
                       : ` (${makeUpCount} học bù)`
                   }`}
-                  className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0"
                 >
                   <UserPlus className="h-2.5 w-2.5 shrink-0 stroke-[2.2]" />
                 </div>
@@ -180,7 +180,7 @@ export function SessionCard({
               {isFull && (
                 <span
                   title="Ca học đã đầy chỗ"
-                  className="inline-flex items-center gap-0.5 rounded px-1 py-0.2 text-[9.5px] font-semibold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800 shrink-0"
+                  className="inline-flex items-center gap-0.5 rounded px-1 text-[9px] font-semibold bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800 shrink-0"
                 >
                   <AlertTriangle className="h-2.5 w-2.5 text-rose-600 dark:text-rose-400 shrink-0" />
                   Hết chỗ
@@ -191,17 +191,17 @@ export function SessionCard({
 
           {/* Dòng 2: Danh sách Avatar Học viên trong ca (thay thế dòng chữ trùng lặp) */}
           {session.type === 'digi_session' ? (
-            <div className="my-1.5 flex flex-col justify-center flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-muted-foreground/80 uppercase tracking-wider">
+            <div className="my-1 flex flex-col justify-center flex-1">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[11px] font-bold text-muted-foreground/80 uppercase tracking-wider">
                   Học viên ({session.studentList?.length || session.totalStudents || 0})
                 </span>
                 {session.status === 'completed' ? (
-                  <span className="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-1 py-0.5 rounded">
+                  <span className="text-[10px] font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-1 py-0.2 rounded">
                     Đã học
                   </span>
                 ) : session.dateBucket === 'today' ? (
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
                     Đang học
                   </span>
                 ) : null}
@@ -219,7 +219,7 @@ export function SessionCard({
                       key={student.id || sIdx}
                       title={tooltipText}
                       className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-full border text-[9.5px] font-bold shadow-2xs transition-transform hover:scale-110 cursor-pointer shrink-0',
+                        'flex h-5 w-5 items-center justify-center rounded-full border text-[8.5px] font-bold shadow-2xs transition-transform hover:scale-110 cursor-pointer shrink-0',
                         colorClass
                       )}
                     >
@@ -234,14 +234,14 @@ export function SessionCard({
                       .slice(5)
                       .map((s) => s.name)
                       .join(', ')}`}
-                    className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-muted text-[8.5px] font-bold text-muted-foreground shadow-2xs hover:scale-105 shrink-0"
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-border bg-muted text-[8px] font-bold text-muted-foreground shadow-2xs hover:scale-105 shrink-0"
                   >
                     +{(session.studentList?.length || 0) - 5}
                   </div>
                 )}
 
                 {(!session.studentList || session.studentList.length === 0) && (
-                  <span className="text-[9.5px] text-muted-foreground/60 italic">
+                  <span className="text-[9px] text-muted-foreground/60 italic">
                     Chưa có học viên
                   </span>
                 )}
@@ -251,7 +251,7 @@ export function SessionCard({
             <>
               <h4
                 className={cn(
-                  'text-xs font-semibold leading-snug block truncate',
+                  'text-xs font-semibold leading-tight block truncate',
                   isCancelled
                     ? 'line-through text-muted-foreground'
                     : isPast
@@ -264,7 +264,7 @@ export function SessionCard({
               </h4>
 
               {/* Dòng 3: Mã lớp - Trình độ ở cạnh phải */}
-              <div className="mt-0.5 flex items-center justify-between gap-1 text-[10px] min-w-0">
+              <div className="mt-0.5 flex items-center justify-between gap-1 text-[11px] min-w-0">
                 <span
                   className="truncate flex-1 min-w-0 font-normal text-muted-foreground"
                   title={session.classCode || ''}
@@ -273,7 +273,7 @@ export function SessionCard({
                 </span>
                 {session.level && (
                   <span
-                    className="font-medium text-foreground/75 shrink-0 text-[10px]"
+                    className="font-medium text-foreground/75 shrink-0 text-[11px]"
                     title={`Trình độ: ${session.level}`}
                   >
                     {session.level}
@@ -285,18 +285,18 @@ export function SessionCard({
         </div>
 
         {/* Footer: Sĩ số & Giáo viên / Trợ giảng */}
-        <div className="mt-1.5 pt-1 space-y-0.5 text-xs text-muted-foreground border-t border-border/20">
+        <div className="mt-1 pt-1 space-y-0.5 text-[11px] text-muted-foreground border-t border-border/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 shrink-0 text-foreground/70" />
-              <span className={cn("text-[10px] font-medium", isFull ? "text-rose-600 dark:text-rose-400 font-bold" : "text-foreground")}>
+              <Users className="h-2.5 w-2.5 shrink-0 text-foreground/70" />
+              <span className={cn("text-[11px] font-medium", isFull ? "text-rose-600 dark:text-rose-400 font-bold" : "text-foreground")}>
                 {session.type === 'digi_session' ? (
                   `${session.totalStudents}/${session.roomCapacity || 15} chỗ`
                 ) : session.attendedStudents !== undefined ? (
                   <>
                     <span>{session.attendedStudents}/{session.totalStudents}</span>
                     {newStudentsCount > 0 && (
-                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-0.5">
                         (+{newStudentsCount})
                       </span>
                     )}
@@ -305,7 +305,7 @@ export function SessionCard({
                   <>
                     <span>{session.totalStudents}</span>
                     {newStudentsCount > 0 && (
-                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">
+                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-0.5">
                         (+{newStudentsCount})
                       </span>
                     )}
@@ -314,15 +314,15 @@ export function SessionCard({
               </span>
             </div>
             {!activeTeacher || activeTeacher === 'Chưa gán' ? (
-              <div className="flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 px-1 py-0.2 rounded text-[8.5px] shrink-0" title="Chưa gán giáo viên">
-                <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0" />
+              <div className="flex items-center gap-0.5 text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 px-1 py-0.2 rounded text-[8px] shrink-0" title="Chưa gán giáo viên">
+                <AlertTriangle className="h-2 w-2 text-amber-500 shrink-0" />
                 <span>Chưa gán GV</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 min-w-0 max-w-[55%]" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-1 min-w-0 max-w-[55%]" onClick={(e) => e.stopPropagation()}>
                 <PersonnelHoverCard person={getTeacherPersonnel(activeTeacher)} align="end">
                   <div className={cn(
-                    "flex h-4.5 w-4.5 items-center justify-center rounded-full border text-[9px] font-bold shrink-0 cursor-pointer",
+                    "flex h-4 w-4 items-center justify-center rounded-full border text-[9.5px] font-bold shrink-0 cursor-pointer",
                     session.substituteTeacher
                       ? "border-amber-200 bg-amber-100 text-amber-700"
                       : "border-border bg-muted text-muted-foreground"
@@ -330,7 +330,7 @@ export function SessionCard({
                     {activeInitials}
                   </div>
                 </PersonnelHoverCard>
-                <span className="text-[10px] text-muted-foreground font-normal truncate" title={activeTeacher}>
+                <span className="text-[11px] text-muted-foreground font-normal truncate" title={activeTeacher}>
                   {activeTeacher}
                 </span>
               </div>

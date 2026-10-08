@@ -216,7 +216,7 @@ export function StudentProgramPackageCard({
               <StatusBadge
                 status={effectiveClass.status || 'active'}
                 label={effectiveClass.status === 'active' ? 'Đang học' : 'Chờ khai giảng'}
-                className="text-[10px] py-0 px-2"
+                className="text-xs py-0 px-2"
               />
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
@@ -242,7 +242,7 @@ export function StudentProgramPackageCard({
 
           {/* Dòng thao tác lớp */}
           <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30 flex-wrap">
-            <span className="text-[11px] text-muted-foreground italic">
+            <span className="text-xs text-muted-foreground italic">
               Buổi bắt đầu: {packageItem.startSessionDate || 'Buổi 01 (15/01/2025)'}
             </span>
             <div className="flex items-center gap-1.5 ml-auto">

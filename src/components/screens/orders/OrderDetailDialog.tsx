@@ -500,7 +500,7 @@ interface OrderDetailItem {
                       {/* Item Row 5: Combo Sub-items (if combo) */}
                       {(item as any).comboItems && (item as any).comboItems.length > 0 && (
                         <div className="pt-2 border-t space-y-1.5 text-xs">
-                          <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                          <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                             THÀNH PHẦN GÓI COMBO ({(item as any).comboItems.length} SẢN PHẨM)
                           </div>
                           <div className="space-y-1 pl-2">

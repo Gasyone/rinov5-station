@@ -101,7 +101,7 @@ export function CrmLeadsDetailDialog({
                   size="sm"
                   variant="outline"
                   className="h-8 gap-1.5 border-primary/30 text-primary hover:bg-primary/10 text-xs font-medium cursor-pointer"
-                  onClick={() => router.push(`/app/booking_test/create?leadId=${lead.id}`)}
+                  onClick={() => window.open(`/booking-test?leadId=${lead.id}`, '_blank')}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Đặt lịch Kiểm tra năng lực</span>
@@ -112,7 +112,7 @@ export function CrmLeadsDetailDialog({
                   size="sm"
                   variant="outline"
                   className="h-8 gap-1.5 border-violet-500/30 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950 text-xs font-medium cursor-pointer"
-                  onClick={() => router.push(`/app/trial_class/create?leadId=${lead.id}`)}
+                  onClick={() => window.open(`/booking-trial?leadId=${lead.id}`, '_blank')}
                 >
                   <GraduationCap className="h-3.5 w-3.5" />
                   <span>Đăng ký Lớp học thử</span>

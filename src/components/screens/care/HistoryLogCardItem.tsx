@@ -81,10 +81,24 @@ export function HistoryLogCardItem({
     effectiveStaffName.toLowerCase().includes('nguyễn huy hoàng') ||
     effectiveStaffName.toLowerCase().includes('gv')
 
+  // Parse outcome from notes if logged as unsuccessful
+  const outcomeMatch = (log.notes || '').match(/\[Kết quả:\s*([^\]]+)\]/i)
+  const loggedOutcome = outcomeMatch ? outcomeMatch[1].trim() : ''
+  const isKnM = log.callConfirmation === 'KNM' || loggedOutcome.includes('Không nghe')
+  const isMayBan = loggedOutcome.includes('Máy bận')
+  const isVangMat = loggedOutcome.includes('Vắng mặt')
+  const isChuaPhanHoi = loggedOutcome.includes('Chưa phản hồi') || (log.notes || '').includes('Chưa phản hồi')
+
   // Resolve action text (kênh + kết quả) nối liền với người nhận (Đề xuất 3)
   let actionText = 'Đã gọi'
-  if (log.callConfirmation === 'KNM') {
+  if (isKnM) {
     actionText = 'Gọi KNM'
+  } else if (isMayBan) {
+    actionText = 'Gọi máy bận'
+  } else if (isVangMat) {
+    actionText = 'Vắng mặt'
+  } else if (isChuaPhanHoi) {
+    actionText = 'Chưa phản hồi'
   } else if (
     log.callConfirmation === 'Đã nhắn Zalo' ||
     channel === 'Nhắn tin Zalo' ||
@@ -135,7 +149,7 @@ export function HistoryLogCardItem({
       <div className="shrink-0 pt-0.5">
         <span
           className={cn(
-            'inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-medium select-none',
+            'inline-flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium select-none',
             isGV
               ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
               : 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
@@ -159,6 +173,23 @@ export function HistoryLogCardItem({
             <span className="text-xs text-muted-foreground font-normal truncate">
               • {actionText} <span className="text-foreground font-normal">{effectiveRecipient}</span>
             </span>
+
+            {isKnM && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60 shrink-0">
+                Không nghe máy
+              </span>
+            )}
+            {isMayBan && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60 shrink-0">
+                Máy bận
+              </span>
+            )}
+            {isVangMat && (
+              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0">
+                Vắng mặt
+              </span>
+            )}
+
             <span
               className="text-xs text-muted-foreground font-normal shrink-0 cursor-default"
               title={timeInfo.full}
@@ -172,12 +203,12 @@ export function HistoryLogCardItem({
             <div className="shrink-0">
               {topic === 'CSTP' || topic === 'CTP' || topic.includes('CSTP') || topic.includes('CTP') ? (
                 log.notes?.toLowerCase().includes('thất bại') ? (
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800 shadow-3xs">
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800">
                     <XCircle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
                     <span>CTP • Thất bại</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 shadow-3xs">
+                  <span className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
                     <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                     <span>CSTP • Tái phí</span>
                   </span>
@@ -190,7 +221,7 @@ export function HistoryLogCardItem({
         </div>
 
         {/* Khung nội dung chăm sóc (Đóng khung, bỏ đường line) */}
-        <div className="rounded-lg border border-slate-200/70 dark:border-zinc-800/70 bg-slate-50/40 dark:bg-zinc-900/30 p-2 space-y-1 text-xs text-left">
+        <div className="rounded-lg border border-border/60 bg-muted/20 dark:bg-zinc-900/30 p-2 space-y-1 text-xs text-left">
           {/* Continuous Stream: Audio (nếu có) + Ghi chú + Phụ huynh phản hồi */}
           <div className="text-xs text-foreground/90 font-normal leading-relaxed">
             {log.audioDuration && (
@@ -202,10 +233,10 @@ export function HistoryLogCardItem({
             {effectiveParentOpinion && (
               <span className="align-middle">
                 {' '}
-                <span className="text-emerald-800 dark:text-emerald-300 font-normal">
+                <span className="text-muted-foreground font-normal">
                   • Phụ huynh phản hồi:
                 </span>{' '}
-                <span className="italic font-normal text-emerald-700 dark:text-emerald-400">
+                <span className="italic font-normal text-foreground/80">
                   “{effectiveParentOpinion}”
                 </span>
               </span>
@@ -236,7 +267,7 @@ export function HistoryLogCardItem({
                   <StatusBadge
                     status={effectiveLinkedOrder.paymentStatus || 'paid'}
                     label={effectiveLinkedOrder.paymentStatusText || 'Đã thanh toán'}
-                    className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                    className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
                   />
                 </>
               )}

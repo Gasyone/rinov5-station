@@ -10,6 +10,7 @@ import { BookingTestEmployeePickerDialog } from './BookingTestEmployeePickerDial
 import {
   findEmployeeByName,
   getActiveEmployeesBySchool,
+  getDutyRosterEmployees,
   resolveBookingBranch,
 } from './bookingTestStaffHelpers'
 
@@ -27,7 +28,11 @@ export function BookingTestResponsiblePanel({
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false)
   const branchName = resolveBookingBranch(booking.school)
   const branchEmployees = useMemo(
-    () => getActiveEmployeesBySchool(booking.school),
+    () => getActiveEmployeesBySchool(booking.school, booking.testTime),
+    [booking.school, booking.testTime]
+  )
+  const allRosterEmployees = useMemo(
+    () => getDutyRosterEmployees(booking.school),
     [booking.school]
   )
   const creatorName = booking.createdBy || booking.ops || 'Quản trị hệ thống'
@@ -68,6 +73,7 @@ export function BookingTestResponsiblePanel({
       <BookingTestEmployeePickerDialog
         open={teacherPickerOpen}
         employees={branchEmployees}
+        allRosterEmployees={allRosterEmployees}
         branchName={branchName}
         selectedName={booking.teacher}
         bookings={bookings}

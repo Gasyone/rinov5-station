@@ -56,24 +56,44 @@ export function getClassPerformance(classCode: string): ClassPerformance {
       },
       nextMilestone: 'Đánh giá phát âm cuối khóa - Buổi 12',
     }
+  } else if (code.includes('TOAN') || code.includes('MATH')) {
+    return {
+      attendanceRate: '95.2%',
+      attendanceDetail: '80/84 buổi đi học (4 buổi nghỉ có phép)',
+      homeworkSubmissionRate: '90.5%',
+      homeworkDetail: '76/84 bài tập hoàn thành',
+      latestScore: {
+        testName: 'Kiểm tra Chuyên đề 07 (Logic & Hình học)',
+        score: '8.5 / 10',
+        grade: 'Giỏi',
+      },
+      latestComment: {
+        date: '18/08/2024',
+        teacherName: 'GV_HuiLT20',
+        content:
+          'Học viên tư duy logic sắc bén, phản xạ giải toán nhanh, làm bài tập đầy đủ và tích cực xây dựng bài trên lớp.',
+      },
+      nextMilestone: 'Kiểm tra Cuối khóa - Buổi 96',
+    }
   } else {
     return {
-      attendanceRate: '—',
-      attendanceDetail: 'Chưa có buổi học nào diễn ra',
-      homeworkSubmissionRate: '—',
-      homeworkDetail: 'Chưa có bài tập nào được giao',
+      attendanceRate: '94.0%',
+      attendanceDetail: '22/24 buổi đi học (2 buổi vắng phép)',
+      homeworkSubmissionRate: '88.0%',
+      homeworkDetail: '21/24 bài tập hoàn thành',
       latestScore: {
-        testName: 'Đánh giá đầu vào',
-        score: '6.0 / 10',
-        grade: 'Trung bình',
+        testName: 'Đánh giá định kỳ',
+        score: '8.0 / 10',
+        grade: 'Khá',
       },
       latestComment: {
         date: '15/06/2026',
-        teacherName: 'Hệ thống',
+        teacherName: 'GV phụ trách',
         content:
-          'Học viên mới được ghép vào lớp học này. Vui lòng theo dõi kết quả ở các buổi học tiếp theo.',
+          'Học viên có ý thức học tập tốt, đi học đúng giờ và tích cực tham gia các hoạt động tại lớp.',
       },
       nextMilestone: 'Kiểm tra giữa kỳ - Buổi 12',
     }
   }
 }
+

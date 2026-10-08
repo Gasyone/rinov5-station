@@ -28,16 +28,16 @@ export function LeaveReserveReservationForm({
   subjectHoldInfo,
 }: LeaveReserveReservationFormProps) {
   return (
-    <div className="space-y-3.5 rounded-xl border border-sky-200/80 bg-sky-50/20 dark:bg-sky-950/10 p-3.5">
-      {/* Reservation Mode Selection: Giữ chỗ vs Không giữ chỗ */}
-      <div className="space-y-1.5">
+    <div className="space-y-2.5 w-full">
+      {/* Reservation Mode Selection: Giữ chỗ vs Không giữ chỗ - Giàn full panel trái */}
+      <div className="space-y-1">
         <FieldLabel label="Hình thức bảo lưu" required>
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2 w-full pt-0.5">
             <button
               type="button"
               onClick={() => onReserveModeChange('hold_seat')}
               className={cn(
-                'flex flex-col items-start p-3 rounded-xl border text-left transition-all cursor-pointer',
+                'flex flex-col items-start p-2.5 rounded-lg border text-left transition-all cursor-pointer',
                 reserveMode === 'hold_seat'
                   ? 'bg-card border-sky-600 ring-2 ring-sky-600/20 shadow-xs'
                   : 'bg-background hover:bg-muted/40 border-border/70 text-muted-foreground'
@@ -48,11 +48,11 @@ export function LeaveReserveReservationForm({
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Bảo lưu Giữ chỗ
                 </span>
-                <span className="text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">
+                <span className="text-[11px] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded font-semibold">
                   Vẫn trong lớp
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 leading-snug">
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                 Tối đa {subjectHoldInfo.maxSessions} buổi ({subjectHoldInfo.subjectName}). Không tính phí các buổi trong lớp.
               </p>
             </button>
@@ -61,7 +61,7 @@ export function LeaveReserveReservationForm({
               type="button"
               onClick={() => onReserveModeChange('no_hold_seat')}
               className={cn(
-                'flex flex-col items-start p-3 rounded-xl border text-left transition-all cursor-pointer',
+                'flex flex-col items-start p-2.5 rounded-lg border text-left transition-all cursor-pointer',
                 reserveMode === 'no_hold_seat'
                   ? 'bg-card border-sky-600 ring-2 ring-sky-600/20 shadow-xs'
                   : 'bg-background hover:bg-muted/40 border-border/70 text-muted-foreground'
@@ -72,11 +72,11 @@ export function LeaveReserveReservationForm({
                   <span className="h-2 w-2 rounded-full bg-amber-500" />
                   Không giữ chỗ
                 </span>
-                <span className="text-xs bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded font-semibold">
+                <span className="text-[11px] bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 px-1.5 py-0.2 rounded font-semibold">
                   Out khỏi lớp
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 leading-snug">
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                 Tối đa 3 tháng. Rút khỏi danh sách lớp để nhường chỗ.
               </p>
             </button>
@@ -84,10 +84,10 @@ export function LeaveReserveReservationForm({
         </FieldLabel>
       </div>
 
-      {/* Date Pickers with Past Reservation Helper */}
-      <div className="space-y-2 pt-1 border-t border-sky-200/50">
+      {/* Date Pickers with Past Reservation Helper - Giàn full panel trái */}
+      <div className="space-y-1.5 pt-0.5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-sky-900 dark:text-sky-200 flex items-center gap-1.5">
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-sky-600" />
             Khoảng thời gian bảo lưu:
           </span>
@@ -101,14 +101,14 @@ export function LeaveReserveReservationForm({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 w-full">
           <FieldLabel label="Bảo lưu từ ngày" required>
             <input
               id="reserve-start-date"
               type="date"
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+              className="w-full h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
               required
             />
           </FieldLabel>
@@ -119,7 +119,7 @@ export function LeaveReserveReservationForm({
               value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
               min={startDate}
-              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+              className="w-full h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
               required
             />
           </FieldLabel>
@@ -135,11 +135,11 @@ export function LeaveReserveReservationForm({
         {/* Informative Note for Mode */}
         {reserveMode === 'hold_seat' ? (
           <div className="text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-200/70 dark:border-emerald-800">
-            ✓ <strong>Bảo lưu Giữ chỗ:</strong> Hệ thống tự động tính số buổi giữ chỗ theo khoảng ngày (Tối đa {subjectHoldInfo.maxSessions} buổi môn {subjectHoldInfo.subjectName}). Học viên không bị trừ phí trong thời gian này.
+            ✓ <strong>Bảo lưu Giữ chỗ:</strong> Tự động tính số buổi giữ chỗ theo khoảng ngày (Tối đa {subjectHoldInfo.maxSessions} buổi môn {subjectHoldInfo.subjectName}). Không trừ phí trong thời gian này.
           </div>
         ) : (
           <div className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/30 p-2 rounded-lg border border-amber-200/70 dark:border-amber-800">
-            ⚠️ <strong>Bảo lưu Không giữ chỗ:</strong> Học viên được rút khỏi sĩ số lớp. Khi hết hạn bảo lưu, Phụ huynh liên hệ để CSM làm thủ tục xếp lớp mới.
+            ⚠️ <strong>Bảo lưu Không giữ chỗ:</strong> Rút khỏi sĩ số lớp. Khi hết hạn bảo lưu, Phụ huynh liên hệ để CSM làm thủ tục xếp lớp mới.
           </div>
         )}
       </div>

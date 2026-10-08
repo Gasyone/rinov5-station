@@ -280,45 +280,39 @@ export function StudentOrdersTab({
   }, [])
 
   return (
-    <div className="space-y-4 text-left">
+    <div className="space-y-1.5 text-left">
       {/* ── TOP TOOLBAR: Xem đơn các con khác (đưa ra đầu) ── Nút Tạo đơn (bên phải) ── */}
-      <div className="flex items-center justify-between py-1 text-xs flex-wrap gap-2">
+      <div className="flex items-center justify-between py-0 text-[11px] flex-wrap gap-2">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Checkbox mở rộng xem đơn hàng của các con khác (đưa ra đầu) */}
           {hasOtherChildrenOrders && (
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-zinc-200 cursor-pointer select-none hover:text-foreground">
+            <label className="flex items-center gap-1.5 text-[11px] font-normal text-muted-foreground cursor-pointer select-none hover:text-foreground">
               <input
                 type="checkbox"
                 checked={showOtherChildrenOrders}
                 onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
-                className="rounded border-border text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer accent-indigo-600"
+                className="rounded border-border text-sky-600 focus:ring-sky-500 h-3 w-3 cursor-pointer accent-sky-600"
               />
               <span>Xem đơn các con khác</span>
             </label>
           )}
-
-          <span className="text-xs text-muted-foreground font-normal">
-            Tổng cộng: <strong className="font-semibold text-foreground">{filteredOrders.length}</strong> đơn hàng
-            {transfers.length > 0 && (
-              <> &bull; <strong className="font-semibold text-foreground">{transfers.length}</strong> phiếu chuyển phí</>
-            )}
-          </span>
         </div>
 
         {/* Button Tạo đơn ở bên phải */}
         <Button
           type="button"
           onClick={handleCreateNewOrder}
-          className="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white border border-indigo-200/80 dark:border-indigo-800 font-bold text-xs px-3.5 h-8.5 rounded-lg shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 shrink-0"
+          variant="outline"
+          className="h-6 px-2 text-[11px] font-medium border-border/80 hover:bg-muted text-foreground flex items-center gap-1 shrink-0 cursor-pointer shadow-3xs"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3 w-3" />
           <span>Tạo đơn</span>
         </Button>
       </div>
 
       {/* ── DANH SÁCH TẤT CẢ ĐƠN HÀNG & PHIẾU CHUYỂN PHÍ (DÒNG THỜI GIAN THỐNG NHẤT) ── */}
       {timelineItems.length > 0 ? (
-        <div className="space-y-3.5">
+        <div className="space-y-1.5">
           {timelineItems.map((item) => {
             if (item.type === 'order') {
               return (

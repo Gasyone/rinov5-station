@@ -86,20 +86,52 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
   const [contactProfileLead, setContactProfileLead] = useState<Lead | null>(null)
   const [isContactProfileOpen, setIsContactProfileOpen] = useState(false)
   const [customLeads, setCustomLeads] = useState<Lead[]>([])
+  const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0)
+
+  // Đồng bộ cập nhật Lead từ tab khác (tab đặt lịch test/học thử)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'rinov5_crm_lead_updated') {
+        setCrmRefreshTrigger((v) => v + 1)
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+
+    let channel: BroadcastChannel | null = null
+    try {
+      channel = new BroadcastChannel('rinov5_crm_sync')
+      channel.onmessage = () => {
+        setCrmRefreshTrigger((v) => v + 1)
+      }
+    } catch {}
+
+    const handleWindowMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'LEAD_UPDATED') {
+        setCrmRefreshTrigger((v) => v + 1)
+      }
+    }
+    window.addEventListener('message', handleWindowMessage)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('message', handleWindowMessage)
+      channel?.close()
+    }
+  }, [])
 
   // Modal Lên đơn hàng cho Lead State
   const [orderModalLead, setOrderModalLead] = useState<Lead | null>(null)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
   const [editingOrder, setEditingOrder] = useState<DetailedOrder | null>(null)
 
-  // Handlers mở Booking Test (chuyển sang trang /app/booking_test/create)
+  // Handlers mở Booking Test (mở Landing page /booking-test trong tab mới)
   const handleOpenBookingTest = (lead: Lead) => {
-    router.push(`/app/booking_test/create?leadId=${lead.id}`)
+    window.open(`/booking-test?leadId=${lead.id}`, '_blank')
   }
 
-  // Handlers mở Trial Class (chuyển sang trang /app/trial_class/create)
+  // Handlers mở Trial Class (mở Landing page /booking-trial trong tab mới)
   const handleOpenTrialClass = (lead: Lead) => {
-    router.push(`/app/trial_class/create?leadId=${lead.id}`)
+    window.open(`/booking-trial?leadId=${lead.id}`, '_blank')
   }
 
   // Handler mở Modal Lên đơn cho Lead
@@ -181,7 +213,8 @@ export function CrmLeadsScreen({ defaultViewScope = 'all' }: CrmLeadsScreenProps
     const baseLeads = getLeads({ search })
     const customIds = new Set(customLeads.map((l) => l.id))
     return [...customLeads, ...baseLeads.filter((l) => !customIds.has(l.id))]
-  }, [customLeads, search])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customLeads, search, crmRefreshTrigger])
 
   // Đếm số lượng tiêu chí lọc nâng cao đang áp dụng
   const activeFilterCount = useMemo(() => {

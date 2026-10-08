@@ -276,31 +276,12 @@ export function LeaveReserveCreateDialog({
         else onOpenChange(true)
       }}
     >
-      <DialogContent className="w-[92vw] max-w-4xl sm:max-w-4xl lg:max-w-5xl bg-card p-0 gap-0 overflow-hidden border border-border shadow-2xl rounded-2xl">
-        {/* Clean Header - NO Subtitle & NO Horizontal Border Line */}
-        <DialogHeader className="px-6 pt-5 pb-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <DialogTitle className="text-xl font-bold text-foreground tracking-tight">
-              Tạo đơn yêu cầu mới
-            </DialogTitle>
-
-            <div className="w-full sm:w-auto min-w-[240px]">
-              <SegmentedControl
-                value={type}
-                options={[
-                  {
-                    value: 'off',
-                    label: 'Nghỉ phép',
-                  },
-                  {
-                    value: 'reservation',
-                    label: 'Bảo lưu',
-                  },
-                ]}
-                onValueChange={handleTypeChange}
-              />
-            </div>
-          </div>
+      <DialogContent className="w-[94vw] max-w-3xl lg:max-w-[780px] bg-card p-0 gap-0 overflow-hidden border border-border shadow-2xl rounded-xl">
+        {/* Header - Title only, compact and clean */}
+        <DialogHeader className="px-5 py-3 border-b border-border/40">
+          <DialogTitle className="text-base font-bold text-foreground tracking-tight">
+            Tạo đơn yêu cầu mới
+          </DialogTitle>
         </DialogHeader>
         <DialogDescription className="sr-only">
           Tạo đơn yêu cầu xin nghỉ phép hoặc bảo lưu học tập cho học viên
@@ -308,11 +289,31 @@ export function LeaveReserveCreateDialog({
 
         {/* 2-Column Body: Form on Left + Policy Panel on Right */}
         <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 p-4 pt-1 max-h-[74vh] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 max-h-[72vh] overflow-y-auto">
             {/* Left Column: Form Controls (7 cols) */}
-            <div className="space-y-3 md:col-span-7">
+            <div className="space-y-2.5 md:col-span-7">
+              {/* Button Bảo lưu / Nghỉ phép đưa sang panel trái, giàn full width */}
+              <div className="w-full">
+                <SegmentedControl
+                  value={type}
+                  options={[
+                    {
+                      value: 'off',
+                      label: 'Nghỉ phép',
+                    },
+                    {
+                      value: 'reservation',
+                      label: 'Bảo lưu',
+                    },
+                  ]}
+                  onValueChange={handleTypeChange}
+                  className="w-full grid grid-cols-2 p-1 bg-muted/70 rounded-lg"
+                  itemClassName="w-full text-center h-8 text-xs font-semibold"
+                />
+              </div>
+
               {/* Student Selector */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <FieldLabel
                   label={
                     <div className="flex items-center justify-between w-full">
@@ -320,7 +321,7 @@ export function LeaveReserveCreateDialog({
                       {type === 'reservation' && selectedStudent && (
                         <span
                           className={cn(
-                            'inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full border normal-case',
+                            'inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border normal-case',
                             eligibility.eligible
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                               : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
@@ -356,7 +357,7 @@ export function LeaveReserveCreateDialog({
                 </FieldLabel>
               </div>
 
-              {/* SECTION: Nghỉ phép with 4-button Date Selector & Multi-session Checklist */}
+              {/* SECTION: Nghỉ phép with 4-button Date Filter Tabs in middle & Multi-session Checklist */}
               {type === 'off' && (
                 <LeaveReserveOffForm
                   startDate={startDate}
@@ -372,7 +373,7 @@ export function LeaveReserveCreateDialog({
                 />
               )}
 
-              {/* SECTION: Bảo lưu with Hold vs No-Hold and Past Reserve (No class restriction) */}
+              {/* SECTION: Bảo lưu with Hold vs No-Hold and Past Reserve */}
               {type === 'reservation' && (
                 <LeaveReserveReservationForm
                   reserveMode={reserveMode}
@@ -398,7 +399,7 @@ export function LeaveReserveCreateDialog({
                       ? 'Ví dụ: Học viên ốm sốt, gia đình có việc bận, đi du lịch...'
                       : 'Ví dụ: Học viên đi học quân sự, du học trao đổi, lý do cá nhân...'
                   }
-                  className="w-full min-h-[60px] rounded-md border border-input bg-background p-2.5 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="w-full min-h-[56px] max-h-[80px] rounded-md border border-input bg-background p-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   required
                 />
               </FieldLabel>
@@ -412,16 +413,16 @@ export function LeaveReserveCreateDialog({
             />
           </div>
 
-          {/* Clean Footer - NO Top Border Line */}
-          <div className="px-6 py-4 flex items-center justify-end gap-2.5">
-            <Button type="button" variant="outline" size="sm" onClick={handleClearAndClose} className="cursor-pointer">
+          {/* Compact Footer */}
+          <div className="px-5 py-2.5 border-t border-border/40 flex items-center justify-end gap-2 bg-muted/10">
+            <Button type="button" variant="outline" size="sm" onClick={handleClearAndClose} className="cursor-pointer h-8 text-xs">
               Hủy bỏ
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={isSubmitDisabled}
-              className="font-semibold cursor-pointer"
+              className="font-semibold cursor-pointer h-8 text-xs"
             >
               Gửi đơn yêu cầu
             </Button>

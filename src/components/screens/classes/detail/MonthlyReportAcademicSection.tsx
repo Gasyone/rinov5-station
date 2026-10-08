@@ -7,7 +7,6 @@ import type { StudentGalleryPhoto } from '@/mocks/studentPhotos'
 import {
   composeSectionA1,
   decomposeSectionA1,
-  composeSectionA2,
   decomposeSectionA2,
 } from './monthlyReportHelpers'
 
@@ -24,6 +23,7 @@ interface MonthlyReportAcademicSectionProps {
   galleryPhotos: StudentGalleryPhoto[]
   onChangePhotos?: (photos: StudentGalleryPhoto[]) => void
   idPrefix?: string
+  showPhotosSection?: boolean
 }
 
 export function MonthlyReportAcademicSection({
@@ -39,38 +39,35 @@ export function MonthlyReportAcademicSection({
   galleryPhotos,
   onChangePhotos,
   idPrefix = 'report',
+  showPhotosSection = true,
 }: MonthlyReportAcademicSectionProps) {
   const a1Data = useMemo(() => {
     return decomposeSectionA1(sectionA1Content)
   }, [sectionA1Content])
 
-  const a2Data = useMemo(() => {
-    return decomposeSectionA2(sectionA2Content, isMath)
-  }, [sectionA2Content, isMath])
-
   return (
-    <div id={`${idPrefix}-section-a`} className="space-y-4 pt-2 border-t">
-      <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-        A - BÁO CÁO HỌC TẬP {monthTitle.toUpperCase()}
+    <div id={`${idPrefix}-section-a`} className="space-y-2 pt-0">
+      <h4 className="text-xs sm:text-sm font-semibold text-foreground">
+        A. Báo cáo học tập {monthTitle}
       </h4>
 
       {/* Sub-section A1: 1. Nhận xét chung */}
-      <div className="space-y-2 pt-1">
+      <div className="space-y-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <label className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
             1. Nhận xét chung
           </label>
         </div>
         {isEditing ? (
-          <div className="space-y-3.5">
-            {/* Box 1: Điểm nổi bật */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+          <div className="space-y-2">
+            {/* Dòng 1: Điểm nổi bật */}
+            <div className="space-y-1">
+              <div className="h-5 flex items-center justify-between gap-1">
+                <label className="text-xs font-normal text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0" />
-                  Điểm nổi bật (Ưu điểm)
+                  Điểm nổi bật
                 </label>
-                <span className="text-[11px] text-muted-foreground">Thái độ, ý thức, sự phối hợp</span>
+                <span className="text-[11px] text-muted-foreground truncate text-right">Ưu điểm, thái độ</span>
               </div>
               <textarea
                 rows={2}
@@ -84,18 +81,18 @@ export function MonthlyReportAcademicSection({
                   )
                 }}
                 placeholder="Nhập những điểm con làm tốt, thái độ tích cực trong kỳ..."
-                className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-border/80 bg-background focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[68px] transition-colors"
+                className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[52px] transition-colors font-normal"
               />
             </div>
 
-            {/* Box 2: Điểm cần lưu ý */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+            {/* Dòng 2: Điểm cần lưu ý */}
+            <div className="space-y-1">
+              <div className="h-5 flex items-center justify-between gap-1">
+                <label className="text-xs font-normal text-amber-700 dark:text-amber-400 flex items-center gap-1.5 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block shrink-0" />
-                  Điểm cần lưu ý (Cần rèn luyện)
+                  Điểm cần lưu ý
                 </label>
-                <span className="text-[11px] text-muted-foreground">Tốc độ phản xạ, sự tự tin</span>
+                <span className="text-[11px] text-muted-foreground truncate text-right">Cần rèn luyện</span>
               </div>
               <textarea
                 rows={2}
@@ -109,12 +106,12 @@ export function MonthlyReportAcademicSection({
                   )
                 }}
                 placeholder="Nhập những điểm con cần cải thiện, điểm cần rèn luyện thêm..."
-                className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-border/80 bg-background focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[68px] transition-colors"
+                className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[52px] transition-colors font-normal"
               />
             </div>
           </div>
         ) : (
-          <div className="w-full text-sm p-3.5 sm:p-4 rounded-xl border border-border/50 bg-muted/10 text-foreground leading-relaxed font-sans">
+          <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans">
             <FormattedEvaluationContent
               content={sectionA1Content}
               type="general"
@@ -123,79 +120,31 @@ export function MonthlyReportAcademicSection({
         )}
       </div>
 
-      {/* Sub-section A2: 2. Nhận xét về kết quả học tập */}
-      <div className="space-y-2 pt-2">
+      {/* Sub-section A2: 2. Nhận xét về kết quả học tập (Gộp chung 1 ô tự điền) */}
+      <div className="space-y-1 pt-0.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-            2. Nhận xét về kết quả học tập
+          <label className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
+            2. Đánh giá kết quả học tập
           </label>
         </div>
         {isEditing ? (
-          <div className="space-y-3.5">
-            {/* Box 1: Từ vựng & Phonics (hoặc Kiến thức & Tư duy) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs font-bold text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 inline-block shrink-0" />
-                  {isMath ? 'Kiến thức & Tư duy toán' : 'Từ vựng & Phonics'}
-                </label>
-                <span className="text-[11px] text-muted-foreground">
-                  {isMath ? 'Khả năng hiểu bài, tư duy' : 'Mức độ nhớ từ, phát âm'}
-                </span>
-              </div>
-              <textarea
-                rows={2}
-                value={a2Data.knowledge}
-                onChange={(e) => {
-                  const newKnowledge = e.target.value
-                  onUpdateA2(
-                    composeSectionA2(newKnowledge, a2Data.skill, isMath),
-                    newKnowledge,
-                    a2Data.skill
-                  )
-                }}
-                placeholder={
-                  isMath
-                    ? 'Nhập đánh giá về mức độ tiếp thu kiến thức và tư duy logic của con...'
-                    : 'Nhập đánh giá về khả năng nhớ từ vựng, phát âm, nhận biết chữ cái...'
-                }
-                className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-border/80 bg-background focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[68px] transition-colors"
-              />
-            </div>
-
-            {/* Box 2: Cấu trúc & Mẫu câu (hoặc Kỹ năng giải toán) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-1">
-                <label className="text-xs font-bold text-violet-700 dark:text-violet-400 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block shrink-0" />
-                  {isMath ? 'Kỹ năng giải toán' : 'Cấu trúc & Mẫu câu'}
-                </label>
-                <span className="text-[11px] text-muted-foreground">
-                  {isMath ? 'Phương pháp giải, trình bày' : 'Phản xạ và sử dụng mẫu câu'}
-                </span>
-              </div>
-              <textarea
-                rows={2}
-                value={a2Data.skill}
-                onChange={(e) => {
-                  const newSkill = e.target.value
-                  onUpdateA2(
-                    composeSectionA2(a2Data.knowledge, newSkill, isMath),
-                    a2Data.knowledge,
-                    newSkill
-                  )
-                }}
-                placeholder={
-                  isMath
-                    ? 'Nhập đánh giá về kỹ năng làm bài, phương pháp tư duy và tính toán...'
-                    : 'Nhập đánh giá về mức độ phản xạ mẫu câu, ngữ pháp và hội thoại...'
-                }
-                className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-border/80 bg-background focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[68px] transition-colors"
-              />
-            </div>
-          </div>
+          <textarea
+            rows={3}
+            value={sectionA2Content}
+            onChange={(e) => {
+              const newContent = e.target.value
+              const parsed = decomposeSectionA2(newContent, isMath)
+              onUpdateA2(newContent, parsed.knowledge, parsed.skill)
+            }}
+            placeholder={
+              isMath
+                ? 'Nhập đánh giá về kiến thức tư duy logic và kỹ năng giải toán của con...'
+                : 'Nhập đánh giá về từ vựng, phonics và cấu trúc mẫu câu của con...'
+            }
+            className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 focus:outline-none leading-relaxed font-sans resize-y min-h-[64px] transition-colors font-normal"
+          />
         ) : (
-          <div className="w-full text-sm p-3.5 sm:p-4 rounded-xl border border-border/50 bg-muted/10 text-foreground leading-relaxed font-sans">
+          <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans">
             <FormattedEvaluationContent
               content={sectionA2Content}
               type="academic"
@@ -204,15 +153,17 @@ export function MonthlyReportAcademicSection({
         )}
       </div>
 
-      {/* Sub-section A3: 3. Khoảnh khắc học tập (Hình ảnh & Video hoạt động trong tháng) */}
-      <MonthlyReportActivityPhotosSection
-        photos={galleryPhotos}
-        onChange={onChangePhotos}
-        readOnly={!isEditing}
-        studentId={studentId}
-        studentName={studentName}
-        monthName={monthTitle}
-      />
+      {/* Sub-section A3: 3. Khoảnh khắc học tập (Chỉ hiển thị nếu showPhotosSection = true) */}
+      {showPhotosSection && (
+        <MonthlyReportActivityPhotosSection
+          photos={galleryPhotos}
+          onChange={onChangePhotos}
+          readOnly={!isEditing}
+          studentId={studentId}
+          studentName={studentName}
+          monthName={monthTitle}
+        />
+      )}
     </div>
   )
 }

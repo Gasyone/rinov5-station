@@ -184,7 +184,7 @@ export function OrderFulfillmentFilterPanel({
               />
             ))
           ) : (
-            <p className="text-[11px] text-muted-foreground px-2 py-1">Chưa có đơn vị vận chuyển</p>
+            <p className="text-xs text-muted-foreground px-2 py-1">Chưa có đơn vị vận chuyển</p>
           )}
         </div>
       </FilterCollapsibleSection>

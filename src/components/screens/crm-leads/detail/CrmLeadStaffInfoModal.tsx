@@ -163,7 +163,7 @@ export function CrmLeadStaffInfoModal({
                   Tư vấn viên Tuyển sinh (Sales Lead)
                 </span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800">
+              <Badge variant="outline" className="text-xs font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800">
                 Phụ trách chính
               </Badge>
             </div>
@@ -177,12 +177,12 @@ export function CrmLeadStaffInfoModal({
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="text-sm font-bold text-foreground">{salesStaff.name}</h4>
-                  <span className="font-mono text-[11px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                  <span className="font-mono text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
                     {salesStaff.code}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">{salesStaff.role}</p>
-                <p className="text-[11px] text-muted-foreground/80">{salesStaff.department}</p>
+                <p className="text-xs text-muted-foreground">{salesStaff.role}</p>
+                <p className="text-xs text-muted-foreground/80">{salesStaff.department}</p>
               </div>
             </div>
 
@@ -215,7 +215,7 @@ export function CrmLeadStaffInfoModal({
                     variant="outline"
                     size="sm"
                     onClick={() => handleCall(salesStaff.phone, salesStaff.name)}
-                    className="h-6 px-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer"
+                    className="h-6 px-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer"
                   >
                     Gọi
                   </Button>
@@ -245,7 +245,7 @@ export function CrmLeadStaffInfoModal({
             </div>
 
             {/* Thông số SLA & Tương tác */}
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap pt-0.5">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-sky-600" />
                 Tiếp nhận: <strong className="text-foreground font-semibold">{salesStaff.assignedDate}</strong>
@@ -273,7 +273,7 @@ export function CrmLeadStaffInfoModal({
                   Chuyên viên Chăm sóc Khách hàng &amp; Trải nghiệm (CS)
                 </span>
               </div>
-              <Badge variant="outline" className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+              <Badge variant="outline" className="text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                 Phối hợp trải nghiệm
               </Badge>
             </div>
@@ -287,12 +287,12 @@ export function CrmLeadStaffInfoModal({
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="text-sm font-bold text-foreground">{csStaff.name}</h4>
-                  <span className="font-mono text-[11px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                  <span className="font-mono text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
                     {csStaff.code}
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground">{csStaff.role}</p>
-                <p className="text-[11px] text-muted-foreground/80">{csStaff.scope}</p>
+                <p className="text-xs text-muted-foreground">{csStaff.role}</p>
+                <p className="text-xs text-muted-foreground/80">{csStaff.scope}</p>
               </div>
             </div>
 
@@ -325,7 +325,7 @@ export function CrmLeadStaffInfoModal({
                     variant="outline"
                     size="sm"
                     onClick={() => handleCall(csStaff.phone, csStaff.name)}
-                    className="h-6 px-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer"
+                    className="h-6 px-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950 cursor-pointer"
                   >
                     Gọi
                   </Button>
@@ -370,7 +370,7 @@ export function CrmLeadStaffInfoModal({
                 href={branchInfo.mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
                 title="Mở chỉ đường trên Google Maps"
               >
                 <span>Mở Google Maps</span>
@@ -387,7 +387,7 @@ export function CrmLeadStaffInfoModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/50 text-[11px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/50 text-xs">
                 <div>
                   <span className="text-muted-foreground block">Hotline quầy lễ tân:</span>
                   <span className="font-mono font-bold text-foreground">{branchInfo.hotline}</span>
@@ -416,7 +416,7 @@ export function CrmLeadStaffInfoModal({
               <div className="text-xs font-bold text-amber-900 dark:text-amber-300">
                 Điều chuyển Tư vấn viên phụ trách Lead
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Chọn tư vấn viên mới để tiếp quản chăm sóc và theo dõi chu kỳ bán của Lead này:
               </p>
               <div className="flex items-center gap-2 flex-wrap">

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { type SimulatedPackage } from './studentCareDetailTypes'
 import { type SessionHistory } from './StudentCareReportTab'
 
-import { UserCheck, BookOpen, Award } from 'lucide-react'
+import { UserCheck, BookOpen, Award, ExternalLink } from 'lucide-react'
 
 interface CareReportSmartCardsProps {
   pkg: SimulatedPackage
@@ -23,6 +23,8 @@ interface CareReportSmartCardsProps {
 export function CareReportSmartCards({
   pkg,
   regularSessions = [],
+  onOpenTests,
+  onOpenEvaluation,
 }: CareReportSmartCardsProps) {
   // Định dạng chuyên cần luôn luôn là phân số x/x (VD: 6/7, 3/4, 0/0)
   const attendanceDisplay = React.useMemo(() => {
@@ -42,71 +44,91 @@ export function CareReportSmartCards({
   }, [pkg.attendanceRatio, regularSessions])
 
   return (
-    <div className="grid grid-cols-3 gap-2 py-0.5 select-none">
-      {/* Card 1: Chuyên cần — Thuần hiển thị chỉ số, không mở modal */}
+    <div className="grid grid-cols-3 gap-1.5 py-0.5 select-none">
+      {/* Card 1: Chuyên cần — Màu Xanh lá (Emerald) + In đậm */}
       <div
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
+          "rounded-lg px-2.5 py-1.5 border flex flex-col justify-between gap-0.5 min-w-0 text-left bg-emerald-50/50 dark:bg-emerald-950/25 border-emerald-200/80 dark:border-emerald-800/60 select-none"
         )}
       >
-        <div className="flex items-center justify-between gap-1.5 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <UserCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 leading-none">
+        <div className="flex items-center justify-between gap-1 min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
+            <UserCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 leading-none">
               {attendanceDisplay}
             </span>
           </div>
-          <span className="text-xs font-normal text-amber-600 dark:text-amber-400 truncate leading-tight ml-auto text-right">
+          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 truncate leading-tight ml-auto text-right">
             Muộn: 1
           </span>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
+        <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 truncate">
           Chuyên cần
         </span>
       </div>
 
-      {/* Card 2: BTVN — Thuần hiển thị chỉ số, không mở modal */}
+      {/* Card 2: BTVN — Màu Xanh dương (Sky) + In đậm */}
       <div
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
+          "rounded-lg px-2.5 py-1.5 border flex flex-col justify-between gap-0.5 min-w-0 text-left bg-sky-50/50 dark:bg-sky-950/25 border-sky-200/80 dark:border-sky-800/60 select-none"
         )}
       >
-        <div className="flex items-center justify-between gap-1.5 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <BookOpen className="h-4 w-4 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span className="text-sm font-bold text-sky-600 dark:text-sky-400 leading-none">
+        <div className="flex items-center justify-between gap-1 min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
+            <BookOpen className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-sky-700 dark:text-sky-400 leading-none">
               {Math.round(7 * (pkg.homeworkCompletion / 100))}/7
             </span>
           </div>
-          <span className="text-xs text-muted-foreground truncate leading-tight ml-auto text-right">
+          <span className="text-xs font-semibold text-sky-700/90 dark:text-sky-300/90 truncate leading-tight ml-auto text-right">
             Trung bình: 7.5
           </span>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
+        <span className="text-xs font-semibold text-sky-800 dark:text-sky-300 truncate">
           BTVN
         </span>
       </div>
 
-      {/* Card 3: Kiểm tra — Thuần hiển thị chỉ số, không mở modal */}
+      {/* Card 3: Kiểm tra / Điểm — Màu Tím (Violet) + In đậm */}
       <div
         className={cn(
-          "rounded-xl px-2.5 py-2 border flex flex-col justify-between gap-1.5 min-w-0 text-left bg-card dark:bg-zinc-900 border-border/70 shadow-3xs select-none"
+          "rounded-lg px-2.5 py-1.5 border flex flex-col justify-between gap-0.5 min-w-0 text-left bg-violet-50/50 dark:bg-violet-950/25 border-violet-200/80 dark:border-violet-800/60 select-none"
         )}
       >
-        <div className="flex items-center justify-between gap-1.5 min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Award className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span className="text-sm font-bold text-amber-600 dark:text-amber-400 leading-none">
+        <div className="flex items-center justify-between gap-1 min-w-0">
+          <div className="flex items-center gap-1 min-w-0">
+            <Award className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-violet-700 dark:text-violet-400 leading-none">
               {pkg.lastTestScore.toFixed(1)}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground truncate leading-tight ml-auto text-right">
+          <span className="text-xs font-semibold text-violet-700/80 dark:text-violet-300/80 truncate leading-tight ml-auto text-right">
             Trước: {pkg.priorTestScore ? pkg.priorTestScore.toFixed(1) : '—'}
           </span>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
-          Kiểm tra
-        </span>
+        <div className="flex items-center justify-between gap-1 min-w-0">
+          <span className="text-xs font-semibold text-violet-800 dark:text-violet-300 truncate">
+            Điểm kiểm tra
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onOpenTests) {
+                onOpenTests()
+              } else if (onOpenEvaluation) {
+                onOpenEvaluation()
+              } else if (typeof window !== 'undefined') {
+                window.open('/app/classes', '_blank')
+              }
+            }}
+            className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors ml-auto shrink-0"
+            title="Mở nhận xét bài kiểm tra gần nhất trong tab mới"
+          >
+            <span>Nhận xét</span>
+            <ExternalLink className="h-3 w-3" />
+          </button>
+        </div>
       </div>
     </div>
   )

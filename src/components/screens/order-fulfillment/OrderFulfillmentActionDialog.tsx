@@ -157,9 +157,9 @@ function PickupHandoverForm({
                     alt="Bằng chứng ký nhận"
                     className="h-10 w-16 object-cover rounded"
                   />
-                  <div className="text-[11px]">
+                  <div className="text-xs">
                     <span className="font-medium text-foreground block">Ảnh chụp ký nhận / Giao hàng</span>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400">Đã đính kèm tệp</span>
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400">Đã đính kèm tệp</span>
                   </div>
                 </div>
                 <Button
@@ -314,9 +314,9 @@ function ShippingUpdateForm({
                     alt="Biên lai gửi hàng"
                     className="h-10 w-16 object-cover rounded"
                   />
-                  <div className="text-[11px]">
+                  <div className="text-xs">
                     <span className="font-medium text-foreground block">Ảnh bưu kiện / Hóa đơn bưu cục</span>
-                    <span className="text-[10px] text-sky-600 dark:text-sky-400">Đã đính kèm tệp</span>
+                    <span className="text-xs text-sky-600 dark:text-sky-400">Đã đính kèm tệp</span>
                   </div>
                 </div>
                 <Button

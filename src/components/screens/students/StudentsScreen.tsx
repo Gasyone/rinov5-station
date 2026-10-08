@@ -2,15 +2,18 @@
 
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
+import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
 import { StudentsToolbar } from './StudentsToolbar'
 import { StudentsTable } from './StudentsTable'
 import { StudentDetailDialog } from './detail/StudentDetailDialog'
+import { StudentClassAssignmentDialog } from './detail/StudentClassAssignmentDialog'
+import { StudentCareEarlyReturnDialog } from '@/components/screens/care/StudentCareEarlyReturnDialog'
 import { toast } from 'sonner'
-import type { StudentStatusId } from './studentTypes'
+import type { StudentLifecycleStatusId, StudentQuickFilterId } from './studentTypes'
 import { createStudentFilterOptionCounters, filterStudents, getInitialStudents } from './studentsHelpers'
 import { INITIAL_FILTER_STATE, type StudentFilterState } from './studentsTypes'
+import type { Student, EnrolledClass } from '@/mocks/students'
 import { Input } from '@/components/ui/input'
 import { FieldLabel } from '@/components/shared'
 
@@ -18,7 +21,8 @@ export function StudentsScreen() {
   const searchParams = useSearchParams()
   const studentIdFromUrl = searchParams?.get('studentId') || searchParams?.get('id') || null
 
-  const [activeStatus, setActiveStatus] = useState<StudentStatusId>('all')
+  const [activeStatus, setActiveStatus] = useState<StudentLifecycleStatusId>('all')
+  const [activeQuickFilter, setActiveQuickFilter] = useState<StudentQuickFilterId>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [branchFilter, setBranchFilter] = useState('all')
   const [subjectFilter, setSubjectFilter] = useState('all')
@@ -26,6 +30,10 @@ export function StudentsScreen() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+
+  // Dialog states for "Ghép lớp" and "Đi học lại" actions
+  const [assigningData, setAssigningData] = useState<{ student: Student; packageName?: string } | null>(null)
+  const [earlyReturnData, setEarlyReturnData] = useState<{ student: Student; enrolledClass?: EnrolledClass } | null>(null)
 
   const activeStudentId = selectedStudentId ?? studentIdFromUrl
 
@@ -182,6 +190,25 @@ export function StudentsScreen() {
       selectedValues: filters.ageRanges,
       getOptionCount: filterOptionCounts.ageRanges,
     }),
+    createFilterGroup({
+      id: 'studentStatuses',
+      title: 'Phân loại / Học thử',
+      options: [
+        { value: 'trial', label: 'Học thử' },
+        { value: 'wait_for_assignment', label: 'Chờ xếp lớp' },
+        { value: 'active', label: 'Đang học' },
+        { value: 'reserve', label: 'Bảo lưu' },
+        { value: 'session_ended', label: 'Hết buổi' },
+        { value: 'awaiting_opening', label: 'Chờ khai giảng' },
+        { value: 'pending_transfer', label: 'Chờ chuyển lớp' },
+        { value: 'enroll_later', label: 'Hẹn xếp sau' },
+        { value: 'draft_class', label: 'Lớp nháp' },
+        { value: 'pending_payment', label: 'Chờ thanh toán' },
+        { value: 'fee_transfer', label: 'Chuyển phí' },
+      ],
+      selectedValues: filters.studentStatuses,
+      getOptionCount: filterOptionCounts.studentStatuses,
+    }),
   ], [filters, levelOptions, subjectOptions, programOptions, packageOptions, classOptions, classTypeOptions, filterOptionCounts])
 
   // Core toggle, clear, and reset callbacks for the Filter Sheet
@@ -228,10 +255,28 @@ export function StudentsScreen() {
         branch: branchFilter,
         subject: subjectFilter,
         status: activeStatus,
+        quickFilter: activeQuickFilter,
         extra: filters,
       }),
-    [allStudents, searchQuery, branchFilter, subjectFilter, activeStatus, filters],
+    [allStudents, searchQuery, branchFilter, subjectFilter, activeStatus, activeQuickFilter, filters],
   )
+
+  const activeFilterCount =
+    filters.branches.length +
+    filters.levels.length +
+    filters.subjects.length +
+    filters.programs.length +
+    filters.packages.length +
+    filters.classes.length +
+    filters.classTypes.length +
+    filters.teachers.length +
+    filters.sales.length +
+    filters.ageRanges.length +
+    filters.studentStatuses.length +
+    filters.genders.length +
+    filters.remainingSessionsRange.length +
+    (filters.startDate ? 1 : 0) +
+    (filters.endDate ? 1 : 0)
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const currentPage = Math.min(page, totalPages)
@@ -242,6 +287,8 @@ export function StudentsScreen() {
       <StudentsToolbar
         activeStatus={activeStatus}
         onStatusChange={(s) => { setActiveStatus(s); setPage(1) }}
+        activeQuickFilter={activeQuickFilter}
+        onQuickFilterChange={(qf) => { setActiveQuickFilter(qf); setPage(1) }}
         searchQuery={searchQuery}
         onSearchChange={(q) => { setSearchQuery(q); setPage(1) }}
         branchFilter={branchFilter}
@@ -249,40 +296,42 @@ export function StudentsScreen() {
         activeSubject={subjectFilter}
         onSubjectChange={(sub) => { setSubjectFilter(sub); setPage(1) }}
         onFilterOpen={() => setIsFilterOpen(true)}
+        activeFilterCount={activeFilterCount}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-        <div className="flex-1 min-w-0 h-full overflow-hidden">
-          <DataTableFrame
-            footer={
-              <DataTablePagination
-                page={currentPage}
-                total={filtered.length}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
-              />
-            }
-          >
-            <StudentsTable
-              students={paged}
-              selectedIds={selectedIds}
-              onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
-              onToggleOne={(id, checked) => {
-                setSelectedIds((cur) => {
-                  const next = new Set(cur)
-                  if (checked) next.add(id)
-                  else next.delete(id)
-                  return next
-                })
-              }}
-              onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
-              onView={(id) => setSelectedStudentId(id)}
-            />
-          </DataTableFrame>
+      {/* Container Nội dung Bảng Học viên & Panel Bộ Lọc Ghim Cạnh Phải */}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 pt-1 pb-2 lg:px-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          <StudentsTable
+            students={paged}
+            selectedIds={selectedIds}
+            onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
+            onToggleOne={(id, checked) => {
+              setSelectedIds((cur) => {
+                const next = new Set(cur)
+                if (checked) next.add(id)
+                else next.delete(id)
+                return next
+              })
+            }}
+            onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
+            onView={(id) => setSelectedStudentId(id)}
+            onAssignClass={(student, pkg) => setAssigningData({ student, packageName: pkg })}
+            onEarlyReturn={(student, cls) => setEarlyReturnData({ student, enrolledClass: cls })}
+            className="flex-1"
+            pagination={{
+              page: currentPage,
+              total: filtered.length,
+              pageSize: pageSize,
+              onPageChange: setPage,
+              onPageSizeChange: setPageSize,
+              selectedCount: selectedIds.size,
+              onClearSelection: () => setSelectedIds(new Set()),
+            }}
+          />
         </div>
 
-        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng) */}
+        {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng & Lớp học) */}
         {isFilterOpen && (
           <FilterGroupAsidePanel
             title="Bộ lọc học viên"
@@ -311,6 +360,48 @@ export function StudentsScreen() {
         }}
         onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
       />
+
+      {/* Modal Ghép lớp cho học viên đang chờ xếp lớp */}
+      {assigningData && (
+        <StudentClassAssignmentDialog
+          open={Boolean(assigningData)}
+          onOpenChange={(open) => !open && setAssigningData(null)}
+          studentName={assigningData.student.name}
+          studentCode={assigningData.student.id}
+          studentBranch={assigningData.student.branch}
+          studentLevel={assigningData.student.level}
+          studentSubLevel={assigningData.student.subLevel}
+          packageName={assigningData.packageName || assigningData.student.packageName || 'Gói học'}
+          pkgRemainingSessions={assigningData.student.remainingSessions ?? 24}
+          pkgTotalSessions={assigningData.student.totalSessions ?? 24}
+          studentClasses={assigningData.student.enrolledClasses}
+          student={assigningData.student}
+          onConfirm={(classItem) => {
+            toast.success(`Đã xếp lớp ${classItem.name} cho học viên ${assigningData.student.name}`)
+            setAssigningData(null)
+          }}
+        />
+      )}
+
+      {/* Modal Đi học lại cho học viên đang bảo lưu */}
+      {earlyReturnData && (
+        <StudentCareEarlyReturnDialog
+          open={Boolean(earlyReturnData)}
+          onOpenChange={(open) => !open && setEarlyReturnData(null)}
+          studentName={earlyReturnData.student.name}
+          studentCode={earlyReturnData.student.id}
+          studentId={earlyReturnData.student.id}
+          packageName={earlyReturnData.enrolledClass?.programName || earlyReturnData.student.packageName || 'Gói học'}
+          className={earlyReturnData.enrolledClass?.className}
+          classCode={earlyReturnData.enrolledClass?.classCode}
+          remainingSessions={earlyReturnData.student.remainingSessions ?? 12}
+          branchName={earlyReturnData.student.branch}
+          onSuccess={() => {
+            toast.success(`Đã ghi nhận yêu cầu đi học lại cho ${earlyReturnData.student.name}`)
+            setEarlyReturnData(null)
+          }}
+        />
+      )}
     </div>
   )
 }

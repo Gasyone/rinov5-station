@@ -110,7 +110,7 @@ export function ProgramLevelTreeFilter({
                 </div>
 
                 {showCount && (
-                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 ml-1.5">
+                  <span className="text-xs text-muted-foreground font-medium shrink-0 ml-1.5">
                     {subjectSessionCount}
                   </span>
                 )}
@@ -146,12 +146,12 @@ export function ProgramLevelTreeFilter({
                                 : 'border-border/70 bg-background'
                             )}
                           />
-                          <span className="text-[11px] truncate" title={level}>
+                          <span className="text-xs truncate" title={level}>
                             {level}
                           </span>
                         </div>
                         {showCount && (
-                          <span className="text-[10px] text-muted-foreground/75 font-normal shrink-0 ml-1.5">
+                          <span className="text-xs text-muted-foreground/75 font-normal shrink-0 ml-1.5">
                             {levelCount}
                           </span>
                         )}

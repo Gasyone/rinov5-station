@@ -181,7 +181,7 @@ export function CrmLeadDetailModal({
               lead={currentLead}
               onAdvanceStage={handleAdvanceStage}
               onOpenDropDialog={() => setIsDropOpen(true)}
-              onOpenBookingTest={() => router.push(`/app/booking_test/create?leadId=${currentLead.id}`)}
+              onOpenBookingTest={() => window.open(`/booking-test?leadId=${currentLead.id}`, '_blank')}
               onOpenCreateOrder={() => onOpenCreateOrder?.(currentLead)}
             />
 
@@ -263,8 +263,8 @@ export function CrmLeadDetailModal({
                   {activeTab === 'test_trial' && (
                     <CrmLeadTestTrialTab
                       lead={currentLead}
-                      onOpenBookingTest={() => router.push(`/app/booking_test/create?leadId=${currentLead.id}`)}
-                      onOpenTrialClass={() => router.push(`/app/trial_class/create?leadId=${currentLead.id}`)}
+                      onOpenBookingTest={() => window.open(`/booking-test?leadId=${currentLead.id}`, '_blank')}
+                      onOpenTrialClass={() => window.open(`/booking-trial?leadId=${currentLead.id}`, '_blank')}
                     />
                   )}
 

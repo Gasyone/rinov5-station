@@ -59,7 +59,7 @@ function HomeworkTable({
 
               <td className="py-2.5 px-3 w-[380px]">
                 <span className="font-semibold text-foreground">{s.topic}</span>
-                <div className="text-xs text-muted-foreground mt-0.5 font-medium">
+                <div className="text-xs text-muted-foreground mt-0.5 font-normal">
                   {getDayOfWeek(s.date)}, {s.date}
                 </div>
               </td>

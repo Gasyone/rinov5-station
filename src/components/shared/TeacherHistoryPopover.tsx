@@ -6,8 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
-import { AppAvatar } from './AppAvatar'
+import { GraduationCap } from 'lucide-react'
 import type { TeacherHistoryEntry } from '@/mocks/classRecords'
 
 interface TeacherHistoryPopoverProps {
@@ -27,14 +26,7 @@ interface TeacherHistoryPopoverProps {
 
 /**
  * Unified popover showing current teacher(s) + teacher assignment history.
- * Does NOT include substitute teachers (dạy thay).
- *
- * Used by:
- * - ClassesTableRow (teacher column, list view)
- * - ClassCodeHoverCell (CARE screens)
- * - ClassTeacherHistoryPopover (standalone wrapper)
- *
- * @see docs/DESIGN_SYSTEM.md §3.4
+ * Styled compact and clean matching HistoricalPackagesPopover.
  */
 export function TeacherHistoryPopover({
   trigger,
@@ -63,86 +55,88 @@ export function TeacherHistoryPopover({
         {trigger}
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 z-50 shadow-lg border bg-popover text-popover-foreground"
+        className="w-[280px] p-2 rounded-xl border border-border/80 bg-popover shadow-xl space-y-1.5 z-50 text-left"
         align={align}
         side={side}
+        sideOffset={6}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="px-3 py-2 border-b bg-muted/30 flex items-center justify-between">
-          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Phân công Giáo viên
-          </h4>
-          <Badge variant="outline" className="text-xs px-1.5 py-0 font-bold">
-            {totalCount} giáo viên
-          </Badge>
+        {/* Header: text thường, không in hoa, không in đậm */}
+        <div className="flex items-center justify-between pb-1.5 border-b border-border/50 px-1">
+          <div className="flex items-center gap-1.5 text-xs font-normal text-foreground">
+            <GraduationCap className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Phân công giáo viên ({totalCount})</span>
+          </div>
+          <span className="text-[10px] text-muted-foreground font-normal shrink-0">
+            Lịch sử phân công
+          </span>
         </div>
 
-        <div className="p-2 space-y-1.5 max-h-[320px] overflow-y-auto">
-          {/* Current teachers */}
+        {/* Danh sách giáo viên: 2 dòng (Tên trên, chi tiết dưới, nhãn bên phải) - style giống gói cũ, hết hạn */}
+        <div className="max-h-64 overflow-y-auto space-y-1 pr-0.5">
+          {/* Giáo viên hiện tại */}
           {currentEntries.map((entry, idx) => (
             <div
               key={`current-${idx}`}
-              className="p-2 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/50 space-y-0.5"
+              className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-left transition-colors hover:bg-muted/50 border border-transparent"
+              title={`${entry.name} - ${entry.role}${entry.phone ? ` • SĐT: ${entry.phone}` : ''}`}
             >
-              <div className="flex items-center gap-2">
-                <AppAvatar name={entry.name} size="xs" shape="circle" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-semibold text-emerald-900 dark:text-emerald-300 truncate">
-                      {entry.name}
-                    </span>
-                    <Badge className="bg-emerald-600 text-xs px-1 py-0 text-white font-bold shrink-0">
-                      Hiện tại
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {entry.role}
-                    {entry.startDate && <span className="font-mono ml-1">• Từ {entry.startDate}</span>}
-                  </div>
-                </div>
+              {/* Cột trái: 2 dòng */}
+              <div className="flex flex-col min-w-0 flex-1 pr-1">
+                {/* Dòng 1: Tên giáo viên (text thường màu đen) */}
+                <span className="text-xs font-normal text-foreground truncate leading-tight">
+                  {entry.name}
+                </span>
+                {/* Dòng 2: Chi tiết vai trò, thời gian, SĐT (text thường màu nhạt) */}
+                <span className="text-[11px] font-normal text-muted-foreground truncate leading-tight mt-0.5">
+                  {entry.role}
+                  {entry.startDate && ` • Từ ${entry.startDate}`}
+                  {entry.phone && ` • ${entry.phone}`}
+                </span>
               </div>
-              {entry.phone && (
-                <p className="text-xs text-muted-foreground font-mono pl-7">
-                  SĐT: {entry.phone}
-                </p>
-              )}
+
+              {/* Cột phải: Nhãn Hiện tại viền thanh mảnh */}
+              <div className="shrink-0 flex items-center gap-1">
+                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40">
+                  Hiện tại
+                </span>
+              </div>
             </div>
           ))}
 
-          {/* Divider between current and past */}
+          {/* Dải phân cách nhẹ khi có cả hiện tại và quá khứ */}
           {currentEntries.length > 0 && pastEntries.length > 0 && (
-            <div className="flex items-center gap-2 px-1 py-0.5">
-              <div className="flex-1 border-t border-border/50" />
-              <span className="text-xs text-muted-foreground font-semibold uppercase">Lịch sử</span>
-              <div className="flex-1 border-t border-border/50" />
+            <div className="pt-1 pb-0.5 px-2 text-[10px] font-normal text-muted-foreground border-t border-border/40">
+              Giáo viên trước đây
             </div>
           )}
 
-          {/* Past teachers */}
+          {/* Giáo viên trước đây */}
           {pastEntries.map((entry, idx) => (
             <div
               key={`past-${idx}`}
-              className="p-2 rounded-lg bg-muted/30 border border-border/40 space-y-0.5"
+              className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-left transition-colors hover:bg-muted/50 border border-transparent"
+              title={`${entry.name} (${entry.role})${entry.reason ? ` • Lý do: ${entry.reason}` : ''}`}
             >
-              <div className="flex items-center gap-2">
-                <AppAvatar name={entry.name} size="xs" shape="circle" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-medium text-foreground truncate">
-                      {entry.name} ({entry.role})
-                    </span>
-                    <span className="text-xs text-muted-foreground font-mono shrink-0">
-                      {entry.startDate} ➔ {entry.endDate || 'Nay'}
-                    </span>
-                  </div>
-                </div>
+              {/* Cột trái: 2 dòng */}
+              <div className="flex flex-col min-w-0 flex-1 pr-1">
+                {/* Dòng 1: Tên giáo viên */}
+                <span className="text-xs font-normal text-foreground truncate leading-tight">
+                  {entry.name}
+                </span>
+                {/* Dòng 2: Vai trò / Lý do */}
+                <span className="text-[11px] font-normal text-muted-foreground truncate leading-tight mt-0.5">
+                  {entry.role}
+                  {entry.reason ? ` • ${entry.reason}` : ''}
+                </span>
               </div>
-              {entry.reason && (
-                <p className="text-xs text-muted-foreground italic pl-7">
-                  Lý do: {entry.reason}
-                </p>
-              )}
+
+              {/* Cột phải: Khoảng thời gian */}
+              <div className="shrink-0 flex items-center gap-1">
+                <span className="text-[9.5px] font-normal px-1.5 py-0.5 rounded-full border border-border/70 text-muted-foreground bg-background font-mono">
+                  {entry.startDate} ➔ {entry.endDate || 'Nay'}
+                </span>
+              </div>
             </div>
           ))}
         </div>

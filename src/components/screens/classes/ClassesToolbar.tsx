@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, AlertCircle, ChevronDown, Table2, CalendarRange } from 'lucide-react'
+import { Plus, ChevronDown, ListFilter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -36,24 +36,19 @@ interface ClassesToolbarProps {
   activeBranch: string
   activeSubject: string
   activeGrade: string
-  viewMode: ClassViewMode
+  viewMode?: ClassViewMode
   searchTerm: string
   branchOptions: string[]
   baseForStatus: ClassRecord[]
   activeFilterCount: number
   isTeacherRole: boolean
   showCreateButton?: boolean
-  specialCareCount?: number
-  lowAcsCount?: number
-  lowAttendanceCount?: number
-  lowHomeworkCount?: number
-  unassignedTeacherCount?: number
   onStatusChange: (status: ClassStatusFilter) => void
   onProblemFilterChange?: (filter: ClassProblemFilter) => void
   onBranchChange: (branch: string) => void
   onSubjectChange: (subject: string) => void
   onGradeChange: (grade: string) => void
-  onViewModeChange: (mode: ClassViewMode) => void
+  onViewModeChange?: (mode: ClassViewMode) => void
   onSearchChange: (value: string) => void
   onOpenFilters: () => void
   onCreateClass: () => void
@@ -70,13 +65,7 @@ export function ClassesToolbar({
   branchOptions,
   baseForStatus,
   activeFilterCount,
-  isTeacherRole,
   showCreateButton = true,
-  specialCareCount = 0,
-  lowAcsCount = 0,
-  lowAttendanceCount = 0,
-  lowHomeworkCount = 0,
-  unassignedTeacherCount = 0,
   onStatusChange,
   onProblemFilterChange,
   onBranchChange,
@@ -122,15 +111,6 @@ export function ClassesToolbar({
     })),
   ]
 
-  // Count map for quick filter chips
-  const countMap: Record<string, number> = {
-    special_care: specialCareCount,
-    unassigned_teacher: unassignedTeacherCount,
-    low_acs: lowAcsCount,
-    low_attendance: lowAttendanceCount,
-    low_homework: lowHomeworkCount,
-  }
-
   // Semantic color map for active state
   const semanticMap: Record<string, StatusSemantic> = {
     special_care: 'error',
@@ -140,81 +120,45 @@ export function ClassesToolbar({
     low_homework: 'info',
   }
 
-  // Active badge bg color map
-  const activeBadgeBg: Record<string, string> = {
-    special_care: 'bg-rose-600 text-white font-bold',
-    unassigned_teacher: 'bg-amber-600 text-white font-bold',
-    low_acs: 'bg-rose-600 text-white font-bold',
-    low_attendance: 'bg-amber-600 text-white font-bold',
-    low_homework: 'bg-sky-600 text-white font-bold',
-  }
-
   return (
-    <div className="flex shrink-0 flex-col gap-3 bg-background px-3 py-3 lg:px-3 border-b">
+    <div className="flex shrink-0 flex-col gap-1.5 bg-background px-2.5 pt-2 pb-1 lg:px-3">
       {/* Top Row: SubjectSelect, BranchSelect, View Switcher (left) and search, filter, create buttons (right) */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <SubjectSelect
-            value={activeSubject}
-            onValueChange={onSubjectChange}
-            className="h-9 min-w-36 text-sm"
-          />
+      <div className="flex flex-wrap items-center justify-between gap-1.5 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
           <BranchSelect
             value={activeBranch}
             branches={branchOptions}
             onValueChange={onBranchChange}
-            className="h-9 min-w-40 text-sm"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
+            className="h-8 min-w-[130px] sm:min-w-[135px] text-xs"
           />
 
-          {/* 2 kiểu view theo yêu cầu: Danh sách bảng và Ma trận tuần định danh */}
-          {onViewModeChange && (
-            <div className="flex items-center rounded-md border border-border/80 p-0.5 bg-muted/30">
-              <button
-                type="button"
-                onClick={() => onViewModeChange('list')}
-                title="Xem dạng danh sách bảng"
-                className={cn(
-                  'flex items-center justify-center h-8 px-2.5 rounded text-xs font-medium transition-all cursor-pointer gap-1.5',
-                  viewMode === 'list'
-                    ? 'bg-background text-foreground shadow-xs font-bold border border-border/60'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Table2 className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Danh sách</span>
-              </button>
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
 
-              <button
-                type="button"
-                onClick={() => onViewModeChange('timetable')}
-                title="Xem ma trận tuần định danh (Lịch tuần chuẩn highlight theo thứ)"
-                className={cn(
-                  'flex items-center justify-center h-8 px-2.5 rounded text-xs font-medium transition-all cursor-pointer gap-1.5',
-                  viewMode === 'timetable'
-                    ? 'bg-background text-foreground shadow-xs font-bold border border-border/60'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <CalendarRange className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Tuần chuẩn</span>
-              </button>
-            </div>
-          )}
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            allLabel="Tất cả các môn"
+            placeholder="Chọn môn học"
+            className="h-8 min-w-[125px] sm:min-w-[130px] text-xs"
+          />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <ExpandableSearch
             value={searchTerm}
             onValueChange={onSearchChange}
             label="Tìm lớp học"
             placeholder="Tìm tên lớp, mã lớp, giáo viên..."
-            inputClassName="sm:w-56"
+            inputClassName="sm:w-60 text-xs h-8"
           />
-          <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
+          <FilterIconButton count={activeFilterCount > 0 ? activeFilterCount : undefined} onClick={onOpenFilters} />
 
           {showCreateButton ? (
-            <Button size="sm" onClick={onCreateClass} className="shrink-0 font-semibold shadow-2xs">
-              <Plus className="h-4 w-4 mr-1.5" />
+            <Button size="sm" onClick={onCreateClass} className="h-8 px-2.5 font-medium text-xs flex items-center gap-1.5 shadow-2xs">
+              <Plus className="h-3.5 w-3.5 mr-0.5" />
               Tạo lớp
             </Button>
           ) : null}
@@ -223,8 +167,8 @@ export function ClassesToolbar({
 
       {/* Grade Selector Row: visible only when math subject is active */}
       {activeSubject === 'math' && (
-        <div className="flex items-center gap-2 border-t border-dashed border-border/80 pt-2 flex-wrap">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
+        <div className="flex items-center gap-2 border-t border-dashed border-border/80 pt-1 flex-wrap">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Khối lớp:</span>
           <SegmentedControl
             value={activeGrade}
             options={[
@@ -236,76 +180,88 @@ export function ClassesToolbar({
               { value: 'lớp 5', label: 'Lớp 5' },
             ]}
             onValueChange={onGradeChange}
+            itemClassName="h-6 px-2 text-xs"
           />
         </div>
       )}
 
       {/* Bottom Row: Status Tiles (left) & Quick Problem Filters (right) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 pt-0.5">
         <div className="overflow-x-auto min-w-0 flex-1">
           <StatusTiles
             tiles={tiles}
             activeId={activeStatus}
+            compact={true}
+            noOverflowCollapse={true}
+            showDot={false}
+            hideDot={true}
+            coloredCount={true}
+            fontNormal={true}
             onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
           />
         </div>
 
-        {/* Quick Problem Filters (Right Aligned - No Outer Background) */}
+        {/* Quick Problem Filters (Right Aligned - Compact Chips) */}
         {onProblemFilterChange && (
-          <div className="flex items-center gap-1.5 shrink-0 text-xs">
-            <span className="text-xs font-semibold text-muted-foreground mr-0.5 flex items-center gap-1">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-              Lọc nhanh:
+          <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
+            <span
+              title="Lọc nhanh"
+              aria-label="Lọc nhanh"
+              className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
+            >
+              <ListFilter className="h-3.5 w-3.5" />
             </span>
 
-            {/* Dropdown chevron to toggle quick filter chip visibility */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  title="Chọn bộ lọc nhanh hiển thị"
-                >
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-48 p-2 space-y-1">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1 pb-1">Hiển thị bộ lọc</p>
-                {QUICK_FILTER_DEFS.map((def) => (
-                  <label
-                    key={def.id}
-                    className="flex items-center gap-2 px-1 py-1 rounded hover:bg-muted cursor-pointer text-xs"
+            <div className="flex items-center gap-1 min-w-0">
+              {/* Dropdown chevron to toggle quick filter chip visibility */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    title="Chọn bộ lọc nhanh hiển thị"
                   >
-                    <Checkbox
-                      checked={visibleFilters.has(def.id)}
-                      onCheckedChange={() => toggleFilterVisibility(def.id)}
-                      className="h-3.5 w-3.5"
-                    />
-                    <span className="font-medium text-foreground">{def.label}</span>
-                  </label>
-                ))}
-              </PopoverContent>
-            </Popover>
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-48 p-2 space-y-1">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1 pb-1">Hiển thị bộ lọc</p>
+                  {QUICK_FILTER_DEFS.map((def) => (
+                    <label
+                      key={def.id}
+                      className="flex items-center gap-2 px-1 py-1 rounded hover:bg-muted cursor-pointer text-xs"
+                    >
+                      <Checkbox
+                        checked={visibleFilters.has(def.id)}
+                        onCheckedChange={() => toggleFilterVisibility(def.id)}
+                        className="h-3.5 w-3.5"
+                      />
+                      <span className="font-normal text-foreground">{def.label}</span>
+                    </label>
+                  ))}
+                </PopoverContent>
+              </Popover>
 
-            {/* Render only visible quick filter chips */}
-            {QUICK_FILTER_DEFS.filter((d) => visibleFilters.has(d.id)).map((def) => (
-              <button
-                key={def.id}
-                type="button"
-                onClick={() => onProblemFilterChange(activeProblemFilter === def.id ? 'all' : def.id)}
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold transition-all cursor-pointer border',
-                  activeProblemFilter === def.id
-                    ? getStatusColors(semanticMap[def.id]).badge
-                    : 'border-border/60 bg-background text-muted-foreground hover:bg-muted hover:text-foreground shadow-2xs'
-                )}
-              >
-                <span>{def.label}</span>
-                <span className={cn('rounded-full px-1.5 py-0 text-xs', activeProblemFilter === def.id ? activeBadgeBg[def.id] : 'bg-muted text-muted-foreground')}>
-                  {countMap[def.id]}
-                </span>
-              </button>
-            ))}
+              {/* Render only visible quick filter chips */}
+              {QUICK_FILTER_DEFS.filter((d) => visibleFilters.has(d.id)).map((def) => {
+                const isActive = activeProblemFilter === def.id
+                return (
+                  <button
+                    key={def.id}
+                    type="button"
+                    onClick={() => onProblemFilterChange(isActive ? 'all' : def.id)}
+                    className={cn(
+                      'inline-flex items-center h-6 rounded-md px-2 text-xs font-normal transition-colors cursor-pointer border select-none shrink-0 gap-1',
+                      isActive
+                        ? getStatusColors(semanticMap[def.id]).badge
+                        : 'border-border/70 border-dashed bg-background text-muted-foreground hover:bg-muted/60'
+                    )}
+                  >
+                    <span>{def.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>

@@ -138,7 +138,7 @@ export function StudentClassAssignmentClassRow({
               </span>
               <Badge
                 variant="outline"
-                className={`text-[10px] font-semibold px-1 py-0 border-transparent ${getStatusBadgeClass(
+                className={`text-xs font-semibold px-1 py-0 border-transparent ${getStatusBadgeClass(
                   cls.status
                 )}`}
               >
@@ -147,13 +147,13 @@ export function StudentClassAssignmentClassRow({
               {isOnline && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-semibold px-1 py-0 text-muted-foreground"
+                  className="text-xs font-semibold px-1 py-0 text-muted-foreground"
                 >
                   Online Tutor
                 </Badge>
               )}
             </div>
-            <span className="text-[11px] font-mono text-muted-foreground font-semibold">
+            <span className="text-xs font-mono text-muted-foreground font-semibold">
               {cls.code || cls.id.toUpperCase()} • {cls.level}{' '}
               {cls.subLevel ? `(${cls.subLevel})` : ''}
             </span>

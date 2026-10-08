@@ -132,7 +132,7 @@ export function BookingTestScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-2 pt-1 lg:px-3 lg:pb-2">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-2.5 lg:px-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
           <DataTableFrame
             footer={
@@ -144,6 +144,7 @@ export function BookingTestScreen() {
                 onPageSizeChange={setPageSize}
                 selectedCount={selectedIds.size}
                 onClearSelection={() => setSelectedIds(new Set())}
+                size="sm"
               />
             }
           >
@@ -212,6 +213,7 @@ export function BookingTestScreen() {
         onCopy={actions.copyToClipboard}
         onDetailNoteChange={setDetailNote}
         onAddNote={actions.addDetailNote}
+        onSelectBooking={(selected) => setDetailBookingId(selected.id)}
       />
 
       <BookingTestAssessmentDialog

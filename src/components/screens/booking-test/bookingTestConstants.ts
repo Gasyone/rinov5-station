@@ -9,6 +9,7 @@ export const STATUS_CONFIG: StatusConfigItem[] = [
   { id: 'checkin', label: 'Đã check-in', status: 'checkin' },
   { id: 'interviewed', label: 'Đã phỏng vấn', status: 'interviewed' },
   { id: 'tested', label: 'Đã làm bài', status: 'tested' },
+  { id: 'assessing', label: 'Đang đánh giá', status: 'assessing' },
   { id: 'completed', label: 'Hoàn tất', status: 'completed' },
   { id: 'failed', label: 'Không đạt', status: 'failed' },
   { id: 'cancelled', label: 'Đã hủy', status: 'cancelled' },

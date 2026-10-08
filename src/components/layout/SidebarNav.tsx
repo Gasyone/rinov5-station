@@ -83,7 +83,12 @@ export function SidebarNav({
   const isSingleMenuGroup = (group: NavigationGroup) => group.items.length === 1
 
   const renderNavContent = (open: boolean) => (
-    <div className="custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-2 overflow-y-auto py-4">
+    <div
+      className={cn(
+        'custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-0.5 overflow-y-auto py-2',
+        open ? 'px-2' : 'px-1.5'
+      )}
+    >
       {visibleNavigationGroups.map((group) => {
         const isGroupActive = group.items.some((item) => isItemActive(item.id))
         const groupExpanded = expandedGroupIds.includes(group.id)
@@ -92,37 +97,40 @@ export function SidebarNav({
         return (
           <div
             key={group.id}
-            className={cn('flex w-full flex-col', open ? 'px-3' : 'items-center')}
+            className={cn('flex w-full flex-col', open ? '' : 'items-center')}
           >
             <Button
               type="button"
               variant="ghost"
+              size="sm"
               className={cn(
-                'flex items-center rounded-xl transition-all',
+                'flex items-center rounded-md font-medium transition-all',
                 isGroupActive
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
-                open ? 'w-full justify-between px-3 py-2.5' : 'h-11 w-11 justify-center p-0'
+                  ? 'bg-accent/80 text-foreground'
+                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                open
+                  ? 'h-[34px] w-full justify-between px-2.5 py-1 text-xs'
+                  : 'h-8 w-8 justify-center p-0'
               )}
               aria-expanded={!singleMenuGroup ? groupExpanded : undefined}
               title={!open ? group.label : ''}
               onClick={() => handleGroupClick(group)}
             >
               {open ? (
-                <span className="flex min-w-0 flex-1 items-center gap-3 pr-2">
-                  <group.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="flex-1 truncate text-left text-inherit text-sm">
+                <span className="flex min-w-0 flex-1 items-center gap-2.5 pr-1">
+                  <group.icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1 truncate text-left text-xs font-medium text-inherit">
                     {group.label}
                   </span>
                 </span>
               ) : (
-                <group.icon className="h-5 w-5 flex-shrink-0" />
+                <group.icon className="h-4 w-4 shrink-0" />
               )}
 
               {open && !singleMenuGroup ? (
                 <ChevronDown
                   className={cn(
-                    'h-4 w-4 flex-shrink-0 transition-transform',
+                    'h-3.5 w-3.5 shrink-0 text-muted-foreground/70 transition-transform',
                     groupExpanded ? '' : '-rotate-90'
                   )}
                 />
@@ -130,24 +138,28 @@ export function SidebarNav({
             </Button>
 
             {groupExpanded && open && !singleMenuGroup ? (
-              <div className="mt-1 space-y-1 overflow-hidden py-1 pl-5 pr-1">
-                {group.items.map((item) => (
-                  <Button
-                    key={item.id}
-                    type="button"
-                    variant="ghost"
-                    className={cn(
-                      'block w-full truncate rounded-lg px-4 py-2 text-left text-sm transition-all',
-                      isItemActive(item.id)
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
-                    )}
-                    title={item.label}
-                    onClick={() => handleItemClick(item.id)}
-                  >
-                    <span className="text-[13px] text-inherit">{item.label}</span>
-                  </Button>
-                ))}
+              <div className="mt-0.5 space-y-0.5 overflow-hidden py-0.5 pl-4">
+                {group.items.map((item) => {
+                  const active = isItemActive(item.id)
+                  return (
+                    <Button
+                      key={item.id}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        'h-[30px] w-full justify-start rounded-md px-2 text-left text-xs transition-all',
+                        active
+                          ? 'bg-accent text-accent-foreground font-medium'
+                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground font-normal'
+                      )}
+                      title={item.label}
+                      onClick={() => handleItemClick(item.id)}
+                    >
+                      <span className="truncate text-xs text-inherit">{item.label}</span>
+                    </Button>
+                  )
+                })}
               </div>
             ) : null}
 
@@ -165,7 +177,7 @@ export function SidebarNav({
         }}
         className={cn(
           'hidden h-full min-h-0 flex-shrink-0 flex-col transition-all duration-300 md:flex',
-          isOpen ? 'w-72' : 'w-[72px] items-center'
+          isOpen ? 'w-60' : 'w-14 items-center'
         )}
       >
         {renderNavContent(isOpen)}
@@ -180,18 +192,18 @@ export function SidebarNav({
             className="absolute inset-0 h-auto w-auto rounded-none bg-foreground/40 p-0 hover:bg-foreground/40"
             onClick={onMobileClose}
           />
-          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col border-r border-border bg-background shadow-lg">
-            <div className="flex h-12 items-center justify-between border-b border-border px-4">
-              <span className="text-sm font-semibold">Navigation</span>
+          <aside className="relative flex h-full w-60 max-w-[85vw] flex-col bg-background shadow-lg">
+            <div className="flex h-11 items-center justify-between border-b border-border px-3">
+              <span className="text-xs font-semibold">Navigation</span>
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="icon-sm"
                 aria-label="Close navigation"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
                 onClick={onMobileClose}
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
             {renderNavContent(true)}

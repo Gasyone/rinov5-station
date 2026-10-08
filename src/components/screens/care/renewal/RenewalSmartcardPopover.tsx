@@ -76,38 +76,38 @@ export function RenewalSmartcardPopover({
           type="button"
           title={`Xem chỉ số tái phí (${timeLabel})`}
           className={cn(
-            'inline-flex items-center gap-2 rounded-lg border border-border/80 bg-background/95 px-2.5 py-1.5 text-xs shadow-2xs backdrop-blur-xs transition-all hover:bg-muted/70 hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none',
+            'inline-flex items-center gap-1.5 h-8 rounded-md border border-border/80 bg-background px-2 text-xs shadow-2xs transition-colors hover:bg-muted/70 hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none shrink-0',
             open && 'border-primary/50 bg-muted/80 ring-1 ring-primary/20',
             className
           )}
         >
           {/* Main icon badge */}
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-            <TrendingUp className="h-3.5 w-3.5" />
+          <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
+            <TrendingUp className="h-3 w-3" />
           </div>
 
           {/* Metric 0: Tỷ lệ tái phí */}
           <div className="flex items-center gap-1">
-            <Award className="h-3.5 w-3.5 text-primary" />
-            <span className="font-bold text-primary">{metrics.renewalRate}%</span>
+            <Award className="h-3 w-3 text-primary" />
+            <span className="font-bold text-xs text-primary">{metrics.renewalRate}%</span>
             <span className="text-xs text-muted-foreground hidden lg:inline">tái phí</span>
           </div>
 
-          <span className="text-muted-foreground/40 font-light">|</span>
+          <span className="text-muted-foreground/30 font-light text-xs">|</span>
 
           {/* Metric 1: Total Orders */}
           <div className="flex items-center gap-1">
-            <ReceiptText className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{metrics.total}</span>
+            <ReceiptText className="h-3 w-3 text-muted-foreground" />
+            <span className="font-semibold text-xs text-foreground">{metrics.total}</span>
             <span className="text-xs text-muted-foreground hidden sm:inline">đơn</span>
           </div>
 
-          <span className="text-muted-foreground/40 font-light">|</span>
+          <span className="text-muted-foreground/30 font-light text-xs">|</span>
 
           {/* Metric 2: Collected Revenue */}
           <div className="flex items-center gap-1">
-            <Banknote className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-semibold text-foreground">
+            <Banknote className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-semibold text-xs text-foreground">
               {formatCompactCurrency(metrics.revenue)}
             </span>
           </div>
@@ -115,10 +115,10 @@ export function RenewalSmartcardPopover({
           {/* Metric 3: Outstanding Debt (visible on md screens up) */}
           {metrics.outstanding > 0 ? (
             <>
-              <span className="text-muted-foreground/40 font-light hidden md:inline">|</span>
+              <span className="text-muted-foreground/30 font-light text-xs hidden md:inline">|</span>
               <div className="hidden md:flex items-center gap-1">
-                <Wallet className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span className="font-medium text-amber-700 dark:text-amber-300">
+                <Wallet className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                <span className="font-medium text-xs text-amber-700 dark:text-amber-300">
                   {formatCompactCurrency(metrics.outstanding)}
                 </span>
                 <span className="text-xs text-muted-foreground">nợ</span>
@@ -129,7 +129,7 @@ export function RenewalSmartcardPopover({
           {/* Dropdown Chevron indicator */}
           <ChevronDown
             className={cn(
-              'h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ml-0.5',
+              'h-3 w-3 text-muted-foreground transition-transform duration-200 ml-0.5',
               open && 'rotate-180 text-foreground'
             )}
           />

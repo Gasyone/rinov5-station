@@ -210,7 +210,7 @@ export function CrmLeadsTable({
                           {lead.parentName}
                         </span>
                         {lead.parentRole && (
-                          <span className="text-[11px] text-muted-foreground/70">
+                          <span className="text-xs text-muted-foreground/70">
                             ({lead.parentRole})
                           </span>
                         )}
@@ -303,7 +303,7 @@ export function CrmLeadsTable({
                             <PopoverTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[10px] font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer shrink-0 transition-colors"
+                                className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-xs font-normal text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer shrink-0 transition-colors"
                                 title={`Có thêm ${nearestEvent.eventCount - 1} sự kiện - Bấm để xem chi tiết`}
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -405,7 +405,7 @@ export function CrmLeadsTable({
                               type="button"
                               size="sm"
                               variant="outline"
-                              className="h-5 px-1.5 text-[11px] font-normal border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 cursor-pointer shrink-0"
+                              className="h-5 px-1.5 text-xs font-normal border-purple-200 text-purple-700 bg-purple-50/60 hover:bg-purple-100 hover:text-purple-900 dark:border-purple-800 dark:text-purple-300 dark:bg-purple-950/40 cursor-pointer shrink-0"
                               onClick={() => onOpenBookingTest?.(lead)}
                               title="Đặt lịch đánh giá năng lực"
                             >
@@ -415,7 +415,7 @@ export function CrmLeadsTable({
                               type="button"
                               size="sm"
                               variant="outline"
-                              className="h-5 px-1.5 text-[11px] font-normal border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 cursor-pointer shrink-0"
+                              className="h-5 px-1.5 text-xs font-normal border-sky-200 text-sky-700 bg-sky-50/60 hover:bg-sky-100 hover:text-sky-900 dark:border-sky-800 dark:text-sky-300 dark:bg-sky-950/40 cursor-pointer shrink-0"
                               onClick={() => onOpenTrialClass?.(lead)}
                               title="Đăng ký ghép lớp học thử"
                             >
@@ -544,7 +544,7 @@ export function CrmLeadsTable({
                                 <ArrowLeftRight className="h-3 w-3 text-muted-foreground/60 group-hover:text-primary shrink-0 transition-colors" />
                               </div>
                               <span
-                                className="text-[11px] text-muted-foreground font-mono truncate"
+                                className="text-xs text-muted-foreground font-mono truncate"
                                 title={`Bắt đầu phụ trách: ${staffAssignInfo.label}`}
                               >
                                 {staffAssignInfo.label}
@@ -576,11 +576,11 @@ export function CrmLeadsTable({
                           {/* Dòng 2: Trạng thái đơn hàng + Ngày cập nhật phía sau */}
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
                             {lead.orderStatus && (
-                              <Badge className={cn("font-normal text-[11px] py-0.5 px-1.5 leading-none shrink-0", getStatusBadgeClass(lead.orderStatus))}>
+                              <Badge className={cn("font-normal text-xs py-0.5 px-1.5 leading-none shrink-0", getStatusBadgeClass(lead.orderStatus))}>
                                 {ORDER_STATUS_LABELS[lead.orderStatus] || lead.orderStatus}
                               </Badge>
                             )}
-                            <span className="font-mono text-[11px] text-muted-foreground font-normal shrink-0">
+                            <span className="font-mono text-xs text-muted-foreground font-normal shrink-0">
                               {formatOrderDate(lead.orderDate || lead.createdAt)}
                             </span>
                           </div>

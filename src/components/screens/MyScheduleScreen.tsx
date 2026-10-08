@@ -446,9 +446,11 @@ export function MyScheduleScreen({
 
       <BookingTestDetailDialog
         booking={detailBooking}
+        bookings={mockBookingTests}
         detailNote={detailNote}
         copiedKey={copiedKey}
         onOpenChange={(open) => { if (!open) setDetailBooking(null) }}
+        onSelectBooking={(b) => setDetailBooking(b)}
         onUpdateBooking={(id, updater) => {
           if (detailBooking && detailBooking.id === id) setDetailBooking(updater(detailBooking))
           toast.success('Đã cập nhật (Demo)')

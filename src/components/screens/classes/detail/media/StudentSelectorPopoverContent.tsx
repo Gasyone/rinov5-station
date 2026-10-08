@@ -202,7 +202,7 @@ export function StudentSelectorPopoverContent({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="truncate block font-semibold text-xs">{st.name}</span>
-                  {st.code && <span className="text-[11px] text-muted-foreground font-mono">{st.code}</span>}
+                  {st.code && <span className="text-xs text-muted-foreground font-mono">{st.code}</span>}
                 </div>
               </div>
 

@@ -37,7 +37,7 @@ export function ClassesDetailDialogV2({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col h-[90vh] max-h-[900px] gap-0 overflow-hidden p-0 sm:max-w-[95vw] lg:max-w-[1380px]">
+      <DialogContent className="flex flex-col h-[85vh] max-h-[760px] gap-0 overflow-hidden p-0 sm:max-w-[92vw] lg:max-w-[1060px] shadow-2xl">
         <DialogTitle className="sr-only">
           Chi tiết lớp học {cls.name} (Giao diện V2)
         </DialogTitle>

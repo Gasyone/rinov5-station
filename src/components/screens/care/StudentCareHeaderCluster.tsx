@@ -42,38 +42,38 @@ export function StudentCareHeaderClusterInfo({
   const primaryContact = contactsList.find((c) => c.isPrimary) || contactsList[0]
 
   return (
-    <div className="space-y-1 pt-0.5">
+    <div className="space-y-0.5 pt-0">
       {/* Thông tin NS & ĐC với icon */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium flex-wrap">
-        <span className="inline-flex items-center gap-1.5" title={`Ngày sinh: ${birthYear}`}>
-          <Calendar className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
+        <span className="inline-flex items-center gap-1" title={`Ngày sinh: ${birthYear}`}>
+          <Calendar className="h-3 w-3 text-muted-foreground/70 shrink-0" />
           <span>{birthYear}</span>
         </span>
         <span className="text-border">•</span>
-        <span className="inline-flex items-center gap-1.5 truncate max-w-sm sm:max-w-md lg:max-w-xl" title={`Địa chỉ: ${address}`}>
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+        <span className="inline-flex items-center gap-1 truncate max-w-sm sm:max-w-md lg:max-w-xl" title={`Địa chỉ: ${address}`}>
+          <MapPin className="h-3 w-3 text-muted-foreground/70 shrink-0" />
           <span className="truncate">{address}</span>
         </span>
       </div>
 
       {/* ── Section: Phụ huynh ── */}
-      <div className="group/parent pt-0.5 text-xs text-muted-foreground font-medium">
-        <div className="flex items-center gap-2 min-w-0 w-full justify-between select-none">
+      <div className="group/parent text-xs text-muted-foreground font-normal">
+        <div className="flex items-center gap-1.5 min-w-0 w-full justify-between select-none">
           {primaryContact && (() => {
             const cleanedName =
               primaryContact.name.replace(/^[^\s]+\s+(Mẹ|Bố|Phụ huynh)\s+/i, '') || primaryContact.name
             return (
               <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
-                <span className="font-bold text-foreground shrink-0">
+                <span className="font-medium text-foreground shrink-0">
                   {cleanedName} <span className="text-muted-foreground font-normal">({primaryContact.relationship})</span>
                 </span>
                 {primaryContact.isPrimary && (
-                  <span className="text-[8.5px] font-semibold px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 dark:border-sky-900 leading-none shrink-0">
+                  <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60 leading-none shrink-0">
                     Chính
                   </span>
                 )}
                 <span className="text-border">•</span>
-                <span className="font-mono font-bold text-sky-600 dark:text-sky-400 shrink-0">{primaryContact.phone}</span>
+                <span className="font-mono font-normal text-muted-foreground shrink-0">{primaryContact.phone}</span>
                 
                 {/* Icon Sao chép SĐT */}
                 <button
@@ -82,10 +82,10 @@ export function StudentCareHeaderClusterInfo({
                     navigator.clipboard.writeText(primaryContact.phone)
                     toast.success(`Đã sao chép SĐT ${cleanedName}!`)
                   }}
-                  className="p-1 hover:bg-muted rounded text-muted-foreground opacity-0 group-hover/parent:opacity-100 transition-opacity cursor-pointer shrink-0"
+                  className="p-0.5 hover:bg-muted rounded text-muted-foreground opacity-0 group-hover/parent:opacity-100 transition-opacity cursor-pointer shrink-0"
                   title="Sao chép SĐT"
                 >
-                  <Copy className="h-3 w-3" />
+                  <Copy className="h-2.5 w-2.5" />
                 </button>
               </div>
             )
@@ -95,13 +95,13 @@ export function StudentCareHeaderClusterInfo({
           <button
             type="button"
             onClick={() => setIsParentsExpanded(!isParentsExpanded)}
-            className="p-1 hover:bg-muted rounded text-sky-600 dark:text-sky-400 cursor-pointer shrink-0 transition-colors"
+            className="p-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground cursor-pointer shrink-0 transition-colors"
             title={isParentsExpanded ? 'Thu gọn danh sách phụ huynh' : `Xem chi tiết phụ huynh (${contactsList.length})`}
           >
             {isParentsExpanded ? (
-              <ChevronUp className="h-4 w-4 stroke-[2.5]" />
+              <ChevronUp className="h-3.5 w-3.5" />
             ) : (
-              <ChevronDown className="h-4 w-4 stroke-[2.5]" />
+              <ChevronDown className="h-3.5 w-3.5" />
             )}
           </button>
         </div>
@@ -118,16 +118,16 @@ export function StudentCareHeaderClusterInfo({
                   className="group/contact flex items-center justify-between gap-2 p-2 bg-muted/20 dark:bg-zinc-800/30 border border-border/40 rounded-lg text-xs"
                 >
                   <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                    <span className="font-bold text-foreground">{cleanedName}</span>
+                    <span className="font-medium text-foreground">{cleanedName}</span>
                     <span className="text-muted-foreground font-normal">({contact.relationship})</span>
                     {contact.isPrimary && (
-                      <span className="text-[8.5px] font-semibold px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/60 dark:border-sky-900 leading-none">
+                      <span className="text-xs font-medium px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60 leading-none">
                         Chính
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className="font-mono font-bold text-sky-600 dark:text-sky-400 mr-1">{contact.phone}</span>
+                    <span className="font-mono font-normal text-muted-foreground mr-1">{contact.phone}</span>
                     
                     {/* Icon Sao chép */}
                     <button
@@ -173,7 +173,7 @@ export function StudentCareHeaderClusterNote({
   const isLongNote = Boolean(studentNote && studentNote.length > 55)
 
   return (
-    <div className="pt-2 mt-1 border-t border-border/40 w-full select-none text-left">
+    <div className="pt-1 mt-0.5 border-t border-border/30 w-full select-none text-left">
       {isEditingStudentNote ? (
         <div className="flex items-center gap-1.5 w-full">
           <input
@@ -181,7 +181,7 @@ export function StudentCareHeaderClusterNote({
             value={editingStudentNoteText}
             onChange={(e) => setEditingStudentNoteText(e.target.value)}
             placeholder="Nhập thói quen, sở thích và mục tiêu học tập..."
-            className="flex-1 bg-background border border-amber-400 dark:border-amber-600 rounded-md px-2.5 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="flex-1 bg-background border border-amber-400 dark:border-amber-600 rounded-md px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-amber-500"
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -194,7 +194,7 @@ export function StudentCareHeaderClusterNote({
           />
           <Button
             size="sm"
-            className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-md"
+            className="h-5.5 px-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-md"
             onClick={() => {
               setStudentNote(editingStudentNoteText)
               setIsEditingStudentNote(false)
@@ -206,31 +206,31 @@ export function StudentCareHeaderClusterNote({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-1.5 text-muted-foreground text-xs"
+            className="h-5.5 px-1.5 text-muted-foreground text-xs"
             onClick={() => setIsEditingStudentNote(false)}
           >
             Hủy
           </Button>
         </div>
       ) : (
-        <div className="group/note flex items-start justify-between gap-1.5 w-full">
-          <div className="flex items-start gap-1.5 flex-1 min-w-0">
+        <div className="group/note flex items-start justify-between gap-1 w-full">
+          <div className="flex items-start gap-1 flex-1 min-w-0">
             <button
               type="button"
               onClick={() => {
                 setIsEditingStudentNote(true)
                 setEditingStudentNoteText(studentNote)
               }}
-              className="p-0.5 mt-0.5 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded text-amber-600 dark:text-amber-400 shrink-0 cursor-pointer transition-colors"
+              className="p-0.5 mt-0.5 hover:bg-muted rounded text-muted-foreground hover:text-foreground shrink-0 cursor-pointer transition-colors"
               title="Sửa trực tiếp ghi chú"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="h-3 w-3" />
             </button>
 
             <div className="relative flex-1 min-w-0">
               <p
                 className={cn(
-                  'text-xs leading-relaxed font-normal text-amber-600 dark:text-amber-400 cursor-pointer',
+                  'text-xs leading-relaxed font-normal text-muted-foreground hover:text-foreground cursor-pointer transition-colors',
                   !isExpanded && 'line-clamp-1 pr-16'
                 )}
                 onClick={() => {
@@ -252,7 +252,7 @@ export function StudentCareHeaderClusterNote({
                           e.stopPropagation()
                           setIsExpanded(false)
                         }}
-                        className="ml-1.5 text-xs font-normal text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                        className="ml-1.5 text-xs font-normal text-muted-foreground hover:text-foreground hover:underline cursor-pointer select-none"
                       >
                         Thu gọn
                       </span>
@@ -272,7 +272,7 @@ export function StudentCareHeaderClusterNote({
                     e.stopPropagation()
                     setIsExpanded(true)
                   }}
-                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-xs font-normal text-amber-700 dark:text-amber-300 hover:underline cursor-pointer select-none"
+                  className="absolute bottom-0 right-0 bg-card dark:bg-zinc-900 pl-1.5 text-xs font-normal text-muted-foreground hover:text-foreground hover:underline cursor-pointer select-none"
                 >
                   ... xem thêm
                 </button>
@@ -299,7 +299,7 @@ export function StudentCareHeaderClusterNote({
                   </h5>
                   <div className="space-y-2.5 text-xs max-h-[280px] overflow-y-auto pr-1">
                     <div className="border-l-2 border-amber-500 pl-2 space-y-1">
-                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                      <div className="flex justify-between text-muted-foreground text-xs">
                         <span className="font-semibold text-foreground">Nguyễn Văn Hùng (Bố)</span>
                         <span>26/07 14:20</span>
                       </div>
@@ -308,7 +308,7 @@ export function StudentCareHeaderClusterNote({
                       </p>
                     </div>
                     <div className="border-l-2 border-sky-500 pl-2 space-y-1">
-                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                      <div className="flex justify-between text-muted-foreground text-xs">
                         <span className="font-semibold text-foreground">Cô Hoàng Thị Mai (GVCN)</span>
                         <span>18/07 16:45</span>
                       </div>
@@ -317,7 +317,7 @@ export function StudentCareHeaderClusterNote({
                       </p>
                     </div>
                     <div className="border-l-2 border-emerald-500 pl-2 space-y-1">
-                      <div className="flex justify-between text-muted-foreground text-[11px]">
+                      <div className="flex justify-between text-muted-foreground text-xs">
                         <span className="font-semibold text-foreground">CSM Trần Quỳnh Anh</span>
                         <span>05/07 10:15</span>
                       </div>

@@ -369,14 +369,75 @@ const DEMO_SLOT_CONFLICTS: Record<string, Record<string, string>> = {
   'Thu Hà': {
     '08:30': 'Đang dạy lớp STA-02 (08:00 - 09:30)',
     '10:00': 'Trùng ca test của Ngô Minh Quang',
+    '11:30': 'Đang dạy lớp STA-02 (11:00 - 12:30)',
     '15:00': 'Đang dạy lớp MOV-01 (14:30 - 16:00)',
+    '17:30': 'Đang họp phụ huynh cuối ngày',
     '19:00': 'Đang dạy lớp STA-03 (18:30 - 20:00)',
+    '21:30': 'Hết giờ làm việc ca tối',
   },
   'Mỹ Linh': {
     '09:00': 'Đang dạy lớp IELTS (08:30 - 10:00)',
     '10:00': 'Trùng ca test của Đỗ Khánh Chi',
+    '11:30': 'Trùng ca test của Trần Bảo An',
     '16:30': 'Đang dạy lớp FLY-01 (16:00 - 17:30)',
+    '17:30': 'Đang dạy kèm học viên chuyển tiếp',
     '19:30': 'Đang dạy lớp Grammar G2 (19:00 - 20:30)',
+    '21:30': 'Hết giờ làm việc ca tối',
+  },
+  'Đỗ Thị Part-time': {
+    '11:30': 'Hết giờ làm việc ca sáng',
+    '17:30': 'Hết giờ làm việc ca chiều',
+    '21:30': 'Hết ca trực tối',
+  },
+  'Lê Phương Thảo': {
+    '11:30': 'Đang dạy kèm 1-1 học viên Math Primary',
+    '17:30': 'Trùng ca test của Đinh Tuấn Kiệt',
+    '21:30': 'Đang chuẩn bị học liệu ngày mai',
+  },
+  'Nguyễn Minh Đức': {
+    '11:30': 'Đang dạy lớp STA-05 (11:00 - 12:30)',
+    '17:30': 'Đang họp chuyên môn khối Tiếng Anh',
+    '21:30': 'Hết giờ trực ca muộn',
+  },
+  'Trần Quang Huy': {
+    '11:30': 'Đang kiểm tra cơ sở vật chất phòng test',
+    '17:30': 'Đang đón tiếp phụ huynh đăng ký mới',
+    '21:30': 'Bận hỗ trợ kỹ thuật đóng quầy',
+  },
+  'Đào Thị Lan': {
+    '11:30': 'Đang trực tiếp nhận hồ sơ',
+    '17:30': 'Đang gọi điện chăm sóc học viên',
+    '21:30': 'Hết giờ làm việc',
+  },
+  'Vũ Minh Khang': {
+    '11:30': 'Đang dạy lớp Math Advance (11:00 - 12:30)',
+    '17:30': 'Trùng ca test của Hoàng Anh',
+    '21:30': 'Đang chấm điểm kiểm tra định kỳ',
+  },
+  'Phạm Hoàng Yến': {
+    '11:30': 'Đang chuẩn bị học liệu ca trưa',
+    '17:30': 'Đang tư vấn lộ trình phụ huynh',
+    '21:30': 'Hết giờ làm việc',
+  },
+  'Nguyễn Đức Minh': {
+    '11:30': 'Đang dạy lớp Grammar Intermediate',
+    '17:30': 'Đang họp tổ bộ môn',
+    '21:30': 'Hết ca làm việc',
+  },
+  'Hoàng Thùy Linh': {
+    '11:30': 'Trùng ca test của bé Gia Bảo',
+    '17:30': 'Đang dạy lớp Tiếng Anh giao tiếp',
+    '21:30': 'Hết giờ làm việc',
+  },
+  'Bùi Thu Phương': {
+    '11:30': 'Đang hỗ trợ thủ tục nhập học',
+    '17:30': 'Đang tư vấn phụ huynh tại quầy',
+    '21:30': 'Hết ca trực CS',
+  },
+  'Đỗ Anh Tuấn': {
+    '11:30': 'Đang dạy lớp Toán tư duy Lớp 3',
+    '17:30': 'Đang dạy lớp Math Olympic',
+    '21:30': 'Hết giờ làm việc',
   },
 }
 
@@ -437,13 +498,33 @@ export function checkStaffConflict(
 
   // 3. Demo Mock Schedule Conflict Matrix
   const staffConflicts = DEMO_SLOT_CONFLICTS[staffName]
-  if (staffConflicts && staffConflicts[slotTime]) {
-    const detail = staffConflicts[slotTime]
-    const type = detail.includes('lớp') ? 'class_session' : 'booking_test'
-    return {
-      isConflicted: true,
-      conflictType: type,
-      conflictDetail: detail,
+  if (staffConflicts) {
+    if (staffConflicts[slotTime]) {
+      const detail = staffConflicts[slotTime]
+      const type = detail.includes('lớp') ? 'class_session' : 'booking_test'
+      return {
+        isConflicted: true,
+        conflictType: type,
+        conflictDetail: detail,
+      }
+    }
+
+    // Kiểm tra nếu slotTime nằm trong khoảng (HH:mm - HH:mm)
+    const slotMin = timeToMinutes(slotTime)
+    for (const conflictStr of Object.values(staffConflicts)) {
+      const match = conflictStr.match(/\((\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\)/)
+      if (match) {
+        const startMin = timeToMinutes(match[1])
+        const endMin = timeToMinutes(match[2])
+        if (slotMin >= startMin && slotMin < endMin) {
+          const type = conflictStr.includes('lớp') ? 'class_session' : 'booking_test'
+          return {
+            isConflicted: true,
+            conflictType: type,
+            conflictDetail: conflictStr,
+          }
+        }
+      }
     }
   }
 

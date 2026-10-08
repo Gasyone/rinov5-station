@@ -27,13 +27,13 @@ export function parseEvaluationContent(
 
   const defaultColor1 =
     type === 'general'
-      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-      : 'text-sky-600 dark:text-sky-400 font-semibold'
+      ? 'text-emerald-700 dark:text-emerald-400 font-normal'
+      : 'text-sky-700 dark:text-sky-400 font-normal'
 
   const defaultColor2 =
     type === 'general'
-      ? 'text-amber-600 dark:text-amber-400 font-semibold'
-      : 'text-purple-600 dark:text-purple-400 font-semibold'
+      ? 'text-amber-700 dark:text-amber-400 font-normal'
+      : 'text-purple-700 dark:text-purple-400 font-normal'
 
   const getColorForLabel = (rawLabel: string, index: number): string => {
     const lower = rawLabel.toLowerCase()
@@ -45,7 +45,7 @@ export function parseEvaluationContent(
         lower.includes('tốt') ||
         lower.includes('tích cực')
       ) {
-        return 'text-emerald-600 dark:text-emerald-400 font-semibold'
+        return 'text-emerald-700 dark:text-emerald-400 font-normal'
       }
       if (
         lower.includes('lưu ý') ||
@@ -55,7 +55,7 @@ export function parseEvaluationContent(
         lower.includes('nhược điểm') ||
         lower.includes('khó khăn')
       ) {
-        return 'text-amber-600 dark:text-amber-400 font-semibold'
+        return 'text-amber-700 dark:text-amber-400 font-normal'
       }
       return index === 0 ? defaultColor1 : defaultColor2
     }
@@ -69,7 +69,7 @@ export function parseEvaluationContent(
       lower.includes('lý thuyết') ||
       lower.includes('khái niệm')
     ) {
-      return 'text-sky-600 dark:text-sky-400 font-semibold'
+      return 'text-sky-700 dark:text-sky-400 font-normal'
     }
     if (
       lower.includes('cấu trúc') ||
@@ -79,7 +79,7 @@ export function parseEvaluationContent(
       lower.includes('phương pháp') ||
       lower.includes('bài tập')
     ) {
-      return 'text-purple-600 dark:text-purple-400 font-semibold'
+      return 'text-purple-700 dark:text-purple-400 font-normal'
     }
     return index === 0 ? defaultColor1 : defaultColor2
   }
@@ -195,7 +195,7 @@ export function FormattedEvaluationContent({
 }: FormattedEvaluationContentProps) {
   if (!content || !content.trim()) {
     return (
-      <div className="text-sm text-muted-foreground/60 italic font-sans">
+      <div className="text-xs text-muted-foreground/60 italic font-sans py-0.5">
         Chưa có nội dung đánh giá.
       </div>
     )
@@ -207,22 +207,22 @@ export function FormattedEvaluationContent({
   const hasAnyLabel = items.some((it) => !!it.label)
   if (!hasAnyLabel) {
     return (
-      <div className={`text-sm text-foreground leading-relaxed font-sans whitespace-pre-line ${className}`}>
+      <div className={`text-xs text-foreground leading-relaxed font-sans whitespace-pre-line ${className}`}>
         {content}
       </div>
     )
   }
 
   return (
-    <div className={`space-y-3.5 font-sans ${className}`}>
+    <div className={`space-y-1.5 font-sans ${className}`}>
       {items.map((item, idx) => (
-        <p key={idx} className="text-sm text-foreground leading-relaxed">
+        <p key={idx} className="text-xs text-foreground/85 leading-relaxed font-normal">
           {item.label && (
-            <span className={`${item.colorClass} select-none`}>
-              {item.label}{' '}
+            <span className={`${item.colorClass || 'text-foreground font-normal'} select-none mr-1.5 font-normal`}>
+              {item.label}
             </span>
           )}
-          <span className="whitespace-pre-line">{item.body}</span>
+          <span className="whitespace-pre-line text-foreground/80 font-normal">{item.body}</span>
         </p>
       ))}
     </div>

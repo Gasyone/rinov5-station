@@ -246,7 +246,7 @@ export function DateRangePicker({
           <div className="w-full sm:w-44 p-3 bg-muted/20 flex flex-col justify-between shrink-0">
             <div className="space-y-2">
               <div className="flex items-center justify-between pb-1.5 border-b border-border/60">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Khoảng thời gian
                 </span>
               </div>
@@ -313,7 +313,7 @@ export function DateRangePicker({
                     setDraftEndDate('')
                     setDraftPreset('all')
                   }}
-                  className="text-[11px] text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
+                  className="text-xs text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
                 >
                   Xóa chọn
                 </button>
@@ -332,7 +332,7 @@ export function DateRangePicker({
             </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-border/60 gap-3">
-              <span className="text-[11px] text-muted-foreground italic">
+              <span className="text-xs text-muted-foreground italic">
                 * Click chọn ngày bắt đầu và kết thúc
               </span>
               <Button

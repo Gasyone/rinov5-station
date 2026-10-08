@@ -181,7 +181,7 @@ export function ClassSessionHoverCard({
         {/* Top Header Ribbon */}
         <div
           className={cn(
-            'px-3 py-1.5 flex items-center justify-between border-b text-[11px] font-semibold gap-2',
+            'px-3 py-1.5 flex items-center justify-between border-b text-xs font-semibold gap-2',
             isCancelled
               ? 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'
               : session.isOpeningDay
@@ -205,7 +205,7 @@ export function ClassSessionHoverCard({
           <div className="flex items-center gap-1.5 shrink-0 min-w-0">
             {hasStudents && !hideStudents && (
               <div
-                className="flex items-center gap-1 text-[11px] font-medium"
+                className="flex items-center gap-1 text-xs font-medium"
                 title={
                   extraStudents > 0
                     ? `${baseStudents} học viên (+${extraStudents} học viên mới / học thử / học bù)`
@@ -231,6 +231,8 @@ export function ClassSessionHoverCard({
                       ? `${session.totalStudents}/${session.capacity || 10}`
                       : session.attendedStudents !== undefined
                       ? `${session.attendedStudents}/${baseStudents}`
+                      : session.capacity !== undefined
+                      ? `${baseStudents}/${session.capacity}`
                       : baseStudents}
                   </strong>
                   {extraStudents > 0 && (
@@ -238,10 +240,10 @@ export function ClassSessionHoverCard({
                       (+{extraStudents})
                     </span>
                   )}
-                  <span className="ml-0.5 text-[10px] text-muted-foreground font-semibold">HV</span>
+                  <span className="ml-0.5 text-xs text-muted-foreground font-semibold">HV</span>
                 </span>
                 {isDigi && session.capacity && (session.totalStudents || 0) >= session.capacity && (
-                  <span className="text-rose-600 dark:text-rose-400 font-bold text-[10px] ml-0.5 flex items-center gap-0.5">
+                  <span className="text-rose-600 dark:text-rose-400 font-bold text-xs ml-0.5 flex items-center gap-0.5">
                     <AlertTriangle className="h-2.5 w-2.5" />
                     Hết
                   </span>
@@ -271,7 +273,7 @@ export function ClassSessionHoverCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-0.5 font-mono text-[11px] font-normal text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:underline group/classlink shrink-0 cursor-pointer"
+                className="inline-flex items-center gap-0.5 font-mono text-xs font-normal text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:underline group/classlink shrink-0 cursor-pointer"
                 title={`Mở chi tiết lớp học ${classCode} trong tab mới`}
               >
                 <span>{classCode}</span>
@@ -280,7 +282,7 @@ export function ClassSessionHoverCard({
             )}
 
             {session.subject && (
-              <span className="text-[11px] font-normal text-muted-foreground">
+              <span className="text-xs font-normal text-muted-foreground">
                 • {session.subject}
               </span>
             )}
@@ -288,7 +290,7 @@ export function ClassSessionHoverCard({
             {isProjectSession && (
               <span
                 className={cn(
-                  'inline-flex items-center rounded border px-1.5 py-0.2 text-[10px] font-bold shrink-0',
+                  'inline-flex items-center rounded border px-1.5 py-0.2 text-xs font-bold shrink-0',
                   getStatusBadgeClass('project')
                 )}
               >
@@ -299,7 +301,7 @@ export function ClassSessionHoverCard({
             {!isProjectSession && isTestSession && (
               <span
                 className={cn(
-                  'inline-flex items-center rounded border px-1.5 py-0.2 text-[10px] font-bold shrink-0',
+                  'inline-flex items-center rounded border px-1.5 py-0.2 text-xs font-bold shrink-0',
                   getStatusBadgeClass('test_session')
                 )}
               >
@@ -310,7 +312,7 @@ export function ClassSessionHoverCard({
 
           {/* 3. KCT & Trình độ */}
           {!isDigi && (
-            <div className="space-y-1.5 text-[11px] text-muted-foreground">
+            <div className="space-y-1.5 text-xs text-muted-foreground">
               {/* 1. KCT (Khung chương trình) */}
               <div className="flex items-center gap-1.5 truncate" title={`Khung chương trình: ${kctName || session.className || 'Khung chương trình chuẩn'}`}>
                 <BookOpen className="h-3.5 w-3.5 shrink-0 text-primary" />
@@ -344,7 +346,7 @@ export function ClassSessionHoverCard({
           {/* 4. Địa điểm & Nhân sự: Cơ sở, phòng + Tách dòng GV & Trợ giảng */}
           <div className="border-t border-border/40 pt-1.5 space-y-1.5 text-xs">
             {locationDisplay && (
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground min-w-0 truncate" title={locationDisplay}>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 truncate" title={locationDisplay}>
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
                 <span className="truncate text-foreground/90 font-medium">{locationDisplay}</span>
               </div>
@@ -352,7 +354,7 @@ export function ClassSessionHoverCard({
 
             {isDigi ? (
               /* Ca tự học Digi */
-              <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+              <div className="flex items-center gap-1.5 text-xs min-w-0">
                 <span className="text-muted-foreground font-medium shrink-0">Trực:</span>
                 {subAssistant ? (
                   <div className="flex items-center gap-1 min-w-0 flex-wrap">
@@ -365,7 +367,7 @@ export function ClassSessionHoverCard({
                         </span>
                       </div>
                     </StaffProfilePopover>
-                    <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                    <span className="text-muted-foreground/60 text-xs shrink-0 font-medium">→</span>
                     {/* Người trực thay */}
                     <StaffProfilePopover person={getStaffPersonnel(subAssistant, 'Trợ giảng trực thay', true)}>
                       <div className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity">
@@ -393,10 +395,10 @@ export function ClassSessionHoverCard({
             ) : (
               <>
                 {/* Dòng 1: Giáo viên (GV) */}
-                <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                <div className="flex items-center gap-1.5 text-xs min-w-0">
                   <span className="text-muted-foreground font-medium shrink-0">GV:</span>
                   {!primaryTeacher || primaryTeacher === 'Chưa gán' ? (
-                    <span className="text-amber-600 dark:text-amber-400 font-medium text-[10px]">Chưa gán</span>
+                    <span className="text-amber-600 dark:text-amber-400 font-medium text-xs">Chưa gán</span>
                   ) : subTeacher ? (
                     /* Có dạy thay: Gạch người cũ + Hiển thị người mới */
                     <div className="flex items-center gap-1 min-w-0 flex-wrap">
@@ -411,7 +413,7 @@ export function ClassSessionHoverCard({
                           </span>
                         </div>
                       </StaffProfilePopover>
-                      <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                      <span className="text-muted-foreground/60 text-xs shrink-0 font-medium">→</span>
                       <StaffProfilePopover person={getStaffPersonnel(subTeacher, 'Giáo viên dạy thay', true)}>
                         <div
                           className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity"
@@ -442,7 +444,7 @@ export function ClassSessionHoverCard({
 
                 {/* Dòng 2: Trợ giảng (TG) - Tách dòng riêng */}
                 {taTeacher && (
-                  <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                  <div className="flex items-center gap-1.5 text-xs min-w-0">
                     <span className="text-muted-foreground font-medium shrink-0">TG:</span>
                     {subAssistant ? (
                       /* Có trợ giảng thay: Gạch người cũ + Hiển thị người mới */
@@ -458,7 +460,7 @@ export function ClassSessionHoverCard({
                             </span>
                           </div>
                         </StaffProfilePopover>
-                        <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                        <span className="text-muted-foreground/60 text-xs shrink-0 font-medium">→</span>
                         <StaffProfilePopover person={getStaffPersonnel(subAssistant, 'Trợ giảng trực thay', true)}>
                           <div
                             className="flex items-center gap-1 min-w-0 cursor-pointer hover:opacity-85 transition-opacity"
@@ -493,7 +495,7 @@ export function ClassSessionHoverCard({
 
           {/* 5. Nội dung bài học */}
           {!isDigi && lessonContentDisplay && (
-            <div className="border-t border-border/40 pt-1.5 text-[11px] text-muted-foreground">
+            <div className="border-t border-border/40 pt-1.5 text-xs text-muted-foreground">
               <p className="line-clamp-2 leading-relaxed break-words" title={lessonContentDisplay}>
                 <span className="font-semibold text-foreground/80 not-italic">Nội dung: </span>
                 <span className="italic">{lessonContentDisplay}</span>
@@ -503,7 +505,7 @@ export function ClassSessionHoverCard({
 
           {/* 6. Project link if applicable */}
           {session.type === 'project' && session.projectUrl && (
-            <div className="border-t border-border/40 pt-1.5 flex items-center justify-between text-[11px]">
+            <div className="border-t border-border/40 pt-1.5 flex items-center justify-between text-xs">
               <span className="font-semibold text-violet-700 dark:text-violet-300 flex items-center gap-1">
                 <FolderGit2 className="h-3 w-3" />
                 Project:
@@ -512,7 +514,7 @@ export function ClassSessionHoverCard({
                 href={session.projectUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 underline inline-flex items-center gap-1 text-[10px]"
+                className="font-medium text-violet-600 hover:text-violet-800 dark:text-violet-400 underline inline-flex items-center gap-1 text-xs"
                 onClick={(e) => e.stopPropagation()}
               >
                 Mở mini project
@@ -523,7 +525,7 @@ export function ClassSessionHoverCard({
         </div>
 
         {/* Footer Hint */}
-        <div className="bg-muted/30 border-t border-border/50 px-3 py-1 text-[10px] text-muted-foreground/80 flex items-center">
+        <div className="bg-muted/30 border-t border-border/50 px-3 py-1 text-xs text-muted-foreground/80 flex items-center">
           <span className="flex items-center gap-1">
             <Info className="h-2.5 w-2.5 text-muted-foreground/60 shrink-0" />
             <span>Nhấp để mở chi tiết buổi học</span>

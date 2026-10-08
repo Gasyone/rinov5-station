@@ -12,6 +12,48 @@ export type StudentStatusId =
   | 'reserve'
   | 'session_ended'
 
+export type StudentLifecycleStatusId =
+  | 'all'
+  | 'wait_for_assignment'
+  | 'active'
+  | 'reserve'
+  | 'session_ended'
+
+export const STUDENT_LIFECYCLE_STATUS_CONFIG: Array<{
+  id: StudentLifecycleStatusId
+  label: string
+  statusKey: string
+}> = [
+  { id: 'wait_for_assignment', label: 'Chờ xếp lớp', statusKey: 'wait_for_assignment' },
+  { id: 'active', label: 'Đang học', statusKey: 'active' },
+  { id: 'reserve', label: 'Bảo lưu', statusKey: 'reserve' },
+  { id: 'session_ended', label: 'Hết buổi', statusKey: 'session_ended' },
+]
+
+export type StudentQuickFilterId =
+  | 'all'
+  | 'awaiting_opening'
+  | 'pending_transfer'
+  | 'enroll_later'
+  | 'draft_class'
+  | 'pending_payment'
+  | 'trial'
+  | 'fee_transfer'
+
+export interface StudentQuickFilterDef {
+  id: Exclude<StudentQuickFilterId, 'all'>
+  label: string
+}
+
+export const STUDENT_QUICK_FILTERS: StudentQuickFilterDef[] = [
+  { id: 'awaiting_opening', label: 'Chờ khai giảng' },
+  { id: 'pending_transfer', label: 'Chờ chuyển lớp' },
+  { id: 'enroll_later', label: 'Hẹn xếp sau' },
+  { id: 'draft_class', label: 'Lớp nháp' },
+  { id: 'pending_payment', label: 'Chờ thanh toán' },
+  { id: 'fee_transfer', label: 'Chuyển phí' },
+]
+
 export const STUDENT_STATUS_CONFIG: Array<{ id: StudentStatusId; label: string; statusKey: string }> = [
   { id: 'pending_payment', label: 'Chờ thanh toán', statusKey: 'pending_payment' },
   { id: 'draft_class', label: 'Lớp nháp', statusKey: 'draft_class' },
@@ -42,6 +84,6 @@ export const STUDENT_STATUS_LABELS: Record<string, string> = {
   inactive: 'Không hoạt động',
   absent: 'Vắng mặt',
   excused: 'Nghỉ phép',
-  paused: 'Tạm dừng',
+  paused: 'Bảo lưu',
   dropped: 'Đã hủy',
 }

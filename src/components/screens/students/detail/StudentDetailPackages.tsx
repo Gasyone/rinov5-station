@@ -41,7 +41,7 @@ interface StudentDetailPackagesProps {
   studentBranch: string
   studentLevel?: string
   studentClasses?: EnrolledClass[]
-  onConfirmAssignment?: (pkgId: string, classItem: { id: string; name: string; startSession?: string }) => void
+  onConfirmAssignment?: (pkgId: string, classItem: { id: string; name: string; startSession?: string; notes?: string }) => void
 }
 
 export function StudentDetailPackages({
@@ -206,7 +206,7 @@ export function StudentDetailPackages({
     setAssignOpen(true)
   }
 
-  const handleConfirmAssignment = (classItem: { id: string; name: string; startSession?: string }) => {
+  const handleConfirmAssignment = (classItem: { id: string; name: string; startSession?: string; notes?: string }) => {
     if (!selectedPkgToAssign) return
 
     if (onConfirmAssignment) {
@@ -222,6 +222,7 @@ export function StudentDetailPackages({
               linkedClassCode: assignedClassCode,
               linkedClassName: classItem.name,
               startSessionDate: classItem.startSession,
+              notes: classItem.notes,
             }
           }
           return p

@@ -32,7 +32,7 @@ export function CrmCustomerPaymentsTab({ payments }: CrmCustomerPaymentsTabProps
       {/* Metric Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-3 bg-card border border-border/70 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-muted-foreground font-medium block">
+          <span className="text-xs text-muted-foreground font-medium block">
             Tổng tiền đã nộp ({payments.length} phiếu thu)
           </span>
           <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
@@ -41,7 +41,7 @@ export function CrmCustomerPaymentsTab({ payments }: CrmCustomerPaymentsTabProps
         </div>
 
         <div className="p-3 bg-sky-50/40 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-900/60 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-sky-700 dark:text-sky-400 font-medium block">
+          <span className="text-xs text-sky-700 dark:text-sky-400 font-medium block">
             Đối soát kế toán
           </span>
           <p className="text-base font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
@@ -53,7 +53,7 @@ export function CrmCustomerPaymentsTab({ payments }: CrmCustomerPaymentsTabProps
         </div>
 
         <div className="p-3 bg-card border border-border/70 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-muted-foreground font-medium block">
+          <span className="text-xs text-muted-foreground font-medium block">
             Phương thức phổ biến
           </span>
           <p className="text-base font-bold text-foreground flex items-center gap-1.5">
@@ -100,17 +100,17 @@ export function CrmCustomerPaymentsTab({ payments }: CrmCustomerPaymentsTabProps
                 <div className="flex items-center gap-1.5">
                   <Badge
                     variant="outline"
-                    className="bg-purple-50 text-purple-700 dark:bg-purple-950/50 border-purple-200 text-[10px]"
+                    className="bg-purple-50 text-purple-700 dark:bg-purple-950/50 border-purple-200 text-xs"
                   >
                     {payment.paymentMethodLabel}
                   </Badge>
                   {payment.isReconciled ? (
-                    <Badge className="bg-emerald-600 text-white text-[10px] font-medium flex items-center gap-1">
+                    <Badge className="bg-emerald-600 text-white text-xs font-medium flex items-center gap-1">
                       <CheckCircle2 className="h-2.5 w-2.5" />
                       <span>Đã đối soát</span>
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-amber-700 border-amber-300 text-[10px]">
+                    <Badge variant="outline" className="text-amber-700 border-amber-300 text-xs">
                       Chờ đối soát
                     </Badge>
                   )}
@@ -120,33 +120,33 @@ export function CrmCustomerPaymentsTab({ payments }: CrmCustomerPaymentsTabProps
               {/* Chi tiết phiếu thu */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Loại giao dịch</span>
+                  <span className="text-xs text-muted-foreground block">Loại giao dịch</span>
                   <p className="font-semibold text-foreground">{payment.receiptTypeLabel}</p>
-                  <span className="text-[11px] text-muted-foreground truncate block">
+                  <span className="text-xs text-muted-foreground truncate block">
                     Người nộp: {payment.parentName}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Số tiền thanh toán</span>
+                  <span className="text-xs text-muted-foreground block">Số tiền thanh toán</span>
                   <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
                     {formatCurrencyVnd(payment.amount)}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Thời gian giao dịch</span>
+                  <span className="text-xs text-muted-foreground block">Thời gian giao dịch</span>
                   <p className="font-medium text-foreground">{payment.createdAt}</p>
-                  <span className="text-[11px] text-muted-foreground">Người lập: {payment.createdBy}</span>
+                  <span className="text-xs text-muted-foreground">Người lập: {payment.createdBy}</span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Tài khoản / Quầy</span>
+                  <span className="text-xs text-muted-foreground block">Tài khoản / Quầy</span>
                   <p className="font-medium text-foreground truncate" title={payment.bankAccount}>
                     {payment.bankAccount || 'Quầy thu ngân chi nhánh'}
                   </p>
                   {payment.notes && (
-                    <span className="text-[11px] text-muted-foreground truncate block" title={payment.notes}>
+                    <span className="text-xs text-muted-foreground truncate block" title={payment.notes}>
                       {payment.notes}
                     </span>
                   )}

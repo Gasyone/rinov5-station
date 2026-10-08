@@ -125,16 +125,16 @@ export function HistoricalClassAiRemarkModal({
             <div className="flex items-center gap-1.5 font-bold text-foreground">
               <GraduationCap className="h-3.5 w-3.5 text-primary" />
               <span>{pkg.className}</span>
-              <span className="font-mono text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+              <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                 {pkg.classCode}
               </span>
             </div>
-            <Badge className="text-[10px] py-0.2 px-2 bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-200 border-none">
+            <Badge className="text-xs py-0.2 px-2 bg-violet-100 text-violet-800 dark:bg-violet-900/60 dark:text-violet-200 border-none">
               Trình độ: {pkg.level} — Level {pkg.subLevel}
             </Badge>
           </div>
 
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
             <span className="flex items-center gap-1">
               <User className="h-3 w-3 text-muted-foreground" />
               <span>Học viên: <strong className="text-foreground font-semibold">{studentName}</strong></span>
@@ -152,11 +152,11 @@ export function HistoricalClassAiRemarkModal({
             <label htmlFor="remark-textarea" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               <span>Nội dung nhận xét tổng kết</span>
               {currentRemark?.isAiGenerated ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 px-1.5 py-0.2 rounded border border-violet-200 dark:border-violet-800/40">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/40 px-1.5 py-0.2 rounded border border-violet-200 dark:border-violet-800/40">
                   <Bot className="h-2.5 w-2.5" /> Bản thảo do AI đề xuất
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800/40">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800/40">
                   <CheckCircle2 className="h-2.5 w-2.5" /> Đã có chỉnh sửa từ GV
                 </span>
               )}
@@ -168,7 +168,7 @@ export function HistoricalClassAiRemarkModal({
               size="sm"
               disabled={isGenerating}
               onClick={handleRegenerateWithAi}
-              className="h-6 px-2 text-[11px] font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-100/50 dark:hover:bg-violet-900/40 gap-1 cursor-pointer"
+              className="h-6 px-2 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-100/50 dark:hover:bg-violet-900/40 gap-1 cursor-pointer"
             >
               <RotateCcw className={`h-3 w-3 ${isGenerating ? 'animate-spin' : ''}`} />
               <span>{isGenerating ? 'Đang tạo...' : 'AI Viết lại'}</span>
@@ -191,7 +191,7 @@ export function HistoricalClassAiRemarkModal({
 
         {/* Gợi ý nhanh từ AI để bổ sung vào nhận xét */}
         <div className="space-y-1.5 text-left pt-1">
-          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-violet-500" />
             <span>Gợi ý chèn nhanh tiêu chí đánh giá:</span>
           </span>
@@ -210,7 +210,7 @@ export function HistoricalClassAiRemarkModal({
         </div>
 
         <DialogFooter className="flex items-center justify-between sm:justify-between pt-2 border-t border-border/60">
-          <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
             <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Sau khi lưu, nhận xét sẽ chuyển trạng thái &quot;Đã duyệt bởi GV&quot;.</span>
           </div>

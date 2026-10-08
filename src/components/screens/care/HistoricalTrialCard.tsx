@@ -60,7 +60,7 @@ export function HistoricalTrialCard({
           <button
             type="button"
             onClick={() => setIsFeedbackExpanded(!isFeedbackExpanded)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
             title={isFeedbackExpanded ? 'Thu gọn nhận xét' : 'Mở rộng nhận xét'}
           >
             <span>{isFeedbackExpanded ? 'Thu gọn' : 'Mở rộng'}</span>

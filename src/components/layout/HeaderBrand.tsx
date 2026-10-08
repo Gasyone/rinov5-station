@@ -1,8 +1,13 @@
+import Link from 'next/link'
 import Image from 'next/image'
 
 export function HeaderBrand() {
   return (
-    <div className="flex items-center gap-2 shrink-0">
+    <Link
+      href="/app/dashboard"
+      className="flex items-center gap-2 shrink-0 hover:opacity-90 transition-opacity"
+      title="Về trang chủ (Home)"
+    >
       <div className="ui-pill-surface flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-muted shrink-0">
         <Image
           src="/rinoedu-logo.png"
@@ -23,6 +28,6 @@ export function HeaderBrand() {
           className="object-contain"
         />
       </div>
-    </div>
+    </Link>
   )
 }

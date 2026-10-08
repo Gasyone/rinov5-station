@@ -32,7 +32,7 @@ export function CrmFamilyOrdersTab({
       {/* 1. Tóm tắt tài chính đơn hàng của gia đình */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-3 bg-card border border-border/70 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-muted-foreground font-medium block">
+          <span className="text-xs text-muted-foreground font-medium block">
             Tổng giá trị đơn hàng gia đình ({orders.length} đơn)
           </span>
           <p className="text-base font-bold text-foreground">
@@ -41,7 +41,7 @@ export function CrmFamilyOrdersTab({
         </div>
 
         <div className="p-3 bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/60 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium block">
+          <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium block">
             Đã thanh toán thực tế
           </span>
           <p className="text-base font-bold text-emerald-700 dark:text-emerald-300">
@@ -50,7 +50,7 @@ export function CrmFamilyOrdersTab({
         </div>
 
         <div className="p-3 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/60 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium block">
+          <span className="text-xs text-amber-700 dark:text-amber-400 font-medium block">
             Công nợ còn lại
           </span>
           <p className="text-base font-bold text-amber-700 dark:text-amber-400">
@@ -109,7 +109,7 @@ export function CrmFamilyOrdersTab({
                       variant="ghost"
                       size="sm"
                       onClick={() => onViewOrderDetail(order.orderNo)}
-                      className="h-6 px-2 text-[11px] text-sky-600 hover:text-sky-700"
+                      className="h-6 px-2 text-xs text-sky-600 hover:text-sky-700"
                     >
                       <span>Chi tiết</span>
                       <ExternalLink className="h-2.5 w-2.5 ml-1" />
@@ -120,45 +120,45 @@ export function CrmFamilyOrdersTab({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Gói khóa học</span>
+                  <span className="text-xs text-muted-foreground block">Gói khóa học</span>
                   <p className="font-semibold text-foreground truncate" title={order.packageName}>
                     {order.packageName}
                   </p>
-                  <span className="text-[11px] text-muted-foreground">{order.courseDuration}</span>
+                  <span className="text-xs text-muted-foreground">{order.courseDuration}</span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Giá trị thanh toán</span>
+                  <span className="text-xs text-muted-foreground block">Giá trị thanh toán</span>
                   <p className="font-bold text-foreground">
                     {formatCurrencyVnd(order.finalAmount)}
                   </p>
                   {order.discountAmount > 0 && (
-                    <span className="text-[10px] text-emerald-600">
+                    <span className="text-xs text-emerald-600">
                       Giảm: -{formatCurrencyVnd(order.discountAmount)}
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Tiến độ thanh toán</span>
+                  <span className="text-xs text-muted-foreground block">Tiến độ thanh toán</span>
                   <p className="font-semibold text-emerald-600 dark:text-emerald-400">
                     Đã nộp: {formatCurrencyVnd(order.paidAmount)}
                   </p>
                   {order.remainingAmount > 0 ? (
-                    <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                       Còn thiếu: {formatCurrencyVnd(order.remainingAmount)}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground">Đã thanh toán đủ 100%</span>
+                    <span className="text-xs text-muted-foreground">Đã thanh toán đủ 100%</span>
                   )}
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground block">Người bán &amp; Ngày</span>
+                  <span className="text-xs text-muted-foreground block">Người bán &amp; Ngày</span>
                   <p className="font-medium text-foreground truncate" title={order.saleBy}>
                     {order.saleBy}
                   </p>
-                  <span className="text-[11px] text-muted-foreground">{order.createdAt}</span>
+                  <span className="text-xs text-muted-foreground">{order.createdAt}</span>
                 </div>
               </div>
             </div>

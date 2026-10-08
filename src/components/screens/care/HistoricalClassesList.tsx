@@ -10,10 +10,14 @@ import {
   RotateCcw,
   Pencil,
   GraduationCap,
+  Users,
+  UserCheck,
+  BookOpen,
+  Award,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { EmptyState } from '@/components/shared'
+import { ClassCodeHoverCell } from './ClassCodeHoverCell'
 import { type HistoricalReportItem } from './HistoricalReportsDialog'
 import { StudentCareEarlyReturnDialog } from './StudentCareEarlyReturnDialog'
 import { HistoricalClassAiRemarkModal, type ClassRemarkState } from './HistoricalClassAiRemarkModal'
@@ -21,7 +25,7 @@ import { type SimulatedPackage } from './studentCareDetailTypes'
 import { type SessionHistory } from './StudentCareReportTab'
 import { type SemesterEvaluationData } from './StudentCareReportTab'
 import { type StudentCareAlert } from '@/mocks/careAlerts'
-import { CareReportSmartCards } from './CareReportSmartCards'
+import { mockClassRecords } from '@/mocks/classRecords'
 // Tạm ẩn import phần test và học thử theo yêu cầu
 // import { HistoricalTestCard } from './HistoricalTestCard'
 // import { HistoricalTrialCard } from './HistoricalTrialCard'
@@ -156,7 +160,12 @@ export function HistoricalClassesList({
     }))
   }
 
-  const historicalPackages = classDataForPackages.filter(({ pkg }) => pkg.id !== activePackageId)
+  const historicalPackages = classDataForPackages.filter(({ pkg }) => {
+    if (pkg.id === activePackageId) return false
+    // Không đưa các gói chính đang học hoặc chờ chuyển/xếp lớp (như pkg-1 hoặc pkg-2) vào lịch sử lớp cũ
+    if (['pkg-1', 'pkg-2'].includes(pkg.id) && pkg.status !== 'expired') return false
+    return true
+  })
   const visibleHistoricalPackages = showAllHistory ? historicalPackages : historicalPackages.slice(0, 2)
 
   const isGlobalReserved =
@@ -168,16 +177,14 @@ export function HistoricalClassesList({
     <div className="space-y-3 pt-2">
       <div className="flex items-center justify-between px-1 shrink-0 select-none flex-wrap gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <h2 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
             <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Lịch sử học tập</span>
           </h2>
           {historicalPackages.length > 0 && (
-            <div className="flex items-center gap-1 text-[10px] font-semibold">
-              <span className="text-muted-foreground/80 bg-muted px-1.5 py-0.2 rounded-full">
-                {historicalPackages.length} lớp cũ
-              </span>
-            </div>
+            <span className="text-muted-foreground text-xs font-normal bg-muted px-1.5 py-0.2 rounded-full">
+              {historicalPackages.length} lớp cũ
+            </span>
           )}
         </div>
 
@@ -185,14 +192,14 @@ export function HistoricalClassesList({
           <button
             type="button"
             onClick={() => setShowAllHistory((prev) => !prev)}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer ml-auto"
+            className="text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer ml-auto"
           >
             {showAllHistory ? 'Thu gọn' : 'Xem tất cả'}
           </button>
         )}
       </div>
 
-      <div className="space-y-3.5">
+      <div className="space-y-2">
         {/* Tạm ẩn phần test và học thử theo yêu cầu
         <div className="space-y-3">
           <HistoricalTestCard
@@ -214,20 +221,36 @@ export function HistoricalClassesList({
 
         {/* CÁC LỚP HỌC TRƯỚC ĐÓ */}
         {historicalPackages.length === 0 ? (
-          <div className="py-6 px-4 rounded-xl border border-dashed border-border/80 bg-muted/20 text-center">
+          <div className="py-3 px-3 rounded-lg border border-dashed border-border/70 bg-muted/20 text-center">
             <p className="text-xs font-semibold text-foreground">Chưa có lớp học trước đó</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Học viên chưa tham gia lớp học nào trước đây.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Học viên chưa tham gia lớp học nào trước đây.</p>
           </div>
         ) : (
           visibleHistoricalPackages.map(({ pkg, isEnglish: pkgIsEnglish, regularSessions, testSessions, reports }) => {
           // Luôn mở rộng lớp gần nhất trong lịch sử học tập
           const isMostRecent = pkg.id === historicalPackages[0]?.pkg.id
           const isOpen = expandedPackageIds[pkg.id] !== undefined ? expandedPackageIds[pkg.id] : isMostRecent
-          const isPending = pkg.status === 'pending'
           const teacher = getHistoricalTeacherInfo(pkg, pkgIsEnglish)
           const dateRange = getHistoricalDates(pkg)
           const totalSessions = pkg.totalSessions || 24
-          const usedSessions = totalSessions - (pkg.remainingSessions || 0)
+
+          // Thống kê & Sĩ số
+          const classRecord = mockClassRecords.find((c) => c.code === pkg.classCode)
+          const enrolled = classRecord?.enrolledStudents || 15
+          const max = classRecord?.maxStudents || 20
+
+          // Chuyên cần
+          const rawAtt = pkg.attendanceRatio || ''
+          const attendanceRatioDisplay = rawAtt.includes('/') ? rawAtt : '6/7'
+
+          // BTVN
+          const hwRatioDisplay = `${Math.round(7 * ((pkg.homeworkCompletion || 85) / 100))}/7`
+
+          // Điểm kiểm tra
+          const testScoreDisplay = pkg.lastTestScore ? pkg.lastTestScore.toFixed(1) : '8.8'
+
+          // Số buổi trong lớp
+          const sessionsCount = pkg.totalSessions || 24
 
           // Determine class status in history
           const isReservedClass = (pkg.status as string) === 'reserve' || (isGlobalReserved && pkg.id === 'pkg-3')
@@ -255,59 +278,107 @@ export function HistoricalClassesList({
           return (
             <div
               key={pkg.id}
-              className="border border-border/80 rounded-xl overflow-hidden bg-background shadow-xs transition-all hover:border-border"
+              className="border border-border/70 rounded-xl overflow-hidden bg-card dark:bg-zinc-900 shadow-2xs transition-all hover:border-border"
             >
               {/* Collapsible Header */}
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => togglePackage(pkg.id)}
-                className="w-full flex items-center justify-between p-3.5 bg-muted/10 hover:bg-muted/20 transition-colors text-left select-none border-b border-border/40 cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    togglePackage(pkg.id)
+                  }
+                }}
+                className="w-full flex items-center justify-between py-2 px-3 sm:px-3.5 bg-muted/25 dark:bg-zinc-800/40 hover:bg-muted/40 transition-colors text-left select-none border-b border-border/50 cursor-pointer"
               >
-                <div className="min-w-0 flex-1 pr-3 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap leading-tight">
-                    <h3 className="text-xs font-bold text-foreground truncate">
-                      Lớp học: {pkg.className}
-                    </h3>
-                    <span className="font-mono text-[9.5px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                      {pkg.classCode}
-                    </span>
+                {/* Cột trái: Thông tin lớp & Sĩ số, Thời gian (số buổi) */}
+                <div className="min-w-0 space-y-0.5 flex-1 pr-2">
+                  {/* Dòng 1: Lớp + Sĩ số đưa về cạnh mã lớp */}
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0" onClick={(e) => e.stopPropagation()}>
+                      <span className="text-muted-foreground font-normal text-[11px]">Lớp</span>
+                      <ClassCodeHoverCell
+                        classCode={pkg.classCode}
+                        subject={pkgIsEnglish ? 'Tiếng Anh' : 'Toán tư duy'}
+                        level={pkg.level || 'Archimedes'}
+                        subLevel={pkg.subLevel}
+                        teacherCode={teacher.main}
+                        schedule={pkg.schedule || 'Thứ 2, 6'}
+                        openInNewTab={true}
+                        className="font-mono font-normal text-[11.5px]"
+                      />
+                    </div>
+
+                    {/* Sĩ số đưa về cạnh mã lớp */}
+                    <div
+                      className="flex items-center gap-1 text-[10.5px] text-muted-foreground font-normal shrink-0"
+                      title={`Sĩ số lớp: ${enrolled}/${max} học viên`}
+                    >
+                      <Users className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                      <span className="text-foreground/90 font-medium">{enrolled}/{max}</span>
+                    </div>
                   </div>
 
-                  {/* Subline: Thời gian học • Trình độ • Giáo viên */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                    <span className="font-medium text-foreground/85">{dateRange}</span>
-                    <span className="text-border">•</span>
-                    <span>
-                      Trình độ: <strong className="text-foreground/90 font-semibold">{pkg.level} — Level {pkg.subLevel}</strong>
-                    </span>
-                    <span className="text-border">•</span>
-                    <span>
-                      GV: <strong className="text-foreground/90 font-semibold">{teacher.main}</strong>
-                    </span>
+                  {/* Dòng 2: Thời gian: {dateRange} ({sessionsCount} buổi) - Xóa trình độ đi */}
+                  <div className="text-[10.5px] text-muted-foreground font-normal truncate">
+                    <span>Thời gian: {dateRange} ({sessionsCount} buổi)</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                {/* Cột phải: Section thống kê thu gọn (Chuyên cần, BTVN, Điểm) + Chevron */}
+                <div className="flex items-center gap-1.5 shrink-0 ml-auto flex-wrap sm:flex-nowrap">
+                  {/* Chuyên cần */}
+                  <div
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    title={`Chuyên cần: ${attendanceRatioDisplay}`}
+                  >
+                    <UserCheck className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground text-[10px]">Chuyên cần:</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{attendanceRatioDisplay}</span>
+                  </div>
+
+                  {/* BTVN */}
+                  <div
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    title={`BTVN: ${hwRatioDisplay}`}
+                  >
+                    <BookOpen className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground text-[10px]">BTVN:</span>
+                    <span className="font-semibold text-sky-600 dark:text-sky-400">{hwRatioDisplay}</span>
+                  </div>
+
+                  {/* Điểm kiểm tra */}
+                  <div
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    title={`Điểm kiểm tra: ${testScoreDisplay}`}
+                  >
+                    <Award className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground text-[10px]">Điểm:</span>
+                    <span className="font-semibold text-violet-600 dark:text-violet-400">{testScoreDisplay}</span>
+                  </div>
+
+                  {/* ChevronDown icon */}
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0",
+                      "h-4 w-4 text-muted-foreground transition-transform duration-200 ml-0.5 shrink-0",
                       isOpen && "rotate-180"
                     )}
                   />
                 </div>
-              </button>
+              </div>
 
               {/* Collapsible Content */}
               {isOpen && (
-                <div className="p-3.5 sm:p-4 space-y-3.5 bg-background/50 text-left">
+                <div className="p-2.5 sm:p-3 space-y-2 bg-card dark:bg-zinc-900 text-left">
                   {/* Status Banner inside history if reserved */}
-
                   {isReservedClass && (
-                    <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 text-xs text-amber-900 dark:text-amber-200 select-none">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-amber-200/80 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 text-xs text-amber-900 dark:text-amber-200 select-none">
+                      <div className="flex items-center gap-1.5">
                         <Snowflake className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                         <span>
-                          Khóa học tạm ngưng bảo lưu <strong>{pkg.remainingSessions || 14} buổi</strong> từ 15/06/2026 đến 15/09/2026.
+                          Khóa học tạm ngưng bảo lưu <span className="font-semibold">{pkg.remainingSessions || 14} buổi</span> từ 15/06/2026 đến 15/09/2026.
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -317,7 +388,7 @@ export function HistoricalClassesList({
                             variant="outline"
                             size="sm"
                             onClick={onOpenLeaveReserveDialog}
-                            className="h-6 px-2 text-[11px] font-semibold text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer shadow-3xs"
+                            className="h-5.5 px-2 text-[11px] font-normal text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer shadow-3xs"
                           >
                             <FileText className="h-3 w-3 mr-1" />
                             <span>Xem đơn #BL002</span>
@@ -328,7 +399,7 @@ export function HistoricalClassesList({
                           variant="outline"
                           size="sm"
                           onClick={() => setEarlyReturnPkg(pkg)}
-                          className="h-6 px-2 text-[11px] font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-3xs"
+                          className="h-5.5 px-2 text-[11px] font-normal text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-3xs"
                         >
                           <RotateCcw className="h-3 w-3 mr-1 text-sky-600 dark:text-sky-400" />
                           <span>Đi học lại</span>
@@ -338,88 +409,59 @@ export function HistoricalClassesList({
                   )}
 
                   {/* Nhận xét học tập Lớp học (AI Tổng hợp / Đã duyệt bởi GV) */}
-                  <div className="bg-muted/25 dark:bg-muted/10 rounded-xl p-3 sm:p-3.5 space-y-2 text-xs text-left">
+                  <div className="bg-muted/20 dark:bg-muted/10 rounded-lg p-2.5 space-y-1.5 text-xs text-left">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="font-bold text-foreground text-xs uppercase tracking-wide">
+                      <span className="font-semibold text-foreground text-xs tracking-normal">
                         {currentRemark.isAiGenerated
-                          ? 'Nhận xét học tập Lớp học (AI Tổng hợp)'
-                          : 'Nhận xét học tập Lớp học (Đã duyệt bởi GV)'}
+                          ? 'Nhận xét học tập lớp học (AI tổng hợp)'
+                          : 'Nhận xét học tập lớp học (Đã duyệt bởi GV)'}
                       </span>
 
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
                         onClick={() => setEditingRemarkPkg({ pkg, teacherName: teacher.main })}
-                        className="h-6 px-2 text-[11px] font-medium border-border/80 text-foreground/80 hover:bg-muted/60 gap-1 cursor-pointer shadow-3xs"
+                        className="inline-flex items-center gap-1 text-[11px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors"
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-3 w-3 shrink-0" />
                         <span>Chỉnh sửa</span>
-                      </Button>
+                      </button>
                     </div>
 
-                    <p className="text-foreground/90 leading-relaxed text-[11.5px] italic">
+                    <p className="text-foreground/85 leading-relaxed text-[11px] italic font-normal">
                       &ldquo;{currentRemark.text}&rdquo;
                     </p>
+                  </div>
 
-                    <div className="text-[10.5px] text-muted-foreground pt-0.5">
-                      <span>
-                        {currentRemark.isAiGenerated
-                          ? `* Tổng hợp từ dữ liệu ${usedSessions} buổi học, kết quả BTVN và các bài kiểm tra.`
-                          : `* Đã được GV ${currentRemark.lastEditedBy || teacher.main} rà soát & cập nhật (${currentRemark.lastEditedAt || 'Gần đây'}).`}
+                  {/* Báo cáo học tập & Nhật ký buổi học */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap text-xs py-0.5 text-left select-none">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 shrink-0">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Báo cáo tháng:</span>
                       </span>
+                      {reportItems.length > 0 ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {reportItems.map((item, idx) => (
+                            <React.Fragment key={item.id}>
+                              {idx > 0 && <span className="text-muted-foreground/40">•</span>}
+                              <button
+                                type="button"
+                                onClick={() => handleCopyLink(item.url || `https://rinoedu.vn/reports/${pkg.classCode}/${item.id}`)}
+                                className="inline-flex items-center gap-1 text-[11px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer"
+                                title="Nhấp để sao chép liên kết báo cáo"
+                              >
+                                <span>{item.monthBadge || item.title}</span>
+                                <ExternalLink className="h-2.5 w-2.5 opacity-60 ml-0.5" />
+                              </button>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground italic font-normal">Chưa có báo cáo tháng</span>
+                      )}
                     </div>
-                  </div>
 
-                  {/* Kết quả học tập tổng kết cuối khóa (Đồng bộ thiết kế SmartCard như buổi hiện tại) */}
-                  <div className="space-y-1.5">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
-                      Kết quả học tập tổng kết
-                    </span>
-                    <CareReportSmartCards
-                      pkg={pkg}
-                      regularSessions={regularSessions}
-                      testSessions={testSessions}
-                      pkgIsEnglish={pkgIsEnglish}
-                      avgRating={4.5}
-                      generalComment=""
-                    />
-                  </div>
-
-                  {/* Báo cáo học tập (danh sách textlink trực tiếp, không mở modal) */}
-                  <div className="flex items-center gap-2 flex-wrap text-xs py-1 text-left select-none">
-                    <span className="font-semibold text-muted-foreground flex items-center gap-1.5 shrink-0">
-                      <FileText className="h-3.5 w-3.5 text-violet-500" />
-                      <span>Báo cáo tháng:</span>
-                    </span>
-                    {reportItems.length > 0 ? (
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        {reportItems.map((item, idx) => (
-                          <React.Fragment key={item.id}>
-                            {idx > 0 && <span className="text-muted-foreground/40">•</span>}
-                            <button
-                              type="button"
-                              onClick={() => handleCopyLink(item.url || `https://rinoedu.vn/reports/${pkg.classCode}/${item.id}`)}
-                              className="inline-flex items-center gap-1 text-[11.5px] font-medium text-primary hover:underline cursor-pointer"
-                              title="Nhấp để sao chép liên kết báo cáo"
-                            >
-                              <span>{item.monthBadge || item.title}</span>
-                              <ExternalLink className="h-3 w-3 opacity-60" />
-                            </button>
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-[11px] text-muted-foreground italic">Chưa có báo cáo tháng</span>
-                    )}
-                  </div>
-
-                  {/* Khối 4: Nút tra cứu nhanh nhật ký chi tiết buổi học */}
-                  {onOpenAttendance && (
-                    <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-3 flex-wrap">
-                      <p className="text-xs text-muted-foreground">
-                        Cần đối soát lịch sử điểm danh, bài tập hoặc nhận xét từng buổi của lớp này?
-                      </p>
+                    {onOpenAttendance && (
                       <Button
                         type="button"
                         variant="outline"
@@ -432,23 +474,14 @@ export function HistoricalClassesList({
                           packageId: pkg.id,
                           isHistorical: true,
                         })}
-                        className="h-7 px-2.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 gap-1.5 cursor-pointer shadow-3xs"
+                        className="h-6 px-2 text-[11px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs ml-auto"
                       >
-                        <ClipboardList className="h-3.5 w-3.5" />
-                        <span>Xem nhật ký {totalSessions} buổi học cũ</span>
+                        <ClipboardList className="h-3 w-3" />
+                        <span>Nhật ký {totalSessions} buổi</span>
                         <ExternalLink className="h-3 w-3 opacity-70" />
                       </Button>
-                    </div>
-                  )}
-
-                  {isPending && (
-                    <div className="py-10 text-center select-none flex flex-col items-center justify-center">
-                      <EmptyState
-                        title="Chương trình học chờ kích hoạt"
-                        description="Chương trình học này chưa bắt đầu. Hiện chưa có lịch sử học tập."
-                      />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
             </div>

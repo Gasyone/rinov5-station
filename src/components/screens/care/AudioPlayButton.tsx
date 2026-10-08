@@ -53,7 +53,7 @@ export function AudioPlayButton({ duration = '0:00', className }: AudioPlayButto
           <Play className="h-3 w-3 text-emerald-600 fill-emerald-600 shrink-0" />
         )}
         {duration && duration !== '0:00' && (
-          <span className="font-mono text-[10.5px] font-bold text-emerald-700 dark:text-emerald-400">
+          <span className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
             {duration}
           </span>
         )}

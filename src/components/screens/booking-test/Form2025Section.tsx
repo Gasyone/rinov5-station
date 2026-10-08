@@ -82,66 +82,70 @@ export function Form2025Section({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-muted/30 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-6">
-          <div>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">Điểm</p>
-            <p className="text-2xl font-bold leading-none text-primary">
+    <div className="space-y-2">
+      {/* 1. Score & Level summary */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-md border bg-muted/25 px-3 py-1">
+        <div className="flex items-center gap-3">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Điểm:</span>
+            <span className="text-base font-bold text-primary leading-tight">
               {formatAssessmentScore(totalScore)}
-              <span className="text-sm font-normal text-muted-foreground"> / 8</span>
-            </p>
+              <span className="text-xs font-normal text-muted-foreground"> / 8</span>
+            </span>
           </div>
-          <div className="h-8 w-px bg-border" />
-          <div>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">Cấp độ nói</p>
-            <p className="text-base font-bold leading-none">{speakingLevel}</p>
+          <div className="h-3.5 w-px bg-border" />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Cấp độ nói:</span>
+            <span className="text-xs font-semibold text-foreground leading-tight">{speakingLevel}</span>
           </div>
         </div>
         {resultHref && readOnly ? (
-          <Button asChild>
+          <Button size="sm" className="h-6.5 px-2.5 text-xs gap-1.5" asChild>
             <Link href={resultHref} target="_blank" rel="noreferrer">
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="h-3.5 w-3.5" />
               Mở kết quả
             </Link>
           </Button>
         ) : (
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2">
+            {!draft.isSkipped2025 && answeredCount < FORM_2025_COLUMNS.length ? (
+              <p className="text-xs text-destructive">Vui lòng chấm đủ 8 tiêu chí.</p>
+            ) : null}
             <Button
               type="button"
+              size="sm"
+              className="h-6.5 px-2.5 text-xs"
               variant={draft.isSkipped2025 ? 'secondary' : 'outline'}
               disabled={readOnly}
               onClick={() => updateDraft({ isSkipped2025: !draft.isSkipped2025 })}
             >
               {draft.isSkipped2025 ? 'Đã bỏ qua' : 'Bỏ qua'}
             </Button>
-            {!draft.isSkipped2025 && answeredCount < FORM_2025_COLUMNS.length ? (
-              <p className="text-xs text-destructive">Vui lòng chấm đủ 8 tiêu chí.</p>
-            ) : null}
           </div>
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-lg bg-background ring-1 ring-border/70">
-        <div className="min-w-[720px]">
-          <div className="grid grid-cols-[7rem_repeat(8,1fr)] bg-muted/40 text-sm font-semibold">
-            <div className="px-4 py-3">Tiêu chí</div>
+      {/* 2. Criteria Score Table */}
+      <div className="overflow-x-auto rounded-lg border bg-background">
+        <div className="min-w-[520px]">
+          <div className="grid grid-cols-[5.5rem_repeat(8,1fr)] bg-muted/40 text-xs font-semibold">
+            <div className="px-3 py-1.5 text-foreground">Tiêu chí</div>
             {FORM_2025_COLUMNS.map((col) => (
-              <div key={col} className="flex items-center justify-center py-3 text-muted-foreground">
+              <div key={col} className="flex items-center justify-center py-1.5 text-muted-foreground font-semibold">
                 {col}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-[7rem_repeat(8,1fr)] border-t border-border/50">
-            <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Đã chọn</div>
+          <div className="grid grid-cols-[5.5rem_repeat(8,1fr)] border-t border-border/50">
+            <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Đã chọn</div>
             {FORM_2025_COLUMNS.map((col) => {
               const isAnswered = typeof draft.scoreSelections[col] === 'number'
               return (
-                <div key={`check-${col}`} className="flex items-center justify-center py-2">
-                  {isAnswered ? <Check className="h-4 w-4 text-primary" /> : null}
+                <div key={`check-${col}`} className="flex items-center justify-center py-1">
+                  {isAnswered ? <Check className="h-3.5 w-3.5 text-primary" /> : null}
                   {draft.isSkipped2025 && !isAnswered ? (
-                    <X className="h-4 w-4 text-muted-foreground/60" />
+                    <X className="h-3.5 w-3.5 text-muted-foreground/60" />
                   ) : null}
                 </div>
               )
@@ -151,9 +155,9 @@ export function Form2025Section({
           {SCORE_ROW_OPTIONS.map((row) => (
             <div
               key={row.key}
-              className="grid grid-cols-[7rem_repeat(8,1fr)] border-t border-border/40 bg-muted/10"
+              className="grid grid-cols-[5.5rem_repeat(8,1fr)] border-t border-border/40 bg-muted/10"
             >
-              <div className="flex items-center px-4 py-3 text-sm font-semibold">
+              <div className="flex items-center px-3 py-1 text-xs font-medium text-foreground">
                 {row.label}
               </div>
               {FORM_2025_COLUMNS.map((col) => {
@@ -164,7 +168,7 @@ export function Form2025Section({
                   <label
                     key={`${row.key}-${col}`}
                     className={cn(
-                      'flex items-center justify-center py-3 transition hover:bg-muted/40',
+                      'flex items-center justify-center py-1 transition hover:bg-muted/40',
                       isDisabled
                         ? cn('cursor-not-allowed', readOnly ? 'opacity-80' : 'opacity-45')
                         : 'cursor-pointer'
@@ -185,16 +189,16 @@ export function Form2025Section({
         </div>
       </div>
 
-      <section className="space-y-3">
-        <h4 className="text-base font-semibold">Nhận xét của giáo viên</h4>
-        <div className="grid gap-3 lg:grid-cols-[18rem_1fr]">
-          <p className="pt-2 text-sm text-muted-foreground">
-            {FEEDBACK_PROMPTS[0]?.prompt}
-            <span className="text-destructive"> *</span>
-          </p>
-          <div className="space-y-2">
-            {FEEDBACK_PROMPTS.map((feedback) => (
-              <div key={feedback.key} className="grid gap-2 sm:grid-cols-2">
+      {/* 3. Teacher Feedback */}
+      <section className="space-y-2">
+        <h4 className="text-xs font-semibold text-foreground">Nhận xét của giáo viên</h4>
+        <div className="space-y-1.5">
+          {FEEDBACK_PROMPTS.map((feedback) => (
+            <div key={feedback.key} className="grid grid-cols-1 sm:grid-cols-[13rem_1fr] items-center gap-1.5">
+              <p className="text-xs text-muted-foreground truncate" title={feedback.prompt}>
+                {feedback.prompt}
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
                 {[
                   { value: 'positive' as const, label: feedback.positive },
                   { value: 'negative' as const, label: feedback.negative },
@@ -204,7 +208,7 @@ export function Form2025Section({
                     <label
                       key={`${feedback.key}-${option.value}`}
                       className={cn(
-                        'flex min-h-10 items-center gap-3 rounded-md px-3 py-2 text-sm transition',
+                        'flex min-h-7 items-center gap-2 rounded-md px-2 py-1 text-xs transition',
                         readOnly ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
                         isSelected
                           ? 'bg-primary/10 font-medium text-primary'
@@ -217,24 +221,25 @@ export function Form2025Section({
                         label={`${feedback.prompt} ${option.label}`}
                         onToggle={() => setFeedbackAnswer(feedback.key, option.value)}
                       />
-                      <span>{option.label}</span>
+                      <span className="truncate">{option.label}</span>
                     </label>
                   )
                 })}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="grid gap-3 lg:grid-cols-[16rem_1fr]">
-        <div>
-          <h4 className="text-base font-semibold">Điểm yếu cần lưu ý</h4>
-          <p className="text-sm text-muted-foreground">
-            Tối đa 3 lựa chọn. {draft.weaknesses.length}/3 đã chọn
+      {/* 4. Weaknesses */}
+      <section className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-semibold text-foreground">Điểm yếu cần lưu ý</h4>
+          <p className="text-xs text-muted-foreground">
+            Tối đa 3 lựa chọn · {draft.weaknesses.length}/3 đã chọn
           </p>
         </div>
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           {WEAKNESS_OPTIONS.map((option) => {
             const isSelected = draft.weaknesses.includes(option.key)
             const isDisabled = Boolean(readOnly || (weaknessLimitReached && !isSelected))
@@ -242,7 +247,7 @@ export function Form2025Section({
               <label
                 key={option.key}
                 className={cn(
-                  'flex min-h-10 items-center gap-3 rounded-md bg-muted/30 px-3 py-2 text-sm transition',
+                  'flex min-h-7 items-center gap-2 rounded-md bg-muted/30 px-2.5 py-1 text-xs transition',
                   isDisabled
                     ? cn('cursor-not-allowed', readOnly ? 'opacity-70' : 'opacity-45')
                     : 'cursor-pointer hover:bg-muted/50',
@@ -253,9 +258,9 @@ export function Form2025Section({
                   checked={isSelected}
                   disabled={isDisabled}
                   onCheckedChange={() => toggleWeakness(option.key)}
-                  className="shrink-0"
+                  className="h-3.5 w-3.5 shrink-0"
                 />
-                <span>{option.label}</span>
+                <span className="truncate">{option.label}</span>
               </label>
             )
           })}

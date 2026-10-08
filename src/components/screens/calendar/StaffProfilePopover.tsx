@@ -129,12 +129,12 @@ export function StaffProfilePopover({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h4 className="text-xs font-bold text-foreground truncate">{person.name}</h4>
                 {person.isSubstitute && (
-                  <span className="text-[9px] px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                  <span className="text-xs px-1 py-0.2 rounded font-semibold bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                     Dạy thay
                   </span>
                 )}
               </div>
-              <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded text-[10px] font-mono font-medium">
+              <span className="inline-block mt-0.5 px-1.5 py-0.2 bg-muted text-muted-foreground rounded text-xs font-mono font-medium">
                 {person.id}
               </span>
             </div>
@@ -145,7 +145,7 @@ export function StaffProfilePopover({
             <div className="flex items-center gap-2">
               <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <div className="min-w-0">
-                <span className="text-[10px] text-muted-foreground block font-medium">Chức vụ</span>
+                <span className="text-xs text-muted-foreground block font-medium">Chức vụ</span>
                 <span className="font-semibold text-foreground truncate block">{person.role || 'Nhân sự'}</span>
               </div>
             </div>
@@ -155,7 +155,7 @@ export function StaffProfilePopover({
                 <div className="flex items-center gap-2 min-w-0">
                   <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
-                    <span className="text-[10px] text-muted-foreground block font-medium">Số điện thoại</span>
+                    <span className="text-xs text-muted-foreground block font-medium">Số điện thoại</span>
                     <span className="font-semibold text-foreground font-mono truncate block">{person.phone}</span>
                   </div>
                 </div>
@@ -191,8 +191,8 @@ export function StaffProfilePopover({
                 <div className="flex items-center gap-2 min-w-0">
                   <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
-                    <span className="text-[10px] text-muted-foreground block font-medium">Email</span>
-                    <span className="font-semibold text-foreground truncate block text-[11px]">{person.email}</span>
+                    <span className="text-xs text-muted-foreground block font-medium">Email</span>
+                    <span className="font-semibold text-foreground truncate block text-xs">{person.email}</span>
                   </div>
                 </div>
                 <Button
@@ -215,7 +215,7 @@ export function StaffProfilePopover({
               variant="ghost"
               size="sm"
               onClick={handleOpenFullProfile}
-              className="h-6 px-2 text-[10px] font-semibold text-primary hover:text-primary/80 gap-1 cursor-pointer"
+              className="h-6 px-2 text-xs font-semibold text-primary hover:text-primary/80 gap-1 cursor-pointer"
             >
               <ExternalLink className="h-3 w-3" />
               Xem hồ sơ chi tiết

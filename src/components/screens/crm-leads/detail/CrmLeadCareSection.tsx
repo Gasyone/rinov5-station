@@ -414,7 +414,7 @@ export function CrmLeadCareSection({
               </div>
 
               <div className="flex justify-end pr-0.5">
-                <p className="text-[11px] text-muted-foreground/80 italic text-right leading-tight select-none">
+                <p className="text-xs text-muted-foreground/80 italic text-right leading-tight select-none">
                   * &quot;Lưu & Đóng&quot;: Lưu nội dung trao đổi và đánh dấu đóng ca chăm sóc này.
                 </p>
               </div>

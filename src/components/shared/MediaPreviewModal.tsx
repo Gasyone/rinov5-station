@@ -46,15 +46,15 @@ export function MediaPreviewModal({
   return (
     <Dialog open={!!previewMedia} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="w-full sm:max-w-4xl lg:max-w-5xl max-w-[95vw] aspect-video max-h-[88vh] p-0 bg-transparent border-none text-white rounded-2xl overflow-hidden z-[9999] shadow-2xl [&>button]:hidden flex items-center justify-center"
+        className="w-full sm:max-w-3xl lg:max-w-4xl max-w-[90vw] aspect-video max-h-[80vh] p-0 bg-transparent border-none text-white rounded-xl overflow-hidden z-[9999] shadow-2xl [&>button]:hidden flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Standard 16:9 Media Preview Frame */}
-        <div className="relative w-full h-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-zinc-950 flex items-center justify-center border border-white/15 group">
+        <div className="relative w-full h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-zinc-950 flex items-center justify-center border border-white/15 group">
           {/* Header Bar Overlay with Semi-Transparent Backdrop */}
           <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-4 pb-8 z-20 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 min-w-0 pr-2">
-              <span className="shrink-0 px-2 py-0.5 rounded-md bg-white/20 text-[10px] font-bold tracking-wider uppercase text-white backdrop-blur-xs border border-white/10">
+              <span className="shrink-0 px-2 py-0.5 rounded-md bg-white/20 text-xs font-bold tracking-wider uppercase text-white backdrop-blur-xs border border-white/10">
                 {isVideo ? 'Video' : isDoc ? 'Tài liệu' : 'Ảnh'}
               </span>
               <DialogTitle className="font-bold text-base truncate text-white drop-shadow-xs">
@@ -200,7 +200,7 @@ export function MediaPreviewModal({
           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3.5 px-4 pt-8 z-20 flex items-center justify-between gap-2 pointer-events-none">
             {/* Left: Video duration if available */}
             {isVideo && previewMedia.duration ? (
-              <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[11px] font-mono text-zinc-300 border border-white/20">
+              <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-xs font-mono text-zinc-300 border border-white/20">
                 Thời lượng: {previewMedia.duration}
               </span>
             ) : <span />}

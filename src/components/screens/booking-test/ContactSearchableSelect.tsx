@@ -132,7 +132,7 @@ export function ContactSearchableSelect({
                 </span>
               </div>
               {selectedContact.address && (
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground truncate pt-0.5 pr-10">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground truncate pt-0.5 pr-10">
                   <MapPin className="h-3 w-3 shrink-0 text-muted-foreground/70" />
                   <span className="truncate">{selectedContact.address}</span>
                 </div>
@@ -267,7 +267,7 @@ export function ContactSearchableSelect({
                           {contact.name}
                         </span>
                         {contact.role && (
-                          <span className="text-[11px] text-muted-foreground font-normal">
+                          <span className="text-xs text-muted-foreground font-normal">
                             ({contact.role})
                           </span>
                         )}
@@ -276,7 +276,7 @@ export function ContactSearchableSelect({
                         </span>
                       </div>
                       {contact.address && (
-                        <div className="text-[11px] text-muted-foreground/75 truncate mt-0.5">
+                        <div className="text-xs text-muted-foreground/75 truncate mt-0.5">
                           📍 {contact.address}
                         </div>
                       )}

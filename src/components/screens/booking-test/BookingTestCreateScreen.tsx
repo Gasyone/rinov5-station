@@ -1,17 +1,13 @@
 'use client'
 
 import { useState, useMemo, type FormEvent } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { BookOpen, Building2, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { BackButton } from '@/components/shared'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   addBookingTest,
   getBookingTests,
   type BookingTest,
 } from '@/mocks/bookingTests'
-import { mockStudents } from '@/mocks/students'
 import { mockLeads, updateLead, type Lead } from '@/mocks/crmLeads'
 import { mapLeadSubjectToBookingProgram } from '@/components/screens/crm-leads/crmLeadsHelpers'
 import { CrmCustomerCreateDialog } from '@/components/screens/crm-leads/CrmCustomerCreateDialog'
@@ -22,16 +18,22 @@ import {
 } from '@/mocks/shiftRoster'
 import {
   PROGRAM_CONFIG,
-  TIME_SLOTS,
+  getSlotTimeRange,
 } from './bookingTestCreateTypes'
+import {
+  buildBookingTestContactsList,
+  BOOKING_TEST_CENTER_DATA,
+} from './bookingTestHelpers'
 import { BookingTestCreateStudentForm } from './BookingTestCreateStudentForm'
+import { BookingTestCreateProgramSection } from './BookingTestCreateProgramSection'
 import { BookingTestCreateScheduleSection } from './BookingTestCreateScheduleSection'
 import { BookingTestCreateStaffSection } from './BookingTestCreateStaffSection'
+import { BookingTestCreateSummary } from './BookingTestCreateSummary'
+import { BookingTestSuccessSummaryView } from './BookingTestSuccessSummaryView'
 import { BookingTestAddChildDialog, type NewChildData } from './BookingTestAddChildDialog'
 import type { ContactPerson } from './ContactSearchableSelect'
 
 export function BookingTestCreateScreen() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const paramLeadId = searchParams.get('leadId')
   const paramStudentName = searchParams.get('studentName')
@@ -54,8 +56,8 @@ export function BookingTestCreateScreen() {
           age: lead.studentAge,
           currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
           academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
-          school: lead.branch || 'RinoEdu Nguyễn Tuân',
-          program: mapLeadSubjectToBookingProgram(lead.targetSubject),
+          school: lead.branch || '',
+          program: lead.targetSubject ? mapLeadSubjectToBookingProgram(lead.targetSubject) : '',
           notes: lead.lastNote || '',
         }
       }
@@ -71,8 +73,8 @@ export function BookingTestCreateScreen() {
         dob: '15/05/2018',
         currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
         academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
-        school: paramBranch || 'RinoEdu Nguyễn Tuân',
-        program: mapLeadSubjectToBookingProgram(paramSubject || ''),
+        school: paramBranch || '',
+        program: paramSubject ? mapLeadSubjectToBookingProgram(paramSubject) : '',
         notes: '',
       }
     }
@@ -81,7 +83,7 @@ export function BookingTestCreateScreen() {
 
   const bookings = useMemo(() => getBookingTests(), [])
 
-  // 1. 3 Ngày đầu tiên (Hôm nay, Ngày mai, Ngày kia) + Min date cho Ngày khác
+  // 1. 4 Ngày đầu tiên (thứ và ngày ra trước, viết tắt T2..CN, Nay/Mai/Ngày kia trong ngoặc, nhiều hơn bỏ ngoặc)
   const dateOptions = useMemo(() => {
     const today = new Date()
     const formatDateStr = (d: Date) => {
@@ -90,24 +92,31 @@ export function BookingTestCreateScreen() {
       const dd = String(d.getDate()).padStart(2, '0')
       return `${yyyy}-${mm}-${dd}`
     }
-    const formatDisplay = (d: Date, prefix: string) => {
+    const getDayShort = (d: Date) => {
+      const day = d.getDay() // 0 = CN, 1 = T2, 2 = T3, 3 = T4, 4 = T5, 5 = T6, 6 = T7
+      return day === 0 ? 'CN' : `T${day + 1}`
+    }
+    const formatDisplay = (d: Date) => {
       const mm = String(d.getMonth() + 1).padStart(2, '0')
       const dd = String(d.getDate()).padStart(2, '0')
-      return `${prefix} (${dd}/${mm})`
+      const dayShort = getDayShort(d)
+      return `${dayShort}, ${dd}/${mm}`
     }
 
     const d0 = new Date(today)
     const d1 = new Date(today); d1.setDate(today.getDate() + 1)
     const d2 = new Date(today); d2.setDate(today.getDate() + 2)
     const d3 = new Date(today); d3.setDate(today.getDate() + 3)
+    const d4 = new Date(today); d4.setDate(today.getDate() + 4)
 
     return {
-      first3: [
-        { dateStr: formatDateStr(d0), label: formatDisplay(d0, 'Hôm nay') },
-        { dateStr: formatDateStr(d1), label: formatDisplay(d1, 'Ngày mai') },
-        { dateStr: formatDateStr(d2), label: formatDisplay(d2, 'Ngày kia') },
+      first4: [
+        { dateStr: formatDateStr(d0), label: formatDisplay(d0) },
+        { dateStr: formatDateStr(d1), label: formatDisplay(d1) },
+        { dateStr: formatDateStr(d2), label: formatDisplay(d2) },
+        { dateStr: formatDateStr(d3), label: formatDisplay(d3) },
       ],
-      minCustomDateStr: formatDateStr(d3),
+      minCustomDateStr: formatDateStr(d4),
     }
   }, [])
 
@@ -117,141 +126,75 @@ export function BookingTestCreateScreen() {
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false)
 
   const contactsList = useMemo<ContactPerson[]>(() => {
-    const map = new Map<string, ContactPerson>()
-
-    // Contact tùy chỉnh/tạo mới qua modal
-    customContacts.forEach((c) => {
-      map.set(c.id, c)
-    })
-
-    // Contact từ mockLeads
-    mockLeads.forEach((lead) => {
-      if (!lead.parentName) return
-      const pName = lead.parentName
-      const pPhone = lead.phone || '0900000000'
-      const key = `${pName}_${pPhone}`
-
-      if (!map.has(key)) {
-        map.set(key, {
-          id: key,
-          name: pName,
-          role: lead.parentRole || 'Mẹ',
-          phone: pPhone,
-          address: lead.address,
-          children: [],
-        })
-      }
-
-      const contact = map.get(key)!
-      if (lead.address && !contact.address) {
-        contact.address = lead.address
-      }
-
-      const childKey = `lead_child_${lead.id}`
-      if (!contact.children.some((c) => c.name === lead.studentName)) {
-        contact.children.push({
-          id: childKey,
-          name: lead.studentName,
-          dob: lead.birthYear ? `01/01/${lead.birthYear}` : undefined,
-          age: lead.studentAge,
-          currentSchool: lead.schoolName || 'Tiểu học Lương Định Của (Quận 3)',
-          academicPerformance: lead.academicAbility || lead.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu',
-        })
-      }
-    })
-
-    // Contact từ mockStudents
-    mockStudents.forEach((student) => {
-      const pName = student.parentName || `Phụ huynh ${student.name}`
-      const pPhone = student.parentPhone || student.phone || '0900000000'
-      const key = `${pName}_${pPhone}`
-
-      if (!map.has(key)) {
-        map.set(key, {
-          id: key,
-          name: pName,
-          role: 'Mẹ',
-          phone: pPhone,
-          address: 'Phường Võ Thị Sáu, Quận 3, TP.HCM',
-          children: [],
-        })
-      }
-
-      const contact = map.get(key)!
-      if (!contact.children.some((c) => c.id === student.id)) {
-        let calcAge: number | undefined
-        if (student.dob) {
-          const birthYear = parseInt(student.dob.slice(0, 4), 10)
-          if (!isNaN(birthYear)) {
-            calcAge = 2026 - birthYear
-          }
-        }
-        contact.children.push({
-          id: student.id,
-          name: student.name,
-          dob: student.dob,
-          age: calcAge || 8,
-          currentSchool: 'Tiểu học Lương Định Của (Quận 3)',
-          academicPerformance: 'Giỏi / Tốt nghiệp loại Ưu',
-        })
-      }
-    })
-
-    return Array.from(map.values())
+    return buildBookingTestContactsList(customContacts)
   }, [customContacts])
 
   const [contactId, setContactId] = useState(leadInfo ? 'lead_contact' : '')
   const [childId, setChildId] = useState(leadInfo ? 'lead_child' : '')
 
-  // Chương trình & Level (rỗng khi tạo mới độc lập)
+  // Chương trình & Level (prefill từ leadInfo nếu có)
   const [program, setProgram] = useState(leadInfo?.program || '')
-  const [level, setLevel] = useState('')
+  const [level, setLevel] = useState(leadInfo?.age && leadInfo.age <= 6 ? 'Pre-Starters (<=6)' : '')
 
   const handleProgramChange = (newProgram: string) => {
     setProgram(newProgram)
     setLevel('')
   }
 
-  const [school, setSchool] = useState(leadInfo?.school || 'RinoEdu Linh Đàm')
+  const [school, setSchool] = useState(leadInfo?.school || '')
   const [teacher, setTeacher] = useState('')
-  const [testDate, setTestDate] = useState(dateOptions.first3[0]?.dateStr || '')
-  const [selectedSlot, setSelectedSlot] = useState(TIME_SLOTS[1] || '08:30')
+  const [testDate, setTestDate] = useState(dateOptions.first4[0]?.dateStr || '')
+  const [selectedSlot, setSelectedSlot] = useState('')
   const [notes, setNotes] = useState(leadInfo?.notes || '')
+  const [createdBooking, setCreatedBooking] = useState<BookingTest | null>(null)
 
-  // Chi nhánh dùng để tra cứu ca trực (fallback Nguyễn Tuân nếu chưa chọn cơ sở)
-  const activeSchoolForRoster = school || 'RinoEdu Nguyễn Tuân'
+  const handleSchoolChange = (newSchool: string) => {
+    setSchool(newSchool)
+    setTeacher('')
+  }
+
+  const handleTestDateChange = (newDate: string) => {
+    setTestDate(newDate)
+    setTeacher('')
+  }
+
   const activeSubject = program ? PROGRAM_CONFIG[program]?.subject : undefined
 
   // Mapping danh sách các khung giờ và số lượng nhân sự trực thực tế từ Shift Roster & Conflict Engine
+  // CHỈ tính toán khi người dùng đã chọn đầy đủ cả cơ sở và ngày test
   const dailySlotsSummary = useMemo(() => {
+    if (!school || !testDate) return []
     return getDailySlotSummary({
-      school: activeSchoolForRoster,
+      school,
       dateStr: testDate,
       subject: activeSubject,
       extraBookings: bookings,
     })
-  }, [activeSchoolForRoster, testDate, activeSubject, bookings])
+  }, [school, testDate, activeSubject, bookings])
 
   // Danh sách nhân sự phụ trách được phân bổ cho ca đang chọn (selectedSlot)
+  // CHỈ tải khi đã chọn đầy đủ cả cơ sở, ngày test và khung giờ
   const currentSlotStaffList = useMemo(() => {
+    if (!school || !testDate || !selectedSlot) return []
     return getDutyStaffForSlot({
-      school: activeSchoolForRoster,
+      school,
       dateStr: testDate,
       slotTime: selectedSlot,
       subject: activeSubject,
       extraBookings: bookings,
     })
-  }, [activeSchoolForRoster, testDate, selectedSlot, activeSubject, bookings])
+  }, [school, testDate, selectedSlot, activeSubject, bookings])
 
   // Tổng hợp lịch rảnh của tất cả giáo viên chi nhánh trong ngày (cho chế độ Teacher-First)
   const dayStaffList = useMemo(() => {
+    if (!school || !testDate) return []
     return getBranchTeachersDailySummary({
-      school: activeSchoolForRoster,
+      school,
       dateStr: testDate,
       subject: activeSubject,
       extraBookings: bookings,
     })
-  }, [activeSchoolForRoster, testDate, activeSubject, bookings])
+  }, [school, testDate, activeSubject, bookings])
 
   // Map xung đột các slot của giáo viên đang chọn
   const teacherSlotConflicts = useMemo(() => {
@@ -365,6 +308,11 @@ export function BookingTestCreateScreen() {
 
   const handleSlotSelection = (slot: string) => {
     setSelectedSlot(slot)
+    if (!school || !testDate) {
+      // Khi chưa chọn cơ sở hoặc ngày, không tự động gán nhân sự trực
+      setTeacher('')
+      return
+    }
     const nextStaff = getDutyStaffForSlot({
       school,
       dateStr: testDate,
@@ -377,56 +325,60 @@ export function BookingTestCreateScreen() {
     }
   }
 
-  const handleCancel = () => {
-    if (paramLeadId) {
-      router.push('/app/crm_leads')
-    } else {
-      router.push('/app/booking_test')
-    }
-  }
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
-    if (!leadInfo) {
-      if (!contactId || !selectedContactObj) {
-        toast.error('Vui lòng chọn phụ huynh / người liên hệ')
-        return
-      }
-      if (!childId || !currentChildName) {
-        toast.error('Vui lòng chọn con / học viên')
-        return
-      }
-      if (!school) {
-        toast.error('Vui lòng chọn trung tâm')
-        return
-      }
-      if (!program) {
-        toast.error('Vui lòng chọn chương trình')
-        return
-      }
-      if (!selectedSlot) {
-        toast.error('Vui lòng chọn khung giờ test')
-        return
-      }
+    if (!program) {
+      toast.error('Vui lòng chọn chương trình test')
+      return
     }
+    if (!school) {
+      toast.error('Vui lòng chọn trung tâm / cơ sở test')
+      return
+    }
+    if (!testDate) {
+      toast.error('Vui lòng chọn ngày đánh giá năng lực')
+      return
+    }
+    if (!selectedSlot) {
+      toast.error('Vui lòng chọn khung giờ test')
+      return
+    }
+
+    const finalChildName = currentChildName?.trim() || '(Lịch test khống)'
+    const finalParentName = currentParentName?.trim() || '(Chưa gán)'
+    const finalPhone = currentPhone?.trim() || '---'
 
     const currentProgramConfig =
       PROGRAM_CONFIG[program] || PROGRAM_CONFIG['Chương trình Station']
     const subject = currentProgramConfig.subject
 
+    const resolvedParentRole =
+      leadInfo?.parentRole ||
+      selectedContactObj?.role ||
+      (finalParentName.toLowerCase().includes('văn') ||
+       finalParentName.toLowerCase().includes('nam') ||
+       finalParentName.toLowerCase().includes('tuấn') ||
+       finalParentName.toLowerCase().includes('dũng')
+        ? 'Bố'
+        : 'Mẹ')
+
     const newBooking: BookingTest = {
       id: `E${Math.floor(1000 + Math.random() * 9000)}`,
-      childName: currentChildName,
-      familyName: `Gia đình ${currentParentName}`,
-      phone: currentPhone,
-      familyMembers: [
-        {
-          name: `${currentParentName} (Phụ huynh)`,
-          phone: currentPhone,
-          isPrimary: true,
-        },
-      ],
+      childName: finalChildName,
+      parentName: finalParentName,
+      parentRole: resolvedParentRole,
+      familyName: currentParentName ? `Gia đình ${finalParentName}` : '(Chưa gán)',
+      phone: finalPhone,
+      familyMembers: currentParentName
+        ? [
+            {
+              name: `${finalParentName} (${resolvedParentRole})`,
+              phone: finalPhone,
+              isPrimary: true,
+            },
+          ]
+        : [],
       status: 'booked_assessment',
       attendance: 'pending',
       subject,
@@ -473,11 +425,27 @@ export function BookingTestCreateScreen() {
     }
 
     toast.success(`Đã tạo lịch test thành công cho ${newBooking.childName}`)
-    if (paramLeadId) {
-      router.push('/app/crm_leads')
-    } else {
-      router.push('/app/booking_test')
+
+    // Đồng bộ đa tab qua BroadcastChannel & localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          'rinov5_crm_lead_updated',
+          JSON.stringify({ leadId: paramLeadId, timestamp: Date.now() })
+        )
+        const channel = new BroadcastChannel('rinov5_crm_sync')
+        channel.postMessage({ type: 'LEAD_UPDATED', leadId: paramLeadId, booking: newBooking })
+        channel.close()
+      } catch {}
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'LEAD_UPDATED', leadId: paramLeadId, booking: newBooking }, '*')
+        }
+      } catch {}
     }
+
+    // Đổi giao diện sang tóm tắt nội dung lịch hẹn (Summary view)
+    setCreatedBooking(newBooking)
   }
 
   const childSelectOptions = selectedContactObj
@@ -490,46 +458,38 @@ export function BookingTestCreateScreen() {
       ]
     : []
 
-  const CENTER_DATA = useMemo(
-    () => [
-      {
-        name: 'RinoEdu Linh Đàm',
-        distance: '1.2 km',
-        address: 'Tầng 3, TTTM Rice City, Linh Đàm, Hoàng Mai',
-      },
-      {
-        name: 'RinoEdu Nguyễn Tuân',
-        distance: '2.8 km',
-        address: 'Số 90 Nguyễn Tuân, Thanh Xuân',
-      },
-      {
-        name: 'RinoEdu Đống Đa',
-        distance: '4.5 km',
-        address: 'Số 142 Hào Nam, Đống Đa',
-      },
-      {
-        name: 'RinoEdu Cầu Giấy',
-        distance: '6.3 km',
-        address: 'Tòa Discovery Complex, 302 Cầu Giấy',
-      },
-    ],
-    []
-  )
+  const CENTER_DATA = BOOKING_TEST_CENTER_DATA
 
   const schoolSelectOptions = useMemo(
-    () =>
-      CENTER_DATA.map((c) => ({
+    () => [
+      {
+        value: '',
+        textValue: 'Chọn trung tâm',
+        label: (
+          <div className="flex items-center py-0.5 min-w-0">
+            <span className="text-muted-foreground font-normal text-xs">
+              Chọn trung tâm
+            </span>
+          </div>
+        ),
+        selectedLabel: (
+          <span className="text-muted-foreground font-normal text-xs">
+            Chọn trung tâm
+          </span>
+        ),
+      },
+      ...CENTER_DATA.map((c) => ({
         value: c.name,
-        textValue: c.name,
+        textValue: `${c.name} (${c.distanceStr})`,
         label: (
           <div className="flex flex-col w-full py-0.5 min-w-0">
             <div className="flex items-center justify-between w-full gap-2">
               <span className="font-medium text-foreground text-xs">{c.name}</span>
               <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-                {c.distance}
+                {c.distanceStr}
               </span>
             </div>
-            <span className="text-[11.5px] text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
+            <span className="text-xs text-muted-foreground/75 truncate font-normal leading-normal mt-0.5">
               {c.address}
             </span>
           </div>
@@ -538,147 +498,191 @@ export function BookingTestCreateScreen() {
           <div className="flex items-center justify-between w-full gap-2 text-xs">
             <span className="truncate font-medium text-foreground">{c.name}</span>
             <span className="text-muted-foreground font-normal tabular-nums shrink-0 text-xs">
-              {c.distance}
+              {c.distanceStr}
             </span>
           </div>
         ),
       })),
+    ],
     [CENTER_DATA]
   )
 
-  const programOptions = Object.keys(PROGRAM_CONFIG).map((p) => ({
-    value: p,
-    label: p,
-  }))
+  const programOptions = useMemo(
+    () => [
+      {
+        value: '',
+        textValue: 'Chọn chương trình',
+        label: (
+          <div className="flex items-center py-0.5 min-w-0">
+            <span className="text-muted-foreground font-normal text-xs">
+              Chọn chương trình
+            </span>
+          </div>
+        ),
+        selectedLabel: (
+          <span className="text-muted-foreground font-normal text-xs">
+            Chọn chương trình
+          </span>
+        ),
+      },
+      ...Object.keys(PROGRAM_CONFIG).map((p) => ({
+        value: p,
+        textValue: p,
+        label: p,
+        selectedLabel: p,
+      })),
+    ],
+    []
+  )
 
-  const levelOptions = (PROGRAM_CONFIG[program]?.levels || []).map((l) => ({
-    value: l,
-    label: l,
-  }))
+  const levelOptions = useMemo(() => {
+    if (!program) return []
+    const levels = (PROGRAM_CONFIG[program]?.levels || []).map((l) => ({
+      value: l,
+      label: l,
+      selectedLabel: l,
+    }))
+    return [
+      {
+        value: '',
+        textValue: 'Level dự kiến',
+        label: (
+          <div className="flex items-center py-0.5 min-w-0">
+            <span className="text-muted-foreground font-normal text-xs">
+              Level dự kiến
+            </span>
+          </div>
+        ),
+        selectedLabel: (
+          <span className="text-muted-foreground font-normal text-xs">
+            Level dự kiến
+          </span>
+        ),
+      },
+      ...levels,
+    ]
+  }, [program])
+
+  const activeDateOption = dateOptions.first4.find((d) => d.dateStr === testDate)
+  const activeDateLabel = testDate ? (activeDateOption ? activeDateOption.label : testDate) : ''
+
+  if (createdBooking) {
+    return (
+      <div className="flex h-full min-h-0 flex-col bg-background">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <BookingTestSuccessSummaryView
+            booking={createdBooking}
+            leadId={paramLeadId}
+            schoolAddress={CENTER_DATA.find((c) => c.name === createdBooking.school)?.address}
+            dateLabel={activeDateLabel}
+            timeRange={getSlotTimeRange(selectedSlot, 30)}
+            onCreateAnother={() => {
+              setCreatedBooking(null)
+              setSelectedSlot('')
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      {/* Header Bar chuẩn Design System - Thu gọn thẳng hàng Option A */}
-      <div className="border-b bg-background px-4 py-1.5 lg:px-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <BackButton onClick={() => router.push('/app/booking_test')} />
-            <h1 className="text-sm font-bold text-foreground">
-              Tạo mới Đặt lịch đánh giá năng lực
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => router.back()}
-              className="cursor-pointer h-7.5 text-xs px-3"
-            >
-              Hủy
-            </Button>
-            <Button
-              type="submit"
-              form="booking-create-form"
-              size="sm"
-              className="gap-1.5 cursor-pointer h-7.5 text-xs px-3"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Tạo lịch test</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Form Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-1.5 lg:px-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2 lg:px-6">
         <form
           id="booking-create-form"
           onSubmit={handleSubmit}
           className="mx-auto max-w-5xl space-y-2.5"
         >
           <div className="flex flex-col lg:flex-row gap-2.5 items-start">
-            {/* CỘT TRÁI: ĐỐI TƯỢNG & CHƯƠNG TRÌNH (THU GỌN VÀ CỐ ĐỊNH STICKY KHI CUỘN) */}
-            <BookingTestCreateStudentForm
-              className="w-full lg:w-[280px] xl:w-[290px] shrink-0 space-y-2.5 lg:sticky lg:top-0 self-start"
-              leadInfo={leadInfo}
-              contactId={contactId}
-              onContactChange={handleContactChange}
-              contactsList={contactsList}
-              selectedContactObj={selectedContactObj}
-              childId={childId}
-              onChildChange={setChildId}
-              childSelectOptions={childSelectOptions}
-              onAddNewContact={() => setIsAddContactModalOpen(true)}
-              onAddNewChild={() => setIsAddChildModalOpen(true)}
-              program={program}
-              onProgramChange={handleProgramChange}
-              programOptions={programOptions}
-              level={level}
-              onLevelChange={setLevel}
-              levelOptions={levelOptions}
-              notes={notes}
-              onNotesChange={setNotes}
-            />
+            {/* CỘT TRÁI (FLEX-1): TOÀN BỘ QUY TRÌNH THAO TÁC ĐẶT LỊCH TEST */}
+            <div className="flex-1 min-w-0 flex flex-col space-y-2.5">
+              {/* 1. HÀNG ĐẦU TIÊN: CHƯƠNG TRÌNH, LEVEL, CƠ SỞ & TEXT LINK GỢI Ý CƠ SỞ GẦN NHẤT */}
+              <BookingTestCreateProgramSection
+                program={program}
+                onProgramChange={handleProgramChange}
+                level={level}
+                onLevelChange={setLevel}
+                school={school}
+                onSchoolChange={handleSchoolChange}
+                programOptions={programOptions}
+                levelOptions={levelOptions}
+                schoolSelectOptions={schoolSelectOptions}
+                centerData={CENTER_DATA}
+              />
 
-            {/* CỘT PHẢI: LỊCH ĐÁNH GIÁ VÀ NHÂN SỰ TRỰC CA */}
-            {!program ? (
-              <div className="flex-1 min-w-0 flex flex-col items-center justify-center rounded-lg border border-dashed bg-background p-8 min-h-[460px] text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-3">
-                  <BookOpen className="h-6 w-6" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">
-                  Chưa chọn Chương trình học
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-md mt-1.5 leading-relaxed">
-                  Giáo viên và ca kiểm tra được phân chia theo từng môn học chuyên môn (Tiếng Anh, Toán tư duy). Vui lòng chọn <span className="font-semibold text-foreground">Chương trình</span> ở cột bên trái để hệ thống hiển thị đúng giáo viên phụ trách.
-                </p>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-2 max-w-lg">
-                  {programOptions.map((opt) => (
-                    <Button
-                      key={opt.value}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleProgramChange(opt.value)}
-                      className="text-xs h-8 gap-1.5 cursor-pointer hover:border-amber-500/50 hover:bg-amber-500/5 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-                    >
-                      <BookOpen className="h-3.5 w-3.5 opacity-70" />
-                      <span>{opt.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 min-w-0 flex flex-col space-y-2.5">
-                {/* 1. LỰA CHỌN NGÀY ĐÁNH GIÁ & KHUNG GIỜ TEST */}
-                <BookingTestCreateScheduleSection
-                  mode="slot_first"
-                  testDate={testDate}
-                  onTestDateChange={setTestDate}
-                  selectedSlot={selectedSlot}
-                  onSlotChange={handleSlotSelection}
-                  dateOptions={dateOptions}
-                  dailySlotsSummary={dailySlotsSummary}
-                  selectedTeacher={teacher}
-                  teacherSlotConflicts={teacherSlotConflicts}
-                />
+              {/* 2. SECTION LỊCH VÀ KHUNG GIỜ TEST (1 SECTION DUY NHẤT) */}
+              <BookingTestCreateScheduleSection
+                mode="slot_first"
+                testDate={testDate}
+                onTestDateChange={handleTestDateChange}
+                selectedSlot={selectedSlot}
+                onSlotChange={handleSlotSelection}
+                dateOptions={dateOptions}
+                dailySlotsSummary={dailySlotsSummary}
+                selectedTeacher={teacher}
+                teacherSlotConflicts={teacherSlotConflicts}
+                school={school}
+              />
 
-                {/* 2. PHỤ TRÁCH CA ĐÃ CHỌN (KÈM BỘ CHỌN TRUNG TÂM Ở HEADER) */}
-                <BookingTestCreateStaffSection
-                  mode="slot_first"
-                  selectedSlot={selectedSlot}
-                  teacher={teacher}
-                  onTeacherChange={setTeacher}
-                  currentSlotStaffList={currentSlotStaffList}
-                  dayStaffList={dayStaffList}
-                  school={school}
-                  onSchoolChange={setSchool}
-                  schoolSelectOptions={schoolSelectOptions}
-                />
-              </div>
-            )}
+              {/* 3. PHỤ TRÁCH CA ĐÃ CHỌN */}
+              <BookingTestCreateStaffSection
+                mode="slot_first"
+                selectedSlot={selectedSlot}
+                teacher={teacher}
+                onTeacherChange={setTeacher}
+                currentSlotStaffList={currentSlotStaffList}
+                dayStaffList={dayStaffList}
+                school={school}
+                testDate={testDate}
+              />
+
+              {/* 4. GHI CHÚ ĐƯA XUỐNG DƯỚI CÙNG PANEL TRÁI, DƯỚI CHỌN PHỤ TRÁCH */}
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ghi chú cho ca test (yêu cầu phụ huynh, đặc điểm học viên...)"
+                rows={2}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[48px] resize-y"
+              />
+            </div>
+
+            {/* CỘT PHẢI (STICKY ~300px): CONTACT & HỌC VIÊN + STICKY BOOKING SUMMARY CARD */}
+            <div className="w-full lg:w-[290px] xl:w-[310px] shrink-0 space-y-2.5 lg:sticky lg:top-0 self-start">
+              {/* KHỐI 1: CONTACT & HỌC VIÊN */}
+              <BookingTestCreateStudentForm
+                leadInfo={leadInfo}
+                contactId={contactId}
+                onContactChange={handleContactChange}
+                contactsList={contactsList}
+                selectedContactObj={selectedContactObj}
+                childId={childId}
+                onChildChange={setChildId}
+                childSelectOptions={childSelectOptions}
+                onAddNewContact={() => setIsAddContactModalOpen(true)}
+                onAddNewChild={() => setIsAddChildModalOpen(true)}
+              />
+
+              {/* KHỐI 2: STICKY BOOKING SUMMARY CARD Ở DƯỚI CONTACT BÊN PHẢI */}
+              <BookingTestCreateSummary
+                dateLabel={activeDateLabel}
+                selectedSlot={selectedSlot}
+                school={school}
+                schoolAddress={CENTER_DATA.find((c) => c.name === school)?.address}
+                program={program}
+                level={level}
+                studentName={currentChildName}
+                parentName={currentParentName}
+                phone={currentPhone}
+                teacherName={teacher}
+                teacherRole={
+                  currentSlotStaffList.find(
+                    (s) => s.employee.name.toLowerCase() === teacher.toLowerCase()
+                  )?.employee.role || 'Giáo viên'
+                }
+              />
+            </div>
           </div>
         </form>
       </div>

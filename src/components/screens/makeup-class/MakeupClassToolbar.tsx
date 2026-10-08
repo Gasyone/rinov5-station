@@ -74,16 +74,21 @@ export function MakeupClassToolbar({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Left side: Subject + Branch Selector */}
         <div className="flex flex-wrap items-center gap-2">
-          <SubjectSelect
-            value={activeSubject}
-            onValueChange={onSubjectChange}
-            className="h-9 min-w-36 text-sm"
-          />
           <BranchSelect
             value={activeBranch}
             branches={branchOptions}
             onValueChange={onBranchChange}
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
             className="h-9 min-w-40 text-sm"
+          />
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            allLabel="Tất cả các môn"
+            placeholder="Chọn môn học"
+            className="h-9 min-w-36 text-sm"
           />
         </div>
 

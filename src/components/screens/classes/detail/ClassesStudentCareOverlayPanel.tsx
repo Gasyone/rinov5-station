@@ -53,7 +53,7 @@ export function ClassesStudentCareOverlayPanel({
   return (
     <aside className="flex min-h-0 flex-col overflow-hidden w-full h-full bg-background relative z-10 animate-in fade-in slide-in-from-right-4 duration-200">
       {/* Top Header Row with Student Name, ExternalLink Icon & Close (X) button */}
-      <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2.5 pt-1 mb-2 pr-1">
+      <div className="shrink-0 flex items-center justify-between border-b border-border/60 pb-2 pt-0.5 mb-1.5 pr-1">
         {/* Left Side: Student Care Title & External Link Icon */}
         <div className="flex items-center gap-2 min-w-0">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 text-xs font-extrabold text-rose-600 dark:text-rose-400">

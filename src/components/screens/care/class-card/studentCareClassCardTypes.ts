@@ -81,17 +81,17 @@ export interface StudentCareClassExpandedInfoProps {
   endDateDisplay: string
   pkg: SimulatedPackage
   pkgIsEnglish: boolean
-  classRecordForHover: ClassRecord
-  csPersonnelItem: PersonnelItem
-  currentCSObj: CSStaffMember
-  effectiveCSName: string
-  filteredCsList: CSStaffMember[]
-  csSearchQuery: string
-  setCsSearchQuery: (query: string) => void
-  isCsPopoverOpen: boolean
-  setIsCsPopoverOpen: (open: boolean) => void
-  handleSelectCS: (staff: CSStaffMember) => void
-  classTeachers: Array<{
+  classRecordForHover?: ClassRecord
+  csPersonnelItem?: PersonnelItem
+  currentCSObj?: CSStaffMember
+  effectiveCSName?: string
+  filteredCsList?: CSStaffMember[]
+  csSearchQuery?: string
+  setCsSearchQuery?: (query: string) => void
+  isCsPopoverOpen?: boolean
+  setIsCsPopoverOpen?: (open: boolean) => void
+  handleSelectCS?: (staff: CSStaffMember) => void
+  classTeachers?: Array<{
     id: string
     name: string
     role: string
@@ -100,4 +100,5 @@ export interface StudentCareClassExpandedInfoProps {
     avatar: string
   }>
   isRenewal?: boolean
+  className?: string
 }

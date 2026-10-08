@@ -99,25 +99,25 @@ export function CrmLeadReturningHistoryModal({
     switch (variant) {
       case 'amber':
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700 shrink-0">
+          <Badge variant="outline" className="text-xs font-semibold bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700 shrink-0">
             {status}
           </Badge>
         )
       case 'rose':
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700 shrink-0">
+          <Badge variant="outline" className="text-xs font-semibold bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700 shrink-0">
             {status}
           </Badge>
         )
       case 'emerald':
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700 shrink-0">
+          <Badge variant="outline" className="text-xs font-semibold bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700 shrink-0">
             {status}
           </Badge>
         )
       default:
         return (
-          <Badge variant="outline" className="text-[10px] font-semibold bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-300 shrink-0">
+          <Badge variant="outline" className="text-xs font-semibold bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-300 shrink-0">
             {status}
           </Badge>
         )
@@ -139,7 +139,7 @@ export function CrmLeadReturningHistoryModal({
               </DialogTitle>
               <Badge
                 variant="outline"
-                className="h-6 text-[11px] font-semibold px-2 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 inline-flex items-center gap-1 shadow-none"
+                className="h-6 text-xs font-semibold px-2 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700 inline-flex items-center gap-1 shadow-none"
               >
                 <RotateCcw className="h-3 w-3" />
                 <span>Lead quay lại</span>
@@ -169,10 +169,10 @@ export function CrmLeadReturningHistoryModal({
                     <span className="font-semibold text-xs text-foreground">
                       {cycle.title}
                     </span>
-                    <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted/80 font-medium">
+                    <span className="text-xs text-muted-foreground px-1.5 py-0.5 rounded bg-muted/80 font-medium">
                       {cycle.cycleTag}
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       ({cycle.timeRange})
                     </span>
                   </div>
@@ -203,7 +203,7 @@ export function CrmLeadReturningHistoryModal({
 
                   {/* 2. DẢI HIGHLIGHT: LÝ DO TẠM DỪNG / THỎA THUẬN BÀN GIAO (Viền trái nhấn, KHÔNG VIỀN HỘP) */}
                   <div className="p-3 rounded-lg bg-amber-500/8 dark:bg-amber-500/10 border-l-3 border-amber-500 space-y-1">
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-900 dark:text-amber-300">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-300">
                       <FileText className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                       <span>Lý do tạm dừng &amp; Thỏa thuận bàn giao:</span>
                     </div>
@@ -222,11 +222,11 @@ export function CrmLeadReturningHistoryModal({
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div>
-                          <span className="text-muted-foreground text-[11px] block">Môn học / Sản phẩm quan tâm:</span>
+                          <span className="text-muted-foreground text-xs block">Môn học / Sản phẩm quan tâm:</span>
                           <span className="font-medium text-foreground">{cycle.productInterest}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground text-[11px] block">Nhu cầu &amp; Kỳ vọng của phụ huynh:</span>
+                          <span className="text-muted-foreground text-xs block">Nhu cầu &amp; Kỳ vọng của phụ huynh:</span>
                           <p className="text-muted-foreground leading-relaxed pt-0.5">{cycle.parentExpectation}</p>
                         </div>
                       </div>
@@ -240,7 +240,7 @@ export function CrmLeadReturningHistoryModal({
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div>
-                          <span className="text-muted-foreground text-[11px] block">Tiến trình đạt được ở đợt này:</span>
+                          <span className="text-muted-foreground text-xs block">Tiến trình đạt được ở đợt này:</span>
                           <p className="text-foreground/90 font-medium leading-relaxed pt-0.5">
                             {cycle.careResultSummary}
                           </p>

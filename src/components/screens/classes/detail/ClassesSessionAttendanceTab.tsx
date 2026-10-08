@@ -163,7 +163,7 @@ export function ClassesSessionAttendanceTab({
                   <ChevronDown className="h-3 w-3" />
                 )}
               </div>
-              <span className="font-bold text-[#e11d48] dark:text-rose-400 text-[11px] flex items-center gap-1">
+              <span className="font-bold text-[#e11d48] dark:text-rose-400 text-xs flex items-center gap-1">
                 🎉 Welcome new students join in class!
               </span>
             </div>
@@ -206,7 +206,7 @@ export function ClassesSessionAttendanceTab({
                     return (
                       <tr key={student.id} className="text-amber-950 dark:text-amber-100 font-medium">
                         <td className="py-1 pr-2 text-left text-zinc-900 dark:text-zinc-100 font-semibold text-[10.5px]">
-                          {displayNameStr}, <span className="font-normal text-[10px] text-muted-foreground">{ageStr}</span>
+                          {displayNameStr}, <span className="font-normal text-xs text-muted-foreground">{ageStr}</span>
                         </td>
                         <td className="py-1 px-2 text-center text-[#92400e] dark:text-amber-400 font-mono text-[10.5px]">
                           {attLabel}
@@ -236,22 +236,22 @@ export function ClassesSessionAttendanceTab({
               <tr>
                 {isTestSession && !isMath ? (
                   <>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 w-[180px] text-[11px]">Học viên</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[85px] text-[11px]">Điểm danh</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Listening</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Reading</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Writing</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-[11px]">Speaking</th>
-                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[60px] text-[11px]">Overall</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 w-[180px] text-xs">Học viên</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[85px] text-xs">Điểm danh</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Listening</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Reading</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Writing</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[68px] text-xs">Speaking</th>
+                    <th className="py-1.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-center w-[60px] text-xs">Overall</th>
                   </>
                 ) : (
                   <>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[28%] min-w-[220px] text-[11px]">Học viên</th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[14%] min-w-[100px] text-[11px]">Điểm danh</th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[13%] min-w-[90px] text-[11px]">
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[28%] min-w-[220px] text-xs">Học viên</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[14%] min-w-[100px] text-xs">Điểm danh</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[13%] min-w-[90px] text-xs">
                       {isProjectSession ? 'Project' : isTestSession && isMath ? 'KTĐK' : 'BTVN'}
                     </th>
-                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[45%] min-w-[280px] text-[11px]">Nhận xét</th>
+                    <th className="py-1.5 px-2.5 font-semibold text-zinc-500 dark:text-zinc-400 w-[45%] min-w-[280px] text-xs">Nhận xét</th>
                   </>
                 )}
               </tr>

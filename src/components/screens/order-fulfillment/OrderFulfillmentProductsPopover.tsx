@@ -102,12 +102,12 @@ export function OrderFulfillmentProductsPopover({
           {/* Dòng 2: Số lượng hiện vật & Phân loại danh mục (xác định 100% thuộc tính sản phẩm) */}
           {hasMultipleProducts ? (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0 truncate">
-              <span className="font-mono font-medium text-foreground text-[11px] shrink-0">
+              <span className="font-mono font-medium text-foreground text-xs shrink-0">
                 Tổng {totalQuantity} món
               </span>
               <span className="text-muted-foreground/40 shrink-0 font-light">•</span>
               <span
-                className="text-[11px] text-muted-foreground truncate"
+                className="text-xs text-muted-foreground truncate"
                 title={`Tổng ${totalQuantity} hiện vật thuộc các danh mục: ${distinctCategories.join(', ')}`}
               >
                 {distinctCategories.join(', ')}
@@ -115,11 +115,11 @@ export function OrderFulfillmentProductsPopover({
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0">
-              <span className="font-mono text-foreground font-medium text-[11px] shrink-0">
+              <span className="font-mono text-foreground font-medium text-xs shrink-0">
                 SL: {firstProduct.quantity} {firstProduct.unit}
               </span>
               <span className="text-muted-foreground/40 shrink-0 font-light">•</span>
-              <span className="text-[11px] text-muted-foreground truncate">
+              <span className="text-xs text-muted-foreground truncate">
                 {PRODUCT_CATEGORY_MAP[firstProduct.category] || firstProduct.category}
               </span>
             </div>
@@ -162,7 +162,7 @@ export function OrderFulfillmentProductsPopover({
                     >
                       {p.name}
                     </span>
-                    <span className="text-[10px] font-medium px-1.5 py-0.2 rounded-md bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shrink-0 font-sans">
+                    <span className="text-xs font-medium px-1.5 py-0.2 rounded-md bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 shrink-0 font-sans">
                       {categoryLabel}
                     </span>
                   </div>
@@ -178,14 +178,14 @@ export function OrderFulfillmentProductsPopover({
                 <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pl-5.5 pt-0.5">
                   <div className="flex items-center gap-1 min-w-0">
                     <MapPin className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-                    <span className="truncate text-[11px]">
+                    <span className="truncate text-xs">
                       Cơ sở: <span className="font-medium text-foreground">{record.branch}</span>
                     </span>
                   </div>
                   {record.studentName && (
                     <div className="flex items-center gap-1 text-xs shrink-0">
                       <User className="h-3 w-3 text-muted-foreground/70 shrink-0" />
-                      <span className="text-[11px]">
+                      <span className="text-xs">
                         Học viên: <span className="font-medium text-foreground">{record.studentName}</span>
                       </span>
                     </div>
@@ -197,7 +197,7 @@ export function OrderFulfillmentProductsPopover({
         </div>
 
         {/* Footer: Tổng số lượng */}
-        <div className="pt-2 border-t border-border/50 flex items-center justify-between text-muted-foreground text-[11px]">
+        <div className="pt-2 border-t border-border/50 flex items-center justify-between text-muted-foreground text-xs">
           <span>
             Tổng số loại: <strong className="font-medium text-foreground">{products.length}</strong>
           </span>

@@ -172,7 +172,7 @@ export function CrmCustomerParentsTab({
                       type="button"
                       onClick={() => handleSelectParent(p)}
                       className={cn(
-                        'h-6.5 px-2.5 rounded-md text-[11px] font-medium transition-all flex items-center gap-1.5 cursor-pointer border shrink-0',
+                        'h-6.5 px-2.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer border shrink-0',
                         isSelected
                           ? 'bg-sky-600 text-white border-sky-600 shadow-xs font-semibold'
                           : 'bg-background hover:bg-muted text-foreground border-border/70'
@@ -184,7 +184,7 @@ export function CrmCustomerParentsTab({
                       {p.isPrimary && (
                         <span
                           className={cn(
-                            'text-[9px] px-1 py-0.5 rounded-xs font-bold uppercase',
+                            'text-xs px-1 py-0.5 rounded-xs font-bold uppercase',
                             isSelected
                               ? 'bg-white/25 text-white'
                               : 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200'
@@ -202,7 +202,7 @@ export function CrmCustomerParentsTab({
                   type="button"
                   onClick={handleAddNewParent}
                   className={cn(
-                    'h-6.5 px-2 rounded-md text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed shrink-0',
+                    'h-6.5 px-2 rounded-md text-xs font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed shrink-0',
                     isAddingNew
                       ? 'bg-sky-600 text-white border-sky-600 font-semibold'
                       : 'border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40'
@@ -215,7 +215,7 @@ export function CrmCustomerParentsTab({
             </div>
 
             {/* Mã lead và Ngày tạo */}
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
               <span className="font-mono">Mã: {leadCode}</span>
               <span className="text-muted-foreground/40">•</span>
               <span>Ngày tạo: {leadCreatedAt}</span>
@@ -283,7 +283,7 @@ export function CrmCustomerParentsTab({
             {isEditing && editForm ? (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Họ và tên *
                   </label>
                   <Input
@@ -295,7 +295,7 @@ export function CrmCustomerParentsTab({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Vai trò
                   </label>
                   <Input
@@ -314,12 +314,12 @@ export function CrmCustomerParentsTab({
                 </h4>
                 <Badge
                   variant="outline"
-                  className="bg-muted/40 text-muted-foreground border-border/60 font-normal text-[11px] shrink-0"
+                  className="bg-muted/40 text-muted-foreground border-border/60 font-normal text-xs shrink-0"
                 >
                   {activeParent.role}
                 </Badge>
                 {activeParent.isPrimary && (
-                  <Badge className="bg-emerald-600/90 text-white font-normal text-[10px] shrink-0">
+                  <Badge className="bg-emerald-600/90 text-white font-normal text-xs shrink-0">
                     Liên hệ chính
                   </Badge>
                 )}
@@ -330,7 +330,7 @@ export function CrmCustomerParentsTab({
             {isEditing && editForm ? (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Số điện thoại *
                   </label>
                   <Input
@@ -342,7 +342,7 @@ export function CrmCustomerParentsTab({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Email
                   </label>
                   <Input
@@ -385,7 +385,7 @@ export function CrmCustomerParentsTab({
 
             {/* Con khác trong gia đình */}
             {siblingNames && siblingNames.length > 0 && !isEditing && (
-              <div className="flex items-center gap-1.5 text-[11px] flex-wrap pt-0.5">
+              <div className="flex items-center gap-1.5 text-xs flex-wrap pt-0.5">
                 <span className="text-muted-foreground font-medium shrink-0 flex items-center gap-1">
                   <Users className="h-3 w-3 text-sky-600 dark:text-sky-400" />
                   Con khác:
@@ -394,7 +394,7 @@ export function CrmCustomerParentsTab({
                   {siblingNames.map((sib) => (
                     <span
                       key={sib}
-                      className="inline-flex items-center gap-1 h-5 px-2 rounded-md text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80"
+                      className="inline-flex items-center gap-1 h-5 px-2 rounded-md text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80"
                     >
                       <GraduationCap className="h-3 w-3 text-sky-600" />
                       <span>{sib}</span>
@@ -409,7 +409,7 @@ export function CrmCustomerParentsTab({
           <div className="space-y-2 min-w-0 md:border-l md:border-border/60 md:pl-3.5">
             {isEditing && editForm ? (
               <div>
-                <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                   Địa chỉ cư trú
                 </label>
                 <Input
@@ -434,7 +434,7 @@ export function CrmCustomerParentsTab({
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-sky-600 hover:underline font-medium shrink-0"
+                    className="inline-flex items-center gap-1 text-xs text-sky-600 hover:underline font-medium shrink-0"
                   >
                     <span>Mở map</span>
                     <ExternalLink className="h-2.5 w-2.5" />
@@ -442,7 +442,7 @@ export function CrmCustomerParentsTab({
                 </div>
 
                 {/* Khoảng cách cơ sở RinoEdu */}
-                <div className="flex items-center gap-1.5 text-[11px] flex-wrap">
+                <div className="flex items-center gap-1.5 text-xs flex-wrap">
                   <Navigation className="h-3 w-3 text-emerald-600 shrink-0" />
                   {(activeParent.nearestBranches || [
                     { name: 'RinoEdu Linh Đàm', distance: '1.2 km' },
@@ -452,7 +452,7 @@ export function CrmCustomerParentsTab({
                     <span
                       key={b.name}
                       className={cn(
-                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] shrink-0 border',
+                        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs shrink-0 border',
                         idx === 0
                           ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 font-semibold'
                           : 'bg-muted/40 text-muted-foreground border-border/50'
@@ -500,7 +500,7 @@ export function CrmCustomerParentsTab({
           {/* CỘT TRÁI: NGÂN SÁCH & QUYỀN HẠN QUYẾT ĐỊNH */}
           <div className="space-y-2 min-w-0">
             <div>
-              <span className="text-[11px] text-muted-foreground font-medium block">
+              <span className="text-xs text-muted-foreground font-medium block">
                 Ngân sách học tập / tháng
               </span>
               {!isEditing ? (
@@ -511,7 +511,7 @@ export function CrmCustomerParentsTab({
                   {activeParent.financialSegment && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] py-0 px-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200"
+                      className="text-xs py-0 px-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200"
                     >
                       {activeParent.financialSegment}
                     </Badge>
@@ -530,7 +530,7 @@ export function CrmCustomerParentsTab({
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground font-medium block">
+              <span className="text-xs text-muted-foreground font-medium block">
                 Quyền hạn quyết định
               </span>
               {!isEditing ? (
@@ -554,7 +554,7 @@ export function CrmCustomerParentsTab({
           {/* CỘT PHẢI: KÊNH LIÊN HỆ & THỜI GIAN LIÊN LẠC */}
           <div className="space-y-2 min-w-0 md:border-l md:border-border/60 md:pl-3.5">
             <div>
-              <span className="text-[11px] text-muted-foreground font-medium block">
+              <span className="text-xs text-muted-foreground font-medium block">
                 Kênh liên hệ ưu tiên
               </span>
               {!isEditing ? (
@@ -563,7 +563,7 @@ export function CrmCustomerParentsTab({
                     {activeParent.preferredChannel || 'Zalo'}
                   </span>
                   {activeParent.zaloStatus && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 px-1.5 py-0.5 rounded">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 px-1.5 py-0.5 rounded">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                       <span>{activeParent.zaloStatus}</span>
                     </span>
@@ -582,7 +582,7 @@ export function CrmCustomerParentsTab({
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground font-medium block">
+              <span className="text-xs text-muted-foreground font-medium block">
                 Thời gian liên lạc
               </span>
               {!isEditing ? (

@@ -6,7 +6,6 @@ import {
   Trash2,
   Upload,
   Link as LinkIcon,
-  ExternalLink,
   FileText,
   Eye,
   X,
@@ -115,45 +114,119 @@ export function MonthlyReportReviewItemsSection({
     return null
   }
 
-  const displayItems = readOnly ? validItems : items
+  // Giao diện tinh gọn cho chế độ xem báo cáo (readOnly): không đóng hộp thô, không nhãn tuần cứng, chỉ có thumbnail đính kèm duy nhất
+  if (readOnly) {
+    return (
+      <div className="space-y-1.5 pt-1.5">
+        <h4 className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
+          <span>2. Nội dung ôn tập riêng</span>
+        </h4>
+
+        <div className="space-y-1.5">
+          {validItems.map((item, idx) => {
+            const hasAttachment = Boolean(item.thumbnailUrl || item.docLink)
+
+            return (
+              <div
+                key={idx}
+                className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 flex items-center justify-between gap-2.5 min-w-0"
+              >
+                {/* Tiêu đề & Nội dung */}
+                <div className="text-xs leading-relaxed font-sans flex-1 min-w-0">
+                  {item.title ? (
+                    <span className="font-normal text-foreground mr-1.5">
+                      {item.title}:
+                    </span>
+                  ) : null}
+                  <span className="text-foreground/80 font-normal">{item.content}</span>
+                </div>
+
+                {/* Thumbnail ảnh / tài liệu đính kèm duy nhất (Click mở xem lớn) */}
+                {hasAttachment && (
+                  <div className="shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (item.thumbnailUrl) {
+                          setPreviewMedia({
+                            name: item.title || 'Tài liệu ôn tập',
+                            url: item.thumbnailUrl!,
+                            thumbnailUrl: item.thumbnailUrl,
+                          })
+                        } else if (item.docLink) {
+                          window.open(item.docLink, '_blank')
+                        }
+                      }}
+                      className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border border-border/70 relative group cursor-pointer bg-muted/40 shadow-3xs"
+                      title={item.thumbnailUrl ? 'Bấm để xem ảnh phóng to' : 'Bấm để mở tài liệu đính kèm'}
+                    >
+                      {item.thumbnailUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.title || 'Tài liệu'}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                        <Eye className="h-3 w-3" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Lightbox Modal xem ảnh lớn khi bấm Xem trên Thumbnail */}
+        {previewMedia && (
+          <MediaPreviewModal
+            previewMedia={previewMedia}
+            onClose={() => setPreviewMedia(null)}
+          />
+        )}
+      </div>
+    )
+  }
+
+  const displayItems = items
 
   return (
-    <div className="space-y-4 pt-4 border-t border-border/70">
-      {/* Header Bar: Tiêu đề & Nút thêm mới */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide flex items-center gap-2">
-            <span>2. NỘI DUNG ÔN TẬP RIÊNG</span>
-          </h4>
-          {!readOnly && (
-            <p className="text-xs text-muted-foreground font-normal mt-0.5">
-              Tùy chọn bổ trợ riêng cho học viên. Khi để trống, mục này sẽ tự động ẩn đi trên báo cáo gửi phụ huynh.
-            </p>
-          )}
-        </div>
+    <div className="space-y-1.5 pt-1.5">
+      {/* Header Bar: Tiêu đề & Nút thêm mới cùng dòng */}
+      <div className="flex items-center justify-between gap-2">
+        <label className="text-xs font-normal text-muted-foreground flex items-center gap-1.5">
+          2. Nội dung ôn tập riêng
+        </label>
 
         {!readOnly && (
           <Button
             type="button"
             size="sm"
             onClick={handleAddItem}
-            className="h-8 text-xs font-bold gap-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs cursor-pointer transition-all active:scale-95"
+            className="h-6 text-[11px] font-normal gap-1 px-2 text-sky-600 dark:text-sky-400 bg-transparent border border-transparent hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-700 dark:hover:text-sky-300 rounded-md cursor-pointer transition-all shadow-none"
+            title="Thêm nội dung ôn tập bổ trợ riêng cho học viên"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3 w-3 text-sky-600 dark:text-sky-400" />
             <span>Thêm nội dung</span>
           </Button>
         )}
       </div>
 
       {/* Danh sách các nội dung ôn tập */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         {displayItems.length === 0 ? (
-          <div className="p-6 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-2.5 select-none">
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+          <div className="p-2.5 sm:p-3 text-center rounded-lg border border-dashed border-border/70 bg-muted/5 space-y-1 select-none">
+            <p className="text-xs font-medium text-muted-foreground">
               Chưa có nội dung ôn tập bổ trợ riêng cho học viên này.
             </p>
             <p className="text-[11px] text-muted-foreground/80 max-w-md mx-auto">
-              Nội dung ôn tập riêng là tùy chọn bổ trợ theo năng lực của từng con. Khi để trống, mục này sẽ tự động ẩn đi trên báo cáo gửi phụ huynh.
+              Nội dung ôn tập riêng là tùy chọn bổ trợ. Khi để trống, mục này sẽ tự động ẩn đi trên báo cáo gửi phụ huynh.
             </p>
             {!readOnly && (
               <Button
@@ -161,9 +234,9 @@ export function MonthlyReportReviewItemsSection({
                 variant="outline"
                 size="sm"
                 onClick={handleAddItem}
-                className="text-xs font-semibold gap-1.5 rounded-xl cursor-pointer mt-1"
+                className="h-6.5 text-[11px] font-medium gap-1 rounded-md cursor-pointer mt-0.5 px-2.5"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3 w-3" />
                 <span>Thêm nội dung ôn tập</span>
               </Button>
             )}
@@ -175,190 +248,145 @@ export function MonthlyReportReviewItemsSection({
             return (
               <div
                 key={idx}
-                className="pt-2 pb-4 border-b border-border/60 last:border-b-0"
+                className="rounded-lg border border-border/80 bg-card p-2 space-y-1.5 shadow-3xs"
               >
-                <div className="flex flex-col md:flex-row items-stretch gap-3.5">
-                  {/* ── CỘT TRÁI: HÌNH ẢNH / TẢI LÊN (CHIỀU CAO BẰNG CẢ CỤM TITLE + MÔ TẢ) ── */}
-                  {(!readOnly || hasAttachment) && (
-                    <div className="w-full md:w-56 shrink-0 flex flex-col">
-                      {/* Popover / Input dán link nếu đang mở (Chỉ khi không readOnly) */}
-                      {!readOnly && activeLinkInputIdx === idx ? (
-                        <div className="h-full min-h-[140px] rounded-2xl border border-primary/50 bg-background p-3 flex flex-col justify-between shadow-xs">
-                          <span className="text-xs font-bold text-foreground">Dán link tài liệu / ảnh:</span>
-                          <input
-                            type="text"
-                            value={tempLinkValue}
-                            onChange={(e) => setTempLinkValue(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveLink(idx)
-                              if (e.key === 'Escape') setActiveLinkInputIdx(null)
-                            }}
-                            placeholder="Link Google Drive, web..."
-                            className="text-xs p-2 rounded-lg border border-border/80 bg-muted/20 focus:outline-none focus:border-primary font-mono"
-                            autoFocus
-                          />
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setActiveLinkInputIdx(null)}
-                              className="text-xs px-2.5 py-1 rounded text-muted-foreground hover:bg-muted cursor-pointer"
-                            >
-                              Hủy
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSaveLink(idx)}
-                              className="text-xs px-3 py-1 rounded bg-primary text-primary-foreground font-bold cursor-pointer"
-                            >
-                              Lưu
-                            </button>
-                          </div>
-                        </div>
-                      ) : hasAttachment ? (
-                        /* Thumboard hiển thị khi đã có file/ảnh */
-                        <div className="relative h-full min-h-[140px] w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/20 shadow-2xs group">
-                          {item.thumbnailUrl ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                              src={item.thumbnailUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-primary/5">
-                              <FileText className="h-8 w-8 text-primary mb-1.5" />
-                              <span className="text-xs font-bold text-foreground truncate max-w-[180px]">
-                                {item.docLink || 'Tài liệu đính kèm'}
-                              </span>
-                            </div>
-                          )}
+                {/* ── HÀNG TRÊN: TIÊU ĐỀ + ĐÍNH KÈM + NÚT XÓA ── */}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={item.title}
+                    onChange={(e) => handleUpdateItem(idx, { title: e.target.value })}
+                    placeholder="Tiêu đề (VD: Ôn tập Unit 1, Phonics Letter T...)"
+                    className="flex-1 text-xs font-semibold px-2 py-1 rounded-md border border-border/70 bg-background focus:outline-none focus:border-primary text-foreground min-w-0"
+                  />
 
-                          {/* Thumboard Overlay Controls on Hover */}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2 text-white">
-                            {item.thumbnailUrl && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setPreviewMedia({
-                                    name: item.title,
-                                    url: item.thumbnailUrl!,
-                                    thumbnailUrl: item.thumbnailUrl,
-                                  })
-                                }
-                                className="inline-flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg cursor-pointer transition-colors w-full justify-center"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                                <span>Xem ảnh lớn</span>
-                              </button>
-                            )}
-
-                            {item.docLink && (
-                              <a
-                                href={item.docLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-bold bg-primary hover:bg-primary/90 px-3 py-1.5 rounded-lg cursor-pointer transition-colors w-full justify-center text-white"
-                              >
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                <span>Mở link file</span>
-                              </a>
-                            )}
-
-                            {!readOnly && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveAttachment(idx)}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 px-2.5 py-1 rounded-lg transition-colors w-full justify-center"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                                <span>Gỡ đính kèm</span>
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                  {/* Attachment Chip hoặc Trigger Buttons */}
+                  {hasAttachment ? (
+                    <div className="flex items-center gap-1.5 h-6.5 px-2 rounded-md border border-border/70 bg-muted/30 text-xs shrink-0 max-w-[150px] sm:max-w-[200px]">
+                      {item.thumbnailUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={item.title}
+                          className="h-4 w-4 rounded object-cover shrink-0 cursor-pointer"
+                          onClick={() =>
+                            setPreviewMedia({
+                              name: item.title,
+                              url: item.thumbnailUrl!,
+                              thumbnailUrl: item.thumbnailUrl,
+                            })
+                          }
+                          title="Bấm để xem ảnh lớn"
+                        />
                       ) : (
-                        /* Thumboard rỗng: Click tải ảnh hoặc dán link */
-                        <div className="h-full min-h-[140px] w-full rounded-2xl border-2 border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 transition-all p-3 flex flex-col items-center justify-center gap-2 text-muted-foreground group">
-                          <label className="cursor-pointer flex flex-col items-center gap-1.5 text-xs hover:text-primary transition-colors text-center">
-                            <div className="p-2 rounded-xl bg-muted/60 group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary transition-colors">
-                              <Upload className="h-4 w-4" />
-                            </div>
-                            <span className="font-bold">Tải tệp / ảnh</span>
-                            <input
-                              type="file"
-                              accept="image/*,.pdf,.doc,.docx"
-                              className="hidden"
-                              onChange={(e) => handleUploadFile(idx, e)}
-                            />
-                          </label>
-                          <div className="flex items-center gap-1 text-[11px]">
-                            <span>hoặc</span>
-                            <button
-                              type="button"
-                              onClick={() => handleStartEditingLink(idx)}
-                              className="font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
-                            >
-                              <LinkIcon className="h-3 w-3" />
-                              <span>dán link</span>
-                            </button>
-                          </div>
-                        </div>
+                        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
                       )}
+                      <span
+                        className="truncate text-[11px] font-medium text-foreground flex-1 cursor-pointer"
+                        title={item.docLink}
+                        onClick={() => {
+                          if (item.thumbnailUrl) {
+                            setPreviewMedia({
+                              name: item.title,
+                              url: item.thumbnailUrl!,
+                              thumbnailUrl: item.thumbnailUrl,
+                            })
+                          } else if (item.docLink) {
+                            window.open(item.docLink, '_blank')
+                          }
+                        }}
+                      >
+                        {item.docLink?.replace(/^.*[\\/]/, '') || 'Tệp'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttachment(idx)}
+                        className="text-muted-foreground hover:text-destructive shrink-0 cursor-pointer p-0.5 transition-colors"
+                        title="Gỡ đính kèm"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <label
+                        className="h-6.5 px-2 text-[11px] font-medium inline-flex items-center gap-1 rounded-md border border-border/70 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors shadow-3xs"
+                        title="Tải ảnh hoặc tệp tài liệu"
+                      >
+                        <Upload className="h-3 w-3 text-muted-foreground" />
+                        <span className="hidden sm:inline">Tải ảnh</span>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf,.doc,.docx"
+                          className="hidden"
+                          onChange={(e) => handleUploadFile(idx, e)}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditingLink(idx)}
+                        className="h-6.5 px-2 text-[11px] font-medium inline-flex items-center gap-1 rounded-md border border-border/70 bg-background hover:bg-muted text-foreground cursor-pointer transition-colors shadow-3xs"
+                        title="Dán link tài liệu hoặc ảnh"
+                      >
+                        <LinkIcon className="h-3 w-3 text-muted-foreground" />
+                        <span className="hidden sm:inline">Dán link</span>
+                      </button>
                     </div>
                   )}
 
-                  {/* ── CỘT PHẢI: GOM TITLE VÀ MÔ TẢ VÀO 1 CỤM SECTION CÓ VIỀN, NỀN, HIGHLIGHT TITLE ── */}
-                  <div className="flex-1 min-w-0 rounded-2xl border border-border/80 bg-card overflow-hidden shadow-2xs flex flex-col">
-                    {/* Header Cụm: Title Highlight + Nút Xóa */}
-                    <div className="bg-primary/5 dark:bg-primary/10 px-3.5 py-2 border-b border-border/60 flex items-center justify-between gap-2 shrink-0">
-                      {readOnly ? (
-                        <h5 className="text-sm font-black text-foreground truncate py-0.5">
-                          {item.title || '(Chưa đặt tiêu đề)'}
-                        </h5>
-                      ) : (
-                        <input
-                          type="text"
-                          value={item.title}
-                          onChange={(e) => handleUpdateItem(idx, { title: e.target.value })}
-                          placeholder="Nhập tiêu đề (VD: Tuần 1, Từ vựng Unit 1, Phonics Letter T...)"
-                          className="flex-1 text-sm font-black text-foreground bg-transparent focus:outline-none placeholder:text-muted-foreground/60 min-w-0"
-                        />
-                      )}
-
-                      {!readOnly && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => handleRemoveItem(idx)}
-                          className="h-6 w-6 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md shrink-0 transition-colors cursor-pointer"
-                          title="Xóa nội dung này"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Body Cụm: Mô tả nội dung */}
-                    <div className="flex-1 p-3 flex flex-col">
-                      {readOnly ? (
-                        <div className="w-full h-full min-h-[90px] text-sm text-foreground leading-relaxed font-sans whitespace-pre-line">
-                          {item.content || (
-                            <span className="italic text-muted-foreground/60">Không có nội dung bổ sung.</span>
-                          )}
-                        </div>
-                      ) : (
-                        <textarea
-                          rows={4}
-                          value={item.content}
-                          onChange={(e) => handleUpdateItem(idx, { content: e.target.value })}
-                          placeholder="Nhập chi tiết bài tập, câu mẫu, từ vựng hoặc chỉ dẫn con luyện tập..."
-                          className="w-full h-full min-h-[95px] text-sm bg-transparent border-none focus:outline-none leading-relaxed font-sans resize-y"
-                        />
-                      )}
-                    </div>
-                  </div>
+                  {/* Nút Xóa nội dung */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleRemoveItem(idx)}
+                    className="h-6.5 w-6.5 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 rounded-md shrink-0 cursor-pointer"
+                    title="Xóa nội dung này"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
+
+                {/* Inline Popover / Input dán link nếu đang mở */}
+                {activeLinkInputIdx === idx && (
+                  <div className="flex items-center gap-1.5 p-1 rounded-md border border-primary/50 bg-primary/5">
+                    <input
+                      type="text"
+                      value={tempLinkValue}
+                      onChange={(e) => setTempLinkValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveLink(idx)
+                        if (e.key === 'Escape') setActiveLinkInputIdx(null)
+                      }}
+                      placeholder="Nhập đường link tài liệu, ảnh, google drive..."
+                      className="flex-1 text-xs px-2 py-0.5 rounded border border-border/80 bg-background focus:outline-none"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleSaveLink(idx)}
+                      className="text-xs px-2.5 py-0.5 rounded bg-primary text-primary-foreground font-semibold cursor-pointer"
+                    >
+                      Lưu
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLinkInputIdx(null)}
+                      className="text-xs px-2 py-0.5 text-muted-foreground hover:bg-muted rounded cursor-pointer"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                )}
+
+                {/* ── HÀNG DƯỚI: TEXTAREA MÔ TẢ NỘI DUNG ── */}
+                <textarea
+                  rows={2}
+                  value={item.content}
+                  onChange={(e) => handleUpdateItem(idx, { content: e.target.value })}
+                  placeholder="Nhập chi tiết bài tập, câu mẫu, từ vựng hoặc chỉ dẫn con luyện tập..."
+                  className="w-full text-xs p-2 rounded-md border border-border/60 bg-muted/20 focus:bg-background focus:border-primary focus:outline-none resize-y min-h-[48px] leading-relaxed font-sans"
+                />
               </div>
             )
           })

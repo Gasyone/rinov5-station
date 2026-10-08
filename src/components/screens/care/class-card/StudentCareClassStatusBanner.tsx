@@ -107,36 +107,37 @@ export function StudentCareClassStatusBanner({
         : 'Lớp cũ'
 
     return (
-      <div className="pt-0.5 space-y-1.5 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          <span className="p-1 rounded-md bg-sky-500/10 text-sky-600 dark:text-sky-400">
-            <ArrowRightLeft className="h-3.5 w-3.5" />
-          </span>
-          <span className="font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wide text-xs">
-            Tiến trình chuyển lớp đang diễn ra
-          </span>
-          <StatusBadge
-            status="pending_transfer"
-            label="Chờ chuyển lớp"
-            className="text-xs py-0 px-1.5"
-          />
-        </div>
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground flex-wrap pt-0.5 text-center">
-          <div>
-            <span>Lớp cũ: </span>
-            <strong className="font-semibold text-foreground">{sourceClassCode}</strong>
+      <div className="-mx-2.5 -mb-2.5 sm:-mx-3 sm:-mb-3 -mt-1.5 p-2.5 sm:p-3 bg-sky-50/50 dark:bg-sky-950/25 rounded-b-xl select-none animate-in fade-in-50 duration-200 space-y-1.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <span className="p-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0">
+              <ArrowRightLeft className="h-3 w-3" />
+            </span>
+            <span className="font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wide text-xs shrink-0">
+              Tiến trình chuyển lớp đang diễn ra
+            </span>
+            <StatusBadge
+              status="pending_transfer"
+              label="Chờ chuyển lớp"
+              className="text-xs py-0 px-1.5 h-4"
+            />
           </div>
           <Button
             type="button"
             size="sm"
             variant="outline"
             onClick={onOpenPlacementTab}
-            className="h-6 px-2 text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 ml-1 cursor-pointer"
+            className="h-6 px-2.5 text-xs font-semibold text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-white dark:bg-sky-900/40 hover:bg-sky-100 dark:hover:bg-sky-900/70 cursor-pointer shrink-0 ml-auto shadow-3xs"
           >
             <UserPlus className="h-3 w-3 mr-1 text-sky-600 dark:text-sky-400" />
             <span>Ghép lớp ngay</span>
             <ExternalLink className="h-2.5 w-2.5 ml-1 opacity-60" />
           </Button>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5 flex-wrap">
+          <span>Lớp cũ:</span>
+          <strong className="font-semibold text-foreground font-mono">{sourceClassCode}</strong>
         </div>
       </div>
     )
@@ -145,7 +146,7 @@ export function StudentCareClassStatusBanner({
   // 3. Trạng thái CHỜ XẾP LỚP
   if (placementStatus === 'wait_for_assignment') {
     return (
-      <div className="pt-0.5 space-y-1.5 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
+      <div className="pt-0.5 space-y-1 select-none animate-in fade-in-50 duration-200 flex flex-col items-center justify-center text-center">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             <UserX className="h-3.5 w-3.5" />
@@ -158,27 +159,13 @@ export function StudentCareClassStatusBanner({
             label={assignedTargetClass ? 'Đã xếp lớp' : 'Chờ xếp lớp'}
             className="text-xs py-0 px-1.5"
           />
-        </div>
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-0.5 text-center flex-wrap">
-          <div>
-            <span>{assignedTargetClass ? 'Lớp tiếp nhận: ' : 'Gói đăng ký: '}</span>
-            <strong
-              className={
-                assignedTargetClass
-                  ? 'font-semibold text-emerald-600 dark:text-emerald-400'
-                  : 'font-semibold text-foreground'
-              }
-            >
-              {assignedTargetClass || pkg.packageName || 'Gói Tiếng Anh Standard 48 buổi'}
-            </strong>
-          </div>
           {!assignedTargetClass && (
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={onOpenPlacementTab}
-              className="h-6 px-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 hover:bg-indigo-100 ml-1 cursor-pointer"
+              className="h-6 px-2.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 bg-white dark:bg-indigo-950/40 hover:bg-indigo-100 ml-1 cursor-pointer shadow-3xs"
             >
               <UserPlus className="h-3 w-3 mr-1 text-indigo-500" />
               <span>Ghép lớp ngay</span>
@@ -186,6 +173,14 @@ export function StudentCareClassStatusBanner({
             </Button>
           )}
         </div>
+        {assignedTargetClass && (
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground pt-0.5 text-center flex-wrap">
+            <span>Lớp tiếp nhận:</span>
+            <strong className="font-semibold text-emerald-600 dark:text-emerald-400">
+              {assignedTargetClass}
+            </strong>
+          </div>
+        )}
       </div>
     )
   }
@@ -224,7 +219,7 @@ export function StudentCareClassStatusBanner({
           <StatusBadge status="pending_payment" label="Chờ thanh toán" className="text-xs py-0 px-1.5" />
         </div>
         <p className="text-xs text-muted-foreground pt-0.5">
-          Gói học: <strong className="font-semibold text-foreground">{pkg.packageName}</strong> • Cần xác nhận phiếu thu trước khi chính thức xếp lớp.
+          Cần xác nhận phiếu thu trước khi chính thức xếp lớp.
         </p>
       </div>
     )
@@ -239,13 +234,12 @@ export function StudentCareClassStatusBanner({
             <CalendarClock className="h-3.5 w-3.5" />
           </span>
           <span className="font-bold text-violet-700 dark:text-violet-400 uppercase tracking-wide text-xs">
-            Học viên xin xếp lớp sau (Lùi lịch học)
+            Học viên xin xếp lớp sau
           </span>
           <StatusBadge status="enroll_later" label="Xếp lớp sau" className="text-xs py-0 px-1.5" />
         </div>
         <p className="text-xs text-muted-foreground pt-0.5">
-          Phụ huynh hẹn liên hệ lại vào đợt học kế tiếp. Gói học:{' '}
-          <strong className="font-semibold text-foreground">{pkg.packageName}</strong>
+          Phụ huynh hẹn liên hệ lại vào đợt học kế tiếp.
         </p>
       </div>
     )

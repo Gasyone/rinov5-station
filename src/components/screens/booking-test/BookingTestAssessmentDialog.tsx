@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Pencil, X } from 'lucide-react'
@@ -18,7 +19,32 @@ import {
   getBookingResultHref,
   hasBookingAssessmentResult,
 } from './bookingTestAssessmentStorage'
+import { calculateStudentAge } from './bookingTestHelpers'
 import type { AssessmentDraft } from './bookingTestTypes'
+
+function getBookingExpectedLevel(booking?: BookingTest | null): string {
+  if (!booking) return 'Mover (>8 và <=10)'
+  const raw = booking.expectedLevel?.trim()
+  if (raw) {
+    if (raw.includes('Pre-Starters') || raw === 'preStarters') return 'Pre-Starters (<=6)'
+    if (raw.includes('Starters') || raw === 'starters') return 'Starters (>6 và <=8)'
+    if (raw.includes('Mover') || raw === 'movers') return 'Mover (>8 và <=10)'
+    if (raw.includes('Flyers') || raw === 'flyers') return 'Flyers (>10)'
+    if (['Pre-Kindie', 'Kindie 1'].includes(raw)) return 'Pre-Starters (<=6)'
+    if (['Kindie 2', 'Kindie 3', 'Level 1A', 'Level 1B'].includes(raw)) return 'Starters (>6 và <=8)'
+    if (['Level 2A', 'Level 2B', 'Level 3A'].includes(raw)) return 'Mover (>8 và <=10)'
+    if (['Level 3B', 'IELTS', 'IELTS Foundation'].includes(raw)) return 'Flyers (>10)'
+    return raw
+  }
+  const age = calculateStudentAge(booking.dob)
+  if (age !== null) {
+    if (age <= 6) return 'Pre-Starters (<=6)'
+    if (age <= 8) return 'Starters (>6 và <=8)'
+    if (age <= 10) return 'Mover (>8 và <=10)'
+    return 'Flyers (>10)'
+  }
+  return 'Mover (>8 và <=10)'
+}
 
 interface BookingTestAssessmentDialogProps {
   booking: BookingTest | null
@@ -40,27 +66,21 @@ export function BookingTestAssessmentDialog({
   onSave,
 }: BookingTestAssessmentDialogProps) {
   const [editBookingId, setEditBookingId] = useState<string | null>(null)
-  const [editConfirmBookingId, setEditConfirmBookingId] = useState<string | null>(null)
+  const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false)
   const editBaselineRef = useRef<AssessmentDraft | null>(null)
   const hasResult = Boolean(booking && hasBookingAssessmentResult(booking))
   const resultHref = booking && hasResult ? getBookingResultHref(booking.id) : undefined
   const isEditMode = Boolean(booking && editBookingId === booking.id)
-  const isEditConfirmOpen = Boolean(booking && editConfirmBookingId === booking.id)
   const isReadOnly = hasResult && !isEditMode
+  const expectedLevel = getBookingExpectedLevel(booking)
 
   const startEditMode = () => {
     if (!booking) return
     editBaselineRef.current = cloneAssessmentDraft(draft)
     setEditBookingId(booking.id)
-    setEditConfirmBookingId(null)
   }
 
   const handleEditClick = () => {
-    if (!booking) return
-    if (booking?.status === 'completed') {
-      setEditConfirmBookingId(booking.id)
-      return
-    }
     startEditMode()
   }
 
@@ -72,7 +92,17 @@ export function BookingTestAssessmentDialog({
     setEditBookingId(null)
   }
 
-  const handleSave = () => {
+  const handleSaveClick = () => {
+    if (!booking) return
+    if (isEditMode && hasResult) {
+      setIsSaveConfirmOpen(true)
+      return
+    }
+    executeSave()
+  }
+
+  const executeSave = () => {
+    setIsSaveConfirmOpen(false)
     editBaselineRef.current = null
     setEditBookingId(null)
     onSave()
@@ -81,7 +111,7 @@ export function BookingTestAssessmentDialog({
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
       setEditBookingId(null)
-      setEditConfirmBookingId(null)
+      setIsSaveConfirmOpen(false)
       editBaselineRef.current = null
     }
     onOpenChange(open)
@@ -91,50 +121,59 @@ export function BookingTestAssessmentDialog({
     <Dialog open={Boolean(booking)} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="grid h-[92vh] w-[96vw] max-h-[850px] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-6xl"
+        className="flex max-h-[85vh] w-[92vw] sm:max-w-3xl flex-col overflow-hidden rounded-xl border p-0 shadow-xl"
       >
         {booking && (
           <>
             {/* Compact Header */}
-            <div className="shrink-0 border-b bg-muted/30 px-6 py-3">
+            <div className="shrink-0 border-b bg-muted/30 px-4 py-2">
               {/* Row 1: Avatar + Title/Name + Meta + Close */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
                   {booking.avatar ? (
-                    <img
+                    <Image
                       src={booking.avatar}
                       alt={booking.childName}
-                      className="h-10 w-10 shrink-0 rounded-xl object-cover shadow-sm border border-border"
+                      width={32}
+                      height={32}
+                      unoptimized
+                      className="h-8 w-8 shrink-0 rounded-lg object-cover shadow-xs border border-border"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary shadow-sm border border-primary/20">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary shadow-xs border border-primary/20">
                       {booking.childName?.charAt(0) || '?'}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <DialogTitle className="text-base font-bold leading-tight">English Assessment Form</DialogTitle>
-                    <DialogDescription className="text-sm truncate">
+                    <DialogTitle className="text-sm font-bold text-foreground truncate leading-tight">
                       {booking.childName}
-                      <span className="ml-2 text-muted-foreground">· {booking.dob ? `Ngày sinh: ${booking.dob}` : 'N/A'}</span>
+                    </DialogTitle>
+                    <DialogDescription className="text-xs font-normal text-muted-foreground leading-tight mt-0.5 truncate">
+                      English Assessment Form
+                      {booking.dob ? ` · Ngày sinh: ${booking.dob}` : ''}
                     </DialogDescription>
                   </div>
                 </div>
 
-                <div className="ml-auto flex items-center gap-4 shrink-0">
-                  <div className="hidden md:flex items-center gap-4">
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Người đánh giá</p>
-                      <p className="text-sm font-semibold truncate">{booking.teacher || 'N/A'}</p>
+                <div className="ml-auto flex items-center gap-3 shrink-0">
+                  <div className="hidden sm:flex items-center gap-3">
+                    <div className="min-w-0 text-right">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 leading-none">Người đánh giá</p>
+                      <p className="text-xs font-medium truncate mt-0.5">{booking.teacher || 'N/A'}</p>
                     </div>
-                    <div className="h-8 w-px bg-border" />
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Thời gian test</p>
-                      <p className="text-sm font-semibold truncate">{booking.testTime || 'N/A'}</p>
+                    <div className="h-6 w-px bg-border" />
+                    <div className="min-w-0 text-right">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 leading-none">
+                        Trình độ dự kiến
+                      </p>
+                      <p className="text-xs font-medium truncate mt-0.5 text-foreground">
+                        {expectedLevel}
+                      </p>
                     </div>
                   </div>
                   <DialogClose
                     aria-label="Đóng form đánh giá"
-                    className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition"
                   >
                     <X className="h-4 w-4" />
                   </DialogClose>
@@ -143,17 +182,7 @@ export function BookingTestAssessmentDialog({
             </div>
 
             {/* Scrollable Body */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-              {isReadOnly ? (
-                <div className="mb-4 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                  Kết quả hiện ở chế độ chỉ xem. Bấm Chỉnh sửa đánh giá để cập nhật lại.
-                </div>
-              ) : null}
-              {isEditMode && hasResult ? (
-                <div className="mb-4 rounded-lg border bg-background px-4 py-3 text-sm text-muted-foreground">
-                  Bạn đang cập nhật lại kết quả hiện có. Hãy lưu khi chắc chắn thay đổi là đúng.
-                </div>
-              ) : null}
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-2.5">
               <Form2025Section
                 draft={draft}
                 resultHref={resultHref}
@@ -163,40 +192,55 @@ export function BookingTestAssessmentDialog({
             </div>
 
             {/* Footer */}
-            <DialogFooter className="shrink-0 border-t bg-muted/30 px-6 py-4">
-              {isReadOnly ? (
-                <>
-                  <Button variant="outline" size="lg" onClick={() => onOpenChange(false)}>
-                    Đóng
-                  </Button>
-                  <Button size="lg" onClick={handleEditClick}>
-                    <Pencil className="h-4 w-4" />
-                    Chỉnh sửa đánh giá
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={isEditMode ? cancelEditMode : () => onOpenChange(false)}
-                  >
-                    {isEditMode ? 'Hủy chỉnh sửa' : 'Hủy'}
-                  </Button>
-                  <Button size="lg" onClick={handleSave}>
-                    {isEditMode ? 'Lưu cập nhật' : 'Cập nhật đánh giá'}
-                  </Button>
-                </>
-              )}
+            <DialogFooter className="shrink-0 flex flex-col sm:flex-row items-center justify-between border-t bg-muted/20 px-4 py-2 gap-2 sm:justify-between">
+              <div className="text-xs text-muted-foreground mr-auto sm:mr-0">
+                {isReadOnly ? (
+                  <span>
+                    Kết quả hiện ở chế độ chỉ xem. Bấm <span className="font-medium text-foreground">Chỉnh sửa đánh giá</span> để cập nhật lại.
+                  </span>
+                ) : isEditMode && hasResult ? (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    Bạn đang cập nhật lại kết quả hiện có. Hãy lưu khi chắc chắn thay đổi là đúng.
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                {isReadOnly ? (
+                  <>
+                    <Button variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={() => onOpenChange(false)}>
+                      Đóng
+                    </Button>
+                    <Button size="sm" className="h-8 px-3 text-xs gap-1.5" onClick={handleEditClick}>
+                      <Pencil className="h-3.5 w-3.5" />
+                      Chỉnh sửa đánh giá
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 text-xs"
+                      onClick={isEditMode ? cancelEditMode : () => onOpenChange(false)}
+                    >
+                      {isEditMode ? 'Hủy chỉnh sửa' : 'Hủy'}
+                    </Button>
+                    <Button size="sm" className="h-8 px-3 text-xs" onClick={handleSaveClick}>
+                      {isEditMode ? 'Lưu cập nhật' : 'Cập nhật đánh giá'}
+                    </Button>
+                  </>
+                )}
+              </div>
             </DialogFooter>
             <ConfirmDialog
-              open={isEditConfirmOpen}
-              onOpenChange={(open) => setEditConfirmBookingId(open ? booking.id : null)}
-              title="Chỉnh sửa kết quả đã hoàn tất?"
-              description="Kết quả đã hoàn tất sẽ được mở lại để cập nhật. Chỉ tiếp tục khi cần sửa điểm hoặc nhận xét đã công bố."
-              confirmLabel="Mở chỉnh sửa"
-              cancelLabel="Giữ chỉ xem"
-              onConfirm={startEditMode}
+              open={isSaveConfirmOpen}
+              onOpenChange={setIsSaveConfirmOpen}
+              title="Xác nhận lưu thay đổi đánh giá?"
+              description="Kết quả đánh giá và nhận xét của học viên sẽ được lưu và cập nhật. Bạn có chắc chắn muốn lưu lại các thay đổi này?"
+              confirmLabel="Lưu thay đổi"
+              cancelLabel="Kiểm tra lại"
+              onConfirm={executeSave}
             />
           </>
         )}

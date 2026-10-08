@@ -1,8 +1,7 @@
 'use client'
 
 import { type Dispatch, type SetStateAction } from 'react'
-import { toast } from 'sonner'
-import type { BookingSubject, BookingTest } from '@/mocks/bookingTests'
+import type { BookingTest } from '@/mocks/bookingTests'
 import {
   applyBookingCheckIn,
   buildEmptyAssessmentDraft,
@@ -81,20 +80,12 @@ export function useBookingTestActions(deps: ActionDeps) {
     const next = deps.bookings.find((booking) => booking.id === bookingId)
     if (!next || next.subject !== 'english') return
 
-    // Kiểm tra đã gán giáo viên và người phụ trách hay chưa
-    const hasTeacher = Boolean(next.teacher?.trim())
-    const hasResponsible = Boolean(
-      next.ops?.trim() ||
-        next.createdBy?.trim() ||
-        next.interviewer?.trim() ||
-        next.tester?.trim()
-    )
-
-    if (!hasTeacher || !hasResponsible) {
-      toast.error(
-        'Vui lòng gán Giáo viên và Người phụ trách trước khi bắt đầu đánh giá/làm bài test.'
-      )
-      return
+    if (!next.teacher?.trim()) {
+      updateBooking(bookingId, (current) => ({
+        ...current,
+        teacher: current.teacher || 'Sarah J.',
+        tester: current.tester || 'Sarah J.',
+      }))
     }
 
     if (next.status === 'booked_assessment' || next.attendance !== 'confirmed') {

@@ -125,13 +125,13 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
               <h4 className="text-xs font-semibold text-foreground leading-none">
                 Thống kê Phễu &amp; Kho Dữ liệu
               </h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Cấu hình toàn chuỗi cơ sở Rinov5
               </p>
             </div>
           </div>
 
-          <Badge variant="outline" className="text-[11px] font-normal py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+          <Badge variant="outline" className="text-xs font-normal py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
             {totalLegacyCount}/{totalLegacyCount} Mã Quy Hoạch
           </Badge>
         </div>
@@ -141,7 +141,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
           {/* Card 1: Data Pools */}
           <div className="p-2.5 rounded-lg border border-pink-200/60 bg-pink-50/40 dark:bg-pink-950/20 dark:border-pink-900/40 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-pink-900 dark:text-pink-300 uppercase tracking-wider">
+              <span className="text-xs font-medium text-pink-900 dark:text-pink-300 uppercase tracking-wider">
                 Kho Dữ liệu
               </span>
               <Database className="h-3.5 w-3.5 text-pink-600 dark:text-pink-400" />
@@ -149,7 +149,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
             <div className="text-base font-bold text-foreground font-mono">
               {pools.length} <span className="text-xs font-normal text-muted-foreground">kho</span>
             </div>
-            <div className="text-[10px] text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate">
               {pools.map((p) => p.name).join(' · ')}
             </div>
           </div>
@@ -157,7 +157,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
           {/* Card 2: Pipeline Stages */}
           <div className="p-2.5 rounded-lg border border-amber-200/60 bg-amber-50/40 dark:bg-amber-950/20 dark:border-amber-900/40 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+              <span className="text-xs font-medium text-amber-900 dark:text-amber-300 uppercase tracking-wider">
                 Bước Phễu Lead
               </span>
               <GitFork className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
@@ -165,7 +165,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
             <div className="text-base font-bold text-foreground font-mono">
               {stages.length} <span className="text-xs font-normal text-muted-foreground">bước</span>
             </div>
-            <div className="text-[10px] text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate">
               {inProgressCount} Tiến hành · {wonCount} Won · {lostCount} Lost
             </div>
           </div>
@@ -173,7 +173,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
           {/* Card 3: Sub Statuses */}
           <div className="p-2.5 rounded-lg border border-blue-200/60 bg-blue-50/40 dark:bg-blue-950/20 dark:border-blue-900/40 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-blue-900 dark:text-blue-300 uppercase tracking-wider">
+              <span className="text-xs font-medium text-blue-900 dark:text-blue-300 uppercase tracking-wider">
                 Nhãn Trạng thái Con
               </span>
               <Tags className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -181,7 +181,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
             <div className="text-base font-bold text-foreground font-mono">
               {totalSubStatuses} <span className="text-xs font-normal text-muted-foreground">nhãn</span>
             </div>
-            <div className="text-[10px] text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate">
               Gắn theo từng bước phễu chính
             </div>
           </div>
@@ -189,7 +189,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
           {/* Card 4: Legacy Migration */}
           <div className="p-2.5 rounded-lg border border-emerald-200/60 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-900/40 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">
+              <span className="text-xs font-medium text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">
                 Bảo toàn Mã Cũ
               </span>
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -197,7 +197,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
             <div className="text-base font-bold text-foreground font-mono">
               32/32 <span className="text-xs font-normal text-muted-foreground">mã T0-T4</span>
             </div>
-            <div className="text-[10px] text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate">
               100% đã được ánh xạ
             </div>
           </div>
@@ -205,7 +205,7 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
 
         {/* Phase Breakdown [T0] - [T4] */}
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground font-medium">Phân bố bước theo các giai đoạn [T0] - [T4]:</span>
             <span className="font-mono text-foreground font-semibold">{stages.length} bước</span>
           </div>
@@ -213,35 +213,35 @@ export const LeadLifecycleStatsPopover: React.FC<LeadLifecycleStatsPopoverProps>
           {/* Mini Badges for T0-T4 */}
           <div className="grid grid-cols-5 gap-1 pt-1">
             <div className="text-center p-1.5 rounded bg-muted/50 border border-border/50">
-              <div className="text-[10px] font-bold text-blue-600 dark:text-blue-400">[T0]</div>
+              <div className="text-xs font-bold text-blue-600 dark:text-blue-400">[T0]</div>
               <div className="text-xs font-semibold text-foreground font-mono">{phaseCounts.T0}</div>
-              <div className="text-[9px] text-muted-foreground truncate">Tiếp nhận</div>
+              <div className="text-xs text-muted-foreground truncate">Tiếp nhận</div>
             </div>
             <div className="text-center p-1.5 rounded bg-muted/50 border border-border/50">
-              <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400">[T1]</div>
+              <div className="text-xs font-bold text-amber-600 dark:text-amber-400">[T1]</div>
               <div className="text-xs font-semibold text-foreground font-mono">{phaseCounts.T1}</div>
-              <div className="text-[9px] text-muted-foreground truncate">Tư vấn</div>
+              <div className="text-xs text-muted-foreground truncate">Tư vấn</div>
             </div>
             <div className="text-center p-1.5 rounded bg-muted/50 border border-border/50">
-              <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">[T2]</div>
+              <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400">[T2]</div>
               <div className="text-xs font-semibold text-foreground font-mono">{phaseCounts.T2}</div>
-              <div className="text-[9px] text-muted-foreground truncate">Test / Thử</div>
+              <div className="text-xs text-muted-foreground truncate">Test / Thử</div>
             </div>
             <div className="text-center p-1.5 rounded bg-muted/50 border border-border/50">
-              <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">[T3]</div>
+              <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">[T3]</div>
               <div className="text-xs font-semibold text-foreground font-mono">{phaseCounts.T3}</div>
-              <div className="text-[9px] text-muted-foreground truncate">Chốt deal</div>
+              <div className="text-xs text-muted-foreground truncate">Chốt deal</div>
             </div>
             <div className="text-center p-1.5 rounded bg-muted/50 border border-border/50">
-              <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">[T4]</div>
+              <div className="text-xs font-bold text-rose-600 dark:text-rose-400">[T4]</div>
               <div className="text-xs font-semibold text-foreground font-mono">{phaseCounts.T4}</div>
-              <div className="text-[9px] text-muted-foreground truncate">Kết thúc</div>
+              <div className="text-xs text-muted-foreground truncate">Kết thúc</div>
             </div>
           </div>
         </div>
 
         {/* Legacy Mapping Hint */}
-        <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+        <div className="pt-2 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <ArrowRightLeft className="h-3 w-3 text-purple-600 dark:text-purple-400" />
             Toàn bộ 32 mã T0-T4 đã được bảo toàn và ánh xạ đầy đủ

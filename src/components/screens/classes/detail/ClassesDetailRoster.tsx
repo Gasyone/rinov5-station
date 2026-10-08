@@ -302,7 +302,7 @@ export function ClassesDetailRoster({
       <div className="flex flex-wrap items-center justify-between gap-2 pb-0.5">
         {/* Left Side: Stats Badge ("Đang học: 19 học viên") + "Thêm học viên" button */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1 font-semibold text-foreground">
+          <div className="flex items-center gap-1.5 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 font-semibold text-foreground">
             <span>Đang học:</span>
             <span className="font-mono font-bold text-primary">{visibleStudents.length} học viên</span>
           </div>
@@ -313,9 +313,9 @@ export function ClassesDetailRoster({
               variant="ghost"
               size="sm"
               onClick={onAddStudent}
-              className="h-8 px-2.5 text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary rounded-lg cursor-pointer bg-transparent border-none shadow-none"
+              className="h-6.5 px-2 text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary rounded-md cursor-pointer bg-transparent border-none shadow-none"
             >
-              <span>Thêm học viên</span>
+              <span>+ Thêm học viên</span>
             </Button>
           )}
         </div>
@@ -329,13 +329,13 @@ export function ClassesDetailRoster({
             <table className="w-full text-xs text-left border-collapse">
               <thead className="bg-zinc-50 dark:bg-zinc-800/50 sticky top-0 border-b border-zinc-200 dark:border-zinc-800 z-10">
                 <tr>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 w-[175px] min-w-[165px] whitespace-nowrap">Học viên</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[90px] whitespace-nowrap">Chuyên cần</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[80px] whitespace-nowrap">BTVN</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[80px] whitespace-nowrap">Kiểm tra</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[80px] whitespace-nowrap">Thái độ</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-left w-[200px] min-w-[180px] whitespace-nowrap">Thẻ chăm sóc</th>
-                  <th className="py-2 px-3 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[100px] min-w-[90px] whitespace-nowrap">Báo cáo tháng</th>
+                  <th className="py-1.5 px-2 font-bold text-zinc-500 dark:text-zinc-400 w-[155px] min-w-[145px] whitespace-nowrap">Học viên</th>
+                  <th className="py-1.5 px-1.5 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[80px] whitespace-nowrap">Chuyên cần</th>
+                  <th className="py-1.5 px-1.5 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[72px] whitespace-nowrap">BTVN</th>
+                  <th className="py-1.5 px-1.5 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[72px] whitespace-nowrap">Kiểm tra</th>
+                  <th className="py-1.5 px-1.5 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[65px] whitespace-nowrap">Thái độ</th>
+                  <th className="py-1.5 px-2 font-bold text-zinc-500 dark:text-zinc-400 text-left w-[170px] min-w-[150px] whitespace-nowrap">Thẻ chăm sóc</th>
+                  <th className="py-1.5 px-1.5 font-bold text-zinc-500 dark:text-zinc-400 text-center w-[85px] whitespace-nowrap">Báo cáo tháng</th>
                 </tr>
               </thead>
               <tbody>
@@ -366,11 +366,11 @@ export function ClassesDetailRoster({
                       )}
                     >
                       {/* Student name + avatar */}
-                      <td className="py-3 px-2.5 w-[175px] min-w-[165px]">
-                        <div className="relative flex items-center gap-2 min-w-0">
+                      <td className="py-1.5 px-2 w-[155px] min-w-[145px]">
+                        <div className="relative flex items-center gap-1.5 min-w-0">
                           <HoverCard>
                             <HoverCardTrigger asChild>
-                              <div className="flex h-7 w-7 shrink-0 cursor-help items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
+                              <div className="flex h-5.5 w-5.5 shrink-0 cursor-help items-center justify-center rounded-md border border-primary/20 bg-primary/10 text-[11px] font-bold text-primary">
                                 {initials}
                               </div>
                             </HoverCardTrigger>
@@ -431,17 +431,17 @@ export function ClassesDetailRoster({
                           <div className="min-w-0 flex-1 truncate">
                             <button
                               type="button"
-                              className="block max-w-full truncate text-left text-xs font-bold text-foreground hover:text-primary hover:underline"
+                              className="block max-w-full truncate text-left text-xs font-semibold text-foreground hover:text-primary hover:underline"
                               onClick={(e) => { e.stopPropagation(); onStudentClick?.(student.id) }}
                             >
                               {student.name}
                             </button>
                             <div className="mt-0.5 flex items-center gap-1 min-w-0">
-                              <span className="font-mono text-xs text-muted-foreground truncate">{student.code}</span>
+                              <span className="font-mono text-[11px] text-muted-foreground truncate">{student.code}</span>
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  'text-xs px-1 py-0 font-bold shrink-0 shadow-none border leading-tight h-4 rounded-md truncate max-w-[65px]',
+                                  'text-[10px] px-1 py-0 font-bold shrink-0 shadow-none border leading-tight h-3.5 rounded truncate max-w-[62px]',
                                   milestoneTag.colorClass
                                 )}
                               >
@@ -450,7 +450,7 @@ export function ClassesDetailRoster({
                             </div>
                           </div>
 
-                          {/* Action icons (Heart for Overlay Care, FileText for Overlay Monthly Report, ExternalLink for Full Care Dialog, Trash for Remove) - Hover overlay */}
+                          {/* Action icons */}
                           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 bg-background/95 backdrop-blur-xs px-1 py-0.5 rounded-md shadow-xs z-10">
                             {onMonthlyReportOverlayClick && (
                               <Button
@@ -461,10 +461,10 @@ export function ClassesDetailRoster({
                                   e.stopPropagation()
                                   onMonthlyReportOverlayClick(student)
                                 }}
-                                className="h-6 w-6 shrink-0 rounded-md text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-transform active:scale-95"
-                                title="Báo cáo tháng - Mở panel báo cáo tháng đè bên phải"
+                                className="h-5 w-5 shrink-0 rounded text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-transform active:scale-95"
+                                title="Báo cáo tháng"
                               >
-                                <FileText className="h-3.5 w-3.5 text-emerald-600" />
+                                <FileText className="h-3 w-3 text-emerald-600" />
                               </Button>
                             )}
 
@@ -476,8 +476,8 @@ export function ClassesDetailRoster({
                                 e.stopPropagation()
                                 setCareStudentId(student.id)
                               }}
-                              className="h-6 w-6 shrink-0 rounded-md text-primary hover:bg-primary/10 transition-transform active:scale-95"
-                              title="Mở trang chi tiết chăm sóc học viên (Student Care)"
+                              className="h-5 w-5 shrink-0 rounded text-primary hover:bg-primary/10 transition-transform active:scale-95"
+                              title="Chi tiết chăm sóc"
                             >
                               <ExternalLink className="h-3 w-3 text-primary" />
                             </Button>
@@ -494,10 +494,10 @@ export function ClassesDetailRoster({
                                   setCareStudentId(student.id)
                                 }
                               }}
-                              className="h-6 w-6 shrink-0 rounded-md text-rose-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 transition-transform active:scale-95"
-                              title="Thực hiện chăm sóc - Mở panel chăm sóc đè"
+                              className="h-5 w-5 shrink-0 rounded text-rose-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 transition-transform active:scale-95"
+                              title="Thực hiện chăm sóc"
                             >
-                              <Heart className="h-3.5 w-3.5 fill-rose-500/20 text-rose-500 hover:fill-rose-500" />
+                              <Heart className="h-3 w-3 fill-rose-500/20 text-rose-500 hover:fill-rose-500" />
                             </Button>
 
                             {!isReadOnly && onRemoveStudent && !isMutedRosterStatus && (
@@ -506,10 +506,10 @@ export function ClassesDetailRoster({
                                 variant="ghost"
                                 size="icon-xs"
                                 onClick={() => setRemoveConfirmStudent(student)}
-                                className="h-6 w-6 shrink-0 rounded-md text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive transition-transform active:scale-95"
+                                className="h-5 w-5 shrink-0 rounded text-muted-foreground/40 hover:bg-destructive/10 hover:text-destructive transition-transform active:scale-95"
                                 title="Xóa khỏi lớp"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             )}
                           </div>
@@ -517,7 +517,7 @@ export function ClassesDetailRoster({
                       </td>
 
                       {/* Attendance */}
-                      <td className="py-3.5 px-3.5 text-center">
+                      <td className="py-1.5 px-1.5 text-center">
                         <div className="flex flex-col items-center leading-tight">
                           <span className={cn(
                             "text-xs font-bold",
@@ -527,14 +527,14 @@ export function ClassesDetailRoster({
                           )}>
                             {attendanceRate}%
                           </span>
-                          <span className="text-xs text-muted-foreground font-mono leading-none">
+                          <span className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5">
                             {attended}/{totalSessions}
                           </span>
                         </div>
                       </td>
 
                       {/* Homework */}
-                      <td className="py-3.5 px-3.5 text-center">
+                      <td className="py-1.5 px-1.5 text-center">
                         <div className="flex flex-col items-center leading-tight">
                           <span className={cn(
                             "text-xs font-bold",
@@ -544,38 +544,38 @@ export function ClassesDetailRoster({
                           )}>
                             {hwRate}%
                           </span>
-                          <span className="text-xs text-muted-foreground font-mono leading-none">
+                          <span className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5">
                             {hwDone}/{hwTotal}
                           </span>
                         </div>
                       </td>
 
                       {/* Kiểm tra */}
-                      <td className="py-3.5 px-3.5 text-center">
+                      <td className="py-1.5 px-1.5 text-center">
                         <div className="flex flex-col items-center justify-center leading-tight">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center gap-0.5">
                             <span className="text-xs font-bold text-foreground font-mono">
                               {avgScore}
                             </span>
                             {getTrendIcon(trend)}
                           </div>
-                          <span className="text-xs text-muted-foreground font-mono mt-0.5">
+                          <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
                             {prevScore}
                           </span>
                         </div>
                       </td>
 
                       {/* Thái độ (Rating sao) */}
-                      <td className="py-3.5 px-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1 leading-none">
-                          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400 shrink-0" />
+                      <td className="py-1.5 px-1.5 text-center">
+                        <div className="flex items-center justify-center gap-0.5 leading-none">
+                          <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400 shrink-0" />
                           <span className="text-xs font-bold text-foreground font-mono">{avgRating}</span>
                         </div>
                       </td>
 
-                      {/* Thẻ chăm sóc: Shared CareTagHoverCard */}
-                      <td className="py-3.5 px-3.5">
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Thẻ chăm sóc: Giữ đầy đủ màu sắc */}
+                      <td className="py-1.5 px-2">
+                        <div className="flex items-center gap-1 flex-wrap">
                           {careTags.map((tag, tIdx) => (
                             <div
                               key={tIdx}
@@ -605,8 +605,8 @@ export function ClassesDetailRoster({
                         </div>
                       </td>
 
-                      {/* Báo cáo tháng (Ở sau cùng - Tự động tạo hàng tháng) */}
-                      <td className="py-3.5 px-2 text-center w-[100px] min-w-[90px]">
+                      {/* Báo cáo tháng */}
+                      <td className="py-1.5 px-1.5 text-center w-[85px] min-w-[80px]">
                         <button
                           type="button"
                           onClick={(e) => {

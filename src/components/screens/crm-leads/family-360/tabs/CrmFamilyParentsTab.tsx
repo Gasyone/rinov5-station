@@ -163,7 +163,7 @@ export function CrmFamilyParentsTab({
               type="button"
               onClick={handleAddNewParent}
               className={cn(
-                'h-6 px-2 rounded-md text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed shrink-0',
+                'h-6 px-2 rounded-md text-xs font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed shrink-0',
                 isAddingNew
                   ? 'bg-sky-600 text-white border-sky-600 font-semibold'
                   : 'border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40'
@@ -206,16 +206,16 @@ export function CrmFamilyParentsTab({
                         <span className="font-semibold text-foreground truncate text-xs">
                           {p.name || 'Chưa đặt tên'}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">({p.role})</span>
+                        <span className="text-xs text-muted-foreground">({p.role})</span>
                       </div>
-                      <span className="font-mono text-[10px] text-muted-foreground block truncate">
+                      <span className="font-mono text-xs text-muted-foreground block truncate">
                         {p.phone || 'Chưa có SĐT'}
                       </span>
                     </div>
                   </div>
 
                   {p.isPrimary && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-xs font-bold uppercase bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200 shrink-0">
+                    <span className="text-xs px-1.5 py-0.5 rounded-xs font-bold uppercase bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200 shrink-0">
                       Chính
                     </span>
                   )}
@@ -240,7 +240,7 @@ export function CrmFamilyParentsTab({
                 variant="outline"
                 size="sm"
                 onClick={handleStartEdit}
-                className="h-6.5 px-2 text-[11px] font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
+                className="h-6.5 px-2 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
               >
                 <Pencil className="h-3 w-3 mr-1" />
                 <span>Sửa hồ sơ</span>
@@ -252,7 +252,7 @@ export function CrmFamilyParentsTab({
                   variant="outline"
                   size="sm"
                   onClick={handleCancelEdit}
-                  className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive cursor-pointer"
+                  className="h-6 px-1.5 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
                 >
                   <X className="h-3 w-3 mr-0.5" />
                   Hủy
@@ -261,7 +261,7 @@ export function CrmFamilyParentsTab({
                   type="button"
                   size="sm"
                   onClick={handleSaveEdit}
-                  className="h-6 px-2 text-[10px] font-bold bg-sky-600 hover:bg-sky-700 text-white cursor-pointer"
+                  className="h-6 px-2 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white cursor-pointer"
                 >
                   <Save className="h-3 w-3 mr-0.5" />
                   Lưu
@@ -275,7 +275,7 @@ export function CrmFamilyParentsTab({
             {isEditing && editForm ? (
               <div className="space-y-2">
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Họ và tên phụ huynh *
                   </label>
                   <Input
@@ -286,7 +286,7 @@ export function CrmFamilyParentsTab({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-0.5">
+                  <label className="text-xs font-medium text-muted-foreground block mb-0.5">
                     Vai trò trong gia đình
                   </label>
                   <Input
@@ -305,12 +305,12 @@ export function CrmFamilyParentsTab({
                   </h4>
                   <Badge
                     variant="outline"
-                    className="bg-muted/40 text-muted-foreground border-border/60 text-[10px]"
+                    className="bg-muted/40 text-muted-foreground border-border/60 text-xs"
                   >
                     {activeParent.role}
                   </Badge>
                   {activeParent.isPrimary && (
-                    <Badge className="bg-emerald-600/90 text-white text-[10px] font-normal">
+                    <Badge className="bg-emerald-600/90 text-white text-xs font-normal">
                       Liên hệ chính
                     </Badge>
                   )}
@@ -320,7 +320,7 @@ export function CrmFamilyParentsTab({
                   <button
                     type="button"
                     onClick={() => handleSetPrimary(activeParent.id)}
-                    className="text-[11px] text-sky-600 hover:underline font-medium block pt-0.5 cursor-pointer"
+                    className="text-xs text-sky-600 hover:underline font-medium block pt-0.5 cursor-pointer"
                   >
                     Đặt làm liên hệ chính của gia đình
                   </button>
@@ -330,11 +330,11 @@ export function CrmFamilyParentsTab({
 
             {/* Thông tin hồ sơ gia đình & con liên kết */}
             <div className="pt-2 border-t border-border/60 space-y-2 text-xs">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Mã gia đình:</span>
                 <span className="font-mono font-medium text-foreground">{familyCode}</span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>Ngày tạo hồ sơ:</span>
                 <span className="font-medium text-foreground">{createdAt}</span>
               </div>
@@ -342,14 +342,14 @@ export function CrmFamilyParentsTab({
               {/* Các con trong gia đình */}
               {siblingNames && siblingNames.length > 0 && (
                 <div className="pt-1">
-                  <span className="text-[11px] text-muted-foreground font-medium block mb-1">
+                  <span className="text-xs text-muted-foreground font-medium block mb-1">
                     Các con trong gia đình:
                   </span>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {siblingNames.map((sib) => (
                       <span
                         key={sib}
-                        className="inline-flex items-center gap-1 h-5 px-2 rounded-md text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80"
+                        className="inline-flex items-center gap-1 h-5 px-2 rounded-md text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80"
                       >
                         <GraduationCap className="h-3 w-3 text-sky-600" />
                         <span>{sib}</span>
@@ -396,7 +396,7 @@ export function CrmFamilyParentsTab({
             {/* SĐT & Email */}
             <div className="space-y-2 min-w-0">
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Số điện thoại *
                 </span>
                 {!isEditing ? (
@@ -429,7 +429,7 @@ export function CrmFamilyParentsTab({
               </div>
 
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Email liên hệ
                 </span>
                 {!isEditing ? (
@@ -450,7 +450,7 @@ export function CrmFamilyParentsTab({
               </div>
 
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Ngân sách học tập / tháng
                 </span>
                 {!isEditing ? (
@@ -461,7 +461,7 @@ export function CrmFamilyParentsTab({
                     {activeParent.financialSegment && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] py-0 px-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200"
+                        className="text-xs py-0 px-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200"
                       >
                         {activeParent.financialSegment}
                       </Badge>
@@ -483,7 +483,7 @@ export function CrmFamilyParentsTab({
             {/* Quyền hạn & Kênh ưu tiên */}
             <div className="space-y-2 min-w-0 sm:border-l sm:border-border/60 sm:pl-3.5">
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Quyền hạn quyết định
                 </span>
                 {!isEditing ? (
@@ -506,7 +506,7 @@ export function CrmFamilyParentsTab({
               </div>
 
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Kênh liên hệ ưu tiên
                 </span>
                 {!isEditing ? (
@@ -515,7 +515,7 @@ export function CrmFamilyParentsTab({
                       {activeParent.preferredChannel || 'Ưu tiên Zalo trong giờ hành chính'}
                     </span>
                     {activeParent.zaloStatus && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 px-1.5 py-0.5 rounded">
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                         <span>{activeParent.zaloStatus}</span>
                       </span>
@@ -536,7 +536,7 @@ export function CrmFamilyParentsTab({
               </div>
 
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-0.5">
+                <span className="text-xs text-muted-foreground font-medium block mb-0.5">
                   Thời gian liên lạc tốt nhất
                 </span>
                 {!isEditing ? (

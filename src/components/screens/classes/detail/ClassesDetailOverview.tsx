@@ -296,11 +296,11 @@ export function ClassesDetailOverview({
   )
 
   return (
-    <div className="space-y-4 pt-1 flex-1 flex flex-col min-h-0">
+    <div className="space-y-3 pt-0.5 flex-1 flex flex-col min-h-0">
       {/* Khung 1: Cụm Thông tin */}
       <Panel 
         title="Thông tin" 
-        headerClassName="-mx-3.5 -mt-3.5 mb-3 px-3.5 py-2.5 bg-muted/40 dark:bg-muted/20 border-b border-border/50 rounded-t-xl"
+        headerClassName="-mx-2.5 -mt-2.5 mb-2 px-2.5 py-1.5 bg-muted/40 dark:bg-muted/20 border-b border-border/50 rounded-t-xl"
         actions={
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -389,21 +389,21 @@ export function ClassesDetailOverview({
             </DropdownMenuContent>
           </DropdownMenu>
         }
-        className="rounded-xl border border-border/80 bg-card p-3.5 shadow-2xs space-y-3 overflow-hidden"
+        className="rounded-xl border border-border/80 bg-card p-2.5 shadow-2xs space-y-2 overflow-hidden"
       >
-        {/* Grid 2 cột: Nhãn mờ (text-muted-foreground) + Giá trị */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-0.5">
-          {/* Item 1: Tên lớp (IN ĐẬM) */}
+        {/* Grid 2 cột: Nhãn mờ + Giá trị */}
+        <div className="grid grid-cols-2 gap-x-2.5 gap-y-1.5 pt-0.5">
+          {/* Item 1: Tên lớp */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Tên lớp</span>
-            <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.name}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Tên lớp</span>
+            <span className="text-xs font-semibold text-foreground block truncate leading-snug">{cls.name}</span>
           </div>
 
-          {/* Item 2: Mã lớp (Có icon copy) */}
+          {/* Item 2: Mã lớp */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Mã lớp</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Mã lớp</span>
             <div className="flex items-center gap-1 min-w-0">
-              <span className="text-xs md:text-[13px] font-normal text-foreground font-mono truncate">{cls.code}</span>
+              <span className="text-xs font-normal text-foreground font-mono truncate leading-snug">{cls.code}</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -414,75 +414,67 @@ export function ClassesDetailOverview({
                     toast.success(`Đã sao chép mã lớp: ${cls.code}`)
                   }
                 }}
-                className="h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                className="h-4 w-4 rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
                 title="Sao chép mã lớp"
               >
-                <Copy className="h-3 w-3" />
+                <Copy className="h-2.5 w-2.5" />
               </Button>
             </div>
           </div>
 
-          {/* Item 3: Cơ sở đào tạo (IN ĐẬM) */}
+          {/* Item 3: Cơ sở đào tạo */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Cơ sở đào tạo</span>
-            <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.branch}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Cơ sở đào tạo</span>
+            <span className="text-xs font-semibold text-foreground block truncate leading-snug">{cls.branch}</span>
           </div>
 
-          {/* Item 4: Phòng học (IN ĐẬM) */}
+          {/* Item 4: Phòng học */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Phòng học</span>
-            <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">{cls.room || 'A101'}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Phòng học</span>
+            <span className="text-xs font-semibold text-foreground block truncate leading-snug">{cls.room || 'A101'}</span>
           </div>
 
-          {/* Item 5: Khung chương trình (Đã đổi vị trí lên trước Môn học - IN ĐẬM + MÀU XANH NHẸ) */}
+          {/* Item 5: Khung chương trình */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Khung chương trình</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Khung chương trình</span>
             <SyllabusProfileHoverCard cls={cls}>
-              <span className="text-xs md:text-[13px] font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 truncate">
+              <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 truncate leading-snug">
                 {cls.syllabus || 'IELTS Junior v2.1'}
               </span>
             </SyllabusProfileHoverCard>
           </div>
 
-          {/* Item 6: Trình độ (IN ĐẬM) */}
+          {/* Item 6: Trình độ */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Trình độ</span>
-            <span className="text-xs md:text-[13px] font-bold text-foreground block truncate">
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Trình độ</span>
+            <span className="text-xs font-semibold text-foreground block truncate leading-snug">
               {cls.level || (isMath ? 'Toán THCS' : 'IELTS')}
               {(cls.subLevel || (isMath ? 'Nâng cao' : '5.0–5.5')) ? ` (${cls.subLevel || (isMath ? 'Nâng cao' : '5.0–5.5')})` : ''}
             </span>
           </div>
 
-          {/* Item 7: Môn học (Đã chuyển xuống vị trí cũ của Khung chương trình) */}
+          {/* Item 7: Môn học */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Môn học</span>
-            <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{isMath ? 'Môn Toán' : 'Tiếng Anh'}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Môn học</span>
+            <span className="text-xs font-normal text-foreground block truncate leading-snug">{isMath ? 'Môn Toán' : 'Tiếng Anh'}</span>
           </div>
 
           {/* Item 8: Loại lớp */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Loại lớp</span>
-            <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.classRatio || (cls.maxStudents ? `1:${cls.maxStudents}` : '1:20')}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Loại lớp</span>
+            <span className="text-xs font-normal text-foreground block truncate leading-snug">{cls.classRatio || (cls.maxStudents ? `1:${cls.maxStudents}` : '1:20')}</span>
           </div>
 
           {/* Item 9: Loại giáo viên */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Loại giáo viên</span>
-            <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.teacherType || 'Việt Nam'}</span>
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Loại giáo viên</span>
+            <span className="text-xs font-normal text-foreground block truncate leading-snug">{cls.teacherType || 'Việt Nam'}</span>
           </div>
 
-          {/* Item 10 (Nếu là Môn toán): Lớp phổ thông */}
-          {isMath && (
-            <div className="min-w-0 space-y-0.5">
-              <span className="text-xs font-medium text-muted-foreground block">Lớp phổ thông</span>
-              <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">{cls.grade || 'Lớp 7'}</span>
-            </div>
-          )}
-
-          {/* Item 11: Thời gian */}
+          {/* Item 10: Thời gian */}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-xs font-medium text-muted-foreground block">Thời gian</span>
-            <span className="text-xs md:text-[13px] font-normal text-foreground block truncate">
+            <span className="text-[11px] font-medium text-muted-foreground block leading-tight">Thời gian</span>
+            <span className="text-xs font-normal text-foreground block truncate leading-snug">
               {cls.startDate && cls.startDate !== '---' ? new Date(cls.startDate).toLocaleDateString('vi-VN') : '01/05/2026'} – {cls.endDate && cls.endDate !== '---' ? new Date(cls.endDate).toLocaleDateString('vi-VN') : '01/08/2026'}
             </span>
           </div>
@@ -492,7 +484,7 @@ export function ClassesDetailOverview({
       {/* Khung 2: Cụm Lịch học */}
       <Panel 
         title="Lịch học" 
-        headerClassName="-mx-3.5 -mt-3.5 mb-3 px-3.5 py-2.5 bg-muted/40 dark:bg-muted/20 border-b border-border/50 rounded-t-xl"
+        headerClassName="-mx-2.5 -mt-2.5 mb-2 px-2.5 py-1.5 bg-muted/40 dark:bg-muted/20 border-b border-border/50 rounded-t-xl"
         actions={
           <Button
             type="button"
@@ -504,26 +496,26 @@ export function ClassesDetailOverview({
             <span>Đổi lịch</span>
           </Button>
         }
-        className="rounded-xl border border-border/80 bg-card p-3.5 shadow-2xs space-y-3.5 overflow-hidden"
+        className="rounded-xl border border-border/80 bg-card p-2.5 shadow-2xs space-y-2 overflow-hidden"
       >
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {scheduleDays.map((slot, idx) => (
-            <div key={idx} className="flex items-start justify-between gap-2 py-2 border-b border-border/40 last:border-none">
+            <div key={idx} className="flex items-center justify-between gap-2 py-1.5 border-b border-border/40 last:border-none">
               {/* Cột 1: Lịch học (Thứ & Giờ) */}
-              <div className="flex flex-col gap-0.5 w-[75px] shrink-0">
-                <div className="font-medium text-foreground text-xs">
+              <div className="flex flex-col gap-0.5 w-[68px] shrink-0">
+                <div className="font-semibold text-foreground text-xs leading-none">
                   {slot.dayOfWeek}
                 </div>
-                <div className="text-muted-foreground text-xs font-normal">
+                <div className="text-muted-foreground text-xs font-normal leading-none mt-0.5">
                   {slot.startTime}–{slot.endTime}
                 </div>
               </div>
 
-              {/* Cột 2 & 3: Tách Cột Giáo viên (GV) & Cột Trợ giảng (TG) riêng ra, không dùng Avatar, chỉ hiện tên đầy đủ */}
-              <div className="flex items-start gap-4 ml-auto shrink-0">
+              {/* Cột 2 & 3: Giáo viên & Trợ giảng */}
+              <div className="flex items-center gap-2.5 ml-auto flex-1 min-w-0 justify-end">
                 {/* Cột Giáo viên chính */}
-                <div className="flex flex-col min-w-0 w-[140px] shrink-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">GV</span>
+                <div className="flex flex-col min-w-0 flex-1 shrink-0 text-left">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 leading-none mb-0.5">GV</span>
                   <PersonnelHoverCard
                     person={{
                       id: slot.teacher.id,
@@ -535,9 +527,9 @@ export function ClassesDetailOverview({
                     align="end"
                   >
                     <div className="cursor-help inline-flex items-center gap-1 flex-wrap text-xs font-normal text-foreground leading-snug">
-                      <span>{slot.teacher.name}</span>
+                      <span className="truncate max-w-[95px]">{slot.teacher.name}</span>
                       {(slot.teacher as { isLeave?: boolean }).isLeave && (
-                        <span className="text-rose-600 dark:text-rose-400 italic font-normal">
+                        <span className="text-rose-600 dark:text-rose-400 italic font-normal text-[10.5px]">
                           (Nghỉ)
                         </span>
                       )}
@@ -546,8 +538,8 @@ export function ClassesDetailOverview({
                 </div>
 
                 {/* Cột Trợ giảng (TG) */}
-                <div className="flex flex-col min-w-0 w-[110px] shrink-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">TG</span>
+                <div className="flex flex-col min-w-0 w-[85px] shrink-0 text-left">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 leading-none mb-0.5">TG</span>
                   {slot.assistant ? (
                     <PersonnelHoverCard
                       person={{
@@ -559,12 +551,12 @@ export function ClassesDetailOverview({
                       }}
                       align="end"
                     >
-                      <span className="cursor-help text-xs font-normal text-foreground block truncate" title={slot.assistant.name}>
+                      <span className="cursor-help text-xs font-normal text-foreground block truncate leading-snug" title={slot.assistant.name}>
                         {slot.assistant.name}
                       </span>
                     </PersonnelHoverCard>
                   ) : (
-                    <span className="text-xs text-muted-foreground/50 italic font-normal block">
+                    <span className="text-xs text-muted-foreground/50 italic font-normal block leading-snug">
                       Chưa có
                     </span>
                   )}

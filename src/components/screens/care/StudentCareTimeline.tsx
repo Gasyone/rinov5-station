@@ -67,7 +67,6 @@ interface RoadmapMilestone {
 export function StudentCareTimeline({
   student,
   filteredCombinedLogs,
-  stickyTopOffset = 160,
   selectedPackageId = 'pkg-1',
   selectedPackage,
   cstpStatus,
@@ -844,19 +843,19 @@ export function StudentCareTimeline({
   const totalHistoryCount = currentPackageLogs.length
 
   return (
-    <div className="flex flex-col bg-white dark:bg-zinc-950 rounded-2xl border border-border/60 p-3.5 shadow-2xs text-left">
+    <div className="flex flex-col bg-white dark:bg-zinc-950 rounded-xl border border-border/60 p-2 shadow-2xs text-left">
       {/* Header bar: Lọc Vai trò + Tab buttons (Đã bỏ checkbox Tất cả chương trình) */}
       <div 
-        className="-mx-3.5 -mt-3.5 py-1.5 px-3.5 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-1 select-none shrink-0 flex-wrap rounded-t-2xl"
+        className="-mx-2 -mt-2 py-1 px-2 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-1.5 mb-1 select-none shrink-0 flex-wrap rounded-t-xl"
       >
-        <div className="flex items-center gap-3 text-xs flex-wrap">
+        <div className="flex items-center gap-2 text-xs flex-wrap">
           {/* Lọc Vai trò phụ trách */}
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-muted-foreground uppercase text-[9.5px]">LỌC:</span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-normal text-muted-foreground text-xs">Lọc:</span>
             <select
               value={staffRoleFilter}
               onChange={(e) => setStaffRoleFilter(e.target.value)}
-              className="h-6 text-xs bg-white dark:bg-zinc-900 border border-border/80 rounded-md px-1.5 focus:outline-none focus:ring-1 focus:ring-primary font-medium text-foreground cursor-pointer shadow-3xs"
+              className="h-6 text-xs bg-background border border-border rounded-md px-1.5 focus:outline-none focus:ring-1 focus:ring-primary font-normal text-foreground cursor-pointer"
             >
               <option value="all">Tất cả</option>
               <option value="cskh">CS</option>
@@ -872,10 +871,10 @@ export function StudentCareTimeline({
             size="xs"
             onClick={() => setActiveTab('history')}
             className={cn(
-              'h-6 text-xs font-semibold px-2.5 rounded-md cursor-pointer transition-colors shadow-3xs',
+              'h-6 text-xs px-2.5 rounded-md cursor-pointer transition-colors',
               activeTab === 'history'
-                ? 'bg-amber-100/90 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 font-bold'
-                : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-foreground border border-border/80'
+                ? 'bg-muted text-foreground border border-border font-medium'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-normal border border-transparent'
             )}
           >
             Lịch sử chăm sóc ({totalHistoryCount})
@@ -887,10 +886,10 @@ export function StudentCareTimeline({
             size="xs"
             onClick={() => setActiveTab('roadmap')}
             className={cn(
-              'h-6 text-xs font-semibold px-2.5 rounded-md cursor-pointer transition-colors shadow-3xs',
+              'h-6 text-xs px-2.5 rounded-md cursor-pointer transition-colors',
               activeTab === 'roadmap'
-                ? 'bg-sky-100/90 text-sky-900 border border-sky-300 dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800 font-bold'
-                : 'bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-foreground border border-border/80'
+                ? 'bg-muted text-foreground border border-border font-medium'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-normal border border-transparent'
             )}
           >
             Mốc chăm sóc
@@ -898,11 +897,11 @@ export function StudentCareTimeline({
         </div>
       </div>
 
-      <div className="space-y-4 pt-3 pr-0.5">
+      <div className="space-y-2 pt-1 pr-0.5">
         {activeTab === 'history' ? (
-          <div className="space-y-3 pt-0.5">
+          <div className="space-y-2 pt-0.5">
             {currentPackageLogs.length === 0 ? (
-              <div className="py-8 text-center text-xs text-muted-foreground italic">
+              <div className="py-6 text-center text-xs text-muted-foreground italic">
                 Chưa có nhật ký chăm sóc cho gói học này
               </div>
             ) : (

@@ -160,7 +160,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     csStaff: "Trần Thảo Anh 20",
     callConfirmation: "Đã gọi",
     completedCareTags: ['ĐK1'],
-    studentNote: 'Con tiếp thu nhanh qua hình ảnh và trực quan (Visual Learner), thích các câu đố tư duy logic và hoạt động nhóm. Gia đình định hướng thi Toán quốc tế SASMO, cần kèm thêm kỹ năng đọc hiểu đề bài dài.',
+    studentNote: 'Con tiếp thu nhanh qua hình ảnh và trực quan (Visual Learner), thích các câu đố tư duy logic và hoạt động nhóm. Gia đình định hướng thi Toán quốc tế SASMO, cần kèm thêm kỹ năng đọc hiểu đề bài dài. Giáo viên phụ trách cần lưu ý theo sát tiến độ làm bài tập về nhà định kỳ hàng tuần, hướng dẫn thêm các phương pháp giải bài toán suy luận thực tế và thường xuyên động viên để con tự tin phát biểu xây dựng bài trên lớp.',
     interactionNotes: '[CSTP] [Đối tượng: Lê Thu Thủy (Mẹ)] Trao đổi kế hoạch gia hạn gói Toán 1:6 (96 buổi). Phụ huynh đã nộp trước 2.8 triệu, rất hài lòng với sự tiến bộ của con và hẹn thanh toán nốt vào cuối tuần.',
     renewalClassification: 'hen_tai',
     linkedOrderCode: 'OD832001',

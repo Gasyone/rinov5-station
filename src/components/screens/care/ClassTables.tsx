@@ -126,7 +126,7 @@ export function ClassTables({ regularSessions, testSessions, isEnglish, onOpenLe
 
                   <td className="py-2.5 px-3 w-[280px]">
                     <span className="font-normal text-foreground">{s.topic}</span>
-                    <div className="text-xs text-muted-foreground mt-0.5 font-medium">
+                    <div className="text-xs text-muted-foreground mt-0.5 font-normal">
                       {getDayOfWeek(s.date)}, {s.date}
                     </div>
                   </td>

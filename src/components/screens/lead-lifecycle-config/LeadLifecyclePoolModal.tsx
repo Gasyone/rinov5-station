@@ -132,7 +132,7 @@ export const LeadLifecyclePoolModal: React.FC<LeadLifecyclePoolModalProps> = ({
 
                       {/* Mã kho */}
                       <TableCell className="text-center py-3">
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-muted text-muted-foreground">
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
                           {pool.code}
                         </span>
                       </TableCell>
@@ -141,7 +141,7 @@ export const LeadLifecyclePoolModal: React.FC<LeadLifecyclePoolModalProps> = ({
                       <TableCell className="text-center py-3">
                         <Badge
                           variant="outline"
-                          className="text-[10px] font-mono font-medium px-2 py-0.5 bg-background text-muted-foreground border-border/70"
+                          className="text-xs font-mono font-medium px-2 py-0.5 bg-background text-muted-foreground border-border/70"
                         >
                           {typeof stageCount === 'number' ? `${stageCount} bước` : 'Mặc định'}
                         </Badge>
@@ -153,7 +153,7 @@ export const LeadLifecyclePoolModal: React.FC<LeadLifecyclePoolModalProps> = ({
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 pr-2">
                             <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
                             <span
-                              className="truncate text-foreground/80 hover:text-primary transition-colors cursor-pointer select-all text-[11px]"
+                              className="truncate text-foreground/80 hover:text-primary transition-colors cursor-pointer select-all text-xs"
                               title={pool.url}
                               onClick={() => handleCopyUrl(pool.url, pool.name)}
                             >

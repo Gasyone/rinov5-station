@@ -5,13 +5,12 @@ import {
   Play,
   ChevronDown,
   ChevronUp,
-  Share2,
-  Users,
-  UserCheck,
+  Copy,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { MediaPreviewModal, PersonnelHoverCard } from '@/components/shared'
+import { MediaPreviewModal } from '@/components/shared'
 import { getShortDayOfWeek, formatDateNoYear } from './careSessionTimelineHelpers'
 
 interface ProjectMediaItem {
@@ -54,6 +53,21 @@ export function CareProjectMediaList({
 }: CareProjectMediaListProps) {
   const [selectedMedia, setSelectedMedia] = useState<ProjectMediaItem | null>(null)
   const [showAllProjects, setShowAllProjects] = useState(false)
+  const [expandedProjectComments, setExpandedProjectComments] = useState<Record<string, boolean>>({})
+
+  const isProjectCommentExpanded = (id: string, idx: number) => {
+    if (expandedProjectComments[id] !== undefined) {
+      return expandedProjectComments[id]
+    }
+    return idx === 0 // Buổi gần nhất luôn mở rộng
+  }
+
+  const toggleExpandProject = (id: string, idx: number) => {
+    setExpandedProjectComments((prev) => ({
+      ...prev,
+      [id]: !isProjectCommentExpanded(id, idx),
+    }))
+  }
 
   // Raw mock media database for project sessions
   const rawProjectSessions: ProjectSession[] = useMemo(() => {
@@ -293,167 +307,160 @@ export function CareProjectMediaList({
 
   return (
     <>
-      <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 select-none text-left overflow-hidden">
+      <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-xl p-2.5 shadow-2xs space-y-2 select-none text-left overflow-hidden">
         {/* Header with soft background tint */}
-        <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
-          <h3 className="text-xs font-bold text-foreground tracking-tight">
-            Buổi Học Dự Án & Media Thực Hành
-          </h3>
-          {filteredProjectSessions.length > 1 && (
-            <button
-              type="button"
-              onClick={() => setShowAllProjects(!showAllProjects)}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <span>
-                {showAllProjects ? 'Thu gọn' : 'Xem thêm'}
-              </span>
-              {showAllProjects ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
-            </button>
-          )}
+        <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
+          <div>
+            <h3 className="text-xs font-semibold text-foreground tracking-tight">
+              Buổi học dự án & thực hành
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-muted-foreground font-normal">
+              Hiển thị {visibleProjects.length}/{filteredProjectSessions.length} buổi dự án
+            </span>
+            {filteredProjectSessions.length > 1 && (
+              <>
+                <span className="text-border/80">•</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAllProjects(!showAllProjects)}
+                  className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <span>
+                    {showAllProjects ? 'Thu gọn' : `Xem thêm (${filteredProjectSessions.length - 1} buổi)`}
+                  </span>
+                  {showAllProjects ? (
+                    <ChevronUp className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                  )}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* List of Project Sessions */}
-        <div className="space-y-4 pt-1">
+        <div className="space-y-1.5 pt-0.5">
           {visibleProjects.map((project, idx) => {
             const shortDay = project.dayOfWeek ? getShortDayOfWeek(project.dayOfWeek) : getShortDayOfWeek(project.date)
             const shortDate = formatDateNoYear(project.date)
+            const firstMedia = project.media[0] || null
+            const isProjectExpanded = isProjectCommentExpanded(project.id, idx)
 
             return (
               <div
-                key={project.id}
-                className={cn(
-                  'space-y-2.5 text-xs',
-                  idx > 0 && 'pt-3 border-t border-border/30'
-                )}
+                key={project.id || idx}
+                className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs space-y-1.5"
               >
-                {/* Row 1: [Thứ, Ngày/Tháng] + Tên dự án | GV: [Tên] • Project */}
                 <div className="flex items-center justify-between gap-2 min-w-0">
-                  {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên buổi dự án */}
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span className="font-semibold text-xs shrink-0 text-sky-600 dark:text-sky-400">
+                  {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên dự án (truncate) - Bỏ giáo viên */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 shrink-0">
                       {shortDay}, {shortDate}
                     </span>
-                    <h4
-                      className="font-normal text-foreground text-xs truncate leading-snug min-w-0"
+
+                    <span
+                      className="font-normal text-foreground text-xs truncate min-w-0"
                       title={project.title}
                     >
                       {project.title}
-                    </h4>
+                    </span>
                   </div>
 
-                  {/* Cụm phải: GV (+hover card) */}
-                  <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground whitespace-nowrap ml-auto">
-                    <span className="text-muted-foreground">GV:</span>
-                    <PersonnelHoverCard
-                      person={{
-                        id: `EMP-${project.id}`,
-                        name: project.evaluator || 'Teacher Mark',
-                        role: 'Giáo viên phụ trách',
-                        phone: '0901234567',
-                        email: 'teacher@rinoedu.com',
-                        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=TeacherMark',
+                  {/* Cụm phải: Nút Sao chép link */}
+                  {firstMedia?.url && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard
+                          .writeText(firstMedia.url)
+                          .then(() => toast.success(`Đã sao chép liên kết media buổi dự án!`))
+                          .catch(() => toast.error('Không thể sao chép liên kết.'))
                       }}
-                      align="end"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer shrink-0"
+                      title="Sao chép liên kết media dự án"
                     >
-                      <span className="font-normal text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer transition-colors">
-                        {project.evaluator}
-                      </span>
-                    </PersonnelHoverCard>
-                  </div>
+                      <Copy className="h-3 w-3 stroke-[1.5]" />
+                    </Button>
+                  )}
                 </div>
 
-
-              {/* Row 2: Grid media ảnh / video */}
-              {project.media.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 pt-0.5">
-                  {project.media.map((mediaItem) => (
-                    <div
-                      key={mediaItem.id}
-                      onClick={() => setSelectedMedia(mediaItem)}
+                {/* Nội dung nhận xét / mô tả buổi dự án (Thu gọn tối đa 3 dòng, buổi gần nhất mở rộng) */}
+                {project.description && (
+                  <div className="relative pt-0.5">
+                    <p
                       className={cn(
-                        'group relative rounded-lg border overflow-hidden bg-zinc-900 cursor-pointer shadow-3xs transition-all aspect-video flex flex-col justify-end p-2',
-                        mediaItem.isTaggedForStudent
-                          ? 'border-emerald-500/80 hover:border-emerald-400 hover:ring-1 hover:ring-emerald-400'
-                          : 'border-border/60 hover:border-sky-500'
+                        'text-xs text-foreground/90 font-normal leading-relaxed cursor-pointer',
+                        !isProjectExpanded ? 'line-clamp-3 pr-20' : 'pr-20'
                       )}
+                      onClick={() => toggleExpandProject(project.id, idx)}
                     >
-                      {/* Image background */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={mediaItem.thumbnailUrl}
-                        alt={mediaItem.title}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-
-                      {/* Top Left: Tag Badge (Ảnh riêng của con vs Chung cả lớp) */}
-                      <div className="absolute top-1.5 left-1.5 z-20 flex items-center gap-1">
-                        {mediaItem.isTaggedForStudent ? (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-600 text-white shadow-xs">
-                            <UserCheck className="h-2.5 w-2.5" />
-                            <span>Ảnh của con</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-medium bg-black/60 text-white/90 backdrop-blur-xs">
-                            <Users className="h-2.5 w-2.5" />
-                            <span>Cả lớp</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Share / Copy Link button on hover */}
+                      {project.description}
+                    </p>
+                    {project.description.length > 60 && (
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigator.clipboard
-                            .writeText(mediaItem.url)
-                            .then(() =>
-                              toast.success(
-                                `Đã sao chép liên kết ${mediaItem.type === 'video' ? 'video' : 'hình ảnh'}!`
-                              )
-                            )
-                            .catch(() => toast.error('Không thể sao chép liên kết.'))
-                        }}
-                        className="absolute top-1.5 right-1.5 z-20 p-1.5 rounded-md bg-black/70 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer flex items-center gap-1 shadow-md hover:scale-105"
-                        title="Sao chép liên kết ảnh/video gửi phụ huynh"
+                        onClick={() => toggleExpandProject(project.id, idx)}
+                        className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
                       >
-                        <Share2 className="h-3 w-3" />
+                        <span>{isProjectExpanded ? '... Thu gọn' : '... xem thêm'}</span>
                       </button>
+                    )}
+                  </div>
+                )}
 
-                      {/* Center Play Icon for Video */}
-                      {mediaItem.type === 'video' && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="h-8 w-8 rounded-full bg-sky-600/90 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                            <Play className="h-4 w-4 ml-0.5 fill-white" />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Bottom title & duration */}
-                      <div className="relative z-10 text-[11px] text-white font-medium truncate leading-tight">
-                        {mediaItem.type === 'video' && (
-                          <span className="bg-sky-600 px-1 rounded text-[10px] font-mono mr-1">
-                            {mediaItem.duration}
-                          </span>
+                {/* Vẫn hiển thị ảnh / video trực tiếp bên dưới */}
+                {project.media.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                    {project.media.map((mediaItem) => (
+                      <div
+                        key={mediaItem.id}
+                        onClick={() => setSelectedMedia(mediaItem)}
+                        className={cn(
+                          'group relative rounded-md border overflow-hidden bg-zinc-900 cursor-pointer shadow-3xs transition-all aspect-video flex flex-col justify-end p-1.5',
+                          mediaItem.isTaggedForStudent
+                            ? 'border-emerald-500/80 hover:border-emerald-400'
+                            : 'border-border/60 hover:border-sky-500'
                         )}
-                        {mediaItem.title}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={mediaItem.thumbnailUrl}
+                          alt={mediaItem.title}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                        {/* Play icon if video */}
+                        {mediaItem.type === 'video' && (
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-6 w-6 rounded-full bg-sky-600/90 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                              <Play className="h-3 w-3 ml-0.5 fill-white" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Title & duration */}
+                        <div className="relative z-10 text-[10.5px] text-white font-normal truncate leading-tight">
+                          {mediaItem.type === 'video' && (
+                            <span className="bg-sky-600 px-1 rounded text-[10px] font-mono mr-1">
+                              {mediaItem.duration}
+                            </span>
+                          )}
+                          {mediaItem.title}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-4 text-center text-muted-foreground italic text-xs bg-muted/10 rounded-lg border border-dashed border-border/50">
-                  Không có hình ảnh/video nào phù hợp với bộ lọc đã chọn.
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>
-
-
       </div>
 
       {/* Media Lightbox Preview Modal */}

@@ -292,7 +292,7 @@ export function LiveConclusionSkillsCard({
             {/* Main row: Title, stars, notes count badge, toggle button */}
             <div className="p-2 flex items-center justify-between gap-2">
               <div className="min-w-0 flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-foreground truncate">
+                <span className="text-xs font-bold text-foreground truncate">
                   {skill.label}
                 </span>
                 {hasNotes && !isExpanded && (
@@ -330,7 +330,7 @@ export function LiveConclusionSkillsCard({
                   ))}
                   <span
                     className={cn(
-                      'text-[10px] font-mono font-bold w-4 text-right ml-0.5',
+                      'text-xs font-mono font-bold w-4 text-right ml-0.5',
                       isMath
                         ? 'text-blue-700 dark:text-blue-400'
                         : 'text-purple-700 dark:text-purple-400'
@@ -368,7 +368,7 @@ export function LiveConclusionSkillsCard({
                 {/* 1. Good points / Strength */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 uppercase">
+                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 uppercase">
                       <Check className="h-3 w-3 stroke-[2.5px]" /> Điểm tích cực / thế mạnh (
                       {skillShortName}):
                     </span>
@@ -444,12 +444,12 @@ export function LiveConclusionSkillsCard({
                             }
                           }}
                           placeholder="Nhập nhận xét mới..."
-                          className="h-6 text-[10px] w-36 sm:w-44 px-2 py-0.5 rounded-md border-emerald-400 dark:border-emerald-600 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-emerald-500"
+                          className="h-6 text-xs w-36 sm:w-44 px-2 py-0.5 rounded-md border-emerald-400 dark:border-emerald-600 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-emerald-500"
                         />
                         <button
                           type="button"
                           onClick={() => handleConfirmAddOption(skill.key, 'good', knownGood)}
-                          className="h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-semibold flex items-center gap-1 cursor-pointer shadow-2xs"
+                          className="h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 cursor-pointer shadow-2xs"
                         >
                           <Check className="h-3 w-3 stroke-[2.5px]" />
                           <span>Thêm</span>
@@ -486,7 +486,7 @@ export function LiveConclusionSkillsCard({
                 {/* 2. Areas to improve */}
                 <div className="space-y-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 uppercase">
+                    <span className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 uppercase">
                       <AlertCircle className="h-3 w-3" /> Điểm cần rèn luyện thêm (
                       {skillShortName}):
                     </span>
@@ -562,12 +562,12 @@ export function LiveConclusionSkillsCard({
                             }
                           }}
                           placeholder="Nhập nhận xét mới..."
-                          className="h-6 text-[10px] w-36 sm:w-44 px-2 py-0.5 rounded-md border-amber-400 dark:border-amber-600 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-amber-500"
+                          className="h-6 text-xs w-36 sm:w-44 px-2 py-0.5 rounded-md border-amber-400 dark:border-amber-600 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-amber-500"
                         />
                         <button
                           type="button"
                           onClick={() => handleConfirmAddOption(skill.key, 'improve', knownImprove)}
-                          className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[10px] font-semibold flex items-center gap-1 cursor-pointer shadow-2xs"
+                          className="h-6 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-xs font-semibold flex items-center gap-1 cursor-pointer shadow-2xs"
                         >
                           <Check className="h-3 w-3 stroke-[2.5px]" />
                           <span>Thêm</span>

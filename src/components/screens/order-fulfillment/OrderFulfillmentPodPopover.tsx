@@ -14,7 +14,7 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
 
   if (totalPodCount === 0) {
     return (
-      <span className="text-[10px] text-muted-foreground/60 italic">
+      <span className="text-xs text-muted-foreground/60 italic">
         Chưa có POD
       </span>
     )
@@ -26,7 +26,7 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="inline-flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded border border-primary/20 transition-colors cursor-pointer w-fit"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded border border-primary/20 transition-colors cursor-pointer w-fit"
             title="Xem bằng chứng giao nhận (POD)"
           >
             <Camera className="h-2.5 w-2.5" />
@@ -43,13 +43,13 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
               <Paperclip className="h-3.5 w-3.5 text-primary" />
               <span>Bằng chứng giao nhận (POD)</span>
             </span>
-            <span className="text-[10px] text-muted-foreground font-mono">{record.id}</span>
+            <span className="text-xs text-muted-foreground font-mono">{record.id}</span>
           </div>
 
           {/* Danh sách ảnh */}
           {record.podImages && record.podImages.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[11px] font-medium text-muted-foreground">Ảnh chụp ký nhận:</span>
+              <span className="text-xs font-medium text-muted-foreground">Ảnh chụp ký nhận:</span>
               <div className="grid grid-cols-2 gap-1.5">
                 {record.podImages.map((imgUrl, i) => (
                   <a
@@ -64,7 +64,7 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
                       alt="Ảnh POD"
                       className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200"
                     />
-                    <span className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-medium">
+                    <span className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium">
                       Phóng to ↗
                     </span>
                   </a>
@@ -76,12 +76,12 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
           {/* Danh sách file đính kèm */}
           {record.attachments && record.attachments.length > 0 && (
             <div className="space-y-1 pt-1">
-              <span className="text-[11px] font-medium text-muted-foreground">Tệp đính kèm:</span>
+              <span className="text-xs font-medium text-muted-foreground">Tệp đính kèm:</span>
               <div className="space-y-1">
                 {record.attachments.map((att) => (
                   <div
                     key={att.id}
-                    className="flex items-center justify-between p-1.5 rounded bg-muted/50 text-[11px] border border-border/50"
+                    className="flex items-center justify-between p-1.5 rounded bg-muted/50 text-xs border border-border/50"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <FileText className="h-3.5 w-3.5 text-sky-600 shrink-0" />
@@ -90,7 +90,7 @@ export function OrderFulfillmentPodPopover({ record }: OrderFulfillmentPodPopove
                       </span>
                     </div>
                     {att.size && (
-                      <span className="text-[10px] text-muted-foreground font-mono shrink-0 ml-1">
+                      <span className="text-xs text-muted-foreground font-mono shrink-0 ml-1">
                         {att.size}
                       </span>
                     )}

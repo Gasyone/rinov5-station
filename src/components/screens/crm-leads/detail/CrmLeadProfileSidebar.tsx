@@ -79,7 +79,7 @@ export function CrmLeadProfileSidebar({
             <span>Chu kỳ bán hàng (Sales Cycle)</span>
           </span>
           {cycles.length > 1 && (
-            <Badge variant="outline" className="text-[10px] bg-background">
+            <Badge variant="outline" className="text-xs bg-background">
               {cycles.length} chu kỳ
             </Badge>
           )}
@@ -101,12 +101,12 @@ export function CrmLeadProfileSidebar({
         ) : (
           <div className="text-xs text-muted-foreground flex items-center justify-between">
             <span className="font-semibold text-foreground">{activeCycle?.title}</span>
-            <span className="text-[11px] font-mono">Bắt đầu: {activeCycle?.startDate}</span>
+            <span className="text-xs font-mono">Bắt đầu: {activeCycle?.startDate}</span>
           </div>
         )}
 
         {activeCycle?.outcomeNote && (
-          <p className="text-[11px] text-muted-foreground italic bg-background/60 p-1.5 rounded border border-border/50">
+          <p className="text-xs text-muted-foreground italic bg-background/60 p-1.5 rounded border border-border/50">
             &ldquo;{activeCycle.outcomeNote}&rdquo;
           </p>
         )}
@@ -122,7 +122,7 @@ export function CrmLeadProfileSidebar({
             <h4 className="font-bold text-foreground text-sm leading-tight">
               {lead.studentName}
             </h4>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {lead.studentAge} tuổi ({birthYear})
             </span>
           </div>
@@ -130,7 +130,7 @@ export function CrmLeadProfileSidebar({
 
         <div className="space-y-2">
           <div>
-            <span className="text-muted-foreground block text-[11px]">Khóa học quan tâm:</span>
+            <span className="text-muted-foreground block text-xs">Khóa học quan tâm:</span>
             <span className="font-semibold text-emerald-700 dark:text-emerald-400">
               {lead.targetSubject}
             </span>
@@ -138,7 +138,7 @@ export function CrmLeadProfileSidebar({
 
           {lead.initialLevel && (
             <div>
-              <span className="text-muted-foreground block text-[11px]">Trình độ hiện tại / test:</span>
+              <span className="text-muted-foreground block text-xs">Trình độ hiện tại / test:</span>
               <span className="font-medium text-foreground">{lead.initialLevel}</span>
             </div>
           )}
@@ -155,18 +155,18 @@ export function CrmLeadProfileSidebar({
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-foreground truncate">{lead.parentName}</span>
               {lead.parentRole && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4">
                   {lead.parentRole}
                 </Badge>
               )}
             </div>
-            <span className="text-[11px] text-muted-foreground">Người bảo trợ tài chính</span>
+            <span className="text-xs text-muted-foreground">Người bảo trợ tài chính</span>
           </div>
         </div>
 
         {/* Số điện thoại ĐẦY ĐỦ + Nút Gọi + Nút Chép */}
         <div className="bg-muted/40 p-2.5 rounded-lg border border-border/70 space-y-2">
-          <span className="text-[11px] text-muted-foreground block">Số điện thoại liên hệ:</span>
+          <span className="text-xs text-muted-foreground block">Số điện thoại liên hệ:</span>
           <div className="flex items-center justify-between gap-1">
             <span className="font-mono font-bold text-sm text-foreground tracking-wide">
               {lead.phone}
@@ -215,13 +215,13 @@ export function CrmLeadProfileSidebar({
         {/* Liên kết anh chị em cùng nhà */}
         {lead.familySiblings && lead.familySiblings.length > 0 && (
           <div className="pt-2 border-t border-border/50">
-            <div className="flex items-center gap-1 text-[11px] font-semibold text-sky-700 dark:text-sky-300 mb-1">
+            <div className="flex items-center gap-1 text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">
               <Users className="h-3.5 w-3.5" />
               <span>Con khác cùng phụ huynh:</span>
             </div>
             <div className="flex flex-wrap gap-1">
               {lead.familySiblings.map((sib, i) => (
-                <Badge key={i} variant="outline" className="text-[10px] bg-sky-50 dark:bg-sky-950/40 border-sky-300">
+                <Badge key={i} variant="outline" className="text-xs bg-sky-50 dark:bg-sky-950/40 border-sky-300">
                   {sib}
                 </Badge>
               ))}
@@ -231,7 +231,7 @@ export function CrmLeadProfileSidebar({
       </div>
 
       {/* 4. Nguồn & Phân bổ */}
-      <div className="bg-muted/30 border border-border rounded-xl p-3 space-y-2 text-[11px]">
+      <div className="bg-muted/30 border border-border rounded-xl p-3 space-y-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Nguồn Lead:</span>
           <span className="font-semibold text-foreground">

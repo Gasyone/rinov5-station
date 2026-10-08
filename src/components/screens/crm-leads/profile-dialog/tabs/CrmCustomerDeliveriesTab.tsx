@@ -43,7 +43,7 @@ export function CrmCustomerDeliveriesTab({
       {/* Metric Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-3 bg-card border border-border/70 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-muted-foreground font-medium block">
+          <span className="text-xs text-muted-foreground font-medium block">
             Tổng số kiện vận chuyển
           </span>
           <p className="text-base font-bold text-foreground">
@@ -52,7 +52,7 @@ export function CrmCustomerDeliveriesTab({
         </div>
 
         <div className="p-3 bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/60 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium block">
+          <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium block">
             Đã giao thành công
           </span>
           <p className="text-base font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
@@ -64,7 +64,7 @@ export function CrmCustomerDeliveriesTab({
         </div>
 
         <div className="p-3 bg-card border border-border/70 rounded-xl shadow-2xs space-y-1">
-          <span className="text-[11px] text-muted-foreground font-medium block">
+          <span className="text-xs text-muted-foreground font-medium block">
             Hình thức giao nhận
           </span>
           <p className="text-base font-bold text-foreground flex items-center gap-1.5">
@@ -96,7 +96,7 @@ export function CrmCustomerDeliveriesTab({
                   <span className="font-mono text-xs font-bold text-foreground">
                     {del.trackingCode}
                   </span>
-                  <Badge variant="outline" className="text-[10px] bg-muted/40">
+                  <Badge variant="outline" className="text-xs bg-muted/40">
                     {del.sourceTypeLabel}
                   </Badge>
                   {del.orderNo && (
@@ -120,37 +120,37 @@ export function CrmCustomerDeliveriesTab({
               {/* Thông tin người nhận & vận chuyển */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
                 <div>
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <User className="h-3 w-3 text-muted-foreground/70" />
                     Người nhận
                   </span>
                   <p className="font-semibold text-foreground">
                     {del.recipientName} ({del.recipientPhone})
                   </p>
-                  <span className="text-[11px] text-muted-foreground truncate block" title={del.shippingAddress}>
+                  <span className="text-xs text-muted-foreground truncate block" title={del.shippingAddress}>
                     {del.shippingAddress}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Truck className="h-3 w-3 text-muted-foreground/70" />
                     Hình thức &amp; Đơn vị
                   </span>
                   <p className="font-semibold text-foreground">
                     {del.deliveryMethod === 'shipping' ? 'Giao hàng tận nơi' : 'Nhận tại quầy'}
                   </p>
-                  <span className="text-[11px] text-muted-foreground">{del.carrier || 'GHN Express'}</span>
+                  <span className="text-xs text-muted-foreground">{del.carrier || 'GHN Express'}</span>
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3 text-muted-foreground/70" />
                     Thời gian
                   </span>
                   <p className="font-medium text-foreground">Tạo: {del.createdAt}</p>
                   {del.completedAt && (
-                    <span className="text-[11px] text-emerald-600 font-medium block">
+                    <span className="text-xs text-emerald-600 font-medium block">
                       Hoàn tất: {del.completedAt}
                     </span>
                   )}
@@ -159,7 +159,7 @@ export function CrmCustomerDeliveriesTab({
 
               {/* Danh mục sản phẩm trong kiện hàng */}
               <div className="pt-2 border-t border-border/50 space-y-1.5">
-                <span className="text-[11px] font-semibold text-muted-foreground block">
+                <span className="text-xs font-semibold text-muted-foreground block">
                   Danh mục sản phẩm trong kiện ({del.products.length} mặt hàng):
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
@@ -172,7 +172,7 @@ export function CrmCustomerDeliveriesTab({
                       <span className="truncate flex-1 font-medium text-foreground" title={p.name}>
                         {p.name}
                       </span>
-                      <Badge variant="outline" className="text-[10px] px-1 py-0 font-bold shrink-0">
+                      <Badge variant="outline" className="text-xs px-1 py-0 font-bold shrink-0">
                         x{p.quantity} {p.unit}
                       </Badge>
                     </div>
@@ -182,7 +182,7 @@ export function CrmCustomerDeliveriesTab({
 
               {/* Ghi chú */}
               {del.notes && (
-                <p className="text-[11px] text-muted-foreground italic bg-muted/20 p-1.5 rounded">
+                <p className="text-xs text-muted-foreground italic bg-muted/20 p-1.5 rounded">
                   Ghi chú giao nhận: {del.notes}
                 </p>
               )}

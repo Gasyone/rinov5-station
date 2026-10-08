@@ -161,21 +161,21 @@ export function CrmLeadChildCard({
         <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
             {child.isCurrent ? (
-              <Badge className="text-[10px] font-bold bg-primary text-primary-foreground h-5 px-1.5">
+              <Badge className="text-xs font-bold bg-primary text-primary-foreground h-5 px-1.5">
                 Học viên đang xem
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground h-5 px-1.5">
+              <Badge variant="outline" className="text-xs font-medium text-muted-foreground h-5 px-1.5">
                 Học viên trong gia đình
               </Badge>
             )}
 
-            <span className="font-mono text-[10px] font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800">
+            <span className="font-mono text-xs font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800">
               {child.code}
             </span>
           </div>
 
-          <span className="text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+          <span className="text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
             <span>Chi tiết</span>
             <ExternalLink className="h-3 w-3" />
           </span>
@@ -206,14 +206,14 @@ export function CrmLeadChildCard({
               {child.englishName && (
                 <Badge
                   variant="secondary"
-                  className="text-[10px] font-bold py-0 h-4.5 px-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                  className="text-xs font-bold py-0 h-4.5 px-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                 >
                   {child.englishName}
                 </Badge>
               )}
             </div>
 
-            <p className="text-[11px] text-muted-foreground font-medium truncate pt-0.5">
+            <p className="text-xs text-muted-foreground font-medium truncate pt-0.5">
               {child.age} tuổi ({child.birthDate}) • {child.gender} • {child.school} ({child.grade})
             </p>
           </div>
@@ -231,7 +231,7 @@ export function CrmLeadChildCard({
 
             <Badge
               className={cn(
-                'text-[10px] font-semibold py-0 h-4.5 px-1.5 rounded-md shadow-none',
+                'text-xs font-semibold py-0 h-4.5 px-1.5 rounded-md shadow-none',
                 getStatusBadgeClass(
                   child.status === 'moi_tiep_nhan'
                     ? 'pending'
@@ -247,7 +247,7 @@ export function CrmLeadChildCard({
             </Badge>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border/40 gap-1.5 flex-wrap">
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40 gap-1.5 flex-wrap">
             <div className="flex items-center gap-1 truncate min-w-0">
               <Award className="h-3 w-3 text-sky-600 shrink-0" />
               <span className="font-medium text-foreground truncate">
@@ -255,7 +255,7 @@ export function CrmLeadChildCard({
               </span>
             </div>
 
-            <div className="flex items-center gap-1 font-mono text-[10px] text-muted-foreground shrink-0">
+            <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground shrink-0">
               <Phone className="h-2.5 w-2.5 text-sky-600" />
               <span>{child.studentPhone}</span>
             </div>
@@ -265,7 +265,7 @@ export function CrmLeadChildCard({
         {/* Mục tiêu học tập / Điểm mạnh (Gọn gàng) */}
         <div className="space-y-1 text-xs">
           {child.learningGoal && (
-            <div className="p-1.5 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 text-[11px] text-foreground flex items-start gap-1.5">
+            <div className="p-1.5 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 text-xs text-foreground flex items-start gap-1.5">
               <Target className="h-3 w-3 text-emerald-600 mt-0.5 shrink-0" />
               <span className="line-clamp-1">
                 <strong className="text-emerald-900 dark:text-emerald-300 font-semibold">Mục tiêu:</strong>{' '}
@@ -274,7 +274,7 @@ export function CrmLeadChildCard({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-1 pt-0.5 text-[10px] text-muted-foreground">
+          <div className="grid grid-cols-2 gap-1 pt-0.5 text-xs text-muted-foreground">
             {child.learningStyle && (
               <div className="p-1 rounded bg-muted/30 border border-border/50 truncate flex items-center gap-1">
                 <Brain className="h-2.5 w-2.5 text-purple-600 shrink-0" />
@@ -303,7 +303,7 @@ export function CrmLeadChildCard({
               size="sm"
               variant="outline"
               onClick={() => onSwitchLead(child.id)}
-              className="h-6 px-2 text-[11px] font-semibold border-primary/40 text-primary hover:bg-primary/10 rounded cursor-pointer"
+              className="h-6 px-2 text-xs font-semibold border-primary/40 text-primary hover:bg-primary/10 rounded cursor-pointer"
             >
               <span>Xem Lead</span>
             </Button>
@@ -315,7 +315,7 @@ export function CrmLeadChildCard({
               size="sm"
               variant="ghost"
               onClick={() => onOpenInNewTab(child.id, child.name, child.code)}
-              className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-foreground rounded cursor-pointer"
+              className="h-6 px-1.5 text-xs text-muted-foreground hover:text-foreground rounded cursor-pointer"
               title="Mở tab mới"
             >
               <ExternalLink className="h-3 w-3" />

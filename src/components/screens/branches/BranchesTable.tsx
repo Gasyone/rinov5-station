@@ -100,7 +100,7 @@ export function BranchesTable({
                       <span className="font-semibold text-foreground hover:underline truncate">
                         {branch.name}
                       </span>
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {branch.code}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ export function BranchesTable({
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium text-foreground">{branch.region}</span>
                   <span
-                    className="text-[11px] text-muted-foreground truncate"
+                    className="text-xs text-muted-foreground truncate"
                     title={branch.address}
                   >
                     {branch.address}
@@ -183,7 +183,7 @@ export function BranchesTable({
                     <DoorOpen className="h-3.5 w-3.5 text-primary" />
                     <span>{branch.roomCount} phòng</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="h-3 w-3" />
                     <span>Tối đa {branch.totalCapacity} HV</span>
                   </div>
@@ -210,7 +210,7 @@ export function BranchesTable({
                   {/* Dòng 2: Danh sách nhân sự, ... nếu nhiều, click vào mở modal detail */}
                   <div
                     className={cn(
-                      'text-[11px] truncate transition-colors cursor-pointer',
+                      'text-xs truncate transition-colors cursor-pointer',
                       staff.length > 0
                         ? 'text-muted-foreground hover:text-primary hover:underline'
                         : 'text-muted-foreground/60 italic'

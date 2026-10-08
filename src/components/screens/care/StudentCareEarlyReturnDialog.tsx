@@ -115,7 +115,7 @@ export function StudentCareEarlyReturnDialog({
               <StatusBadge
                 status="reserve"
                 label={isHoldingClass ? 'Bảo lưu giữ lớp' : 'Bảo lưu rút khỏi lớp'}
-                className="text-[10px] py-0 px-1.5"
+                className="text-xs py-0 px-1.5"
               />
             </div>
 
@@ -152,7 +152,7 @@ export function StudentCareEarlyReturnDialog({
                 required
               />
             </FieldLabel>
-            <div className="flex items-center gap-1.5 text-[11px] text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 px-2.5 py-1.5 rounded-md border border-sky-200/60 dark:border-sky-900/40">
+            <div className="flex items-center gap-1.5 text-xs text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 px-2.5 py-1.5 rounded-md border border-sky-200/60 dark:border-sky-900/40">
               <Info className="h-3.5 w-3.5 shrink-0 text-sky-600" />
               <span>
                 Học viên đi học lại sớm hơn dự kiến ban đầu ({expectedReturnDate}). Tiến trình học và thời hạn gói sẽ được hệ thống tự động cập nhật.

@@ -3,7 +3,6 @@
 import React from 'react'
 import {
   MoreVertical,
-  ChevronDown,
   UserPlus,
   ExternalLink,
   Snowflake,
@@ -42,12 +41,11 @@ export function StudentCareClassActionMenu({
         <Button
           variant="outline"
           size="sm"
-          className="h-7 px-2 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground rounded-md bg-background hover:bg-muted/60 border-border/70 cursor-pointer shadow-3xs"
-          title="Danh sách thao tác học vụ"
+          className="h-6.5 px-2 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground rounded-md bg-background hover:bg-muted/60 border-border/70 cursor-pointer shadow-3xs shrink-0"
+          title="Menu thao tác học vụ"
         >
           <MoreVertical className="h-3.5 w-3.5" />
-          <span>Thao tác</span>
-          <ChevronDown className="h-3 w-3 opacity-60" />
+          <span>Menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-54">
@@ -61,7 +59,7 @@ export function StudentCareClassActionMenu({
               <UserPlus className="h-4 w-4 text-indigo-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Ghép lớp</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
+                <span className="text-xs text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
             </DropdownMenuItem>
@@ -85,7 +83,7 @@ export function StudentCareClassActionMenu({
               <UserPlus className="h-4 w-4 text-sky-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Ghép lớp ngay</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
+                <span className="text-xs text-muted-foreground font-normal">Mở tab Xếp lớp học viên</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
             </DropdownMenuItem>
@@ -109,7 +107,7 @@ export function StudentCareClassActionMenu({
               <FileEdit className="h-4 w-4 text-zinc-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Xác nhận xếp lớp</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Chốt sổ lớp chính thức</span>
+                <span className="text-xs text-muted-foreground font-normal">Chốt sổ lớp chính thức</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
             </DropdownMenuItem>
@@ -141,7 +139,7 @@ export function StudentCareClassActionMenu({
               <Sparkles className="h-4 w-4 text-cyan-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Đổi lớp khác</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Chuyển trước khai giảng</span>
+                <span className="text-xs text-muted-foreground font-normal">Chuyển trước khai giảng</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
             </DropdownMenuItem>
@@ -172,7 +170,7 @@ export function StudentCareClassActionMenu({
               <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Xác nhận phiếu thu</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Hoàn tất thanh toán</span>
+                <span className="text-xs text-muted-foreground font-normal">Hoàn tất thanh toán</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -195,7 +193,7 @@ export function StudentCareClassActionMenu({
               <CalendarClock className="h-4 w-4 text-violet-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Xếp lớp ngay</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Kích hoạt xếp lớp sớm</span>
+                <span className="text-xs text-muted-foreground font-normal">Kích hoạt xếp lớp sớm</span>
               </div>
               <ExternalLink className="h-3 w-3 ml-auto opacity-60 shrink-0" />
             </DropdownMenuItem>
@@ -240,7 +238,7 @@ export function StudentCareClassActionMenu({
               <GraduationCap className="h-4 w-4 text-violet-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span>Chuyển chính thức</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Đăng ký khóa học dài hạn</span>
+                <span className="text-xs text-muted-foreground font-normal">Đăng ký khóa học dài hạn</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem

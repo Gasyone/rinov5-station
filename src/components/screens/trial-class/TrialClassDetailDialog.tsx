@@ -1,29 +1,59 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { CalendarDays, Clock, ExternalLink, CalendarPlus, RefreshCw, MessageSquare } from 'lucide-react'
+import {
+  BookOpen,
+  CalendarPlus,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  ExternalLink,
+  GraduationCap,
+  History,
+  MapPin,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  School,
+  UserPlus,
+  Users,
+  X,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  AppAvatar,
   StatusBadge,
   ConfirmDialog,
-  StudentHeaderInfoCard,
-  AppAvatar,
+  PersonnelHoverCard,
 } from '@/components/shared'
 import { ClassCodeHoverCell } from '@/components/screens/care/ClassCodeHoverCell'
 import { SessionHoverCard } from '@/components/screens/calendar/SessionHoverCard'
-import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
-import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
-import type { TrialClass } from '@/mocks/trialClasses'
-import { formatSessionDateTimeRange, getTrialStatusLabel, getLeaveReserveTicketForTrial, getTrialFamilyMembers, buildTrialSessionData } from './trialClassHelpers'
+import { MOCK_TRIAL_CLASSES, type TrialClass } from '@/mocks/trialClasses'
+import { mockLeads } from '@/mocks/crmLeads'
+import {
+  formatSessionDateTimeRange,
+  getTrialStatusLabel,
+  getTrialFamilyMembers,
+  buildTrialSessionData,
+  getStudentAgeText,
+  buildPersonnelItem,
+} from './trialClassHelpers'
 import type { AssignDialogMode } from './trialClassTypes'
-import { cn } from '@/lib/utils'
+import { DetailCard } from './TrialClassDetailCard'
+import { TrialClassDetailFeedbackSection } from './TrialClassDetailFeedbackSection'
 
 interface TrialClassDetailDialogProps {
   trial: TrialClass | null
@@ -37,63 +67,6 @@ interface TrialClassDetailDialogProps {
   onReject?: (id: string) => void
 }
 
-/** Field item with non-uppercase, sentence-case label */
-function DetailField({
-  label,
-  value,
-  supporting,
-  className,
-}: {
-  label: string
-  value: React.ReactNode
-  supporting?: React.ReactNode
-  className?: string
-}) {
-  return (
-    <div className={cn('min-w-0', className)}>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="mt-0.5 truncate text-sm font-semibold text-foreground">{value}</div>
-      {supporting ? <div className="mt-0.5 truncate text-xs text-muted-foreground">{supporting}</div> : null}
-    </div>
-  )
-}
-
-/** Section card container with rounded gray border and white background */
-function DetailCard({
-  title,
-  icon,
-  actions,
-  children,
-  className,
-}: {
-  title: string
-  icon?: React.ReactNode
-  actions?: React.ReactNode
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <div className={cn('rounded-xl border border-border/80 bg-background p-4 shadow-2xs', className)}>
-      <div className="mb-3 flex items-center justify-between gap-3 shrink-0">
-        <h3 className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-          {icon}
-          {title}
-        </h3>
-        {actions ? <div>{actions}</div> : null}
-      </div>
-      {children}
-    </div>
-  )
-}
-
-function getAttendanceStatusInfo(t: TrialClass) {
-  if (t.status === 'completed') return { text: 'Có mặt', class: 'text-emerald-600 dark:text-emerald-400' }
-  if (t.status === 'no_show') return { text: 'Vắng mặt', class: 'text-red-600 dark:text-red-400' }
-  if (t.status === 'confirmed') return { text: 'Chưa điểm danh', class: 'text-muted-foreground' }
-  if (t.status === 'pending_approval') return { text: 'Chưa ghép lớp', class: 'text-muted-foreground' }
-  return { text: 'Chưa điểm danh', class: 'text-muted-foreground' }
-}
-
 export function TrialClassDetailDialog({
   trial,
   onOpenChange,
@@ -102,316 +75,655 @@ export function TrialClassDetailDialog({
   onReject,
 }: TrialClassDetailDialogProps) {
   const [confirmAction, setConfirmAction] = useState<{ type: string; label: string; description: string } | null>(null)
-  const [leaveReserveOpen, setLeaveReserveOpen] = useState(false)
+  const [overrideTrial, setOverrideTrial] = useState<TrialClass | null>(null)
+  const [prevTrialId, setPrevTrialId] = useState(trial?.id)
+  const [historyPopoverOpen, setHistoryPopoverOpen] = useState(false)
+  const [isSessionContentExpanded, setIsSessionContentExpanded] = useState(false)
 
-  const reserveTicket = useMemo(() => {
-    if (!trial) return null
-    return getLeaveReserveTicketForTrial(trial.studentName, trial.familyPhone)
-  }, [trial])
+  // Reset overrideTrial nếu prop trial bên ngoài thay đổi
+  if (trial?.id !== prevTrialId) {
+    setPrevTrialId(trial?.id)
+    setOverrideTrial(null)
+  }
 
-  const leaveReserveReq = useMemo(() => {
-    if (!reserveTicket) return null
-    return mockLeaveReserveRequests.find((r) => r.id === reserveTicket.id) ?? mockLeaveReserveRequests[0] ?? null
-  }, [reserveTicket])
+  const currentTrial = overrideTrial ?? trial
 
-  if (!trial) return null
+  // Tìm các lần học thử khác của học viên này (cho phép chuyển đổi xem)
+  const previousTrials = useMemo(() => {
+    if (!currentTrial) return []
+    const cleanName = currentTrial.studentName?.trim().toLowerCase()
+    const cleanPhone = currentTrial.familyPhone?.trim()
+    return MOCK_TRIAL_CLASSES.filter(
+      (t) => t.id !== currentTrial.id && ((cleanName && t.studentName?.trim().toLowerCase() === cleanName) || (cleanPhone && t.familyPhone?.trim() === cleanPhone))
+    )
+  }, [currentTrial])
+
+  // Đối chiếu lead match để lấy trường học, học lực, địa chỉ
+  const leadMatch = useMemo(() => {
+    if (!currentTrial) return null
+    return (
+      mockLeads.find(
+        (l) => l.studentName.toLowerCase() === currentTrial.studentName.toLowerCase() || l.phone === currentTrial.familyPhone || (currentTrial.customerId && l.id === currentTrial.customerId)
+      ) ?? null
+    )
+  }, [currentTrial])
+
+  // Profile nhân sự cho Hover Card
+  const creatorPersonnelItem = useMemo(
+    () => buildPersonnelItem(currentTrial?.creator, 'Nhân viên kinh doanh / Tuyển sinh'),
+    [currentTrial?.creator]
+  )
+  const teacherPersonnelItem = useMemo(
+    () => buildPersonnelItem(currentTrial?.owner, 'Giáo viên phụ trách'),
+    [currentTrial?.owner]
+  )
+  const assistantPersonnelItem = useMemo(
+    () => buildPersonnelItem(currentTrial?.assistant, 'Trợ giảng lớp học'),
+    [currentTrial?.assistant]
+  )
+
+  // Nội dung buổi học (ưu tiên sessionContent từ mock, hoặc fallback cấu trúc chuẩn)
+  const sessionContent = useMemo(() => {
+    if (!currentTrial) return undefined
+    if (currentTrial.sessionContent) return currentTrial.sessionContent
+    if (currentTrial.sessions.length > 0) {
+      return {
+        topic: `Buổi học: ${currentTrial.sessions[0].sessionName}`,
+        objective: `Làm quen kiến thức chương trình ${currentTrial.program}, đánh giá khả năng tiếp thu và mức độ phù hợp.`,
+        activities: [
+          'Khởi động & Làm quen lớp học',
+          'Tương tác kiến thức trọng tâm bài học',
+          'Thực hành bài tập nhóm và tương tác trực tiếp với giáo viên',
+          'Đánh giá phản xạ & Ghi nhận nhận xét sau buổi học',
+        ],
+      }
+    }
+    return undefined
+  }, [currentTrial])
+
+  if (!trial || !currentTrial) return null
 
   const handleConfirmAction = () => {
     if (!confirmAction) return
-    if (confirmAction.type === 'approve') onApprove?.(trial.id)
-    if (confirmAction.type === 'reject') onReject?.(trial.id)
+    if (confirmAction.type === 'approve') onApprove?.(currentTrial.id)
+    if (confirmAction.type === 'reject') onReject?.(currentTrial.id)
     setConfirmAction(null)
   }
 
-  const isPendingReschedule = trial.status === 'reschedule'
-  const activeSessions = isPendingReschedule ? [] : trial.sessions
-  const releasedSession = trial.previousSession ?? (isPendingReschedule ? trial.sessions[0] : undefined)
-  const familyMembers = getTrialFamilyMembers(trial)
-  const attendanceInfo = getAttendanceStatusInfo(trial)
-  const sessionData = buildTrialSessionData(trial)
+  const isPendingReschedule = currentTrial.status === 'reschedule'
+  const activeSessions = isPendingReschedule ? [] : currentTrial.sessions
+  const releasedSession = currentTrial.previousSession ?? (isPendingReschedule ? currentTrial.sessions[0] : undefined)
+  const familyMembers = getTrialFamilyMembers(currentTrial)
+  const primaryFamilyMember = familyMembers.find((m) => m.isPrimary) ?? familyMembers[0] ?? { name: currentTrial.parentName || currentTrial.familyName, phone: currentTrial.familyPhone }
+  const sessionData = buildTrialSessionData(currentTrial)
+  // Nhận xét chỉ tồn tại và hiển thị khi buổi học thử đã hoàn thành (status === 'completed')
+  const hasFeedback = currentTrial.status === 'completed' && Boolean(currentTrial.feedback)
+  const feedback = hasFeedback ? currentTrial.feedback : undefined
+
+  const studentSchool = currentTrial.currentSchool || leadMatch?.schoolName || 'Tiểu học Chu Văn An (Hà Nội)'
+  const studentAbility = currentTrial.academicPerformance || leadMatch?.academicPerformance || leadMatch?.academicAbility || 'Khá - Giỏi / Tiếp thu nhanh'
+  const parentAddress = currentTrial.parentAddress || currentTrial.address || leadMatch?.address || 'Thanh Xuân, Hà Nội'
+  const parentDisplayName = primaryFamilyMember.name.includes('(') ? primaryFamilyMember.name : `${primaryFamilyMember.name} (Bố)`
 
   return (
     <>
       <Dialog open={Boolean(trial)} onOpenChange={onOpenChange}>
-        <DialogContent className="grid max-h-[88vh] w-full grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-4xl border-none shadow-xl bg-slate-100 dark:bg-slate-900">
-          {/* Header — Uniform flat gray background without border line */}
-          <DialogHeader className="shrink-0 px-6 pb-0 pt-5">
-            <div className="flex flex-col gap-3">
-              {/* Row 1: Title (left) & Status Badge (right) */}
-              <div className="flex items-center justify-between gap-4 pr-6">
+        <DialogContent className="max-h-[88vh] flex flex-col gap-0 overflow-hidden sm:max-w-4xl p-0 border shadow-xl bg-background">
+          {/* Header gọn gàng: Tiêu đề + Mã phiếu + Badge Trạng thái */}
+          <DialogHeader className="shrink-0 px-5 pt-2.5 pb-1 border-b-0">
+            <div className="flex items-center justify-between gap-3 pr-6">
+              <div className="flex items-center gap-2">
                 <DialogTitle className="text-xs font-normal text-muted-foreground">
                   Chi tiết Phiếu học thử
-                  <Badge variant="outline" className="ml-1.5 rounded-md font-mono text-xs font-normal text-muted-foreground">
-                    {trial.id}
-                  </Badge>
                 </DialogTitle>
-                <div className="shrink-0">
-                  <StatusBadge status={trial.status} label={getTrialStatusLabel(trial.status)} />
-                </div>
+                <Badge variant="outline" className="font-mono text-xs font-semibold px-1.5 py-0.5">
+                  {currentTrial.id}
+                </Badge>
               </div>
-
-              {/* Row 2: Student Header Info Card */}
-              <StudentHeaderInfoCard
-                studentName={trial.studentName}
-                status="Học thử"
-                address={trial.school || trial.branch}
-                parents={familyMembers.map((m) => ({
-                  name: m.name,
-                  relationship: m.isPrimary ? 'Phụ huynh' : 'Người thân',
-                  isPrimary: m.isPrimary,
-                  phone: m.phone,
-                }))}
-                initialNote={trial.notes}
-              />
+              <div className="shrink-0">
+                <StatusBadge
+                  status={currentTrial.status === 'reschedule' ? 'confirmed' : currentTrial.status}
+                  label={getTrialStatusLabel(currentTrial.status)}
+                />
+              </div>
             </div>
           </DialogHeader>
 
-          {/* Body area with uniform flat gray background */}
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto px-6 py-2">
-            {/* Grid layout: Left column 60% (col-span-3), Right info column 40% (col-span-2) */}
-            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-5">
-              {/* CỘT TRÁI (60%): Buổi học thử (Lớp ghép) */}
-              <div className="flex flex-col gap-4 min-w-0 md:col-span-3">
-                {/* 1. Buổi học thử (Lớp ghép) */}
+          {/* Body: 2 Panel song song (Trái 60%, Phải 40%) */}
+          <div className="flex-1 overflow-y-auto px-5 pt-0.5 pb-3">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start">
+              {/* ==================== PANEL TRÁI (60% - col-span-3): Kết quả & Lịch ghép ==================== */}
+              <div className="flex flex-col gap-3 min-w-0 md:col-span-3">
+                {/* 1. KẾT QUẢ HỌC THỬ & ĐÁNH GIÁ */}
+                <TrialClassDetailFeedbackSection
+                  trial={currentTrial}
+                  feedback={feedback}
+                  activeSessionsCount={activeSessions.length}
+                />
+
+                {/* 2. CHI TIẾT LỊCH GHÉP & BUỔI HỌC */}
                 <DetailCard
-                  title="Buổi học thử (Lớp ghép)"
-                  icon={<CalendarDays className="h-4 w-4 text-primary" />}
+                  title="Chi tiết Lịch ghép & Buổi học"
+                  titleClassName="font-normal text-muted-foreground"
                   actions={
                     activeSessions.length > 0 ? (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs font-medium text-primary hover:bg-primary/10"
-                        onClick={() => onOpenAssign?.({ mode: 'reschedule', trialId: trial.id })}
+                        className="h-6 px-1.5 text-xs font-medium text-primary hover:bg-primary/10 cursor-pointer"
+                        onClick={() => onOpenAssign?.({ mode: 'reschedule', trialId: currentTrial.id })}
                       >
-                        <RefreshCw className="mr-1 h-3.5 w-3.5" />
+                        <RefreshCw className="mr-1 h-3 w-3" />
                         Đổi buổi học
                       </Button>
                     ) : (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 px-2 text-xs font-medium text-primary border-primary/30 hover:bg-primary/10"
-                        onClick={() => onOpenAssign?.({ mode: 'assign', trialId: trial.id })}
+                        className="h-6 px-2 text-xs font-medium text-primary border-primary/30 hover:bg-primary/10 cursor-pointer"
+                        onClick={() => onOpenAssign?.({ mode: 'assign', trialId: currentTrial.id })}
                       >
-                        <CalendarPlus className="mr-1 h-3.5 w-3.5" />
+                        <CalendarPlus className="mr-1 h-3 w-3" />
                         Chọn buổi học
                       </Button>
                     )
                   }
                 >
                   {activeSessions.length > 0 ? (
-                    <div className="space-y-3">
-                      {/* Dòng 1: Cơ sở / Trường (Tách riêng lên trên) */}
-                      <DetailField label="Cơ sở / Trường" value={trial.school || trial.branch} />
-
-                      {/* Dòng 2: Lớp ghép | Mã lớp */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <DetailField label="Lớp ghép" value={activeSessions[0].className} />
-                        <DetailField
-                          label="Mã lớp"
-                          value={
-                            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                              <ClassCodeHoverCell
-                                classCode={activeSessions[0].classId}
-                                subject={trial.subject}
-                                level={trial.program}
-                                teacherCode={trial.owner}
-                                schedule={formatSessionDateTimeRange(activeSessions[0].trialDate)}
-                              />
-                            </div>
-                          }
-                        />
-                      </div>
-
-                      {/* Dòng 2: Chương trình | Trình độ */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <DetailField label="Chương trình" value={trial.subject} />
-                        <DetailField label="Trình độ" value={trial.program} />
-                      </div>
-
-                      {/* Dòng 3: Tên buổi học | Thời gian học */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <DetailField label="Tên buổi học" value={activeSessions[0].sessionName} />
-                        <DetailField
-                          label="Thời gian học"
-                          value={
-                            sessionData ? (
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <SessionHoverCard session={sessionData}>
-                                  <span className="font-semibold text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer text-xs">
-                                    {formatSessionDateTimeRange(activeSessions[0].trialDate)}
-                                  </span>
-                                </SessionHoverCard>
-                              </div>
-                            ) : (
-                              formatSessionDateTimeRange(activeSessions[0].trialDate)
-                            )
-                          }
-                        />
-                      </div>
-
-                      {/* Dòng 4: Trạng thái điểm danh | Nhận xét */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <DetailField
-                          label="Trạng thái điểm danh"
-                          value={
-                            <span className={cn('font-semibold', attendanceInfo.class)}>
-                              {attendanceInfo.text}
+                    <div className="space-y-2.5 text-xs">
+                      {/* Dòng 1: Thời gian học & Giáo viên / Trợ giảng */}
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Clock className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                          {sessionData ? (
+                            <SessionHoverCard session={sessionData}>
+                              <span className="font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline text-xs inline-flex items-center gap-1 cursor-pointer">
+                                <span>{formatSessionDateTimeRange(activeSessions[0].trialDate)}</span>
+                                <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
+                              </span>
+                            </SessionHoverCard>
+                          ) : (
+                            <span className="font-normal text-sky-600 text-xs">
+                              {formatSessionDateTimeRange(activeSessions[0].trialDate)}
                             </span>
-                          }
-                        />
-                        <DetailField
-                          label="Nhận xét"
-                          value={
-                            trial.feedback ? (
-                              <a
-                                href={trial.feedback.resultLink || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 font-semibold text-primary underline underline-offset-2 hover:text-primary/80 cursor-pointer text-xs"
-                              >
-                                <MessageSquare className="h-3 w-3" />
-                                <span>Xem nhận xét ({trial.feedback.rating}/5★)</span>
-                              </a>
-                            ) : (
-                              <span className="font-normal text-muted-foreground italic text-xs">Chờ nhận xét</span>
-                            )
-                          }
-                        />
+                          )}
+                        </div>
+
+                        {/* Giáo viên & Trợ giảng với Profile Hover Card */}
+                        <div className="flex items-center gap-2 shrink-0 text-xs">
+                          <PersonnelHoverCard person={teacherPersonnelItem} align="end">
+                            <span className="inline-flex items-center gap-1 cursor-pointer hover:underline text-foreground">
+                              <GraduationCap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                              <span className="font-semibold truncate max-w-[110px]">
+                                {currentTrial.owner || 'Chưa gán GV'}
+                              </span>
+                            </span>
+                          </PersonnelHoverCard>
+
+                          {currentTrial.assistant && (
+                            <PersonnelHoverCard person={assistantPersonnelItem} align="end">
+                              <span className="inline-flex items-center gap-1 cursor-pointer hover:underline text-muted-foreground hover:text-foreground">
+                                <Users className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                <span className="font-medium text-xs truncate max-w-[110px]">
+                                  TG: <span className="font-semibold text-foreground">{currentTrial.assistant}</span>
+                                </span>
+                              </span>
+                            </PersonnelHoverCard>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Dòng 2: Cơ sở & Phòng học */}
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <MapPin className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                          <span className="font-semibold text-foreground text-xs truncate">
+                            {currentTrial.branch || currentTrial.school}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 text-xs">
+                          <School className="h-3.5 w-3.5 text-violet-500 shrink-0" />
+                          <span className="font-medium text-foreground">Phòng 201</span>
+                        </div>
+                      </div>
+
+                      {/* Dòng 3: Lớp ghép, Buổi học & Môn học */}
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <BookOpen className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                          <div className="flex items-center gap-1 truncate" onClick={(e) => e.stopPropagation()}>
+                            <ClassCodeHoverCell
+                              classCode={activeSessions[0].classId}
+                              subject={currentTrial.subject}
+                              level={currentTrial.program}
+                              teacherCode={currentTrial.owner}
+                              schedule={formatSessionDateTimeRange(activeSessions[0].trialDate)}
+                            />
+                            <span className="font-semibold text-foreground text-xs truncate ml-1">
+                              {activeSessions[0].className}
+                            </span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs font-normal h-4.5 px-1.5 shrink-0 ml-1">
+                            {currentTrial.subject}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {activeSessions[0].sessionName}
+                        </span>
+                      </div>
+
+                      {/* Ca cũ đã giải phóng (nếu có) */}
+                      {releasedSession && (
+                        <div className="rounded border border-amber-200/80 bg-amber-50/40 dark:bg-amber-950/20 dark:border-amber-900/40 p-2 text-xs flex items-center justify-between gap-2">
+                          <span className="text-amber-800 dark:text-amber-300">
+                            Lớp cũ: <strong>{releasedSession.className}</strong> ({formatSessionDateTimeRange(releasedSession.trialDate)})
+                          </span>
+                          <span className="text-amber-600 dark:text-amber-400 italic shrink-0">Đã giải phóng</span>
+                        </div>
+                      )}
+
+                      {/* Mở rộng / Thu gọn nội dung buổi học */}
+                      {sessionContent && (
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground py-0.5 cursor-pointer select-none transition-colors"
+                            onClick={() => setIsSessionContentExpanded((prev) => !prev)}
+                          >
+                            <span className="flex items-center gap-1.5 min-w-0">
+                              <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span className="shrink-0 font-medium text-foreground">Nội dung buổi học</span>
+                              <Badge variant="outline" className="text-xs font-normal px-1.5 py-0 h-4 truncate max-w-[190px]">
+                                {sessionContent.topic}
+                              </Badge>
+                            </span>
+                            <span className="text-xs text-primary flex items-center gap-0.5 shrink-0 ml-2">
+                              {isSessionContentExpanded ? (
+                                <>
+                                  <span>Thu gọn</span>
+                                  <ChevronUp className="h-3 w-3" />
+                                </>
+                              ) : (
+                                <>
+                                  <span>Chi tiết</span>
+                                  <ChevronDown className="h-3 w-3" />
+                                </>
+                              )}
+                            </span>
+                          </button>
+
+                          {isSessionContentExpanded && (
+                            <div className="mt-2 p-2.5 rounded-md bg-muted/40 border border-border/60 text-xs space-y-2">
+                              {sessionContent.objective && (
+                                <div>
+                                  <span className="font-semibold text-foreground text-xs">Mục tiêu: </span>
+                                  <span className="text-muted-foreground text-xs leading-relaxed">
+                                    {sessionContent.objective}
+                                  </span>
+                                </div>
+                              )}
+                              {sessionContent.activities && sessionContent.activities.length > 0 && (
+                                <div>
+                                  <span className="font-semibold text-foreground text-xs block mb-1">
+                                    Hoạt động buổi học:
+                                  </span>
+                                  <ul className="space-y-1 pl-4 list-disc text-muted-foreground text-xs">
+                                    {sessionContent.activities.map((act, idx) => (
+                                      <li key={idx} className="leading-relaxed">
+                                        {act}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div
-                      className="group cursor-pointer rounded-lg border border-dashed border-border/80 bg-muted/20 p-4 text-center transition-colors hover:border-primary/50 hover:bg-primary/5"
-                      onClick={() => onOpenAssign?.({ mode: 'assign', trialId: trial.id })}
+                      className="group cursor-pointer py-5 px-3 text-center transition-colors hover:bg-muted/30 rounded-md"
+                      onClick={() => onOpenAssign?.({ mode: 'assign', trialId: currentTrial.id })}
                     >
-                      <p className="text-sm font-semibold text-primary group-hover:underline">
-                        Chưa xếp lịch học thử &bull; Thao tác chọn buổi ngay
+                      <p className="text-xs font-semibold text-primary group-hover:underline">
+                        Chưa xếp lịch học thử &bull; Chọn buổi ngay
                       </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">Click để mở danh sách lịch khả dụng và chọn buổi học ghép cho học viên.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Click để mở danh sách lớp và ca học khả dụng cho học viên.
+                      </p>
                     </div>
                   )}
                 </DetailCard>
-
-                {/* 2. Buổi cũ / đã giải phóng (nếu có) */}
-                {releasedSession && (
-                  <DetailCard
-                    title="Lớp cũ (Đã giải phóng)"
-                    icon={<CalendarDays className="h-4 w-4 text-amber-600" />}
-                    className="border-amber-200/80 bg-amber-50/30 dark:border-amber-900/30 dark:bg-amber-950/10"
-                  >
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <DetailField label="Lớp cũ" value={releasedSession.className} supporting={`Mã lớp: ${releasedSession.classId}`} />
-                      <DetailField label="Buổi cũ" value={releasedSession.sessionName} supporting={formatSessionDateTimeRange(releasedSession.trialDate)} />
-                    </div>
-                  </DetailCard>
-                )}
-
-                {/* 3. Đề xuất Nghỉ phép / Bảo lưu liên quan (nếu có) */}
-                {reserveTicket && (
-                  <DetailCard
-                    title="Đề xuất Bảo lưu & Nghỉ phép liên quan"
-                    icon={<ExternalLink className="h-4 w-4 text-primary" />}
-                    actions={
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs font-medium text-primary hover:bg-primary/10"
-                        onClick={() => setLeaveReserveOpen(true)}
-                      >
-                        Xem đơn ({reserveTicket.id})
-                      </Button>
-                    }
-                  >
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <DetailField
-                        label="Loại đơn"
-                        value={reserveTicket.type === 'reservation' ? 'Bảo lưu' : 'Nghỉ phép'}
-                        supporting={`Trạng thái: ${reserveTicket.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}`}
-                      />
-                      <DetailField
-                        label="Thời gian nghỉ"
-                        value={`${reserveTicket.startDate} - ${reserveTicket.endDate}`}
-                      />
-                    </div>
-                    {reserveTicket.reason && (
-                      <p className="mt-2 text-xs text-muted-foreground bg-background/60 p-2 rounded border border-border/50">
-                        <span className="font-semibold">Lý do:</span> {reserveTicket.reason}
-                      </p>
-                    )}
-                  </DetailCard>
-                )}
               </div>
 
-              {/* CỘT PHẢI (40%): Thời hạn & Phụ trách, Lịch sử thao tác */}
-              <div className="flex flex-col gap-4 min-w-0 md:col-span-2">
-                {/* 1. Thời hạn & Phụ trách */}
-                <DetailCard title="Thời hạn & Phụ trách" icon={<Clock className="h-4 w-4 text-primary" />}>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3 border-b border-border/60 pb-3">
-                      <DetailField label="Ngày tạo phiếu" value={trial.auditLog[0]?.timestamp ?? '—'} />
-                      <DetailField label="Lần học thử" value={trial.attempt} />
+              {/* ==================== PANEL PHẢI (40% - col-span-2): Học viên & Phụ trách ==================== */}
+              <div className="flex flex-col gap-3 min-w-0 md:col-span-2">
+                {/* 1. THÔNG TIN HỌC VIÊN */}
+                <DetailCard
+                  title="Thông tin Học viên"
+                  titleClassName="font-normal text-muted-foreground"
+                  actions={
+                    previousTrials.length > 0 ? (
+                      <Popover open={historyPopoverOpen} onOpenChange={setHistoryPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-1.5 text-xs font-normal gap-1 text-primary hover:text-primary/80 shrink-0 cursor-pointer"
+                            title="Xem lịch sử các lần học thử trước đó"
+                          >
+                            <History className="h-3.5 w-3.5 text-primary" />
+                            <span>{previousTrials.length} lần học thử khác</span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-80 p-3 shadow-lg bg-popover z-50">
+                          <div className="flex items-center justify-between border-b pb-2 mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <History className="h-3.5 w-3.5 text-primary" />
+                              <span className="text-xs font-bold text-foreground">
+                                Lịch sử học thử ({previousTrials.length + 1} lần)
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {currentTrial.studentName}
+                            </span>
+                          </div>
+                          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            {/* Phiếu hiện tại */}
+                            <div className="rounded border border-primary/40 bg-primary/5 p-2 text-xs space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-primary font-mono">{currentTrial.id}</span>
+                                <span className="text-xs font-medium text-primary bg-primary/15 px-1 rounded">
+                                  Đang xem
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-muted-foreground text-xs">
+                                <span>{currentTrial.sessions[0] ? formatSessionDateTimeRange(currentTrial.sessions[0].trialDate) : 'Chưa xếp lịch'}</span>
+                                <span className="font-medium text-foreground">{currentTrial.program}</span>
+                              </div>
+                            </div>
+                            {/* Các phiếu khác: Click để chuyển xem */}
+                            {previousTrials.map((pt) => (
+                              <button
+                                key={pt.id}
+                                type="button"
+                                onClick={() => {
+                                  setOverrideTrial(pt)
+                                  setHistoryPopoverOpen(false)
+                                }}
+                                className="w-full text-left rounded border border-border/70 bg-card hover:bg-muted/60 hover:border-primary/40 transition-colors p-2 text-xs space-y-1 cursor-pointer group"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-semibold text-foreground font-mono group-hover:text-primary transition-colors">
+                                      {pt.id}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">({pt.attempt || 'Khác'})</span>
+                                  </div>
+                                  <StatusBadge status={pt.status} label={getTrialStatusLabel(pt.status)} />
+                                </div>
+                                <div className="flex items-center justify-between text-muted-foreground text-xs">
+                                  <span>{pt.sessions[0] ? formatSessionDateTimeRange(pt.sessions[0].trialDate) : 'Chưa xếp lịch'}</span>
+                                  <span className="font-medium text-foreground">{pt.program}</span>
+                                </div>
+                                <div className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+                                  &rarr; Click để xem chi tiết phiếu này
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <Badge variant="outline" className="text-xs font-medium h-5 px-1.5 text-muted-foreground">
+                        {currentTrial.attempt || 'Lần 1'}
+                      </Badge>
+                    )
+                  }
+                >
+                  <div className="space-y-2 text-xs">
+                    {/* Dòng 1: Học viên & Ngày sinh / Tuổi */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <span className="font-semibold text-foreground text-xs truncate">
+                        {currentTrial.studentName}
+                      </span>
+                      <span className="text-muted-foreground text-xs shrink-0 text-right">
+                        {getStudentAgeText(currentTrial)}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <AppAvatar name={trial.creator || 'CARE'} size="sm" />
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-muted-foreground">Nguồn tạo (Sale)</p>
-                        <p className="truncate text-sm font-semibold text-foreground">{trial.creator || 'Hệ thống CARE'}</p>
-                      </div>
+                    {/* Dòng 2: Trường học của học viên */}
+                    <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+                      <span className="text-muted-foreground shrink-0">Trường:</span>
+                      <span className="font-normal text-muted-foreground truncate text-right" title={studentSchool}>
+                        {studentSchool}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <AppAvatar name={trial.owner || 'Chưa phân công'} size="sm" />
-                      <div className="min-w-0">
-                        <p className="text-xs font-medium text-muted-foreground">Người phụ trách</p>
-                        <p className="truncate text-sm font-semibold text-foreground">{trial.owner || '—'}</p>
-                      </div>
+                    {/* Dòng 3: Học lực của học viên */}
+                    <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+                      <span className="text-muted-foreground shrink-0">Học lực:</span>
+                      <span className="font-normal text-muted-foreground truncate text-right" title={studentAbility}>
+                        {studentAbility}
+                      </span>
                     </div>
+
+                    {/* Đường phân cách tách thông tin Phụ huynh */}
+                    <div className="border-t border-border/50 my-1" />
+
+                    {/* Dòng 4: Phụ huynh & Số điện thoại */}
+                    <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+                      <span className="font-semibold text-foreground truncate">
+                        {parentDisplayName}
+                      </span>
+                      <span className="font-mono font-normal text-muted-foreground shrink-0">
+                        {primaryFamilyMember.phone}
+                      </span>
+                    </div>
+
+                    {/* Dòng 5: Địa chỉ phụ huynh */}
+                    <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+                      <span className="text-muted-foreground shrink-0">Địa chỉ:</span>
+                      <span className="font-normal text-muted-foreground truncate text-right" title={parentAddress}>
+                        {parentAddress}
+                      </span>
+                    </div>
+
+                    {/* Thành viên phụ (nếu có) */}
+                    {familyMembers.length > 1 && (
+                      <div className="space-y-0.5">
+                        {familyMembers.filter((m) => !m.isPrimary).map((m, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>{m.name}</span>
+                            <span className="font-mono">{m.phone}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Ghi chú */}
+                    {currentTrial.notes && (
+                      <div className="rounded bg-muted/40 p-2 text-xs text-foreground italic border border-border/40 mt-1">
+                        &ldquo;{currentTrial.notes}&rdquo;
+                      </div>
+                    )}
                   </div>
                 </DetailCard>
 
-                {/* 2. Lịch sử thao tác */}
-                <DetailCard title="Lịch sử thao tác" className="flex-1">
-                  <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-                    {trial.auditLog.map((log, idx) => (
-                      <div key={idx} className="relative pl-4 border-l-2 border-primary/30 text-xs">
-                        <div className="flex items-center justify-between text-muted-foreground">
-                          <span className="font-semibold text-foreground">{log.author}</span>
-                          <span className="text-xs">{log.timestamp}</span>
+                {/* 2. THỜI HẠN */}
+                <DetailCard
+                  title="Thời hạn"
+                  titleClassName="font-normal text-muted-foreground"
+                  actions={
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 px-1.5 text-xs font-medium gap-1 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                          title="Xem lịch sử thao tác & ghi chú"
+                        >
+                          <History className="h-3 w-3 text-primary" />
+                          <span>Lịch sử ({currentTrial.auditLog.length})</span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-80 p-3 shadow-lg bg-popover z-50">
+                        <div className="flex items-center gap-1.5 border-b pb-2 mb-2">
+                          <History className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-bold text-foreground">
+                            Lịch sử thao tác & ghi chú
+                          </span>
                         </div>
-                        <p className="font-medium text-foreground mt-0.5">{log.action}</p>
-                        {log.detail && <p className="text-muted-foreground text-xs mt-0.5">{log.detail}</p>}
+                        {currentTrial.auditLog.length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic py-1">
+                            Chưa có lịch sử thao tác nào.
+                          </p>
+                        ) : (
+                          <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                            {currentTrial.auditLog.map((log, idx) => (
+                              <div key={idx} className="relative pl-3 border-l-2 border-primary/40 text-xs space-y-0.5">
+                                <div className="flex items-center justify-between text-muted-foreground text-xs">
+                                  <span className="font-semibold text-foreground">{log.author}</span>
+                                  <span>{log.timestamp}</span>
+                                </div>
+                                <p className="font-medium text-foreground">{log.action}</p>
+                                {log.detail && (
+                                  <p className="text-muted-foreground text-xs">{log.detail}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                  }
+                >
+                  <div className="space-y-2.5 text-xs">
+                    {/* Ngày tạo & Phân loại */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Ngày tạo phiếu:</span>
+                      <span className="font-semibold text-foreground">
+                        {currentTrial.auditLog[0]?.timestamp || '—'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Lần học thử:</span>
+                      <span className="font-semibold text-foreground">
+                        {currentTrial.attempt || 'Lần 1'}
+                      </span>
+                    </div>
+
+                    {/* Người tạo */}
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-border/50">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <UserPlus className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                        <span className="text-muted-foreground">Người tạo:</span>
                       </div>
-                    ))}
+                      <PersonnelHoverCard person={creatorPersonnelItem} align="end">
+                        <div className="flex items-center gap-1.5 font-semibold text-foreground truncate max-w-[150px] cursor-pointer hover:underline">
+                          <AppAvatar name={currentTrial.creator || 'Hệ thống'} size="xs" />
+                          <span className="truncate">{currentTrial.creator || 'Hệ thống'}</span>
+                        </div>
+                      </PersonnelHoverCard>
+                    </div>
                   </div>
                 </DetailCard>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons Footer — Uniform flat gray background without border line */}
-          <div className="flex shrink-0 items-center justify-between px-6 pb-4 pt-1">
-            <Button
-              variant="ghost"
-              className="text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-              onClick={() => setConfirmAction({ type: 'reject', label: 'Từ chối ghép lớp', description: 'Bạn có chắc chắn muốn từ chối ghép lớp học thử này?' })}
-            >
-              Từ chối ghép lớp
-            </Button>
+          {/* Footer chuẩn: Nút đóng bên trái/phải, nút thao tác chính */}
+          <div className="shrink-0 flex items-center justify-between px-5 py-2 border-t border-border/50 bg-muted/15">
+            <div>
+              {currentTrial.status === 'pending_approval' && activeSessions.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                  onClick={() =>
+                    setConfirmAction({
+                      type: 'reject',
+                      label: 'Từ chối ghép lớp',
+                      description: 'Bạn có chắc chắn muốn từ chối ghép lớp học thử này?',
+                    })
+                  }
+                >
+                  <X className="h-3.5 w-3.5 mr-1" />
+                  Từ chối ghép lớp
+                </Button>
+              )}
+            </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="h-8 text-xs">
                 Đóng
               </Button>
-              {(trial.status === 'pending_approval' || trial.status === 'reschedule') && (
+
+              {/* Action chính theo trạng thái */}
+              {currentTrial.status === 'pending_approval' && (
+                activeSessions.length > 0 ? (
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+                    onClick={() => {
+                      onApprove?.(currentTrial.id)
+                      onOpenChange(false)
+                    }}
+                  >
+                    <Check className="h-3.5 w-3.5 mr-1" />
+                    Xác nhận ghép lớp
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+                    onClick={() => onOpenAssign?.({ mode: 'assign', trialId: currentTrial.id })}
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Ghép lớp & xác nhận
+                  </Button>
+                )
+              )}
+
+              {currentTrial.status === 'rejected' && (
                 <Button
                   size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => onOpenAssign?.({ mode: trial.status === 'reschedule' ? 'reschedule' : 'assign', trialId: trial.id })}
+                  className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+                  onClick={() => onOpenAssign?.({ mode: 'assign', trialId: currentTrial.id })}
                 >
-                  {trial.status === 'reschedule' ? 'Đổi buổi học' : 'Duyệt & Ghép lớp'}
+                  <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                  Ghép lại lớp
+                </Button>
+              )}
+
+              {currentTrial.status === 'reschedule' && (
+                <Button
+                  size="sm"
+                  className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+                  onClick={() => onOpenAssign?.({ mode: 'reschedule', trialId: currentTrial.id })}
+                >
+                  <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                  Đổi buổi học
+                </Button>
+              )}
+
+              {/* Chỉ hiển thị nút "Mở trang nhận xét" khi buổi học thử đã hoàn thành VÀ có nhận xét */}
+              {feedback && currentTrial.status === 'completed' && (
+                <Button
+                  size="sm"
+                  asChild
+                  className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+                >
+                  <a
+                    href={feedback.resultLink || `/app/trial_class/feedback/${currentTrial.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                    Mở trang nhận xét
+                  </a>
                 </Button>
               )}
             </div>
@@ -423,21 +735,13 @@ export function TrialClassDetailDialog({
       {confirmAction && (
         <ConfirmDialog
           open={Boolean(confirmAction)}
-          onOpenChange={(open) => { if (!open) setConfirmAction(null) }}
+          onOpenChange={(open) => {
+            if (!open) setConfirmAction(null)
+          }}
           title={confirmAction.label}
           description={confirmAction.description}
           onConfirm={handleConfirmAction}
           variant="destructive"
-        />
-      )}
-
-      {/* Leave/Reserve Detail Dialog if ticket clicked */}
-      {leaveReserveOpen && (
-        <LeaveReserveDetailDialog
-          open={leaveReserveOpen}
-          onOpenChange={setLeaveReserveOpen}
-          request={leaveReserveReq}
-          readOnly
         />
       )}
     </>

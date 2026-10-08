@@ -150,13 +150,13 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                   )}
                 </button>
 
-                <span className="text-[11px] font-mono font-bold text-muted-foreground/60 w-5 shrink-0">
+                <span className="text-xs font-mono font-bold text-muted-foreground/60 w-5 shrink-0">
                   #{stage.order}
                 </span>
 
                 <Badge
                   variant="outline"
-                  className={cn('text-[11px] font-semibold px-2 py-0.5 shrink-0', cfg.badgeClass)}
+                  className={cn('text-xs font-semibold px-2 py-0.5 shrink-0', cfg.badgeClass)}
                 >
                   [{phaseKey}]
                 </Badge>
@@ -165,20 +165,20 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                   <span className="font-semibold text-xs text-foreground truncate">
                     {cleanName}
                   </span>
-                  <span className="font-mono text-[10px] text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border/40 shrink-0">
+                  <span className="font-mono text-xs text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded border border-border/40 shrink-0">
                     {stage.code}
                   </span>
                 </div>
 
                 {/* Stage Type Indicator */}
                 {stage.stageType === 'won' && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 px-2 py-0.5 rounded-full shrink-0">
                     <CheckCircle2 className="h-3 w-3" />
                     <span>Won</span>
                   </span>
                 )}
                 {stage.stageType === 'global_lost' && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 px-2 py-0.5 rounded-full shrink-0">
+                  <span className="inline-flex items-center gap-1 text-xs text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 px-2 py-0.5 rounded-full shrink-0">
                     <AlertCircle className="h-3 w-3" />
                     <span>Lost</span>
                   </span>
@@ -188,7 +188,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
               {/* Right: SLA, Sub-status Count, Up/Down, Actions */}
               <div className="flex items-center gap-2 sm:gap-3 shrink-0 self-end sm:self-center">
                 {stage.slaHours && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/50">
                     <Clock className="h-3 w-3 text-amber-500" />
                     <span>{stage.slaHours}h</span>
                   </div>
@@ -196,7 +196,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
 
                 <Badge
                   variant="secondary"
-                  className="text-[11px] font-normal cursor-pointer hover:bg-muted"
+                  className="text-xs font-normal cursor-pointer hover:bg-muted"
                   onClick={() => onToggleExpand(stage.id)}
                 >
                   {subs.length} nhãn con
@@ -279,7 +279,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                     <span className="text-xs font-semibold text-foreground">
                       Danh sách nhãn con ({subs.length})
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       (
                       {subs.filter((s) => s.origin === 'system').length} hệ thống ·{' '}
                       {subs.filter((s) => s.origin === 'custom').length} tùy biến)
@@ -310,7 +310,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-border/70 bg-muted/40 text-muted-foreground text-[11px] font-semibold">
+                          <tr className="border-b border-border/70 bg-muted/40 text-muted-foreground text-xs font-semibold">
                             <th className="py-2.5 px-3 w-[22%]">Tên Nhãn Trạng Thái</th>
                             <th className="py-2.5 px-2.5 w-[13%]">Mã Code</th>
                             <th className="py-2.5 px-2.5 w-[18%]">Phân Hệ / Nguồn Gốc</th>
@@ -345,12 +345,12 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                               {/* 3. Phân Hệ / Nguồn Gốc */}
                               <td className="py-2.5 px-2.5">
                                 {sub.origin === 'system' ? (
-                                  <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 font-medium">
+                                  <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 font-medium">
                                     <Link2 className="h-3 w-3" />
                                     <span>⚙️ Hệ thống ({sub.systemModuleLabel || 'Tự động'})</span>
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                                     <Tag className="h-3 w-3 text-muted-foreground/60" />
                                     <span>Tác nghiệp nội bộ</span>
                                   </span>
@@ -361,17 +361,17 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                               <td className="py-2.5 px-2.5">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   {sub.requiresNote && (
-                                    <span className="text-[10px] text-destructive bg-destructive/10 px-1.5 py-0.5 rounded font-medium border border-destructive/20">
+                                    <span className="text-xs text-destructive bg-destructive/10 px-1.5 py-0.5 rounded font-medium border border-destructive/20">
                                       Bắt buộc ghi chú
                                     </span>
                                   )}
                                   {sub.suggestsCallback && (
-                                    <span className="text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded font-medium border border-amber-200/60 dark:border-amber-900/40">
+                                    <span className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded font-medium border border-amber-200/60 dark:border-amber-900/40">
                                       Gợi ý hẹn ngày
                                     </span>
                                   )}
                                   {!sub.requiresNote && !sub.suggestsCallback && (
-                                    <span className="text-[11px] text-muted-foreground/40 italic">—</span>
+                                    <span className="text-xs text-muted-foreground/40 italic">—</span>
                                   )}
                                 </div>
                               </td>
@@ -379,7 +379,7 @@ export const LeadLifecyclePipelineTab: React.FC<LeadLifecyclePipelineTabProps> =
                               {/* 5. Mô Tả & Hướng Dẫn Sử Dụng */}
                               <td className="py-2.5 px-3">
                                 <span
-                                  className="text-[11px] text-muted-foreground line-clamp-1"
+                                  className="text-xs text-muted-foreground line-clamp-1"
                                   title={sub.description || sub.systemEventTrigger || 'Nhãn theo dõi tiến trình chăm sóc khách hàng'}
                                 >
                                   {sub.description || sub.systemEventTrigger || 'Nhãn theo dõi tiến trình chăm sóc khách hàng'}

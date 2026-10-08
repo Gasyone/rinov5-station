@@ -9,8 +9,12 @@ export type TrialClassStatus =
 
 export interface TrialClassTeacherFeedback {
   rating: number
+  ratingText?: string
+  learnedTopics?: string[]
   strengths: string[]
   weaknesses: string[]
+  reminders?: string[]
+  teacherName?: string
   comment: string
   recommendedLevel: string
   resultLink?: string
@@ -50,7 +54,11 @@ export interface TrialClass {
   trialName: string
   customerId: string
   studentName: string
+  studentAge?: number
+  studentBirthYear?: number
+  studentGender?: 'Nam' | 'Nữ'
   parentName: string
+  parentRole?: string
   familyName: string
   familyPhone: string
   familyMembers?: TrialClassFamilyMember[]
@@ -70,6 +78,16 @@ export interface TrialClass {
   internalNotes?: TrialClassNote[]
   cancelReason?: string
   previousSession?: { className: string; classId: string; sessionName: string; sessionId: string; trialDate: string }
+  currentSchool?: string
+  academicPerformance?: string
+  parentAddress?: string
+  address?: string
+  assistant?: string
+  sessionContent?: {
+    topic: string
+    objective?: string
+    activities?: string[]
+  }
 }
 
 export const MOCK_TRIAL_CLASSES: TrialClass[] = [
@@ -122,21 +140,6 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     auditLog: [
       { timestamp: '2026-05-17 10:00', author: 'Lan Anh', action: 'Tạo booking', detail: 'Ghi nhận nhu cầu học thử' },
     ],
-    feedback: {
-      rating: 5,
-      strengths: [
-        'Con rất tốt trong phần Từ vựng (4/5) và Phát âm (4/5) - cô khen con vì đã nhớ bài rất nhanh! 🌟',
-        'Ghi nhớ từ vựng qua hình ảnh con vật, đồ dùng nhanh chóng.',
-      ],
-      weaknesses: [
-        'Phần Ngữ pháp (2/5) và Nói (2/5) con cần luyện tập thêm để phản xạ tự nhiên hơn nhé.',
-        'Còn rụt rè khi được yêu cầu nói câu dài độc lập.',
-      ],
-      comment:
-        'Con rất tốt trong phần Từ vựng (4/5) và Phát âm (4/5) - cô khen con vì đã nhớ bài rất nhanh! Phần Ngữ pháp và Nói cần luyện tập thêm để phản xạ tự nhiên hơn.',
-      recommendedLevel: 'Cambridge Starter A1',
-      resultLink: '/app/trial_class/feedback/TR-2605-001',
-    },
   },
   {
     id: 'TR-2605-008',
@@ -200,14 +203,17 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     school: 'RinoEdu Nguyễn Tuân',
     program: 'IELTS Starter',
     subject: 'Tiếng Anh',
-    sessions: [{ className: 'IELTS Starter A1', classId: 'CLS-011', sessionName: 'Flyers F1', sessionId: 'SESS-11001', trialDate: '2026-05-28 18:30' }],
+    sessions: [],
+    previousSession: { className: 'IELTS Starter A1', classId: 'CLS-011', sessionName: 'Flyers F1', sessionId: 'SESS-11001', trialDate: '2026-05-28 18:30' },
     creator: 'Lan Anh',
     owner: 'Ms. Sarah',
-    status: 'pending_approval',
+    status: 'rejected',
     branch: 'RinoEdu Nguyễn Tuân',
-    notes: 'Học viên bảo lưu muốn học thử lại để đánh giá xếp lớp mới',
+    notes: 'Lớp IELTS Starter A1 đã đủ sĩ số, giáo vụ từ chối ghép',
+    cancelReason: 'Lớp đã đủ sĩ số',
     auditLog: [
-      { timestamp: '2026-05-24 10:00', author: 'Lan Anh', action: 'Tạo booking' }
+      { timestamp: '2026-05-24 10:00', author: 'Lan Anh', action: 'Tạo booking' },
+      { timestamp: '2026-05-24 14:00', author: 'Ms. Sarah', action: 'Từ chối ghép lớp', detail: 'Lớp đã đủ sĩ số' },
     ],
   },
   {
@@ -289,32 +295,98 @@ export const MOCK_TRIAL_CLASSES: TrialClass[] = [
     trialName: 'Học thử English Foundation',
     customerId: 'KH-10273',
     studentName: 'Nguyễn An',
-    parentName: 'Nguyễn Văn A',
+    studentAge: 11,
+    studentBirthYear: 2015,
+    parentName: 'Nguyễn Văn A (Bố)',
     familyName: 'Gia đình Nguyễn',
-    familyPhone: '0922222222',
+    familyPhone: '0911111111',
+    familyMembers: [
+      { name: 'Nguyễn Văn A (Bố)', phone: '0911111111', isPrimary: true },
+      { name: 'Trần Thị Lan (Mẹ)', phone: '0922222223' },
+    ],
     attempt: 'Lần 2',
     school: 'RinoEdu Linh Đàm',
+    currentSchool: 'Tiểu học Chu Văn An (Hà Nội)',
+    academicPerformance: 'Khá - Giỏi / Tiếp thu nhanh',
+    parentAddress: 'Thanh Xuân, Hà Nội',
     program: 'English Foundation',
     subject: 'Tiếng Anh',
     sessions: [{ className: 'English Foundation A1', classId: 'CLS-003', sessionName: 'Foundation A1', sessionId: 'SESS-9903', trialDate: '2026-05-14 17:15' }],
     creator: 'Hoàng Yến',
     owner: 'Ms. Emily',
+    assistant: 'Nguyễn Thu Hà',
     status: 'completed',
     branch: 'RinoEdu Linh Đàm',
-    notes: '',
+    sessionContent: {
+      topic: 'Hình học phẳng & Bảng chun hình học (Ngũ giác, Lục giác)',
+      objective: 'Nhận biết, phân biệt hình ngũ giác, lục giác; thực hành lắp ghép và sáng tạo hình trên bảng chun.',
+      activities: [
+        'Khởi động: Nhận diện và gọi tên các hình học cơ bản (tam giác, tứ giác)',
+        'Khám phá: Tìm hiểu đặc điểm số cạnh, số đỉnh của hình ngũ giác và lục giác',
+        'Thực hành: Sáng tạo các hình học từ bảng chun hình học',
+        'Tổng kết & Đánh giá: Trình bày bài làm và nhận xét mức độ tiếp thu',
+      ],
+    },
+    notes: 'Giao tiếp tốt',
     auditLog: [
       { timestamp: '2026-05-10 10:00', author: 'Hoàng Yến', action: 'Tạo booking' },
       { timestamp: '2026-05-10 15:00', author: 'Ms. Emily', action: 'Ghép lớp' },
       { timestamp: '2026-05-14 19:00', author: 'Ms. Emily', action: 'GV nhận xét', detail: 'Hoàn thành buổi học thử' },
     ],
     feedback: {
-      rating: 4,
-      strengths: ['Giao tiếp tự nhiên', 'Phát âm tốt'],
-      weaknesses: ['Ngữ pháp còn yếu'],
-      comment: 'Bé nói tiếng Anh rất tự nhiên, phát âm chuẩn. Cần củng cố thêm ngữ pháp cơ bản.',
-      recommendedLevel: 'Level 2A',
-      resultLink: 'mock://trial-results/TR-2605-003',
+      rating: 5,
+      ratingText: 'Excellent',
+      learnedTopics: [
+        'Tìm hiểu hình ngũ giác, lục giác và thực hành tạo các hình này.',
+        'Chơi trò tạo nhiều hình dạng khác nhau từ bảng chun hình học để củng cố nội dung về hình.',
+      ],
+      strengths: [
+        'Con vui vẻ hợp tác, tập trung chủ động suy nghĩ và lên bảng trình bày suy nghĩ của mình.',
+        'Con quan sát, nhận biết và vẽ được các hình học cơ bản như tam giác, tứ giác.',
+      ],
+      weaknesses: [
+        'Con cần rèn luyện thêm để ghi nhớ tên gọi các hình như tam giác, tứ giác, lục giác, tránh nhầm lẫn.',
+      ],
+      reminders: [
+        'Con hãy ôn lại tên gọi các hình đã học và luyện nhận biết từng hình.',
+      ],
+      teacherName: 'Hoàng Thị Ngọc Anh',
+      comment: 'Con vui vẻ hợp tác, tập trung chủ động suy nghĩ và lên bảng trình bày suy nghĩ của mình. Quan sát, nhận biết và vẽ được các hình cơ bản tốt.',
+      recommendedLevel: 'Archimedes 6A',
+      resultLink: '/trial-report/TR-2605-003',
     },
+  },
+  {
+    id: 'TR-2604-001',
+    trialName: 'Học thử Phonics Starter',
+    customerId: 'KH-10273',
+    studentName: 'Nguyễn An',
+    studentAge: 11,
+    studentBirthYear: 2015,
+    parentName: 'Nguyễn Văn A (Bố)',
+    familyName: 'Gia đình Nguyễn',
+    familyPhone: '0911111111',
+    familyMembers: [
+      { name: 'Nguyễn Văn A (Bố)', phone: '0911111111', isPrimary: true },
+      { name: 'Trần Thị Lan (Mẹ)', phone: '0922222223' },
+    ],
+    attempt: 'Lần 1',
+    school: 'RinoEdu Linh Đàm',
+    currentSchool: 'Tiểu học Chu Văn An (Hà Nội)',
+    academicPerformance: 'Khá - Giỏi / Tiếp thu nhanh',
+    parentAddress: 'Thanh Xuân, Hà Nội',
+    program: 'Phonics Starter',
+    subject: 'Tiếng Anh',
+    sessions: [{ className: 'Phonics P1', classId: 'CLS-007', sessionName: 'Phonics S1', sessionId: 'SESS-9900', trialDate: '2026-04-12 17:30' }],
+    creator: 'Hoàng Yến',
+    owner: 'Ms. Emily',
+    status: 'completed',
+    branch: 'RinoEdu Linh Đàm',
+    notes: 'Tiếp thu nhanh',
+    auditLog: [
+      { timestamp: '2026-04-08 10:00', author: 'Hoàng Yến', action: 'Tạo booking' },
+      { timestamp: '2026-04-12 19:00', author: 'Ms. Emily', action: 'Hoàn thành buổi học thử' },
+    ],
   },
   {
     id: 'TR-2605-007',

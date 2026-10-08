@@ -33,9 +33,10 @@ export function cleanMessageNotes(notes?: string | null): string {
   text = text.replace(/\[(Đến|Kênh|Mốc\/Thẻ|Kết quả|Hẹn gọi lại|Ý kiến PH|Đối tượng|CSKH Nội bộ|Chỉ CSKH)[^\]]*\]/gi, '').trim()
   text = text.replace(/^\[[A-Z0-9]{2,6}(-[0-9]{2})?\]\s*/i, '').trim()
   text = text.replace(/^(\||:|-|\s)+/, '').trim()
+  text = text.replace(/(\||:|-|\s)+$/, '').trim()
 
   if (!text || text.length < 2) {
-    const rawClean = notes.replace(/\[[^\]]+\]/g, '').replace(/^(\||:|-|\s)+/, '').trim()
+    const rawClean = notes.replace(/\[[^\]]+\]/g, '').replace(/^(\||:|-|\s)+/, '').replace(/(\||:|-|\s)+$/, '').trim()
     text = rawClean || 'Đã tương tác trao đổi thông tin chăm sóc học viên.'
   }
 
@@ -584,7 +585,7 @@ export function getSimulatedPackagesList(student: StudentCareAlert): SimulatedPa
     endDate: '10/01/2027',
     level: isMath ? 'Archimedes 1' : 'Level 4',
     subLevel: 'B',
-    status: isSessionEnded ? 'expired' : 'active',
+    status: isSessionEnded ? 'expired' : ((isPendingTransfer || isReserve || isUnassigned) ? 'pending' : 'active'),
     studentStatus: isSessionEnded
       ? 'Hết buổi'
       : (isPendingTransfer || isReserve || isUnassigned)

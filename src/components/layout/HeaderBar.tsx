@@ -40,6 +40,7 @@ import { Input } from '@/components/ui/input'
 import { HeaderBrand } from './HeaderBrand'
 import { NotificationDropdown } from './NotificationDropdown'
 import { FeedbackPopover } from './FeedbackPopover'
+import { HeaderWorkdayDatePicker } from './HeaderWorkdayDatePicker'
 
 const UI_LOCALE_OPTIONS = [
   { code: 'vi', label: 'Tiếng Việt', shortLabel: 'VI' },
@@ -123,6 +124,9 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
           </div>
         )}
       </div>
+
+      {/* Center: Hôm nay & Lịch chọn ngày */}
+      <HeaderWorkdayDatePicker />
 
       <div className="flex items-center gap-1.5 md:gap-2">
         <div

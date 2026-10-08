@@ -135,7 +135,7 @@ export function StudentCarePersonnelCluster({
     >
       {/* ── Hàng 1: Người phụ trách CS (có icon đổi) ── */}
       <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-muted-foreground text-[11px] font-medium flex items-center gap-1">
+        <span className="text-muted-foreground text-xs font-medium flex items-center gap-1">
           <Headset className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
           <span>Phụ trách:</span>
         </span>
@@ -211,7 +211,7 @@ export function StudentCarePersonnelCluster({
                           <span className="text-xs font-semibold block truncate">
                             {staff.name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground block truncate">
+                          <span className="text-xs text-muted-foreground block truncate">
                             {staff.code} {staff.role ? `• ${staff.role}` : ''}
                           </span>
                         </div>
@@ -230,7 +230,7 @@ export function StudentCarePersonnelCluster({
 
       {/* ── Hàng 2: GV Phụ trách & N+ Trợ giảng ── */}
       <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-        <span className="text-muted-foreground text-[11px] font-medium">GV:</span>
+        <span className="text-muted-foreground text-xs font-medium">GV:</span>
 
         {/* Hover xem chi tiết GV */}
         <PersonnelHoverCard person={teacherPersonnelItem} align="end">
@@ -249,7 +249,7 @@ export function StudentCarePersonnelCluster({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 text-[11px] font-semibold border border-sky-200/80 transition-colors cursor-pointer shadow-3xs"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 text-xs font-semibold border border-sky-200/80 transition-colors cursor-pointer shadow-3xs"
                 title={`Xem thêm ${assistants.length} trợ giảng / giáo viên phụ`}
               >
                 <span>+{assistants.length}</span>
@@ -267,7 +267,7 @@ export function StudentCarePersonnelCluster({
                     <h4 className="text-xs font-bold text-foreground">
                       {ast.titleHeader || 'Trợ giảng buổi học'}
                     </h4>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
                       {ast.badge || 'Trợ giảng'}
                     </span>
                   </div>

@@ -324,11 +324,11 @@ export function ClassesBulkFeedbackDialog({
               Nhận xét buổi học
             </DialogTitle>
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border text-[11px]">
+              <span className="flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border text-xs">
                 Đã hoàn thành: <strong className="text-foreground">{completedCount}</strong>/{totalCount}
               </span>
               {!(isMath && isTestSession) && (
-                <span className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-200/50 text-[11px]">
+                <span className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md border border-amber-200/50 text-xs">
                   Tổng điểm: <strong className="font-bold">{totalStars}</strong> <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
                 </span>
               )}
@@ -340,7 +340,7 @@ export function ClassesBulkFeedbackDialog({
         <div className="flex-1 min-h-0 flex overflow-hidden">
           {/* Left Student List Sidebar */}
           <aside className="w-[240px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
-            <div className="px-3 py-1.5 border-b text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="px-3 py-1.5 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Học sinh ({totalCount})
             </div>
             <div className="flex-1 overflow-y-auto p-1 space-y-0.5 custom-scrollbar">
@@ -382,7 +382,7 @@ export function ClassesBulkFeedbackDialog({
                           }
                           return <p className="truncate font-semibold text-xs leading-tight">{np.vietnameseName}</p>
                         })()}
-                        <p className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5">{student.code}</p>
+                        <p className="text-xs text-muted-foreground font-mono leading-none mt-0.5">{student.code}</p>
                       </div>
                     </div>
                     {state?.isSent && (

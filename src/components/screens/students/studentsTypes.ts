@@ -16,6 +16,7 @@ export interface StudentFilterState {
   packages: string[]
   dateRanges: string[]
   ageRanges: string[]
+  studentStatuses: string[]
   status: StudentStatusFilter
   startDate?: string
   endDate?: string
@@ -35,6 +36,7 @@ export const INITIAL_FILTER_STATE: StudentFilterState = {
   packages: [],
   dateRanges: [],
   ageRanges: [],
+  studentStatuses: [],
   status: 'all',
   startDate: '',
   endDate: '',

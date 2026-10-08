@@ -1,5 +1,27 @@
 import { mockStudents, type EnrolledClass, type Student } from '@/mocks/students'
 import type { StudentFilterState, StudentStatusFilter } from './studentsTypes'
+import type { StudentLifecycleStatusId, StudentQuickFilterId } from './studentTypes'
+
+export function getStudentLifecycleStatus(student: Student): StudentLifecycleStatusId {
+  if (student.status === 'reserve') return 'reserve'
+  if (student.status === 'session_ended') return 'session_ended'
+  if (
+    student.status === 'wait_for_assignment' ||
+    student.status === 'enroll_later' ||
+    student.status === 'pending_payment' ||
+    student.status === 'awaiting_opening'
+  ) {
+    return 'wait_for_assignment'
+  }
+  if (student.status === 'trial') {
+    const hasClass = Boolean(
+      student.enrolledClass ||
+      (student.enrolledClasses && student.enrolledClasses.length > 0)
+    )
+    return hasClass ? 'active' : 'wait_for_assignment'
+  }
+  return 'active'
+}
 
 export function getStudentBranches(students: Student[]) {
   return Array.from(new Set(students.map((s) => s.branch))).sort()
@@ -23,6 +45,7 @@ export interface StudentFilterOptionCounters {
   packages: (value: string) => number
   dateRanges: (value: string) => number
   ageRanges: (value: string) => number
+  studentStatuses: (value: string) => number
 }
 
 function countStudents(students: Student[], predicate: (student: Student) => boolean) {
@@ -55,11 +78,14 @@ function matchesEnrollmentDateRange(student: Student, range: string) {
   return false
 }
 
-function getStudentAge(student: Student) {
-  if (!student.dob) return 0
+export function getStudentAge(studentOrDob?: Student | string | null): number {
+  if (!studentOrDob) return 0
+  const dob = typeof studentOrDob === 'object' ? studentOrDob.dob : studentOrDob
+  if (!dob) return 0
 
-  const birthDate = new Date(student.dob)
-  const today = new Date('2026-06-16')
+  const birthDate = new Date(dob)
+  if (isNaN(birthDate.getTime())) return 0
+  const today = new Date()
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDelta = today.getMonth() - birthDate.getMonth()
 
@@ -119,6 +145,7 @@ export function createStudentFilterOptionCounters(
     dateRanges: (range) =>
       countStudents(students, (student) => matchesEnrollmentDateRange(student, range)),
     ageRanges: (range) => countStudents(students, (student) => matchesAgeRange(student, range)),
+    studentStatuses: (status) => countStudents(students, (student) => student.status === status),
   }
 }
 
@@ -128,7 +155,8 @@ export function filterStudents(
     search: string
     branch: string
     subject?: string
-    status: StudentStatusFilter
+    status: StudentLifecycleStatusId | StudentStatusFilter
+    quickFilter?: StudentQuickFilterId
     extra: StudentFilterState
   }
 ): Student[] {
@@ -141,8 +169,34 @@ export function filterStudents(
     // 1. Primary Campus (Toolbar dropdown)
     if (filters.branch !== 'all' && student.branch !== filters.branch) return false
 
-    // 2. Tab Status (Header tabs)
-    if (filters.status !== 'all' && student.status !== filters.status) return false
+    // 2. Tab Status (Header tabs - Lifecycle Status)
+    if (filters.status !== 'all') {
+      const lifecycle = getStudentLifecycleStatus(student)
+      if (lifecycle !== filters.status && student.status !== filters.status) return false
+    }
+
+    // 2.1. Quick Filter (Actionable Chips - không số đếm)
+    if (filters.quickFilter && filters.quickFilter !== 'all') {
+      const qf = filters.quickFilter
+      if (qf === 'awaiting_opening') {
+        if (student.status !== 'awaiting_opening') return false
+      } else if (qf === 'pending_transfer') {
+        const matches =
+          student.status === 'pending_transfer' ||
+          (student.enrolledClasses?.some((c) => c.status === 'pending_transfer') ?? false)
+        if (!matches) return false
+      } else if (qf === 'enroll_later') {
+        if (student.status !== 'enroll_later') return false
+      } else if (qf === 'draft_class') {
+        if (student.status !== 'draft_class') return false
+      } else if (qf === 'pending_payment') {
+        if (student.status !== 'pending_payment') return false
+      } else if (qf === 'trial') {
+        if (student.status !== 'trial') return false
+      } else if (qf === 'fee_transfer') {
+        if (student.status !== 'fee_transfer') return false
+      }
+    }
 
     // 3. Advanced Filter: Campuses
     if (filters.extra.branches.length > 0 && !filters.extra.branches.includes(student.branch))
@@ -232,6 +286,13 @@ export function filterStudents(
       if (!matches) return false
     }
 
+    // Advanced Filter: Student Statuses (Học thử, Chờ khai giảng, v.v.)
+    if (filters.extra.studentStatuses && filters.extra.studentStatuses.length > 0) {
+      if (!filters.extra.studentStatuses.includes(student.status)) {
+        return false
+      }
+    }
+
     // 13. Extra tab status check (compatibility)
     if (filters.extra.status !== 'all' && student.status !== filters.extra.status) return false
 
@@ -290,3 +351,137 @@ export function buildEmptyStudent(): Omit<Student, 'id'> {
 export function getInitialStudents(): Student[] {
   return [...mockStudents]
 }
+
+export interface BirthdayInfo {
+  isToday: boolean
+  isThisMonth: boolean
+  hasBirthday: boolean
+  birthYear: number | string
+  fullDob: string
+  formattedDay: string
+  label: string
+  tooltip: string
+}
+
+export function getBirthdayInfo(dobString?: string): BirthdayInfo | null {
+  if (!dobString) return null
+  const parts = dobString.split('-')
+  if (parts.length < 3) return null
+  const birthYear = parseInt(parts[0], 10)
+  const birthMonth = parseInt(parts[1], 10) - 1 // 0-indexed
+  const birthDay = parseInt(parts[2], 10)
+
+  if (isNaN(birthYear) || isNaN(birthMonth) || isNaN(birthDay)) return null
+
+  const today = new Date()
+  const isToday = birthMonth === today.getMonth() && birthDay === today.getDate()
+  const isThisMonth = birthMonth === today.getMonth()
+
+  const dayStr = String(birthDay).padStart(2, '0')
+  const monthStr = String(birthMonth + 1).padStart(2, '0')
+  const fullDob = `${dayStr}/${monthStr}/${birthYear}`
+  const formattedDay = `${dayStr}/${monthStr}`
+
+  return {
+    isToday,
+    isThisMonth,
+    hasBirthday: isToday || isThisMonth,
+    birthYear,
+    fullDob,
+    formattedDay,
+    label: isToday ? 'Sinh nhật hôm nay!' : `Sinh nhật ${formattedDay}`,
+    tooltip: isToday
+      ? `🎂 Hôm nay là sinh nhật em! (${fullDob})`
+      : `🎂 Sinh nhật tháng này: ${fullDob}`,
+  }
+}
+
+export function formatNextSessionShort(cls: EnrolledClass): string {
+  const cleanDate = (dateStr: string): string => {
+    if (!dateStr) return ''
+    const ymdMatch = dateStr.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
+    if (ymdMatch) {
+      const month = parseInt(ymdMatch[2], 10)
+      const day = parseInt(ymdMatch[3], 10)
+      return `${day}/${month}`
+    }
+    const dmyMatch = dateStr.match(/(\d{1,2})[-/](\d{1,2})(?:[-/]\d{2,4})?/)
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1], 10)
+      const month = parseInt(dmyMatch[2], 10)
+      return `${day}/${month}`
+    }
+    return dateStr.replace(/[-/]\d{4}/g, '').trim()
+  }
+
+  const cleanDow = (dowStr: string): string => {
+    const dow = (dowStr || '').trim()
+    return dow
+      .replace(/^Thứ\s*(\d)/i, 'T$1')
+      .replace(/^Thứ\s*Hai/i, 'T2')
+      .replace(/^Thứ\s*Ba/i, 'T3')
+      .replace(/^Thứ\s*Tư/i, 'T4')
+      .replace(/^Thứ\s*Năm/i, 'T5')
+      .replace(/^Thứ\s*Sáu/i, 'T6')
+      .replace(/^Thứ\s*Bảy/i, 'T7')
+      .replace(/^Chủ\s*Nhật/i, 'CN')
+      .replace(/^Thứ\s*/i, 'T')
+      .trim()
+  }
+
+  if (cls.scheduleSlots && cls.scheduleSlots.length > 0) {
+    const slot = cls.scheduleSlots[0]
+    const dow = cleanDow(slot.dayOfWeek || '')
+    const date = cleanDate((slot.date || '').trim())
+    if (dow && date) return `${dow} - ${date}`
+    if (dow) return dow
+    if (date) return date
+  }
+
+  if (cls.nextLessonDate && cls.nextLessonDate !== '-') {
+    const raw = cls.nextLessonDate.replace(/\(.*\)/g, '').trim()
+    const parts = raw.split(/[,–-]/)
+    if (parts.length >= 2) {
+      const dow = cleanDow(parts[0])
+      const date = cleanDate(parts[1])
+      if (dow && date) return `${dow} - ${date}`
+    }
+    const dowMatch = raw.match(/(Thứ\s*\d|Thứ\s*Hai|Thứ\s*Ba|Thứ\s*Tư|Thứ\s*Năm|Thứ\s*Sáu|Thứ\s*Bảy|Chủ\s*Nhật|T[2-7]|CN)/i)
+    const dow = dowMatch ? cleanDow(dowMatch[1]) : ''
+    const date = cleanDate(raw)
+    if (dow && date) return `${dow} - ${date}`
+    if (dow) return dow
+    if (date) return date
+  }
+
+  return 'T4 - 4/6'
+}
+
+export function getPlacementAttempt(student: Student, cls: EnrolledClass): number {
+  if (cls.placementAttempt && cls.placementAttempt > 0) return cls.placementAttempt
+  if (student.placementAttempt && student.placementAttempt > 0) return student.placementAttempt
+  if (student.notes?.includes('lần 2') || student.notes?.includes('ghép lại')) return 2
+  if (student.notes?.includes('lần 3')) return 3
+  if (cls.status === 'pending_transfer') return 2
+  if (student.id === 's-baonam') return 2
+  if (student.id === 's3' || student.id === 's-thanhhang') return 2
+  if (student.id === 's14') return 3
+  if (student.id === 's21') return 2
+  return 1
+}
+
+export function getLessonName(student: Student, cls: EnrolledClass): string {
+  if (cls.nextLessonName && cls.nextLessonName !== '-') return cls.nextLessonName
+  const isMath = Boolean(
+    student.subject === 'math' ||
+    cls.programName?.toLowerCase().includes('toán') ||
+    cls.className?.toLowerCase().includes('toán') ||
+    cls.level?.toLowerCase().includes('toán')
+  )
+  if (isMath) {
+    return 'Bài 01: Khảo sát & Khởi động chuyên đề'
+  }
+  return 'Lesson 01: Review & Speaking Exercises'
+}
+
+

@@ -549,10 +549,10 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
       type: (sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')) ? 'project' : undefined,
       projectUrl: (sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')) ? 'https://scratch.mit.edu/projects/612048882' : undefined,
       materials: (() => {
-        const isProject = sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')
-        // Only completed sessions have post-class attached photos/materials, but project session can have materials
-        if (status !== 'completed' && !isProject) return []
+        // Only completed sessions have post-class attached photos/materials
+        if (status !== 'completed') return []
         
+        const isProject = sessionNum === 8 || topics[i].topic.toLowerCase().includes('dự án') || topics[i].topic.toLowerCase().includes('project')
         const baseMaterials = isProject ? [
           { name: `Slide hướng dẫn dự án Buổi ${sessionNum} (Slide.pdf)`, url: `https://storage.rinoedu.vn/materials/slide-buoi-${sessionNum}.pdf` },
           { name: `Project: Link mở bài mini project`, url: `https://scratch.mit.edu/projects/612048882` }

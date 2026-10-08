@@ -58,7 +58,7 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
               <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
               <span>Cảnh báo Tái kích hoạt: Đã ngừng học / Không hoạt động {ops.daysInactive} ngày</span>
             </div>
-            <Badge className="bg-amber-600 text-white border-none text-[10px]">
+            <Badge className="bg-amber-600 text-white border-none text-xs">
               &gt; 6 Tháng
             </Badge>
           </div>
@@ -69,7 +69,7 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
           </p>
 
           <div className="flex items-center justify-between pt-1 border-t border-amber-200 dark:border-amber-800/80">
-            <span className="text-[11px] text-amber-800 dark:text-amber-400">
+            <span className="text-xs text-amber-800 dark:text-amber-400">
               Lần học cuối: <strong>{ops.lastActivityDate}</strong>
             </span>
             <Button
@@ -92,7 +92,7 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
               <h4 className="font-bold text-foreground text-sm">
                 Đã bàn giao cho Ban Vận hành / Giáo vụ
               </h4>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 Mã học viên:{' '}
                 <a
                   href={`/app/students/${ops.studentCode}`}
@@ -113,7 +113,7 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
         {/* Thông tin lớp học & Giáo vụ phụ trách */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
           <div className="bg-muted/40 p-2.5 rounded-lg border border-border/70 space-y-1">
-            <span className="text-[11px] text-muted-foreground block">Lớp học hiện tại:</span>
+            <span className="text-xs text-muted-foreground block">Lớp học hiện tại:</span>
             <span className="font-bold text-primary flex items-center gap-1">
               <BookOpen className="h-3.5 w-3.5" />
               {ops.currentClass}
@@ -122,7 +122,7 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
           </div>
 
           <div className="bg-muted/40 p-2.5 rounded-lg border border-border/70 space-y-1">
-            <span className="text-[11px] text-muted-foreground block">Giáo vụ phụ trách lớp:</span>
+            <span className="text-xs text-muted-foreground block">Giáo vụ phụ trách lớp:</span>
             <span className="font-semibold text-foreground flex items-center gap-1">
               <UserCheck className="h-3.5 w-3.5 text-sky-600" />
               {ops.academicOfficer}
@@ -131,20 +131,20 @@ export function CrmLeadOpsHandoffTab({ lead, onReactivate }: CrmLeadOpsHandoffTa
           </div>
 
           <div className="bg-muted/40 p-2.5 rounded-lg border border-border/70 space-y-1">
-            <span className="text-[11px] text-muted-foreground block">Tiến độ buổi học:</span>
+            <span className="text-xs text-muted-foreground block">Tiến độ buổi học:</span>
             <span className="font-bold text-foreground">{ops.sessionsLearned}</span>
             <span className="text-[10.5px] text-muted-foreground block">Theo gói đào tạo</span>
           </div>
 
           <div className="bg-muted/40 p-2.5 rounded-lg border border-border/70 space-y-1">
-            <span className="text-[11px] text-muted-foreground block">Tỷ lệ chuyên cần:</span>
+            <span className="text-xs text-muted-foreground block">Tỷ lệ chuyên cần:</span>
             <span className="font-bold text-emerald-700 dark:text-emerald-400">{ops.attendanceRate}</span>
             <span className="text-[10.5px] text-muted-foreground block">Tương tác lớp học</span>
           </div>
         </div>
 
         {/* Thông báo trách nhiệm Sales */}
-        <div className="p-2.5 rounded-lg bg-muted/50 text-[11px] text-muted-foreground flex items-center justify-between">
+        <div className="p-2.5 rounded-lg bg-muted/50 text-xs text-muted-foreground flex items-center justify-between">
           <span>
             ℹ️ Sales chỉ theo dõi trạng thái tham khảo. Việc điểm danh, bảo lưu hoặc chăm sóc hàng ngày do Ban Học vụ đảm nhiệm.
           </span>

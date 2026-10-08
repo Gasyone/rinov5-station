@@ -1,4 +1,6 @@
-import type { EnrolledClass } from '@/mocks/students'
+import type { EnrolledClass, Student } from '@/mocks/students'
+
+export type { Student }
 
 export interface StudentProgram {
   id: string
@@ -22,7 +24,20 @@ export interface StudentProgram {
   endDate?: string
   currentClass: EnrolledClass | null
   pastClasses: EnrolledClass[]
-  programStatus: 'active' | 'wait_for_assignment' | 'dropped' | 'reserved'
+  programStatus:
+    | 'active'
+    | 'wait_for_assignment'
+    | 'dropped'
+    | 'pending_transfer'
+    | 'reserved'
+    | 'reserve'
+    | 'draft_class'
+    | 'awaiting_opening'
+    | 'trial'
+    | 'enroll_later'
+    | 'pending_payment'
+    | 'fee_transfer'
+    | 'session_ended'
   droppedClassInfo?: {
     className: string
     classCode: string
@@ -48,6 +63,26 @@ export interface StudentProgram {
     transferDate?: string
     reason?: string
   }
+  renewalInfo?: {
+    status: 'success' | 'failed' | 'pending'
+    outcomeType?: 'not_purchased' | 'purchased_other'
+    failureReason?: string
+    newPackageName?: string
+    newProgramName?: string
+    linkedOrderNo?: string
+    decisionDate?: string
+    note?: string
+  }
+  feeTransferInfo?: {
+    ticketCode: string
+    transferDate: string
+    executorName?: string
+    transferredSessions: number
+    targetPackageName?: string
+    recipientStudentName?: string
+    linkedOrderNo?: string
+    note?: string
+  }
 }
 
 export interface StudentPackage {
@@ -67,6 +102,8 @@ export interface StudentPackage {
   orderNo?: string
   leaveQuota?: number
   saleName?: string
+  teacherType?: 'VN' | 'Phil' | 'Native' | 'Mix' | string
+  notes?: string
 }
 
 export interface StudentAvailableSlot {

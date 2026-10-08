@@ -55,7 +55,7 @@ export function ClassesSessionMediaEmptyState({
           <SearchX className="h-4.5 w-4.5" />
         </div>
         <h4 className="text-xs font-bold text-foreground">Không tìm thấy media phù hợp</h4>
-        <p className="text-[11px] text-muted-foreground mt-0.5 max-w-md mx-auto">
+        <p className="text-xs text-muted-foreground mt-0.5 max-w-md mx-auto">
           Chưa có hình ảnh, video hoặc tài liệu nào được gắn cho học viên <strong className="text-foreground">{filterLabel}</strong> trong buổi học này.
         </p>
         {onClearFilter && (
@@ -107,7 +107,7 @@ export function ClassesSessionMediaEmptyState({
           : 'Chưa có media nào trong lớp học'}
       </h4>
 
-      <p className="text-[11px] text-muted-foreground mt-0.5 max-w-md mx-auto leading-normal">
+      <p className="text-xs text-muted-foreground mt-0.5 max-w-md mx-auto leading-normal">
         {singleSessionMode
           ? 'Tải lên hình ảnh hoạt động, bài tập, video bài giảng hoặc tài liệu cho buổi học này để lưu trữ và chia sẻ cho phụ huynh & học viên.'
           : 'Tải lên hình ảnh hoạt động, bài giảng hoặc tài liệu theo từng buổi học.'}

@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getStatusBadgeClass } from '@/lib/statusColors'
@@ -125,8 +126,8 @@ export function MonthlyCommentsSection({
         sectionA2Content: '',
         sectionAContent: '',
         sectionB1Content: '',
-        sectionB2StartLesson: 8,
-        sectionB2EndLesson: 10,
+        sectionB2StartLesson: undefined,
+        sectionB2EndLesson: undefined,
         sectionB2Weeks: [],
         evaluator: 'Ms.Chloe',
         date: '28/04/2026',
@@ -163,31 +164,35 @@ export function MonthlyCommentsSection({
   )
 
   return (
-    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3 select-none text-left overflow-hidden">
+    <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-xl p-2.5 shadow-2xs space-y-2 select-none text-left overflow-hidden">
       {/* Header with soft background tint */}
-      <div className="-mx-4 -mt-4 py-2.5 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-3 flex-wrap">
+      <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
         <div>
-          <h3 className="text-xs font-bold text-foreground tracking-tight">
-            Báo cáo Tháng của Học viên
+          <h3 className="text-xs font-semibold text-foreground tracking-tight">
+            Báo cáo tháng của học viên
           </h3>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground font-normal">
+          <span className="text-[11px] text-muted-foreground font-normal">
             Hiển thị {visibleComments.length}/{commentsList.length} kỳ báo cáo
           </span>
           {commentsList.length > 1 && (
             <>
-              <span className="text-border">•</span>
+              <span className="text-border/80">•</span>
               <button
                 type="button"
                 onClick={() => setShowAllHistory(!showAllHistory)}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 <span>
                   {showAllHistory ? 'Thu gọn' : `Xem thêm (${commentsList.length - 1} kỳ)`}
                 </span>
-                {showAllHistory ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                {showAllHistory ? (
+                  <ChevronUp className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                ) : (
+                  <ChevronDown className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                )}
               </button>
             </>
           )}
@@ -200,7 +205,7 @@ export function MonthlyCommentsSection({
           return (
             <div
               key={mc.id || idx}
-              className="p-2.5 rounded-xl border border-transparent bg-transparent hover:border-border/70 hover:bg-muted/30 dark:hover:bg-zinc-800/40 transition-all text-xs"
+              className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs"
             >
               {/* Card Header Bar: Toàn bộ chỉ 1 dòng duy nhất */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -212,18 +217,18 @@ export function MonthlyCommentsSection({
                       const url = `${origin}/report/${studentId}?month=${encodeURIComponent(mc.monthOptionValue || mc.month)}`
                       window.open(url, '_blank')
                     }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 dark:text-sky-400 hover:underline cursor-pointer transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors shrink-0"
                     title={`Nhấp để mở Landing Page báo cáo ${mc.month}`}
                   >
                     <span>{mc.month}</span>
-                    <ExternalLink className="h-3 w-3 opacity-70" />
+                    <ExternalLink className="h-3 w-3 opacity-60 ml-0.5" />
                   </button>
 
                   {/* Current Month Badge */}
                   {(mc.isCurrent !== undefined ? mc.isCurrent : idx === 0) && (
                     <span
                       className={cn(
-                        'text-[10px] font-bold px-2 py-0.5 rounded-full border leading-none shrink-0',
+                        'text-[10.5px] font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
                         getStatusBadgeClass('current')
                       )}
                     >
@@ -233,40 +238,44 @@ export function MonthlyCommentsSection({
 
                   {/* Draft Badge if report is empty */}
                   {!mc.sectionA1Content && !mc.sectionAContent && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 leading-none shrink-0">
+                    <span className="text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 leading-none shrink-0">
                       Bản dự thảo
                     </span>
                   )}
 
                   {/* Danh hiệu (Award Badge) đưa lên header */}
                   {mc.awardBadge && (
-                    <span className="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none inline-flex items-center gap-1 shrink-0">
-                      <Award className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                    <span className="text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none inline-flex items-center gap-1 shrink-0">
+                      <Award className="h-3 w-3 text-amber-600 dark:text-amber-400 stroke-[1.5]" />
                       <span>{mc.awardBadge}</span>
                     </span>
                   )}
 
                   {/* Teacher / Evaluator */}
-                  <span className="text-[11px] text-muted-foreground font-medium shrink-0">
-                    GV: <strong className="text-foreground font-semibold">{mc.teacherName || mc.evaluator || 'Ms.Chloe'}</strong>
+                  <span className="text-[11px] text-muted-foreground font-normal shrink-0">
+                    GV: <span className="text-foreground font-normal">{mc.teacherName || mc.evaluator || 'Ms.Chloe'}</span>
                   </span>
                 </div>
 
                 {/* Right Action Buttons: Xem & Sửa báo cáo trong modal + Sao chép link */}
                 <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleOpenReport(mc.monthOptionValue || mc.month)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-colors cursor-pointer shadow-3xs"
+                    className="h-6 px-2 text-[11px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs"
                     title={`Mở xem và chỉnh sửa báo cáo ${mc.month} trong modal`}
                   >
                     <Pencil className="h-3 w-3" />
                     <span>Xem & sửa</span>
-                  </button>
+                  </Button>
 
                   {/* Nút Copy Link Landing Page */}
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       const origin = typeof window !== 'undefined' ? window.location.origin : ''
                       const link = `${origin}/report/${studentId}?month=${encodeURIComponent(mc.monthOptionValue || mc.month)}`
@@ -275,11 +284,11 @@ export function MonthlyCommentsSection({
                         .then(() => toast.success(`Đã sao chép liên kết Landing Page báo cáo ${mc.month}!`))
                         .catch(() => toast.error('Không thể sao chép liên kết.'))
                     }}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
                     title={`Sao chép liên kết Landing Page báo cáo ${mc.month}`}
                   >
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
+                    <Copy className="h-3 w-3 stroke-[1.5]" />
+                  </Button>
                 </div>
               </div>
             </div>

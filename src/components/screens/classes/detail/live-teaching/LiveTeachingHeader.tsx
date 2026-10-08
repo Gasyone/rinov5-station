@@ -109,7 +109,7 @@ export function LiveTeachingHeader({
         </Button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-bold text-[11px] px-1.5 py-0.5 rounded-md gap-1 shrink-0">
+          <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-bold text-xs px-1.5 py-0.5 rounded-md gap-1 shrink-0">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             Đang dạy
           </Badge>
@@ -166,7 +166,7 @@ export function LiveTeachingHeader({
 
               {/* Dropdown panel */}
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 w-[320px] p-1.5 rounded-xl border bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 animate-in fade-in zoom-in-95">
-                <div className="px-2 py-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider border-b mb-1">
+                <div className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider border-b mb-1">
                   Học liệu buổi học ({materials.length})
                 </div>
                 {materials.map((mat) => {
@@ -191,7 +191,7 @@ export function LiveTeachingHeader({
                         <div className="min-w-0">
                           <p className="truncate leading-tight">{mat.title}</p>
                           {mat.description && (
-                            <p className="text-[10px] text-muted-foreground font-normal line-clamp-1 mt-0.5">
+                            <p className="text-xs text-muted-foreground font-normal line-clamp-1 mt-0.5">
                               {mat.description}
                             </p>
                           )}
@@ -200,7 +200,7 @@ export function LiveTeachingHeader({
 
                       <div className="flex items-center gap-1 shrink-0 ml-1">
                         {mat.badgeLabel && (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 uppercase">
+                          <Badge variant="outline" className="text-xs px-1 py-0 uppercase">
                             {mat.badgeLabel}
                           </Badge>
                         )}
@@ -243,7 +243,7 @@ export function LiveTeachingHeader({
           title="Trạng thái thu âm / ghi hình toàn bộ ca dạy (Bấm để bật/tắt)"
         >
           <span className={cn('h-2 w-2 rounded-full', isClassRecording ? 'bg-rose-500 animate-pulse' : 'bg-zinc-400')} />
-          <span className="text-[11px]">{isClassRecording ? 'Đang thu âm' : 'Tạm dừng thu'}</span>
+          <span className="text-xs">{isClassRecording ? 'Đang thu âm' : 'Tạm dừng thu'}</span>
         </button>
 
         {/* Toggle Roster Drawer */}

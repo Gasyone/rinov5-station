@@ -299,4 +299,105 @@ export function formatTeacherFullName(name?: string): string {
   return cleaned
 }
 
+/**
+ * Chuyển đổi an toàn chuỗi ngày tháng (DD/MM/YYYY hoặc YYYY-MM-DD) sang epoch timestamp (ms).
+ */
+export function parseDateToTimestamp(dateStr?: string): number {
+  if (!dateStr || dateStr === '—') return Number.MAX_SAFE_INTEGER
+  const dmyMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (dmyMatch) {
+    const [, day, month, year] = dmyMatch
+    return new Date(Number(year), Number(month) - 1, Number(day)).getTime()
+  }
+  const timestamp = new Date(dateStr).getTime()
+  return isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp
+}
+
+/**
+ * Trọng số ưu tiên vòng đời trạng thái lớp học (Smart Operational Lifecycle)
+ * 1. Đang học (vận hành hàng ngày)
+ * 2. Chờ khai giảng (chuẩn bị phòng, GV, tài liệu, tuyển sinh)
+ * 3. Tạm nghỉ (cần rà soát)
+ * 4. Mở chiêu sinh
+ * 5. Nháp (kế hoạch dự kiến)
+ * 6. Đã kết thúc
+ */
+export const CLASS_LIFECYCLE_WEIGHT: Record<string, number> = {
+  dang_hoc: 1,
+  cho_khai_giang: 2,
+  tam_dung: 3,
+  mo_chieu_sinh: 4,
+  nhap: 5,
+  huy: 6,
+}
+
+/**
+ * Kiểm tra xem lớp học có cảnh báo vận hành cần xử lý gấp không:
+ * - Giáo viên xin nghỉ phép (cần bố trí dạy thay)
+ * - Chưa được phân công giáo viên
+ */
+export function hasOperationalAlert(cls: ClassRecord): boolean {
+  if (hasTeacherLeave(cls)) return true
+  if (!cls.teacher || cls.teacher === 'Chưa gán' || cls.teacher.trim() === '') return true
+  return false
+}
+
+/**
+ * Sắp xếp mặc định thông minh cho danh sách lớp học (Smart Default Operational Sort)
+ * 
+ * BẬC 1 - Cảnh báo vận hành gấp:
+ *   Lớp có giáo viên nghỉ phép hoặc chưa gán GV được ưu tiên đưa lên đầu bảng để giáo vụ xử lý.
+ * 
+ * BẬC 2 - Vòng đời trạng thái:
+ *   Gom nhóm theo thứ tự: Đang học -> Chờ khai giảng -> Tạm nghỉ -> Nháp -> Đã kết thúc.
+ * 
+ * BẬC 3 - Thời gian tiệm cận:
+ *   - Lớp "Đang học": Xếp theo buổi học tới gần nhất (nextSession.date tăng dần: hôm nay, ngày mai...).
+ *   - Lớp "Chờ khai giảng" / "Nháp": Xếp theo ngày khai giảng gần nhất (startDate tăng dần).
+ * 
+ * BẬC 4 - Tên lớp / Mã lớp:
+ *   Xếp theo bảng chữ cái A -> Z nếu cùng thứ hạng thời gian.
+ */
+export function sortClassesByOperationalPriority(classes: ClassRecord[]): ClassRecord[] {
+  return [...classes].sort((a, b) => {
+    // Bậc 1: Cảnh báo vận hành cần xử lý gấp
+    const alertA = hasOperationalAlert(a) ? 1 : 0
+    const alertB = hasOperationalAlert(b) ? 1 : 0
+    if (alertA !== alertB) {
+      return alertB - alertA
+    }
+
+    // Bậc 2: Vòng đời trạng thái lớp
+    const weightA = CLASS_LIFECYCLE_WEIGHT[a.status] ?? 99
+    const weightB = CLASS_LIFECYCLE_WEIGHT[b.status] ?? 99
+    if (weightA !== weightB) {
+      return weightA - weightB
+    }
+
+    // Bậc 3: Thời gian cụ thể theo từng loại trạng thái
+    if (a.status === 'dang_hoc' && b.status === 'dang_hoc') {
+      const nextA = parseDateToTimestamp(a.nextSession?.date)
+      const nextB = parseDateToTimestamp(b.nextSession?.date)
+      if (nextA !== nextB) {
+        return nextA - nextB
+      }
+    }
+
+    if (
+      (a.status === 'cho_khai_giang' || a.status === 'nhap' || a.status === 'mo_chieu_sinh') &&
+      a.status === b.status
+    ) {
+      const startA = parseDateToTimestamp(a.startDate)
+      const startB = parseDateToTimestamp(b.startDate)
+      if (startA !== startB) {
+        return startA - startB
+      }
+    }
+
+    // Bậc 4: Tên lớp A -> Z
+    return a.name.localeCompare(b.name, 'vi')
+  })
+}
+
+
 

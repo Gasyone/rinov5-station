@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { FileText } from 'lucide-react'
 import { ConfirmDialog } from '@/components/shared'
 import type { BookingTest } from '@/mocks/bookingTests'
 import {
@@ -26,7 +27,7 @@ export function BookingTestDetailActions({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
   const canCheckIn = shouldShowCheckInAction(booking)
   const canCancel = !isTerminalBookingStatus(booking.status)
-  const isAssessing = booking.status === 'checkin'
+  const isAssessing = booking.status === 'checkin' || booking.status === 'assessing'
 
   return (
     <>
@@ -36,7 +37,7 @@ export function BookingTestDetailActions({
           {canCancel && (
             <Button
               variant="ghost"
-              className="text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="h-8 px-2.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() => setConfirmCancelOpen(true)}
             >
               Hủy lịch test
@@ -45,7 +46,7 @@ export function BookingTestDetailActions({
           {!canCancel && isAssessing && (
             <Button
               variant="ghost"
-              className="text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="h-8 px-2.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() =>
                 onUpdateBooking(booking.id, (current) => ({ ...current, status: 'failed' }))
               }
@@ -57,14 +58,14 @@ export function BookingTestDetailActions({
 
         {/* Right side: Close & Primary Action */}
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={() => onOpenChange(false)}>
             Đóng
           </Button>
 
           {canCheckIn && (
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-8 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() =>
                 onUpdateBooking(booking.id, (current) => applyBookingCheckIn(current))
               }
@@ -73,20 +74,22 @@ export function BookingTestDetailActions({
             </Button>
           )}
 
-          {isAssessing && booking.subject === 'english' && booking.teacher?.trim() && (
+          {booking.subject === 'english' && (
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              variant="outline"
+              className="h-8 px-3 text-xs border-primary/50 text-primary hover:bg-primary/10 gap-1.5 font-medium cursor-pointer"
               onClick={() => onOpenAssessment(booking.id)}
             >
-              Mở đánh giá
+              <FileText className="h-3.5 w-3.5" />
+              <span>Mở modal nhận xét</span>
             </Button>
           )}
 
-          {isAssessing && (!booking.teacher?.trim() || booking.subject !== 'english') && (
+          {isAssessing && (
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-8 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() =>
                 onUpdateBooking(booking.id, (current) => ({ ...current, status: 'completed' }))
               }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
@@ -12,12 +12,13 @@ import { TrialClassAssignDialog } from './TrialClassAssignDialog'
 import {
   filterTrialClasses,
   readTrialClasses,
+  sortTrialClasses,
   type TrialClassUpdater,
   getWeekdayLabel,
 } from './trialClassHelpers'
 import { SYSTEM_BRANCHES } from '@/components/controls'
 import { STATUS_CONFIG } from './trialClassConstants'
-import type { AssignDialogMode, StatusTileId, TrialSessionSelection, TrialClassFilterState, TrialResultFilterId } from './trialClassTypes'
+import type { AssignDialogMode, StatusTileId, TrialSessionSelection, TrialClassFilterState, TrialResultFilterId, TrialSortField, SortDirection } from './trialClassTypes'
 
 function getUniqueStringValues(trials: TrialClass[], key: 'branch' | 'program' | 'creator' | 'subject' | 'owner' | 'school'): string[] {
   return [...new Set(trials.map((t) => t[key]).filter(Boolean))] as string[]
@@ -45,9 +46,39 @@ export function TrialClassScreen() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [copiedKey, setCopiedKey] = useState('')
+  const [sortField, setSortField] = useState<TrialSortField>('trialDate')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
   const [detailTrialId, setDetailTrialId] = useState('')
   const [assignMode, setAssignMode] = useState<AssignDialogMode>({ mode: 'closed' })
+
+  // Đồng bộ lại danh sách khi quay lại màn hình hoặc có tạo mới từ page /booking-trial
+  useEffect(() => {
+    const handleSync = () => {
+      setTrialState(readTrialClasses())
+    }
+    window.addEventListener('focus', handleSync)
+    let channel: BroadcastChannel | null = null
+    try {
+      channel = new BroadcastChannel('rinov5_crm_sync')
+      channel.onmessage = () => handleSync()
+    } catch {}
+
+    return () => {
+      window.removeEventListener('focus', handleSync)
+      channel?.close()
+    }
+  }, [])
+
+  const handleSort = (field: TrialSortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+    setPage(1)
+  }
 
   const trials = trialState.trials
   const error = trialState.error
@@ -80,6 +111,11 @@ export function TrialClassScreen() {
     [trials, searchTerm, activeBranch, activeStatus, filters, activeSubject, activeResultFilter]
   )
 
+  const sorted = useMemo(
+    () => sortTrialClasses(filtered, sortField, sortDirection),
+    [filtered, sortField, sortDirection]
+  )
+
   const reloadTrials = () => {
     setIsLoading(true)
     setTimeout(() => {
@@ -88,9 +124,9 @@ export function TrialClassScreen() {
     }, 500)
   }
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const paged = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   const activeFilterCount =
     filters.programs.length +
@@ -216,7 +252,15 @@ export function TrialClassScreen() {
     toast.success('Đã sao chép')
   }
 
-  const handleAssign = (trialId: string, sessions: TrialSessionSelection[], notes: string, rescheduleReason?: string) => {
+  const handleAssign = (
+    trialId: string,
+    sessions: TrialSessionSelection[],
+    notes: string,
+    rescheduleReason?: string,
+    branch?: string,
+    program?: string,
+    subject?: string
+  ) => {
     const now = new Date().toISOString().slice(0, 16).replace('T', ' ')
     setTrials((current) =>
       current.map((t) => {
@@ -224,6 +268,11 @@ export function TrialClassScreen() {
         const previousSession = t.sessions.length > 0 ? t.sessions[0] : t.previousSession
         return {
           ...t,
+          branch: branch || t.branch,
+          school: branch || t.school,
+          program: program || t.program,
+          subject: subject || t.subject,
+          notes: notes || t.notes,
           sessions: sessions.map((s) => ({
             classId: s.classId,
             className: s.className,
@@ -245,7 +294,6 @@ export function TrialClassScreen() {
         }
       })
     )
-    setAssignMode({ mode: 'closed' })
     toast.success(rescheduleReason ? 'Đã đổi buổi học thành công' : 'Đã ghép lớp thành công')
   }
 
@@ -268,7 +316,7 @@ export function TrialClassScreen() {
         onOpenFilters={() => setIsFilterOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-0 lg:px-3 lg:pb-3">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-2.5 lg:px-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
           <TrialClassTableFrame
             loading={isLoading}
@@ -277,8 +325,11 @@ export function TrialClassScreen() {
             selectedIds={selectedIds}
             copiedKey={copiedKey}
             currentPage={currentPage}
-            total={filtered.length}
+            total={sorted.length}
             pageSize={pageSize}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
             onRetry={reloadTrials}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
@@ -296,8 +347,12 @@ export function TrialClassScreen() {
                 return next
               })
             }}
+            onClearSelection={() => setSelectedIds(new Set())}
             onRowClick={setDetailTrialId}
             onCopy={handleCopy}
+            onOpenAssign={(id) => {
+              setAssignMode({ mode: 'assign', trialId: id })
+            }}
             onOpenAssignReschedule={(id) => {
               setAssignMode({ mode: 'reschedule', trialId: id })
             }}
@@ -353,6 +408,7 @@ export function TrialClassScreen() {
         onOpenChange={(open) => { if (!open) setAssignMode({ mode: 'closed' }) }}
         onAssign={handleAssign}
       />
+
     </div>
   )
 }

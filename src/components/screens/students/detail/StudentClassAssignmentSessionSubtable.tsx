@@ -98,7 +98,7 @@ export function StudentClassAssignmentSessionSubtable({
                   <div className="font-semibold text-foreground text-xs leading-tight">
                     {dateDisplay}
                   </div>
-                  <div className="text-[11px] text-muted-foreground font-normal">
+                  <div className="text-xs text-muted-foreground font-normal">
                     {session.startTime} - {session.endTime}
                   </div>
                 </TableCell>
@@ -113,7 +113,7 @@ export function StudentClassAssignmentSessionSubtable({
                   </div>
                   {session.description && (
                     <div
-                      className="text-[11px] text-muted-foreground truncate max-w-[450px]"
+                      className="text-xs text-muted-foreground truncate max-w-[450px]"
                       title={session.description}
                     >
                       {session.description}
@@ -124,7 +124,7 @@ export function StudentClassAssignmentSessionSubtable({
                 {/* 4. Giảng viên */}
                 <TableCell className="w-[180px] py-2 px-3 align-middle">
                   <div className="flex items-center gap-1.5">
-                    <Avatar className="h-5 w-5 border bg-primary/10 text-primary text-[10px] font-bold shrink-0">
+                    <Avatar className="h-5 w-5 border bg-primary/10 text-primary text-xs font-bold shrink-0">
                       <AvatarFallback className="font-bold">
                         {getInitials(
                           session.substituteTeacherName || session.teacherName
@@ -133,10 +133,10 @@ export function StudentClassAssignmentSessionSubtable({
                     </Avatar>
                     {session.substituteTeacherName ? (
                       <div className="flex flex-col gap-0 min-w-0 leading-none">
-                        <span className="line-through text-muted-foreground/60 text-[10px] truncate max-w-[100px]">
+                        <span className="line-through text-muted-foreground/60 text-xs truncate max-w-[100px]">
                           {session.teacherName}
                         </span>
-                        <span className="text-amber-600 dark:text-amber-400 font-bold text-[11px] truncate max-w-[100px]">
+                        <span className="text-amber-600 dark:text-amber-400 font-bold text-xs truncate max-w-[100px]">
                           {session.substituteTeacherName}
                         </span>
                       </div>

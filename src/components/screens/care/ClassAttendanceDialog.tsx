@@ -170,7 +170,7 @@ function AttendanceTable({
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 font-medium">
+                  <div className="text-xs text-muted-foreground mt-0.5 font-normal">
                     {getDayOfWeek(s.date)}, {s.date}
                   </div>
                 </td>

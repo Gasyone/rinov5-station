@@ -138,8 +138,11 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   booked_assessment: 'success',
   unassigned_teacher: 'warning',
   interviewed: 'purple',
+  ranh: 'success',
+  ban: 'error',
   tested: 'warning',
   checkin: 'success',
+  assessing: 'info',
   completed: 'completed',
   escalated: 'error',
   failed: 'error',
@@ -192,6 +195,7 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   fee_transfer: 'info',
   trial: 'purple',
   reserve: 'purple',
+  paused: 'purple',
   session_ended: 'neutral',
   dropout: 'error',
   buoi_1: 'info',
@@ -228,6 +232,8 @@ const ENTITY_STATUS_MAP: Record<string, StatusSemantic> = {
   enroll_later: 'purple',
   pending_transfer: 'warning',
   awaiting_opening: 'completed',
+  phu_hop: 'success',
+  lop_phu_hop: 'success',
 
   // Class lifecycle (BF-CLS-02)
   nhap: 'neutral',

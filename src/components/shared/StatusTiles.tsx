@@ -38,6 +38,8 @@ export interface StatusTilesProps<T extends string> {
   showDot?: boolean
   hideDot?: boolean
   coloredCount?: boolean
+  compact?: boolean
+  fontNormal?: boolean
 }
 
 /* ── Single tile button ───────────────────────────────────── */
@@ -46,8 +48,9 @@ function TileButton<T extends string>({
   isActive,
   onSelect,
   compact,
-  showDot = true,
-  coloredCount = false,
+  showDot = false,
+  coloredCount = true,
+  fontNormal = false,
 }: {
   tile: StatusTile<T>
   isActive: boolean
@@ -55,6 +58,7 @@ function TileButton<T extends string>({
   compact?: boolean
   showDot?: boolean
   coloredCount?: boolean
+  fontNormal?: boolean
 }) {
   const semantic =
     tile.semantic ??
@@ -67,7 +71,8 @@ function TileButton<T extends string>({
       variant="ghost"
       onClick={() => onSelect(tile.id)}
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border text-xs font-medium transition-colors',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border text-xs transition-colors',
+        fontNormal ? 'font-normal' : 'font-medium',
         compact ? 'h-7 px-2.5' : 'h-8 px-3',
         isActive
           ? colors.active
@@ -92,10 +97,14 @@ function TileButton<T extends string>({
           />
         )
       )}
-      <span>{tile.label}</span>
+      <span className={cn(fontNormal && 'font-normal')}>{tile.label}</span>
       <span
         className={cn(
-          'rounded-full px-1.5 py-0.5 text-[11px] font-bold min-w-[20px] text-center leading-none transition-colors',
+          'rounded-full text-center leading-none transition-colors',
+          fontNormal ? 'font-normal' : 'font-bold',
+          compact
+            ? 'min-w-[18px] px-1.25 py-0.5 text-[10.5px]'
+            : 'min-w-[20px] px-1.5 py-0.5 text-xs',
           isActive
             ? 'bg-primary-foreground/20 text-primary-foreground'
             : coloredCount
@@ -123,9 +132,11 @@ export function StatusTiles<T extends string>({
   onSelect,
   className,
   noOverflowCollapse = false,
-  showDot = true,
+  showDot = false,
   hideDot,
-  coloredCount = false,
+  coloredCount = true,
+  compact = false,
+  fontNormal = false,
 }: StatusTilesProps<T>) {
   const effectiveShowDot = hideDot ? false : showDot
   const containerRef = useRef<HTMLDivElement>(null)
@@ -143,7 +154,7 @@ export function StatusTiles<T extends string>({
     if (children.length === 0) return
 
     // Measure total width of all tiles with gaps
-    const gap = 8
+    const gap = compact ? 6 : 8
     const widths = children.map((c) => c.offsetWidth)
     const totalWidth = widths.reduce((s, w) => s + w, 0) + gap * (widths.length - 1)
 
@@ -154,7 +165,7 @@ export function StatusTiles<T extends string>({
     }
 
     // Need to collapse — reserve space for the "+N" button
-    const moreButtonReserve = 130
+    const moreButtonReserve = compact ? 110 : 130
     const maxWidth = containerWidth - moreButtonReserve
     let usedWidth = 0
     let fitCount = 0
@@ -167,7 +178,7 @@ export function StatusTiles<T extends string>({
     }
 
     setVisibleCount(Math.max(1, fitCount))
-  }, [noOverflowCollapse])
+  }, [noOverflowCollapse, compact])
 
   useEffect(() => {
     recalc()
@@ -184,15 +195,17 @@ export function StatusTiles<T extends string>({
 
   if (noOverflowCollapse) {
     return (
-      <div className={cn('flex items-center gap-2 flex-wrap min-w-0', className)}>
+      <div className={cn('flex items-center flex-wrap min-w-0', compact ? 'gap-1.5' : 'gap-2', className)}>
         {tiles.map((tile) => (
           <TileButton
             key={tile.id}
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={onSelect}
+            compact={compact}
             showDot={effectiveShowDot}
             coloredCount={coloredCount}
+            fontNormal={fontNormal}
           />
         ))}
       </div>
@@ -211,7 +224,10 @@ export function StatusTiles<T extends string>({
       <div
         ref={measureRef}
         aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 flex items-center gap-2 whitespace-nowrap"
+        className={cn(
+          'pointer-events-none invisible absolute left-0 top-0 flex items-center whitespace-nowrap',
+          compact ? 'gap-1.5' : 'gap-2'
+        )}
       >
         {tiles.map((tile) => (
           <TileButton
@@ -219,22 +235,26 @@ export function StatusTiles<T extends string>({
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={() => {}}
+            compact={compact}
             showDot={effectiveShowDot}
             coloredCount={coloredCount}
+            fontNormal={fontNormal}
           />
         ))}
       </div>
 
       {/* Visible row */}
-      <div className="flex items-center gap-2">
+      <div className={cn('flex items-center', compact ? 'gap-1.5' : 'gap-2')}>
         {visibleTiles.map((tile) => (
           <TileButton
             key={tile.id}
             tile={tile}
             isActive={tile.id === activeId}
             onSelect={onSelect}
+            compact={compact}
             showDot={effectiveShowDot}
             coloredCount={coloredCount}
+            fontNormal={fontNormal}
           />
         ))}
 
@@ -245,7 +265,9 @@ export function StatusTiles<T extends string>({
                 type="button"
                 variant="outline"
                 className={cn(
-                  'inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-medium',
+                  'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border',
+                  fontNormal ? 'font-normal' : 'font-medium',
+                  compact ? 'h-7 px-2.5 text-xs' : 'h-8 px-3 text-xs',
                   activeInOverflow
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -266,6 +288,7 @@ export function StatusTiles<T extends string>({
                     compact
                     showDot={effectiveShowDot}
                     coloredCount={coloredCount}
+                    fontNormal={fontNormal}
                   />
                 ))}
               </div>

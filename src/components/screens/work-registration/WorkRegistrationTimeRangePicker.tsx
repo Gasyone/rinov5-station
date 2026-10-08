@@ -261,7 +261,7 @@ export function WorkRegistrationTimeRangePicker({
                   </span>
                 </div>
                 {typeof draftMinutes === 'number' && draftMinutes > 0 ? (
-                  <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 animate-in fade-in">
+                  <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 animate-in fade-in">
                     ✨ Mới chọn: +{formatMinutes(draftMinutes)}
                   </span>
                 ) : null}

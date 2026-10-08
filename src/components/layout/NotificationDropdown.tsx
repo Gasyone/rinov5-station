@@ -144,7 +144,7 @@ export function NotificationDropdown() {
             {mounted && unreadCount > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-                <span className="relative inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                <span className="relative inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               </span>
@@ -161,7 +161,7 @@ export function NotificationDropdown() {
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold tracking-tight text-foreground">Thông báo</span>
               {mounted && unreadCount > 0 && (
-                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/10 px-1.5 text-[10px] font-semibold text-primary">
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/10 px-1.5 text-xs font-semibold text-primary">
                   {unreadCount}
                 </span>
               )}
@@ -176,7 +176,7 @@ export function NotificationDropdown() {
                   setOnlyUnread((prev) => !prev)
                 }}
                 className={cn(
-                  'h-6 px-2.5 text-[11px] font-medium rounded-full border transition-all flex items-center gap-1.5 select-none',
+                  'h-6 px-2.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5 select-none',
                   onlyUnread
                     ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                     : 'bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/50'
@@ -198,7 +198,7 @@ export function NotificationDropdown() {
                 size="xs"
                 disabled={!mounted || unreadCount === 0}
                 className={cn(
-                  'h-6 px-1.5 text-[11px] font-medium transition-colors flex items-center gap-1 rounded-md',
+                  'h-6 px-1.5 text-xs font-medium transition-colors flex items-center gap-1 rounded-md',
                   mounted && unreadCount > 0
                     ? 'text-muted-foreground hover:text-primary cursor-pointer'
                     : 'text-muted-foreground/35 cursor-not-allowed opacity-50'
@@ -302,14 +302,14 @@ export function NotificationDropdown() {
                           </p>
 
                           {/* Dòng phụ: Nội dung phụ (truncate ... nếu dài) + Thời gian */}
-                          <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground/80 mt-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground/80 mt-1 min-w-0">
                             <span
                               className="truncate min-w-0"
                               title={notif.message}
                             >
                               {notif.message}
                             </span>
-                            <span className="shrink-0 text-[10px] text-muted-foreground/60 font-medium">
+                            <span className="shrink-0 text-xs text-muted-foreground/60 font-medium">
                               {getRelativeTime(notif.timestamp)}
                             </span>
                           </div>
@@ -355,7 +355,7 @@ export function NotificationDropdown() {
 
               {/* Fixed Footer Bar */}
               <div className="border-t border-border/70 px-3 py-2 bg-muted/15 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-muted-foreground/80">
+                <span className="text-xs text-muted-foreground/80">
                   {filteredNotifications.length} thông báo
                 </span>
                 <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export function NotificationDropdown() {
                       resetNotifications()
                       toast.success('Đã nạp lại dữ liệu mẫu thông báo đầy đủ')
                     }}
-                    className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                   >
                     <RotateCcw className="h-3 w-3" />
                     <span>Nạp lại</span>
@@ -379,7 +379,7 @@ export function NotificationDropdown() {
                       e.stopPropagation()
                       toast.info('Hệ thống đang hiển thị toàn bộ 16 thông báo mới nhất')
                     }}
-                    className="text-[11px] font-medium text-primary hover:underline hover:text-primary/80 transition-colors flex items-center gap-0.5"
+                    className="text-xs font-medium text-primary hover:underline hover:text-primary/80 transition-colors flex items-center gap-0.5"
                   >
                     <span>Xem tất cả</span>
                     <span aria-hidden="true">&rarr;</span>

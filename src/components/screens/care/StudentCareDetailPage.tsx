@@ -1,24 +1,16 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-
-import {
-  ArrowLeft,
-  ShieldCheck,
-  ChevronDown,
-  Copy,
-} from 'lucide-react'
 import { toast } from 'sonner'
-import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
-import { cn } from '@/lib/utils'
 import { useUIStore } from '@/stores/useUIStore'
-import { StudentCareHeaderClusterInfo, StudentCareHeaderClusterNote } from './StudentCareHeaderCluster'
-import { getStatusBadgeClass } from '@/lib/statusColors'
 import { mockCareAlerts, type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
+import { mockStudents, type Student } from '@/mocks/students'
+import { StudentCareProfilePanel } from './StudentCareProfilePanel'
+import {
+  StudentDetailEditProfileDialog,
+  type StudentProfileUpdateData,
+} from '../students/detail/StudentDetailEditProfileDialog'
 import { stableHash } from './operationsAlertHelpers'
-import { AppAvatar } from '@/components/shared'
 import { StudentCareChatFeed } from './StudentCareChatFeed'
 import { StudentCareReportTab } from './StudentCareReportTab'
 import { LeaveReserveDetailDialog } from '@/components/screens/leave-reserve/LeaveReserveDetailDialog'
@@ -36,7 +28,7 @@ import {
 
 interface StudentCareDetailPageProps {
   studentId: string
-  onBack: () => void
+  onBack?: () => void
   alerts: StudentCareAlert[]
   onRefresh?: () => void
   onStudentSelect?: (studentId: string) => void
@@ -46,7 +38,6 @@ interface StudentCareDetailPageProps {
 
 export function StudentCareDetailPage({
   studentId,
-  onBack,
   alerts,
   onRefresh,
   initialTab = 'learning',
@@ -69,8 +60,9 @@ export function StudentCareDetailPage({
         : 'regular'
 
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [revision, setRevision] = useState(0)
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
-  const [showCodes, setShowCodes] = useState(false)
   const [isCreateLeaveReserveOpen, setIsCreateLeaveReserveOpen] = useState(false)
   const [createLeaveReserveType, setCreateLeaveReserveType] = useState<'off' | 'reservation'>('off')
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
@@ -289,27 +281,13 @@ export function StudentCareDetailPage({
     return getSimulatedLogs(student, topicsList)
   }, [student, topicsList])
 
-  const birthYear = useMemo(() => {
-    if (!student) return ''
-    const baseYear = 2018 - (stableHash(student.studentId) % 4)
-    return `25/08/${baseYear}`
-  }, [student])
-
   const address = useMemo(() => {
-    if (!student) return ''
+    if (!student) return 'Số 29 Nguyễn Tuân, Nam Từ Liêm, Hà Nội'
     const districts = ["Thanh Xuân", "Cầu Giấy", "Đống Đa", "Hai Bà Trưng", "Nam Từ Liêm"]
     const district = districts[stableHash(student.studentId) % districts.length]
     return `Số ${10 + (stableHash(student.studentId) % 90)} Nguyễn Tuân, ${district}, Hà Nội`
   }, [student])
 
-  const [prevContacts, setPrevContacts] = useState(contacts)
-  const [contactsList, setContactsList] = useState(contacts)
-
-  // Student personality/attitude note
-  const [studentNote, setStudentNote] = useState('')
-  const [isEditingStudentNote, setIsEditingStudentNote] = useState(false)
-  const [editingStudentNoteText, setEditingStudentNoteText] = useState('')
-  const [isParentsExpanded, setIsParentsExpanded] = useState(false)
   const [isLeaveReserveOpen, setIsLeaveReserveOpen] = useState(false)
 
   const leaveRequest = useMemo(() => {
@@ -321,218 +299,133 @@ export function StudentCareDetailPage({
     )
   }, [student])
 
-  useEffect(() => {
-    if (student) {
-      if (student.studentNote !== undefined) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setStudentNote(student.studentNote)
-      } else {
-        const hash = stableHash(student.studentId)
-        const mockNotes = [
-          'Học viên tích cực, thích hoạt động nhóm, cần động viên nhiều hơn khi làm bài tập cá nhân.',
-          '',
-          'Con tiếp thu nhanh các bài học logic, hay đặt câu hỏi phản biện trên lớp.',
-          '',
-          'Thường xuyên giơ tay phát biểu, có năng khiếu tự học tốt.',
-        ]
-        setStudentNote(mockNotes[hash % mockNotes.length])
+  // Find matching student record from mockStudents or synthesize
+  const resolvedStudent = useMemo<Student | null>(() => {
+    if (!student) return null
+    const target = mockStudents.find(
+      (s) =>
+        s.id === student.studentId ||
+        s.id === student.id ||
+        s.name.toLowerCase() === student.studentName.toLowerCase() ||
+        student.studentName.toLowerCase().includes(s.name.toLowerCase()) ||
+        s.name.toLowerCase().includes(student.studentName.toLowerCase())
+    )
+
+    if (target) {
+      return {
+        ...target,
+        name: student.studentName || target.name,
+        englishName: student.englishName || target.englishName,
+        notes: student.studentNote || target.notes,
       }
     }
-  }, [student])
 
-  if (prevContacts !== contacts) {
-    setPrevContacts(contacts)
-    setContactsList(contacts)
+    const lastDigit = parseInt(student.studentId.replace(/\D/g, '').slice(-1), 10) || 0
+    const isFemale = lastDigit % 2 === 0
+    const baseYear = 2018 - (stableHash(student.studentId) % 4)
+    const familyContacts = getFamilyContacts(student.studentId, student.studentName)
+    const primaryC = familyContacts.find((c) => c.isPrimary) || familyContacts[0]
+
+    return {
+      id: student.studentId || student.id,
+      name: student.studentName,
+      englishName: student.englishName,
+      email: `${student.studentId.toLowerCase()}@student.rinoedu.vn`,
+      phone: primaryC?.phone || '0901234567',
+      gender: isFemale ? 'Female' : 'Male',
+      dob: `${baseYear}-08-25`,
+      status: 'active',
+      branch: 'RinoEdu Nguyễn Tuân',
+      level: student.level || 'Toán 1:6',
+      subLevel: student.subLevel,
+      parentName: primaryC?.name || 'Nguyễn Thu Trang',
+      parentPhone: primaryC?.phone || '0912345678',
+      enrollmentDate: student.startDate || '2024-08-14',
+      notes: student.studentNote || 'Thường xuyên giơ tay phát biểu, có năng khiếu tự học tốt.',
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [student, studentId, revision])
+
+  const handleSaveProfile = (updatedData: StudentProfileUpdateData) => {
+    if (!resolvedStudent || !student) return
+
+    // 1. Update in mockStudents
+    const targetStudent = mockStudents.find(
+      (s) =>
+        s.id === resolvedStudent.id ||
+        s.id === student.studentId ||
+        s.name.toLowerCase() === resolvedStudent.name.toLowerCase()
+    )
+    if (targetStudent) {
+      targetStudent.name = updatedData.name
+      targetStudent.englishName = updatedData.englishName
+      if (updatedData.avatar) targetStudent.avatar = updatedData.avatar
+      targetStudent.gender = updatedData.gender
+      targetStudent.dob = updatedData.dob
+    }
+
+    // 2. Update in mockCareAlerts
+    const foundAlert = mockCareAlerts.find(
+      (a) => a.id === studentId || a.studentId === studentId || a.studentName === student.studentName
+    )
+    if (foundAlert) {
+      foundAlert.studentName = updatedData.name
+      foundAlert.englishName = updatedData.englishName
+    }
+
+    setRevision((r) => r + 1)
+    onRefresh?.()
+    toast.success('Đã cập nhật thông tin học viên thành công!')
+  }
+
+  const handleUpdateNote = (newNote: string) => {
+    if (!resolvedStudent || !student) return
+
+    const targetStudent = mockStudents.find(
+      (s) =>
+        s.id === resolvedStudent.id ||
+        s.id === student.studentId ||
+        s.name.toLowerCase() === resolvedStudent.name.toLowerCase()
+    )
+    if (targetStudent) {
+      targetStudent.notes = newNote
+    }
+
+    const foundAlert = mockCareAlerts.find(
+      (a) => a.id === studentId || a.studentId === studentId || a.studentName === student.studentName
+    )
+    if (foundAlert) {
+      foundAlert.studentNote = newNote
+    }
+
+    setRevision((r) => r + 1)
+    onRefresh?.()
+    toast.success('Đã cập nhật ghi chú học viên!')
   }
 
   if (!student) return null
 
-  const cid = student.customerCode || (student.studentId ? `VH${student.studentId.replace(/\D/g, '') || '230994'}` : 'VH230994')
-  const uid = String(100000 + (stableHash(student.studentId) % 900000))
-  const sid = student.studentId || '193060'
-
-  const handleCopyCode = (code: string, label: string) => {
-    navigator.clipboard.writeText(code)
-    toast.success(`Đã sao chép ${label}!`)
-  }
-
-  const studentAvatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${student.studentName}`
   const formattedPhone = selectedContactPhone || primaryContact?.phone || '0901234567'
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
       {/* Direct direct-split layout without top header bar */}
-      <div className="flex-1 min-h-0 px-4 pb-4 pt-3 flex flex-col">
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 px-2.5 pb-2.5 pt-1.5 flex flex-col">
+        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-2 min-h-0 overflow-hidden">
           
           {/* Left Column: Profile Info Header & Report Tab */}
-          <main className="flex min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1.5 scrollbar-thin">
+          <main className="flex min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1 scrollbar-thin">
             
-            {/* Unified Personal Information Cluster Card */}
-            <div className="shrink-0 bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-3.5 shadow-sm space-y-2 text-left mb-3">
-              {/* Top Row: Back Button, Avatar, Name, Mã ID, NS, ĐC, Phụ huynh */}
-              <div className="flex items-start gap-3 min-w-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground shrink-0 border mt-0.5"
-                  title="Quay lại danh sách cảnh báo"
-                  onClick={onBack}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-
-                <HoverCard openDelay={150} closeDelay={150}>
-                  <HoverCardTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => setIsProfileOpen(true)}
-                      className="cursor-pointer hover:scale-105 hover:opacity-90 active:scale-95 transition-all shrink-0 rounded-full focus:outline-none"
-                    >
-                      <AppAvatar
-                        src={studentAvatar}
-                        name={student.studentName}
-                        size="xl"
-                        className="border-2 border-background shadow-md shrink-0 h-16 w-16 text-xl pointer-events-none"
-                      />
-                    </button>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80 p-4 rounded-xl shadow-md border bg-popover text-popover-foreground z-50 text-left" align="start">
-                    <div className="space-y-3.5 text-xs text-left">
-                      <div className="flex items-center gap-2.5 border-b border-border pb-2.5">
-                        <AppAvatar src={studentAvatar} size="sm" className="h-9 w-9 border border-primary/10" />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-bold text-sm text-foreground truncate">{student.studentName}</h4>
-                            <Badge className={cn('text-xs font-bold py-0.5 px-1.5 rounded-full shadow-none border-none uppercase leading-none h-4', getStatusBadgeClass(student.status))}>
-                              {student.status}
-                            </Badge>
-                          </div>
-                          <p className="font-mono text-[9.5px] text-muted-foreground mt-0.5">{student.studentId}</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
-                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Lớp học:</span>
-                          <span className="font-semibold text-foreground truncate">{student.classCode}</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
-                          <span className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Môn học:</span>
-                          <span className="font-semibold text-foreground">{student.subject}</span>
-                        </div>
-                        <div className="space-y-1.5 pt-1">
-                          <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">LIÊN HỆ GIA ĐÌNH</p>
-                          {contactsList.map((contact, idx) => (
-                            <div key={idx} className="flex justify-between items-center gap-2 py-0.5">
-                              <span className="font-medium text-foreground">{contact.name} ({contact.relationship})</span>
-                              <span className="font-mono text-muted-foreground font-semibold">{contact.phone}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="text-[9.5px] text-primary font-bold text-center border-t border-border/40 pt-2 cursor-pointer hover:underline">
-                        Nhấp vào avatar để xem chi tiết đầy đủ
-                      </div>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-
-                {/* Right side info next to avatar */}
-                <div className="min-w-0 space-y-1 flex-1">
-                  {/* Row: Tên học viên + Nút Nghỉ phép, Bảo lưu, Mã ID */}
-                  <div className="flex items-center justify-between gap-2 leading-tight flex-nowrap min-w-0">
-                    <span className="text-base font-bold text-foreground truncate">
-                      {student.studentName} {student.englishName ? `(${student.englishName})` : ''}
-                    </span>
-
-                    <div className="flex items-center gap-1.5 shrink-0 ml-auto flex-wrap sm:flex-nowrap">
-                      {/* Toggle Icon Button Mở rộng Mã ID */}
-                      <button
-                        type="button"
-                        onClick={() => setShowCodes((prev) => !prev)}
-                        className={cn(
-                          "inline-flex items-center gap-1 text-xs transition-colors cursor-pointer select-none shrink-0 h-6.5 px-2 rounded-md hover:bg-muted/80 whitespace-nowrap border border-border/60",
-                          showCodes
-                            ? "text-primary font-bold bg-primary/10 border-primary/30"
-                            : "text-muted-foreground hover:text-foreground font-medium"
-                        )}
-                        title={showCodes ? "Ẩn danh sách mã hệ thống" : "Hiện mã CID, UID, SID"}
-                      >
-                        <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-                        <span>Mã ID</span>
-                        <ChevronDown className={cn("h-3 w-3 shrink-0 transition-transform duration-200", showCodes && "rotate-180")} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <StudentCareHeaderClusterInfo
-                    birthYear={birthYear}
-                    address={address}
-                    contactsList={contactsList}
-                    setContactsList={setContactsList}
-                    isParentsExpanded={isParentsExpanded}
-                    setIsParentsExpanded={setIsParentsExpanded}
-                  />
-                </div>
-              </div>
-
-              {/* Dải hiển thị mã hệ thống khi mở rộng - Tách thành 1 dòng riêng biệt */}
-              {showCodes && (
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground select-none py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/40 rounded-xl border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200 w-full">
-                  <span className="flex items-center gap-1 font-mono text-xs">
-                    <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span>CID:</span>
-                    <strong className="text-foreground font-semibold">{cid}</strong>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCode(cid, 'Mã CID')}
-                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                      title="Sao chép CID"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  </span>
-                  <span className="text-muted-foreground/30">•</span>
-                  <span className="flex items-center gap-1 font-mono text-xs">
-                    <span>UID:</span>
-                    <strong className="text-foreground font-semibold">{uid}</strong>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCode(uid, 'Mã UID')}
-                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                      title="Sao chép UID"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  </span>
-                  <span className="text-muted-foreground/30">•</span>
-                  <span className="flex items-center gap-1 font-mono text-xs">
-                    <span>SID:</span>
-                    <strong className="text-foreground font-semibold">{sid}</strong>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCode(sid, 'Mã SID')}
-                      className="p-0.5 hover:text-foreground text-muted-foreground transition-colors cursor-pointer rounded hover:bg-muted/80 ml-0.5"
-                      title="Sao chép SID"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </button>
-                  </span>
-                </div>
-              )}
-
-              {/* Student Note Row: Full Width underneath Avatar */}
-              <StudentCareHeaderClusterNote
-                studentNote={studentNote}
-                setStudentNote={setStudentNote}
-                isEditingStudentNote={isEditingStudentNote}
-                setIsEditingStudentNote={setIsEditingStudentNote}
-                editingStudentNoteText={editingStudentNoteText}
-                setEditingStudentNoteText={setEditingStudentNoteText}
+            {/* Thông tin học viên (Độc lập cho màn Chi tiết Chăm sóc) */}
+            {resolvedStudent && (
+              <StudentCareProfilePanel
+                student={resolvedStudent}
+                address={address}
+                onEditProfile={() => setIsEditProfileOpen(true)}
+                onUpdateNote={handleUpdateNote}
+                className="mb-1.5 shrink-0"
               />
-            </div>
+            )}
 
             <div className="w-full pt-1 flex flex-col">
               <StudentCareReportTab
@@ -635,6 +528,22 @@ export function StudentCareDetailPage({
             : null
         }
       />
+
+      {/* Dialog: Chỉnh sửa thông tin học viên (Ảnh 2) */}
+      {resolvedStudent && isEditProfileOpen && (
+        <StudentDetailEditProfileDialog
+          open={isEditProfileOpen}
+          onOpenChange={setIsEditProfileOpen}
+          initialData={{
+            name: resolvedStudent.name,
+            englishName: resolvedStudent.englishName,
+            avatar: resolvedStudent.avatar,
+            gender: resolvedStudent.gender,
+            dob: resolvedStudent.dob,
+          }}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   )
 }

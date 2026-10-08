@@ -200,7 +200,7 @@ export function CrmFamilyProfile360Modal({
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(defaultAddress)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 text-[11px] text-sky-600 dark:text-sky-400 hover:underline font-medium shrink-0 ml-1 cursor-pointer"
+                className="inline-flex items-center gap-0.5 text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium shrink-0 ml-1 cursor-pointer"
               >
                 <span>(Mở map)</span>
                 <ExternalLink className="h-2.5 w-2.5" />
@@ -208,7 +208,7 @@ export function CrmFamilyProfile360Modal({
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground mr-1">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mr-1">
                 <Navigation className="h-3 w-3 text-emerald-600 shrink-0" />
                 <span>Khoảng cách cơ sở:</span>
               </div>
@@ -216,7 +216,7 @@ export function CrmFamilyProfile360Modal({
                 <span
                   key={b.name}
                   className={cn(
-                    'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] shrink-0 border',
+                    'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs shrink-0 border',
                     idx === 0
                       ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 font-semibold'
                       : 'bg-muted/40 text-muted-foreground border-border/50'
@@ -251,7 +251,7 @@ export function CrmFamilyProfile360Modal({
             <Users className="h-3.5 w-3.5" />
             <span>Phụ huynh &amp; Người bảo trợ</span>
             {parents.length > 0 && (
-              <Badge variant="secondary" className="h-4 px-1 text-[10px] font-bold rounded-full ml-0.5">
+              <Badge variant="secondary" className="h-4 px-1 text-xs font-bold rounded-full ml-0.5">
                 {parents.length}
               </Badge>
             )}
@@ -286,7 +286,7 @@ export function CrmFamilyProfile360Modal({
             <ShoppingCart className="h-3.5 w-3.5 text-amber-600" />
             <span>Đơn hàng gia đình</span>
             {orders.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 border-0 ml-0.5">
                 {orders.length}
               </Badge>
             )}
@@ -306,7 +306,7 @@ export function CrmFamilyProfile360Modal({
             <Receipt className="h-3.5 w-3.5 text-emerald-600" />
             <span>Lịch sử Thanh toán</span>
             {payments.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 border-0 ml-0.5">
                 {payments.length}
               </Badge>
             )}
@@ -326,7 +326,7 @@ export function CrmFamilyProfile360Modal({
             <Truck className="h-3.5 w-3.5 text-sky-600" />
             <span>Giao nhận &amp; Vận đơn</span>
             {deliveries.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 border-0 ml-0.5">
                 {deliveries.length}
               </Badge>
             )}

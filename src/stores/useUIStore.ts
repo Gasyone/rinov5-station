@@ -15,6 +15,7 @@ interface UIState {
   notifications: Notification[]
   currentMenuId: string | null
   customHeaderTitle: string | null
+  workdayDate: string
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
   setTheme: (theme: 'light' | 'dark') => void
@@ -23,6 +24,7 @@ interface UIState {
   removeNotification: (id: string) => void
   setCurrentMenuId: (menuId: string | null) => void
   setCustomHeaderTitle: (title: string | null) => void
+  setWorkdayDate: (date: string) => void
 }
 
 const generateId = () => {
@@ -84,6 +86,12 @@ export const useUIStore = create<UIState>()(
 
       setCustomHeaderTitle: (title: string | null) => {
         set({ customHeaderTitle: title })
+      },
+
+      workdayDate: new Date().toISOString().split('T')[0],
+
+      setWorkdayDate: (date: string) => {
+        set({ workdayDate: date })
       },
     }),
     {

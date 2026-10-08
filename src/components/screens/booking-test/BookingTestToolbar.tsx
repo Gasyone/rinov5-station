@@ -52,9 +52,8 @@ export function BookingTestToolbar({
 }: BookingTestToolbarProps) {
   const mainStatusIds: StatusTileId[] = [
     'booked_assessment',
+    'assessing',
     'completed',
-    'failed',
-    'cancelled',
   ]
 
   const conditionStatusIds: StatusTileId[] = [
@@ -62,6 +61,7 @@ export function BookingTestToolbar({
     'checkin',
     ...(activeSubject === 'math' ? [] : ['interviewed' as StatusTileId]),
     'tested',
+    'failed',
   ]
 
   const mainTiles: StatusTile<StatusTileId>[] = [
@@ -93,25 +93,30 @@ export function BookingTestToolbar({
   })
 
   return (
-    <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-2 lg:px-3">
+    <div className="flex shrink-0 flex-col gap-2 bg-background px-2 py-2.5 lg:px-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <SubjectSelect
-            value={activeSubject}
-            onValueChange={onSubjectChange}
-            options={[
-              { value: 'all', label: 'Tất cả môn' },
-              { value: 'english', label: 'Tiếng Anh' },
-              { value: 'math', label: 'Toán học' }
-            ]}
-            className="h-9 min-w-36 text-sm"
-          />
-
           <BranchSelect
             value={activeSchool}
             branches={schoolOptions}
             onValueChange={onSchoolChange}
-            className="h-9 min-w-40 text-sm"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
+            className="h-8 min-w-38 text-xs"
+          />
+
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            options={[
+              { value: 'all', label: 'Tất cả các môn' },
+              { value: 'english', label: 'Tiếng Anh' },
+              { value: 'math', label: 'Toán học' }
+            ]}
+            allLabel="Tất cả các môn"
+            placeholder="Chọn môn học"
+            className="h-8 min-w-32 text-xs"
           />
         </div>
 
@@ -121,23 +126,16 @@ export function BookingTestToolbar({
             onValueChange={onSearchChange}
             label="Tìm lịch test"
             placeholder="Tìm tên học viên, số điện thoại, mã lịch..."
-            inputClassName="sm:w-64"
+            inputClassName="sm:w-60 text-xs h-8"
           />
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
           {!isTeacherRole && (
-            onCreateBooking ? (
-              <Button size="sm" onClick={onCreateBooking}>
-                <Plus className="h-4 w-4" />
+            <Button asChild size="sm" className="h-8 gap-1.5 shadow-xs text-xs font-medium cursor-pointer">
+              <Link href="/booking-test">
+                <Plus className="h-3.5 w-3.5" />
                 Tạo lịch test
-              </Button>
-            ) : (
-              <Button asChild size="sm">
-                <Link href="/app/booking_test/create">
-                  <Plus className="h-4 w-4" />
-                  Tạo lịch test
-                </Link>
-              </Button>
-            )
+              </Link>
+            </Button>
           )}
         </div>
       </div>
@@ -149,6 +147,7 @@ export function BookingTestToolbar({
           activeId={activeStatus}
           onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
           noOverflowCollapse
+          compact
           showDot={false}
           hideDot={true}
           coloredCount={true}

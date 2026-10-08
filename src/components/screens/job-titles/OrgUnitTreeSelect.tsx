@@ -212,7 +212,7 @@ function OrgTreeNodeRow({
         </span>
 
         {/* Unit Code */}
-        <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+        <span className="text-xs font-mono text-muted-foreground shrink-0">
           ({node.code})
         </span>
 
@@ -351,7 +351,7 @@ export const OrgUnitTreeSelect: React.FC<OrgUnitTreeSelectProps> = ({
               <span className="truncate font-medium text-foreground">
                 {selectedUnit.name}
               </span>
-              <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+              <span className="text-xs font-mono text-muted-foreground shrink-0">
                 ({selectedUnit.code})
               </span>
             </div>
@@ -390,7 +390,7 @@ export const OrgUnitTreeSelect: React.FC<OrgUnitTreeSelectProps> = ({
         </div>
 
         {/* Tree Toolbar: summary count & expand/collapse controls */}
-        <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
           <span>
             {searchQuery
               ? `Kết quả tìm kiếm (${displayedTree.length} nhánh)`

@@ -90,7 +90,7 @@ export function CrmLeadParentProfileView({
                         type="button"
                         onClick={() => onSelectParent(p)}
                         className={cn(
-                          'h-6 px-2 rounded-md text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer border shrink-0',
+                          'h-6 px-2 rounded-md text-xs font-medium transition-all flex items-center gap-1 cursor-pointer border shrink-0',
                           isSelected
                             ? 'bg-sky-600 text-white border-sky-600 shadow-xs font-semibold'
                             : 'bg-background hover:bg-muted text-foreground border-border/70'
@@ -102,7 +102,7 @@ export function CrmLeadParentProfileView({
                         {p.isPrimary && (
                           <span
                             className={cn(
-                              'text-[8px] px-1 rounded-xs font-bold uppercase',
+                              'text-xs px-1 rounded-xs font-bold uppercase',
                               isSelected
                                 ? 'bg-white/20 text-white'
                                 : 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200'
@@ -120,7 +120,7 @@ export function CrmLeadParentProfileView({
 
             {/* Mã lead và Ngày tạo ở dưới title "Thông tin phụ huynh" ở header */}
             {(leadCode || leadCreatedAt) && (
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap pl-5">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap pl-5">
                 {leadCode && (
                   <button
                     type="button"
@@ -128,7 +128,7 @@ export function CrmLeadParentProfileView({
                       navigator.clipboard.writeText(leadCode)
                       toast.success(`Đã sao chép mã Lead: ${leadCode}`)
                     }}
-                    className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+                    className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
                     title="Nhấp để sao chép mã Lead"
                   >
                     <span>Mã: {leadCode}</span>
@@ -139,7 +139,7 @@ export function CrmLeadParentProfileView({
                   <span className="text-muted-foreground/40 shrink-0">•</span>
                 )}
                 {leadCreatedAt && (
-                  <span className="text-[11px] text-muted-foreground font-normal shrink-0">
+                  <span className="text-xs text-muted-foreground font-normal shrink-0">
                     Ngày tạo: {leadCreatedAt}
                   </span>
                 )}
@@ -215,11 +215,11 @@ export function CrmLeadParentProfileView({
               <h4 className="text-base font-semibold text-foreground truncate">
                 {isEditing ? editedParent.name : parent.name}
               </h4>
-              <Badge variant="outline" className="bg-muted/40 text-muted-foreground border-border/60 font-normal text-[11px] shrink-0">
+              <Badge variant="outline" className="bg-muted/40 text-muted-foreground border-border/60 font-normal text-xs shrink-0">
                 {isEditing ? editedParent.role : parent.role}
               </Badge>
               {parent.isPrimary && (
-                <Badge className="bg-emerald-600/90 text-white font-normal text-[10px] shrink-0">
+                <Badge className="bg-emerald-600/90 text-white font-normal text-xs shrink-0">
                   Liên hệ chính
                 </Badge>
               )}
@@ -256,7 +256,7 @@ export function CrmLeadParentProfileView({
 
             {/* Dòng 3: Con khác (nếu có) */}
             {siblingLeads && siblingLeads.length > 0 && (
-              <div className="flex items-center gap-1.5 text-[11px] flex-wrap pt-0.5">
+              <div className="flex items-center gap-1.5 text-xs flex-wrap pt-0.5">
                 <span className="text-muted-foreground font-medium shrink-0 flex items-center gap-1">
                   <Users className="h-3 w-3 text-sky-600 dark:text-sky-400" />
                   Con khác:
@@ -268,7 +268,7 @@ export function CrmLeadParentProfileView({
                       href={sib.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 h-5.5 px-2 rounded-md text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800/80 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 h-5.5 px-2 rounded-md text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800/80 transition-colors cursor-pointer"
                       title={`Mở hồ sơ Lead của ${sib.name} trong tab mới`}
                     >
                       <GraduationCap className="h-3 w-3 text-sky-600 dark:text-sky-400" />
@@ -327,7 +327,7 @@ export function CrmLeadParentProfileView({
                     href={mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-sky-600 hover:text-sky-700 dark:text-sky-400 font-medium hover:underline shrink-0"
+                    className="inline-flex items-center gap-1 text-xs text-sky-600 hover:text-sky-700 dark:text-sky-400 font-medium hover:underline shrink-0"
                     title="Mở Google Maps"
                   >
                     <span>Mở map</span>
@@ -336,7 +336,7 @@ export function CrmLeadParentProfileView({
                 </div>
 
                 {/* Dòng Khoảng cách với 3 cơ sở gần nhất */}
-                <div className="flex items-center gap-1.5 text-[11px] flex-wrap">
+                <div className="flex items-center gap-1.5 text-xs flex-wrap">
                   <Navigation className="h-3 w-3 text-emerald-600 shrink-0" />
                   {nearestBranches.map((b, idx) => {
                     const cleanName = b.name
@@ -350,7 +350,7 @@ export function CrmLeadParentProfileView({
                         target="_blank"
                         rel="noopener noreferrer"
                         className={cn(
-                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] shrink-0 transition-colors cursor-pointer hover:underline',
+                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs shrink-0 transition-colors cursor-pointer hover:underline',
                           idx === 0
                             ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-200/80 dark:border-emerald-800/80 hover:text-emerald-900 dark:hover:text-emerald-200'
                             : 'bg-muted/40 text-muted-foreground border border-border/50 font-normal hover:text-foreground'
@@ -436,7 +436,7 @@ export function CrmLeadParentProfileView({
                     <div className="space-y-2 min-w-0">
                       {/* Ngân sách học tập */}
                       <div className="space-y-0.5 min-w-0">
-                        <span className="text-[11px] text-muted-foreground font-medium block">
+                        <span className="text-xs text-muted-foreground font-medium block">
                           Ngân sách học tập / tháng
                         </span>
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -451,7 +451,7 @@ export function CrmLeadParentProfileView({
                           {parent.financialSegment && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] py-0 px-1.5 font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shrink-0"
+                              className="text-xs py-0 px-1.5 font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 shrink-0"
                             >
                               {parent.financialSegment}
                             </Badge>
@@ -461,7 +461,7 @@ export function CrmLeadParentProfileView({
 
                       {/* Quyền hạn quyết định */}
                       <div className="space-y-0.5 min-w-0">
-                        <span className="text-[11px] text-muted-foreground font-medium block">
+                        <span className="text-xs text-muted-foreground font-medium block">
                           Quyền hạn quyết định
                         </span>
                         <p
@@ -480,7 +480,7 @@ export function CrmLeadParentProfileView({
                     <div className="space-y-2 min-w-0 md:border-l md:border-border/60 md:pl-3.5">
                       {/* Kênh ưu tiên & Trạng thái Zalo */}
                       <div className="space-y-0.5 min-w-0">
-                        <span className="text-[11px] text-muted-foreground font-medium block">
+                        <span className="text-xs text-muted-foreground font-medium block">
                           Kênh liên hệ ưu tiên
                         </span>
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -488,7 +488,7 @@ export function CrmLeadParentProfileView({
                             {cleanChannelName}
                           </span>
                           {parent.zaloStatus && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 px-1.5 py-0.5 rounded">
                               <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                               <span>{parent.zaloStatus}</span>
                             </span>
@@ -498,7 +498,7 @@ export function CrmLeadParentProfileView({
 
                       {/* Khung giờ liên lạc */}
                       <div className="space-y-0.5 min-w-0">
-                        <span className="text-[11px] text-muted-foreground font-medium block">
+                        <span className="text-xs text-muted-foreground font-medium block">
                           Thời gian liên lạc
                         </span>
                         <p
@@ -517,13 +517,13 @@ export function CrmLeadParentProfileView({
                   {/* Phần mở rộng: Xem thêm các kênh liên hệ khác */}
                   {isChannelsExpanded && (
                     <div className="pt-2 border-t border-border/50 space-y-1.5 animate-in fade-in-0 duration-150">
-                      <div className="text-[11px] font-medium text-muted-foreground">
+                      <div className="text-xs font-medium text-muted-foreground">
                         Các kênh liên hệ bổ sung:
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                         {/* Facebook */}
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="text-[11px] text-muted-foreground shrink-0">Facebook:</span>
+                          <span className="text-xs text-muted-foreground shrink-0">Facebook:</span>
                           {parent.facebook ? (
                             <a
                               href={parent.facebook.startsWith('http') ? parent.facebook : `https://${parent.facebook}`}
@@ -535,27 +535,27 @@ export function CrmLeadParentProfileView({
                               <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                             </a>
                           ) : (
-                            <span className="text-muted-foreground/70 italic text-[11px]">Chưa cập nhật</span>
+                            <span className="text-muted-foreground/70 italic text-xs">Chưa cập nhật</span>
                           )}
                         </div>
 
                         {/* Instagram */}
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="text-[11px] text-muted-foreground shrink-0">Instagram:</span>
+                          <span className="text-xs text-muted-foreground shrink-0">Instagram:</span>
                           {parent.instagram ? (
                             <span className="text-pink-600 dark:text-pink-400 truncate">{parent.instagram}</span>
                           ) : (
-                            <span className="text-muted-foreground/70 italic text-[11px]">Chưa cập nhật</span>
+                            <span className="text-muted-foreground/70 italic text-xs">Chưa cập nhật</span>
                           )}
                         </div>
 
                         {/* Zalo phụ / Zalo riêng */}
                         <div className="flex items-center gap-1.5 min-w-0 sm:col-span-2">
-                          <span className="text-[11px] text-muted-foreground shrink-0">Zalo riêng:</span>
+                          <span className="text-xs text-muted-foreground shrink-0">Zalo riêng:</span>
                           {parent.zaloPhone && parent.zaloPhone !== parent.phone ? (
                             <span className="text-sky-700 dark:text-sky-300 font-mono">{parent.zaloPhone}</span>
                           ) : (
-                            <span className="text-muted-foreground/70 italic text-[11px]">Dùng chung số điện thoại chính ({parent.phone})</span>
+                            <span className="text-muted-foreground/70 italic text-xs">Dùng chung số điện thoại chính ({parent.phone})</span>
                           )}
                         </div>
                       </div>

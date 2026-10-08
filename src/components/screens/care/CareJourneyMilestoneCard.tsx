@@ -211,7 +211,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
               <StatusBadge
                 status="that_bai"
                 label={item.statusLabel || 'Thất bại'}
-                className="text-[11px] px-2 py-0 h-5 font-semibold shrink-0"
+                className="text-xs px-2 py-0 h-5 font-semibold shrink-0"
               />
             )}
 
@@ -268,7 +268,7 @@ export const CareJourneyMilestoneCard: React.FC<CareJourneyMilestoneCardProps> =
                   <div className="shrink-0 pt-0.5">
                     <span
                       className={cn(
-                        'inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-medium select-none',
+                        'inline-flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium select-none',
                         isTeacher
                           ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
                           : 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'

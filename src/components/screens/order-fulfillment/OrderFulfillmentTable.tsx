@@ -202,7 +202,7 @@ export function OrderFulfillmentTable({
                           >
                             {displayCode}
                           </span>
-                          <div className="text-[11px] text-muted-foreground truncate" title={`${rc.handoverBy || 'Lễ tân cơ sở'} • ${dateOnly}`}>
+                          <div className="text-xs text-muted-foreground truncate" title={`${rc.handoverBy || 'Lễ tân cơ sở'} • ${dateOnly}`}>
                             <span>{rc.handoverBy || 'Lễ tân cơ sở'}</span>
                             {dateOnly && <span> • {dateOnly}</span>}
                           </div>
@@ -286,7 +286,7 @@ export function OrderFulfillmentTable({
                             </div>
                             {/* Dòng 2 (Đề xuất): Tên gói học / Khóa học đào tạo */}
                             <span
-                              className="text-[11px] text-muted-foreground truncate"
+                              className="text-xs text-muted-foreground truncate"
                               title={rc.coursePackageName || 'Combo giáo trình / học liệu'}
                             >
                               {rc.coursePackageName || 'Combo giáo trình khóa học'}
@@ -302,7 +302,7 @@ export function OrderFulfillmentTable({
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  'text-[10px] py-0 px-1.5 font-medium shrink-0',
+                                  'text-xs py-0 px-1.5 font-medium shrink-0',
                                   rc.sourceType === 'care_gift' &&
                                     'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800',
                                   rc.sourceType === 'reward' &&
@@ -324,7 +324,7 @@ export function OrderFulfillmentTable({
                               {rc.sourceCode && (
                                 <div className="flex items-center gap-0.5 min-w-0">
                                   <span
-                                    className="font-mono font-semibold text-foreground text-[11px] truncate"
+                                    className="font-mono font-semibold text-foreground text-xs truncate"
                                     title={`Mã căn cứ: ${rc.sourceCode}`}
                                   >
                                     {rc.sourceCode}
@@ -360,7 +360,7 @@ export function OrderFulfillmentTable({
                             </div>
                             {/* Dòng 2 (Đề xuất): Tên sự kiện / Chiến dịch tri ân / Lý do khen thưởng */}
                             <span
-                              className="text-[11px] text-muted-foreground truncate"
+                              className="text-xs text-muted-foreground truncate"
                               title={rc.sourceTitle || 'Quà tặng / Học liệu trung tâm'}
                             >
                               {rc.sourceTitle || 'Quà tặng / Học liệu'}
@@ -379,7 +379,7 @@ export function OrderFulfillmentTable({
                             onClick={(e) => e.stopPropagation()}
                           >
                             <span
-                              className="font-mono font-bold text-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/70 text-[11px] hover:text-primary transition-colors truncate"
+                              className="font-mono font-bold text-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/70 text-xs hover:text-primary transition-colors truncate"
                               title={`Phiếu xuất kho: ${rc.stockExportCode}`}
                             >
                               {rc.stockExportCode}
@@ -440,7 +440,7 @@ export function OrderFulfillmentTable({
                         <div onClick={(e) => e.stopPropagation()} className="min-w-0">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-help transition-colors truncate max-w-full">
+                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground cursor-help transition-colors truncate max-w-full">
                                 <span className="font-semibold text-foreground/90 shrink-0">{ncc}:</span>
                                 <span className="truncate underline decoration-dotted decoration-muted-foreground/60">{progress}</span>
                                 <Info className="h-3 w-3 text-muted-foreground/70 shrink-0" />
@@ -460,10 +460,10 @@ export function OrderFulfillmentTable({
                                       <span>ĐVVC: {rc.carrier}</span>
                                     </span>
                                     {rc.trackingCode && (
-                                      <span className="font-mono text-[10px] text-muted-foreground">{rc.trackingCode}</span>
+                                      <span className="font-mono text-xs text-muted-foreground">{rc.trackingCode}</span>
                                     )}
                                   </div>
-                                  <div className="space-y-1 text-[11px]">
+                                  <div className="space-y-1 text-xs">
                                     <div className="flex justify-between">
                                       <span className="text-muted-foreground">Tiến trình:</span>
                                       <span className="font-medium text-foreground">{progress}</span>
@@ -487,13 +487,13 @@ export function OrderFulfillmentTable({
                                       </div>
                                     )}
                                     {totalPodCount > 0 && (
-                                      <div className="flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 pt-1 border-t">
+                                      <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 pt-1 border-t">
                                         <span>Bằng chứng POD:</span>
                                         <span className="font-medium font-mono">Đã lưu {totalPodCount} tệp</span>
                                       </div>
                                     )}
                                     {rc.shippingAddress && (
-                                      <div className="text-[10px] text-muted-foreground pt-1 border-t">
+                                      <div className="text-xs text-muted-foreground pt-1 border-t">
                                         <span>Địa chỉ: {rc.shippingAddress}</span>
                                       </div>
                                     )}
@@ -507,9 +507,9 @@ export function OrderFulfillmentTable({
                                       <MapPin className="h-3.5 w-3.5" />
                                       <span>Bàn giao tại quầy cơ sở</span>
                                     </span>
-                                    <span className="text-[10px] font-mono text-muted-foreground">{rc.id}</span>
+                                    <span className="text-xs font-mono text-muted-foreground">{rc.id}</span>
                                   </div>
-                                  <div className="space-y-1 text-[11px]">
+                                  <div className="space-y-1 text-xs">
                                     <div className="flex justify-between">
                                       <span className="text-muted-foreground">Điểm bàn giao:</span>
                                       <span className="font-medium text-foreground">{rc.branch}</span>
@@ -529,13 +529,13 @@ export function OrderFulfillmentTable({
                                       </div>
                                     )}
                                     {totalPodCount > 0 && (
-                                      <div className="flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 pt-1 border-t">
+                                      <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 pt-1 border-t">
                                         <span>Bằng chứng POD:</span>
                                         <span className="font-medium font-mono">Đã lưu {totalPodCount} tệp</span>
                                       </div>
                                     )}
                                     {rc.notes && (
-                                      <div className="text-[10px] text-muted-foreground pt-1 border-t">
+                                      <div className="text-xs text-muted-foreground pt-1 border-t">
                                         <span>Ghi chú: {rc.notes}</span>
                                       </div>
                                     )}
@@ -565,7 +565,7 @@ export function OrderFulfillmentTable({
                     >
                       <Badge
                         className={cn(
-                          'text-[11px] py-0.5 px-1.5 font-medium whitespace-nowrap inline-flex justify-center',
+                          'text-xs py-0.5 px-1.5 font-medium whitespace-nowrap inline-flex justify-center',
                           getStatusBadgeClass(rc.status)
                         )}
                       >

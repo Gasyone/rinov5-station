@@ -124,7 +124,7 @@ export function StudentDetailRecommendedClasses({
             <span
               role="button"
               tabIndex={0}
-              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-[11px] font-medium shrink-0"
+              className="px-1.5 py-0.5 hover:bg-muted/80 text-muted-foreground hover:text-foreground border border-border/40 rounded transition-all cursor-pointer flex items-center gap-1 text-xs font-medium shrink-0"
               title={`Xem lịch sử đổi giáo viên (${teacherHistoryList.length} giáo viên)`}
             >
               <History className="h-3 w-3" />
@@ -189,7 +189,7 @@ export function StudentDetailRecommendedClasses({
                       {/* Sĩ số: Không nền, không viền */}
                       <div className="flex items-center gap-1.5 text-xs">
                         <span className="font-semibold text-foreground">{enrolled}/{max}</span>
-                        <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
                           (+{newCount} mới, Trial)
                         </span>
                       </div>
@@ -229,7 +229,7 @@ export function StudentDetailRecommendedClasses({
                           className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                           title="Nhấp chuột để xem thông tin Khung chương trình"
                         >
-                          <span className="text-[11px] font-medium text-muted-foreground">KCT:</span>{' '}
+                          <span className="text-xs font-medium text-muted-foreground">KCT:</span>{' '}
                           <span className="font-medium text-foreground">
                             {rec.syllabus && rec.syllabus !== '—' ? rec.syllabus : 'IELTS Junior v2.1'}
                           </span>
@@ -238,7 +238,7 @@ export function StudentDetailRecommendedClasses({
 
                       <span className="text-muted-foreground/30">•</span>
 
-                      <span className="text-[11px] text-muted-foreground font-medium">GV:</span>
+                      <span className="text-xs text-muted-foreground font-medium">GV:</span>
                       {teachers.map((tName, idx) => {
                         const teacherPersonObj = {
                           id: `EMP-${tName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'EMP'}`,
@@ -300,7 +300,7 @@ export function StudentDetailRecommendedClasses({
                       <span className="text-muted-foreground font-medium text-[11.5px]">Điểm TB:</span>
                       <strong className="text-foreground font-bold">
                         {perf.latestScore.score !== '—' ? perf.latestScore.score : '7.0'}
-                        <span className="text-[10px] font-normal text-muted-foreground">/10</span>
+                        <span className="text-xs font-normal text-muted-foreground">/10</span>
                       </strong>
                     </div>
                     <span className="text-border/60">•</span>
@@ -312,7 +312,7 @@ export function StudentDetailRecommendedClasses({
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-muted-foreground font-medium">
+                  <div className="text-xs text-muted-foreground font-medium">
                     Tỷ lệ lấp đầy: <strong className="text-foreground font-semibold">{pct}%</strong>
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export function StudentDetailRecommendedClasses({
                       {currentSelectedSession.topic}
                     </span>
                     <span className="text-muted-foreground/60 hidden sm:inline">•</span>
-                    <span className="text-[11px] font-mono text-muted-foreground hidden sm:inline">
+                    <span className="text-xs font-mono text-muted-foreground hidden sm:inline">
                       Phòng {currentSelectedSession.room}
                     </span>
                     <span className="text-muted-foreground/60 hidden md:inline">•</span>
@@ -364,7 +364,7 @@ export function StudentDetailRecommendedClasses({
                       </div>
 
                       <DropdownMenuContent align="end" className="w-[380px] p-1.5 space-y-1">
-                        <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground border-b border-border/40">
+                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border/40">
                           Chọn buổi ghép lớp ({rec.name})
                         </div>
                         {upcomingList.map((sess, idx) => (
@@ -384,12 +384,12 @@ export function StudentDetailRecommendedClasses({
                                 {sess.day}, {sess.date} ({sess.time})
                               </span>
                               {idx === 0 && (
-                                <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded">
+                                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded">
                                   Buổi đầu
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] truncate w-full">
+                            <div className="flex items-center gap-1.5 text-muted-foreground text-xs truncate w-full">
                               <span className="truncate">{sess.topic}</span>
                               <span>•</span>
                               <span>Phòng {sess.room}</span>

@@ -60,13 +60,13 @@ export function LiveLessonGuideDrawer({
             <div className="flex items-center gap-2 mb-1">
               <Badge
                 className={cn(
-                  'text-[10px] font-bold px-2 py-0.5 rounded-md border-none',
+                  'text-xs font-bold px-2 py-0.5 rounded-md border-none',
                   isMath ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
                 )}
               >
                 KCT: {syllabusTitle}
               </Badge>
-              <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+              <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
                 <Clock className="h-3 w-3 text-amber-500" />
                 {session.startTime ? `${session.startTime} - ${session.endTime}` : '17:45 - 19:15'}
               </span>
@@ -96,7 +96,7 @@ export function LiveLessonGuideDrawer({
                 <BookOpen className="h-4 w-4 text-primary shrink-0" />
                 <span>Nội dung KCT Buổi {session.sessionNumber}</span>
               </span>
-              <span className="text-[11px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {isMath ? 'Toán tư duy' : 'Tiếng Anh'}
               </span>
             </div>
@@ -209,7 +209,7 @@ export function LiveLessonGuideDrawer({
                             </div>
                             <span className="font-semibold text-xs text-foreground truncate">{c.name}</span>
                           </div>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 uppercase shrink-0 font-mono">
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 uppercase shrink-0 font-mono">
                             {c.type}
                           </Badge>
                         </div>
@@ -228,7 +228,7 @@ export function LiveLessonGuideDrawer({
                 <Sparkles className="h-3.5 w-3.5 text-amber-600" />
                 <span>Ghi chú từ Khung chương trình</span>
               </div>
-              <p className="text-[11px] text-amber-900/90 dark:text-amber-200 leading-relaxed font-medium">
+              <p className="text-xs text-amber-900/90 dark:text-amber-200 leading-relaxed font-medium">
                 {session.description}
               </p>
             </div>

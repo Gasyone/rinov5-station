@@ -99,10 +99,10 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
         <button
           type="button"
           onClick={() => scroll('right')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full py-1 px-2 flex items-center gap-1 text-[11px] font-semibold transition-all hover:scale-105 cursor-pointer group animate-pulse hover:animate-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full py-1 px-2 flex items-center gap-1 text-xs font-semibold transition-all hover:scale-105 cursor-pointer group animate-pulse hover:animate-none"
           title="Cuộn sang phải xem các trạng thái tiếp theo (T4, T5)"
         >
-          <span className="hidden md:inline text-[10px] text-slate-500 group-hover:text-blue-600 font-medium">
+          <span className="hidden md:inline text-xs text-slate-500 group-hover:text-blue-600 font-medium">
             Cuộn xem T4, T5
           </span>
           <ChevronRight className="w-4 h-4 text-blue-600" />
@@ -114,7 +114,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
         <button
           type="button"
           onClick={() => scroll('left')}
-          className="absolute left-[118px] top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full p-1 flex items-center text-[11px] font-semibold transition-all hover:scale-105 cursor-pointer"
+          className="absolute left-[118px] top-1/2 -translate-y-1/2 z-30 shadow-md bg-white/95 hover:bg-white text-slate-700 hover:text-blue-600 border border-slate-300 rounded-full p-1 flex items-center text-xs font-semibold transition-all hover:scale-105 cursor-pointer"
           title="Cuộn sang trái"
         >
           <ChevronLeft className="w-4 h-4 text-blue-600" />
@@ -144,7 +144,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                 <div className="text-xs font-bold tracking-tight text-slate-800">
                   Xem tất cả
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                <div className="text-xs text-slate-500 font-medium mt-0.5">
                   {mode === 'all' ? 'Toàn bộ T0-T5' : 'Toàn bộ phễu'}
                 </div>
                 {/* Nút cuộn trái / phải hỗ trợ xem cột phía sau */}
@@ -165,7 +165,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-[9px] text-slate-400 font-normal">Cuộn</span>
+                  <span className="text-xs text-slate-400 font-normal">Cuộn</span>
                   <button
                     type="button"
                     disabled={!canScrollRight}
@@ -195,7 +195,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                   <div className="flex items-center justify-center gap-1.5">
                     <span>{group.groupCode}</span>
                     {group.groupLabel && (
-                      <span className="text-[11px] font-normal text-slate-500 hidden sm:inline">
+                      <span className="text-xs font-normal text-slate-500 hidden sm:inline">
                         • {group.groupLabel}
                       </span>
                     )}
@@ -214,7 +214,7 @@ export const CrmLeadsStatusMatrix: React.FC<CrmLeadsStatusMatrixProps> = ({
                       key={col.id}
                       onClick={() => onSelectStatus(col.id)}
                       style={{ backgroundColor: col.color }}
-                      className={`py-1 px-2.5 text-center text-[11px] font-semibold text-white whitespace-nowrap border-r border-white/25 cursor-pointer transition-opacity hover:opacity-90 ${
+                      className={`py-1 px-2.5 text-center text-xs font-semibold text-white whitespace-nowrap border-r border-white/25 cursor-pointer transition-opacity hover:opacity-90 ${
                         isActive ? 'ring-2 ring-inset ring-white' : ''
                       }`}
                       title={`Lọc theo ${col.label}`}

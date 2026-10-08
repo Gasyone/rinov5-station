@@ -142,12 +142,12 @@ function OrgTreeNodeItem({
               >
                 {node.name}
               </span>
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border">
+              <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground border">
                 {node.code}
               </span>
               <span
                 className={cn(
-                  'rounded px-1.5 py-0.5 text-[10px] font-semibold',
+                  'rounded px-1.5 py-0.5 text-xs font-semibold',
                   typeConfig.badgeVariant
                 )}
               >
@@ -162,17 +162,17 @@ function OrgTreeNodeItem({
                   {node.leaderAvatar ? (
                     <AvatarImage src={node.leaderAvatar} alt={node.leaderName} />
                   ) : null}
-                  <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                     {leaderInitial}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-foreground font-medium">{node.leaderName}</span>
-                <span className="text-[11px] text-muted-foreground">({node.leaderTitle})</span>
+                <span className="text-xs text-muted-foreground">({node.leaderTitle})</span>
               </div>
 
               <span className="text-border">|</span>
 
-              <div className="flex items-center gap-1 text-[11px]">
+              <div className="flex items-center gap-1 text-xs">
                 <Users className="h-3 w-3 text-primary" />
                 <span className="font-semibold text-foreground">{node.memberCount}</span> nhân sự
               </div>
@@ -181,7 +181,7 @@ function OrgTreeNodeItem({
             {/* Job Titles / Chức danh thuộc đơn vị */}
             {node.positions && node.positions.length > 0 ? (
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground shrink-0">
+                <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground shrink-0">
                   <Briefcase className="h-3 w-3 text-primary/70" />
                   <span>Chức danh:</span>
                 </span>
@@ -189,7 +189,7 @@ function OrgTreeNodeItem({
                   {node.positions.map((title) => (
                     <span
                       key={title}
-                      className="inline-flex items-center rounded bg-muted/80 px-1.5 py-0.5 text-[10px] font-medium text-foreground/80 border border-border/60"
+                      className="inline-flex items-center rounded bg-muted/80 px-1.5 py-0.5 text-xs font-medium text-foreground/80 border border-border/60"
                     >
                       {title}
                     </span>

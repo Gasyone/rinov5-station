@@ -62,14 +62,14 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between px-3 py-1.5 bg-[#e0f2fe]/60 dark:bg-sky-950/20 rounded-md shrink-0">
-      <span className="text-[11px] font-bold text-sky-950 dark:text-sky-400 uppercase tracking-wide">{title}</span>
+      <span className="text-xs font-bold text-sky-950 dark:text-sky-400 uppercase tracking-wide">{title}</span>
       <div className="flex items-center gap-2.5">
         {[1, 2, 3, 4, 5].map((val) => (
           <button
             key={val}
             type="button"
             onClick={() => onRatingChange(val)}
-            className="flex items-center gap-1 text-[11px] text-sky-955 dark:text-sky-400 cursor-pointer select-none font-bold"
+            className="flex items-center gap-1 text-xs text-sky-955 dark:text-sky-400 cursor-pointer select-none font-bold"
           >
             <span className={cn(
               "h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0 bg-background transition-all",
@@ -150,10 +150,10 @@ export function ClassesSemesterEvaluationDialog({
             <DialogTitle className="text-sm font-bold text-foreground truncate">
               Semester Evaluation / Đánh giá cuối kỳ
             </DialogTitle>
-            <span className="text-[11px] text-muted-foreground truncate hidden sm:inline">· Buổi kiểm tra: {sessionTopic}</span>
+            <span className="text-xs text-muted-foreground truncate hidden sm:inline">· Buổi kiểm tra: {sessionTopic}</span>
           </div>
           <div className="flex items-center gap-2.5 pr-8 shrink-0">
-            <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground cursor-pointer select-none">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={viewAllAttended}
@@ -169,7 +169,7 @@ export function ClassesSemesterEvaluationDialog({
                 size="xs"
                 onClick={() => setViewMode('table')}
                 className={cn(
-                  "h-6 px-2 text-[11px] font-bold gap-1 rounded-md transition-all cursor-pointer",
+                  "h-6 px-2 text-xs font-bold gap-1 rounded-md transition-all cursor-pointer",
                   viewMode === 'table'
                     ? "text-primary bg-background shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -184,7 +184,7 @@ export function ClassesSemesterEvaluationDialog({
                 size="xs"
                 onClick={() => setViewMode('form')}
                 className={cn(
-                  "h-6 px-2 text-[11px] font-bold gap-1 rounded-md transition-all cursor-pointer",
+                  "h-6 px-2 text-xs font-bold gap-1 rounded-md transition-all cursor-pointer",
                   viewMode === 'form'
                     ? "text-primary bg-background shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -211,7 +211,7 @@ export function ClassesSemesterEvaluationDialog({
             <>
               {/* Left Student List Sidebar */}
               <aside className="w-[240px] border-r dark:border-zinc-800 flex flex-col shrink-0 bg-zinc-50/50 dark:bg-zinc-950/20">
-                <div className="px-3 py-1.5 border-b text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="px-3 py-1.5 border-b text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Học sinh ({displayedStudents.length})
                 </div>
                 <div className="flex-1 overflow-y-auto p-1 space-y-0.5 custom-scrollbar bg-white dark:bg-zinc-950">
@@ -253,7 +253,7 @@ export function ClassesSemesterEvaluationDialog({
                               }
                               return <p className="truncate font-semibold text-xs leading-tight">{np.vietnameseName}</p>
                             })()}
-                            <p className="text-[10px] text-muted-foreground font-mono leading-none mt-0.5">{student.code}</p>
+                            <p className="text-xs text-muted-foreground font-mono leading-none mt-0.5">{student.code}</p>
                           </div>
                         </div>
                         {isSaved && (
@@ -277,10 +277,10 @@ export function ClassesSemesterEvaluationDialog({
                         <h3 className="text-sm font-bold text-foreground">
                           Nhận xét cho học viên: <span className="text-primary">{selectedStudent.name}</span>
                         </h3>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Mã học viên: {selectedStudent.code}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Mã học viên: {selectedStudent.code}</p>
                       </div>
                       {currentEval.isSubmitted && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                        <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
                           <Check className="h-3 w-3 stroke-[2.5px]" />
                           Đã hoàn thành đánh giá
                         </span>
@@ -379,7 +379,7 @@ export function ClassesSemesterEvaluationDialog({
                       <div className="space-y-1.5 pt-1">
                         {/* Vốn từ vựng Title & Radios */}
                         <div className="space-y-0.5">
-                          <span className="block text-[11px] font-bold text-foreground">Vốn từ vựng</span>
+                          <span className="block text-xs font-bold text-foreground">Vốn từ vựng</span>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.vocabLevel === 'rich'}
@@ -423,7 +423,7 @@ export function ClassesSemesterEvaluationDialog({
 
                         {/* Vốn ngữ pháp Title & Radios */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-[11px] font-bold text-foreground">Vốn ngữ pháp</span>
+                          <span className="block text-xs font-bold text-foreground">Vốn ngữ pháp</span>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.grammarLevel === 'proficient'}
@@ -478,7 +478,7 @@ export function ClassesSemesterEvaluationDialog({
                       <div className="space-y-1.5 pt-1">
                         {/* Kỹ năng nghe */}
                         <div className="space-y-0.5">
-                          <span className="block text-[11px] font-bold text-foreground">Kỹ năng nghe</span>
+                          <span className="block text-xs font-bold text-foreground">Kỹ năng nghe</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.listeningReaction === 'good'}
@@ -507,7 +507,7 @@ export function ClassesSemesterEvaluationDialog({
 
                         {/* Kỹ năng nói */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-[11px] font-bold text-foreground">Kỹ năng nói</span>
+                          <span className="block text-xs font-bold text-foreground">Kỹ năng nói</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.speakingVolume === 'loud'}
@@ -548,7 +548,7 @@ export function ClassesSemesterEvaluationDialog({
 
                         {/* Kỹ năng đọc */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-[11px] font-bold text-foreground">Kỹ năng đọc</span>
+                          <span className="block text-xs font-bold text-foreground">Kỹ năng đọc</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.readingComprehension === 'good'}
@@ -577,7 +577,7 @@ export function ClassesSemesterEvaluationDialog({
 
                         {/* Kỹ năng viết */}
                         <div className="space-y-0.5 pt-1">
-                          <span className="block text-[11px] font-bold text-foreground">Kỹ năng viết</span>
+                          <span className="block text-xs font-bold text-foreground">Kỹ năng viết</span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-0.5">
                             <CustomRadio
                               checked={currentEval.writingSpelling === 'correct'}

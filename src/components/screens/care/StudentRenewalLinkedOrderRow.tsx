@@ -62,8 +62,8 @@ export function StudentRenewalLinkedOrderRow({
     <div className="text-xs select-none py-1">
       {isEditing ? (
         // Ô nhập trực tiếp trên dòng - không mở modal, có thể sửa
-        <div className="flex items-center gap-2 p-1.5 rounded-lg border border-sky-300 dark:border-sky-700 bg-sky-50/70 dark:bg-sky-950/40 w-full flex-wrap animate-in fade-in-50 duration-150">
-          <div className="flex items-center gap-1.5 shrink-0 font-semibold text-sky-800 dark:text-sky-300">
+        <div className="flex items-center gap-2 p-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50/70 dark:bg-emerald-950/40 w-full flex-wrap animate-in fade-in-50 duration-150">
+          <div className="flex items-center gap-1.5 shrink-0 font-semibold text-emerald-800 dark:text-emerald-300">
             <Link2 className="h-3.5 w-3.5" />
             <span>Mã đơn hàng:</span>
           </div>
@@ -84,7 +84,7 @@ export function StudentRenewalLinkedOrderRow({
                 }
               }}
               placeholder="Nhập hoặc chọn mã đơn (VD: OD832001)..."
-              className="h-7 flex-1 px-2 text-xs rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-zinc-900 font-mono font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs"
+              className="h-7 flex-1 px-2 text-xs rounded-md border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-zinc-900 font-mono font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-3xs"
             />
             <datalist id="renewal-order-suggestions">
               {suggestedOrders.map((ord) => (
@@ -99,7 +99,7 @@ export function StudentRenewalLinkedOrderRow({
               size="xs"
               disabled={!orderCodeInput.trim()}
               onClick={handleSubmit}
-              className="h-7 px-2.5 text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white rounded-md cursor-pointer shrink-0 inline-flex items-center gap-1 shadow-3xs"
+              className="h-7 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md cursor-pointer shrink-0 inline-flex items-center gap-1 shadow-3xs"
               title="Lưu liên kết đơn hàng"
             >
               <Check className="h-3 w-3" />
@@ -131,7 +131,7 @@ export function StudentRenewalLinkedOrderRow({
               href={`/quote/${orderInfo.orderCode}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono font-bold text-sky-700 dark:text-sky-400 hover:underline cursor-pointer"
+              className="font-mono font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
               title="Xem chi tiết đơn hàng báo giá"
             >
               {orderInfo.orderCode}
@@ -152,7 +152,7 @@ export function StudentRenewalLinkedOrderRow({
                 <StatusBadge
                   status={orderInfo.paymentStatus || 'paid'}
                   label={orderInfo.paymentStatusLabel}
-                  className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
                 />
               </>
             )}
@@ -163,7 +163,7 @@ export function StudentRenewalLinkedOrderRow({
             <button
               type="button"
               onClick={handleStartEdit}
-              className="p-1 text-muted-foreground hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded transition-colors cursor-pointer"
+              className="p-1 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors cursor-pointer"
               title="Sửa mã đơn hàng trực tiếp trên dòng"
             >
               <Pencil className="h-3.5 w-3.5" />
@@ -196,7 +196,7 @@ export function StudentRenewalLinkedOrderRow({
           <button
             type="button"
             onClick={handleStartEdit}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/40 px-2 py-1 rounded-md border border-dashed border-sky-300 dark:border-sky-700 transition-colors cursor-pointer shrink-0 shadow-3xs"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 px-2 py-1 rounded-md border border-dashed border-emerald-300 dark:border-emerald-700 transition-colors cursor-pointer shrink-0 shadow-3xs"
             title="Nhập mã đơn hàng trực tiếp trên dòng (không mở modal)"
           >
             <Plus className="h-3.5 w-3.5" />

@@ -106,7 +106,7 @@ export function CrmLeadHeaderCard({
                   size="sm"
                   variant="outline"
                   onClick={onOpenDetailModal}
-                  className="h-6 px-2 text-[11px] font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
+                  className="h-6 px-2 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
                   title="Mở toàn bộ biểu mẫu hồ sơ khách hàng để xem hoặc cập nhật chi tiết"
                 >
                   <span>Xem chi tiết hồ sơ</span>
@@ -119,7 +119,7 @@ export function CrmLeadHeaderCard({
                 <Button
                   size="sm"
                   onClick={onReactivateCycle}
-                  className="h-6 px-2 text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
+                  className="h-6 px-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 cursor-pointer shadow-3xs flex items-center gap-1 rounded-md shrink-0"
                   title="Kích hoạt bán mới (Win-back / Tái tiếp cận)"
                 >
                   <Sparkles className="h-3 w-3" />

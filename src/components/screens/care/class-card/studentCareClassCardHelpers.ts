@@ -379,3 +379,27 @@ export function getTabLine2Display(
   return { text: classCode, isStatus: false }
 }
 
+/**
+ * Chuẩn hóa định dạng lịch học dạng dòng phụ (tách thời gian chi tiết theo từng ngày):
+ * VD: "T3 - 17:30-19:30, T6 - 17:30-19:30"
+ */
+export function formatCompactSchedule(schedule?: string): string {
+  if (!schedule) return 'Chưa xếp lịch'
+  const trimmed = schedule.trim()
+  if (!trimmed || trimmed === '-') return 'Chưa xếp lịch'
+
+  // Tách từng ca học theo dấu phẩy để hiển thị đầy đủ thời gian riêng cho từng ngày
+  return trimmed
+    .split(',')
+    .map((s) => {
+      let part = s.trim()
+      // Rút gọn Thứ x thành Tx nếu có để dòng gọn gàng hơn
+      part = part
+        .replace(/^Thứ\s*([2-7])/i, 'T$1')
+        .replace(/^Chủ\s*nhật/i, 'CN')
+      return part
+    })
+    .filter(Boolean)
+    .join(', ')
+}
+

@@ -76,7 +76,7 @@ export function WorkRegistrationSlotDetailDialog({
                       {formatMinutes(totalMinutes)}
                     </span>
                     {timeRange && (
-                      <span className="text-[11px] font-normal text-muted-foreground tabular-nums">
+                      <span className="text-xs font-normal text-muted-foreground tabular-nums">
                         {timeRange}
                       </span>
                     )}

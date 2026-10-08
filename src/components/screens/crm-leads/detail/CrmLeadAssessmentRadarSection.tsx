@@ -138,7 +138,7 @@ export function CrmLeadAssessmentRadarSection({
       </div>
 
       {/* 5 THẺ KỸ NĂNG: CÓ VIỀN CHO TỪNG MỤC, KHÔNG CÓ LINE PROCESS */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-[11px]">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
         {skillsData.map((item, idx) => (
           <div
             key={item.key}
@@ -205,7 +205,7 @@ export function CrmLeadAssessmentRadarSection({
                 </span>{' '}
                 về:
               </p>
-              <ul className="space-y-0.5 pl-1 text-[11px] text-muted-foreground font-medium">
+              <ul className="space-y-0.5 pl-1 text-xs text-muted-foreground font-medium">
                 {improvementBullets.map((bullet, bIdx) => (
                   <li key={bIdx} className="flex items-start gap-1.5">
                     <span className="text-amber-600 shrink-0">•</span>

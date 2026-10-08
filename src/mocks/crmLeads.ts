@@ -107,6 +107,7 @@ export interface Lead {
   slaDeadline?: string // Hạn SLA xử lý theo trạng thái
   lastNote?: string
   academicPerformance?: string
+  gender?: 'Male' | 'Female' | 'Other' | 'Nam' | 'Nữ' | string
 
   // Thông tin Lead quay lại (Returning Lead) & Lịch sử khảo sát trước
   isReturningLead?: boolean

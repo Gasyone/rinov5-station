@@ -204,13 +204,13 @@ export function CrmLeadReassignModal({
             <div className="flex items-center gap-2.5 min-w-0">
               <AppAvatar name={currentCleanName} size="sm" className="h-8 w-8 shrink-0" />
               <div className="min-w-0">
-                <span className="text-[11px] text-muted-foreground block">Người phụ trách hiện tại:</span>
+                <span className="text-xs text-muted-foreground block">Người phụ trách hiện tại:</span>
                 <strong className="text-xs font-bold text-foreground block truncate">
                   {currentCleanName}
                 </strong>
               </div>
             </div>
-            <Badge variant="outline" className="text-[10px] font-semibold bg-background">
+            <Badge variant="outline" className="text-xs font-semibold bg-background">
               Đang phụ trách
             </Badge>
           </div>
@@ -222,7 +222,7 @@ export function CrmLeadReassignModal({
                 Chọn Tư vấn viên tiếp nhận mới <span className="text-rose-500">*</span>
               </label>
               {selectedStaff && (
-                <span className="text-[11px] text-sky-700 dark:text-sky-300 font-medium">
+                <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">
                   {selectedStaff.activeLeadsCount} leads đang phụ trách
                 </span>
               )}
@@ -242,7 +242,7 @@ export function CrmLeadReassignModal({
                       <div className="flex items-center gap-1.5 min-w-0 truncate">
                         <span className="font-semibold text-foreground text-xs">{selectedStaff.name}</span>
                         <span className="font-mono text-[10.5px] text-muted-foreground">({selectedStaff.code})</span>
-                        <span className="text-[11px] text-muted-foreground truncate">• {selectedStaff.branch}</span>
+                        <span className="text-xs text-muted-foreground truncate">• {selectedStaff.branch}</span>
                       </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
@@ -327,11 +327,11 @@ export function CrmLeadReassignModal({
                                 <span className="font-semibold text-foreground text-xs truncate">
                                   {staff.name}
                                 </span>
-                                <span className="font-mono text-[10px] text-muted-foreground">
+                                <span className="font-mono text-xs text-muted-foreground">
                                   ({staff.code})
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{staff.role}</span>
                                 <span>•</span>
                                 <span className="flex items-center gap-0.5 truncate">

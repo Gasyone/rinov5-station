@@ -135,7 +135,7 @@ export function CalendarClassScheduleScreen() {
         onOpenFilter={() => setIsFilterOpen((prev) => !prev)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
+      <div className="flex flex-1 min-h-0 w-full gap-1.5 overflow-hidden">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           {viewMode === 'day' ? (
             <>

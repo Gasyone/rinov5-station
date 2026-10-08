@@ -65,7 +65,7 @@ export function CrmLeadStudentEditForm({
         </span>
         <div className="space-y-2.5">
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-muted-foreground">
+            <label className="text-xs font-medium text-muted-foreground">
               Mục tiêu học tập của con *
             </label>
             <Textarea
@@ -78,7 +78,7 @@ export function CrmLeadStudentEditForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">Phong cách tiếp thu (VARK Style)</label>
+              <label className="text-xs font-medium text-muted-foreground">Phong cách tiếp thu (VARK Style)</label>
               <Input
                 value={editedStudent.learningStyle || ''}
                 onChange={(e) => setEditedStudent((s) => ({ ...s, learningStyle: e.target.value }))}
@@ -88,7 +88,7 @@ export function CrmLeadStudentEditForm({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">Tính cách &amp; Tâm lý lớp học</label>
+              <label className="text-xs font-medium text-muted-foreground">Tính cách &amp; Tâm lý lớp học</label>
               <Input
                 value={editedStudent.personality || ''}
                 onChange={(e) => setEditedStudent((s) => ({ ...s, personality: e.target.value }))}
@@ -99,7 +99,7 @@ export function CrmLeadStudentEditForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-muted-foreground">Sở thích &amp; Đam mê ngoài giờ</label>
+            <label className="text-xs font-medium text-muted-foreground">Sở thích &amp; Đam mê ngoài giờ</label>
             <Input
               value={editedStudent.interests || ''}
               onChange={(e) => setEditedStudent((s) => ({ ...s, interests: e.target.value }))}
@@ -110,7 +110,7 @@ export function CrmLeadStudentEditForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">Điểm mạnh nổi bật</label>
+              <label className="text-xs font-medium text-muted-foreground">Điểm mạnh nổi bật</label>
               <Textarea
                 value={editedStudent.strengths || ''}
                 onChange={(e) => setEditedStudent((s) => ({ ...s, strengths: e.target.value }))}
@@ -120,7 +120,7 @@ export function CrmLeadStudentEditForm({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">Điểm cần rèn giũa</label>
+              <label className="text-xs font-medium text-muted-foreground">Điểm cần rèn giũa</label>
               <Textarea
                 value={editedStudent.weaknesses || ''}
                 onChange={(e) => setEditedStudent((s) => ({ ...s, weaknesses: e.target.value }))}

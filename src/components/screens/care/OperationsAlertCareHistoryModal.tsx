@@ -165,7 +165,7 @@ export function OperationsAlertCareHistoryModal({
         {isRenewalItem && orderInfo?.orderCode && (
           <div className="mt-1 flex items-center gap-1.5 text-xs flex-wrap text-muted-foreground">
             <ShoppingBag className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="font-medium text-muted-foreground text-[11px]">Đơn hàng liên kết:</span>
+            <span className="font-medium text-muted-foreground text-xs">Đơn hàng liên kết:</span>
             <a
               href={`/quote/${orderInfo.orderCode}`}
               target="_blank"
@@ -185,7 +185,7 @@ export function OperationsAlertCareHistoryModal({
                 <StatusBadge
                   status={orderInfo.paymentStatus || 'paid'}
                   label={orderInfo.paymentStatusLabel}
-                  className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
                 />
               </>
             )}

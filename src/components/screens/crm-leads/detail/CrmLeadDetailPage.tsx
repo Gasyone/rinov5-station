@@ -59,10 +59,13 @@ export function CrmLeadDetailPage({
     setActiveLeadId(leadId)
   }
 
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
   // Find lead in mock data or state
   const foundLead = useMemo(() => {
     return mockLeads.find((l) => l.id === activeLeadId || l.code === activeLeadId) || mockLeads[0]
-  }, [activeLeadId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLeadId, refreshTrigger])
 
   const [prevFoundLead, setPrevFoundLead] = useState<Lead>(foundLead)
   const [currentLead, setCurrentLead] = useState<Lead>(foundLead)
@@ -74,8 +77,38 @@ export function CrmLeadDetailPage({
   const [, setActiveCycleId] = useState<string>(
     foundLead.currentCycleId || foundLead.salesCycles?.[0]?.cycleId || 'cycle-001'
   )
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [activeParentPersona, setActiveParentPersona] = useState<string | null>(null)
+
+  // Lắng nghe cập nhật Lead từ tab khác (qua BroadcastChannel, localStorage hoặc postMessage)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'rinov5_crm_lead_updated') {
+        setRefreshTrigger((v) => v + 1)
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+
+    let channel: BroadcastChannel | null = null
+    try {
+      channel = new BroadcastChannel('rinov5_crm_sync')
+      channel.onmessage = () => {
+        setRefreshTrigger((v) => v + 1)
+      }
+    } catch {}
+
+    const handleWindowMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'LEAD_UPDATED') {
+        setRefreshTrigger((v) => v + 1)
+      }
+    }
+    window.addEventListener('message', handleWindowMessage)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('message', handleWindowMessage)
+      channel?.close()
+    }
+  }, [])
 
   // Booking Dialogs state
   const [isBookingTestOpen, setIsBookingTestOpen] = useState(false)
@@ -478,7 +511,7 @@ export function CrmLeadDetailPage({
                 {ordersCount > 0 && (
                   <Badge
                     variant="secondary"
-                    className="h-4.5 min-w-4.5 px-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-0"
+                    className="h-4.5 min-w-4.5 px-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-0"
                   >
                     {ordersCount}
                   </Badge>

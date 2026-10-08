@@ -50,3 +50,5 @@ export { StudentHeaderInfoCard, type StudentHeaderInfoCardProps } from './Studen
 export { StudentParentInfoCards, type ParentMemberInfo, type StudentParentInfoCardsProps } from './StudentParentInfoCards'
 export { StudentProfileHoverCard, type StudentProfileItem, type StudentProfileHoverCardProps } from './StudentProfileHoverCard'
 export { MediaPreviewModal, type MediaPreviewItem, type MediaPreviewModalProps, type TaggedStudentItem } from './MediaPreviewModal'
+export { HistoricalPackagesPopover, type HistoricalPackageItem, type HistoricalPackagesPopoverProps } from './HistoricalPackagesPopover'
+

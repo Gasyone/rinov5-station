@@ -463,7 +463,7 @@ export function LiveTeachingConclusionView({
       <div className="flex-1 overflow-auto custom-scrollbar p-3 sm:p-4">
         <div className="w-full bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden flex flex-col">
           {/* Table Header Row: 3 columns (Col 1: 3/12, Col 2: 5/12, Col 3: 4/12) */}
-          <div className="grid grid-cols-12 gap-3.5 px-4 py-3 bg-zinc-100/80 dark:bg-zinc-800/80 border-b text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground items-center shrink-0">
+          <div className="grid grid-cols-12 gap-3.5 px-4 py-3 bg-zinc-100/80 dark:bg-zinc-800/80 border-b text-xs font-extrabold uppercase tracking-wider text-muted-foreground items-center shrink-0">
             <div className="col-span-12 xl:col-span-3">Học viên, Thái độ & Nền nếp (BTVN)</div>
             <div className="col-span-12 xl:col-span-5">
               {isMath ? 'Đánh giá 5 bậc tư duy & Ghi chú riêng từng bậc' : 'Đánh giá 4 kỹ năng & Ghi chú riêng từng kỹ năng'}
@@ -515,15 +515,15 @@ export function LiveTeachingConclusionView({
                   <div className="col-span-12 xl:col-span-4 space-y-1.5">
                     <div className="flex items-center justify-between gap-1">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase truncate">
+                        <span className="text-xs font-bold text-muted-foreground uppercase truncate">
                           Nhận xét gửi PH:
                         </span>
                         {itemEval.isSent ? (
-                          <Badge className="text-[9px] px-1.5 py-0 bg-emerald-600 text-white border-none shrink-0 shadow-2xs">
+                          <Badge className="text-xs px-1.5 py-0 bg-emerald-600 text-white border-none shrink-0 shadow-2xs">
                             Đã gửi PH
                           </Badge>
                         ) : itemEval.isGenerated ? (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 text-emerald-600 border-emerald-300 shrink-0">
+                          <Badge variant="outline" className="text-xs px-1 py-0 text-emerald-600 border-emerald-300 shrink-0">
                             Đã tạo AI
                           </Badge>
                         ) : null}
@@ -535,7 +535,7 @@ export function LiveTeachingConclusionView({
                           size="xs"
                           variant="ghost"
                           onClick={() => handleGenerateStudentFeedback(student)}
-                          className="h-6 gap-1 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md px-1.5 cursor-pointer"
+                          className="h-6 gap-1 text-xs font-bold text-primary hover:bg-primary/10 rounded-md px-1.5 cursor-pointer"
                           title="Tạo nhận xét AI riêng cho học sinh này"
                         >
                           <Sparkles className="h-3 w-3" />
@@ -547,7 +547,7 @@ export function LiveTeachingConclusionView({
                           size="xs"
                           onClick={() => handleSendIndividualFeedback(student)}
                           className={cn(
-                            'h-6 gap-1 text-[10px] font-bold rounded-md px-2 cursor-pointer transition-all shadow-2xs',
+                            'h-6 gap-1 text-xs font-bold rounded-md px-2 cursor-pointer transition-all shadow-2xs',
                             itemEval.isSent
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                               : 'bg-emerald-600 hover:bg-emerald-700 text-white'

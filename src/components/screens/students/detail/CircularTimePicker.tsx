@@ -186,7 +186,7 @@ export function CircularTimePicker({
                 onChange={handleHourInputChange}
                 className="w-7 text-center font-mono text-sm font-bold bg-transparent outline-none text-foreground"
               />
-              <span className="text-[10px] text-muted-foreground font-semibold">
+              <span className="text-xs text-muted-foreground font-semibold">
                 h
               </span>
             </div>
@@ -207,7 +207,7 @@ export function CircularTimePicker({
                 onChange={handleMinuteInputChange}
                 className="w-7 text-center font-mono text-sm font-bold bg-transparent outline-none text-foreground"
               />
-              <span className="text-[10px] text-muted-foreground font-semibold">
+              <span className="text-xs text-muted-foreground font-semibold">
                 p
               </span>
             </div>
@@ -225,7 +225,7 @@ export function CircularTimePicker({
         </div>
 
         {/* Chú thích tối giản 2 vòng */}
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1 font-medium select-none">
+        <div className="flex items-center justify-between text-xs text-muted-foreground px-1 font-medium select-none">
           <span className="flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
             Vòng ngoài: <strong>Giờ</strong>
@@ -308,7 +308,7 @@ export function CircularTimePicker({
                   transform: 'translate(-50%, -50%)',
                 }}
                 className={cn(
-                  'w-6 h-6 rounded-full text-[11px] font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
+                  'w-6 h-6 rounded-full text-xs font-mono font-bold flex items-center justify-center transition-transform z-20 cursor-pointer',
                   isSelected
                     ? 'text-primary-foreground scale-105'
                     : 'text-foreground/80 hover:bg-muted/70 hover:scale-110'
@@ -341,7 +341,7 @@ export function CircularTimePicker({
                 }}
                 className={cn(
                   'rounded-full flex items-center justify-center transition-transform z-20 cursor-pointer font-mono font-bold',
-                  isMajor ? 'w-5 h-5 text-[10px]' : 'w-4 h-4 text-[8px]',
+                  isMajor ? 'w-5 h-5 text-xs' : 'w-4 h-4 text-xs',
                   isSelected
                     ? 'text-primary-foreground scale-110'
                     : isMajor

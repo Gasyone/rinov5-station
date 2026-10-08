@@ -396,8 +396,8 @@ export interface DetailedMonthlyReportForm {
   sectionA2Skill?: string
   galleryPhotos?: StudentGalleryPhoto[]
   sectionB1Content: string
-  sectionB2StartLesson: number
-  sectionB2EndLesson: number
+  sectionB2StartLesson?: number
+  sectionB2EndLesson?: number
   sectionB2Weeks: WeekReviewItem[]
   sectionB2Content: string
 }
@@ -596,8 +596,8 @@ export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
   sectionA2Content: '',
   galleryPhotos: [],
   sectionB1Content: getAiSynthesizedNextMonthPlan(8, 10),
-  sectionB2StartLesson: 8,
-  sectionB2EndLesson: 10,
+  sectionB2StartLesson: undefined,
+  sectionB2EndLesson: undefined,
   sectionB2Weeks: DEFAULT_SECTION_B2_WEEKS,
   sectionB2Content: getReviewContentForRange(8, 10),
 }
@@ -611,8 +611,8 @@ export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
   sectionA2Content: '',
   galleryPhotos: [],
   sectionB1Content: '',
-  sectionB2StartLesson: 8,
-  sectionB2EndLesson: 10,
+  sectionB2StartLesson: undefined,
+  sectionB2EndLesson: undefined,
   sectionB2Weeks: [],
   sectionB2Content: '',
 }

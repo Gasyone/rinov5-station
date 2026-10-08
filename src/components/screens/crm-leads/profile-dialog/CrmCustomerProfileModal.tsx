@@ -488,7 +488,7 @@ export function CrmCustomerProfileModal({
             <FileText className="h-3.5 w-3.5" />
             <span>Thông tin chung &amp; Học viên</span>
             {children.length > 0 && (
-              <Badge variant="secondary" className="h-4 px-1 text-[10px] font-bold rounded-full ml-0.5">
+              <Badge variant="secondary" className="h-4 px-1 text-xs font-bold rounded-full ml-0.5">
                 {children.length}
               </Badge>
             )}
@@ -508,7 +508,7 @@ export function CrmCustomerProfileModal({
             <Users className="h-3.5 w-3.5" />
             <span>Thông tin Phụ huynh</span>
             {detailedParents.length > 0 && (
-              <Badge variant="secondary" className="h-4 px-1 text-[10px] font-bold rounded-full ml-0.5">
+              <Badge variant="secondary" className="h-4 px-1 text-xs font-bold rounded-full ml-0.5">
                 {detailedParents.length}
               </Badge>
             )}
@@ -543,7 +543,7 @@ export function CrmCustomerProfileModal({
             <ShoppingCart className="h-3.5 w-3.5 text-amber-600" />
             <span>Đơn hàng</span>
             {orders.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 border-0 ml-0.5">
                 {orders.length}
               </Badge>
             )}
@@ -563,7 +563,7 @@ export function CrmCustomerProfileModal({
             <Receipt className="h-3.5 w-3.5 text-emerald-600" />
             <span>Thanh toán</span>
             {payments.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 border-0 ml-0.5">
                 {payments.length}
               </Badge>
             )}
@@ -583,7 +583,7 @@ export function CrmCustomerProfileModal({
             <Truck className="h-3.5 w-3.5 text-sky-600" />
             <span>Giao hàng</span>
             {deliveries.length > 0 && (
-              <Badge className="h-4 px-1 text-[10px] font-bold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 border-0 ml-0.5">
+              <Badge className="h-4 px-1 text-xs font-bold rounded-full bg-sky-100 text-sky-800 dark:bg-sky-950 border-0 ml-0.5">
                 {deliveries.length}
               </Badge>
             )}

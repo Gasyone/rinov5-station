@@ -62,8 +62,8 @@ export function StudentDetailClassCard({
     ? 'huy'
     : cls.status === 'session_ended'
     ? 'huy'
-    : cls.status === 'paused'
-    ? 'tam_dung'
+    : (cls.status === 'paused' || cls.status === 'reserve')
+    ? 'reserve'
     : cls.status === 'wait_for_assignment'
     ? 'cho_khai_giang'
     : cls.status === 'pending_transfer'
@@ -72,7 +72,8 @@ export function StudentDetailClassCard({
 
   const isClassInactive =
     !isPast &&
-    (classStatus === 'tam_dung' ||
+    (classStatus === 'reserve' ||
+    classStatus === 'tam_dung' ||
     classStatus === 'huy' ||
     cls.status === 'dropped' ||
     cls.status === 'session_ended')
@@ -93,8 +94,9 @@ export function StudentDetailClassCard({
             return 'Chờ khai giảng'
           case 'dang_hoc':
             return 'Đang học'
+          case 'reserve':
           case 'tam_dung':
-            return 'Tạm nghỉ'
+            return 'Bảo lưu'
           case 'huy':
             return 'Đã kết thúc'
           default:
@@ -259,7 +261,7 @@ export function StudentDetailClassCard({
                 <>
                   <div className="flex items-center gap-1.5 text-xs">
                     <span className="font-semibold text-foreground">{enrolled}/{max}</span>
-                    <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
+                    <span className="text-xs font-normal text-emerald-600 dark:text-emerald-400 shrink-0">
                       (+{newCount} mới, Trial)
                     </span>
                   </div>
@@ -298,7 +300,7 @@ export function StudentDetailClassCard({
                   className="text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                   title="Nhấp chuột để xem thông tin Khung chương trình"
                 >
-                  <span className="text-[11px] font-medium text-muted-foreground">KCT:</span>{' '}
+                  <span className="text-xs font-medium text-muted-foreground">KCT:</span>{' '}
                   <span className="font-medium text-foreground">
                     {cls.curriculumName || syllabusRecord.syllabus || 'IELTS Junior v2.1'}
                   </span>
@@ -307,7 +309,7 @@ export function StudentDetailClassCard({
 
               <span className="text-muted-foreground/30">•</span>
 
-              <span className="text-[11px] text-muted-foreground font-medium">GV:</span>
+              <span className="text-xs text-muted-foreground font-medium">GV:</span>
               {teacherList.map((tName, idx) => {
                 const teacherPersonObj = {
                   id: `EMP-${tName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'EMP'}`,
@@ -432,7 +434,7 @@ export function StudentDetailClassCard({
                   <span className="text-muted-foreground font-medium text-[11.5px]">Điểm TB:</span>
                   <strong className="text-foreground font-bold">
                     {perf.latestScore.score !== '—' ? perf.latestScore.score : '7.0'}
-                    <span className="text-[10px] font-normal text-muted-foreground">/10</span>
+                    <span className="text-xs font-normal text-muted-foreground">/10</span>
                   </strong>
                 </div>
                 <span className="text-border/60">•</span>
@@ -444,7 +446,7 @@ export function StudentDetailClassCard({
                 </div>
               </div>
 
-              <div className="text-[11px] text-muted-foreground font-medium">
+              <div className="text-xs text-muted-foreground font-medium">
                 Tỷ lệ lấp đầy: <strong className="text-foreground font-semibold">{pct}%</strong>
               </div>
             </div>

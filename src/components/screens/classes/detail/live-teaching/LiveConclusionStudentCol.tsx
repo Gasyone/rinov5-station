@@ -77,7 +77,7 @@ export function LiveConclusionStudentCol({
               </span>
             )}
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground">{student.code}</p>
+          <p className="text-xs font-mono text-muted-foreground">{student.code}</p>
         </div>
       </div>
 
@@ -88,13 +88,13 @@ export function LiveConclusionStudentCol({
             <Badge
               key={tag.id}
               variant="outline"
-              className={cn('text-[10px] font-semibold px-1.5 py-0 rounded-md', tag.colorClass)}
+              className={cn('text-xs font-semibold px-1.5 py-0 rounded-md', tag.colorClass)}
             >
               {tag.icon} {tag.shortLabel}
             </Badge>
           ))
         ) : (
-          <span className="text-[10px] text-muted-foreground italic">Chưa có tag trong giờ</span>
+          <span className="text-xs text-muted-foreground italic">Chưa có tag trong giờ</span>
         )}
       </div>
 
@@ -107,11 +107,11 @@ export function LiveConclusionStudentCol({
       {/* ── 2. Attitude (Thái độ học tập 1-5 sao) ── */}
       <div className="pt-1 border-t border-zinc-100 dark:border-zinc-800">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+          <span className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1">
             <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
             Thái độ ({evalData.attitude || 4}★)
           </span>
-          <span className="text-[10px] text-muted-foreground font-medium">
+          <span className="text-xs text-muted-foreground font-medium">
             {evalData.attitude === 5
               ? 'Tích cực'
               : evalData.attitude === 4
@@ -147,7 +147,7 @@ export function LiveConclusionStudentCol({
       <div className="space-y-1.5 pt-1 border-t border-zinc-100 dark:border-zinc-800">
         {/* App HW */}
         <div className="flex items-center justify-between gap-1 flex-wrap">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+          <span className="text-xs font-bold text-muted-foreground uppercase">
             📱 BTVN App:
           </span>
           <div className="flex items-center gap-0.5">
@@ -174,7 +174,7 @@ export function LiveConclusionStudentCol({
 
         {/* Book HW */}
         <div className="flex items-center justify-between gap-1 flex-wrap">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+          <span className="text-xs font-bold text-muted-foreground uppercase">
             📖 BTVN Sách:
           </span>
           <div className="flex items-center gap-0.5">
@@ -235,13 +235,13 @@ export function LiveConclusionStudentCol({
             {selectedReminders.slice(0, 2).map((rem, idx) => (
               <span
                 key={idx}
-                className="text-[9px] text-amber-700 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/60 truncate max-w-[190px]"
+                className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/60 truncate max-w-[190px]"
               >
                 • {rem}
               </span>
             ))}
             {selectedReminders.length > 2 && (
-              <span className="text-[9px] text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 +{selectedReminders.length - 2} khác
               </span>
             )}
@@ -271,7 +271,7 @@ export function LiveConclusionStudentCol({
                   <div
                     key={reminder}
                     onClick={() => handleToggleReminder(reminder)}
-                    className="flex items-start gap-1.5 cursor-pointer text-[10px] select-none hover:text-amber-900 dark:hover:text-amber-200 transition-colors"
+                    className="flex items-start gap-1.5 cursor-pointer text-xs select-none hover:text-amber-900 dark:hover:text-amber-200 transition-colors"
                   >
                     <div
                       className={cn(

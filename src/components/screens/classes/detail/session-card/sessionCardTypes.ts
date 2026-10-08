@@ -6,6 +6,7 @@ import type { PersonnelItem } from '@/components/shared/PersonnelCell'
 export interface ClassesSessionCardProps {
   session: RoadmapSession
   roster?: RosterStudent[]
+  isNextSession?: boolean
   onView: (session: RoadmapSession) => void
   onCancel: (sessionId: string) => void
   onEditTeacher: (sessionId: string) => void
@@ -66,13 +67,16 @@ export function getAssistantPersonnel(name: string): PersonnelItem {
   }
 }
 
-export function getSessionTone(session: RoadmapSession) {
+export function getSessionTone(session: RoadmapSession, isNextSession?: boolean) {
   const isCancelled = session.status === 'cancelled' || session.status === 'absent'
   const isOpeningDay = session.sessionNumber === 1
   const hasSubstitute = !!session.substituteTeacherName
 
   if (isCancelled) {
     return 'border-dashed border-border/60 bg-muted/15 opacity-60 hover:opacity-100'
+  }
+  if (isNextSession) {
+    return 'bg-emerald-500/5 text-card-foreground border-emerald-500/30 border-l-4 border-l-emerald-500 hover:border-emerald-500/80 shadow-2xs'
   }
   if (isOpeningDay) {
     return 'bg-card text-card-foreground border-border border-l-4 border-l-rose-500 hover:border-border/80 shadow-2xs'
@@ -84,7 +88,7 @@ export function getSessionTone(session: RoadmapSession) {
     return 'bg-card text-card-foreground border-border border-l-4 border-l-zinc-300 dark:border-l-zinc-700 hover:border-border/80 shadow-2xs'
   }
   if (session.status === 'upcoming') {
-    return 'bg-card text-card-foreground border-border border-l-4 border-l-emerald-500 hover:border-border/80 shadow-2xs'
+    return 'bg-card text-card-foreground border-border border-l-4 border-l-sky-500 hover:border-border/80 shadow-2xs'
   }
   return 'bg-card text-card-foreground border-border border-l-4 border-l-primary/60 hover:border-primary/80 shadow-2xs'
 }

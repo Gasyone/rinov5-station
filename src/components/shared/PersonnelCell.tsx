@@ -55,19 +55,19 @@ export function PersonnelCell({
   const sizeClasses = {
     xs: {
       container: 'h-5 w-5 text-xs border',
-      fallback: 'text-xs font-bold',
+      fallback: 'text-xs font-medium',
       singleText: 'text-xs',
       singleContainer: 'h-5 w-5 rounded-md',
     },
     sm: {
       container: 'h-7 w-7 text-xs border-2',
-      fallback: 'text-xs font-bold',
+      fallback: 'text-xs font-medium',
       singleText: 'text-xs',
       singleContainer: 'h-7 w-7 rounded-md',
     },
     md: {
       container: 'h-9 w-9 text-sm border-2',
-      fallback: 'text-xs font-bold',
+      fallback: 'text-xs font-medium',
       singleText: 'text-sm',
       singleContainer: 'h-9 w-9 rounded-md',
     },

@@ -67,6 +67,7 @@ export function WorkRegistrationToolbar({
               value={subjectFilter}
               subjects={subjects}
               onValueChange={onSubjectChange}
+              allLabel="Tất cả các môn"
               ariaLabel="Môn học"
               className="h-8 w-full min-w-0 sm:w-auto sm:min-w-32"
             />
@@ -84,7 +85,7 @@ export function WorkRegistrationToolbar({
             <div className="flex items-center gap-3">
               {/* CHÚ THÍCH PHÂN ĐỊNH LỊCH ĐƯỢC ĐƯA LÊN CẠNH BUTTON CẢNH BÁO */}
               <div className="hidden sm:flex items-center gap-3 text-xs mr-1 bg-muted/40 px-2.5 py-1 rounded-md border border-border/60">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mr-0.5">Phân định:</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mr-0.5">Phân định:</span>
 
                 <div className="flex items-center gap-1.5">
                   <span className="inline-block w-2.5 h-2.5 rounded-xs border-2 border-dashed border-emerald-500 bg-emerald-100 dark:bg-emerald-950/80" />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Columns3, Grid } from 'lucide-react'
 
 import {
@@ -70,6 +71,25 @@ export function CalendarEventScheduleScreen() {
       })
   }, [])
 
+  const searchParams = useSearchParams()
+  const initialSearch = searchParams?.get('search') ?? ''
+  const initialBookingId = searchParams?.get('bookingId') ?? ''
+
+  const initialTargetSession = useMemo(() => {
+    if (!initialBookingId && !initialSearch) return null
+    return (
+      allSessions.find((s) => {
+        if (initialBookingId && (s.id === `EVT-${initialBookingId}` || s.id === initialBookingId)) {
+          return true
+        }
+        if (initialSearch && s.title.toLowerCase().includes(initialSearch.toLowerCase())) {
+          return true
+        }
+        return false
+      }) ?? null
+    )
+  }, [allSessions, initialBookingId, initialSearch])
+
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
   const [displayFormat, setDisplayFormat] = useState<'timeline' | 'list'>('timeline')
   const [periodFilters, setPeriodFilters] = useState<string[]>([])
@@ -79,10 +99,18 @@ export function CalendarEventScheduleScreen() {
   const [saleFilters, setSaleFilters] = useState<string[]>([])
   const [teacherFilters, setTeacherFilters] = useState<string[]>([])
   const [bookingStatusFilters, setBookingStatusFilters] = useState<string[]>([])
-  const [search, setSearch] = useState('')
-  const [activeBranch, setActiveBranch] = useState(SYSTEM_BRANCHES[0] ?? 'RinoEdu Nguyễn Tuân')
+  const [search, setSearch] = useState(initialSearch)
+  const [activeBranch, setActiveBranch] = useState(
+    () => initialTargetSession?.branch ?? SYSTEM_BRANCHES[0] ?? 'RinoEdu Nguyễn Tuân'
+  )
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(() => getMonday(new Date()))
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (initialTargetSession) {
+      const d = new Date(initialTargetSession.date)
+      if (!isNaN(d.getTime())) return getMonday(d)
+    }
+    return getMonday(new Date())
+  })
 
   const today = useMemo(() => {
     const value = new Date()
@@ -173,6 +201,7 @@ export function CalendarEventScheduleScreen() {
         options: [
           { value: 'booked_assessment', label: 'Đã đặt lịch test' },
           { value: 'checkin', label: 'Đã check-in' },
+          { value: 'assessing', label: 'Đang đánh giá' },
           { value: 'completed', label: 'Hoàn tất' },
           { value: 'failed', label: 'Không đạt' },
           { value: 'cancelled', label: 'Đã hủy' },
@@ -253,8 +282,8 @@ export function CalendarEventScheduleScreen() {
     setSelectedDate(date)
   }
 
-  const [selectedEvent, setSelectedEvent] = useState<EventSession | null>(null)
-  const [bookingTestOpen, setBookingTestOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<EventSession | null>(initialTargetSession)
+  const [bookingTestOpen, setBookingTestOpen] = useState(Boolean(initialTargetSession))
 
   const handleSelectEvent = (session: EventSession) => {
     setSelectedEvent(session)
@@ -615,6 +644,7 @@ export function CalendarEventScheduleScreen() {
       {bookingTestOpen && selectedEvent?.type === 'placement_test' && (
         <BookingTestDetailDialog
           booking={getAssociatedBookingTest(selectedEvent) || mockBookingTests[0]}
+          bookings={mockBookingTests}
           detailNote=""
           copiedKey=""
           onOpenChange={setBookingTestOpen}

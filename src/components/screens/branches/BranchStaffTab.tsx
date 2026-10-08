@@ -143,12 +143,12 @@ export function BranchStaffTab({
                   {/* Personnel Info */}
                   <td className="py-2 px-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-[10px] shrink-0 border border-primary/20">
+                      <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-xs shrink-0 border border-primary/20">
                         {getInitials(member.name)}
                       </div>
                       <div className="min-w-0">
                         <div className="font-medium text-foreground truncate">{member.name}</div>
-                        <div className="text-[10px] text-muted-foreground font-mono truncate">
+                        <div className="text-xs text-muted-foreground font-mono truncate">
                           {member.email}
                         </div>
                       </div>
@@ -158,11 +158,11 @@ export function BranchStaffTab({
                   {/* Department & Position */}
                   <td className="py-2 px-2.5">
                     <div className="font-medium text-foreground">{member.position}</div>
-                    <div className="text-[10px] text-muted-foreground">{member.department}</div>
+                    <div className="text-xs text-muted-foreground">{member.department}</div>
                   </td>
 
                   {/* Phone Number */}
-                  <td className="py-2 px-2.5 font-mono text-[11px] text-muted-foreground">
+                  <td className="py-2 px-2.5 font-mono text-xs text-muted-foreground">
                     {member.phone}
                   </td>
 
@@ -175,13 +175,13 @@ export function BranchStaffTab({
                           options={PRESET_ASSIGNMENT_ROLES}
                           onValueChange={(val) => onUpdateRole(member.id, val)}
                           ariaLabel="Vai trò tại cơ sở"
-                          className="h-6 text-[11px] w-[140px]"
+                          className="h-6 text-xs w-[140px]"
                         />
                       </div>
                     ) : (
                       <span
                         className={cn(
-                          'inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium border',
+                          'inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium border',
                           getRoleBadgeClass(member.roleInBranch)
                         )}
                       >
@@ -192,7 +192,7 @@ export function BranchStaffTab({
 
                   {/* Contract Type */}
                   <td className="py-2 px-2.5 text-center">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       {member.contractType || 'Full-time'}
                     </span>
                   </td>

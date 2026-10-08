@@ -20,10 +20,10 @@ import { MonthlyCommentsSection, type MonthlyCommentItem } from './MonthlyCommen
 import { getStudentMonthlyReports } from '@/mocks/monthlyReports'
 import { StudentCareReportLinkDialogs } from './StudentCareReportLinkDialogs'
 import { StudentCareActiveClassCard } from './StudentCareActiveClassCard'
-import { EmptyState } from '@/components/shared'
 import { mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { resolveStudentPlacementStatus } from './class-card/studentCareClassCardHelpers'
 import { mockStudents } from '@/mocks/students'
+import { EmptyState } from '@/components/shared'
 
 export type { SessionHistory, SemesterEvaluationData }
 
@@ -340,7 +340,11 @@ export function StudentCareReportTab({
 
   const togglePackage = (id: string) => {
     setExpandedPackageIds((prev) => {
-      const historicalList = classDataForPackages.filter((p) => p.pkg.id !== activePackage?.id)
+      const historicalList = classDataForPackages.filter((p) => {
+        if (p.pkg.id === activePackage?.id) return false
+        if (['pkg-1', 'pkg-2'].includes(p.pkg.id) && p.pkg.status !== 'expired') return false
+        return true
+      })
       const isMostRecent = id === historicalList[0]?.pkg.id
       const current = prev[id] !== undefined ? prev[id] : isMostRecent
       return {
@@ -355,7 +359,7 @@ export function StudentCareReportTab({
   }, [classDataForPackages, activePackage])
 
   return (
-    <div className="w-full space-y-6 text-left p-0 select-none">
+    <div className="w-full space-y-3 text-left p-0 select-none">
       {/* 1. LỚP HIỆN TẠI (Đóng khung/viền, Nền trắng) */}
       {classDataForPackages
         .filter(({ pkg }) => pkg.id === activePackage?.id)
@@ -412,7 +416,7 @@ export function StudentCareReportTab({
 
 
           return (
-            <div key={pkg.id} className="space-y-4">
+            <div key={pkg.id} className="space-y-2">
               {/* Cụm thông tin Chương trình hiện tại & Lớp học */}
               <StudentCareActiveClassCard
                 pkg={pkg}
@@ -430,11 +434,9 @@ export function StudentCareReportTab({
                 isRenewal={isRenewal}
               />
 
-
-
               {/* 1. Nhóm 5 buổi đã học + 2 buổi sắp tới (Dạng dòng/thẻ) & 2. Nhóm Buổi project thực hành (Media Ảnh/Video) */}
               {!isPending && !shouldHideTimeline && (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {/* Nhật ký Buổi học với SmartCards đặt bên trong (trên các buổi học) */}
                   <CareSessionTimelineList
                     regularSessions={regularSessions}
@@ -493,8 +495,10 @@ export function StudentCareReportTab({
                     />
                   )}
                 </div>
-              )}              {isPending && (
-                <div className="py-10 text-center select-none flex flex-col items-center justify-center border border-dashed rounded-xl">
+              )}
+
+              {(isPending || shouldHideTimeline) && (
+                <div className="py-6 px-4 text-center select-none flex flex-col items-center justify-center border border-dashed border-border/70 rounded-xl bg-card">
                   <EmptyState
                     title="Chương trình học chờ kích hoạt"
                     description="Chương trình học này chưa bắt đầu. Hiện chưa có lịch sử học tập."

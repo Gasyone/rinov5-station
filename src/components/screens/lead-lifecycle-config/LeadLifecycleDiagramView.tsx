@@ -96,13 +96,13 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                     <div className="flex items-center justify-between gap-1 mb-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span
-                          className="font-mono text-[10px] font-bold shrink-0 px-1.5 py-0.2 rounded text-white"
+                          className="font-mono text-xs font-bold shrink-0 px-1.5 py-0.2 rounded text-white"
                           style={{ backgroundColor: stage.color }}
                         >
                           [{stage.phaseGroup}]
                         </span>
                         <span
-                          className="font-semibold text-[11px] text-foreground truncate"
+                          className="font-semibold text-xs text-foreground truncate"
                           title={stage.name}
                         >
                           {getCleanStageName(stage.name)}
@@ -146,7 +146,7 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                   {/* Danh sách nhãn con cấu hình */}
                   <div className="p-1.5 flex-1 flex flex-col gap-1 min-h-[130px] max-h-[220px] overflow-y-auto custom-scrollbar">
                     {displayedSubs.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center text-[10px] text-muted-foreground/60 italic text-center p-2">
+                      <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground/60 italic text-center p-2">
                         {originFilter === 'system'
                           ? 'Không có nhãn hệ thống'
                           : originFilter === 'custom'
@@ -291,7 +291,7 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                     variant="ghost"
                     size="sm"
                     onClick={() => onAddNewSubStatus(lostStage)}
-                    className="h-5 text-[11px] gap-1 text-slate-700 hover:text-slate-900 p-1 cursor-pointer"
+                    className="h-5 text-xs gap-1 text-slate-700 hover:text-slate-900 p-1 cursor-pointer"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Thêm lý do</span>
@@ -300,7 +300,7 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                   {lostSubs.length === 0 ? (
-                    <div className="col-span-3 text-center py-4 text-[11px] text-muted-foreground/70 italic">
+                    <div className="col-span-3 text-center py-4 text-xs text-muted-foreground/70 italic">
                       {originFilter === 'system'
                         ? '(Toàn bộ lý do dừng chăm sóc là nhãn tác nghiệp nội bộ)'
                         : 'Không có lý do phù hợp bộ lọc'}
@@ -313,7 +313,7 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                         className="group/lost p-2 rounded-lg bg-background border border-border hover:border-slate-400 text-xs cursor-pointer transition-colors flex items-center justify-between gap-1"
                         title={`Sửa lý do: ${sub.name} (${sub.code})`}
                       >
-                        <div className="font-medium text-foreground truncate text-[11px]" title={sub.name}>
+                        <div className="font-medium text-foreground truncate text-xs" title={sub.name}>
                           {sub.name}
                         </div>
                         {onDeleteSubStatus && (
@@ -352,14 +352,14 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                       Nhánh Trả lại Giáo trình &amp; Hoàn hủy Đơn (Rẽ nhánh từ [T4])
                     </span>
                   </div>
-                  <span className="text-[10px] text-red-600/80 dark:text-red-400 font-mono">
+                  <span className="text-xs text-red-600/80 dark:text-red-400 font-mono">
                     {t4ExceptionSubs.length} trạng thái con
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {t4ExceptionSubs.length === 0 ? (
-                    <div className="col-span-4 text-center py-4 text-[11px] text-muted-foreground/70 italic">
+                    <div className="col-span-4 text-center py-4 text-xs text-muted-foreground/70 italic">
                       Không có trạng thái ngoại lệ phù hợp bộ lọc
                     </div>
                   ) : (
@@ -380,7 +380,7 @@ export const LeadLifecycleDiagramView: React.FC<LeadLifecycleDiagramViewProps> =
                         }
                       >
                         <div className="flex items-center justify-between gap-1">
-                          <div className="font-medium text-foreground truncate text-[11px]" title={sub.name}>
+                          <div className="font-medium text-foreground truncate text-xs" title={sub.name}>
                             {sub.name}
                           </div>
                           {sub.origin === 'custom' && onDeleteSubStatus && (

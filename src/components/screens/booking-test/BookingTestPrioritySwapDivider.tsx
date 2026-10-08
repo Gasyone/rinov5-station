@@ -37,7 +37,7 @@ export function BookingTestPrioritySwapDivider({
               type="button"
               onClick={onToggle}
               className={cn(
-                'relative z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold shadow-xs transition-all duration-200 cursor-pointer',
+                'relative z-10 flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-xs transition-all duration-200 cursor-pointer',
                 'bg-background hover:bg-muted text-foreground border-border hover:border-primary/50',
                 'active:scale-95 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               )}
@@ -46,7 +46,7 @@ export function BookingTestPrioritySwapDivider({
                 <ArrowUpDown className="h-2.5 w-2.5 transition-transform duration-300 group-hover:rotate-180" />
               </div>
 
-              <div className="flex items-center gap-1 text-[11px] min-w-0">
+              <div className="flex items-center gap-1 text-xs min-w-0">
                 <span className="text-muted-foreground font-normal">Đổi thứ tự:</span>
                 <span className="font-semibold text-primary flex items-center gap-1 truncate">
                   {isSlotFirst ? (

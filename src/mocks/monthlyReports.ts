@@ -30,8 +30,8 @@ export interface StudentMonthlyReport {
 
   // Section B: Kế hoạch học tập cải thiện
   sectionB1Content: string
-  sectionB2StartLesson: number
-  sectionB2EndLesson: number
+  sectionB2StartLesson?: number
+  sectionB2EndLesson?: number
   sectionB2Weeks: WeekReviewItem[]
   sectionB2Content?: string
   sectionBContent?: string
@@ -52,13 +52,13 @@ export interface MonthlyReportMonthOption {
 }
 
 export const MONTH_OPTIONS: MonthlyReportMonthOption[] = [
-  { value: '4_5_2026', label: 'Báo cáo Tháng 4 & Kế hoạch Tháng 5/2026', current: 'Tháng 4', next: 'Tháng 5', dateStr: '01/04/2026 đến 30/04/2026', monthKey: 'Tháng 4/2026' },
-  { value: '5_6_2026', label: 'Báo cáo Tháng 5 & Kế hoạch Tháng 6/2026', current: 'Tháng 5', next: 'Tháng 6', dateStr: '01/05/2026 đến 31/05/2026', monthKey: 'Tháng 5/2026' },
-  { value: '6_7_2026', label: 'Báo cáo Tháng 6 & Kế hoạch Tháng 7/2026', current: 'Tháng 6', next: 'Tháng 7', dateStr: '01/06/2026 đến 30/06/2026', monthKey: 'Tháng 6/2026' },
-  { value: '7_8_2026', label: 'Báo cáo Tháng 7 & Kế hoạch Tháng 8/2026', current: 'Tháng 7', next: 'Tháng 8', dateStr: '01/07/2026 đến 31/07/2026', monthKey: 'Tháng 7/2026' },
-  { value: '3_4_2026', label: 'Báo cáo Tháng 3 & Kế hoạch Tháng 4/2026', current: 'Tháng 3', next: 'Tháng 4', dateStr: '01/03/2026 đến 31/03/2026', monthKey: 'Tháng 3/2026' },
-  { value: '2_3_2026', label: 'Báo cáo Tháng 2 & Kế hoạch Tháng 3/2026', current: 'Tháng 2', next: 'Tháng 3', dateStr: '01/02/2026 đến 28/02/2026', monthKey: 'Tháng 2/2026' },
-  { value: '1_2_2026', label: 'Báo cáo Tháng 1 & Kế hoạch Tháng 2/2026', current: 'Tháng 1', next: 'Tháng 2', dateStr: '01/01/2026 đến 31/01/2026', monthKey: 'Tháng 1/2026' },
+  { value: '4_5_2026', label: 'Báo cáo T4 & Kế hoạch T5/2026', current: 'Tháng 4', next: 'Tháng 5', dateStr: '01/04/2026 đến 30/04/2026', monthKey: 'Tháng 4/2026' },
+  { value: '5_6_2026', label: 'Báo cáo T5 & Kế hoạch T6/2026', current: 'Tháng 5', next: 'Tháng 6', dateStr: '01/05/2026 đến 31/05/2026', monthKey: 'Tháng 5/2026' },
+  { value: '6_7_2026', label: 'Báo cáo T6 & Kế hoạch T7/2026', current: 'Tháng 6', next: 'Tháng 7', dateStr: '01/06/2026 đến 30/06/2026', monthKey: 'Tháng 6/2026' },
+  { value: '7_8_2026', label: 'Báo cáo T7 & Kế hoạch T8/2026', current: 'Tháng 7', next: 'Tháng 8', dateStr: '01/07/2026 đến 31/07/2026', monthKey: 'Tháng 7/2026' },
+  { value: '3_4_2026', label: 'Báo cáo T3 & Kế hoạch T4/2026', current: 'Tháng 3', next: 'Tháng 4', dateStr: '01/03/2026 đến 31/03/2026', monthKey: 'Tháng 3/2026' },
+  { value: '2_3_2026', label: 'Báo cáo T2 & Kế hoạch T3/2026', current: 'Tháng 2', next: 'Tháng 3', dateStr: '01/02/2026 đến 28/02/2026', monthKey: 'Tháng 2/2026' },
+  { value: '1_2_2026', label: 'Báo cáo T1 & Kế hoạch T2/2026', current: 'Tháng 1', next: 'Tháng 2', dateStr: '01/01/2026 đến 31/01/2026', monthKey: 'Tháng 1/2026' },
 ]
 
 export const FIXED_PARENT_NOTICE = `Con sẽ phát phiếu và tranh học của phần ôn luyện riêng vào buổi tới. Con luyện tập phiếu bài tập, sau đó dựa trên tranh ảnh trên phiếu, con sẽ chỉ tranh trên phiếu, đọc to. Ba mẹ hỗ trợ con quay và gửi video qua zalo cho cô hàng tuần. Ba mẹ có thể cho con đến sớm để cô kiểm tra bài con mỗi buổi nhé.
@@ -147,8 +147,8 @@ function createSeedReport(
     sectionAContent: `${sectionA1}\n\n${sectionA2}`,
     galleryPhotos: getStudentPhotos(studentId).slice(0, 4),
     sectionB1Content: sectionB1,
-    sectionB2StartLesson: 8,
-    sectionB2EndLesson: 10,
+    sectionB2StartLesson: undefined,
+    sectionB2EndLesson: undefined,
     sectionB2Weeks: weeks,
     sectionB2Content: 'Kế hoạch ôn tập 4 tuần theo bài học trọng tâm',
     sectionBContent: `${sectionB1}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,
@@ -375,8 +375,8 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     sectionAContent: '',
     galleryPhotos: [], // Trắng chưa chọn ảnh
     sectionB1Content: '', // Trắng để người dùng tự điền
-    sectionB2StartLesson: 8,
-    sectionB2EndLesson: 10,
+    sectionB2StartLesson: undefined,
+    sectionB2EndLesson: undefined,
     sectionB2Weeks: [],
     sectionB2Content: '',
     sectionBContent: '',
@@ -547,11 +547,12 @@ function normalizeName(str: string): string {
  */
 export function getStudentMonthlyReports(
   studentIdOrName?: string,
-  secondIdentifier?: string
+  secondIdentifier?: string,
+  thirdIdentifier?: string
 ): StudentMonthlyReport[] {
-  if (!studentIdOrName && !secondIdentifier) return []
+  if (!studentIdOrName && !secondIdentifier && !thirdIdentifier) return []
 
-  const targets = [studentIdOrName, secondIdentifier].filter(Boolean) as string[]
+  const targets = [studentIdOrName, secondIdentifier, thirdIdentifier].filter(Boolean) as string[]
 
   for (const rawTarget of targets) {
     const target = rawTarget.trim()
@@ -670,8 +671,8 @@ export function saveStudentMonthlyReport(
         ? mockMonthlyReports[existingIndex].galleryPhotos
         : [],
     sectionB1Content: data.sectionB1Content !== undefined ? data.sectionB1Content : '',
-    sectionB2StartLesson: data.sectionB2StartLesson ?? 8,
-    sectionB2EndLesson: data.sectionB2EndLesson ?? 10,
+    sectionB2StartLesson: data.sectionB2StartLesson,
+    sectionB2EndLesson: data.sectionB2EndLesson,
     sectionB2Weeks: data.sectionB2Weeks || [],
     sectionB2Content: data.sectionB2Content || '',
     sectionBContent: data.sectionBContent || `${data.sectionB1Content || ''}\n\nKế hoạch ôn tập 4 tuần bổ trợ tại nhà`,

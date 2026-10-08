@@ -41,31 +41,31 @@ export function StudentPackageCardItem({
     switch (pkg.status) {
       case 'active':
         return (
-          <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-[11px] font-bold shadow-none">
+          <Badge className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-none">
             Đang học
           </Badge>
         )
       case 'pending_placement':
         return (
-          <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800 text-[11px] font-bold shadow-none">
+          <Badge className="bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800 text-xs font-bold shadow-none">
             Chờ xếp lớp
           </Badge>
         )
       case 'reserved':
         return (
-          <Badge className="bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border-sky-200 dark:border-sky-800 text-[11px] font-bold shadow-none">
+          <Badge className="bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border-sky-200 dark:border-sky-800 text-xs font-bold shadow-none">
             Đang bảo lưu
           </Badge>
         )
       case 'expired':
         return (
-          <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 text-[11px] font-bold shadow-none">
+          <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 text-xs font-bold shadow-none">
             Hết buổi
           </Badge>
         )
       case 'transferred':
         return (
-          <Badge className="bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 border-violet-200 dark:border-violet-800 text-[11px] font-bold shadow-none">
+          <Badge className="bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300 border-violet-200 dark:border-violet-800 text-xs font-bold shadow-none">
             Đã chuyển phí
           </Badge>
         )
@@ -132,17 +132,17 @@ export function StudentPackageCardItem({
             {pkg.purchaseDate && (
               <>
                 <span className="text-muted-foreground/50">•</span>
-                <span className="text-muted-foreground text-[11px]">Mua ngày {pkg.purchaseDate}</span>
+                <span className="text-muted-foreground text-xs">Mua ngày {pkg.purchaseDate}</span>
               </>
             )}
             {pkg.saleRep && (
               <>
                 <span className="text-muted-foreground/50">•</span>
-                <span className="text-muted-foreground text-[11px]">Tư vấn: {pkg.saleRep}</span>
+                <span className="text-muted-foreground text-xs">Tư vấn: {pkg.saleRep}</span>
               </>
             )}
             {pkg.orderType && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-zinc-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <span className="px-1.5 py-0.2 rounded text-xs font-semibold bg-zinc-200/70 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                 {pkg.orderType}
               </span>
             )}
@@ -157,14 +157,14 @@ export function StudentPackageCardItem({
             <span className="text-foreground">
               Đã học: <strong className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{pkg.attendedSessions}</strong> / <span className="font-mono">{pkg.totalSessions}</span> buổi
             </span>
-            <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px]">
+            <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs">
               {percentAttended}%
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             {isLowSessions && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 animate-pulse">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 animate-pulse">
                 <AlertTriangle className="h-3 w-3 text-amber-600" />
                 <span>Sắp hết buổi</span>
               </span>
@@ -199,7 +199,7 @@ export function StudentPackageCardItem({
 
         {/* Bonus / Gift info note */}
         {pkg.bonusText && pkg.bonusText !== '--' && (
-          <div className="flex items-center gap-1.5 text-[11px] text-indigo-700 dark:text-indigo-300 pt-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 pt-0.5">
             <Gift className="h-3 w-3 text-indigo-600 shrink-0" />
             <span className="font-medium truncate">{pkg.bonusText}</span>
           </div>
@@ -214,7 +214,7 @@ export function StudentPackageCardItem({
             <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="truncate">{pkg.className || 'Chưa ghép lớp'}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3 shrink-0" />
             <span className="truncate">{pkg.schedule || 'Lịch linh hoạt'}</span>
           </div>
@@ -231,7 +231,7 @@ export function StudentPackageCardItem({
             <span className="truncate">{pkg.primaryTeacher?.name || 'GV. Sarah Smith'}</span>
           </div>
           {pkg.assistantTeacher?.name && (
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <User className="h-3 w-3 shrink-0" />
               <span className="truncate">TA: {pkg.assistantTeacher.name}</span>
             </div>

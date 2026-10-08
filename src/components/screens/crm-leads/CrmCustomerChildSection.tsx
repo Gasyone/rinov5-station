@@ -142,7 +142,7 @@ export function CrmCustomerChildSection({
               >
                 <div
                   className={cn(
-                    'flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold shrink-0',
+                    'flex h-4 w-4 items-center justify-center rounded-full text-xs font-bold shrink-0',
                     isSelected ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-background text-foreground'
                   )}
                 >
@@ -429,7 +429,7 @@ export function CrmCustomerChildSection({
                         {cycle.title || `Đợt ${cycle.cycleNumber || cIdx + 1}`}
                       </span>
                       {(cycle.startDate || cycle.endDate) && (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           ({cycle.startDate || ''} - {cycle.endDate || 'Hiện tại'})
                         </span>
                       )}
@@ -437,7 +437,7 @@ export function CrmCustomerChildSection({
                     {cycle.status && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] font-semibold bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-300"
+                        className="text-xs font-semibold bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800 dark:text-zinc-300"
                       >
                         {cycle.status === 'converted'
                           ? 'Đã hoàn thành'
@@ -481,7 +481,7 @@ export function CrmCustomerChildSection({
                     </div>
 
                     {cycle.outcomeNote && (
-                      <div className="mt-1 p-2 rounded bg-muted/40 border border-border/40 text-[11px] leading-relaxed">
+                      <div className="mt-1 p-2 rounded bg-muted/40 border border-border/40 text-xs leading-relaxed">
                         <strong className="text-foreground font-medium">Ghi chú đợt cũ: </strong>
                         <span className="text-muted-foreground italic">&ldquo;{cycle.outcomeNote}&rdquo;</span>
                       </div>

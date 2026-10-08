@@ -56,7 +56,7 @@ export function LiveMaterialViewer({
                   type="button"
                   onClick={() => setViewMode('slide')}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer',
+                    'px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer',
                     viewMode === 'slide'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -68,7 +68,7 @@ export function LiveMaterialViewer({
                   type="button"
                   onClick={() => setViewMode('raw_pdf')}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer',
+                    'px-2 py-0.5 rounded text-xs font-semibold transition-all cursor-pointer',
                     viewMode === 'raw_pdf'
                       ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -82,7 +82,7 @@ export function LiveMaterialViewer({
                 href={pdfUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden sm:inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary hover:underline font-medium ml-1"
+                className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline font-medium ml-1"
                 title="Mở tài liệu trên tab mới"
               >
                 <span>Mở link gốc</span>
@@ -170,7 +170,7 @@ export function LiveMaterialViewer({
                   Audio Bài Nghe Bản Ngữ
                 </Badge>
                 <h3 className="font-bold text-sm text-foreground truncate">{material.title}</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{material.description || 'Luyện phát âm & nghe hiểu câu chuyện'}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{material.description || 'Luyện phát âm & nghe hiểu câu chuyện'}</p>
               </div>
             </div>
 
@@ -181,7 +181,7 @@ export function LiveMaterialViewer({
 
             {/* Story Transcript */}
             <div className="p-3.5 rounded-xl bg-zinc-50/70 dark:bg-zinc-950/40 border space-y-2 flex-1 min-h-0 overflow-y-auto">
-              <span className="text-[11px] font-bold text-foreground uppercase tracking-wider block">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider block">
                 Nội dung bài nghe (Transcript):
               </span>
               <div className="space-y-1.5 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium pl-1">
@@ -245,7 +245,7 @@ export function LiveMaterialViewer({
                       <h3 className="text-center text-emerald-800 dark:text-emerald-300 font-bold text-xs sm:text-sm mb-2 pb-1 border-b border-teal-100 dark:border-teal-900/40">
                         Yêu cầu cần đạt
                       </h3>
-                      <ul className="space-y-1.5 text-[11px] sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
+                      <ul className="space-y-1.5 text-xs sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
                         <li className="flex items-start gap-1.5">
                           <span className="text-teal-600 font-bold">•</span>
                           <span>Nhận biết được vị trí các số có 2 chữ số trong bảng 100.</span>
@@ -282,7 +282,7 @@ export function LiveMaterialViewer({
                       <h3 className="text-center text-emerald-800 dark:text-emerald-300 font-bold text-xs sm:text-sm mb-2 pb-1 border-b border-teal-100 dark:border-teal-900/40">
                         Tư duy toán học, tư duy logic
                       </h3>
-                      <div className="space-y-2 text-[11px] sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
+                      <div className="space-y-2 text-xs sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
                         <div>
                           <p className="font-bold text-emerald-700 dark:text-emerald-400 italic mb-0.5 flex items-center gap-1 text-[11.5px]">
                             <span>1. Tư duy toán học</span>
@@ -333,7 +333,7 @@ export function LiveMaterialViewer({
                       <h3 className="text-center text-sky-800 dark:text-sky-300 font-bold text-xs sm:text-sm mb-2 pb-1 border-b border-sky-100 dark:border-sky-900/40">
                         Lesson Objectives & Targets
                       </h3>
-                      <ul className="space-y-1.5 text-[11px] sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
+                      <ul className="space-y-1.5 text-xs sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
                         <li className="flex items-start gap-1.5">
                           <span className="text-sky-600 font-bold">•</span>
                           <span><strong>Words:</strong> pencil, eraser, notebook, classroom, teacher, student.</span>
@@ -370,7 +370,7 @@ export function LiveMaterialViewer({
                       <h3 className="text-center text-sky-800 dark:text-sky-300 font-bold text-xs sm:text-sm mb-2 pb-1 border-b border-sky-100 dark:border-sky-900/40">
                         Core Language Competencies
                       </h3>
-                      <div className="space-y-2 text-[11px] sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
+                      <div className="space-y-2 text-xs sm:text-xs text-zinc-800 dark:text-zinc-200 leading-snug font-medium">
                         <div>
                           <p className="font-bold text-sky-700 dark:text-sky-400 italic mb-0.5 flex items-center gap-1 text-[11.5px]">
                             <span>1. Pronunciation & Phonics</span>
@@ -423,17 +423,17 @@ export function LiveMaterialViewer({
                   <h3 className="font-bold text-sm text-foreground">
                     {isMath ? `Hoạt động luyện tập bài toán — Trang ${currentPage}` : `Classroom Practice & Activities — Page ${currentPage}`}
                   </h3>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {isMath
                       ? 'Giáo viên tương tác cùng học sinh: đếm số, nhận biết vị trí hàng/cột và tìm quy luật dấu chân các con vật Pooka và Wooka.'
                       : 'Students practice listening, repeating vocabulary and role-playing classroom conversations.'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 pt-1">
-                  <Badge variant="outline" className="text-[11px] px-2.5 py-0.5 bg-white dark:bg-zinc-800">
+                  <Badge variant="outline" className="text-xs px-2.5 py-0.5 bg-white dark:bg-zinc-800">
                     {isMath ? 'Bảng số 100' : 'Vocabulary Lab'}
                   </Badge>
-                  <Badge variant="outline" className="text-[11px] px-2.5 py-0.5 bg-white dark:bg-zinc-800">
+                  <Badge variant="outline" className="text-xs px-2.5 py-0.5 bg-white dark:bg-zinc-800">
                     {isMath ? 'Phép tách số chục & đơn vị' : 'Sentence Practice'}
                   </Badge>
                 </div>
@@ -441,7 +441,7 @@ export function LiveMaterialViewer({
             )}
 
             {/* Bottom slide footer indicator */}
-            <div className="pt-1.5 flex items-center justify-between text-[10px] text-muted-foreground border-t border-zinc-200/60 dark:border-zinc-800/60">
+            <div className="pt-1.5 flex items-center justify-between text-xs text-muted-foreground border-t border-zinc-200/60 dark:border-zinc-800/60">
               <span>{isMath ? 'Học phần: Math Kindi · Cấp độ 1' : 'Học phần: IELTS Junior / Cambridge · Level 2'}</span>
               <span className="font-mono font-bold">Slide {currentPage} / {totalPages}</span>
             </div>

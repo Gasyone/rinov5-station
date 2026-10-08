@@ -30,18 +30,15 @@ interface BookingTestTableProps {
 const COLUMN_DEFS: Array<{ label: string; className: string; sticky?: boolean }> = [
   {
     label: 'Học viên',
-    className: 'sticky left-12 z-30 w-[280px] min-w-[280px] max-w-[280px] overflow-hidden bg-muted',
+    className: 'sticky top-0 left-8 z-50 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden bg-muted',
     sticky: true,
   },
-  { label: 'Liên hệ', className: 'min-w-40' },
-  { label: 'Nội dung Trải nghiệm', className: 'min-w-48' },
-  { label: 'Giáo viên & Cơ sở', className: 'min-w-52' },
-  { label: 'Speaking', className: 'min-w-48' },
-  { label: 'LWR', className: 'min-w-48' },
-  { label: 'Trạng thái', className: 'min-w-44' },
-  { label: 'Trình độ', className: 'min-w-36' },
-  { label: 'Kết quả', className: 'min-w-28' },
-  { label: 'Ghi chú', className: 'min-w-48' },
+  { label: 'Liên hệ', className: 'min-w-40 sticky top-0 z-30 bg-muted' },
+  { label: 'Lịch test', className: 'min-w-44 sticky top-0 z-30 bg-muted' },
+  { label: 'Speaking & LWR', className: 'min-w-52 sticky top-0 z-30 bg-muted' },
+  { label: 'Kết quả', className: 'min-w-36 sticky top-0 z-30 bg-muted' },
+  { label: 'Trạng thái', className: 'w-28 min-w-28 max-w-32 sticky top-0 z-30 bg-muted' },
+  { label: 'Phụ trách', className: 'min-w-52 sticky top-0 z-30 bg-muted' },
 ]
 
 export function BookingTestTable({
@@ -62,11 +59,11 @@ export function BookingTestTable({
   return (
     <Table
       containerClassName="min-w-full overflow-visible align-top"
-      className="min-w-[1550px]"
+      className="min-w-[1350px]"
     >
-      <TableHeader className="[&_tr]:border-b-0">
-        <TableRow className="border-b-0 bg-muted hover:bg-muted [&>th]:h-8.5 [&>th]:py-1 text-xs">
-          <TableHead className="sticky left-0 z-40 w-12 min-w-12 max-w-12 overflow-hidden bg-muted text-center">
+      <TableHeader className="sticky top-0 z-40 bg-muted border-b border-border/80 shadow-2xs">
+        <TableRow className="border-b-0 bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground">
+          <TableHead className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 overflow-hidden bg-muted text-center px-1">
             <Checkbox
               checked={isPageSelected}
               onCheckedChange={(checked) => onToggleAll(Boolean(checked), pageIds)}
@@ -92,11 +89,12 @@ export function BookingTestTable({
             </TableCell>
           </TableRow>
         ) : (
-          bookings.map((booking) => (
+          bookings.map((booking, index) => (
             <BookingTestTableRow
               key={booking.id}
               booking={booking}
               bookings={bookings}
+              index={index}
               isSelected={selectedIds.has(booking.id)}
               copiedKey={copiedKey}
               onToggle={onToggleOne}

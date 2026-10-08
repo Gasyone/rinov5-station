@@ -295,13 +295,13 @@ export function OrderFulfillmentStudentPickerModal({
           </div>
 
           {/* THANH HÀNH ĐỘNG NHANH */}
-          <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground flex-wrap gap-2">
+          <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span>
                 Tìm thấy <strong className="text-foreground">{filteredStudents.length}</strong> học viên phù hợp
               </span>
               {selectedClass !== 'all' && (
-                <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                <Badge variant="secondary" className="text-xs py-0 px-1.5 font-normal">
                   Lớp: {selectedClass}
                 </Badge>
               )}
@@ -312,7 +312,7 @@ export function OrderFulfillmentStudentPickerModal({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-6 text-[11px] px-2 gap-1 cursor-pointer"
+                className="h-6 text-xs px-2 gap-1 cursor-pointer"
                 onClick={handleSelectAllVisible}
                 disabled={filteredStudents.length === 0}
               >
@@ -334,7 +334,7 @@ export function OrderFulfillmentStudentPickerModal({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-[11px] px-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 cursor-pointer"
+                  className="h-6 text-xs px-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 cursor-pointer"
                   onClick={handleClearAllSelected}
                 >
                   <RotateCcw className="h-3 w-3" />
@@ -395,39 +395,39 @@ export function OrderFulfillmentStudentPickerModal({
                       <TableCell className="py-2 font-medium">
                         <div className="flex flex-col">
                           <span className="text-foreground font-semibold">{st.name}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground font-mono">
                             Mã: {st.id}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
                         {st.enrolledClass ? (
-                          <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-normal gap-1">
+                          <Badge variant="outline" className="text-xs py-0 px-1.5 font-normal gap-1">
                             <GraduationCap className="h-3 w-3 text-primary" />
                             <span>{st.enrolledClass}</span>
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-[11px]">—</span>
+                          <span className="text-muted-foreground text-xs">—</span>
                         )}
                       </TableCell>
                       <TableCell className="py-2">
-                        <div className="flex flex-col text-[11px]">
+                        <div className="flex flex-col text-xs">
                           <span className="text-foreground font-medium">
                             {st.parentName || 'Phụ huynh'}
                           </span>
-                          <span className="text-muted-foreground font-mono text-[10px]">
+                          <span className="text-muted-foreground font-mono text-xs">
                             {maskPhoneNumber(displayPhone)}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2 text-[11px] text-muted-foreground truncate max-w-[120px]">
+                      <TableCell className="py-2 text-xs text-muted-foreground truncate max-w-[120px]">
                         {st.branch || '—'}
                       </TableCell>
                       <TableCell className="py-2">
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[10px] py-0 px-1.5 font-normal',
+                            'text-xs py-0 px-1.5 font-normal',
                             st.status === 'active' && 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
                             st.status === 'reserve' && 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                           )}

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { MapPin, Plus } from 'lucide-react'
+import { ExternalLink, MapPin, Plus } from 'lucide-react'
 import { FieldLabel } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { InlineSelect, type ToolbarSelectOption } from '@/components/controls'
@@ -32,14 +32,15 @@ interface BookingTestCreateStudentFormProps {
   school?: string
   onSchoolChange?: (val: string) => void
   schoolSelectOptions?: ToolbarSelectOption[]
-  program: string
-  onProgramChange: (val: string) => void
-  programOptions: Array<{ value: string; label: string }>
-  level: string
-  onLevelChange: (val: string) => void
-  levelOptions: Array<{ value: string; label: string }>
-  notes: string
-  onNotesChange: (val: string) => void
+  program?: string
+  onProgramChange?: (val: string) => void
+  programOptions?: Array<{ value: string; label: string }>
+  level?: string
+  onLevelChange?: (val: string) => void
+  levelOptions?: Array<{ value: string; label: string }>
+  notes?: string
+  onNotesChange?: (val: string) => void
+  showTestConfigSection?: boolean
   className?: string
 }
 
@@ -54,17 +55,15 @@ export function BookingTestCreateStudentForm({
   childSelectOptions,
   onAddNewContact,
   onAddNewChild,
-  school,
-  onSchoolChange,
-  schoolSelectOptions,
-  program,
+  program = '',
   onProgramChange,
-  programOptions,
-  level,
+  programOptions = [],
+  level = '',
   onLevelChange,
-  levelOptions,
-  notes,
+  levelOptions = [],
+  notes = '',
   onNotesChange,
+  showTestConfigSection = false,
   className,
 }: BookingTestCreateStudentFormProps) {
   const selectedChild = selectedContactObj?.children.find((c) => c.id === childId)
@@ -73,7 +72,7 @@ export function BookingTestCreateStudentForm({
     <div
       className={
         className ||
-        'w-full lg:w-[280px] xl:w-[290px] shrink-0 space-y-2.5 lg:sticky lg:top-0 self-start'
+        'w-full space-y-2'
       }
     >
       {/* SECTION 1: CONTACT VÀ HỌC VIÊN */}
@@ -83,7 +82,7 @@ export function BookingTestCreateStudentForm({
         </div>
 
         {leadInfo ? (
-          <div className="space-y-2.5 pt-0.5">
+          <div className="space-y-2 pt-0.5">
             {/* Khối Phụ huynh (Contact) - Phẳng, kèm vai trò trong ngoặc */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -93,12 +92,32 @@ export function BookingTestCreateStudentForm({
                     ({leadInfo.parentRole || 'Mẹ'})
                   </span>
                 </span>
-                <span className="text-muted-foreground font-medium text-[11px] tabular-nums">{leadInfo.phone}</span>
+                <span className="text-muted-foreground font-medium text-xs tabular-nums">{leadInfo.phone}</span>
               </div>
               {leadInfo.address && (
-                <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground/80">
-                  <MapPin className="h-3 w-3 text-muted-foreground/60 shrink-0 mt-0.5" />
-                  <span className="leading-snug truncate">{leadInfo.address}</span>
+                <div className="flex items-center justify-between gap-1.5 text-xs text-muted-foreground/80">
+                  <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                    <MapPin className="h-3 w-3 text-rose-500/80 shrink-0" />
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(leadInfo.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="leading-snug truncate hover:underline hover:text-foreground transition-colors cursor-pointer"
+                      title={`Xem vị trí trên Google Maps: ${leadInfo.address}`}
+                    >
+                      {leadInfo.address}
+                    </a>
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(leadInfo.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium text-xs shrink-0 transition-colors cursor-pointer hover:text-primary/80 whitespace-nowrap"
+                    title={`Mở bản đồ Google Maps cho: ${leadInfo.address}`}
+                  >
+                    <span>Xem bản đồ</span>
+                    <ExternalLink className="h-2.5 w-2.5" />
+                  </a>
                 </div>
               )}
             </div>
@@ -106,16 +125,16 @@ export function BookingTestCreateStudentForm({
             {/* Dải phân cách nhẹ */}
             <div className="border-t border-border/50" />
 
-            {/* Khối Con / Bé - Phẳng, tinh gọn, không nhãn học viên */}
-            <div className="space-y-1.5">
+            {/* Khối Con / Bé - Phẳng, tinh gọn */}
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-foreground text-xs">{leadInfo.childName}</span>
-                <span className="text-muted-foreground text-[11px]">
+                <span className="text-muted-foreground text-xs">
                   {leadInfo.age ? `${leadInfo.age} tuổi` : ''}
                   {leadInfo.dob ? ` (${leadInfo.dob})` : ''}
                 </span>
               </div>
-              <div className="space-y-1 text-[11px]">
+              <div className="space-y-1 text-xs">
                 <div className="flex items-start justify-between gap-1">
                   <span className="text-muted-foreground shrink-0">Trường:</span>
                   <span className="font-medium text-foreground text-right truncate">
@@ -144,6 +163,33 @@ export function BookingTestCreateStudentForm({
               />
             </FieldLabel>
 
+            {selectedContactObj?.address && (
+              <div className="flex items-center justify-between gap-1.5 text-xs text-muted-foreground/80 -mt-1 px-0.5">
+                <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                  <MapPin className="h-3 w-3 text-rose-500/80 shrink-0" />
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedContactObj.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="leading-snug truncate hover:underline hover:text-foreground transition-colors cursor-pointer"
+                    title={`Xem vị trí trên Google Maps: ${selectedContactObj.address}`}
+                  >
+                    {selectedContactObj.address}
+                  </a>
+                </div>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedContactObj.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 text-primary hover:underline font-medium text-xs shrink-0 transition-colors cursor-pointer hover:text-primary/80 whitespace-nowrap"
+                  title={`Mở bản đồ Google Maps cho: ${selectedContactObj.address}`}
+                >
+                  <span>Xem bản đồ</span>
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+              </div>
+            )}
+
             {/* Chọn Con / Học viên */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -156,7 +202,7 @@ export function BookingTestCreateStudentForm({
                     variant="ghost"
                     size="sm"
                     onClick={onAddNewChild}
-                    className="h-5 px-1.5 text-[11px] font-medium text-primary hover:bg-primary/10 gap-1 cursor-pointer"
+                    className="h-5 px-1.5 text-xs font-medium text-primary hover:bg-primary/10 gap-1 cursor-pointer"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Thêm con</span>
@@ -179,20 +225,20 @@ export function BookingTestCreateStudentForm({
               />
               {selectedChild && (
                 <div className="space-y-1 pt-1.5 text-xs">
-                  <div className="flex items-center justify-between text-[11px]">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Tuổi / Ngày sinh:</span>
                     <span className="font-medium text-foreground">
                       {selectedChild.age ? `${selectedChild.age} tuổi` : ''}
                       {selectedChild.dob ? ` (${selectedChild.dob})` : ''}
                     </span>
                   </div>
-                  <div className="flex items-start justify-between gap-2 text-[11px]">
+                  <div className="flex items-start justify-between gap-2 text-xs">
                     <span className="text-muted-foreground shrink-0">Trường:</span>
                     <span className="font-medium text-foreground text-right truncate">
                       {selectedChild.currentSchool || 'Tiểu học Lương Định Của (Quận 3)'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-muted-foreground shrink-0">Học lực:</span>
                     <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                       {selectedChild.academicPerformance || 'Giỏi / Tốt nghiệp loại Ưu'}
@@ -205,55 +251,59 @@ export function BookingTestCreateStudentForm({
         )}
       </div>
 
-      {/* SECTION 2: THÔNG TIN CHỌN TEST */}
-      <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b">
-          Thông tin chọn test
+      {/* SECTION 2: THÔNG TIN CHỌN TEST (CHỈ RENDER KHI SHOWTESTCONFIGSECTION LÀ TRUE, VD TRONG DIALOG) */}
+      {showTestConfigSection && onProgramChange && (
+        <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b">
+            Thông tin chọn test
+          </div>
+
+          <div className="space-y-2">
+            <FieldLabel label="Chọn chương trình" required>
+              <InlineSelect
+                value={program}
+                onValueChange={(val) => {
+                  onProgramChange(val)
+                  const cfg = PROGRAM_CONFIG[val]
+                  if (cfg && cfg.levels.length > 0 && onLevelChange) {
+                    onLevelChange(cfg.levels[0])
+                  } else if (onLevelChange) {
+                    onLevelChange('')
+                  }
+                }}
+                options={programOptions}
+                placeholder="Chọn chương trình"
+                ariaLabel="Chọn chương trình"
+              />
+            </FieldLabel>
+
+            {onLevelChange && (
+              <FieldLabel label="Chọn level">
+                <InlineSelect
+                  value={level}
+                  onValueChange={onLevelChange}
+                  options={levelOptions}
+                  placeholder={program ? 'Chọn level' : 'Vui lòng chọn chương trình'}
+                  disabled={!program || levelOptions.length === 0}
+                  ariaLabel="Chọn level"
+                />
+              </FieldLabel>
+            )}
+          </div>
+
+          {onNotesChange && (
+            <FieldLabel label="Ghi chú">
+              <textarea
+                value={notes}
+                onChange={(e) => onNotesChange(e.target.value)}
+                placeholder="Nhập ghi chú chi tiết..."
+                rows={2}
+                className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[48px] resize-y"
+              />
+            </FieldLabel>
+          )}
         </div>
-
-        {/* Chương trình & Level */}
-        <div className="space-y-2">
-          <FieldLabel label="Chọn chương trình" required>
-            <InlineSelect
-              value={program}
-              onValueChange={(val) => {
-                onProgramChange(val)
-                const cfg = PROGRAM_CONFIG[val]
-                if (cfg && cfg.levels.length > 0) {
-                  onLevelChange(cfg.levels[0])
-                } else {
-                  onLevelChange('')
-                }
-              }}
-              options={programOptions}
-              placeholder="Chọn chương trình"
-              ariaLabel="Chọn chương trình"
-            />
-          </FieldLabel>
-
-          <FieldLabel label="Chọn level">
-            <InlineSelect
-              value={level}
-              onValueChange={onLevelChange}
-              options={levelOptions}
-              placeholder={program ? 'Chọn level' : 'Vui lòng chọn chương trình'}
-              disabled={!program || levelOptions.length === 0}
-              ariaLabel="Chọn level"
-            />
-          </FieldLabel>
-        </div>
-
-        {/* Ghi chú */}
-        <FieldLabel label="Ghi chú">
-          <textarea
-            value={notes}
-            onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Nhập ghi chú chi tiết..."
-            rows={2}
-            className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[48px] resize-y"
-          />
-        </FieldLabel>
-      </div>
+      )}
     </div>
   )
 }

@@ -64,24 +64,36 @@ export function CareSessionTimelineList({
   const testCompletedSessions = showAllTests ? allTestSessions : allTestSessions.slice(0, 1)
 
   // Buổi học đầu tiên hoàn thành (buổi trên cùng) mặc định mở rộng nhận xét học viên
-  const firstCompletedId = regularCompletedSessions[0]?.id
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({})
 
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>(() => {
-    const firstId = getCareSessions(pkgIsEnglish).filter((s) => s.type === 'lesson')[0]?.id || 'past-19'
-    return { [firstId]: true }
-  })
-
-  const isSessionExpanded = (id: string) => {
+  const isSessionExpanded = (id: string, idx: number) => {
     if (expandedComments[id] !== undefined) {
       return expandedComments[id]
     }
-    return id === firstCompletedId || id === 'past-19'
+    return idx === 0 // Buổi gần nhất luôn mở rộng
   }
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = (id: string, idx: number) => {
     setExpandedComments((prev) => ({
       ...prev,
-      [id]: !isSessionExpanded(id),
+      [id]: !isSessionExpanded(id, idx),
+    }))
+  }
+
+
+  const [expandedTestComments, setExpandedTestComments] = useState<Record<string, boolean>>({})
+
+  const isTestSessionExpanded = (id: string, idx: number) => {
+    if (expandedTestComments[id] !== undefined) {
+      return expandedTestComments[id]
+    }
+    return idx === 0 // Buổi gần nhất luôn mở rộng
+  }
+
+  const toggleExpandTest = (id: string, idx: number) => {
+    setExpandedTestComments((prev) => ({
+      ...prev,
+      [id]: !isTestSessionExpanded(id, idx),
     }))
   }
 
@@ -95,7 +107,7 @@ export function CareSessionTimelineList({
       return (
         <span
           className={cn(
-            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            'text-xs font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
             getStatusBadgeClass('pending')
           )}
           title="Chưa điểm danh"
@@ -116,7 +128,7 @@ export function CareSessionTimelineList({
       return (
         <span
           className={cn(
-            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            'text-xs font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
             getStatusBadgeClass('absent')
           )}
           title="Vắng mặt"
@@ -134,7 +146,7 @@ export function CareSessionTimelineList({
       return (
         <span
           className={cn(
-            'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+            'text-xs font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
             getStatusBadgeClass('late')
           )}
           title="Đến muộn"
@@ -148,7 +160,7 @@ export function CareSessionTimelineList({
     return (
       <span
         className={cn(
-          'text-[11px] font-semibold px-2 py-0.5 rounded-full border shadow-3xs leading-none shrink-0',
+          'text-xs font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
           getStatusBadgeClass('present')
         )}
         title="Đã đến"
@@ -181,7 +193,7 @@ export function CareSessionTimelineList({
             toast.info(`Buổi học ngày ${session.date}: Học viên có đơn xin nghỉ phép đã được phê duyệt.`)
           }
         }}
-        className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200/80 dark:border-amber-800/60 shadow-3xs transition-all shrink-0 select-none"
+        className="inline-flex items-center gap-1 text-xs font-normal text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline cursor-pointer bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200/80 dark:border-amber-800/60 transition-all shrink-0 select-none"
         title="Học viên có đơn xin nghỉ phép buổi học này. Bấm để xem chi tiết đơn nghỉ phép"
       >
         <span>Nghỉ phép (V)</span>
@@ -251,10 +263,10 @@ export function CareSessionTimelineList({
     }
   }
 
-  const renderSessionCard = (session: UnifiedSessionItem) => {
+  const renderSessionCard = (session: UnifiedSessionItem, idx: number) => {
     const isUpcoming = session.type === 'upcoming'
     const isTest = session.type === 'test'
-    const isExpanded = isSessionExpanded(session.id)
+    const isExpanded = isSessionExpanded(session.id, idx)
     const hasLeave = Boolean(
       session.isLeaveRequested ||
       session.attendance === 'absent_excused' ||
@@ -295,10 +307,10 @@ export function CareSessionTimelineList({
                 {/* Thứ viết tắt & Ngày (không có năm) đưa ra trước Tên buổi học */}
                 <span
                   className={cn(
-                    'text-xs shrink-0 transition-colors group-hover:text-primary',
+                    'text-xs shrink-0 transition-colors group-hover:text-primary font-normal',
                     session.type === 'lesson'
-                      ? 'font-bold text-foreground'
-                      : 'font-semibold text-sky-600 dark:text-sky-400'
+                      ? 'text-foreground'
+                      : 'text-sky-600 dark:text-sky-400'
                   )}
                 >
                   {shortDay}, {shortDate}
@@ -306,10 +318,7 @@ export function CareSessionTimelineList({
 
                 <h4
                   className={cn(
-                    'text-xs truncate leading-snug min-w-0 transition-colors group-hover:text-primary group-hover:underline',
-                    session.type === 'lesson'
-                      ? 'font-bold text-foreground'
-                      : 'font-normal text-foreground'
+                    'text-xs truncate leading-snug min-w-0 transition-colors group-hover:text-primary group-hover:underline font-normal text-foreground'
                   )}
                   title={session.topic}
                 >
@@ -337,7 +346,7 @@ export function CareSessionTimelineList({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+                    className="text-sky-600 dark:text-sky-400 hover:underline font-normal cursor-pointer"
                     title={`Mở bài tập ${session.homeworkCode} trong tab mới`}
                   >
                     {session.homeworkCode}
@@ -383,16 +392,16 @@ export function CareSessionTimelineList({
               <p
                 className={cn(
                   'text-xs text-foreground/90 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
-                  !isExpanded && 'line-clamp-3 pr-20'
+                  !isExpanded ? 'line-clamp-3 pr-20' : 'pr-20'
                 )}
-                onClick={() => toggleExpand(session.id)}
+                onClick={() => toggleExpand(session.id, idx)}
               >
                 {session.comment}
               </p>
               {session.comment.length > 60 && (
                 <button
                   type="button"
-                  onClick={() => toggleExpand(session.id)}
+                  onClick={() => toggleExpand(session.id, idx)}
                   className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
                 >
                   <span>{isExpanded ? '... Thu gọn' : '... xem thêm'}</span>
@@ -403,15 +412,13 @@ export function CareSessionTimelineList({
         ) : (
           /* Buổi học chưa có nhận xét: Chỉ cảnh báo nhận xét, KHÔNG xét giờ */
           !isUpcoming && (
-            <div className="pt-2 border-t border-border/30">
-              <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-50/85 dark:bg-amber-950/35 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs text-center flex-wrap shadow-3xs">
-                <div className="flex items-center justify-center gap-1.5 shrink-0">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <span className="font-bold text-xs text-amber-700 dark:text-amber-300">
-                    Chưa có nhận xét từ giáo viên:
-                  </span>
-                </div>
-                <span className="text-amber-800/90 dark:text-amber-300/90 font-medium">
+            <div className="pt-1.5 border-t border-border/30">
+              <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span className="font-normal text-amber-950 dark:text-amber-200">
+                  Chưa có nhận xét từ giáo viên:
+                </span>
+                <span className="truncate text-amber-800/75 dark:text-amber-300/70 font-normal">
                   Giáo viên chưa cập nhật đánh giá học viên cho ca học này.
                 </span>
               </div>
@@ -468,15 +475,15 @@ export function CareSessionTimelineList({
             <div
               role="button"
               tabIndex={0}
-              className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
+              className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-muted/35 dark:bg-zinc-800/40 border border-border/60 cursor-pointer hover:bg-muted/60 hover:border-border transition-all select-none group"
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
+                <span className="font-normal text-xs text-foreground shrink-0">
                   {openingDayOfWeek}, {openingShortDate} ({openingTime})
                 </span>
                 <span className="text-border">•</span>
                 <span
-                  className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
+                  className="font-normal text-muted-foreground truncate text-xs group-hover:text-foreground transition-colors"
                   title="Khai giảng & Định hướng học tập"
                 >
                   Khai giảng & Định hướng học tập
@@ -490,12 +497,12 @@ export function CareSessionTimelineList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {/* Card Section 1: Nhật ký Buổi học */}
-      <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden">
+      <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-xl p-2.5 shadow-2xs space-y-2 text-left select-none overflow-hidden">
         {/* Streamlined Header with soft background tint */}
-        <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
-          <h3 className="text-sm font-bold text-foreground tracking-tight">
+        <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-1.5">
+          <h3 className="text-xs font-semibold text-foreground tracking-tight">
             Nhật ký Buổi học
           </h3>
           <span className="text-xs text-muted-foreground font-normal">
@@ -505,27 +512,27 @@ export function CareSessionTimelineList({
 
         {/* Thông báo nếu đang bảo lưu */}
         {placementStatus === 'reserve' && (
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50 text-xs text-amber-900 dark:text-amber-200">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>Khóa học đang bảo lưu. Danh sách dưới đây lưu lại tiến trình các buổi học đã hoàn thành trước ngày bảo lưu.</span>
+          <div className="flex items-center gap-1.5 p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs text-foreground font-normal">
+            <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="text-amber-950 dark:text-amber-200">Khóa học đang bảo lưu. Danh sách dưới đây lưu lại tiến trình các buổi học đã hoàn thành trước ngày bảo lưu.</span>
           </div>
         )}
 
         {/* Lưu ý phát sinh (Chuyên cần, Chưa nhận xét, Chưa điểm danh, BTVN): Hiển thị TRÊN Smartcard thống kê */}
         {notices.length > 0 && (
-          <div className="rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 p-2.5 space-y-1.5 text-xs text-left select-none animate-in fade-in-50 duration-200">
+          <div className="rounded-lg border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/20 p-2 space-y-1.5 text-xs text-left select-none animate-in fade-in-50 duration-200">
             {notices.map((notice) => (
               <div
                 key={notice.id}
-                className="flex items-start gap-2 min-w-0 leading-snug"
+                className="flex items-start gap-1.5 min-w-0 leading-tight"
                 title={`${notice.issue} ${notice.action}`}
               >
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="min-w-0 flex-1 text-xs text-amber-950 dark:text-amber-100">
-                  <span className="font-semibold text-amber-800 dark:text-amber-300">
-                    {notice.issue}
+                <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1 text-xs">
+                  <span className="font-normal text-amber-950 dark:text-amber-200">
+                    {notice.issue}.
                   </span>{' '}
-                  <span className="text-amber-800/80 dark:text-amber-300/80 font-normal">
+                  <span className="text-amber-800/75 dark:text-amber-300/70 font-normal">
                     {notice.action}
                   </span>
                 </div>
@@ -535,7 +542,7 @@ export function CareSessionTimelineList({
         )}
 
         {/* Smart Cards inside Nhật ký Buổi học (trên các buổi học) */}
-        {smartCards && <div className="mb-2">{smartCards}</div>}
+        {smartCards && <div className="mb-1.5">{smartCards}</div>}
 
         {/* Single Line Upcoming Session Banner (1 buổi tiếp theo - Ẩn khi bảo lưu hoặc hết buổi) */}
         {placementStatus !== 'reserve' && placementStatus !== 'session_ended' && upcomingSessions.length > 0 && (() => {
@@ -549,20 +556,20 @@ export function CareSessionTimelineList({
           const nextHoverSessionData = buildGenericSessionData(nextSession)
 
           return (
-            <div className="pt-0.5 pb-1">
+            <div className="pt-0 pb-0.5">
               <ClassSessionHoverCard session={nextHoverSessionData} side="bottom">
                 <div
                   role="button"
                   tabIndex={0}
-                  className="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200/60 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100/70 hover:border-sky-300 dark:hover:bg-sky-900/40 transition-all select-none group"
+                  className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-muted/35 dark:bg-zinc-800/40 border border-border/60 cursor-pointer hover:bg-muted/60 hover:border-border transition-all select-none group"
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="font-semibold text-xs text-sky-700 dark:text-sky-400 shrink-0">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-normal text-xs text-foreground shrink-0">
                       {dayOfWeek}, {shortDate} ({sessionTime})
                     </span>
                     <span className="text-border">•</span>
                     <span
-                      className="font-normal text-foreground truncate text-xs group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors"
+                      className="font-normal text-muted-foreground truncate text-xs group-hover:text-foreground transition-colors"
                       title={nextSession.topic}
                     >
                       {nextSession.topic}
@@ -578,7 +585,7 @@ export function CareSessionTimelineList({
         {regularCompletedSessions.length > 0 && (
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-foreground">
+              <span className="font-normal text-muted-foreground">
                 {placementStatus === 'reserve' ? 'Lịch sử buổi học trước khi bảo lưu' : 'Lịch sử buổi học'} ({regularCompletedSessions.length})
               </span>
               {allSessions.length > 7 && (
@@ -595,44 +602,151 @@ export function CareSessionTimelineList({
               )}
             </div>
             <div className="space-y-2">
-              {regularCompletedSessions.map(renderSessionCard)}
+              {regularCompletedSessions.map((session, idx) => renderSessionCard(session, idx))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Card Section 2: Kiểm tra (Tách riêng giống Section Dự án, Header màu xám) */}
+      {/* Card Section 2: Kiểm tra (Đồng bộ thiết kế tinh giản như Báo cáo tháng) */}
       {allTestSessions.length > 0 && (
-        <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-2xl p-4 shadow-2xs space-y-3.5 text-left select-none overflow-hidden">
+        <div className="bg-card dark:bg-zinc-900 border border-border/80 rounded-xl p-2.5 shadow-2xs space-y-2 text-left select-none overflow-hidden">
           {/* Header with soft background tint */}
-          <div className="-mx-4 -mt-4 py-2 px-4 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 mb-2.5">
-            <h3 className="text-xs font-bold text-foreground tracking-tight">
-              Kiểm tra
-            </h3>
+          <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
+            <div>
+              <h3 className="text-xs font-semibold text-foreground tracking-tight">
+                Kiểm tra
+              </h3>
+            </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground font-normal">
+              <span className="text-[11px] text-muted-foreground font-normal">
                 Hiển thị {testCompletedSessions.length}/{allTestSessions.length} bài kiểm tra
               </span>
               {allTestSessions.length > 1 && (
                 <>
-                  <span className="text-border">•</span>
+                  <span className="text-border/80">•</span>
                   <button
                     type="button"
                     onClick={() => setShowAllTests(!showAllTests)}
-                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     <span>
-                      {showAllTests ? 'Thu gọn' : 'Xem thêm'}
+                      {showAllTests ? 'Thu gọn' : `Xem thêm (${allTestSessions.length - 1} bài)`}
                     </span>
-                    {showAllTests ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                    {showAllTests ? (
+                      <ChevronUp className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3 text-muted-foreground stroke-[1.5]" />
+                    )}
                   </button>
                 </>
               )}
             </div>
           </div>
 
-          <div className="space-y-2 pt-0.5">
-            {testCompletedSessions.map(renderSessionCard)}
+          <div className="space-y-1.5 pt-0.5">
+            {testCompletedSessions.map((session, idx) => {
+              const shortDay = getShortDayOfWeek(session.date)
+              const shortDate = formatDateNoYear(session.date)
+              const hoverSessionData = buildGenericSessionData(session)
+              const isTestExpanded = isTestSessionExpanded(session.id, idx)
+
+              return (
+                <div
+                  key={session.id}
+                  className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs space-y-1.5"
+                >
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên bài kiểm tra (truncate) */}
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs font-normal text-sky-600 dark:text-sky-400 shrink-0">
+                        {shortDay}, {shortDate}
+                      </span>
+
+                      <ClassSessionHoverCard session={hoverSessionData} side="bottom">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className="font-normal text-foreground truncate min-w-0 cursor-pointer hover:underline hover:text-sky-600 transition-colors"
+                          title={session.topic}
+                        >
+                          {session.topic}
+                        </span>
+                      </ClassSessionHoverCard>
+                    </div>
+
+                    {/* Cụm phải: Điểm danh • BT • Điểm số */}
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto whitespace-nowrap text-xs">
+                      {/* Điểm danh */}
+                      {renderAttendanceBadge(session)}
+
+                      {/* Trạng thái Nghỉ phép nếu có */}
+                      {renderLeaveBadge(session)}
+
+                      {/* Mã bài tập nếu có */}
+                      {session.homeworkCode && (
+                        <>
+                          <span className="text-border/60">•</span>
+                          {session.homeworkSubmitted ? (
+                            <a
+                              href={`/app/classes?homework=${session.homeworkCode}&studentId=${studentId || ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-sky-600 dark:text-sky-400 hover:underline font-normal cursor-pointer"
+                              title={`Mở bài tập ${session.homeworkCode} trong tab mới`}
+                            >
+                              {session.homeworkCode}
+                            </a>
+                          ) : (
+                            <span
+                              className="text-muted-foreground/70 font-normal"
+                              title={`Bài tập ${session.homeworkCode} (Chưa làm)`}
+                            >
+                              {session.homeworkCode}
+                            </span>
+                          )}
+                        </>
+                      )}
+
+                      {/* Điểm số */}
+                      {session.score && (
+                        <span
+                          className="font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/60 px-2 py-0.5 rounded-full border border-violet-200/80 dark:border-violet-800/60 text-[11px] leading-none shrink-0"
+                          title={`Điểm bài kiểm tra: ${session.score}/10`}
+                        >
+                          {session.score}/10
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Nội dung nhận xét bài kiểm tra (Thu gọn tối đa 3 dòng, buổi gần nhất mở rộng) */}
+                  {session.comment && session.comment.trim() && (
+                    <div className="relative pt-0.5">
+                      <p
+                        className={cn(
+                          'text-xs text-foreground/90 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
+                          !isTestExpanded ? 'line-clamp-3 pr-20' : 'pr-20'
+                        )}
+                        onClick={() => toggleExpandTest(session.id, idx)}
+                      >
+                        {session.comment}
+                      </p>
+                      {session.comment.length > 60 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleExpandTest(session.id, idx)}
+                          className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
+                        >
+                          <span>{isTestExpanded ? '... Thu gọn' : '... xem thêm'}</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

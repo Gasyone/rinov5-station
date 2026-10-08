@@ -204,45 +204,45 @@ export function StudentDetailScheduleSlotsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[580px] p-5 rounded-2xl border bg-background shadow-xl">
-        <DialogHeader className="pb-3 border-b border-border/60">
+      <DialogContent className="sm:max-w-[460px] p-3.5 sm:p-4 rounded-xl border bg-background shadow-xl">
+        <DialogHeader className="pb-2 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <Clock className="h-4 w-4" />
+            <span className="p-1 rounded-md bg-primary/10 text-primary shrink-0">
+              <Clock className="h-3.5 w-3.5" />
             </span>
-            <div>
-              <DialogTitle className="text-sm font-bold text-foreground">
+            <div className="min-w-0 text-left">
+              <DialogTitle className="text-xs sm:text-[13px] font-bold text-foreground leading-tight">
                 Chỉnh sửa khung giờ học viên rảnh
               </DialogTitle>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
                 Tích chọn các thứ và chọn giờ bắt đầu - kết thúc cho từng ca học rảnh.
               </p>
             </div>
           </div>
         </DialogHeader>
 
-        {/* Bảng danh sách 7 ngày trong tuần - thiết kế phẳng, không viền hộp */}
-        <div className="divide-y divide-border/40 py-1 max-h-[400px] overflow-y-auto pr-1">
+        {/* Bảng danh sách 7 ngày trong tuần - tinh gọn, padding nhỏ */}
+        <div className="divide-y divide-border/40 py-0.5 max-h-[340px] overflow-y-auto pr-1 scrollbar-thin">
           {daySchedules.map((d) => (
             <div
               key={d.day}
               className={cn(
-                "py-3 px-1 transition-colors flex items-start gap-3 text-xs",
+                "py-1.5 px-0.5 transition-colors flex items-center gap-2 text-xs",
                 d.enabled ? "opacity-100" : "opacity-60"
               )}
             >
               {/* Checkbox + Tên thứ */}
-              <div className="flex items-center gap-2 w-24 shrink-0 pt-1">
+              <div className="flex items-center gap-1.5 w-20 shrink-0">
                 <Checkbox
                   id={`day-check-${d.day}`}
                   checked={d.enabled}
                   onCheckedChange={(checked) => handleToggleDay(d.day, checked === true)}
-                  className="cursor-pointer"
+                  className="cursor-pointer h-3.5 w-3.5"
                 />
                 <label
                   htmlFor={`day-check-${d.day}`}
                   className={cn(
-                    "text-xs font-bold cursor-pointer select-none",
+                    "text-xs font-semibold cursor-pointer select-none",
                     d.enabled ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
@@ -252,13 +252,13 @@ export function StudentDetailScheduleSlotsDialog({
 
               {/* Các khung giờ của thứ này */}
               {d.enabled ? (
-                <div className="flex-1 flex flex-wrap items-center gap-2">
+                <div className="flex-1 flex flex-wrap items-center gap-1.5">
                   {d.slots.map((slot, sIdx) => (
                     <div
                       key={sIdx}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-0.5 bg-muted/40 hover:bg-muted/70 rounded-md px-1 py-0.5 border border-border/40"
                     >
-                      {/* Chọn cả ca học bắt đầu - kết thúc gộp làm 1, phẳng hoàn toàn */}
+                      {/* Chọn cả ca học bắt đầu - kết thúc gộp làm 1 */}
                       <TimeRangePicker
                         startTime={slot.start}
                         endTime={slot.end}
@@ -271,10 +271,10 @@ export function StudentDetailScheduleSlotsDialog({
                         <button
                           type="button"
                           onClick={() => handleRemoveTime(d.day, sIdx)}
-                          className="text-muted-foreground hover:text-destructive p-1 rounded-md cursor-pointer transition-colors hover:bg-destructive/10"
+                          className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer transition-colors"
                           title="Xóa ca này"
                         >
-                          <X className="h-3.5 w-3.5" />
+                          <X className="h-3 w-3" />
                         </button>
                       )}
                     </div>
@@ -286,16 +286,16 @@ export function StudentDetailScheduleSlotsDialog({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleAddTime(d.day)}
-                    className="h-7 px-2 text-[11px] font-semibold text-primary hover:text-primary hover:bg-primary/10 rounded-lg gap-1 cursor-pointer border border-dashed border-primary/30"
+                    className="h-6 px-1.5 text-[10.5px] font-medium text-primary hover:text-primary hover:bg-primary/10 rounded-md gap-0.5 cursor-pointer border border-dashed border-primary/30"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-2.5 w-2.5" />
                     <span>Thêm giờ</span>
                   </Button>
                 </div>
               ) : (
                 <div
                   onClick={() => handleToggleDay(d.day, true)}
-                  className="flex-1 text-[11px] text-muted-foreground/60 italic pt-1 cursor-pointer select-none hover:text-muted-foreground"
+                  className="flex-1 text-[10.5px] text-muted-foreground/50 italic cursor-pointer select-none hover:text-muted-foreground"
                 >
                   (Bấm tích chọn để mở lịch thứ này)
                 </div>
@@ -305,21 +305,21 @@ export function StudentDetailScheduleSlotsDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs">
+        <div className="flex items-center justify-between pt-2.5 border-t border-border/50 text-xs">
           <span className="text-[11px] text-muted-foreground">
             Đã chọn:{' '}
-            <strong className="text-foreground font-bold">
+            <strong className="text-foreground font-semibold">
               {daySchedules.filter((d) => d.enabled).length} ngày
             </strong>{' '}
             trong tuần
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="text-xs cursor-pointer"
+              className="h-7 px-2.5 text-xs cursor-pointer"
             >
               Hủy
             </Button>
@@ -327,7 +327,7 @@ export function StudentDetailScheduleSlotsDialog({
               type="button"
               size="sm"
               onClick={handleSave}
-              className="bg-primary text-primary-foreground text-xs font-semibold cursor-pointer"
+              className="h-7 px-3 bg-primary text-primary-foreground text-xs font-semibold cursor-pointer shadow-3xs"
             >
               Lưu thay đổi
             </Button>

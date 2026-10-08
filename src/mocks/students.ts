@@ -7,7 +7,7 @@ export interface EnrolledClass {
   scheduleSlots: ScheduleSlot[]
   teacherName: string
   assistantName?: string
-  status: 'active' | 'inactive' | 'pending_transfer' | 'session_ended' | 'wait_for_assignment' | 'absent' | 'excused' | 'paused' | 'dropped'
+  status: 'active' | 'inactive' | 'pending_transfer' | 'session_ended' | 'wait_for_assignment' | 'absent' | 'excused' | 'paused' | 'reserve' | 'dropped' | 'awaiting_opening'
   progress: string
   branch?: string       // Trường học của lớp
   room?: string         // Phòng học
@@ -36,6 +36,9 @@ export interface EnrolledClass {
   teacherFinalFeedback?: string // Nhận xét tổng kết của GV
   linkedPackageName?: string    // Gói học liên kết
   finishReason?: string    // Lý do kết thúc (Hoàn thành, Chuyển lớp, Bảo lưu)
+  placementAttempt?: number // Số lần ghép lớp (Lần 1, 2, 3...)
+  isOldClass?: boolean      // Đánh dấu lớp cũ đã ghép
+  notes?: string           // Ghi chú xếp lớp nội bộ
 }
 
 export interface Student {
@@ -43,6 +46,7 @@ export interface Student {
   name: string
   englishName?: string
   email: string
+  placementAttempt?: number // Số lần ghép lớp của học viên
   phone?: string
   avatar?: string
   gender: "Male" | "Female" | "Other"
@@ -80,6 +84,11 @@ export interface Student {
   branches?: string[]      // Các cơ sở theo học/liên kết
 }
 
+const _now = new Date()
+const _curMonth = String(_now.getMonth() + 1).padStart(2, '0')
+const _curDay = String(_now.getDate()).padStart(2, '0')
+const _laterDay = String(_now.getDate() === 18 ? 22 : 18).padStart(2, '0')
+
 export const mockStudents: Student[] = [
   {
     id: "s-baohan",
@@ -88,7 +97,7 @@ export const mockStudents: Student[] = [
     email: "baohan.le@email.com",
     phone: "0987654321",
     gender: "Female",
-    dob: "2012-08-14",
+    dob: `2014-${_curMonth}-${_curDay}`,
     status: "active",
     enrolledClass: "Toán Tư Duy 1:6",
     branch: "RinoEdu Nguyễn Tuân",
@@ -99,6 +108,7 @@ export const mockStudents: Student[] = [
     parentName: "Nguyễn Thu Trang",
     parentPhone: "0912345678",
     enrollmentDate: "2024-08-14",
+    notes: "Con tiếp thu nhanh qua hình ảnh và trực quan (Visual Learner), thích các câu đố tư duy logic và hoạt động nhóm. Gia đình định hướng thi Toán quốc tế SASMO, cần kèm thêm kỹ năng đọc hiểu đề bài dài. Giáo viên phụ trách cần lưu ý theo sát tiến độ làm bài tập về nhà định kỳ hàng tuần, hướng dẫn thêm các phương pháp giải bài toán suy luận thực tế và thường xuyên động viên để con tự tin phát biểu xây dựng bài trên lớp.",
     packageName: "[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)",
     remainingSessions: 12,
     totalSessions: 96,
@@ -119,6 +129,7 @@ export const mockStudents: Student[] = [
         level: "Toán 1:6",
         subLevel: "A",
         programName: "Chương trình Toán tư duy 1:6 chuẩn quốc tế",
+        linkedPackageName: "[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)",
         pathCode: "PATH-MATH-16",
         startDate: "2024-08-14",
         endDate: "2027-08-14"
@@ -156,12 +167,13 @@ export const mockStudents: Student[] = [
           { dayOfWeek: "Thứ 6", date: "19/01", startTime: "17:30", endTime: "19:00" }
         ],
         teacherName: "GV_HuiLT20",
-        status: "paused",
+        status: "reserve",
         progress: "34 / 48 buổi (Bảo lưu 14 buổi)",
         branch: "RinoEdu Nguyễn Tuân",
         room: "P.102",
         level: "Toán 1:6",
         subLevel: "Archimedes 5 - A",
+        linkedPackageName: "Gói Toán tư duy Standard (6 tháng)",
         startDate: "2026-01-15",
         endDate: "2026-10-15"
       }
@@ -198,12 +210,13 @@ export const mockStudents: Student[] = [
           { dayOfWeek: "Thứ 7", date: "24/02", startTime: "09:00", endTime: "10:30" }
         ],
         teacherName: "GV_ThuTrang08",
-        status: "paused",
+        status: "reserve",
         progress: "44 / 72 buổi (Bảo lưu 28 buổi)",
         branch: "RinoEdu Nguyễn Tuân",
         room: "P.201",
         level: "IELTS Junior",
         subLevel: "5.0–5.5",
+        linkedPackageName: "Gói Tiếng Anh Level 4 (12 tháng)",
         startDate: "2026-02-20",
         endDate: "2026-12-20"
       }
@@ -216,7 +229,7 @@ export const mockStudents: Student[] = [
     email: "thaonhi.vu@email.com",
     phone: "0982345678",
     gender: "Female",
-    dob: "2014-03-25",
+    dob: `2015-${_curMonth}-${_laterDay}`,
     status: "wait_for_assignment",
     enrolledClass: "",
     branch: "RinoEdu Nguyễn Tuân",
@@ -271,6 +284,7 @@ export const mockStudents: Student[] = [
         level: "IELTS",
         subLevel: "5.0–5.5",
         programName: "Chương trình IELTS chuẩn quốc tế",
+        linkedPackageName: "Gói IELTS cam kết 7.0",
         pathCode: "PATH-IELTS-A1",
         startDate: "2026-05-01",
         endDate: "2026-08-01"
@@ -291,6 +305,7 @@ export const mockStudents: Student[] = [
         level: "TOEIC",
         subLevel: "450–550",
         programName: "Khóa bổ trợ phát âm chuyên sâu",
+        linkedPackageName: "Gói TOEIC 4 kỹ năng",
         pathCode: "PATH-PRONUN",
         startDate: "2026-05-06",
         endDate: "2026-08-06"
@@ -359,6 +374,7 @@ export const mockStudents: Student[] = [
         level: "Beginner",
         subLevel: "A1",
         programName: "Tiếng Anh nền tảng cơ bản",
+        linkedPackageName: "Gói Giao tiếp cơ bản",
         pathCode: "PATH-ENG-A1",
         startDate: "2026-07-01",
         endDate: "2026-10-01"
@@ -379,6 +395,7 @@ export const mockStudents: Student[] = [
         level: "TOEIC",
         subLevel: "550–650",
         programName: "Tiếng Anh giao tiếp phản xạ",
+        linkedPackageName: "Gói TOEIC 4 kỹ năng",
         pathCode: "PATH-ENG-COMM",
         startDate: "2026-06-15",
         endDate: "2026-09-15"
@@ -399,6 +416,7 @@ export const mockStudents: Student[] = [
         level: "Flyers",
         subLevel: "A2–B1",
         programName: "Tư duy lập trình & Robotics trẻ em",
+        linkedPackageName: "Gói Tiếng Anh Cambridge 48 buổi",
         pathCode: "PATH-STEM-ROBO",
         startDate: "2026-06-10",
         endDate: "2026-09-10"
@@ -631,7 +649,7 @@ export const mockStudents: Student[] = [
     phone: "0931403052",
     gender: "Female",
     dob: "2016-04-12",
-    status: "active",
+    status: "fee_transfer",
     branch: "RinoEdu Nguyễn Tuân",
     level: "English",
     subLevel: "Level 4",
@@ -640,10 +658,33 @@ export const mockStudents: Student[] = [
     parentName: "Nguyễn Văn A",
     parentPhone: "0901403052",
     enrollmentDate: "2023-07-31",
-    packageName: "Gói tiếng Anh Cambridge",
-    remainingSessions: 60,
-    totalSessions: 110,
-    enrolledClasses: []
+    packageName: "Gói chuyển phí học tập Tiếng Anh",
+    remainingSessions: 16,
+    totalSessions: 32,
+    enrolledClasses: [
+      {
+        classCode: "ENG-IELTS-4A",
+        className: "Tiếng Anh IELTS Level 4 (NT01)",
+        type: "offline",
+        scheduleSlots: [
+          { dayOfWeek: "Thứ 3", date: "15/07", startTime: "17:30", endTime: "19:00" },
+          { dayOfWeek: "Thứ 6", date: "18/07", startTime: "17:30", endTime: "19:00" }
+        ],
+        teacherName: "GV Sarah Miller",
+        status: "session_ended",
+        progress: "16 / 16 buổi",
+        branch: "RinoEdu Nguyễn Tuân",
+        room: "P302",
+        level: "English",
+        subLevel: "Level 4",
+        programName: "Lộ trình Tiếng Anh giao tiếp Cambridge",
+        linkedPackageName: "Gói chuyển phí học tập Tiếng Anh",
+        startDate: "2023-07-31",
+        endDate: "2024-01-15",
+        usedSessions: 16,
+        totalSessions: 16
+      }
+    ]
   },
   {
     id: "s15",
@@ -1183,9 +1224,9 @@ mockStudents.forEach((student, index) => {
     else if (index % 5 === 3) type = 'station'
     else type = 'online'
 
-    let statusVal: 'active' | 'paused' | 'dropped' | 'session_ended' = 'active'
+    let statusVal: 'active' | 'reserve' | 'dropped' | 'session_ended' = 'active'
     if (index % 4 === 0) statusVal = 'active'
-    else if (index % 4 === 1) statusVal = 'paused'
+    else if (index % 4 === 1) statusVal = 'reserve'
     else if (index % 4 === 2) statusVal = 'dropped'
     else statusVal = 'session_ended'
 
@@ -1222,7 +1263,10 @@ mockStudents.forEach((student, index) => {
       cls.curriculumCode = `CUR-${cls.classCode}`;
     }
     if (!cls.nextLessonName) {
-      cls.nextLessonName = `Lesson ${classIdx + 13}: Review and Speaking/Writing Exercises`;
+      const isMath = Boolean(student.subject === 'math' || cls.className?.toLowerCase().includes('toán') || cls.programName?.toLowerCase().includes('toán'))
+      cls.nextLessonName = isMath
+        ? `Bài 0${classIdx + 1}: Khảo sát & Khởi động chuyên đề`
+        : `Lesson 0${classIdx + 1}: Review & Speaking Exercises`;
     }
     if (!cls.nextLessonDate) {
       cls.nextLessonDate = `Thứ Tư, 04/06 (18:00 - 20:00)`;

@@ -64,7 +64,7 @@ export function ClassesSemesterEvaluationTable({
                         {vietnamese ? (
                           <>
                             <p className="font-bold text-zinc-900 dark:text-zinc-100 text-xs leading-tight mb-0.5">{english}</p>
-                            <p className="font-normal text-muted-foreground text-[11px] leading-tight">{vietnamese}</p>
+                            <p className="font-normal text-muted-foreground text-xs leading-tight">{vietnamese}</p>
                           </>
                         ) : (
                           <p className="font-semibold text-foreground text-xs leading-tight">{english}</p>

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import {
   AlertCircle,
   ArrowRight,
@@ -43,7 +42,6 @@ export default function LoginPage() {
   const { login, isLoading, error, setError } = useAuthStore()
   const locale = useUIStore((s) => s.locale)
   const setLocale = useUIStore((s) => s.setLocale)
-  const router = useRouter()
 
   const currentLocale = LOCALE_OPTIONS.find((option) => option.code === locale) ?? LOCALE_OPTIONS[0]
 
@@ -52,7 +50,8 @@ export default function LoginPage() {
     setError(null)
     const ok = await login(identifier, password)
     if (ok) {
-      window.location.href = '/app/calendar_class_schedule'
+      const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null
+      window.location.href = redirectUrl || '/app/dashboard'
     }
   }
 

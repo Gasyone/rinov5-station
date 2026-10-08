@@ -75,38 +75,38 @@ export function OperationsAlertSmartcardPopover({
           type="button"
           title={`Xem chỉ số chăm sóc học viên (${timeLabel})`}
           className={cn(
-            'inline-flex items-center gap-2 rounded-lg border border-border/80 bg-background/95 px-2.5 py-1.5 text-xs shadow-2xs backdrop-blur-xs transition-all hover:bg-muted/70 hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none',
+            'inline-flex items-center gap-1.5 h-8 rounded-md border border-border/80 bg-background px-2 text-xs shadow-2xs transition-colors hover:bg-muted/70 hover:border-primary/40 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring cursor-pointer select-none shrink-0',
             open && 'border-primary/50 bg-muted/80 ring-1 ring-primary/20',
             className
           )}
         >
           {/* Main icon badge */}
-          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" />
+          <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
+            <ShieldCheck className="h-3 w-3" />
           </div>
 
           {/* Metric 0: Tỷ lệ đúng hạn SLA */}
           <div className="flex items-center gap-1">
-            <Award className="h-3.5 w-3.5 text-primary" />
-            <span className="font-bold text-primary">{metrics.inTimeRate}%</span>
+            <Award className="h-3 w-3 text-primary" />
+            <span className="font-bold text-xs text-primary">{metrics.inTimeRate}%</span>
             <span className="text-xs text-muted-foreground hidden lg:inline">SLA</span>
           </div>
 
-          <span className="text-muted-foreground/40 font-light">|</span>
+          <span className="text-muted-foreground/30 font-light text-xs">|</span>
 
           {/* Metric 1: Total Alerts */}
           <div className="flex items-center gap-1">
-            <Users className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{metrics.total}</span>
+            <Users className="h-3 w-3 text-muted-foreground" />
+            <span className="font-semibold text-xs text-foreground">{metrics.total}</span>
             <span className="text-xs text-muted-foreground hidden sm:inline">ca</span>
           </div>
 
-          <span className="text-muted-foreground/40 font-light">|</span>
+          <span className="text-muted-foreground/30 font-light text-xs">|</span>
 
           {/* Metric 2: Đã chăm sóc */}
           <div className="flex items-center gap-1">
-            <CheckCircle className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+            <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-semibold text-xs text-emerald-600 dark:text-emerald-400">
               {metrics.cared}
             </span>
             <span className="text-xs text-muted-foreground hidden md:inline">đã CS</span>
@@ -115,10 +115,10 @@ export function OperationsAlertSmartcardPopover({
           {/* Metric 3: Quá hạn SLA (visible on md screens up if > 0) */}
           {metrics.overdue > 0 ? (
             <>
-              <span className="text-muted-foreground/40 font-light hidden md:inline">|</span>
+              <span className="text-muted-foreground/30 font-light text-xs hidden md:inline">|</span>
               <div className="hidden md:flex items-center gap-1">
-                <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                <span className="font-medium text-rose-600 dark:text-rose-400">
+                <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+                <span className="font-medium text-xs text-rose-600 dark:text-rose-400">
                   {metrics.overdue}
                 </span>
                 <span className="text-xs text-muted-foreground">quá hạn</span>
@@ -129,7 +129,7 @@ export function OperationsAlertSmartcardPopover({
           {/* Dropdown Chevron indicator */}
           <ChevronDown
             className={cn(
-              'h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ml-0.5',
+              'h-3 w-3 text-muted-foreground transition-transform duration-200 ml-0.5',
               open && 'rotate-180 text-foreground'
             )}
           />

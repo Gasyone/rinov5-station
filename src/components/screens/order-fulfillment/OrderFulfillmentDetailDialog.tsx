@@ -113,7 +113,7 @@ export function OrderFulfillmentDetailDialog({
                       <Package className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                       <span>Danh mục sản phẩm & học liệu bàn giao</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
                       <span className="bg-muted px-2 py-0.5 rounded-full border border-border/60 font-semibold text-foreground">
                         {record.products.length} mặt hàng
                       </span>
@@ -135,7 +135,7 @@ export function OrderFulfillmentDetailDialog({
                       <tbody className="divide-y divide-border/40">
                         {record.products.map((p, idx) => (
                           <tr key={p.id || idx} className="hover:bg-muted/30 transition-colors">
-                            <td className="py-2.5 px-3 text-muted-foreground font-mono text-[11px]">
+                            <td className="py-2.5 px-3 text-muted-foreground font-mono text-xs">
                               {idx + 1}
                             </td>
                             <td className="py-2.5 px-3 font-medium text-foreground">
@@ -144,18 +144,18 @@ export function OrderFulfillmentDetailDialog({
                             <td className="py-2.5 px-3">
                               <Badge
                                 variant="outline"
-                                className="text-[10px] font-normal py-0 px-1.5 bg-muted/40"
+                                className="text-xs font-normal py-0 px-1.5 bg-muted/40"
                               >
                                 {PRODUCT_CATEGORY_MAP[p.category] || p.category}
                               </Badge>
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-semibold text-foreground">
-                              {p.quantity} <span className="text-muted-foreground text-[11px] font-normal">{p.unit}</span>
+                              {p.quantity} <span className="text-muted-foreground text-xs font-normal">{p.unit}</span>
                             </td>
                           </tr>
                         ))}
                       </tbody>
-                      <tfoot className="bg-muted/30 border-t border-border/60 text-[11px] font-medium text-muted-foreground">
+                      <tfoot className="bg-muted/30 border-t border-border/60 text-xs font-medium text-muted-foreground">
                         <tr>
                           <td colSpan={3} className="py-2 px-3 text-right">
                             Tổng số lượng bàn giao:
@@ -176,7 +176,7 @@ export function OrderFulfillmentDetailDialog({
                       <Camera className="h-4 w-4 text-primary" />
                       <span>Bằng chứng giao nhận & Ký nhận (POD)</span>
                     </div>
-                    <span className="text-[11px] text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-full border border-border/60">
+                    <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-full border border-border/60">
                       {totalFiles} tệp đính kèm
                     </span>
                   </div>
@@ -184,7 +184,7 @@ export function OrderFulfillmentDetailDialog({
                   {/* Ảnh chụp thực tế */}
                   {record.podImages && record.podImages.length > 0 ? (
                     <div className="space-y-2">
-                      <span className="text-[11px] font-medium text-muted-foreground block">
+                      <span className="text-xs font-medium text-muted-foreground block">
                         Ảnh chụp thực tế & Phiếu ký nhận:
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -207,17 +207,17 @@ export function OrderFulfillmentDetailDialog({
                               /* Fallback Card khi URL ảnh bị lỗi / offline */
                               <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center bg-muted/60 text-muted-foreground">
                                 <FileText className="h-6 w-6 text-primary/70 mb-1" />
-                                <span className="text-[11px] font-semibold text-foreground">
+                                <span className="text-xs font-semibold text-foreground">
                                   Ảnh POD #{i + 1}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground/80">
+                                <span className="text-xs text-muted-foreground/80">
                                   Bấm để xem chứng từ
                                 </span>
                               </div>
                             )}
 
                             {/* Hover overlay */}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-medium gap-1.5 backdrop-blur-[1px]">
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-medium gap-1.5 backdrop-blur-[1px]">
                               <ZoomIn className="h-3.5 w-3.5" />
                               <span>Phóng to</span>
                             </div>
@@ -230,7 +230,7 @@ export function OrderFulfillmentDetailDialog({
                   {/* Tài liệu / Biên bản scan đính kèm */}
                   {record.attachments && record.attachments.length > 0 ? (
                     <div className="space-y-2 pt-1">
-                      <span className="text-[11px] font-medium text-muted-foreground block">
+                      <span className="text-xs font-medium text-muted-foreground block">
                         Biên bản / Tài liệu scan đính kèm:
                       </span>
                       <div className="space-y-1.5">
@@ -248,7 +248,7 @@ export function OrderFulfillmentDetailDialog({
                                 >
                                   {att.name}
                                 </span>
-                                <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                                <div className="text-xs text-muted-foreground flex items-center gap-2">
                                   {att.size && <span>{att.size}</span>}
                                   {att.uploadedAt && <span>• Tải lên: {att.uploadedAt}</span>}
                                 </div>
@@ -311,7 +311,7 @@ export function OrderFulfillmentDetailDialog({
                       <Badge
                         variant="outline"
                         className={cn(
-                          'text-[10px] py-0 px-2 font-medium border',
+                          'text-xs py-0 px-2 font-medium border',
                           getStatusBadgeClass(record.status)
                         )}
                       >
@@ -319,7 +319,7 @@ export function OrderFulfillmentDetailDialog({
                       </Badge>
                       <Badge
                         variant="secondary"
-                        className="text-[10px] py-0 px-2 font-normal"
+                        className="text-xs py-0 px-2 font-normal"
                       >
                         {DELIVERY_METHOD_MAP[record.deliveryMethod] || (isPickup ? 'Nhận tại quầy' : 'Giao hàng')}
                       </Badge>
@@ -339,7 +339,7 @@ export function OrderFulfillmentDetailDialog({
                           <span>Xuất theo đợt</span>
                         )}
                         {record.coursePackageName && (
-                          <span className="text-muted-foreground font-normal text-[11px]">
+                          <span className="text-muted-foreground font-normal text-xs">
                             ({record.coursePackageName})
                           </span>
                         )}
@@ -373,7 +373,7 @@ export function OrderFulfillmentDetailDialog({
                     {/* Thời điểm tạo */}
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground shrink-0">Thời điểm tạo:</span>
-                      <span className="font-mono text-muted-foreground text-[11px]">{record.createdAt}</span>
+                      <span className="font-mono text-muted-foreground text-xs">{record.createdAt}</span>
                     </div>
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export function OrderFulfillmentDetailDialog({
                       <span>Thông tin người nhận & Địa chỉ</span>
                     </div>
                     {record.recipientRole && (
-                      <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                      <Badge variant="secondary" className="text-xs py-0 px-1.5 font-normal">
                         {record.recipientRole}
                       </Badge>
                     )}
@@ -418,7 +418,7 @@ export function OrderFulfillmentDetailDialog({
                         {record.customerName &&
                           record.recipientName &&
                           record.customerName !== record.recipientName && (
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               Khách đặt: {record.customerName} ({record.customerPhone})
                             </span>
                           )}
@@ -444,12 +444,12 @@ export function OrderFulfillmentDetailDialog({
                               {record.recipientStudents.map((st, idx) => (
                                 <div
                                   key={idx}
-                                  className="text-[11px] text-muted-foreground flex items-center justify-end gap-2"
+                                  className="text-xs text-muted-foreground flex items-center justify-end gap-2"
                                 >
                                   <span className="font-medium text-foreground">
                                     {idx + 1}. {st.name}
                                   </span>
-                                  {st.phone && <span className="font-mono text-[10px]">{st.phone}</span>}
+                                  {st.phone && <span className="font-mono text-xs">{st.phone}</span>}
                                 </div>
                               ))}
                             </div>
@@ -470,7 +470,7 @@ export function OrderFulfillmentDetailDialog({
                               <Store className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>{record.branch}</span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               Quầy Lễ tân trạm (Xuất trình mã phiếu hoặc SĐT khi nhận)
                             </p>
                           </div>
@@ -487,7 +487,7 @@ export function OrderFulfillmentDetailDialog({
                                 <button
                                   type="button"
                                   onClick={() => handleCopy(record.shippingAddress || '', 'Địa chỉ')}
-                                  className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5 cursor-pointer mt-0.5"
+                                  className="text-xs text-primary hover:underline inline-flex items-center gap-0.5 cursor-pointer mt-0.5"
                                 >
                                   <Copy className="h-2.5 w-2.5" />
                                   <span>Sao chép địa chỉ</span>
@@ -501,7 +501,7 @@ export function OrderFulfillmentDetailDialog({
                               <span className="text-muted-foreground shrink-0 w-24">Vận đơn:</span>
                               <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                 {record.carrier && (
-                                  <Badge variant="outline" className="text-[11px] py-0 px-1.5 font-medium">
+                                  <Badge variant="outline" className="text-xs py-0 px-1.5 font-medium">
                                     {record.carrier}
                                   </Badge>
                                 )}
@@ -523,7 +523,7 @@ export function OrderFulfillmentDetailDialog({
                                     href={record.trackingUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-[10px] underline text-primary hover:text-primary/80 inline-flex items-center gap-0.5"
+                                    className="text-xs underline text-primary hover:text-primary/80 inline-flex items-center gap-0.5"
                                     title="Mở liên kết tra cứu trực tuyến"
                                   >
                                     <span>Tra cứu</span>
@@ -540,7 +540,7 @@ export function OrderFulfillmentDetailDialog({
                               <span className="font-medium text-foreground">
                                 {record.shipperName}{' '}
                                 {record.shipperPhone && (
-                                  <span className="font-mono text-muted-foreground text-[11px]">
+                                  <span className="font-mono text-muted-foreground text-xs">
                                     ({record.shipperPhone})
                                   </span>
                                 )}

@@ -89,7 +89,7 @@ export function StudentProgramPackagesView({
                   • {activePackages.length} gói học đang áp dụng
                 </span>
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Trình độ: <strong className="text-foreground font-semibold">{program.level || studentLevel || 'Tiêu chuẩn'}</strong>
                 {program.subLevel && ` (${program.subLevel})`}
               </div>

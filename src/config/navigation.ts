@@ -30,6 +30,15 @@ export interface NavigationGroup {
 
 export const navigationGroups: NavigationGroup[] = [
   {
+    id: 'group_home',
+    label: 'Tổng quan',
+    icon: Home,
+    hiddenInSidebar: true,
+    items: [
+      { id: 'dashboard', label: 'Bàn làm việc (Home)', href: '/app/dashboard', hiddenInSidebar: true },
+    ],
+  },
+  {
     id: 'group_calendar',
     label: 'Lịch biểu',
     icon: CalendarDays,

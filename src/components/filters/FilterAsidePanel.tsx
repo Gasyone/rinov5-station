@@ -61,14 +61,14 @@ export function FilterAsidePanel({
             {activeCount > 0 && (
               <Badge
                 variant="secondary"
-                className="h-4.5 rounded-full px-1.5 text-[10px] font-medium bg-primary/10 text-primary border-primary/20 shrink-0"
+                className="h-4.5 rounded-full px-1.5 text-xs font-medium bg-primary/10 text-primary border-primary/20 shrink-0"
               >
                 {activeCount}
               </Badge>
             )}
           </div>
           {description && (
-            <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5" title={description}>
+            <p className="text-xs text-muted-foreground truncate leading-tight mt-0.5" title={description}>
               {description}
             </p>
           )}
@@ -163,7 +163,7 @@ export function FilterCollapsibleSection({
                 {title}
               </span>
               {badgeCount > 0 && (
-                <span className="h-4 min-w-[16px] px-1 rounded-full bg-primary/10 text-primary text-[10px] font-semibold flex items-center justify-center shrink-0">
+                <span className="h-4 min-w-[16px] px-1 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center shrink-0">
                   {badgeCount}
                 </span>
               )}
@@ -183,7 +183,7 @@ export function FilterCollapsibleSection({
               e.stopPropagation()
               onClear()
             }}
-            className="text-[10px] text-muted-foreground hover:text-foreground ml-2 px-1 py-0.5 rounded cursor-pointer transition-colors shrink-0"
+            className="text-xs text-muted-foreground hover:text-foreground ml-2 px-1 py-0.5 rounded cursor-pointer transition-colors shrink-0"
           >
             {clearLabel}
           </button>
@@ -247,7 +247,7 @@ export function FilterCheckboxOption({
       {typeof count === 'number' && (
         <span
           className={cn(
-            'font-mono text-[11px] shrink-0',
+            'font-mono text-xs shrink-0',
             checked ? 'text-foreground/80 font-medium' : 'text-muted-foreground/60'
           )}
         >
@@ -295,7 +295,7 @@ export function FilterRadioOption({
       <span className="truncate">{label}</span>
       <div className="flex items-center gap-1 shrink-0">
         {typeof count === 'number' && (
-          <span className="text-[11px] text-muted-foreground">({count})</span>
+          <span className="text-xs text-muted-foreground">({count})</span>
         )}
         {selected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
       </div>

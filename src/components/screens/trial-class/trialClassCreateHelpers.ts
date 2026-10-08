@@ -96,6 +96,7 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
         phone: pPhone,
         source: 'Học viên Station',
         isFromLead: false,
+        address: 'Phường Võ Thị Sáu, Quận 3, TP.HCM',
         children: [],
       })
     }
@@ -122,6 +123,7 @@ export function buildTrialContactsList(customContacts: TrialContactPerson[] = []
         phone: contact.phone,
         source: 'Danh bạ chung',
         isFromLead: false,
+        address: 'Phường Đa Kao, Quận 1, TP.HCM',
         children: [
           {
             id: `child_${contact.id}`,

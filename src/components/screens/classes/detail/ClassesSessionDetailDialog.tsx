@@ -359,7 +359,7 @@ export function ClassesSessionDetailDialog({
               type="button"
               size="xs"
               onClick={() => setIsLiveTeachingOpen(true)}
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-[11px] rounded-lg cursor-pointer mr-0.5"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-xs rounded-lg cursor-pointer mr-0.5"
               title="Khởi chạy màn hình giảng dạy và tốc ký học viên"
             >
               <Play className="h-3 w-3 fill-current shrink-0" />
@@ -371,19 +371,19 @@ export function ClassesSessionDetailDialog({
                 size="xs"
                 onClick={() => setIsSemesterEvalOpen(true)}
                 disabled={session.status === 'cancelled' || session.status === 'absent'}
-                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-[11px] rounded-md cursor-pointer mr-0.5"
+                className="gap-1 bg-[#f97316] hover:bg-[#ea580c] text-white font-bold border-none shadow-xs transition-all px-2 h-6.5 text-xs rounded-md cursor-pointer mr-0.5"
               >
                 <ClipboardCheck className="h-3 w-3 shrink-0" />
                 Semester Eval ({completedEvalCount}/{activeRoster.length})
               </Button>
             )}
 
-            <Button variant="ghost" size="sm" disabled={!hasPrev} onClick={() => navigateTo(currentIndex - 1)} className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2">
+            <Button variant="ghost" size="sm" disabled={!hasPrev} onClick={() => navigateTo(currentIndex - 1)} className="h-6.5 rounded-lg text-xs gap-1 px-1.5 sm:px-2">
               <ChevronLeft className="h-3 w-3" /> <span className="hidden sm:inline">Buổi trước</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2 font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 cursor-pointer">
+                <Button variant="ghost" size="sm" className="h-6.5 rounded-lg text-xs gap-1 px-1.5 sm:px-2 font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 cursor-pointer">
                   <span>{session.date} ({session.startTime}–{session.endTime})</span>
                   <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 </Button>
@@ -427,7 +427,7 @@ export function ClassesSessionDetailDialog({
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="ghost" size="sm" disabled={!hasNext} onClick={() => navigateTo(currentIndex + 1)} className="h-6.5 rounded-lg text-[11px] gap-1 px-1.5 sm:px-2">
+            <Button variant="ghost" size="sm" disabled={!hasNext} onClick={() => navigateTo(currentIndex + 1)} className="h-6.5 rounded-lg text-xs gap-1 px-1.5 sm:px-2">
               <span className="hidden sm:inline">Buổi sau</span> <ChevronRight className="h-3 w-3" />
             </Button>
 
@@ -454,11 +454,11 @@ export function ClassesSessionDetailDialog({
               <div>
                 <DialogTitle className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold text-foreground">
                   <span>{session.topic}</span>
-                  <Badge variant="outline" className={cn("rounded-full text-[10px] font-semibold px-1.5 py-0", getStatusBadgeClass(getSessionStatusBadgeKey(session.status)))}>
+                  <Badge variant="outline" className={cn("rounded-full text-xs font-semibold px-1.5 py-0", getStatusBadgeClass(getSessionStatusBadgeKey(session.status)))}>
                     {getSessionStatusLabel(session.status)}
                   </Badge>
                   {isTestSession && (
-                    <Badge variant="outline" className="rounded-full text-[10px] font-semibold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+                    <Badge variant="outline" className="rounded-full text-xs font-semibold px-1.5 py-0 border-zinc-300 bg-zinc-100 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                       Buổi kiểm tra
                     </Badge>
                   )}
@@ -538,7 +538,7 @@ export function ClassesSessionDetailDialog({
               >
                 <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                 <span>Học viên</span>
-                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[11px] font-bold ${
+                <span className={`ml-0.5 rounded-full px-1.5 py-0.2 text-xs font-bold ${
                   leftPanelTab === 'roster'
                     ? 'bg-zinc-100 dark:bg-zinc-800 text-foreground'
                     : 'bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-600 dark:text-zinc-400'

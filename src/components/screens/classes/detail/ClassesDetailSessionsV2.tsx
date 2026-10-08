@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { CalendarDays, CheckCircle2, Clock, RefreshCw, Route } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Clock } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { ConfirmDialog, FieldLabel } from '@/components/shared'
-import type { ClassRecord, ScheduleSlot } from '@/mocks/classRecords'
+import type { ClassRecord } from '@/mocks/classRecords'
 
 import { ClassesAddScheduleDialog } from './ClassesAddScheduleDialog'
 import { ClassesSessionActionDialog } from './ClassesSessionActionDialog'
@@ -65,7 +64,6 @@ export function ClassesDetailSessionsV2({
   classNotes,
   classLogs,
   onAddClassNote,
-  onEditRoadmap,
 }: ClassesDetailSessionsV2Props) {
   const [selectedDetailSession, setSelectedDetailSession] = useState<RoadmapSession | null>(null)
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
@@ -151,14 +149,14 @@ export function ClassesDetailSessionsV2({
   }
 
   return (
-    <div className="space-y-6 pb-6 pt-1">
+    <div className="space-y-2.5 pb-2 pt-0.5">
 
       {/* GROUP 1: HÔM NAY */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between pt-1 pb-1">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-xs font-bold text-foreground">
+      <section className="space-y-1">
+        <div className="flex items-center justify-between pb-0.5">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="text-xs font-semibold text-foreground">
               Hôm nay
             </h3>
             <span className="text-xs text-muted-foreground font-normal">
@@ -168,16 +166,17 @@ export function ClassesDetailSessionsV2({
         </div>
 
         {todaySessions.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-4 text-center text-xs text-muted-foreground italic">
+          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-2.5 text-center text-xs text-muted-foreground italic">
             Không có buổi học nào hôm nay
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-1.5">
             {todaySessions.map((session) => (
               <ClassesSessionCard
                 key={`v2-today-${session.id}`}
                 session={session}
                 roster={roster}
+                isNextSession={true}
                 onView={(s) => setSelectedDetailSession(s)}
                 onCancel={handleOpenCancelModal}
                 onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
@@ -196,10 +195,10 @@ export function ClassesDetailSessionsV2({
       </section>
 
       {/* GROUP 2: SẮP TỚI */}
-      <section className="space-y-2 pt-2">
-        <div className="flex items-center gap-2 pt-2 pb-1">
-          <Clock className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-          <h3 className="text-xs font-bold text-foreground">
+      <section className="space-y-1">
+        <div className="flex items-center gap-1.5 pb-0.5">
+          <Clock className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
+          <h3 className="text-xs font-semibold text-foreground">
             Sắp tới
           </h3>
           <span className="text-xs text-muted-foreground font-normal">
@@ -208,16 +207,17 @@ export function ClassesDetailSessionsV2({
         </div>
 
         {upcomingSessions.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-4 text-center text-xs text-muted-foreground italic">
+          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-2.5 text-center text-xs text-muted-foreground italic">
             Không có buổi học nào sắp tới
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {upcomingSessions.map((session) => (
+          <div className="grid grid-cols-1 gap-1.5">
+            {upcomingSessions.map((session, idx) => (
               <ClassesSessionCard
                 key={`v2-upcoming-${session.id}`}
                 session={session}
                 roster={roster}
+                isNextSession={todaySessions.length === 0 && idx === 0}
                 onView={(s) => setSelectedDetailSession(s)}
                 onCancel={handleOpenCancelModal}
                 onEditTeacher={(id) => handleOpenEdit(id, 'teacher')}
@@ -235,12 +235,12 @@ export function ClassesDetailSessionsV2({
         )}
       </section>
 
-      {/* GROUP 3: ĐÃ HỌC */}
-      <section className="space-y-2 pt-2">
-        <div className="flex items-center gap-2 pt-2 pb-1">
-          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-xs font-bold text-foreground">
-            Đã học
+      {/* GROUP 3: LỊCH SỬ BUỔI HỌC (Title text thường, không in đậm) */}
+      <section className="space-y-1">
+        <div className="flex items-center gap-1.5 pb-0.5">
+          <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+          <h3 className="text-xs font-normal text-muted-foreground">
+            Lịch sử buổi học
           </h3>
           <span className="text-xs text-muted-foreground font-normal">
             ({completedSessions.length})
@@ -248,11 +248,11 @@ export function ClassesDetailSessionsV2({
         </div>
 
         {completedSessions.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-4 text-center text-xs text-muted-foreground italic">
+          <div className="rounded-lg border border-dashed border-border/50 bg-muted/5 p-2.5 text-center text-xs text-muted-foreground italic">
             Chưa có buổi học nào hoàn thành
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-1.5">
             {completedSessions.map((session) => (
               <ClassesSessionCard
                 key={`v2-completed-${session.id}`}

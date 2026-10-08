@@ -377,7 +377,7 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-2 rounded-xl border border-border/80 bg-card shadow-2xs">
         {/* Danh sách các kho dạng thẻ pill */}
         <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-0.5 min-w-0 flex-1">
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 shrink-0 hidden md:inline">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 shrink-0 hidden md:inline">
             Kho dữ liệu:
           </span>
           {pools.map((p) => {
@@ -398,7 +398,7 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
                 <span>{p.name}</span>
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold',
+                    'text-xs px-1.5 py-0.5 rounded font-mono font-semibold',
                     isSelected
                       ? 'bg-primary-foreground/20 text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
@@ -590,7 +590,7 @@ export const LeadLifecycleConfigScreen: React.FC = () => {
           <div className="space-y-3 py-2 text-xs">
             <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-2 text-amber-900 dark:text-amber-200">
               <Info className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 Hành động này sẽ thay thế toàn bộ danh sách trạng thái hiện tại của{' '}
                 <strong>{currentPool.name}</strong> bằng bản sao các trạng thái từ kho nguồn được chọn bên dưới.
               </p>

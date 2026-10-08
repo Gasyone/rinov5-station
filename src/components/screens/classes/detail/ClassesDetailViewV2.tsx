@@ -58,7 +58,7 @@ export function ClassesDetailViewV2({
   onStatusChange,
   hideClassType = true,
 }: ClassesDetailViewV2Props) {
-  const [activeTab, setActiveTab] = useState(initialTab || 'roster')
+  const [activeTab, setActiveTab] = useState(initialTab === 'overview' ? 'roster' : (initialTab || 'roster'))
 
   const [isStudentSelectOpen, setIsStudentSelectOpen] = useState(false)
   const [tempSelectedStudents, setTempSelectedStudents] = useState<SelectedStudentItem[] | null>(null)
@@ -145,7 +145,7 @@ export function ClassesDetailViewV2({
     if (nextEditing) {
       setActiveTab('sessions')
     } else {
-      setActiveTab(initialTab === 'overview' ? 'sessions' : initialTab)
+      setActiveTab(initialTab === 'overview' ? 'roster' : initialTab)
     }
   }
 
@@ -464,9 +464,9 @@ export function ClassesDetailViewV2({
       ) : (
         <>
           {/* Main Layout: Left Column (Header Card + Tabs & Roster/Sessions) & Right Column Panel */}
-          <div className="grid min-h-0 flex-1 gap-4 p-6 lg:grid-cols-[1fr_410px] h-full overflow-hidden bg-background">
+          <div className="grid min-h-0 flex-1 gap-3 p-3 lg:p-3.5 lg:grid-cols-[1fr_275px] h-full overflow-hidden bg-background">
             {/* Left Panel Container */}
-            <main className="flex min-h-0 flex-col overflow-hidden h-full space-y-4">
+            <main className="flex min-h-0 flex-col overflow-hidden h-full space-y-2">
               {/* Section Thông tin lớp học (Header trái) */}
               <ClassesDetailHeaderV2
                 cls={cls}
@@ -488,24 +488,12 @@ export function ClassesDetailViewV2({
               {/* Body Section underneath Left Section Header */}
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col h-full">
-                  {/* Segmented Control Filter Tabs (5 Tabs: Tổng quan, Học viên, Buổi học, Tài liệu & media, Lịch sử cập nhật) */}
-                  <TabsList className="shrink-0 grid w-full grid-cols-5 gap-1 bg-muted/60 p-1 h-9 rounded-lg border border-border/40 mb-1">
-                    <TabsTrigger
-                      value="overview"
-                      className={cn(
-                        "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                        "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                        "hover:text-foreground"
-                      )}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                      <span>Tổng quan</span>
-                    </TabsTrigger>
-
+                  {/* Segmented Control Filter Tabs (4 Tabs: Học viên, Buổi học, Tài liệu & media, Lịch sử cập nhật) */}
+                  <TabsList className="shrink-0 inline-flex w-auto max-w-full items-center gap-1 bg-muted/60 p-0.5 h-7.5 rounded-lg border border-border/40 mb-1">
                     <TabsTrigger
                       value="roster"
                       className={cn(
-                        "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
                         "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
                         "hover:text-foreground",
                         hasRosterError && "text-destructive data-[state=active]:!text-destructive"
@@ -513,7 +501,7 @@ export function ClassesDetailViewV2({
                     >
                       <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                       <span>Học viên</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0 text-[10.5px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
                         {rosterState.length}
                       </span>
                     </TabsTrigger>
@@ -521,7 +509,7 @@ export function ClassesDetailViewV2({
                     <TabsTrigger
                       value="sessions"
                       className={cn(
-                        "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
                         "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
                         "hover:text-foreground"
                       )}
@@ -533,7 +521,7 @@ export function ClassesDetailViewV2({
                     <TabsTrigger
                       value="media"
                       className={cn(
-                        "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
                         "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
                         "hover:text-foreground"
                       )}
@@ -545,31 +533,21 @@ export function ClassesDetailViewV2({
                     <TabsTrigger
                       value="logs"
                       className={cn(
-                        "h-7 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
                         "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
                         "hover:text-foreground"
                       )}
                     >
                       <Clock className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
                       <span>Lịch sử cập nhật</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-xs font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
+                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0 text-[10.5px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
                         {logs.length}
                       </span>
                     </TabsTrigger>
                   </TabsList>
 
                   {/* Scrollable Container */}
-                  <div className="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col h-full pt-3">
-                    {/* Tab 0: Placeholder Tổng quan */}
-                    <TabsContent value="overview" className="m-0 focus-visible:outline-none flex-1 flex flex-col items-center justify-center py-10">
-                      <EmptyState
-                        icon={<Sparkles className="h-7 w-7 text-[#0088cc]" />}
-                        title="Tính năng Tổng quan Lớp học đang phát triển"
-                        description="Khu vực tổng quan phân tích dữ liệu lớp học đang được xây dựng (Placeholder). Vui lòng chuyển sang tab Học viên hoặc Buổi học để xem thông tin chi tiết."
-                        className="border-dashed border-border/70 rounded-2xl bg-muted/15 py-12 px-6 max-w-lg mx-auto"
-                      />
-                    </TabsContent>
-
+                  <div className="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col h-full pt-1">
                     {/* Tab 1: Roster */}
                     <TabsContent value="roster" className="m-0 focus-visible:outline-none">
                       <ClassesDetailRoster
@@ -675,39 +653,39 @@ export function ClassesDetailViewV2({
                     </TabsContent>
 
                     {/* Tab 4: Logs (Lịch sử cập nhật) */}
-                    <TabsContent value="logs" className="m-0 focus-visible:outline-none flex-1 pb-4">
-                      <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+                    <TabsContent value="logs" className="m-0 focus-visible:outline-none flex-1 pb-2">
+                      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
                         {/* Header with light gray background matching Overview headers */}
-                        <div className="bg-muted/40 dark:bg-muted/20 px-4 py-3 border-b border-border flex items-center justify-between">
+                        <div className="bg-muted/40 dark:bg-muted/20 px-3.5 py-2 border-b border-border flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-primary" />
-                            <h4 className="text-xs font-extrabold text-foreground uppercase tracking-wide">
-                              Lịch Sử Cập Nhật Lớp Học ({logs.length})
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            <h4 className="text-xs font-normal text-muted-foreground">
+                              Lịch sử cập nhật ({logs.length})
                             </h4>
                           </div>
                         </div>
 
                         {/* Clean history rows without dots, vertical lines, or individual card borders */}
                         {logs.length === 0 ? (
-                          <div className="p-4">
+                          <div className="p-3">
                             <EmptyState
-                              icon={<Clock className="h-7 w-7 text-muted-foreground/40" />}
+                              icon={<Clock className="h-6 w-6 text-muted-foreground/40" />}
                               title="Chưa có lịch sử cập nhật nào"
                               description="Lịch sử cập nhật trạng thái, thêm học viên và đổi lịch học sẽ được ghi vết tự động tại đây."
-                              className="border-dashed border-border/70 rounded-xl bg-muted/15 py-8"
+                              className="border-dashed border-border/70 rounded-lg bg-muted/15 py-6"
                             />
                           </div>
                         ) : (
                           <div className="divide-y divide-border/40">
                             {logs.map((log) => (
-                              <div key={log.id} className="px-4 py-3 text-xs space-y-1 hover:bg-muted/20 transition-colors">
+                              <div key={log.id} className="px-3.5 py-2 text-xs space-y-0.5 hover:bg-muted/20 transition-colors">
                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                  <span className="font-bold text-foreground">
+                                  <span className="font-semibold text-foreground">
                                     {log.operator}
                                   </span>
                                   <span className="font-mono text-xs">{formatNoteTimestamp(log.timestamp)}</span>
                                 </div>
-                                <p className="font-medium text-foreground/90 leading-relaxed">
+                                <p className="font-normal text-foreground/90 leading-relaxed text-[11.5px]">
                                   {log.action}
                                 </p>
                               </div>

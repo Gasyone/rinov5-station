@@ -38,10 +38,10 @@ interface ClassesStudentMonthlyReportOverlayPanelProps {
 }
 
 const MONTH_OPTIONS = [
-  { value: '4_5_2026', label: 'Báo cáo Tháng 4 & Kế hoạch Tháng 5/2026', current: 'Tháng 4', next: 'Tháng 5', dateStr: '01/04/2026 đến 30/04/2026' },
-  { value: '5_6_2026', label: 'Báo cáo Tháng 5 & Kế hoạch Tháng 6/2026', current: 'Tháng 5', next: 'Tháng 6', dateStr: '01/05/2026 đến 31/05/2026' },
-  { value: '6_7_2026', label: 'Báo cáo Tháng 6 & Kế hoạch Tháng 7/2026', current: 'Tháng 6', next: 'Tháng 7', dateStr: '01/06/2026 đến 30/06/2026' },
-  { value: '7_8_2026', label: 'Báo cáo Tháng 7 & Kế hoạch Tháng 8/2026', current: 'Tháng 7', next: 'Tháng 8', dateStr: '01/07/2026 đến 31/07/2026' },
+  { value: '4_5_2026', label: 'Báo cáo T4 & Kế hoạch T5/2026', current: 'Tháng 4', next: 'Tháng 5', dateStr: '01/04/2026 đến 30/04/2026' },
+  { value: '5_6_2026', label: 'Báo cáo T5 & Kế hoạch T6/2026', current: 'Tháng 5', next: 'Tháng 6', dateStr: '01/05/2026 đến 31/05/2026' },
+  { value: '6_7_2026', label: 'Báo cáo T6 & Kế hoạch T7/2026', current: 'Tháng 6', next: 'Tháng 7', dateStr: '01/06/2026 đến 30/06/2026' },
+  { value: '7_8_2026', label: 'Báo cáo T7 & Kế hoạch T8/2026', current: 'Tháng 7', next: 'Tháng 8', dateStr: '01/07/2026 đến 31/07/2026' },
 ]
 
 export function ClassesStudentMonthlyReportOverlayPanel({
@@ -103,8 +103,8 @@ export function ClassesStudentMonthlyReportOverlayPanel({
     () => initialReport?.galleryPhotos || []
   )
   const [sectionB1Content, setSectionB1Content] = useState(() => initialReport?.sectionB1Content || '')
-  const [sectionB2StartLesson, setSectionB2StartLesson] = useState(() => initialReport?.sectionB2StartLesson || (isMath ? 1 : 8))
-  const [sectionB2EndLesson, setSectionB2EndLesson] = useState(() => initialReport?.sectionB2EndLesson || (isMath ? 4 : 10))
+  const [sectionB2StartLesson, setSectionB2StartLesson] = useState<number | undefined>(() => initialReport?.sectionB2StartLesson)
+  const [sectionB2EndLesson, setSectionB2EndLesson] = useState<number | undefined>(() => initialReport?.sectionB2EndLesson)
   const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(() => initialReport?.sectionB2Weeks || [])
   const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
@@ -177,8 +177,8 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       setSectionA2Content('')
       setGalleryPhotos([])
       setSectionB1Content('')
-      setSectionB2StartLesson(isMath ? 1 : 8)
-      setSectionB2EndLesson(isMath ? 4 : 10)
+      setSectionB2StartLesson(undefined)
+      setSectionB2EndLesson(undefined)
       setSectionB2Weeks([
         { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
         { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
@@ -219,19 +219,27 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   // Step 1: Start lesson change
   const handleStartLessonChange = (startNum: number) => {
     setSectionB2StartLesson(startNum)
-    const newB1Content = getDirectLessonPlanForRange(startNum, sectionB2EndLesson, isMath)
-    setSectionB1Content(newB1Content)
+    if (sectionB2EndLesson) {
+      const newB1Content = getDirectLessonPlanForRange(startNum, sectionB2EndLesson, isMath)
+      setSectionB1Content(newB1Content)
+    }
   }
 
   // Step 1: End lesson change
   const handleEndLessonChange = (endNum: number) => {
     setSectionB2EndLesson(endNum)
-    const newB1Content = getDirectLessonPlanForRange(sectionB2StartLesson, endNum, isMath)
-    setSectionB1Content(newB1Content)
+    if (sectionB2StartLesson) {
+      const newB1Content = getDirectLessonPlanForRange(sectionB2StartLesson, endNum, isMath)
+      setSectionB1Content(newB1Content)
+    }
   }
 
   // Load sample lesson plan for Section 1
   const handleLoadNextMonthPlan = () => {
+    if (!sectionB2StartLesson || !sectionB2EndLesson) {
+      toast.info('Vui lòng chọn bài bắt đầu và kết thúc!')
+      return
+    }
     setIsSynthesizingAi(true)
     setTimeout(() => {
       setIsSynthesizingAi(false)
@@ -280,11 +288,11 @@ export function ClassesStudentMonthlyReportOverlayPanel({
               BÁO CÁO HỌC TẬP
             </h3>
             {isEditing ? (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
                 Sửa
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-muted text-muted-foreground border border-border/60">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-muted text-muted-foreground border border-border/60">
                 Xem
               </span>
             )}
@@ -322,7 +330,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
           {/* Thông báo thời hạn chỉnh sửa khi đang sửa */}
           {isEditing && (
-            <div className="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] text-amber-950 dark:text-amber-200 flex items-center justify-between gap-2 shadow-3xs">
+            <div className="px-3 py-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-xs text-amber-950 dark:text-amber-200 flex items-center justify-between gap-2 shadow-3xs">
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <span>
@@ -334,7 +342,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
           {/* Thông báo khi kỳ cũ đã khóa chỉnh sửa */}
           {!isEditing && editStatus.isLocked && (
-            <div className="px-3 py-2 rounded-xl bg-muted/60 border border-border text-[11px] text-muted-foreground flex items-center justify-between gap-2">
+            <div className="px-3 py-2 rounded-xl bg-muted/60 border border-border text-xs text-muted-foreground flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span>
@@ -378,7 +386,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                       {awardBadge}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground italic px-2 py-0.5 rounded-full bg-muted/50 border border-dashed">
+                    <span className="text-xs text-muted-foreground italic px-2 py-0.5 rounded-full bg-muted/50 border border-dashed">
                       Chưa đặt danh hiệu
                     </span>
                   )}
@@ -469,12 +477,15 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 {isEditing && (
                   <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                     <span className="text-xs font-bold text-muted-foreground shrink-0">Chọn bài:</span>
-                    <Select value={String(sectionB2StartLesson)} onValueChange={(v) => handleStartLessonChange(Number(v))}>
+                    <Select
+                      value={sectionB2StartLesson ? String(sectionB2StartLesson) : undefined}
+                      onValueChange={(v) => handleStartLessonChange(Number(v))}
+                    >
                       <SelectTrigger
                         className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
                         title={startLessonObj ? `Buổi ${startLessonObj.lessonNumber}: ${startLessonObj.title}` : undefined}
                       >
-                        <SelectValue placeholder="Bắt đầu" />
+                        <SelectValue placeholder="Chọn bài" />
                       </SelectTrigger>
                       <SelectContent className="max-w-[380px] w-[320px]">
                         {activeLessons.map((l) => (
@@ -489,12 +500,15 @@ export function ClassesStudentMonthlyReportOverlayPanel({
 
                     <span className="text-xs font-bold text-muted-foreground shrink-0">→</span>
 
-                    <Select value={String(sectionB2EndLesson)} onValueChange={(v) => handleEndLessonChange(Number(v))}>
+                    <Select
+                      value={sectionB2EndLesson ? String(sectionB2EndLesson) : undefined}
+                      onValueChange={(v) => handleEndLessonChange(Number(v))}
+                    >
                       <SelectTrigger
                         className="h-7.5 text-xs font-semibold w-24 sm:w-28 max-w-[120px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
                         title={endLessonObj ? `Buổi ${endLessonObj.lessonNumber}: ${endLessonObj.title}` : undefined}
                       >
-                        <SelectValue placeholder="Kết thúc" />
+                        <SelectValue placeholder="Chọn bài" />
                       </SelectTrigger>
                       <SelectContent className="max-w-[380px] w-[320px]">
                         {activeLessons.map((l) => (
@@ -517,7 +531,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                       title="Nạp nội dung khung chương trình cho các buổi học đã chọn"
                     >
                       {isSynthesizingAi ? <Loader2 className="h-3 w-3 animate-spin" /> : <BookOpen className="h-3 w-3" />}
-                      <span>Nạp bài học mẫu</span>
+                      <span>Thêm bài</span>
                     </Button>
                   </div>
                 )}
@@ -528,7 +542,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                   rows={6}
                   value={sectionB1Content}
                   onChange={(e) => setSectionB1Content(e.target.value)}
-                  placeholder="Nhập hoặc chọn bài học rồi bấm 'Nạp bài học mẫu' để biên tập nội dung..."
+                  placeholder="Nhập hoặc chọn bài học rồi bấm 'Thêm bài' để biên tập nội dung..."
                   className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
                 />
               ) : (
@@ -574,12 +588,12 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             <>
               <div className="flex items-center gap-2.5 text-xs flex-wrap">
                 {editStatus.isLocked ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-muted text-muted-foreground border">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border">
                     <Lock className="h-2.5 w-2.5" />
                     <span>Đã khóa</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                     <Clock className="h-2.5 w-2.5" />
                     <span>Còn {editStatus.daysRemaining} ngày sửa</span>
                   </span>

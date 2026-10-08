@@ -14,6 +14,9 @@ interface TrialClassTableFrameProps {
   currentPage: number
   total: number
   pageSize: number
+  sortField?: import('./trialClassTypes').TrialSortField
+  sortDirection?: import('./trialClassTypes').SortDirection
+  onSort?: (field: import('./trialClassTypes').TrialSortField) => void
   onRetry: () => void
   onPageChange: (page: number) => void
   onPageSizeChange: (pageSize: number) => void
@@ -22,9 +25,11 @@ interface TrialClassTableFrameProps {
   onRowClick: (id: string) => void
   onCopy: (text: string, key: string) => void
   onRequestReschedule?: (id: string) => void
+  onOpenAssign?: (id: string) => void
   onOpenAssignReschedule?: (id: string) => void
   onApprove?: (id: string) => void
   onReject?: (id: string) => void
+  onClearSelection?: () => void
 }
 
 export function TrialClassTableFrame({
@@ -36,6 +41,9 @@ export function TrialClassTableFrame({
   currentPage,
   total,
   pageSize,
+  sortField,
+  sortDirection,
+  onSort,
   onRetry,
   onPageChange,
   onPageSizeChange,
@@ -44,9 +52,11 @@ export function TrialClassTableFrame({
   onRowClick,
   onCopy,
   onRequestReschedule,
+  onOpenAssign,
   onOpenAssignReschedule,
   onApprove,
   onReject,
+  onClearSelection,
 }: TrialClassTableFrameProps) {
   if (loading) {
     return <ModuleLoadingSkeleton rows={8} columns={10} showToolbar={false} className="h-full" />
@@ -72,6 +82,9 @@ export function TrialClassTableFrame({
           pageSize={pageSize}
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
+          selectedCount={selectedIds.size}
+          onClearSelection={onClearSelection}
+          size="sm"
         />
       }
     >
@@ -79,11 +92,15 @@ export function TrialClassTableFrame({
         trials={trials}
         selectedIds={selectedIds}
         copiedKey={copiedKey}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={onSort}
         onToggleAll={onToggleAll}
         onToggleOne={onToggleOne}
         onRowClick={onRowClick}
         onCopy={onCopy}
         onRequestReschedule={onRequestReschedule}
+        onOpenAssign={onOpenAssign}
         onOpenAssignReschedule={onOpenAssignReschedule}
         onApprove={onApprove}
         onReject={onReject}

@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { Calendar as CalendarIcon, Clock } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Calendar as CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { FieldLabel } from '@/components/shared'
-import { SegmentedControl } from '@/components/controls'
 import { cn } from '@/lib/utils'
-import { TIME_GROUPS } from './bookingTestCreateTypes'
+import { TIME_GROUPS, getSlotTimeRange } from './bookingTestCreateTypes'
 
 type PeriodType = 'morning' | 'afternoon' | 'evening' | 'all'
 
@@ -19,10 +17,10 @@ function getSessionForSlot(slot: string): PeriodType {
 }
 
 const PERIOD_OPTIONS: Array<{ value: PeriodType; label: string }> = [
-  { value: 'morning', label: '☀️ Sáng (8)' },
-  { value: 'afternoon', label: '🌤 Chiều (9)' },
-  { value: 'evening', label: '🌙 Tối (8)' },
-  { value: 'all', label: 'Tất cả (25)' },
+  { value: 'morning', label: '☀️ Sáng' },
+  { value: 'afternoon', label: '🌤 Chiều' },
+  { value: 'evening', label: '🌙 Tối' },
+  { value: 'all', label: 'Tất cả' },
 ]
 
 interface DateOptionItem {
@@ -37,7 +35,7 @@ interface BookingTestCreateScheduleSectionProps {
   selectedSlot: string
   onSlotChange: (slot: string) => void
   dateOptions: {
-    first3: DateOptionItem[]
+    first4: DateOptionItem[]
     minCustomDateStr: string
   }
   dailySlotsSummary: Array<{
@@ -46,6 +44,7 @@ interface BookingTestCreateScheduleSectionProps {
   }>
   selectedTeacher?: string
   teacherSlotConflicts?: Record<string, string>
+  school?: string
 }
 
 export function BookingTestCreateScheduleSection({
@@ -58,11 +57,13 @@ export function BookingTestCreateScheduleSection({
   dailySlotsSummary,
   selectedTeacher = '',
   teacherSlotConflicts = {},
+  school = '',
 }: BookingTestCreateScheduleSectionProps) {
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const isTeacherFirst = mode === 'teacher_first'
+  const hasFacilityAndDate = Boolean(school && testDate)
 
-  const isFirst3Selected = dateOptions.first3.some((d) => d.dateStr === testDate)
+  const isFirst4Selected = dateOptions.first4.some((d) => d.dateStr === testDate)
 
   const calendarSelectedDate = useMemo(() => {
     if (!testDate) return undefined
@@ -92,15 +93,17 @@ export function BookingTestCreateScheduleSection({
   const [activePeriod, setActivePeriod] = useState<PeriodType>(() =>
     selectedSlot ? getSessionForSlot(selectedSlot) : 'morning'
   )
+  const [prevSelectedSlot, setPrevSelectedSlot] = useState(selectedSlot)
 
-  useEffect(() => {
-    if (selectedSlot && activePeriod !== 'all') {
+  if (selectedSlot !== prevSelectedSlot) {
+    setPrevSelectedSlot(selectedSlot)
+    if (activePeriod !== 'all') {
       const slotPeriod = getSessionForSlot(selectedSlot)
       if (slotPeriod !== activePeriod) {
         setActivePeriod(slotPeriod)
       }
     }
-  }, [selectedSlot])
+  }
 
   const displayedGroups = useMemo(() => {
     if (activePeriod === 'morning') {
@@ -116,104 +119,127 @@ export function BookingTestCreateScheduleSection({
   }, [activePeriod])
 
   return (
-    <div className="space-y-3">
-      {/* SECTION 1: 4 NÚT CHỌN NGÀY (BỎ VIỀN VÀ NỀN) */}
-      <div className="space-y-1">
-        <FieldLabel label="Lựa chọn Ngày đánh giá & Ca test" required>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-0.5">
-            {dateOptions.first3.map((item) => {
-              const isSelected = testDate === item.dateStr
+    /* DUY NHẤT 1 SECTION GỘP CHỌN NGÀY VÀ KHUNG GIỜ TEST */
+    <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2.5">
+      {/* PHẦN 1: 5 NÚT CHỌN NGÀY ĐẦU ĐỦ (KHÔNG CÒN TEXT NGÀY VÀ TAG NAY/MAI) */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        {dateOptions.first4.map((item) => {
+          const isSelected = testDate === item.dateStr
+          return (
+            <button
+              key={item.dateStr}
+              type="button"
+              onClick={() => onTestDateChange(item.dateStr)}
+              className={cn(
+                'flex items-center justify-center rounded-md border px-2 py-1 text-xs font-medium transition-colors text-center truncate cursor-pointer h-8',
+                isSelected
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                  : 'bg-background hover:bg-muted text-foreground'
+              )}
+            >
+              <span className="truncate">{item.label}</span>
+            </button>
+          )
+        })}
+
+        {/* Nút 5: Ngày khác */}
+        <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className={cn(
+                'flex items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors text-center truncate cursor-pointer h-8',
+                testDate && !isFirst4Selected
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                  : 'bg-background hover:bg-muted text-foreground'
+              )}
+            >
+              <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">
+                {testDate && !isFirst4Selected
+                  ? (() => {
+                      const parts = testDate.split('-').map(Number)
+                      if (parts.length === 3) {
+                        const d = new Date(parts[0], parts[1] - 1, parts[2])
+                        const day = d.getDay()
+                        const dayShort = day === 0 ? 'CN' : `T${day + 1}`
+                        const dd = String(parts[2]).padStart(2, '0')
+                        const mm = String(parts[1]).padStart(2, '0')
+                        return `${dayShort}, ${dd}/${mm}`
+                      }
+                      return testDate
+                    })()
+                  : 'Ngày khác'}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-auto p-0 z-50">
+            <Calendar
+              mode="single"
+              selected={calendarSelectedDate}
+              onSelect={handleCalendarSelect}
+              disabled={(date) => date < minDateObj}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* DẢI PHÂN CÁCH NHẸ GIỮA CHỌN NGÀY VÀ BẢNG KHUNG GIỜ */}
+      <div className="border-t border-border/60" />
+
+      {/* PHẦN 2: THANH PHÂN ĐOẠN BUỔI Ở TRÊN + LƯỚI KHUNG GIỜ TEST Ở DƯỚI (PHƯƠNG ÁN 2) */}
+      <div className="space-y-2.5">
+        {/* Thanh Tabs Buổi (Nền xám nhạt trung tính, không dùng màu xanh để tránh lẫn với giờ được chọn) */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex rounded-lg bg-muted/70 p-0.5 border border-border/60">
+            {PERIOD_OPTIONS.map((opt) => {
+              const isSelected = activePeriod === opt.value
               return (
                 <button
-                  key={item.dateStr}
+                  key={opt.value}
                   type="button"
-                  onClick={() => onTestDateChange(item.dateStr)}
+                  onClick={() => setActivePeriod(opt.value)}
                   className={cn(
-                    'flex items-center justify-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors text-center truncate cursor-pointer h-8',
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer flex items-center gap-1',
                     isSelected
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                      : 'bg-background hover:bg-muted text-foreground'
+                      ? 'bg-background text-foreground font-bold shadow-xs border border-border/50'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  {item.label}
+                  <span>{opt.label}</span>
                 </button>
               )
             })}
-
-            {/* Nút 4: Ngày khác */}
-            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    'flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors text-center truncate cursor-pointer h-8',
-                    !isFirst3Selected
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
-                      : 'bg-background hover:bg-muted text-foreground'
-                  )}
-                >
-                  <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">
-                    {!isFirst3Selected && testDate
-                      ? (() => {
-                          const parts = testDate.split('-')
-                          return parts.length === 3 ? `${parts[2]}/${parts[1]}` : testDate
-                        })()
-                      : 'Ngày khác'}
-                  </span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-auto p-0 z-50">
-                <Calendar
-                  mode="single"
-                  selected={calendarSelectedDate}
-                  onSelect={handleCalendarSelect}
-                  disabled={(date) => date < minDateObj}
-                />
-              </PopoverContent>
-            </Popover>
           </div>
-        </FieldLabel>
-      </div>
 
-      {/* SECTION 2: KHUNG GIỜ TEST (30 PHÚT/CA) */}
-      <div className="rounded-lg border border-border/70 bg-background p-2.5 space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-1.5 pb-1.5 border-b">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 shrink-0">
-              <Clock className="h-3.5 w-3.5 text-primary" />
-              <span>Khung giờ test</span>
+          {/* Thông tin ngữ cảnh */}
+          {!hasFacilityAndDate ? (
+            <span className="text-xs text-muted-foreground/80 font-normal hidden sm:inline">
+              {!school && !testDate
+                ? '(Chọn cơ sở và ngày để xem số lượng giáo viên rảnh)'
+                : !school
+                ? '(Chọn cơ sở để xem số lượng giáo viên rảnh)'
+                : '(Chọn ngày để xem số lượng giáo viên rảnh)'}
             </span>
-
-            {isTeacherFirst && selectedTeacher ? (
-              <span className="text-[11px] text-muted-foreground font-normal truncate max-w-[160px] sm:max-w-none">
-                Lịch: <span className="font-semibold text-primary">{selectedTeacher}</span>
-                {selectedSlot && <span className="ml-1 text-foreground">({selectedSlot})</span>}
-              </span>
-            ) : selectedSlot ? (
-              <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0">
-                Ca: {selectedSlot}
-              </span>
-            ) : null}
-          </div>
-
-          <SegmentedControl
-            value={activePeriod}
-            onValueChange={(val) => setActivePeriod(val as PeriodType)}
-            options={PERIOD_OPTIONS}
-            className="h-6.5 p-0.5 bg-muted/60 shrink-0"
-            itemClassName="h-5.5 px-2 text-[11px] font-medium"
-          />
+          ) : isTeacherFirst && selectedTeacher ? (
+            <span className="text-xs text-muted-foreground font-normal truncate max-w-[200px] sm:max-w-none">
+              Lịch trực: <span className="font-semibold text-primary">{selectedTeacher}</span>
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground font-normal hidden sm:inline">
+              Ca test 30 phút • Chọn giờ bắt đầu
+            </span>
+          )}
         </div>
 
+        {/* Lưới các khung giờ test (Chỉ hiển thị giờ bắt đầu) */}
         <div className="space-y-2">
           {displayedGroups.map((group) => (
             <div key={group.title} className="space-y-1">
               {activePeriod === 'all' && (
-                <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 pb-0.5">
                   <span>{group.icon}</span>
                   <span>{group.title}</span>
-                  <span className="text-[11px] text-muted-foreground font-normal">({group.slots.length} ca)</span>
                 </div>
               )}
 
@@ -224,60 +250,78 @@ export function BookingTestCreateScheduleSection({
                   const slotSummary = dailySlotsSummary.find((s) => s.slot === slot)
                   const generalAvailableCount = slotSummary ? slotSummary.availableCount : 0
 
-                  // Nếu đang ở chế độ Teacher-First và có chọn Teacher
                   const hasTeacher = Boolean(selectedTeacher && selectedTeacher !== '')
                   const isTeacherBusy = hasTeacher && Boolean(teacherSlotConflicts[slot])
                   const teacherConflictDetail = hasTeacher ? teacherSlotConflicts[slot] : undefined
                   const isTeacherAvailable = hasTeacher && !isTeacherBusy
+
+                  const isFull = hasFacilityAndDate && generalAvailableCount === 0 && !hasTeacher
+                  const fullRange = getSlotTimeRange(slot, 30)
 
                   return (
                     <button
                       key={slot}
                       type="button"
                       onClick={() => onSlotChange(slot)}
-                      title={teacherConflictDetail ? `⚠️ ${teacherConflictDetail}` : undefined}
+                      title={
+                        teacherConflictDetail
+                          ? `⚠️ ${teacherConflictDetail}`
+                          : isFull
+                          ? `⚠️ Ca ${fullRange} đã hết giáo viên trực rảnh (0 rảnh)`
+                          : `Ca ${fullRange}`
+                      }
                       className={cn(
-                        'flex items-center justify-between rounded-md border px-2 py-1 text-xs transition-all cursor-pointer h-8',
+                        'flex items-center justify-between rounded-md border px-2.5 py-1 text-xs transition-all cursor-pointer h-8.5 min-w-0',
                         isSlotSelected
-                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs ring-1 ring-primary/40'
+                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs ring-2 ring-primary/20'
+                          : !hasFacilityAndDate
+                          ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
                           : isTeacherFirst && hasTeacher
                           ? isTeacherAvailable
-                            ? 'border-border/70 bg-background hover:bg-muted/50 text-foreground'
+                            ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
                             : 'border-border/50 bg-background/50 text-muted-foreground opacity-60 hover:opacity-90 border-dashed'
                           : generalAvailableCount > 0
-                          ? 'border-border/70 bg-background hover:bg-muted/50 text-foreground'
-                          : 'border-border/50 bg-background/50 text-muted-foreground opacity-60 hover:opacity-90'
+                          ? 'border-border/70 bg-background hover:border-primary/50 hover:bg-muted/40 text-foreground'
+                          : 'border-rose-200/70 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 text-muted-foreground opacity-80 border-dashed hover:opacity-100 hover:border-rose-400'
                       )}
                     >
-                      <span className="font-semibold text-xs tabular-nums shrink-0">
+                      {/* CHỈ HIỂN THỊ GIỜ BẮT ĐẦU */}
+                      <span
+                        className={cn(
+                          'font-bold text-xs tabular-nums shrink-0',
+                          !isSlotSelected && isFull ? 'text-muted-foreground' : ''
+                        )}
+                      >
                         {slot}
                       </span>
 
                       {/* Nhãn trạng thái */}
-                      <span
-                        className={cn(
-                          'text-[11px] font-medium shrink-0 ml-1 transition-colors truncate',
-                          isSlotSelected
-                            ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 rounded font-semibold'
+                      {(isSlotSelected || hasFacilityAndDate) && (
+                        <span
+                          className={cn(
+                            'text-[10.5px] font-medium shrink-0 ml-1 transition-colors truncate',
+                            isSlotSelected
+                              ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 rounded font-semibold'
+                              : isTeacherFirst && hasTeacher
+                              ? isTeacherAvailable
+                                ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                                : 'text-rose-600 dark:text-rose-400 font-medium'
+                              : generalAvailableCount > 0
+                              ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                              : 'text-rose-600 dark:text-rose-400 font-semibold bg-rose-100/70 dark:bg-rose-900/40 px-1 py-0.2 rounded'
+                          )}
+                        >
+                          {isSlotSelected
+                            ? 'Đã chọn'
                             : isTeacherFirst && hasTeacher
                             ? isTeacherAvailable
-                              ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                              : 'text-rose-600 dark:text-rose-400 font-medium'
+                              ? 'Khả dụng'
+                              : 'Bận'
                             : generalAvailableCount > 0
-                            ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                            : 'text-muted-foreground font-normal'
-                        )}
-                      >
-                        {isSlotSelected
-                          ? 'Đã chọn'
-                          : isTeacherFirst && hasTeacher
-                          ? isTeacherAvailable
-                            ? 'Khả dụng'
-                            : 'Bận'
-                          : generalAvailableCount > 0
-                          ? `${generalAvailableCount} rảnh`
-                          : 'Hết chỗ'}
-                      </span>
+                            ? `${generalAvailableCount} rảnh`
+                            : 'Hết chỗ'}
+                        </span>
+                      )}
                     </button>
                   )
                 })}

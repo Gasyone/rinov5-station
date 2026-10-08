@@ -143,7 +143,7 @@ export function CrmLeadTestTrialTab({
               href="/app/calendar_event_schedule"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 cursor-pointer"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 cursor-pointer"
               title="Mở màn hình Lịch ca test & Sự kiện ở tab mới"
             >
               <span>Lịch ca test</span>
@@ -221,7 +221,7 @@ export function CrmLeadTestTrialTab({
             <Button
               type="button"
               size="sm"
-              className="h-6.5 text-[11px] bg-sky-600 hover:bg-sky-700 text-white cursor-pointer ml-auto"
+              className="h-6.5 text-xs bg-sky-600 hover:bg-sky-700 text-white cursor-pointer ml-auto"
               onClick={onOpenBookingTest}
             >
               + Đặt lịch ngay
@@ -244,7 +244,7 @@ export function CrmLeadTestTrialTab({
               href="/app/calendar_class_schedule"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 cursor-pointer"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5 cursor-pointer"
               title="Mở màn hình Lịch lớp học ở tab mới"
             >
               <span>Lịch lớp học</span>
@@ -278,12 +278,12 @@ export function CrmLeadTestTrialTab({
                   </span>
                   <Badge
                     variant="outline"
-                    className="h-4 px-1 text-[10px] bg-violet-100 text-violet-800 border-violet-300 font-medium"
+                    className="h-4 px-1 text-xs bg-violet-100 text-violet-800 border-violet-300 font-medium"
                   >
                     Đã xếp lịch
                   </Badge>
                 </div>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Thời gian: {lead.trialDate || 'Chưa xếp'}{' '}
                   {lead.trialTime ? `(${lead.trialTime})` : ''} • Cơ sở: {lead.branch}
                 </span>
@@ -291,7 +291,7 @@ export function CrmLeadTestTrialTab({
             </div>
 
             {lead.trialFeedback ? (
-              <span className="text-[11px] italic text-muted-foreground truncate max-w-xs">
+              <span className="text-xs italic text-muted-foreground truncate max-w-xs">
                 &ldquo;{lead.trialFeedback}&rdquo;
               </span>
             ) : (
@@ -299,7 +299,7 @@ export function CrmLeadTestTrialTab({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 text-[11px] text-violet-700 hover:text-violet-900 cursor-pointer px-1.5"
+                className="h-6 text-xs text-violet-700 hover:text-violet-900 cursor-pointer px-1.5"
                 onClick={onOpenTrialClass}
               >
                 Đổi buổi khác
@@ -310,7 +310,7 @@ export function CrmLeadTestTrialTab({
 
         {/* Danh sách Gợi ý Buổi học phù hợp từ Lịch lớp học (calendar_class_schedule) */}
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
             <span>
               Buổi học sắp tới phù hợp tại{' '}
               <strong className="text-foreground">{lead.branch || 'cơ sở'}</strong>{' '}
@@ -323,7 +323,7 @@ export function CrmLeadTestTrialTab({
 
           <div className="border border-border/80 rounded-lg overflow-hidden bg-card text-xs">
             {recommendedSessions.length === 0 ? (
-              <div className="p-3 text-center text-muted-foreground text-[11px]">
+              <div className="p-3 text-center text-muted-foreground text-xs">
                 Không có buổi học khả dụng trong thời gian tới tại cơ sở này.
               </div>
             ) : (
@@ -363,7 +363,7 @@ export function CrmLeadTestTrialTab({
                       <div className="flex-1 min-w-[150px]">
                         <div className="font-bold text-foreground text-xs flex items-center gap-1.5">
                           <span>{session.className}</span>
-                          <span className="text-[10px] font-normal text-muted-foreground px-1 py-0.2 rounded bg-muted/60">
+                          <span className="text-xs font-normal text-muted-foreground px-1 py-0.2 rounded bg-muted/60">
                             {session.level}
                           </span>
                         </div>
@@ -373,7 +373,7 @@ export function CrmLeadTestTrialTab({
                       </div>
 
                       {/* Cột 3: Sĩ số */}
-                      <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-[90px]">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-[90px]">
                         <Users className="h-3.5 w-3.5 opacity-70 shrink-0" />
                         <span>
                           {session.totalStudents}/{session.roomCapacity || 15} HS
@@ -398,7 +398,7 @@ export function CrmLeadTestTrialTab({
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-6.5 px-2.5 text-[11px] border-violet-300 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950 cursor-pointer font-medium"
+                            className="h-6.5 px-2.5 text-xs border-violet-300 dark:border-violet-800 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950 cursor-pointer font-medium"
                             onClick={() => onSelectTrialSession?.(session)}
                           >
                             <Calendar className="h-3 w-3 mr-1" />
@@ -418,7 +418,7 @@ export function CrmLeadTestTrialTab({
               href="/app/calendar_class_schedule"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[11px] text-primary hover:underline inline-flex items-center gap-1 font-medium"
+              className="text-xs text-primary hover:underline inline-flex items-center gap-1 font-medium"
             >
               <span>Xem toàn bộ lịch lớp học trên hệ thống</span>
               <ExternalLink className="h-3 w-3" />
@@ -441,7 +441,7 @@ export function CrmLeadTestTrialTab({
             </div>
             <Badge
               variant="outline"
-              className="text-[10px] border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 font-medium"
+              className="text-xs border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 font-medium"
             >
               Dữ liệu chu kỳ trước
             </Badge>
@@ -450,17 +450,17 @@ export function CrmLeadTestTrialTab({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {/* Lịch sử Test kỳ trước */}
             <div className="bg-muted/20 p-2.5 rounded-lg border border-border/60 space-y-1">
-              <span className="text-[11px] font-semibold text-foreground block">
+              <span className="text-xs font-semibold text-foreground block">
                 Kiểm tra năng lực đợt trước:
               </span>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Thời gian:{' '}
                 <strong className="text-foreground">
                   {lead.previousTest?.date || '15/02/2026'}
                 </strong>{' '}
                 ({lead.previousTest?.time || '18:00'})
               </div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Kết quả:{' '}
                 <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                   {lead.previousTest?.resultLevel || lead.initialLevel || 'SuperKids Level 1'}
@@ -479,10 +479,10 @@ export function CrmLeadTestTrialTab({
 
             {/* Lịch sử Học thử kỳ trước */}
             <div className="bg-muted/20 p-2.5 rounded-lg border border-border/60 space-y-1">
-              <span className="text-[11px] font-semibold text-foreground block">
+              <span className="text-xs font-semibold text-foreground block">
                 Buổi học thử đợt trước:
               </span>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Lớp học: <strong className="text-foreground">{lead.previousTrial?.className || 'SK-01'}</strong>{' '}
                 ({lead.previousTrial?.date || '18/02/2026'})
               </div>
@@ -498,7 +498,7 @@ export function CrmLeadTestTrialTab({
           {/* Danh sách các đợt Test năng lực nếu có từ 2 đợt trở lên */}
           {lead.testHistory && lead.testHistory.length > 1 && (
             <div className="space-y-1.5 pt-2 border-t border-border/50">
-              <span className="text-[11px] font-semibold text-foreground block">
+              <span className="text-xs font-semibold text-foreground block">
                 Tổng hợp các đợt kiểm tra năng lực ({lead.testHistory.length} đợt):
               </span>
               <div className="border border-border/70 rounded-lg overflow-hidden divide-y divide-border/50 bg-background text-xs">
@@ -506,13 +506,13 @@ export function CrmLeadTestTrialTab({
                   <div key={t.id || idx} className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 hover:bg-muted/20">
                     <div className="flex items-center gap-2 min-w-[140px]">
                       <span className="font-bold text-foreground">{t.cycleTitle || `Đợt ${idx + 1}`}:</span>
-                      <span className="text-muted-foreground text-[11px]">{t.date} {t.time ? `(${t.time})` : ''}</span>
+                      <span className="text-muted-foreground text-xs">{t.date} {t.time ? `(${t.time})` : ''}</span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-1 min-w-[160px]">
                       <span className="font-semibold text-emerald-700 dark:text-emerald-400">{t.resultLevel}</span>
                       <span className="text-muted-foreground font-mono">({t.score})</span>
                     </div>
-                    <div className="text-muted-foreground text-[11px] shrink-0">
+                    <div className="text-muted-foreground text-xs shrink-0">
                       GV: {t.teacherName} • <span className="font-medium text-foreground">{t.status === 'completed' ? 'Đã hoàn thành' : 'Đang hẹn test'}</span>
                     </div>
                   </div>

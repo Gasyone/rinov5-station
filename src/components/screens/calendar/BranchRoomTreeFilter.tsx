@@ -136,7 +136,7 @@ export function BranchRoomTreeFilter({
                 </div>
 
                 {showCount && (
-                  <span className="text-[11px] text-muted-foreground font-medium shrink-0 ml-1.5">
+                  <span className="text-xs text-muted-foreground font-medium shrink-0 ml-1.5">
                     {branchCount}
                   </span>
                 )}
@@ -172,12 +172,12 @@ export function BranchRoomTreeFilter({
                                 : 'border-border/70 bg-background'
                             )}
                           />
-                          <span className="text-[11px] truncate" title={room}>
+                          <span className="text-xs truncate" title={room}>
                             {room}
                           </span>
                         </div>
                         {showCount && (
-                          <span className="text-[10px] text-muted-foreground/75 font-normal shrink-0 ml-1.5">
+                          <span className="text-xs text-muted-foreground/75 font-normal shrink-0 ml-1.5">
                             {roomCount}
                           </span>
                         )}

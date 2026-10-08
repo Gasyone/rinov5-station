@@ -15,6 +15,9 @@ export interface TrialSessionSelection {
   assistantTeacher?: string
   room?: string
   lessonTopic?: string
+  lessonWords?: string
+  lessonSentences?: string
+  lessonPhonics?: string
 }
 
 export interface TrialClassFilterState {
@@ -54,3 +57,6 @@ export interface RescheduleRequestData {
   reason: string
   notes: string
 }
+
+export type TrialSortField = 'trialDate' | 'createdAt' | 'studentName' | 'status'
+export type SortDirection = 'asc' | 'desc'

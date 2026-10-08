@@ -91,7 +91,7 @@ export function CrmFamilyChildrenTab({
               <button
                 type="button"
                 onClick={onAddChild}
-                className="h-6 px-2 rounded-md text-[11px] font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 shrink-0"
+                className="h-6 px-2 rounded-md text-xs font-medium transition-all flex items-center gap-1 cursor-pointer border border-dashed border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 shrink-0"
               >
                 <Plus className="h-3 w-3" />
                 <span>Thêm con</span>
@@ -118,7 +118,7 @@ export function CrmFamilyChildrenTab({
                   <div className="flex items-center gap-2 min-w-0">
                     <span
                       className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0',
+                        'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shrink-0',
                         isSelected
                           ? 'bg-indigo-600 text-white'
                           : 'bg-muted text-muted-foreground'
@@ -131,18 +131,18 @@ export function CrmFamilyChildrenTab({
                         <span className="font-semibold text-foreground truncate text-xs">
                           {child.name}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           ({child.age} tuổi)
                         </span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground block truncate">
+                      <span className="text-xs text-muted-foreground block truncate">
                         {child.currentSchool || 'Chưa cập nhật trường'}
                       </span>
                     </div>
                   </div>
 
                   {child.isCurrent && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200 font-bold uppercase shrink-0">
+                    <span className="text-xs px-1.5 py-0.5 rounded-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200 font-bold uppercase shrink-0">
                       Đang care
                     </span>
                   )}
@@ -159,7 +159,7 @@ export function CrmFamilyChildrenTab({
               <User className="h-3.5 w-3.5 text-indigo-600" />
               Tóm tắt học viên
             </span>
-            <span className="font-mono text-[11px] text-muted-foreground">
+            <span className="font-mono text-xs text-muted-foreground">
               Mã: {activeChild.customerCode}
             </span>
           </div>
@@ -171,25 +171,25 @@ export function CrmFamilyChildrenTab({
               </div>
               <div className="min-w-0">
                 <h4 className="text-sm font-bold text-foreground truncate">{activeChild.name}</h4>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Sinh năm {activeChild.birthYear} ({activeChild.age} tuổi)
                 </p>
               </div>
             </div>
 
             <div className="pt-2 border-t border-border/60 space-y-2">
-              <div className="flex items-center justify-between text-[11px]">
+              <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Trường học:</span>
                 <span className="font-medium text-foreground truncate max-w-[170px]" title={activeChild.currentSchool}>
                   {activeChild.currentSchool || 'Chưa cập nhật'}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-[11px]">
+              <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">Trạng thái học tập:</span>
                 <Badge
                   variant="outline"
-                  className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200 text-[10px] py-0"
+                  className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 border-emerald-200 text-xs py-0"
                 >
                   Đang theo học
                 </Badge>
@@ -199,7 +199,7 @@ export function CrmFamilyChildrenTab({
             {/* Thống kê đơn hàng & chi tiêu của bé */}
             <div className="pt-2 border-t border-border/60 grid grid-cols-2 gap-2 text-center">
               <div className="p-2 rounded-lg bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50">
-                <div className="flex items-center justify-center gap-1 text-[10px] text-amber-800 dark:text-amber-300 font-medium">
+                <div className="flex items-center justify-center gap-1 text-xs text-amber-800 dark:text-amber-300 font-medium">
                   <ShoppingBag className="h-3 w-3" />
                   <span>Đơn hàng</span>
                 </div>
@@ -209,7 +209,7 @@ export function CrmFamilyChildrenTab({
               </div>
 
               <div className="p-2 rounded-lg bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-900/50">
-                <div className="flex items-center justify-center gap-1 text-[10px] text-emerald-800 dark:text-emerald-300 font-medium">
+                <div className="flex items-center justify-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
                   <CircleDollarSign className="h-3 w-3" />
                   <span>Tích lũy</span>
                 </div>
@@ -233,64 +233,64 @@ export function CrmFamilyChildrenTab({
               <GraduationCap className="h-3.5 w-3.5 text-indigo-600" />
               <span>Thông tin học tập &amp; Định vị tác nghiệp ({activeChild.name})</span>
             </h4>
-            <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
               Khóa: {activeChild.course}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
             <div>
-              <span className="text-[11px] text-muted-foreground block">Học lực / Phản xạ</span>
+              <span className="text-xs text-muted-foreground block">Học lực / Phản xạ</span>
               <p className="font-semibold text-foreground">
                 {activeChild.academicPerformance || 'Khá / Phản xạ tốt'}
               </p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Tài khoản Vuihoc</span>
+              <span className="text-xs text-muted-foreground block">Tài khoản Vuihoc</span>
               <p className="font-mono font-medium text-purple-700 dark:text-purple-300">
                 {activeChild.vuihocAccount || 'Chưa liên kết'}
               </p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">SĐT riêng của con (nếu có)</span>
+              <span className="text-xs text-muted-foreground block">SĐT riêng của con (nếu có)</span>
               <p className="font-mono text-foreground">{activeChild.phone || 'Chưa có SĐT riêng'}</p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Loại hình đào tạo</span>
+              <span className="text-xs text-muted-foreground block">Loại hình đào tạo</span>
               <p className="font-semibold text-foreground">{activeChild.customerType}</p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Nhóm ngành</span>
+              <span className="text-xs text-muted-foreground block">Nhóm ngành</span>
               <p className="font-semibold text-foreground">{activeChild.industryGroup}</p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Nhóm sản phẩm</span>
+              <span className="text-xs text-muted-foreground block">Nhóm sản phẩm</span>
               <p className="font-medium text-foreground truncate" title={activeChild.selectedProductGroups?.join(', ')}>
                 {activeChild.selectedProductGroups?.join(', ') || 'Tiếng Anh Thiếu Nhi'}
               </p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Nguồn tiếp nhận</span>
+              <span className="text-xs text-muted-foreground block">Nguồn tiếp nhận</span>
               <p className="font-medium text-foreground truncate" title={activeChild.selectedSources?.join(', ')}>
                 {activeChild.selectedSources?.join(', ') || 'Web Rinoedu'}
               </p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Tư vấn phụ trách (Sales)</span>
+              <span className="text-xs text-muted-foreground block">Tư vấn phụ trách (Sales)</span>
               <p className="font-semibold text-foreground truncate" title={activeChild.selectedStaff?.join(', ')}>
                 {activeChild.selectedStaff?.join(', ') || 'Trần Thị Mai'}
               </p>
             </div>
 
             <div>
-              <span className="text-[11px] text-muted-foreground block">Nhân viên marketing</span>
+              <span className="text-xs text-muted-foreground block">Nhân viên marketing</span>
               <p className="font-medium text-foreground truncate" title={activeChild.marketingStaff}>
                 {activeChild.marketingStaff || 'Nguyễn Thị Lan (Marketing)'}
               </p>
@@ -309,7 +309,7 @@ export function CrmFamilyChildrenTab({
                 <h4 className="text-xs font-bold text-foreground">
                   Lịch sử tiếp cận &amp; Tư vấn của {activeChild.name} ({displayOccurrences.length} đợt)
                 </h4>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Chu kỳ tiếp cận, chăm sóc tuyển sinh và các lần liên hệ cho bé
                 </p>
               </div>
@@ -347,12 +347,12 @@ export function CrmFamilyChildrenTab({
                 >
                   <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-border/60 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-bold">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-xs font-bold">
                         {cycle.cycleNumber}
                       </span>
                       <h5 className="text-xs font-bold text-foreground">{cycle.title}</h5>
                       {cycle.isCurrent && (
-                        <Badge className="bg-purple-600 text-white text-[9px] py-0 px-1.5 font-bold flex items-center gap-1">
+                        <Badge className="bg-purple-600 text-white text-xs py-0 px-1.5 font-bold flex items-center gap-1">
                           <Sparkles className="h-2.5 w-2.5" />
                           <span>Đợt hiện tại</span>
                         </Badge>
@@ -366,7 +366,7 @@ export function CrmFamilyChildrenTab({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                     <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3 text-muted-foreground/70" />
                         Thời gian tiếp cận
                       </span>
@@ -376,7 +376,7 @@ export function CrmFamilyChildrenTab({
                     </div>
 
                     <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Share2 className="h-3 w-3 text-sky-600" />
                         Kênh tiếp nhận
                       </span>
@@ -384,7 +384,7 @@ export function CrmFamilyChildrenTab({
                     </div>
 
                     <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <User className="h-3 w-3 text-amber-600" />
                         Tư vấn viên (Sales)
                       </span>
@@ -394,7 +394,7 @@ export function CrmFamilyChildrenTab({
                     </div>
 
                     <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <BookOpen className="h-3 w-3 text-emerald-600" />
                         Khóa học quan tâm
                       </span>
@@ -405,7 +405,7 @@ export function CrmFamilyChildrenTab({
                   </div>
 
                   {cycle.outcomeNote && (
-                    <div className="pt-1.5 border-t border-border/50 text-[11px] flex items-start gap-1.5 bg-muted/30 p-1.5 rounded-md">
+                    <div className="pt-1.5 border-t border-border/50 text-xs flex items-start gap-1.5 bg-muted/30 p-1.5 rounded-md">
                       <FileText className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <span className="font-semibold text-foreground mr-1">Ghi chú diễn biến:</span>

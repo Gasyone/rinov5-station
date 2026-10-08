@@ -118,7 +118,7 @@ export function OrgUnitDetailDialog({
                     <span className="text-muted-foreground shrink-0">Loại hình</span>
                     <span
                       className={cn(
-                        'rounded px-1.5 py-0.5 text-[10px] font-semibold',
+                        'rounded px-1.5 py-0.5 text-xs font-semibold',
                         typeConfig.badgeVariant
                       )}
                     >
@@ -144,8 +144,8 @@ export function OrgUnitDetailDialog({
                     </span>
                   </div>
                   {unit.description ? (
-                    <div className="pt-1 text-[11px] text-muted-foreground leading-relaxed">
-                      <span className="text-muted-foreground block text-[10px] font-medium mb-0.5">
+                    <div className="pt-1 text-xs text-muted-foreground leading-relaxed">
+                      <span className="text-muted-foreground block text-xs font-medium mb-0.5">
                         Mô tả chức năng:
                       </span>
                       {unit.description}
@@ -239,7 +239,7 @@ export function OrgUnitDetailDialog({
                                   <span className="font-semibold text-foreground">
                                     {pos.assignedCount}
                                   </span>{' '}
-                                  <span className="text-[11px] text-muted-foreground">người</span>
+                                  <span className="text-xs text-muted-foreground">người</span>
                                 </td>
                                 <td className="py-2.5 px-3">
                                   {pos.staffList.length > 0 ? (
@@ -257,7 +257,7 @@ export function OrgUnitDetailDialog({
                                               {staff.avatar ? (
                                                 <AvatarImage src={staff.avatar} alt={staff.name} />
                                               ) : null}
-                                              <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
+                                              <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                                                 {initial}
                                               </AvatarFallback>
                                             </Avatar>
@@ -265,7 +265,7 @@ export function OrgUnitDetailDialog({
                                         })}
                                         {remainingCount > 0 ? (
                                           <div
-                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-muted border-2 border-background ring-1 ring-border/30 text-[10px] font-semibold text-muted-foreground shrink-0"
+                                            className="flex h-6 w-6 items-center justify-center rounded-full bg-muted border-2 border-background ring-1 ring-border/30 text-xs font-semibold text-muted-foreground shrink-0"
                                             title={`Còn ${remainingCount} nhân sự khác`}
                                           >
                                             +{remainingCount}
@@ -276,14 +276,14 @@ export function OrgUnitDetailDialog({
                                       <div className="text-xs text-foreground font-medium truncate max-w-[200px]">
                                         {visibleStaff.map((s) => s.name).join(', ')}
                                         {remainingCount > 0 ? (
-                                          <span className="text-muted-foreground text-[11px] ml-1 font-normal">
+                                          <span className="text-muted-foreground text-xs ml-1 font-normal">
                                             +{remainingCount}
                                           </span>
                                         ) : null}
                                       </div>
                                     </div>
                                   ) : (
-                                    <span className="text-muted-foreground text-[11px] italic">
+                                    <span className="text-muted-foreground text-xs italic">
                                       Chưa có
                                     </span>
                                   )}
@@ -293,7 +293,7 @@ export function OrgUnitDetailDialog({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    className="h-6.5 px-2.5 text-[11px] gap-1 text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
+                                    className="h-6.5 px-2.5 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10 cursor-pointer"
                                     onClick={() => setAssigningPosition(pos.title)}
                                   >
                                     <UserPlus className="h-3 w-3" />
@@ -347,7 +347,7 @@ export function OrgUnitDetailDialog({
                                         {member.avatar ? (
                                           <AvatarImage src={member.avatar} alt={member.name} />
                                         ) : null}
-                                        <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
+                                        <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                                           {initial}
                                         </AvatarFallback>
                                       </Avatar>
@@ -355,7 +355,7 @@ export function OrgUnitDetailDialog({
                                         <div className="font-medium text-foreground whitespace-nowrap">
                                           {member.name}
                                         </div>
-                                        <div className="text-[10px] text-muted-foreground">
+                                        <div className="text-xs text-muted-foreground">
                                           Gia nhập: {member.joinedDate}
                                         </div>
                                       </div>
@@ -369,7 +369,7 @@ export function OrgUnitDetailDialog({
                                       {!member.isPrimary ? (
                                         <Badge
                                           variant="secondary"
-                                          className="text-[10px] font-normal text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-400"
+                                          className="text-xs font-normal text-amber-700 bg-amber-50 dark:bg-amber-950 dark:text-amber-400"
                                         >
                                           Kiêm nhiệm
                                         </Badge>
@@ -381,7 +381,7 @@ export function OrgUnitDetailDialog({
                                       {maskPhone(member.phone)}
                                     </div>
                                     {member.email ? (
-                                      <div className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+                                      <div className="text-xs text-muted-foreground truncate max-w-[180px]">
                                         {member.email}
                                       </div>
                                     ) : null}
@@ -420,7 +420,7 @@ export function OrgUnitDetailDialog({
               />
             </div>
             <div className="space-y-1 text-muted-foreground">
-              <span className="text-[11px] font-medium block text-foreground/80">
+              <span className="text-xs font-medium block text-foreground/80">
                 Gợi ý từ danh mục chuẩn:
               </span>
               <div className="flex flex-wrap gap-1 mt-1 max-h-28 overflow-y-auto">
@@ -438,7 +438,7 @@ export function OrgUnitDetailDialog({
                     <button
                       key={item}
                       type="button"
-                      className="text-[10px] px-2 py-0.5 rounded-full border bg-muted/40 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
+                      className="text-xs px-2 py-0.5 rounded-full border bg-muted/40 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
                       onClick={() => setNewPosName(item)}
                     >
                       + {item}

@@ -27,11 +27,11 @@ export function LeaveReservePolicyPanel({
   }, [studentId, studentName])
 
   return (
-    <div className="space-y-3 md:col-span-5 flex flex-col justify-start">
-      {/* SECTION 1: Policy Guidelines Card (Flat inside) */}
-      <div className="rounded-2xl border border-border/80 bg-card p-3.5 space-y-2.5 shadow-2xs">
-        <div className="flex items-center gap-1.5 pb-2 border-b border-border/50 text-foreground">
-          <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+    <div className="space-y-2.5 md:col-span-5 flex flex-col justify-start">
+      {/* SECTION 1: Policy Guidelines Card */}
+      <div className="rounded-xl border border-border/70 bg-card p-3 space-y-2 shadow-2xs">
+        <div className="flex items-center gap-1.5 pb-1.5 border-b border-border/40 text-foreground">
+          <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
           <h4 className="font-bold text-xs uppercase tracking-wider">
             {type === 'reservation' ? 'Chính sách bảo lưu [RS-TCSM]' : 'Quy định nghỉ phép & học bù'}
           </h4>
@@ -39,59 +39,59 @@ export function LeaveReservePolicyPanel({
 
         {/* Flat Policy Content */}
         {type === 'reservation' ? (
-          <div className="space-y-2.5 text-xs text-muted-foreground">
+          <div className="space-y-2 text-xs text-muted-foreground">
             {/* Condition */}
-            <div className="flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
-              <p className="text-xs leading-relaxed">
+            <div className="flex items-start gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-sky-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed">
                 <strong className="text-foreground">Điều kiện:</strong> Còn <strong>tối thiểu 16 buổi học</strong> (không áp dụng học bổng 100%).
               </p>
             </div>
 
             {/* Hold Seat Rule */}
-            <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
+            <div className="space-y-0.5 pt-1 border-t border-border/40 text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
                   1. Bảo lưu Giữ chỗ (Trong lớp)
                 </span>
-                <span className="text-xs bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 font-semibold px-1.5 py-0.2 rounded border border-emerald-200 dark:border-emerald-800">
                   Không trừ phí
                 </span>
               </div>
-              <ul className="space-y-0.5 pl-4 list-disc text-muted-foreground">
+              <ul className="space-y-0.5 pl-3.5 list-disc text-muted-foreground">
                 <li>Toán: Tối đa <strong>04 buổi</strong> | Tiếng Anh: Tối đa <strong>08 buổi</strong>.</li>
                 <li>Vẫn ở trong lớp; hết hạn tự động chạy phí tiếp.</li>
               </ul>
             </div>
 
             {/* No Hold Seat Rule */}
-            <div className="space-y-1 pt-1 border-t border-border/40 text-xs">
+            <div className="space-y-0.5 pt-1 border-t border-border/40 text-[11px]">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
                   2. Bảo lưu Không giữ chỗ (Out lớp)
                 </span>
-                <span className="text-xs bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                <span className="text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 font-semibold px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
                   Tối đa 3 tháng
                 </span>
               </div>
-              <ul className="space-y-0.5 pl-4 list-disc text-muted-foreground">
+              <ul className="space-y-0.5 pl-3.5 list-disc text-muted-foreground">
                 <li>Tối đa <strong>03 tháng</strong> (rút tên khỏi danh sách lớp).</li>
               </ul>
             </div>
           </div>
         ) : (
           /* Leave Policy Content */
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <Clock className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-xs leading-relaxed">
+          <div className="space-y-1.5 text-xs text-muted-foreground">
+            <div className="flex items-start gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed">
                 <strong className="text-foreground">Thời hạn báo:</strong> Gửi trước giờ ca học <strong>tối thiểu 02 tiếng</strong> để được tính vắng có phép.
               </p>
             </div>
 
-            <div className="space-y-1.5 pt-1 border-t border-border/40 text-xs leading-relaxed">
+            <div className="space-y-1 pt-1 border-t border-border/40 text-[11px] leading-relaxed">
               <div className="flex items-start gap-1.5">
                 <span className="text-amber-600 font-bold">•</span>
                 <div>
@@ -117,29 +117,29 @@ export function LeaveReservePolicyPanel({
         )}
       </div>
 
-      {/* SECTION 2: Student History Card (Flat list inside) */}
-      <div className="rounded-2xl border border-border/80 bg-card p-3.5 space-y-2 shadow-2xs">
-        <div className="flex items-center justify-between pb-2 border-b border-border/50 text-foreground">
+      {/* SECTION 2: Student History Card */}
+      <div className="rounded-xl border border-border/70 bg-card p-3 space-y-1.5 shadow-2xs">
+        <div className="flex items-center justify-between pb-1.5 border-b border-border/40 text-foreground">
           <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider">
-            <History className="h-4 w-4 text-primary shrink-0" />
+            <History className="h-3.5 w-3.5 text-primary shrink-0" />
             <span>Lịch sử đơn của học viên</span>
           </div>
-          <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-full border text-muted-foreground font-mono">
+          <span className="text-[11px] font-semibold bg-muted px-2 py-0.2 rounded-full border text-muted-foreground font-mono">
             {studentHistory.length} đơn
           </span>
         </div>
 
         {studentHistory.length === 0 ? (
-          <div className="text-center py-3 text-muted-foreground text-xs">
+          <div className="text-center py-2.5 text-muted-foreground text-xs">
             Học viên chưa có lịch sử đơn nghỉ phép/bảo lưu.
           </div>
         ) : (
-          <div className="divide-y divide-border/40 max-h-[180px] overflow-y-auto pr-1">
+          <div className="divide-y divide-border/40 max-h-[140px] overflow-y-auto pr-1">
             {studentHistory.map((item) => {
               const statusText = STATUS_LABELS[item.status] || item.status
               const typeText = TYPE_LABELS[item.type] || item.type
               return (
-                <div key={item.id} className="py-2 first:pt-0 last:pb-0 text-xs space-y-1">
+                <div key={item.id} className="py-1.5 first:pt-0 last:pb-0 text-xs space-y-0.5">
                   <div className="flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono font-bold text-xs text-foreground">
@@ -151,7 +151,7 @@ export function LeaveReservePolicyPanel({
                     </div>
                     <span
                       className={cn(
-                        'text-xs font-semibold px-1.5 py-0.2 rounded-full border',
+                        'text-[10px] font-semibold px-1.5 py-0.2 rounded-full border',
                         getStatusBadgeClass(item.status)
                       )}
                     >
@@ -159,13 +159,13 @@ export function LeaveReservePolicyPanel({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
                     <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
                     <span>{item.startDate} {item.endDate && item.endDate !== item.startDate ? `→ ${item.endDate}` : ''}</span>
                   </div>
 
                   {item.reason && (
-                    <p className="text-xs text-muted-foreground italic truncate">
+                    <p className="text-[11px] text-muted-foreground italic truncate">
                       {item.reason}
                     </p>
                   )}

@@ -101,7 +101,7 @@ export function OrderFulfillmentCell({
 
           {/* Dòng 2: Hiển thị còn lại nếu có nhiều */}
           {summary.line1Text && summary.line1Text !== '—' && (
-            <div className="text-[11px] text-muted-foreground/80 font-normal truncate" title={summary.line1Text}>
+            <div className="text-xs text-muted-foreground/80 font-normal truncate" title={summary.line1Text}>
               Còn: {summary.line1Text}
             </div>
           )}

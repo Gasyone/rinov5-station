@@ -1,8 +1,7 @@
 'use client'
 
-import { SlidersHorizontal } from 'lucide-react'
+import { ListFilter } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import {
   getStatusColors,
   resolveStatusSemantic,
@@ -13,7 +12,7 @@ import type { StatusTileId } from './bookingTestTypes'
 export interface ConditionFilterItem {
   id: StatusTileId
   label: string
-  count: number
+  count?: number
   status: string
 }
 
@@ -25,6 +24,7 @@ interface BookingTestConditionFiltersProps {
   showDot?: boolean
   hideDot?: boolean
   coloredCount?: boolean
+  showCount?: boolean
 }
 
 export function BookingTestConditionFilters({
@@ -35,53 +35,57 @@ export function BookingTestConditionFilters({
   showDot = false,
   hideDot = true,
   coloredCount = true,
+  showCount = false,
 }: BookingTestConditionFiltersProps) {
   const effectiveShowDot = hideDot ? false : showDot
 
   return (
     <div className={cn('flex items-center gap-1.5 min-w-0', className)}>
-      <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground shrink-0 pr-0.5">
-        <SlidersHorizontal className="h-3.5 w-3.5 text-amber-500" />
-        <span className="hidden sm:inline">Lọc nhanh:</span>
-      </div>
+      <span
+        title="Lọc nhanh"
+        aria-label="Lọc nhanh"
+        className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
+      >
+        <ListFilter className="h-3.5 w-3.5" />
+      </span>
 
-      <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto custom-scrollbar">
+      <div className="flex items-center gap-1 min-w-0 overflow-x-auto custom-scrollbar">
         {items.map((item) => {
           const isActive = item.id === activeId
           const semantic = resolveStatusSemantic(item.status)
           const colors = getStatusColors(semantic)
 
           return (
-            <Button
+            <button
               key={item.id}
               type="button"
-              variant="outline"
-              size="sm"
               onClick={() => onSelect(item.id)}
               className={cn(
-                'h-7 rounded-md px-2.5 text-xs font-medium transition-all gap-1.5 shrink-0 border-dashed',
+                'inline-flex items-center h-6 rounded-md px-2 text-xs font-medium transition-colors cursor-pointer border select-none shrink-0 gap-1',
                 isActive
-                  ? 'border-solid border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/20'
-                  : 'border-border bg-background text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                  ? 'border-primary/50 bg-primary/10 text-primary font-semibold border-solid'
+                  : 'border-border/70 border-dashed bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground'
               )}
             >
               {effectiveShowDot && (
                 <span className={cn('h-1.5 w-1.5 rounded-full', colors.dot)} />
               )}
               <span>{item.label}</span>
-              <span
-                className={cn(
-                  'rounded px-1.5 py-0.5 text-xs font-bold font-mono transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : coloredCount
-                      ? (SEMANTIC_COUNT_BG[semantic] || 'bg-muted text-muted-foreground')
-                      : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {item.count}
-              </span>
-            </Button>
+              {showCount && item.count !== undefined && (
+                <span
+                  className={cn(
+                    'rounded px-1 py-0 text-xs font-bold font-mono transition-colors',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : coloredCount
+                        ? (SEMANTIC_COUNT_BG[semantic] || 'bg-muted text-muted-foreground')
+                        : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {item.count}
+                </span>
+              )}
+            </button>
           )
         })}
       </div>

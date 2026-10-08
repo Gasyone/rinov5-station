@@ -39,7 +39,7 @@ export function CrmFamilyLeadsTab({
             <h4 className="text-xs font-bold text-foreground">
               Lịch sử các đợt tiếp cận Lead của gia đình ({occurrences.length} đợt)
             </h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Theo dõi chu kỳ tiếp cận, tư vấn tuyển sinh và chăm sóc qua từng thời kỳ
             </p>
           </div>
@@ -72,18 +72,18 @@ export function CrmFamilyLeadsTab({
           >
             <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-[11px] font-bold">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 text-xs font-bold">
                   {cycle.cycleNumber}
                 </span>
                 <h5 className="text-xs font-bold text-foreground">{cycle.title}</h5>
                 {cycle.childName && (
-                  <Badge variant="outline" className="text-[10px] bg-muted/40 font-medium">
+                  <Badge variant="outline" className="text-xs bg-muted/40 font-medium">
                     <GraduationCap className="h-2.5 w-2.5 mr-0.5 text-indigo-600" />
                     {cycle.childName}
                   </Badge>
                 )}
                 {cycle.isCurrent && (
-                  <Badge className="bg-purple-600 text-white text-[10px] py-0 px-1.5 font-bold flex items-center gap-1">
+                  <Badge className="bg-purple-600 text-white text-xs py-0 px-1.5 font-bold flex items-center gap-1">
                     <Sparkles className="h-2.5 w-2.5" />
                     <span>Đợt hiện tại</span>
                   </Badge>
@@ -97,7 +97,7 @@ export function CrmFamilyLeadsTab({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
               <div className="space-y-0.5">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3 text-muted-foreground/70" />
                   Thời gian tiếp cận
                 </span>
@@ -107,7 +107,7 @@ export function CrmFamilyLeadsTab({
               </div>
 
               <div className="space-y-0.5">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Share2 className="h-3 w-3 text-sky-600" />
                   Kênh tiếp nhận
                 </span>
@@ -115,7 +115,7 @@ export function CrmFamilyLeadsTab({
               </div>
 
               <div className="space-y-0.5">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <User className="h-3 w-3 text-amber-600" />
                   Tư vấn viên (Sales)
                 </span>
@@ -125,7 +125,7 @@ export function CrmFamilyLeadsTab({
               </div>
 
               <div className="space-y-0.5">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <BookOpen className="h-3 w-3 text-emerald-600" />
                   Khóa học quan tâm
                 </span>

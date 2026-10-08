@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Calendar as CalendarIcon, Clock, MapPin, Info, CheckCircle2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MapPin, Info } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -88,10 +88,10 @@ export function LeaveReserveOffForm({
   const dayName = daysOfWeek[dateObj.getDay()] || 'Hôm nay'
 
   return (
-    <div className="space-y-3 rounded-xl border border-amber-200/80 bg-amber-50/20 dark:bg-amber-950/10 p-3.5">
-      {/* 4-Button Date Selector (Like Booking Ca Test) */}
+    <div className="space-y-2.5 w-full">
+      {/* 4-Button Date Selector (Tab lọc ở giữa, giàn full panel trái) */}
       <FieldLabel label="Lựa chọn Ngày xin nghỉ phép" required>
-        <div className="grid grid-cols-4 gap-2 pt-0.5">
+        <div className="grid grid-cols-4 gap-1.5 w-full pt-0.5">
           {dateOptions.first3.map((item) => {
             const isSelected = startDate === item.dateStr
             return (
@@ -100,9 +100,9 @@ export function LeaveReserveOffForm({
                 type="button"
                 onClick={() => onDateChange(item.dateStr)}
                 className={cn(
-                  'flex items-center justify-center rounded-lg border px-2 py-2 text-xs font-medium transition-colors text-center truncate cursor-pointer',
+                  'flex items-center justify-center rounded-lg border px-1.5 py-1.5 text-xs font-medium transition-colors text-center truncate cursor-pointer',
                   isSelected
-                    ? 'bg-sky-600 text-white border-sky-600 shadow-xs font-semibold'
+                    ? 'bg-sky-600 text-white border-sky-600 shadow-2xs font-semibold'
                     : 'bg-background hover:bg-muted text-foreground border-border/80'
                 )}
               >
@@ -117,9 +117,9 @@ export function LeaveReserveOffForm({
               <button
                 type="button"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-medium transition-colors text-center truncate cursor-pointer',
+                  'flex items-center justify-center gap-1.5 rounded-lg border px-1.5 py-1.5 text-xs font-medium transition-colors text-center truncate cursor-pointer',
                   !isFirst3Selected && startDate
-                    ? 'bg-sky-600 text-white border-sky-600 shadow-xs font-semibold'
+                    ? 'bg-sky-600 text-white border-sky-600 shadow-2xs font-semibold'
                     : 'bg-background hover:bg-muted text-foreground border-border/80'
                 )}
               >
@@ -145,10 +145,10 @@ export function LeaveReserveOffForm({
         </div>
       </FieldLabel>
 
-      {/* Multi-session Checklist in that Day */}
-      <div className="pt-2 border-t border-amber-200/60 space-y-2">
+      {/* Multi-session Checklist in that Day - Giàn full panel trái */}
+      <div className="space-y-1.5 pt-0.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+          <span className="font-semibold text-foreground flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-amber-600" />
             Các ca học trong ngày ({dayName} - {availableSessions.length} ca học):
           </span>
@@ -164,39 +164,39 @@ export function LeaveReserveOffForm({
         </div>
 
         {availableSessions.length === 0 ? (
-          <div className="text-center py-4 bg-background/80 rounded-lg border border-dashed text-muted-foreground text-xs">
+          <div className="text-center py-3 bg-muted/30 rounded-lg border border-dashed text-muted-foreground text-xs">
             Học viên không có lịch học nào trong ngày đã chọn.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {availableSessions.map((session) => {
               const isChecked = selectedSessionIds.has(session.id)
               return (
                 <label
                   key={session.id}
                   className={cn(
-                    'flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer text-xs',
+                    'flex items-center justify-between p-2.5 rounded-lg border transition-all cursor-pointer text-xs',
                     isChecked
-                      ? 'bg-amber-100/70 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 shadow-2xs'
-                      : 'bg-background hover:bg-muted/40 border-border/70 opacity-75'
+                      ? 'bg-amber-50/80 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700 shadow-2xs'
+                      : 'bg-background hover:bg-muted/40 border-border/70 opacity-80'
                   )}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <Checkbox
                       checked={isChecked}
                       onCheckedChange={() => onToggleSession(session.id)}
                       className="data-[state=checked]:bg-amber-600 data-[state=checked]:border-amber-600 h-4 w-4"
                     />
                     <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground truncate">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-foreground truncate">
                           {session.sessionTitle}
                         </span>
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-mono">
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 font-mono">
                           {session.classCode}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
                         <span className="text-foreground font-medium">Lớp: {session.className}</span>
                         <span>•</span>
                         <span className="flex items-center gap-1 font-medium text-amber-900 dark:text-amber-300">
@@ -216,7 +216,7 @@ export function LeaveReserveOffForm({
 
                   <span
                     className={cn(
-                      'text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 border ml-2',
+                      'text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 border ml-2',
                       isChecked
                         ? 'bg-amber-600 text-white border-amber-600'
                         : 'bg-muted text-muted-foreground border-border/60'
@@ -231,7 +231,7 @@ export function LeaveReserveOffForm({
         )}
 
         {/* Quota Indicator */}
-        <div className="flex items-center justify-between text-xs bg-background/90 rounded-lg border p-2 text-muted-foreground">
+        <div className="flex items-center justify-between text-xs bg-muted/40 rounded-lg border border-border/70 p-2 text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Info className="h-3.5 w-3.5 text-amber-600" />
             <span>Hạn mức vắng phép năm học:</span>

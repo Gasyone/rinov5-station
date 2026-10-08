@@ -230,7 +230,7 @@ export function BranchDetailDialog({
                 {isEditing ? editForm.name || branch.name : branch.name}
               </DialogTitle>
               {isEditing ? (
-                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                   Đang chỉnh sửa
                 </span>
               ) : (
@@ -308,7 +308,7 @@ export function BranchDetailDialog({
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-border/50">
                   <span className="font-semibold text-foreground text-xs">Thuộc tính chi nhánh</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{branch.code}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{branch.code}</span>
                 </div>
 
                 <FieldLabel label="Tên cơ sở / Chi nhánh" required>
@@ -406,36 +406,36 @@ export function BranchDetailDialog({
                 {/* 4. Chi tiết thuộc tính */}
                 <div className="space-y-3 pt-0.5">
                   <div>
-                    <span className="text-[11px] text-muted-foreground block font-medium">
+                    <span className="text-xs text-muted-foreground block font-medium">
                       Địa chỉ chi nhánh
                     </span>
                     <p className="text-foreground leading-relaxed mt-0.5">
                       {branch.address}
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {branch.province} {branch.district ? `(${branch.district})` : ''}
                     </p>
                   </div>
 
                   {branch.businessHours && (
                     <div>
-                      <span className="text-[11px] text-muted-foreground block font-medium">
+                      <span className="text-xs text-muted-foreground block font-medium">
                         Giờ mở cửa
                       </span>
                       <p className="text-foreground mt-0.5">
                         {branch.businessHours.openTime} - {branch.businessHours.closeTime}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {branch.businessHours.daysOfWeek}
                       </p>
                     </div>
                   )}
 
                   <div>
-                    <span className="text-[11px] text-muted-foreground block font-medium">
+                    <span className="text-xs text-muted-foreground block font-medium">
                       Tọa độ GPS
                     </span>
-                    <div className="flex items-center gap-2 mt-0.5 font-mono text-[11px]">
+                    <div className="flex items-center gap-2 mt-0.5 font-mono text-xs">
                       <span className="text-foreground">
                         {branch.coordinates || 'Chưa định vị GPS'}
                       </span>
@@ -444,7 +444,7 @@ export function BranchDetailDialog({
                           href={`https://maps.google.com/?q=${branch.coordinates}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer text-[11px]"
+                          className="text-primary hover:underline flex items-center gap-0.5 cursor-pointer text-xs"
                         >
                           <span>Bản đồ</span>
                           <ExternalLink className="h-2.5 w-2.5" />
@@ -677,7 +677,7 @@ export function BranchDetailDialog({
                     </span>
                   </div>
 
-                  <div className="flex-1 min-h-0 overflow-auto p-3 divide-y divide-border/40 font-mono text-[11px]">
+                  <div className="flex-1 min-h-0 overflow-auto p-3 divide-y divide-border/40 font-mono text-xs">
                     {branch.history && branch.history.length > 0 ? (
                       branch.history.map((item) => (
                         <div

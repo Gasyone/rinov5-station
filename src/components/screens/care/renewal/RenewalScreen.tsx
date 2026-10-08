@@ -684,7 +684,7 @@ export function RenewalScreen() {
         onExpiryPeriodChange={(p) => { setSelectedExpiryPeriod(p); resetPagination() }}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 py-1.5 lg:px-3 pb-3">
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2.5 pt-0.5 pb-2 lg:px-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
           <RenewalTable
             alerts={paginatedSingle}

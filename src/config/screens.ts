@@ -4,6 +4,14 @@ export interface ScreenConfig {
 }
 
 export const screens: Record<string, ScreenConfig> = {
+  dashboard: {
+    label: 'Bàn làm việc (Home)',
+    description: 'Bảng điều khiển tác nghiệp ngày làm việc, lịch học, lớp học và cảnh báo học viên',
+  },
+  home: {
+    label: 'Bàn làm việc (Home)',
+    description: 'Bảng điều khiển tác nghiệp ngày làm việc, lịch học, lớp học và cảnh báo học viên',
+  },
   my_schedule: {
     label: 'Lịch của tôi',
     description: 'Sổ tay tác nghiệp ca dạy cá nhân dành cho Giáo viên và Trợ giảng',

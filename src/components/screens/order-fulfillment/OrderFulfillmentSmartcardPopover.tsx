@@ -136,11 +136,11 @@ export function OrderFulfillmentSmartcardPopover({
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h4 className="text-xs font-bold text-foreground truncate">Chỉ số bàn giao & giao hàng</h4>
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-1.5 py-0.2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-1.5 py-0.2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                     Hoàn tất {metrics.handoverRate}%
                   </span>
                 </div>
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {metrics.total} phiếu khớp bộ lọc
                 </p>
               </div>
@@ -162,7 +162,7 @@ export function OrderFulfillmentSmartcardPopover({
           {localTimeRange === 'custom' && (
             <div className="flex items-center justify-between gap-2 px-1 py-1 text-xs animate-in fade-in-50 duration-200">
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <span className="text-[11px] font-medium text-muted-foreground shrink-0">Từ ngày:</span>
+                <span className="text-xs font-medium text-muted-foreground shrink-0">Từ ngày:</span>
                 <Input
                   type="date"
                   value={customStartDate}
@@ -172,7 +172,7 @@ export function OrderFulfillmentSmartcardPopover({
               </div>
               <span className="text-muted-foreground/40 text-xs px-0.5">→</span>
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <span className="text-[11px] font-medium text-muted-foreground shrink-0">Đến ngày:</span>
+                <span className="text-xs font-medium text-muted-foreground shrink-0">Đến ngày:</span>
                 <Input
                   type="date"
                   value={customEndDate}
@@ -188,7 +188,7 @@ export function OrderFulfillmentSmartcardPopover({
             {/* 1. Tổng phiếu bàn giao (Indigo) */}
             <div className="flex items-center justify-between rounded-lg border border-indigo-500/20 bg-indigo-500/[0.04] p-2.5 transition-all">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tổng phiếu bàn giao
                 </p>
                 <p className="text-sm sm:text-base font-bold text-foreground mt-0.5">
@@ -203,7 +203,7 @@ export function OrderFulfillmentSmartcardPopover({
             {/* 2. Đã bàn giao thành công (Emerald) */}
             <div className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-2.5 transition-all">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   Đã bàn giao
                 </p>
                 <p className="text-sm sm:text-base font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">
@@ -218,7 +218,7 @@ export function OrderFulfillmentSmartcardPopover({
             {/* 3. Đang vận chuyển (Blue / Sky) */}
             <div className="flex items-center justify-between rounded-lg border border-sky-500/20 bg-sky-500/[0.04] p-2.5 transition-all">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-400">
                   Đang vận chuyển
                 </p>
                 <p className="text-sm sm:text-base font-bold text-sky-700 dark:text-sky-300 mt-0.5">
@@ -233,7 +233,7 @@ export function OrderFulfillmentSmartcardPopover({
             {/* 4. Chờ bàn giao tồn đọng (Amber / Warning) */}
             <div className="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-2.5 transition-all">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                   Chờ bàn giao tồn
                 </p>
                 <p className="text-sm sm:text-base font-bold text-amber-700 dark:text-amber-300 mt-0.5">
@@ -248,7 +248,7 @@ export function OrderFulfillmentSmartcardPopover({
 
           {/* SLA & Tiến độ xử lý */}
           <div className="rounded-lg bg-muted/30 p-2 border border-border/40 text-xs space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
               <span>Tiến độ bàn giao đúng hạn (SLA &lt; 24h)</span>
               <span className="font-semibold text-foreground">{metrics.slaRate}%</span>
             </div>
@@ -264,17 +264,17 @@ export function OrderFulfillmentSmartcardPopover({
             {/* SLA distribution pills */}
             <div className="grid grid-cols-3 gap-1 pt-0.5 text-xs text-center">
               <div className="rounded bg-background px-1.5 py-0.5 border border-border/40">
-                <span className="text-muted-foreground block text-[10px]">Dưới 24h</span>
+                <span className="text-muted-foreground block text-xs">Dưới 24h</span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">{metrics.under24hCount}</span>
               </div>
               <div className="rounded bg-background px-1.5 py-0.5 border border-border/40">
-                <span className="text-muted-foreground block text-[10px]">24h - 48h</span>
+                <span className="text-muted-foreground block text-xs">24h - 48h</span>
                 <span className="font-bold text-amber-600 dark:text-amber-400">
                   {metrics.between24And48hCount}
                 </span>
               </div>
               <div className="rounded bg-background px-1.5 py-0.5 border border-border/40">
-                <span className="text-muted-foreground block text-[10px]">Quá hạn / Tồn</span>
+                <span className="text-muted-foreground block text-xs">Quá hạn / Tồn</span>
                 <span className="font-bold text-rose-600 dark:text-rose-400">
                   {metrics.overdueCount}
                 </span>

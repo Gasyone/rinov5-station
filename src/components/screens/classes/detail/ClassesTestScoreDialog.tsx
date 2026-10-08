@@ -565,7 +565,7 @@ export function ClassesTestScoreDialog({
                         <div className="flex flex-col items-center justify-center h-full min-h-[110px] rounded-lg border border-dashed border-zinc-200 dark:border-zinc-800 p-4 text-center text-muted-foreground text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
                           <Sparkles className="h-4 w-4 text-amber-500 mb-1 opacity-70" />
                           <p className="font-semibold text-zinc-700 dark:text-zinc-300">Gợi ý từ vựng Fluency</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">Chọn điểm Fluency (1 - 5) ở trên để xem các từ vựng gợi ý phù hợp.</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Chọn điểm Fluency (1 - 5) ở trên để xem các từ vựng gợi ý phù hợp.</p>
                         </div>
                       )}
                     </div>
@@ -585,7 +585,7 @@ export function ClassesTestScoreDialog({
                   {activeScore !== null ? `${activeScore}/10` : '--'}
                 </span>
                 {activeScore !== null && (
-                  <span className="text-muted-foreground text-[11px] font-normal">
+                  <span className="text-muted-foreground text-xs font-normal">
                     (Điểm trung bình rubric)
                   </span>
                 )}

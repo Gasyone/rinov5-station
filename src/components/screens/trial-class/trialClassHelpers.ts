@@ -1,7 +1,11 @@
-import { getTrialClasses, type TrialClassStatus, type TrialClass } from '@/mocks/trialClasses'
+import { getTrialClasses, getMockSessionsForClass, type TrialClassStatus, type TrialClass } from '@/mocks/trialClasses'
 export type { TrialClass }
-import type { CreateTrialClassForm, StatusTileId, TrialClassFilterState, TrialResultFilterId } from './trialClassTypes'
-import { STATUS_META } from './trialClassConstants'
+import type { CreateTrialClassForm, StatusTileId, TrialClassFilterState, TrialResultFilterId, TrialSortField, SortDirection } from './trialClassTypes'
+import { STATUS_META, MOCK_CLASS_OPTIONS } from './trialClassConstants'
+import { mockClassRecords } from '@/mocks/classRecords'
+import { mockEmployees } from '@/mocks/employees'
+import { mockLeads } from '@/mocks/crmLeads'
+import type { PersonnelItem } from '@/components/shared'
 
 export function formatTrialDate(dateStr: string): string {
   if (!dateStr) return '—'
@@ -9,6 +13,14 @@ export function formatTrialDate(dateStr: string): string {
   const parts = date.split('-')
   if (parts.length !== 3) return dateStr
   return `${parts[2]}/${parts[1]}/${parts[0]}${time ? ` ${time}` : ''}`
+}
+
+export function formatSessionDateOnly(dateStr: string): string {
+  if (!dateStr) return '—'
+  const [date] = dateStr.split(' ')
+  const parts = date.split('-')
+  if (parts.length !== 3) return dateStr
+  return `${parts[2]}/${parts[1]}/${parts[0]}`
 }
 
 export function formatDateShort(dateStr: string): string {
@@ -66,19 +78,62 @@ export function buildTrialSessionData(trial: TrialClass): GenericSessionData | n
   const endTime = getEndTime(startTime)
   const timeSlot = endTime ? `${startTime} - ${endTime}` : startTime
 
+  // 1. Tìm thông tin lớp trong MOCK_CLASS_OPTIONS hoặc mockClassRecords
+  const classOpt = MOCK_CLASS_OPTIONS.find(
+    (c) =>
+      c.classId.toLowerCase() === sess.classId?.toLowerCase() ||
+      c.className.toLowerCase() === sess.className?.toLowerCase()
+  )
+
+  const classRecord = mockClassRecords.find(
+    (c) =>
+      c.code.toLowerCase() === sess.classId?.toLowerCase() ||
+      c.id.toLowerCase() === sess.classId?.toLowerCase() ||
+      c.name.toLowerCase() === sess.className?.toLowerCase()
+  )
+
+  // 2. Giáo viên & Trợ giảng
+  const teacher = classOpt?.teacher || classRecord?.teacher || trial.owner || 'Ms. Sarah'
+  const assistantTeacher = classRecord?.assistant || 'Cô Lan Anh'
+
+  // 3. Sĩ số & Sức chứa
+  const mockSessions = getMockSessionsForClass(sess.classId)
+  const matchedSession = mockSessions?.find(
+    (s) => s.id === sess.sessionId || s.name === sess.sessionName
+  ) || mockSessions?.[0]
+
+  const totalStudents = matchedSession?.attendees ?? classOpt?.enrolledStudents ?? classRecord?.enrolledStudents ?? 12
+  const capacity = matchedSession?.capacity ?? classOpt?.maxStudents ?? classRecord?.maxStudents ?? 15
+  const trialStudents = classRecord?.trialStudents ?? 1
+
+  // 4. Phòng học & Cơ sở
+  const schoolRoom = classRecord?.room || 'Phòng 201'
+  const branch = trial.branch || trial.school || classRecord?.branch || 'RinoEdu Nguyễn Tuân'
+
+  // 5. Tiêu đề / Bài học
+  const lessonTitle = sess.sessionName || 'Buổi học ghép'
+
   return {
     id: sess.classId,
     className: sess.className,
     classCode: sess.classId,
-    title: sess.sessionName,
+    title: lessonTitle,
+    lessonSubtitle: sess.sessionName,
     subject: trial.subject,
     level: trial.program,
-    branch: trial.branch || trial.school,
+    branch,
+    schoolRoom,
     date: sess.trialDate,
     timeLabel: startTime,
     endTimeLabel: endTime,
     timeSlot,
     scheduleType: 'class',
+    teacher,
+    teacherName: teacher,
+    assistantTeacher,
+    totalStudents,
+    capacity,
+    trialStudents,
   }
 }
 
@@ -91,7 +146,8 @@ export function countStatus(trials: TrialClass[], id: string): number {
 }
 
 export function getTrialStatusLabel(status: string) {
-  if (status === 'reschedule') return 'Ghép lớp'
+  if (status === 'reschedule') return 'Đã ghép lớp'
+  if (status === 'no_show') return 'Không đến'
   return STATUS_META[status as keyof typeof STATUS_META]?.label ?? status
 }
 
@@ -328,5 +384,185 @@ export function getLeaveReserveTicketForTrial(studentName: string, familyPhone: 
     const isPhoneMatch = cleanRequestPhone.length > 0 && cleanRequestPhone === cleanPhone
     return (isNameMatch || isPhoneMatch) && (r.type === 'reservation' || r.type === 'off')
   }) || null
+}
+
+const STUDENT_DEMOGRAPHICS: Record<string, { age: number; birthYear: number; dob?: string; gender?: 'Nam' | 'Nữ' }> = {
+  'Nguyễn An': { age: 11, birthYear: 2015, dob: '15/03/2015', gender: 'Nam' },
+  'Bùi Hoàng Phúc': { age: 8, birthYear: 2018, gender: 'Nam' },
+  'Nguyễn Minh Anh': { age: 6, birthYear: 2020, gender: 'Nữ' },
+  'Hoàng Gia Bảo': { age: 7, birthYear: 2019, gender: 'Nam' },
+  'Trương Minh Khang': { age: 9, birthYear: 2017, gender: 'Nam' },
+  'Lê Chi': { age: 12, birthYear: 2014, gender: 'Nữ' },
+  'Trần Bảo Nam': { age: 8, birthYear: 2018, gender: 'Nam' },
+  'Đỗ Khánh Linh': { age: 11, birthYear: 2015, gender: 'Nữ' },
+  'Phạm Đức Minh': { age: 10, birthYear: 2016, gender: 'Nam' },
+  'Vũ Đức Huy': { age: 8, birthYear: 2018, gender: 'Nam' },
+  'Phạm Thùy Linh': { age: 10, birthYear: 2016, gender: 'Nữ' },
+  'Ngô Gia Huy': { age: 9, birthYear: 2017, gender: 'Nam' },
+  'Vũ Tue Nhi': { age: 7, birthYear: 2019, gender: 'Nữ' },
+  'Vũ Tuệ Nhi': { age: 7, birthYear: 2019, gender: 'Nữ' },
+}
+
+export function getStudentAgeText(trial: TrialClass): string {
+  const name = (trial.studentName || '').trim()
+  const demo = STUDENT_DEMOGRAPHICS[name]
+
+  // 1. Xác định giới tính (Nam / Nữ)
+  let gender = trial.studentGender || demo?.gender
+  if (!gender) {
+    const matchedLead = mockLeads.find((l) => l.studentName?.toLowerCase() === name.toLowerCase())
+    if (matchedLead?.studentGender) {
+      gender = matchedLead.studentGender
+    } else {
+      const lowerName = name.toLowerCase()
+      const femaleKeywords = ['thị', 'chi', 'linh', 'nhi', 'hương', 'mai', 'ngọc', 'trang', 'hà', 'phương', 'lan', 'vy', 'hân', 'my', 'châu', 'yến']
+      const isFemale = femaleKeywords.some((kw) => lowerName.includes(kw))
+      gender = isFemale ? 'Nữ' : 'Nam'
+    }
+  }
+
+  // 2. Xác định tuổi & năm sinh
+  let age = trial.studentAge || demo?.age
+  let birthYear = trial.studentBirthYear || demo?.birthYear
+
+  if (!birthYear && demo?.dob) {
+    const parts = demo.dob.split('/')
+    if (parts.length === 3) {
+      birthYear = parseInt(parts[2], 10)
+    }
+  }
+
+  if (age && !birthYear) {
+    birthYear = new Date().getFullYear() - age
+  } else if (!age && birthYear) {
+    age = new Date().getFullYear() - birthYear
+  } else if (!age && !birthYear) {
+    age = 8
+    birthYear = 2018
+  }
+
+  // Định dạng chuẩn dòng 2 theo yêu cầu: "Giới tính, x T, Năm sinh" (Ví dụ: "Nam, 8 T, 2018")
+  return `${gender}, ${age} T, ${birthYear}`
+}
+
+export function getAttemptNumber(attempt?: string): string {
+  if (!attempt) return '1'
+  const match = attempt.match(/\d+/)
+  return match ? match[0] : '1'
+}
+
+export function getProgramAndLevel(trial: TrialClass): string {
+  if (!trial.sessions || trial.sessions.length === 0) return trial.program || '—'
+  const sess = trial.sessions[0]
+  if (sess.className) {
+    const program = trial.program || ''
+    if (program && sess.className.startsWith(program)) {
+      const levelPart = sess.className.slice(program.length).trim()
+      return levelPart ? `${program} · ${levelPart}` : program
+    }
+    return sess.className
+  }
+  return trial.program || '—'
+}
+
+export function getProgramSubjectColor(trial: { subject?: string; program?: string }): string {
+  const s = `${trial.subject || ''} ${trial.program || ''}`.toLowerCase()
+  if (s.includes('stem') || s.includes('robotics') || s.includes('coding')) {
+    return 'text-purple-600 dark:text-purple-400'
+  }
+  if (s.includes('toán') || s.includes('math')) {
+    return 'text-amber-600 dark:text-amber-400'
+  }
+  return 'text-blue-600 dark:text-blue-400'
+}
+
+export function sortTrialClasses(
+  items: TrialClass[],
+  sortField: TrialSortField,
+  direction: SortDirection
+): TrialClass[] {
+  const sorted = [...items]
+  const factor = direction === 'asc' ? 1 : -1
+
+  sorted.sort((a, b) => {
+    if (sortField === 'studentName') {
+      return factor * a.studentName.localeCompare(b.studentName, 'vi')
+    }
+
+    if (sortField === 'trialDate') {
+      const aDate = a.sessions[0]?.trialDate || ''
+      const bDate = b.sessions[0]?.trialDate || ''
+      if (!aDate && !bDate) return 0
+      if (!aDate) return -factor
+      if (!bDate) return factor
+      return factor * aDate.localeCompare(bDate)
+    }
+
+    if (sortField === 'status') {
+      const STATUS_WEIGHT: Record<string, number> = {
+        pending_approval: 1,
+        reschedule: 2,
+        rejected: 3,
+        confirmed: 4,
+        completed: 5,
+        no_show: 6,
+        cancelled: 7,
+      }
+      const aWeight = STATUS_WEIGHT[a.status] ?? 99
+      const bWeight = STATUS_WEIGHT[b.status] ?? 99
+      return factor * (aWeight - bWeight)
+    }
+
+    if (sortField === 'createdAt') {
+      const aTime = a.auditLog[0]?.timestamp || a.id
+      const bTime = b.auditLog[0]?.timestamp || b.id
+      return factor * aTime.localeCompare(bTime)
+    }
+
+    return 0
+  })
+
+  return sorted
+}
+
+export function buildPersonnelItem(
+  name: string | undefined,
+  defaultRole: string,
+  defaultPhone = '0912 345 678'
+): PersonnelItem {
+  if (!name) {
+    return {
+      name: 'Chưa xác định',
+      role: defaultRole,
+      phone: defaultPhone,
+      email: 'staff@rinoedu.vn',
+    }
+  }
+
+  const cleanName = name.trim().toLowerCase()
+  const matched = mockEmployees.find(
+    (emp) =>
+      emp.name.toLowerCase() === cleanName ||
+      emp.name.toLowerCase().includes(cleanName) ||
+      cleanName.includes(emp.name.toLowerCase())
+  )
+
+  if (matched) {
+    return {
+      id: matched.id,
+      name: matched.name,
+      role: matched.position || defaultRole,
+      avatar: matched.avatar,
+      phone: matched.phone,
+      email: matched.email,
+    }
+  }
+
+  return {
+    name,
+    role: defaultRole,
+    phone: defaultPhone,
+    email: `${name.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.vn`,
+  }
 }
 

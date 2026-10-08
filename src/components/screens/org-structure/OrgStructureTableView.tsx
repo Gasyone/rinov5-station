@@ -125,7 +125,7 @@ export function OrgStructureTableView({
                         <span className="font-semibold text-foreground hover:underline truncate">
                           {node.name}
                         </span>
-                        <span className="font-mono text-[10px] px-1 py-0.2 rounded bg-muted text-muted-foreground border">
+                        <span className="font-mono text-xs px-1 py-0.2 rounded bg-muted text-muted-foreground border">
                           {node.code}
                         </span>
                       </div>
@@ -181,7 +181,7 @@ export function OrgStructureTableView({
                 {/* Type badge */}
                 <td className="py-2.5 px-3">
                   <span
-                    className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ${typeConfig.badgeVariant}`}
+                    className={`inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${typeConfig.badgeVariant}`}
                   >
                     {typeConfig.label}
                   </span>
@@ -195,11 +195,11 @@ export function OrgStructureTableView({
                 {/* Quy mô: Chức danh (trên) & Nhân sự (dưới) */}
                 <td className="py-2.5 px-3 text-center">
                   <div className="inline-flex flex-col items-center gap-0.5">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/85">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/85">
                       <Briefcase className="h-3 w-3 text-primary/70" />
                       <span>{node.positions?.length || 1} chức danh</span>
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="h-2.5 w-2.5 text-muted-foreground" />
                       <span>{node.memberCount} nhân sự</span>
                     </span>

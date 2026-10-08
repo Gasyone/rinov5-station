@@ -132,7 +132,7 @@ export function CrmLeadQuickCareCard({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         {/* Kết quả tương tác */}
         <div className="sm:col-span-1 space-y-1">
-          <label className="text-[11px] font-medium text-muted-foreground block">
+          <label className="text-xs font-medium text-muted-foreground block">
             Kết quả cuộc trao đổi:
           </label>
           <Select value={outcome} onValueChange={setOutcome}>
@@ -151,7 +151,7 @@ export function CrmLeadQuickCareCard({
 
         {/* Lịch hẹn gọi lại nếu có */}
         <div className="sm:col-span-2 space-y-1">
-          <label className="text-[11px] font-medium text-muted-foreground block">
+          <label className="text-xs font-medium text-muted-foreground block">
             Lịch hẹn tương tác tiếp theo (nếu có):
           </label>
           <div className="relative">

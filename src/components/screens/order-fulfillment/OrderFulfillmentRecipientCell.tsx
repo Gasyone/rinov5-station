@@ -69,31 +69,31 @@ export function OrderFulfillmentRecipientCell({
                   {info.recipientList.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between py-1 px-1.5 rounded bg-muted/40 text-[11px]"
+                      className="flex items-center justify-between py-1 px-1.5 rounded bg-muted/40 text-xs"
                     >
                       <span className="font-medium text-foreground truncate">
                         {idx + 1}. {item.name}
                       </span>
                       {item.phone && (
-                        <span className="text-muted-foreground font-mono text-[10px]">
+                        <span className="text-muted-foreground font-mono text-xs">
                           {maskPhoneNumber(item.phone)}
                         </span>
                       )}
                     </div>
                   ))}
                   {info.recipientCount > info.recipientList.length && (
-                    <p className="text-[10px] text-muted-foreground italic text-center pt-1">
+                    <p className="text-xs text-muted-foreground italic text-center pt-1">
                       ... và {info.recipientCount - info.recipientList.length} người nhận khác trong danh sách
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Bàn giao đồng loạt theo danh sách tại cơ sở {record.branch}.
                 </p>
               )}
 
-              <div className="pt-1.5 border-t border-border/40 text-[10px] text-muted-foreground flex items-center justify-between">
+              <div className="pt-1.5 border-t border-border/40 text-xs text-muted-foreground flex items-center justify-between">
                 <span className="truncate max-w-[150px]">Đại diện: {info.representativeName}</span>
                 {info.representativePhone && (
                   <span className="font-mono">{maskPhoneNumber(info.representativePhone)}</span>
@@ -105,7 +105,7 @@ export function OrderFulfillmentRecipientCell({
 
         {/* Dòng 2: Địa chỉ nhận hàng (Xóa sđt và thông tin cũ) */}
         <div
-          className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5 min-w-0"
+          className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 min-w-0"
           title={deliveryAddress}
         >
           <MapPin className="h-3 w-3 text-muted-foreground/70 shrink-0" />
@@ -128,7 +128,7 @@ export function OrderFulfillmentRecipientCell({
                 {info.representativeName}
               </span>
               {info.representativeRole && (
-                <span className="text-[10px] font-normal text-muted-foreground px-1 py-0 rounded bg-muted shrink-0">
+                <span className="text-xs font-normal text-muted-foreground px-1 py-0 rounded bg-muted shrink-0">
                   {info.representativeRole}
                 </span>
               )}
@@ -142,24 +142,24 @@ export function OrderFulfillmentRecipientCell({
             <div className="font-semibold text-foreground border-b pb-1 flex items-center justify-between gap-2">
               <span>{info.representativeName}</span>
               {info.representativeRole && (
-                <span className="text-[10px] font-normal text-muted-foreground">
+                <span className="text-xs font-normal text-muted-foreground">
                   ({info.representativeRole})
                 </span>
               )}
             </div>
             {phone && (
-              <div className="text-[11px] flex items-center justify-between gap-2 text-foreground font-mono pt-0.5">
-                <span className="text-muted-foreground font-sans text-[11px]">SĐT liên hệ:</span>
+              <div className="text-xs flex items-center justify-between gap-2 text-foreground font-mono pt-0.5">
+                <span className="text-muted-foreground font-sans text-xs">SĐT liên hệ:</span>
                 <span>{phone}</span>
               </div>
             )}
             {record.studentName && (
-              <div className="text-[11px] flex items-center justify-between gap-2 text-muted-foreground pt-0.5">
+              <div className="text-xs flex items-center justify-between gap-2 text-muted-foreground pt-0.5">
                 <span>Học viên:</span>
                 <strong className="text-foreground font-medium">{record.studentName}</strong>
               </div>
             )}
-            <div className="text-[10px] text-muted-foreground pt-1 border-t flex items-center justify-between">
+            <div className="text-xs text-muted-foreground pt-1 border-t flex items-center justify-between">
               <span>Hình thức nhận:</span>
               <span>{record.deliveryMethod === 'shipping' ? 'Giao tận nơi' : 'Nhận tại cơ sở'}</span>
             </div>
@@ -169,7 +169,7 @@ export function OrderFulfillmentRecipientCell({
 
       {/* Dòng 2: Địa chỉ nhận hàng (Xóa sđt và thông tin cũ) */}
       <div
-        className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5 min-w-0"
+        className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5 min-w-0"
         title={deliveryAddress}
       >
         <MapPin className="h-3 w-3 text-muted-foreground/70 shrink-0" />

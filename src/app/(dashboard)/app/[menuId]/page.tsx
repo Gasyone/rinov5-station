@@ -29,6 +29,14 @@ function safeLazy<T extends React.ComponentType<Record<string, unknown>>>(
 }
 
 const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
+  dashboard: safeLazy(async () => {
+    const { HomeScreen } = await import('@/components/screens/home/HomeScreen')
+    return { default: HomeScreen }
+  }),
+  home: safeLazy(async () => {
+    const { HomeScreen } = await import('@/components/screens/home/HomeScreen')
+    return { default: HomeScreen }
+  }),
   booking_test: safeLazy(async () => {
     const { BookingTestScreen } = await import('@/components/screens/booking-test/BookingTestScreen')
     return { default: BookingTestScreen }

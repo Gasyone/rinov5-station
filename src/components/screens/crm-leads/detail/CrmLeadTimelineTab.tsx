@@ -99,7 +99,7 @@ export function CrmLeadTimelineTab({
                       {item.outcomeLabel}
                     </Badge>
                   </div>
-                  <span className="text-[11px] font-mono text-muted-foreground flex items-center gap-1">
+                  <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {item.timestamp}
                   </span>
@@ -108,7 +108,7 @@ export function CrmLeadTimelineTab({
                 <p className="text-foreground leading-relaxed pt-0.5">{item.note}</p>
 
                 {item.nextAppointment && (
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300 pt-1 border-t border-border/40">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 dark:text-violet-300 pt-1 border-t border-border/40">
                     <Calendar className="h-3 w-3 shrink-0" />
                     <span>Hẹn tương tác tiếp: {item.nextAppointment}</span>
                   </div>

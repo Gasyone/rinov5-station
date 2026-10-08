@@ -152,7 +152,7 @@ export function WorkRegistrationStaffSectionGrid({
                 </div>
 
                 {sectionStats && sectionStats.totalMinutes > 0 && (
-                  <div className="flex items-center gap-2 text-[11px] font-medium opacity-85">
+                  <div className="flex items-center gap-2 text-xs font-medium opacity-85">
                     <span>
                       Tổng ca tuần: <strong>{sectionStats.shiftCount} buổi</strong> ({formatDurationShort(sectionStats.totalMinutes)})
                     </span>
@@ -268,7 +268,7 @@ export function WorkRegistrationStaffSectionGrid({
                                 onClick={(e) => e.stopPropagation()}
                                 className="flex flex-col justify-between h-full w-full rounded-md border border-indigo-400/90 border-l-[3.5px] border-l-indigo-600 bg-indigo-50/95 dark:bg-indigo-950/70 dark:border-indigo-600/80 dark:border-l-indigo-500 p-1.5 cursor-pointer shadow-2xs hover:bg-indigo-100/90 hover:border-indigo-500 dark:hover:bg-indigo-900/70 transition-all group/class overflow-hidden"
                               >
-                                <div className="flex items-center justify-between gap-1 text-[11px] text-indigo-800 dark:text-indigo-300 tracking-tight">
+                                <div className="flex items-center justify-between gap-1 text-xs text-indigo-800 dark:text-indigo-300 tracking-tight">
                                   <span className="flex items-center gap-1 font-normal truncate">
                                     <BookOpen className="h-3 w-3 shrink-0 text-indigo-700 dark:text-indigo-400" />
                                     <span>{classTimeRange}</span>
@@ -286,9 +286,9 @@ export function WorkRegistrationStaffSectionGrid({
                                   </span>
                                 </div>
                                 {isTaller && (
-                                  <div className="flex items-center justify-between gap-1 mt-auto pt-0.5 border-t border-indigo-200/60 dark:border-indigo-800/50 text-[10px] text-indigo-800/90 dark:text-indigo-300">
+                                  <div className="flex items-center justify-between gap-1 mt-auto pt-0.5 border-t border-indigo-200/60 dark:border-indigo-800/50 text-xs text-indigo-800/90 dark:text-indigo-300">
                                     <span className="truncate">{assignedClassRecord.assignedClass || 'Toán tư duy'}</span>
-                                    <span className="text-[9px] font-bold bg-indigo-200/80 dark:bg-indigo-900/80 px-1 py-0.2 rounded shrink-0">
+                                    <span className="text-xs font-bold bg-indigo-200/80 dark:bg-indigo-900/80 px-1 py-0.2 rounded shrink-0">
                                       Lớp dạy
                                     </span>
                                   </div>
@@ -329,13 +329,13 @@ export function WorkRegistrationStaffSectionGrid({
                               >
                                 <div className="flex items-center justify-between gap-1 w-full">
                                   <div className="flex items-center gap-1 min-w-0">
-                                    <span className="text-[11px] font-normal truncate">
+                                    <span className="text-xs font-normal truncate">
                                       {isFullShift ? 'Cả buổi' : `${interval.start} - ${interval.end}`}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-1 shrink-0">
                                     {!isTaller && (
-                                      <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
                                         Chờ lưu
                                       </span>
                                     )}
@@ -358,13 +358,13 @@ export function WorkRegistrationStaffSectionGrid({
                                 {isTaller && (
                                   <div className="flex items-center justify-between gap-1 mt-auto pt-0.5 border-t border-emerald-200/60 dark:border-emerald-800/50">
                                     {isDutyAssigned ? (
-                                      <span className="text-[10px] text-emerald-800/90 dark:text-emerald-300 font-medium truncate">
+                                      <span className="text-xs text-emerald-800/90 dark:text-emerald-300 font-medium truncate">
                                         Trực ca
                                       </span>
                                     ) : (
                                       <span />
                                     )}
-                                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
                                       Chờ lưu
                                     </span>
                                   </div>
@@ -397,7 +397,7 @@ export function WorkRegistrationStaffSectionGrid({
                             >
                               <div className="flex items-center justify-between gap-1 w-full">
                                 <div className="flex items-center gap-1 min-w-0">
-                                  <span className="text-[11px] font-normal truncate">
+                                  <span className="text-xs font-normal truncate">
                                     {isFullShift ? 'Cả buổi' : `${interval.start} - ${interval.end}`}
                                   </span>
                                 </div>
@@ -427,7 +427,7 @@ export function WorkRegistrationStaffSectionGrid({
 
                               {isTaller && isDutyAssigned && (
                                 <div className="flex items-center justify-between gap-1 mt-auto pt-0.5 border-t border-border/30">
-                                  <span className="text-[10px] text-muted-foreground font-medium truncate">
+                                  <span className="text-xs text-muted-foreground font-medium truncate">
                                     Trực ca
                                   </span>
                                 </div>
@@ -523,7 +523,7 @@ export function WorkRegistrationStaffSectionGrid({
                                   className={cn(
                                     'shrink-0 tabular-nums leading-tight',
                                     isFullSection
-                                      ? 'text-[11px] font-medium text-emerald-600 dark:text-emerald-400'
+                                      ? 'text-xs font-medium text-emerald-600 dark:text-emerald-400'
                                       : 'text-[9.5px] font-normal text-muted-foreground'
                                   )}
                                 >
@@ -541,10 +541,10 @@ export function WorkRegistrationStaffSectionGrid({
                               e.stopPropagation()
                               onOpenSlotDetail?.(dateKey, sectionRecords[0]?.slotId, sec.id)
                             }}
-                            className="w-full text-left text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-1 border-t border-border/30 mt-0.5"
+                            className="w-full text-left text-xs font-semibold text-primary hover:text-primary/80 hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-1 border-t border-border/30 mt-0.5"
                           >
                             <span>+{remainingCount} khác...</span>
-                            <span className="text-[10px] font-normal text-muted-foreground">Chi tiết →</span>
+                            <span className="text-xs font-normal text-muted-foreground">Chi tiết →</span>
                           </button>
                         )}
 

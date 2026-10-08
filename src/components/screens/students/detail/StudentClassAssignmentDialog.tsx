@@ -7,44 +7,43 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { ConfirmDialog } from '@/components/shared'
-import { ExpandableSearch } from '@/components/controls'
 import { mockClassRecords } from '@/mocks/classRecords'
 import { generateRoadmapSessions } from '@/components/screens/classes/detail/classesDetailHelpers'
-import { AlertCircle, AlertTriangle, ChevronsUpDown } from 'lucide-react'
-import type { EnrolledClass } from '@/mocks/students'
-import type { ClassRecord } from '@/mocks/classRecords'
-
-// Treeview Table & Helpers
-import { StudentClassAssignmentTreeTable } from './StudentClassAssignmentTreeTable'
+import type { EnrolledClass, Student } from '@/mocks/students'
+import type { StudentAvailableSlot } from './studentDetailTypes'
 import { checkSlotsOverlap } from './studentDetailHelpers'
+import {
+  getStudentAssessmentDetails,
+  isClassSuitable,
+} from './studentClassAssignmentHelpers'
+import { StudentClassAssignmentPackageSection } from './StudentClassAssignmentPackageSection'
+import { StudentClassAssignmentClassesList } from './StudentClassAssignmentClassesList'
+import { StudentClassAssignmentSummaryPanel } from './StudentClassAssignmentSummaryPanel'
 
-interface StudentClassAssignmentDialogProps {
+export interface StudentClassAssignmentDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   studentName: string
   studentCode: string
   studentBranch: string
   studentLevel?: string
+  studentSubLevel?: string
+  availableSlots?: StudentAvailableSlot[]
+  isTestLevel?: boolean
   packageName: string
   pkgRemainingSessions: number
+  pkgTotalSessions?: number
+  pkgStudiedSessions?: number
   studentClasses?: EnrolledClass[]
-  onConfirm: (classItem: { id: string; name: string; startSession?: string }) => void
+  onConfirm: (classItem: { id: string; name: string; startSession?: string; notes?: string }) => void
   currentClassCode?: string
   currentClassName?: string
+  student?: Student | null
 }
 
-function getClassAssignmentSessions(cls: ClassRecord) {
+function getClassAssignmentSessions(cls: typeof mockClassRecords[0]) {
   const clsWithSyllabus = {
     ...cls,
     syllabus:
@@ -95,28 +94,45 @@ export function StudentClassAssignmentDialog({
   studentCode,
   studentBranch,
   studentLevel = '',
+  studentSubLevel,
+  availableSlots,
+  isTestLevel,
   packageName,
   pkgRemainingSessions,
+  pkgTotalSessions,
+  pkgStudiedSessions,
   studentClasses = [],
   onConfirm,
   currentClassCode,
   currentClassName,
+  student,
 }: StudentClassAssignmentDialogProps) {
+  // Assessment and parent details
+  const assessment = useMemo(() => {
+    return getStudentAssessmentDetails(
+      student,
+      studentName,
+      studentCode,
+      studentBranch,
+      studentLevel,
+      isTestLevel
+    )
+  }, [student, studentName, studentCode, studentBranch, studentLevel, isTestLevel])
+
+  // Tabs & Search State (bỏ tab 'suitable', mặc định 'all')
   const [activeTab, setActiveTab] = useState<
-    'suitable' | 'all' | 'nhap' | 'cho_khai_giang' | 'dang_hoc'
-  >('suitable')
-  const [branchFilter, setBranchFilter] = useState<string>(studentBranch)
-  const [gradeGroupFilter, setGradeGroupFilter] = useState<string>('all')
-  const [dayFilter, setDayFilter] = useState<string>('all')
+    'all' | 'dang_hoc' | 'cho_khai_giang'
+  >('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null)
   const [startSessionDate, setStartSessionDate] = useState<string>('')
   const [expandedClassIds, setExpandedClassIds] = useState<Set<string>>(
     () => new Set()
   )
-  const [showWarningOpen, setShowWarningOpen] = useState(false)
+  const [internalNotes, setInternalNotes] = useState<string>('')
+  const [showTransferConfirm, setShowTransferConfirm] = useState(false)
 
-  // Load and map mock class records, exclude 'tam_dung' (tạm nghỉ) and 'huy' (đã kết thúc) as they cannot be assigned
+  // Load classes, exclude tam_dung and huy
   const classesList = useMemo(() => {
     return mockClassRecords
       .filter((c) => c.status !== 'tam_dung' && c.status !== 'huy')
@@ -127,60 +143,15 @@ export function StudentClassAssignmentDialog({
       })
   }, [])
 
-  // Filter classes based on active tab and dropdown/search filters
+  // Filtered classes according to activeTab and searchQuery
   const filteredClasses = useMemo(() => {
     return classesList.filter((cls) => {
       // 1. Tab filter
-      if (activeTab === 'suitable') {
-        const isBranchMatch = cls.branch === studentBranch
-
-        const isLevelMatch = studentLevel
-          ? cls.level.toLowerCase().includes(studentLevel.toLowerCase()) ||
-            studentLevel.toLowerCase().includes(cls.level.toLowerCase())
-          : true
-
-        const isActiveStatus =
-          cls.status === 'dang_hoc' || cls.status === 'cho_khai_giang'
-
-        if (!isBranchMatch || !isLevelMatch || !isActiveStatus) {
-          return false
-        }
-      } else if (activeTab !== 'all') {
-        if (cls.status !== activeTab) {
-          return false
-        }
-      }
-
-      // 2. Branch dropdown filter
-      if (branchFilter !== 'all' && cls.branch !== branchFilter) {
+      if (activeTab !== 'all' && cls.status !== activeTab) {
         return false
       }
 
-      // 3. Grade Group dropdown filter
-      if (gradeGroupFilter !== 'all') {
-        if (gradeGroupFilter === 'Young Learners') {
-          const ylLevels = ['movers', 'flyers', 'ket prep', 'pet prep']
-          if (!ylLevels.includes(cls.level.toLowerCase())) return false
-        } else if (gradeGroupFilter === 'Math') {
-          if (!cls.level.toLowerCase().includes('math')) return false
-        } else {
-          if (!cls.level.toLowerCase().includes(gradeGroupFilter.toLowerCase()))
-            return false
-        }
-      }
-
-      // 4. Day dropdown filter
-      if (dayFilter !== 'all') {
-        const matchesSlot = cls.scheduleSlots.some(
-          (slot) => slot.dayOfWeek.toLowerCase() === dayFilter.toLowerCase()
-        )
-        const matchesScheduleText = cls.schedule
-          .toLowerCase()
-          .includes(dayFilter.toLowerCase())
-        if (!matchesSlot && !matchesScheduleText) return false
-      }
-
-      // 5. Search query
+      // 2. Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
         const match =
@@ -193,42 +164,22 @@ export function StudentClassAssignmentDialog({
 
       return true
     })
-  }, [
-    classesList,
-    activeTab,
-    branchFilter,
-    gradeGroupFilter,
-    dayFilter,
-    searchQuery,
-    studentBranch,
-    studentLevel,
-  ])
+  }, [classesList, activeTab, searchQuery])
 
-  // Find the selected class details
+  // Selected class record
   const selectedClass = useMemo(() => {
     return classesList.find((c) => c.id === selectedClassId) || null
   }, [classesList, selectedClassId])
 
-  // Auto-expand & auto-select suitable class when dialog is opened
+  // Auto-select initial class when dialog opens
   useEffect(() => {
     if (open) {
-      const suitable = classesList.filter((c) => {
-        const isBranchMatch = c.branch === studentBranch
-        const isLevelMatch = studentLevel
-          ? c.level.toLowerCase().includes(studentLevel.toLowerCase()) ||
-            studentLevel.toLowerCase().includes(c.level.toLowerCase())
-          : true
-        const isActiveStatus =
-          c.status === 'dang_hoc' || c.status === 'cho_khai_giang'
-        return isBranchMatch && isLevelMatch && isActiveStatus
-      })
+      setActiveTab('all')
+      const suitable = classesList.filter((c) =>
+        isClassSuitable(c, studentBranch, studentLevel)
+      )
+      const defaultClass = suitable[0] || classesList[0]
 
-      // If no suitable classes, default to 'all' so screen isn't empty!
-      const initialTab = suitable.length > 0 ? 'suitable' : 'all'
-      setActiveTab(initialTab)
-
-      const targetList = initialTab === 'suitable' ? suitable : classesList
-      const defaultClass = targetList[0] || classesList[0]
       if (defaultClass) {
         setSelectedClassId(defaultClass.id)
         setExpandedClassIds(new Set([defaultClass.id]))
@@ -241,7 +192,9 @@ export function StudentClassAssignmentDialog({
 
         if (activeSession) {
           const dayName = getDayOfWeekFromDateStr(activeSession.date)
-          const dateDisplay = dayName ? `${dayName}, ${activeSession.date}` : activeSession.date
+          const dateDisplay = dayName
+            ? `${dayName}, ${activeSession.date}`
+            : activeSession.date
           setStartSessionDate(
             `${dateDisplay} (Buổi ${activeSession.sessionNumber}: ${activeSession.topic})`
           )
@@ -253,11 +206,6 @@ export function StudentClassAssignmentDialog({
   // Select class action
   const handleSelectClass = (clsId: string) => {
     setSelectedClassId(clsId)
-    setExpandedClassIds((prev) => {
-      const next = new Set(prev)
-      next.add(clsId)
-      return next
-    })
 
     const cls = classesList.find((c) => c.id === clsId)
     if (cls) {
@@ -269,7 +217,9 @@ export function StudentClassAssignmentDialog({
 
       if (activeSession) {
         const dayName = getDayOfWeekFromDateStr(activeSession.date)
-        const dateDisplay = dayName ? `${dayName}, ${activeSession.date}` : activeSession.date
+        const dateDisplay = dayName
+          ? `${dayName}, ${activeSession.date}`
+          : activeSession.date
         setStartSessionDate(
           `${dateDisplay} (Buổi ${activeSession.sessionNumber}: ${activeSession.topic})`
         )
@@ -295,31 +245,6 @@ export function StudentClassAssignmentDialog({
       return next
     })
   }
-
-  // Toggle expand all / collapse all
-  const isAllExpanded =
-    filteredClasses.length > 0 &&
-    expandedClassIds.size === filteredClasses.length
-
-  const handleToggleExpandAll = () => {
-    if (isAllExpanded) {
-      setExpandedClassIds(new Set())
-    } else {
-      setExpandedClassIds(new Set(filteredClasses.map((c) => c.id)))
-    }
-  }
-
-  // Warnings calculation
-  const isClassFull = selectedClass
-    ? selectedClass.enrolledStudents >= selectedClass.maxStudents
-    : false
-
-  const isLevelMismatch = useMemo(() => {
-    if (!selectedClass || !studentLevel) return false
-    const sLevel = studentLevel.toLowerCase()
-    const cLevel = selectedClass.level.toLowerCase()
-    return !sLevel.includes(cLevel) && !cLevel.includes(sLevel)
-  }, [selectedClass, studentLevel])
 
   const conflictingClasses = useMemo(() => {
     if (!selectedClass || !studentClasses || studentClasses.length === 0)
@@ -354,33 +279,37 @@ export function StudentClassAssignmentDialog({
     return conflicts
   }, [selectedClass, studentClasses])
 
-  const handleConfirm = () => {
+  // Is transfer check (hỗ trợ cả trạng thái pending_transfer và so khớp mã lớp hiện tại)
+  const isTransfer = useMemo(() => {
+    if (student?.status === 'pending_transfer') return true
+    if (!currentClassCode || !selectedClass) return false
+    const cleanCurrent = currentClassCode.trim().toLowerCase()
+    const cleanSelectedCode = selectedClass.code?.trim().toLowerCase()
+    const cleanSelectedId = selectedClass.id?.trim().toLowerCase()
+    return cleanCurrent !== cleanSelectedCode && cleanCurrent !== cleanSelectedId
+  }, [currentClassCode, selectedClass, student?.status])
+
+  // Execute confirm assignment
+  const executeConfirm = () => {
     if (selectedClass) {
       onConfirm({
         id: selectedClass.id,
         name: selectedClass.name || selectedClass.code,
         startSession: startSessionDate || undefined,
+        notes: internalNotes || undefined,
       })
       onOpenChange(false)
       setSelectedClassId(null)
       setStartSessionDate('')
+      setInternalNotes('')
     }
   }
 
   const handleConfirmAttempt = () => {
-    if (selectedClass) {
-      const cleanCurrent = currentClassCode?.trim().toLowerCase()
-      const cleanSelectedCode = selectedClass.code?.trim().toLowerCase()
-      const cleanSelectedId = selectedClass.id?.trim().toLowerCase()
-      const isTransfer =
-        cleanCurrent &&
-        cleanCurrent !== cleanSelectedCode &&
-        cleanCurrent !== cleanSelectedId
-      if (isTransfer) {
-        setShowWarningOpen(true)
-      } else {
-        handleConfirm()
-      }
+    if (isTransfer) {
+      setShowTransferConfirm(true)
+    } else {
+      executeConfirm()
     }
   }
 
@@ -388,6 +317,7 @@ export function StudentClassAssignmentDialog({
     onOpenChange(false)
     setSelectedClassId(null)
     setStartSessionDate('')
+    setInternalNotes('')
   }
 
   return (
@@ -398,306 +328,121 @@ export function StudentClassAssignmentDialog({
         else onOpenChange(val)
       }}
     >
-      <DialogContent className="w-[94vw] sm:max-w-[94vw] md:max-w-[880px] lg:max-w-[940px] h-[86vh] max-h-[660px] min-h-[420px] flex flex-col p-0 overflow-hidden bg-background shadow-2xl rounded-xl">
-        {/* Header with Student & Package Details */}
-        <DialogHeader className="px-5 py-2.5 border-b bg-muted/20 shrink-0">
-          <div className="flex flex-col gap-1">
-            <DialogTitle className="text-sm font-bold text-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pr-8">
-              <span>Ghép lớp học viên</span>
-              <span className="text-xs font-normal text-muted-foreground bg-background px-2.5 py-0.5 rounded-full border shadow-2xs">
-                Gói học: <strong className="text-foreground">{packageName}</strong>{' '}
-                (Còn{' '}
-                <strong className="text-emerald-600 font-semibold">
-                  {pkgRemainingSessions} buổi
-                </strong>
-                )
-              </span>
+      <DialogContent className="w-[96vw] max-w-[96vw] sm:max-w-[94vw] md:max-w-[90vw] lg:max-w-[1060px] xl:max-w-[1120px] h-[88vh] max-h-[88vh] flex flex-col gap-0 p-0 overflow-hidden bg-background shadow-2xl rounded-xl border">
+        {/* Header gọn gàng - Không đường line, text thường không in đậm, khoảng cách tối ưu */}
+        <DialogHeader className="shrink-0 px-4 pt-2.5 pb-1">
+          <div className="flex items-center justify-between gap-3 pr-6">
+            <DialogTitle className="text-xs font-normal text-foreground">
+              {isTransfer ? 'Chuyển lớp học viên' : 'Xếp lớp học viên'}
             </DialogTitle>
-            <div className="text-xs text-muted-foreground flex items-center gap-x-3 gap-y-1 flex-wrap">
-              <span>
-                Học viên: <strong className="text-foreground">{studentName}</strong>
-              </span>
-              <span className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-semibold">
-                {studentCode}
-              </span>
-              {studentLevel && (
-                <>
-                  <span className="text-muted-foreground/30">|</span>
-                  <span>
-                    Trình độ:{' '}
-                    <strong className="text-primary font-semibold">
-                      {studentLevel}
-                    </strong>
-                  </span>
-                </>
-              )}
-              <span className="text-muted-foreground/30">|</span>
-              <span>
-                Cơ sở gốc:{' '}
-                <strong className="text-foreground">{studentBranch}</strong>
-              </span>
-            </div>
           </div>
         </DialogHeader>
 
-        {/* Status Tab Filter Bar */}
-        <div className="flex flex-wrap gap-1 px-5 py-1 bg-muted/10 select-none shrink-0 border-b border-border/30">
-          {([
-            { id: 'suitable', label: 'Lớp phù hợp' },
-            { id: 'all', label: 'Tất cả lớp' },
-            { id: 'nhap', label: 'Nháp' },
-            { id: 'cho_khai_giang', label: 'Chờ khai giảng' },
-            { id: 'dang_hoc', label: 'Đang học' },
-          ] as const).map((tab) => {
-            const count = classesList.filter((c) => {
-              if (tab.id === 'suitable') {
-                const isBranchMatch = c.branch === studentBranch
-                const isLevelMatch = studentLevel
-                  ? c.level.toLowerCase().includes(studentLevel.toLowerCase()) ||
-                    studentLevel.toLowerCase().includes(c.level.toLowerCase())
-                  : true
-                const isActiveStatus =
-                  c.status === 'dang_hoc' || c.status === 'cho_khai_giang'
-                return isBranchMatch && isLevelMatch && isActiveStatus
-              }
-              if (tab.id === 'all') return true
-              return c.status === tab.id
-            }).length
+        {/* Body: 2 Panel song song sát header (Trái Flex-1 cuộn độc lập, Phải Cố định không ảnh hưởng bởi cuộn) */}
+        <div className="flex-1 min-h-0 px-4 pt-0 pb-2.5 overflow-hidden flex flex-col lg:flex-row gap-3 items-start">
+          {/* ==================== PANEL TRÁI (FLEX-1): QUY TRÌNH CHỌN LỚP (CUỘN ĐỘC LẬP) ==================== */}
+          <div className="flex-1 min-w-0 flex flex-col space-y-1.5 w-full h-full overflow-y-auto pr-1">
+            {/* 1. Phần Gói mua, Loại gói, Số buổi đã học/tổng buổi & Cơ sở */}
+            <StudentClassAssignmentPackageSection
+              packageName={packageName}
+              pkgRemainingSessions={pkgRemainingSessions}
+              pkgTotalSessions={pkgTotalSessions}
+              pkgStudiedSessions={pkgStudiedSessions}
+              studentBranch={studentBranch}
+              studentLevel={studentLevel}
+            />
 
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id)
-                }}
-                className={`px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground shadow-2xs'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                }`}
-              >
-                {tab.label} ({count})
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Filters Toolbar */}
-        <div className="px-5 py-1 border-b flex flex-wrap items-center justify-between bg-background select-none gap-2 shrink-0">
-          <div className="flex flex-wrap gap-1.5 items-center flex-1 min-w-0">
-            <div className="w-[145px] shrink-0">
-              <Select value={branchFilter} onValueChange={setBranchFilter}>
-                <SelectTrigger
-                  size="sm"
-                  className="w-full h-7 text-xs bg-background py-0.5"
-                >
-                  <SelectValue placeholder="Trường" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả trường</SelectItem>
-                  <SelectItem value="RinoEdu Nguyễn Tuân">
-                    RinoEdu Nguyễn Tuân
-                  </SelectItem>
-                  <SelectItem value="RinoEdu Linh Đàm">
-                    RinoEdu Linh Đàm
-                  </SelectItem>
-                  <SelectItem value="RinoEdu Smart City">
-                    RinoEdu Smart City
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-[130px] shrink-0">
-              <Select
-                value={gradeGroupFilter}
-                onValueChange={setGradeGroupFilter}
-              >
-                <SelectTrigger
-                  size="sm"
-                  className="w-full h-7 text-xs bg-background py-0.5"
-                >
-                  <SelectValue placeholder="Khối lớp" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả khối lớp</SelectItem>
-                  <SelectItem value="IELTS">Khối IELTS</SelectItem>
-                  <SelectItem value="TOEIC">Khối TOEIC</SelectItem>
-                  <SelectItem value="Young Learners">
-                    Khối Young Learners
-                  </SelectItem>
-                  <SelectItem value="Math">Khối Toán</SelectItem>
-                  <SelectItem value="Beginner">Khối Beginner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-[120px] shrink-0">
-              <Select value={dayFilter} onValueChange={setDayFilter}>
-                <SelectTrigger
-                  size="sm"
-                  className="w-full h-7 text-xs bg-background py-0.5"
-                >
-                  <SelectValue placeholder="Chọn thứ" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả các thứ</SelectItem>
-                  <SelectItem value="Thứ 2">Thứ 2</SelectItem>
-                  <SelectItem value="Thứ 3">Thứ 3</SelectItem>
-                  <SelectItem value="Thứ 4">Thứ 4</SelectItem>
-                  <SelectItem value="Thứ 5">Thứ 5</SelectItem>
-                  <SelectItem value="Thứ 6">Thứ 6</SelectItem>
-                  <SelectItem value="Thứ 7">Thứ 7</SelectItem>
-                  <SelectItem value="Chủ nhật">Chủ nhật</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleToggleExpandAll}
-              className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <ChevronsUpDown className="h-3.5 w-3.5 mr-1" />
-              {isAllExpanded ? 'Thu gọn' : 'Mở rộng'}
-            </Button>
-          </div>
-          <ExpandableSearch
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-            placeholder="Tìm tên lớp, GV, phòng..."
-            inputClassName="h-7 text-xs sm:w-44"
-            className="shrink-0"
-          />
-        </div>
-
-        {/* Treeview Table Scrollable Area */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-1 pt-0">
-          <StudentClassAssignmentTreeTable
-            classes={filteredClasses}
-            selectedClassId={selectedClassId}
-            onSelectClass={handleSelectClass}
-            selectedSessionDate={startSessionDate}
-            onSelectSession={handleSelectSession}
-            expandedClassIds={expandedClassIds}
-            onToggleExpandClass={handleToggleExpandClass}
-            studentBranch={studentBranch}
-            studentLevel={studentLevel}
-          />
-        </div>
-
-        {/* Dialog Footer with Live Selection & Warnings */}
-        <DialogFooter className="px-5 py-2 border-t bg-muted/10 flex flex-row items-center justify-between sm:justify-between gap-4 shrink-0">
-          <div className="flex-1 min-w-0 text-left pr-4 select-none">
-            {selectedClass ? (
-              <div className="space-y-1">
-                {/* Live Assignment Summary */}
-                <div className="text-xs text-foreground font-semibold flex items-center gap-1.5 flex-wrap">
-                  <span className="text-muted-foreground">Đang ghép vào:</span>
-                  <span className="text-primary font-bold">
-                    {selectedClass.name || selectedClass.code}
+            {/* Lớp cũ cần chuyển (nếu đang chuyển lớp) */}
+            {isTransfer && currentClassName && (
+              <div className="p-2 rounded-lg border bg-amber-50/50 dark:bg-amber-950/20 border-amber-200/70 dark:border-amber-800/50 text-xs flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-800 dark:text-amber-300 font-normal">
+                    Lớp cũ đang theo học:
                   </span>
-                  <span className="text-muted-foreground/40">|</span>
-                  <span className="text-muted-foreground">Phòng:</span>
-                  <span>{selectedClass.room || '—'}</span>
-                  <span className="text-muted-foreground/40">|</span>
-                  <span className="text-muted-foreground">Buổi bắt đầu:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                    {startSessionDate || 'Chưa chọn'}
+                  <span className="text-foreground font-medium">
+                    {currentClassName} ({currentClassCode})
                   </span>
                 </div>
-
-                {/* Warnings */}
-                {(isClassFull ||
-                  isLevelMismatch ||
-                  conflictingClasses.length > 0) && (
-                  <div className="text-xs text-amber-700 dark:text-amber-400 font-medium space-y-0.5 pt-0.5">
-                    {isClassFull && (
-                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        <span className="truncate">
-                          Lớp đầy sĩ số ({selectedClass.enrolledStudents}/
-                          {selectedClass.maxStudents})
-                        </span>
-                      </div>
-                    )}
-                    {isLevelMismatch && (
-                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        <span className="truncate">
-                          Trình độ lệch (Lớp {selectedClass.level} vs Học viên{' '}
-                          {studentLevel})
-                        </span>
-                      </div>
-                    )}
-                    {conflictingClasses.map((conflict, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400"
-                      >
-                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        <span className="truncate">
-                          Trùng lịch học lớp <strong>{conflict.className}</strong>{' '}
-                          ({conflict.dayOfWeek} {conflict.timeSlot})
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <span className="text-amber-600 dark:text-amber-400 italic text-xs">
+                  Sẽ được chuyển ra khỏi lớp cũ
+                </span>
               </div>
-            ) : (
-              <span className="text-xs text-muted-foreground italic">
-                Chưa chọn lớp học ghép
-              </span>
             )}
+
+            {/* 2. Danh sách lớp học (Tabs cùng hàng với search, nhãn ★ Lớp phù hợp ở mỗi lớp) */}
+            <StudentClassAssignmentClassesList
+              classes={filteredClasses}
+              allAvailableClasses={classesList}
+              selectedClassId={selectedClassId}
+              onSelectClass={handleSelectClass}
+              startSessionDate={startSessionDate}
+              onSelectSession={handleSelectSession}
+              expandedClassIds={expandedClassIds}
+              onToggleExpandClass={handleToggleExpandClass}
+              studentBranch={studentBranch}
+              studentLevel={studentLevel}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              internalNotes={internalNotes}
+              onNotesChange={setInternalNotes}
+              conflictingClasses={conflictingClasses}
+            />
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              className="rounded-lg h-8 px-4 text-xs cursor-pointer"
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleConfirmAttempt}
-              disabled={!selectedClassId || !startSessionDate}
-              className="rounded-lg h-8 px-5 text-xs cursor-pointer"
-            >
-              Xác nhận ghép
-            </Button>
+          {/* ==================== PANEL PHẢI: TIÊU CHÍ & TÓM TẮT ==================== */}
+          <div className="w-full lg:w-[310px] xl:w-[320px] shrink-0 h-full overflow-y-auto pl-0.5 pr-1 pb-1">
+            <StudentClassAssignmentSummaryPanel
+              assessment={assessment}
+              selectedClass={selectedClass}
+              startSessionDate={startSessionDate}
+              packageName={packageName}
+              pkgRemainingSessions={pkgRemainingSessions}
+              studentBranch={studentBranch}
+              isTransfer={isTransfer}
+              currentClassName={currentClassName}
+              currentClassCode={currentClassCode}
+              internalNotes={internalNotes}
+              studentLevel={studentLevel}
+              studentSubLevel={studentSubLevel}
+              availableSlots={availableSlots}
+              student={student}
+              onConfirm={handleConfirmAttempt}
+              onCancel={handleClose}
+            />
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
 
       {/* Confirm Transfer Dialog */}
-      {showWarningOpen && selectedClass && (
+      {showTransferConfirm && selectedClass && (
         <ConfirmDialog
-          open={showWarningOpen}
-          onOpenChange={setShowWarningOpen}
+          open={showTransferConfirm}
+          onOpenChange={setShowTransferConfirm}
           title="Xác nhận chuyển lớp"
           confirmLabel="Xác nhận chuyển"
           cancelLabel="Hủy"
           variant="destructive"
-          onConfirm={handleConfirm}
+          onConfirm={executeConfirm}
           description={
-            <div className="space-y-2 select-none">
+            <div className="space-y-2 select-none text-xs">
               <p>
                 Học viên đang học ở lớp{' '}
-                <strong className="font-semibold text-foreground">
+                <span className="font-medium text-foreground">
                   {currentClassName || currentClassCode}
-                </strong>
+                </span>
                 .
               </p>
               <p>
                 Hành động này sẽ{' '}
-                <strong className="font-semibold text-destructive">
-                  xóa (thoát) học viên khỏi lớp cũ
-                </strong>{' '}
-                và chuyển sang lớp mới{' '}
-                <strong className="font-semibold text-foreground">
+                <span className="font-medium text-destructive">
+                  chuyển học viên khỏi lớp cũ
+                </span>{' '}
+                và phân bổ vào lớp mới{' '}
+                <span className="font-medium text-foreground">
                   {selectedClass.name || selectedClass.code}
-                </strong>
+                </span>
                 .
               </p>
               <p>Bạn có chắc chắn muốn tiếp tục?</p>

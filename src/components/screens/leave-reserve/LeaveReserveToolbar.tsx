@@ -79,18 +79,20 @@ export function LeaveReserveToolbar({
     <div className="flex shrink-0 flex-col gap-2 bg-background px-3 py-3 lg:px-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <SubjectSelect
-            value={activeSubject}
-            onValueChange={onSubjectChange}
-            options={SUBJECT_OPTIONS}
-            className="h-9 min-w-36 text-sm"
-          />
           <BranchSelect
             value={branchFilter}
             onValueChange={onBranchChange}
-            allLabel="Tất cả trường"
-            ariaLabel="Trường"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
             className="h-9 min-w-40 text-sm"
+          />
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            allLabel="Tất cả các môn"
+            options={SUBJECT_OPTIONS}
+            className="h-9 min-w-36 text-sm"
           />
         </div>
         <div className="flex items-center gap-2">

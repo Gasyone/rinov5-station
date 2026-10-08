@@ -12,6 +12,7 @@ import {
   isBookingCheckedIn,
   isTeacherEmployeeName,
   matchesStatusTile,
+  sortBookingTestsByOperationalPriority,
   uniqueSorted,
 } from './bookingTestHelpers'
 import type { FilterState, StatusTileId } from './bookingTestTypes'
@@ -140,15 +141,25 @@ export function useBookingTestData({
   const filteredBookings = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
 
-    return bookings.filter((booking) => {
+    const filtered = bookings.filter((booking) => {
       if (userRole === 'teacher' && booking.teacher !== userName && booking.tester !== userName) {
         return false
       }
       if (activeSubject !== 'all' && booking.subject !== activeSubject) return false
-      if (activeSchool !== 'all' && booking.school !== activeSchool) return false
-      if (!matchesStatusTile(booking, activeStatus)) return false
+      // Lọc theo trạng thái:
+      // 1. Nếu mở bộ lọc nâng cao chọn trạng thái: ưu tiên theo các trạng thái được chọn (bao gồm "Đã hủy" nếu chọn)
+      if (filters.statuses.length > 0) {
+        if (!filters.statuses.includes(booking.status)) return false
+      } else {
+        // 2. Tab "Tất cả" ngoài màn hình không bao gồm trạng thái "Đã hủy"
+        if (activeStatus === 'all' && booking.status === 'cancelled') {
+          return false
+        }
+      }
+
+      // 3. Khớp trạng thái theo tab / nút lọc nhanh ngoài màn hình (nếu không phải 'all')
+      if (activeStatus !== 'all' && !matchesStatusTile(booking, activeStatus)) return false
       if (filters.schools.length > 0 && !filters.schools.includes(booking.school)) return false
-      if (filters.statuses.length > 0 && !filters.statuses.includes(booking.status)) return false
       if (
         filters.teachers.length > 0 &&
         !filters.teachers.some((teacher) => getMemberList(booking).includes(teacher))
@@ -209,7 +220,9 @@ export function useBookingTestData({
         }
         return true
       })
-    }, [activeSchool, activeStatus, activeSubject, bookings, filters, searchTerm, userRole, userName])
+
+    return sortBookingTestsByOperationalPriority(filtered)
+  }, [activeSchool, activeStatus, activeSubject, bookings, filters, searchTerm, userRole, userName])
 
   const filterGroups = useMemo<FilterGroupConfig[]>(
     () => [

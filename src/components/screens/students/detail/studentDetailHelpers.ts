@@ -1,163 +1,166 @@
 import type { Student, EnrolledClass } from '@/mocks/students'
 import type { StudentPackage, StudentGlobalLog, StudentNote, FamilyMember, StudentScheduleSession, StudentProgram, StudentAvailableSlot } from './studentDetailTypes'
 
+export const isMath = (str: string) => {
+  const s = (str || '').toLowerCase()
+  return s.includes('toán') || s.includes('math') || s.includes('logic') || s.includes('archimedes')
+}
+
+export const isEnglish = (str: string) => {
+  const s = (str || '').toLowerCase()
+  return s.includes('tiếng anh') || s.includes('ielts') || s.includes('english') || s.includes('speaking') || s.includes('junior') || s.includes('toeic')
+}
+
 /**
  * Returns mock package registrations for a student
  */
 export function getStudentPackages(student: Student): StudentPackage[] {
-  const list: StudentPackage[] = []
-
-  // Main package from student data
-  if (student.packageName) {
-    const mainClass = student.enrolledClasses?.[0]
-    list.push({
-      id: `PKG-${student.id}-1`,
-      packageName: student.packageName,
-      totalSessions: student.totalSessions ?? 24,
-      remainingSessions: student.remainingSessions ?? 24,
-      price: (student.totalSessions ?? 24) * 150000,
-      purchaseDate: student.enrollmentDate,
-      endDate: new Date(new Date(student.enrollmentDate).getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      status: student.remainingSessions && student.remainingSessions > 0 ? 'active' : 'expired',
-      linkedClassCode: mainClass?.classCode,
-      linkedClassName: mainClass?.className,
-      startSessionDate: mainClass?.scheduleSlots?.[0]
-        ? `${mainClass.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
-        : '02/06 (Buổi 1: Nhập môn & Định hướng)',
-      orderNo: 'OD800436',
-      leaveQuota: (student.totalSessions ?? 24) >= 96 ? 8 : (student.totalSessions ?? 24) >= 48 ? 4 : 2,
-    })
-  }
-
-  // Add a secondary package if the student has multiple classes
-  if (student.enrolledClasses && student.enrolledClasses.length > 1) {
-    student.enrolledClasses.slice(1).forEach((cls, idx) => {
-      const pDate = new Date(new Date(student.enrollmentDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const eDate = new Date(new Date(pDate).getTime() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      list.push({
-        id: `PKG-${student.id}-${idx + 2}`,
-        packageName: cls.programName || `Gói Bổ Trợ Kỹ Năng ${cls.className}`,
-        totalSessions: 12,
+  // If special showcase student Bảo Hân, preserve her rich multi-package scenario
+  if (student.id === 's-baohan') {
+    return [
+      {
+        id: `PKG-${student.id}-1`,
+        packageName: student.packageName || '[Gia sư][TH] Toán Tư Duy 1:6 (96 buổi + 8 buổi ôn tập)',
+        totalSessions: 96,
+        remainingSessions: 12,
+        price: 14400000,
+        purchaseDate: '2024-08-14',
+        endDate: '2027-08-14',
+        status: 'active',
+        linkedClassCode: 'LD_TOAN_00032',
+        linkedClassName: 'Toán Tư Duy 1:6 (96 buổi)',
+        startSessionDate: '18/08 (Buổi 1: Nhập môn & Định hướng)',
+        orderNo: 'OD800436',
+        leaveQuota: 8,
+        saleName: 'Trần Thị Mai',
+        teacherType: 'VN',
+      },
+      {
+        id: `PKG-${student.id}-math-unlinked`,
+        packageName: 'Gói Bổ Trợ Hình Học Không Gian & Logic',
+        totalSessions: 8,
         remainingSessions: 8,
         price: 1200000,
-        purchaseDate: pDate,
-        endDate: eDate,
+        purchaseDate: '2024-09-01',
+        endDate: '2025-06-30',
         status: 'active',
-        linkedClassCode: cls.classCode,
-        linkedClassName: cls.className,
-        startSessionDate: cls.scheduleSlots?.[0]
-          ? `${cls.scheduleSlots[0].date} (Buổi 1: Nhập môn & Định hướng)`
-          : '02/06 (Buổi 1: Nhập môn & Định hướng)',
         orderNo: 'OD794023',
+        leaveQuota: 0,
+        saleName: 'Trần Thị Mai',
+        teacherType: 'VN',
+      },
+      {
+        id: `PKG-${student.id}-math-adv`,
+        packageName: 'Gói Nâng Cao Số Học & Giải Toán Bằng Sơ Đồ',
+        totalSessions: 12,
+        remainingSessions: 4,
+        price: 1800000,
+        purchaseDate: '2024-07-01',
+        endDate: '2025-03-31',
+        status: 'active',
+        packageTag: 'received_transfer',
+        orderNo: 'OD798202',
         leaveQuota: 1,
-      })
-    })
+        saleName: 'Trần Thị Mai',
+        teacherType: 'VN',
+      },
+      {
+        id: `PKG-${student.id}-math-prev`,
+        packageName: 'Gói Ôn Luyện Toán Tư Duy Nhập Môn K9',
+        totalSessions: 24,
+        remainingSessions: 0,
+        price: 3600000,
+        purchaseDate: '2023-09-01',
+        endDate: '2024-03-31',
+        status: 'cancelled',
+        packageTag: 'cancelled',
+        orderNo: 'OD780012',
+        leaveQuota: 2,
+        saleName: 'Trần Thị Mai',
+        teacherType: 'VN',
+      },
+      {
+        id: `PKG-${student.id}-math-transferred`,
+        packageName: 'Gói Toán Tư Duy K8 (Chuyển sang cơ sở mới)',
+        totalSessions: 16,
+        remainingSessions: 6,
+        price: 2400000,
+        purchaseDate: '2023-06-01',
+        endDate: '2024-01-31',
+        status: 'transferred',
+        packageTag: 'transferred',
+        orderNo: 'OD760089',
+        leaveQuota: 1,
+        saleName: 'Trần Thị Mai',
+        teacherType: 'VN',
+      },
+    ]
   }
 
-  // Add a secondary Math package with no linked class for multi-package & placement demo
+  // FOR ALL OTHER STUDENTS:
+  const list: StudentPackage[] = []
+
+  let pkgStatus: StudentPackage['status'] = 'active'
+  if (student.status === 'reserve') {
+    pkgStatus = 'reserved'
+  } else if (student.status === 'session_ended' || (student.remainingSessions !== undefined && student.remainingSessions === 0)) {
+    pkgStatus = 'expired'
+  } else if (student.status === 'pending_payment') {
+    pkgStatus = 'pending'
+  } else if (student.status === 'fee_transfer') {
+    pkgStatus = 'transferred'
+  } else if (student.status === 'pending_transfer') {
+    pkgStatus = 'active'
+  }
+
+  const mainClass = student.enrolledClasses?.[0]
+  const totalSessions = student.totalSessions ?? (mainClass?.totalSessions || 24)
+  const remainingSessions = student.remainingSessions ?? (student.status === 'session_ended' ? 0 : totalSessions)
+
+  // Primary package
   list.push({
-    id: `PKG-${student.id}-math-unlinked`,
-    packageName: 'Gói Bổ Trợ Hình Học Không Gian & Logic',
-    totalSessions: 8, remainingSessions: 8, price: 1200000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'active', orderNo: 'OD794023', leaveQuota: 0,
+    id: `PKG-${student.id}-1`,
+    packageName: student.packageName || mainClass?.linkedPackageName || mainClass?.programName || 'Gói học tiêu chuẩn',
+    totalSessions,
+    remainingSessions,
+    price: totalSessions * 150000,
+    purchaseDate: student.enrollmentDate || '2025-01-15',
+    endDate: mainClass?.endDate || new Date(new Date(student.enrollmentDate || '2025-01-15').getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: pkgStatus,
+    linkedClassCode: mainClass?.classCode && !mainClass.classCode.startsWith('UNASSIGNED') ? mainClass.classCode : undefined,
+    linkedClassName: mainClass?.className && mainClass.className !== 'Chưa xếp lớp' ? mainClass.className : undefined,
+    startSessionDate: mainClass?.startSessionDate || (mainClass?.scheduleSlots?.[0] ? `${mainClass.scheduleSlots[0].date} (Buổi 1)` : undefined),
+    orderNo: `OD${800000 + Math.abs(student.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) * 31) % 90000}`,
+    leaveQuota: totalSessions >= 96 ? 8 : totalSessions >= 48 ? 4 : 2,
+    saleName: student.saleName || 'Trần Thị Mai',
   })
 
-  // Add a 3rd Math package for multi-package list (Ví dụ Gói nhận chuyển)
-  list.push({
-    id: `PKG-${student.id}-math-adv`,
-    packageName: 'Gói Nâng Cao Số Học & Giải Toán Bằng Sơ Đồ',
-    totalSessions: 12, remainingSessions: 4, price: 1800000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'active', packageTag: 'received_transfer', orderNo: 'OD798202', leaveQuota: 1,
-  })
+  // Secondary packages if student has multiple enrolled classes
+  if (student.enrolledClasses && student.enrolledClasses.length > 1) {
+    student.enrolledClasses.slice(1).forEach((cls, idx) => {
+      const clsTotal = cls.totalSessions || 12
+      const clsRemaining = cls.status === 'session_ended' ? 0 : 8
+      let clsPkgStatus: StudentPackage['status'] = 'active'
+      if (cls.status === 'reserve' || cls.status === 'paused') clsPkgStatus = 'reserved'
+      else if (cls.status === 'session_ended') clsPkgStatus = 'expired'
+      else if (cls.status === 'pending_transfer') clsPkgStatus = 'active'
 
-  // Add a 4th Math package to showcase >3 packages expand/collapse (Ví dụ Gói hủy)
-  list.push({
-    id: `PKG-${student.id}-math-prev`,
-    packageName: 'Gói Ôn Luyện Toán Tư Duy Nhập Môn K9',
-    totalSessions: 24, remainingSessions: 0, price: 3600000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'cancelled', packageTag: 'cancelled', orderNo: 'OD780012', leaveQuota: 2,
-  })
-
-  // Add a 5th Math package (Ví dụ Gói chuyển)
-  list.push({
-    id: `PKG-${student.id}-math-transferred`,
-    packageName: 'Gói Toán Tư Duy K8 (Chuyển sang cơ sở mới)',
-    totalSessions: 16, remainingSessions: 6, price: 2400000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'transferred', packageTag: 'transferred', orderNo: 'OD760089', leaveQuota: 1,
-  })
-
-  // Add a package with no linked class for demo
-  list.push({
-    id: `PKG-${student.id}-unlinked`,
-    packageName: 'Gói Tiếng Anh Giao Tiếp Bổ Trợ',
-    totalSessions: 16, remainingSessions: 16, price: 2400000,
-    purchaseDate: student.enrollmentDate,
-    endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'active',
-  })
-
-  // Add a transferred-fee package for demo
-  const pTransDate = new Date(new Date(student.enrollmentDate).getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  list.push({
-    id: `PKG-${student.id}-transferred`,
-    packageName: 'Gói IELTS Intensive 5.0 (Cũ)',
-    totalSessions: 20, remainingSessions: 8, price: 1800000,
-    purchaseDate: pTransDate,
-    endDate: new Date(new Date(pTransDate).getTime() + 150 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'transferred', linkedClassCode: 'CLS-OLD-01', linkedClassName: 'IELTS Intensive 5.0 - K12',
-    startSessionDate: '15/11/2024 (Buổi 1: Cam kết đầu ra & Chẩn đoán)',
-  })
-
-  // Add a cancelled package for demo
-  const pCancelDate = new Date(new Date(student.enrollmentDate).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  list.push({
-    id: `PKG-${student.id}-cancelled`,
-    packageName: 'Gói Speaking Club Tháng 3',
-    totalSessions: 8, remainingSessions: 6, price: 800000,
-    purchaseDate: pCancelDate,
-    endDate: new Date(new Date(pCancelDate).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'cancelled',
-  })
-
-  // Add an expired package for demo
-  list.push({
-    id: `PKG-${student.id}-expired`,
-    packageName: 'Gói Tiếng Anh Trẻ Em Standard (Hết hạn)',
-    totalSessions: 24, remainingSessions: 0, price: 3600000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() - 185 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'expired',
-  })
-
-  // Add a suspended/reserved package for demo
-  list.push({
-    id: `PKG-${student.id}-suspended`,
-    packageName: 'Gói Luyện Thi IELTS Target 6.5 (Bảo lưu)',
-    totalSessions: 48, remainingSessions: 32, price: 7200000,
-    purchaseDate: new Date(new Date(student.enrollmentDate).getTime() - 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date(new Date(student.enrollmentDate).getTime() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'suspended',
-  })
-
-  // Fallback if no package is recorded
-  if (list.length === 0) {
-    list.push({
-      id: `PKG-${student.id}-fallback`,
-      packageName: 'Gói Tiêu Chuẩn RinoEdu',
-      totalSessions: 24,
-      remainingSessions: 24,
-      price: 3600000,
-      purchaseDate: student.enrollmentDate,
-      endDate: new Date(new Date(student.enrollmentDate).getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      status: 'active',
+      list.push({
+        id: `PKG-${student.id}-${idx + 2}`,
+        packageName: cls.linkedPackageName || cls.programName || `Gói Bổ Trợ ${cls.className}`,
+        totalSessions: clsTotal,
+        remainingSessions: clsRemaining,
+        price: clsTotal * 150000,
+        purchaseDate: cls.startDate || student.enrollmentDate,
+        endDate: cls.endDate || '2026-12-31',
+        status: clsPkgStatus,
+        linkedClassCode: cls.classCode && !cls.classCode.startsWith('UNASSIGNED') ? cls.classCode : undefined,
+        linkedClassName: cls.className,
+        startSessionDate: cls.startSessionDate || (cls.scheduleSlots?.[0] ? `${cls.scheduleSlots[0].date} (Buổi 1)` : undefined),
+        orderNo: `OD${810000 + idx * 100}`,
+        leaveQuota: clsTotal >= 48 ? 4 : 2,
+        saleName: student.saleName || 'Trần Thị Mai',
+      })
     })
   }
 
@@ -442,6 +445,210 @@ export function checkSlotsOverlap(
 }
 
 /**
+ * Generates accurate data-driven programs for standard students based on their actual mock data.
+ */
+function getStandardStudentPrograms(
+  student: Student,
+  packagesList?: StudentPackage[],
+  classesList?: EnrolledClass[]
+): StudentProgram[] {
+  const pkgs = packagesList || getStudentPackages(student)
+  const clsList = classesList || student.enrolledClasses || []
+
+  // If student has multiple enrolled classes (e.g. s1, s3):
+  if (clsList.length > 1) {
+    return clsList.map((cls, idx) => {
+      const pkg = pkgs.find((p) => p.linkedClassCode === cls.classCode) || pkgs[idx] || pkgs[0]
+      const clsTotal = cls.totalSessions || pkg?.totalSessions || 24
+      const clsRemaining = cls.status === 'session_ended' ? 0 : (pkg?.remainingSessions ?? 12)
+      const clsStudied = Math.max(0, clsTotal - clsRemaining)
+
+      let progStatus: StudentProgram['programStatus'] = 'active'
+      if (cls.status === 'reserve' || cls.status === 'paused' || student.status === 'reserve') progStatus = 'reserved'
+      else if (cls.status === 'pending_transfer' || cls.status === 'dropped' || student.status === 'pending_transfer') progStatus = 'pending_transfer'
+      else if (cls.status === 'session_ended' || student.status === 'session_ended') progStatus = 'session_ended'
+      else if (cls.status === 'wait_for_assignment' || student.status === 'wait_for_assignment') progStatus = 'wait_for_assignment'
+      else if (student.status === 'draft_class') progStatus = 'draft_class'
+      else if (student.status === 'pending_payment') progStatus = 'pending_payment'
+      else if (student.status === 'fee_transfer') progStatus = 'fee_transfer'
+      else if (student.status === 'awaiting_opening') progStatus = 'awaiting_opening'
+      else if (student.status === 'trial') progStatus = 'trial'
+      else if (student.status === 'enroll_later') progStatus = 'enroll_later'
+
+      const isEng = isEnglish(cls.className) || isEnglish(cls.programName || '') || isEnglish(pkg?.packageName || '')
+      const isMathCls = isMath(cls.className) || isMath(cls.programName || '') || isMath(pkg?.packageName || '')
+
+      return {
+        id: `prog-${student.id}-${idx}`,
+        name: cls.className || pkg?.packageName || `Lớp ${idx + 1}`,
+        subject: isEng ? 'english' : isMathCls ? 'math' : (student.subject === 'stem' ? 'stem' : 'other'),
+        level: cls.level || student.level,
+        subLevel: cls.subLevel || student.subLevel,
+        schoolClass: student.schoolClass,
+        branch: cls.branch || student.branch,
+        entryScore: '8.0 / 10',
+        entryScoreEvaluation: 'Khá giỏi',
+        assessmentNote: student.notes || 'Học viên có tinh thần học tập tốt, tiếp thu bài nhanh.',
+        csmName: isEng ? 'Hoàng Yến (CSM Ngoại ngữ)' : 'Minh Phương (CSM Toán)',
+        saleName: student.saleName || 'Trần Thị Mai',
+        availableSlots: getStudentAvailableSlots(student),
+        packages: pkg ? [pkg] : pkgs,
+        totalSessions: clsTotal,
+        studiedSessions: clsStudied,
+        remainingSessions: clsRemaining,
+        startDate: cls.startDate || pkg?.purchaseDate || student.enrollmentDate,
+        endDate: cls.endDate || pkg?.endDate || '2026-12-31',
+        currentClass: cls,
+        pastClasses: [],
+        programStatus: progStatus,
+        reservedInfo: progStatus === 'reserved' ? {
+          reservedSessions: clsRemaining,
+          startDate: cls.startDate || '15/01/2026',
+          endDate: cls.endDate || '15/04/2026',
+          duration: '3 tháng',
+          isHoldingClass: true,
+          expiryDate: '15/10/2026',
+          reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh',
+        } : undefined,
+      }
+    })
+  }
+
+  // Single class or no class (the vast majority of students)
+  const mainClass = clsList[0] || null
+  const primaryPkg = pkgs[0] || {
+    id: `PKG-${student.id}-1`,
+    packageName: student.packageName || 'Gói học tiêu chuẩn',
+    totalSessions: student.totalSessions || 24,
+    remainingSessions: student.remainingSessions ?? 24,
+    price: (student.totalSessions || 24) * 150000,
+    purchaseDate: student.enrollmentDate,
+    status: student.status === 'reserve' ? 'reserved' : student.status === 'session_ended' ? 'expired' : 'active',
+  }
+
+  const totalSessions = student.totalSessions ?? (mainClass?.totalSessions || primaryPkg.totalSessions || 24)
+  const remainingSessions = student.remainingSessions ?? (student.status === 'session_ended' ? 0 : (primaryPkg.remainingSessions ?? totalSessions))
+  const studiedSessions = Math.max(0, totalSessions - remainingSessions)
+
+  let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
+  if (student.status === 'session_ended' || remainingSessions === 0) {
+    programStatus = 'session_ended'
+  } else if (student.status === 'reserve') {
+    programStatus = 'reserved'
+  } else if (student.status === 'pending_transfer') {
+    programStatus = 'pending_transfer'
+  } else if (student.status === 'fee_transfer') {
+    programStatus = 'fee_transfer'
+  } else if (student.status === 'draft_class') {
+    programStatus = 'draft_class'
+  } else if (student.status === 'pending_payment') {
+    programStatus = 'pending_payment'
+  } else if (student.status === 'enroll_later') {
+    programStatus = 'enroll_later'
+  } else if (student.status === 'awaiting_opening') {
+    programStatus = 'awaiting_opening'
+  } else if (student.status === 'trial') {
+    programStatus = 'trial'
+  } else if (student.status === 'wait_for_assignment' || !mainClass || mainClass.classCode.startsWith('UNASSIGNED')) {
+    programStatus = 'wait_for_assignment'
+  } else if (mainClass?.status === 'reserve' || mainClass?.status === 'paused') {
+    programStatus = 'reserved'
+  } else if (mainClass?.status === 'session_ended') {
+    programStatus = 'session_ended'
+  } else if (mainClass?.status === 'pending_transfer' || mainClass?.status === 'dropped') {
+    programStatus = 'pending_transfer'
+  } else if (mainClass && (student.status === 'active' || !student.status)) {
+    programStatus = 'active'
+  }
+
+  const isEng = isEnglish(student.packageName || '') || isEnglish(student.level || '') || student.subject === 'english' || (mainClass && isEnglish(mainClass.className))
+  const progSubject = isEng ? 'english' : 'math'
+
+  // Name of program on the tab
+  let progName = 'Chương trình chuẩn'
+  if (student.status === 'fee_transfer') {
+    progName = 'Tiếng Anh IELTS'
+  } else if (mainClass && !mainClass.classCode.startsWith('UNASSIGNED') && mainClass.status !== 'session_ended') {
+    progName = mainClass.className
+  } else if (student.packageName) {
+    const raw = student.packageName.replace(/^Gói\s+/i, '').replace(/\(.*?\)/g, '').trim()
+    progName = raw.charAt(0).toUpperCase() + raw.slice(1)
+  }
+
+  const hasRealClass = Boolean(mainClass && !mainClass.classCode.startsWith('UNASSIGNED'))
+
+  return [
+    {
+      id: `prog-${student.id}-main`,
+      name: progName,
+      subject: progSubject,
+      level: mainClass?.level || student.level,
+      subLevel: mainClass?.subLevel || student.subLevel,
+      schoolClass: student.schoolClass,
+      branch: mainClass?.branch || student.branch,
+      entryScore: '8.5 / 10',
+      entryScoreEvaluation: 'Khá giỏi',
+      assessmentNote: student.notes || 'Học viên có tinh thần học tập tốt, tiếp thu bài nhanh.',
+      csmName: isEng ? 'Hoàng Yến (CSM Ngoại ngữ)' : 'Minh Phương (CSM Toán)',
+      saleName: student.saleName || 'Trần Thị Mai',
+      availableSlots: getStudentAvailableSlots(student),
+      packages: pkgs,
+      totalSessions,
+      studiedSessions,
+      remainingSessions,
+      startDate: primaryPkg.purchaseDate || student.enrollmentDate,
+      endDate: primaryPkg.endDate || '2026-12-31',
+      currentClass: (programStatus !== 'wait_for_assignment' && programStatus !== 'session_ended' && programStatus !== 'fee_transfer' && hasRealClass && mainClass?.status !== 'session_ended') ? mainClass : null,
+      pastClasses: [
+        ...(hasRealClass && (mainClass!.status === 'dropped' || mainClass!.status === 'session_ended' || programStatus === 'session_ended' || programStatus === 'fee_transfer') ? [mainClass!] : []),
+        ...(student.enrolledClasses ? student.enrolledClasses.filter((c) => c.status === 'session_ended' && c.classCode !== mainClass?.classCode) : []),
+      ],
+      programStatus,
+      droppedClassInfo: (programStatus === 'pending_transfer' || mainClass?.status === 'dropped') && mainClass ? {
+        className: mainClass.className,
+        classCode: mainClass.classCode,
+        droppedDate: '01/06/2026',
+        studiedBeforeDrop: mainClass.progress || `${studiedSessions} / ${totalSessions} buổi`,
+        teacherName: mainClass.teacherName,
+        room: mainClass.room,
+        reason: 'Học viên chuyển lớp theo nguyện vọng đổi lịch học'
+      } : undefined,
+      transferInfo: (programStatus === 'pending_transfer') ? {
+        sourceClass: mainClass?.classCode || 'Lớp cũ',
+        targetClass: 'Chưa ghép lớp',
+        transferredSessions: remainingSessions,
+        transferDate: '01/06/2026',
+        reason: 'Chuyển sang ca học mới phù hợp thời khóa biểu'
+      } : undefined,
+      reservedInfo: programStatus === 'reserved' ? {
+        reservedSessions: remainingSessions,
+        startDate: mainClass?.startDate || student.enrollmentDate || '15/01/2026',
+        endDate: mainClass?.endDate || '15/04/2026',
+        duration: '3 tháng',
+        isHoldingClass: hasRealClass,
+        expiryDate: '15/10/2026',
+        reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh'
+      } : undefined,
+      renewalInfo: programStatus === 'session_ended' ? {
+        status: 'pending',
+        decisionDate: '15/06/2026',
+        note: 'Học viên đã kết thúc số buổi học, đang chờ tư vấn tái phí.',
+      } : undefined,
+      feeTransferInfo: programStatus === 'fee_transfer' ? {
+        ticketCode: 'CP00014156',
+        transferDate: '15/01/2024',
+        executorName: 'Trần Thảo Anh 20',
+        transferredSessions: remainingSessions || 16,
+        targetPackageName: 'Gói Tiếng Anh Giao Tiếp Cambridge (16 buổi)',
+        recipientStudentName: student.name || 'Nguyễn Phương Vy',
+        linkedOrderNo: 'OD803325',
+        note: 'Đã hoàn tất thủ tục chuyển 16 buổi sang gói học mới.',
+      } : undefined,
+    }
+  ]
+}
+
+/**
  * Groups packages & classes into Programs by Subject (e.g. Toán Tư Duy, Tiếng Anh).
  * Calculates cumulative sessions, dates, current class, past classes, and program status.
  */
@@ -450,19 +657,13 @@ export function getStudentPrograms(
   packagesList?: StudentPackage[],
   classesList?: EnrolledClass[]
 ): StudentProgram[] {
+  // If not showcase student Bảo Hân, build data-driven programs matching their actual table row
+  if (student.id !== 's-baohan') {
+    return getStandardStudentPrograms(student, packagesList, classesList)
+  }
+
   const allPackages = packagesList || getStudentPackages(student)
   const allClasses = classesList || student.enrolledClasses || []
-
-  // Helper to categorize by subject
-  const isMath = (str: string) => {
-    const s = (str || '').toLowerCase()
-    return s.includes('toán') || s.includes('math') || s.includes('logic') || s.includes('archimedes')
-  }
-
-  const isEnglish = (str: string) => {
-    const s = (str || '').toLowerCase()
-    return s.includes('tiếng anh') || s.includes('ielts') || s.includes('english') || s.includes('speaking') || s.includes('junior')
-  }
 
   // Split packages into Math, English, Other
   const mathPackages = allPackages.filter((p) => isMath(p.packageName) || isMath(p.linkedClassName || ''))
@@ -472,7 +673,16 @@ export function getStudentPrograms(
   const mathClasses = allClasses.filter((c) => isMath(c.className) || isMath(c.programName || '') || isMath(c.level || ''))
   const englishClasses = allClasses.filter((c) => isEnglish(c.className) || isEnglish(c.programName || '') || isEnglish(c.level || ''))
 
-  const programs: StudentProgram[] = []
+  const isStudentEnglish = Boolean(
+    !isMath(student.packageName || '') &&
+    (student.subject === 'english' ||
+      isEnglish(student.packageName || '') ||
+      isEnglish(student.level || '') ||
+      englishClasses.length > 0)
+  )
+
+  const mathPrograms: StudentProgram[] = []
+  const englishPrograms: StudentProgram[] = []
 
   // 1. Math Program
   if (mathPackages.length > 0 || mathClasses.length > 0 || student.subject === 'math' || isMath(student.level || '')) {
@@ -493,19 +703,41 @@ export function getStudentPrograms(
       }
     ]
 
-    const totalSessions = pkgs.reduce((acc, p) => acc + p.totalSessions, 0)
-    const remainingSessions = pkgs.reduce((acc, p) => acc + p.remainingSessions, 0)
+    const totalSessions = student.totalSessions || 96
+    const remainingSessions = student.remainingSessions ?? 12
     const studiedSessions = Math.max(0, totalSessions - remainingSessions)
 
     // Determine current class vs past classes
-    const activeCls = mathClasses.find((c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer') || null
-    const droppedCls = mathClasses.find((c) => c.status === 'dropped') || null
-    const pausedCls = mathClasses.find((c) => c.status === 'paused') || null
+    const activeCls = mathClasses.find((c) => c.status === 'active') || null
+    const droppedCls = mathClasses.find((c) => c.status === 'dropped' || c.status === 'pending_transfer') || null
+    const pausedCls = mathClasses.find((c) => c.status === 'paused' || c.status === 'reserve') || null
 
     let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
-    if (student.status === 'reserve' || pausedCls) programStatus = 'reserved'
-    else if (activeCls) programStatus = 'active'
-    else if (droppedCls) programStatus = 'dropped'
+    if (student.status === 'reserve' || pausedCls) {
+      programStatus = 'reserved'
+    } else if (student.status === 'pending_transfer' || droppedCls) {
+      programStatus = 'pending_transfer'
+    } else if (student.status === 'fee_transfer') {
+      programStatus = 'fee_transfer'
+    } else if (student.status === 'draft_class') {
+      programStatus = 'draft_class'
+    } else if (student.status === 'pending_payment') {
+      programStatus = 'pending_payment'
+    } else if (student.status === 'enroll_later') {
+      programStatus = 'enroll_later'
+    } else if (student.status === 'awaiting_opening') {
+      programStatus = 'awaiting_opening'
+    } else if (student.status === 'trial') {
+      programStatus = 'trial'
+    } else if (student.status === 'session_ended' || remainingSessions === 0) {
+      programStatus = 'session_ended'
+    } else if (student.status === 'wait_for_assignment') {
+      programStatus = 'wait_for_assignment'
+    } else if (activeCls && (student.status === 'active' || !student.status)) {
+      programStatus = 'active'
+    } else {
+      programStatus = 'wait_for_assignment'
+    }
 
     // Past classes: classes that are dropped or session_ended, or mock historical classes if none
     const actualPast = mathClasses.filter((c) => c.status === 'dropped' || c.status === 'session_ended')
@@ -561,9 +793,9 @@ export function getStudentPrograms(
       }
     ]
 
-    programs.push({
+    mathPrograms.push({
       id: 'track-math-1-6',
-      name: 'Toán Tư Duy 1:6',
+      name: '[MATH_TUTOR] Toán Tư Duy 1:6',
       subject: 'math',
       level: activeCls?.level || (student.level?.toLowerCase().includes('ielts') ? 'Toán Tiền Tiểu Học' : student.level) || 'Toán Tiền Tiểu Học',
       subLevel: activeCls?.subLevel || (student.subLevel?.toLowerCase().includes('ielts') ? 'Kindi 3 (Pre-K)' : student.subLevel) || 'Kindi 3 (Pre-K)',
@@ -602,23 +834,342 @@ export function getStudentPrograms(
       } : undefined,
       reservedInfo: (programStatus === 'reserved' || pausedCls) ? {
         reservedSessions: remainingSessions, startDate: '15/06/2026', endDate: '15/09/2026', duration: '3 tháng',
-        isHoldingClass: Boolean(pausedCls), expiryDate: '15/10/2026', reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh'
+        isHoldingClass: Boolean(pausedCls || (activeCls && student.status === 'reserve') || (student.enrolledClasses && student.enrolledClasses.length > 0)),
+        expiryDate: '15/10/2026', reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh'
       } : undefined,
     })
+
+    // Program 2: [MATH_ARCH] Toán Nền Tảng K10 (Lớp LD_TOAN_00088)
+    mathPrograms.push({
+      id: 'track-math-arch',
+      name: '[MATH_ARCH] Toán Nền Tảng K10',
+      subject: 'math',
+      level: 'Toán Nền Tảng K10',
+      subLevel: 'A+',
+      schoolClass: student.schoolClass || 'Lớp 6',
+      branch: student.branch || 'RinoEdu Linh Đàm',
+      entryScore: '8.0 / 10',
+      entryScoreEvaluation: 'Tư duy logic tốt, đạt chuẩn lớp Archimedes',
+      assessmentNote: 'Cần rèn luyện thêm các dạng bài hình học không gian.',
+      csmName: 'Minh Phương (CSM Toán)',
+      saleName: student.saleName || 'Trần Thị Mai (Sales)',
+      availableSlots: [
+        { id: `slot-${student.id}-m3`, dayOfWeek: 'Thứ 4 & Chủ Nhật', timeRange: '18:00 - 19:30', isPreferred: true, note: 'Lớp Archimedes' },
+      ],
+      packages: [
+        {
+          id: `PKG-${student.id}-math-arch`,
+          packageName: 'Gói Toán Nền Tảng Archimedes K10 (48 buổi)',
+          totalSessions: 48,
+          remainingSessions: 32,
+          price: 7200000,
+          purchaseDate: '2024-09-01',
+          endDate: '2025-06-30',
+          status: 'active' as const,
+          linkedClassCode: 'LD_TOAN_00088',
+          linkedClassName: 'Toán Nền Tảng Archimedes K10',
+          orderNo: 'OD812044',
+          leaveQuota: 4,
+          saleName: 'Trần Thị Mai',
+        },
+        {
+          id: `PKG-${student.id}-math-arch-old1`,
+          packageName: 'Gói Toán Archimedes Khởi Động K9 (24 buổi)',
+          totalSessions: 24,
+          remainingSessions: 0,
+          price: 3600000,
+          purchaseDate: '2023-09-01',
+          endDate: '2024-03-31',
+          status: 'expired' as const,
+          orderNo: 'OD800210',
+          leaveQuota: 2,
+          saleName: 'Trần Thị Mai',
+        },
+        {
+          id: `PKG-${student.id}-math-arch-old2`,
+          packageName: 'Gói Ôn Luyện Chuyên Đề Số Học Archimedes (16 buổi)',
+          totalSessions: 16,
+          remainingSessions: 0,
+          price: 2400000,
+          purchaseDate: '2024-04-01',
+          endDate: '2024-08-30',
+          status: 'transferred' as const,
+          packageTag: 'transferred' as const,
+          orderNo: 'OD790155',
+          leaveQuota: 1,
+          saleName: 'Trần Thị Mai',
+        },
+      ],
+      totalSessions: 48,
+      studiedSessions: 16,
+      remainingSessions: 32,
+      startDate: '2024-09-01',
+      endDate: '2025-06-30',
+      currentClass: {
+        classCode: 'LD_TOAN_00088',
+        className: 'Toán Nền Tảng Archimedes K10',
+        type: 'offline',
+        scheduleSlots: [
+          { dayOfWeek: 'Thứ 4', date: '04/09', startTime: '18:00', endTime: '19:30' },
+          { dayOfWeek: 'Chủ Nhật', date: '08/09', startTime: '09:00', endTime: '10:30' },
+        ],
+        teacherName: 'Thầy Nguyễn Văn Nam',
+        assistantName: 'Lê Thu Thảo',
+        status: 'active',
+        progress: '16 / 48 buổi',
+        branch: student.branch || 'RinoEdu Linh Đàm',
+        room: 'A203',
+        level: 'Toán Nền Tảng K10',
+        subLevel: 'A+',
+        startDate: '2024-09-01',
+        startSessionDate: 'Buổi 01 (04/09/2024)',
+      },
+      pastClasses: [],
+      programStatus: 'active',
+    })
+
+    // 4 Gói cũ / hết hạn (cho Popover Khác)
+    mathPrograms.push(
+      {
+        id: 'track-math-pre',
+        name: '[MATH_PRE] Toán Einstein 0 Foundation',
+        subject: 'math',
+        level: 'Toán Einstein 0',
+        subLevel: 'Foundation',
+        schoolClass: student.schoolClass || 'Lớp 6',
+        branch: student.branch || 'RinoEdu Linh Đàm',
+        totalSessions: 24,
+        studiedSessions: 24,
+        remainingSessions: 0,
+        startDate: '2023-01-10',
+        endDate: '2023-07-10',
+        packages: [
+          {
+            id: `PKG-${student.id}-old-1`,
+            packageName: 'Gói Toán Einstein 0 Foundation (24 buổi)',
+            totalSessions: 24,
+            remainingSessions: 0,
+            price: 3600000,
+            purchaseDate: '2023-01-10',
+            endDate: '2023-07-10',
+            status: 'expired',
+            orderNo: 'OD751020',
+            leaveQuota: 2,
+          },
+        ],
+        currentClass: null,
+        pastClasses: [
+          {
+            classCode: 'LD_TOAN_00002',
+            className: 'Toán Einstein 0 K1',
+            type: 'offline',
+            scheduleSlots: [],
+            teacherName: 'Cô Thu Trang',
+            status: 'session_ended',
+            progress: '24 / 24 buổi (Hết buổi)',
+            branch: student.branch || 'RinoEdu Linh Đàm',
+            room: 'A101',
+            level: 'Toán Einstein 0',
+            startDate: '2023-01-15',
+            endDate: '2023-07-15',
+          },
+        ],
+        programStatus: 'session_ended',
+        renewalInfo: {
+          status: 'failed',
+          outcomeType: 'not_purchased',
+          failureReason: 'Phụ huynh không mua tiếp do bận lịch học thêm ở trường và chuyển lịch học chính khóa.',
+          decisionDate: '15/07/2023',
+          note: 'Học viên dừng học sau khi hết buổi.',
+        },
+      },
+      {
+        id: 'track-ie-super',
+        name: '[IE_SUPER] Tiếng Anh SuperKids Level 2',
+        subject: 'english',
+        level: 'SuperKids Level 2',
+        subLevel: 'Level 2',
+        schoolClass: student.schoolClass || 'Lớp 6',
+        branch: student.branch || 'RinoEdu Linh Đàm',
+        totalSessions: 24,
+        studiedSessions: 24,
+        remainingSessions: 0,
+        startDate: '2023-03-01',
+        endDate: '2023-09-01',
+        packages: [
+          {
+            id: `PKG-${student.id}-old-2`,
+            packageName: 'Gói Tiếng Anh SuperKids Level 2 (24 buổi)',
+            totalSessions: 24,
+            remainingSessions: 0,
+            price: 4800000,
+            purchaseDate: '2023-03-01',
+            endDate: '2023-09-01',
+            status: 'expired',
+            orderNo: 'OD761040',
+            leaveQuota: 2,
+          },
+        ],
+        currentClass: null,
+        pastClasses: [
+          {
+            classCode: 'LD_ENG_00002',
+            className: 'SuperKids Level 2 - K3',
+            type: 'offline',
+            scheduleSlots: [],
+            teacherName: 'David Smith',
+            status: 'session_ended',
+            progress: '24 / 24 buổi (Hết buổi)',
+            branch: student.branch || 'RinoEdu Linh Đàm',
+            room: 'B102',
+            level: 'SuperKids Level 2',
+            startDate: '2023-03-05',
+            endDate: '2023-09-05',
+          },
+        ],
+        programStatus: 'session_ended',
+        renewalInfo: {
+          status: 'success',
+          outcomeType: 'purchased_other',
+          newPackageName: '[MATH_TUTOR] Toán Tư Duy 1:6 (96 buổi)',
+          newProgramName: 'Toán Tư Duy',
+          linkedOrderNo: 'OD751020',
+          decisionDate: '20/07/2023',
+          note: 'Mua sang gói Toán Tư Duy 1:6 sau khi kết thúc khóa tiếng Anh.',
+        },
+      },
+      {
+        id: 'track-math-kindy',
+        name: '[MATH_KINDY] Toán Mầm Non Archimedes',
+        subject: 'math',
+        level: 'Toán Mầm Non Archimedes',
+        subLevel: 'Kindy',
+        schoolClass: student.schoolClass || 'Lớp 6',
+        branch: student.branch || 'RinoEdu Linh Đàm',
+        totalSessions: 16,
+        studiedSessions: 16,
+        remainingSessions: 0,
+        startDate: '2022-09-01',
+        endDate: '2023-03-01',
+        packages: [
+          {
+            id: `PKG-${student.id}-old-3`,
+            packageName: 'Gói Toán Mầm Non Archimedes (16 buổi)',
+            totalSessions: 16,
+            remainingSessions: 0,
+            price: 2400000,
+            purchaseDate: '2022-09-01',
+            endDate: '2023-03-01',
+            status: 'expired',
+            orderNo: 'OD720011',
+            leaveQuota: 1,
+          },
+        ],
+        currentClass: null,
+        pastClasses: [
+          {
+            classCode: 'LD_TOAN_00001',
+            className: 'Toán Khám Phá Khối Hình K7',
+            type: 'offline',
+            scheduleSlots: [],
+            teacherName: 'GV_HuongTM',
+            status: 'session_ended',
+            progress: '16 / 16 buổi (Hết buổi)',
+            branch: student.branch || 'RinoEdu Linh Đàm',
+            room: 'A101',
+            level: 'Toán Mầm Non',
+            startDate: '2022-09-10',
+            endDate: '2023-03-01',
+          },
+        ],
+        programStatus: 'session_ended',
+        renewalInfo: {
+          status: 'failed',
+          outcomeType: 'not_purchased',
+          failureReason: 'Gia đình chuyển nơi cư trú sang quận khác, không tiện di chuyển đến cơ sở.',
+          decisionDate: '18/08/2023',
+          note: 'Không mua tiếp do chuyển nhà.',
+        },
+      },
+      {
+        id: 'track-stem-robot',
+        name: '[STEM_ROBOT] Lập Trình Robot & AI K1',
+        subject: 'stem',
+        level: 'STEM Robot & AI Level 1',
+        subLevel: 'Level 1',
+        schoolClass: student.schoolClass || 'Lớp 6',
+        branch: student.branch || 'RinoEdu Linh Đàm',
+        totalSessions: 12,
+        studiedSessions: 12,
+        remainingSessions: 0,
+        startDate: '2023-06-01',
+        endDate: '2023-09-01',
+        packages: [
+          {
+            id: `PKG-${student.id}-old-4`,
+            packageName: 'Gói Lập Trình Robot & AI K1 (12 buổi)',
+            totalSessions: 12,
+            remainingSessions: 0,
+            price: 3000000,
+            purchaseDate: '2023-06-01',
+            endDate: '2023-09-01',
+            status: 'expired',
+            orderNo: 'OD774411',
+            leaveQuota: 1,
+          },
+        ],
+        currentClass: null,
+        pastClasses: [
+          {
+            classCode: 'LD_STEM_00001',
+            className: 'STEM Robot K1',
+            type: 'offline',
+            scheduleSlots: [],
+            teacherName: 'Thầy Quốc Bảo',
+            status: 'session_ended',
+            progress: '12 / 12 buổi (Hết buổi)',
+            branch: student.branch || 'RinoEdu Linh Đàm',
+            room: 'Lab 1',
+            level: 'STEM K1',
+            startDate: '2023-06-05',
+            endDate: '2023-09-01',
+          },
+        ],
+        programStatus: 'session_ended',
+        renewalInfo: {
+          status: 'success',
+          outcomeType: 'purchased_other',
+          newPackageName: 'Gói Tiếng Anh SuperKids Level 2 (24 buổi)',
+          newProgramName: 'Tiếng Anh',
+          linkedOrderNo: 'OD761040',
+          decisionDate: '25/08/2023',
+          note: 'Học viên hoàn thành trải nghiệm STEM và đăng ký tiếp gói tiếng Anh.',
+        },
+      }
+    )
   }
 
   // 2. English Program
-  if (englishPackages.length > 0 || englishClasses.length > 0 || student.subject === 'english' || programs.length === 1) {
+  if (
+    student.subject === 'english' ||
+    englishClasses.length > 0 ||
+    (mathPrograms.length === 0 && englishPackages.length > 0) ||
+    isStudentEnglish
+  ) {
     const pkgs = englishPackages.length > 0 ? englishPackages : [
       {
         id: `PKG-${student.id}-eng-unlinked`,
-        packageName: 'Gói Tiếng Anh Giao Tiếp Bổ Trợ',
-        totalSessions: 16,
-        remainingSessions: 16,
-        price: 2400000,
+        packageName: student.packageName || 'Gói Tiếng Anh Level 4 (12 tháng)',
+        totalSessions: student.totalSessions || 72,
+        remainingSessions: student.remainingSessions ?? 28,
+        price: (student.totalSessions || 72) * 200000,
         purchaseDate: student.enrollmentDate,
-        endDate: '2026-10-30',
+        endDate: '2026-12-20',
         status: 'active' as const,
+        linkedClassCode: englishClasses[0]?.classCode || 'LD_TA_00019',
+        linkedClassName: englishClasses[0]?.className || 'Lớp Tiếng Anh Standard B1',
+        orderNo: 'OD812099',
+        leaveQuota: 6,
       },
       {
         id: `PKG-${student.id}-eng-transferred`,
@@ -634,21 +1185,37 @@ export function getStudentPrograms(
       }
     ]
 
-    const totalSessions = pkgs.reduce((acc, p) => acc + p.totalSessions, 0)
-    const remainingSessions = pkgs.reduce((acc, p) => acc + p.remainingSessions, 0)
+    const totalSessions = student.totalSessions || pkgs.reduce((acc, p) => acc + p.totalSessions, 0)
+    const remainingSessions = student.remainingSessions ?? pkgs.reduce((acc, p) => acc + p.remainingSessions, 0)
     const studiedSessions = Math.max(0, totalSessions - remainingSessions)
 
-    const activeCls = englishClasses.find((c) => c.status === 'active' || c.status === 'wait_for_assignment' || c.status === 'pending_transfer') || null
-    const droppedCls = englishClasses.find((c) => c.status === 'dropped') || null
-    const pausedCls = englishClasses.find((c) => c.status === 'paused') || null
+    const activeCls = englishClasses.find((c) => c.status === 'active') || null
+    const droppedCls = englishClasses.find((c) => c.status === 'dropped' || c.status === 'pending_transfer') || null
+    const pausedCls = englishClasses.find((c) => c.status === 'paused' || c.status === 'reserve') || null
 
     let programStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
-    if (activeCls) {
-      programStatus = 'active'
-    } else if (pausedCls) {
+    if (student.status === 'reserve' || pausedCls) {
       programStatus = 'reserved'
-    } else if (droppedCls) {
-      programStatus = 'dropped'
+    } else if (student.status === 'pending_transfer' || droppedCls) {
+      programStatus = 'pending_transfer'
+    } else if (student.status === 'fee_transfer') {
+      programStatus = 'fee_transfer'
+    } else if (student.status === 'draft_class') {
+      programStatus = 'draft_class'
+    } else if (student.status === 'pending_payment') {
+      programStatus = 'pending_payment'
+    } else if (student.status === 'enroll_later') {
+      programStatus = 'enroll_later'
+    } else if (student.status === 'awaiting_opening') {
+      programStatus = 'awaiting_opening'
+    } else if (student.status === 'trial') {
+      programStatus = 'trial'
+    } else if (student.status === 'session_ended' || remainingSessions === 0) {
+      programStatus = 'session_ended'
+    } else if (student.status === 'wait_for_assignment') {
+      programStatus = 'wait_for_assignment'
+    } else if (activeCls && (student.status === 'active' || !student.status)) {
+      programStatus = 'active'
     } else {
       programStatus = 'wait_for_assignment'
     }
@@ -680,21 +1247,21 @@ export function getStudentPrograms(
       }
     ]
 
-    programs.push({
+    englishPrograms.push({
       id: 'track-eng-1-6',
       name: 'Tiếng Anh - Lớp nhóm 1:6',
       subject: 'english',
-      level: 'IELTS Junior',
-      subLevel: 'Band 5.0 – 5.5 (Pre-Intermediate)',
+      level: student.level || 'IELTS Junior',
+      subLevel: student.subLevel || 'Band 5.0 – 5.5 (Pre-Intermediate)',
       schoolClass: student.schoolClass,
-      branch: activeCls?.branch || 'RinoEdu Nguyễn Tuân',
+      branch: (activeCls || pausedCls)?.branch || student.branch || 'RinoEdu Nguyễn Tuân',
       entryScore: '6.0 / 9.0 (IELTS Mock)',
       entryScoreEvaluation: 'Đạt chuẩn đầu vào Lớp Foundation',
       assessmentNote: 'Kỹ năng Nghe và Phát âm chuẩn. Cần rèn luyện thêm Ngữ pháp viết Task 1.',
       csmName: 'Hoàng Yến (CSM Ngoại ngữ)',
-      saleName: 'Đặng Quốc Anh (Sales Tiếng Anh)',
+      saleName: student.saleName || 'Đặng Quốc Anh (Sales Tiếng Anh)',
       availableSlots: [
-        { id: `slot-${student.id}-e1`, dayOfWeek: 'Thứ 4 & Thứ 7', timeRange: '18:00 - 19:30', isPreferred: true, note: 'Cơ sở Nguyễn Tuân' },
+        { id: `slot-${student.id}-e1`, dayOfWeek: 'Thứ 4 & Thứ 7', timeRange: '18:00 - 19:30', isPreferred: true, note: `Cơ sở ${student.branch || 'Nguyễn Tuân'}` },
         { id: `slot-${student.id}-e2`, dayOfWeek: 'Chủ Nhật', timeRange: '14:30 - 16:00', isPreferred: false, note: 'Lớp Speaking' },
       ],
       packages: pkgs,
@@ -703,7 +1270,11 @@ export function getStudentPrograms(
       remainingSessions,
       startDate: pkgs[0]?.purchaseDate || '2025-11-01',
       endDate: pkgs[pkgs.length - 1]?.endDate || '2026-10-30',
-      currentClass: activeCls,
+      currentClass: (activeCls || pausedCls) ? {
+        ...(activeCls || pausedCls)!,
+        assistantName: (activeCls || pausedCls)!.assistantName || 'Lê Thu Thảo',
+        startSessionDate: (activeCls || pausedCls)!.startSessionDate || 'Buổi 01 (20/02/2026)',
+      } : null,
       pastClasses: mockPast,
       programStatus,
       droppedClassInfo: droppedCls ? {
@@ -715,26 +1286,27 @@ export function getStudentPrograms(
         sourceClass: droppedCls.classCode, targetClass: 'Chưa ghép lớp', transferredSessions: remainingSessions,
         transferDate: '15/04/2026', reason: 'Chuyển sang gói học IELTS VIP mới'
       } : undefined,
-      reservedInfo: programStatus === 'reserved' ? {
+      reservedInfo: (programStatus === 'reserved' || pausedCls) ? {
         reservedSessions: remainingSessions, startDate: '01/06/2026', endDate: '31/07/2026', duration: '2 tháng',
-        isHoldingClass: false, expiryDate: '15/11/2026', reason: 'Bảo lưu theo nguyện vọng phụ huynh'
+        isHoldingClass: Boolean(pausedCls || (activeCls && student.status === 'reserve') || (student.enrolledClasses && student.enrolledClasses.length > 0)),
+        expiryDate: '15/11/2026', reason: 'Bảo lưu theo nguyện vọng phụ huynh'
       } : undefined,
     })
 
     // 3. Parallel Track: English 1:1 Tutor Track (Minh chứng học song song 2 lộ trình)
-    programs.push({
+    englishPrograms.push({
       id: 'track-eng-tutor',
       name: 'Tiếng Anh - Gia sư 1:1',
       subject: 'english',
       level: 'IELTS VIP 1:1',
       subLevel: '1 kèm 1 Cấp tốc',
       schoolClass: student.schoolClass,
-      branch: 'RinoEdu Nguyễn Tuân',
+      branch: student.branch || 'RinoEdu Nguyễn Tuân',
       entryScore: '6.5 / 9.0 (IELTS Mock)',
       entryScoreEvaluation: 'Mục tiêu nâng band cấp tốc trong 3 tháng',
       assessmentNote: 'Cần giáo viên 1:1 tập trung sửa phát âm và chấm bài viết Task 2 hàng tuần.',
       csmName: 'Hoàng Yến (CSM Ngoại ngữ)',
-      saleName: 'Đặng Quốc Anh (Sales Tiếng Anh)',
+      saleName: student.saleName || 'Đặng Quốc Anh (Sales Tiếng Anh)',
       availableSlots: [
         { id: `slot-${student.id}-et1`, dayOfWeek: 'Chủ Nhật', timeRange: '08:30 - 10:00', isPreferred: true, note: 'Lịch học gia sư 1:1 cuối tuần' },
       ],
@@ -751,16 +1323,53 @@ export function getStudentPrograms(
     })
   }
 
+  // Combine programs: If student is primarily English, put English first; otherwise Math first
+  const programs = isStudentEnglish
+    ? [...englishPrograms, ...mathPrograms]
+    : [...mathPrograms, ...englishPrograms]
+
   // Fallback if no programs detected
   if (programs.length === 0) {
+    const totalSessions = student.totalSessions || 24
+    const remainingSessions = student.remainingSessions ?? 24
+    const studiedSessions = Math.max(0, totalSessions - remainingSessions)
+
+    let fallbackStatus: StudentProgram['programStatus'] = 'wait_for_assignment'
+    if (student.status === 'reserve') fallbackStatus = 'reserved'
+    else if (student.status === 'pending_transfer') fallbackStatus = 'pending_transfer'
+    else if (student.status === 'fee_transfer') fallbackStatus = 'fee_transfer'
+    else if (student.status === 'draft_class') fallbackStatus = 'draft_class'
+    else if (student.status === 'pending_payment') fallbackStatus = 'pending_payment'
+    else if (student.status === 'enroll_later') fallbackStatus = 'enroll_later'
+    else if (student.status === 'awaiting_opening') fallbackStatus = 'awaiting_opening'
+    else if (student.status === 'trial') fallbackStatus = 'trial'
+    else if (student.status === 'session_ended' || remainingSessions === 0) fallbackStatus = 'session_ended'
+    else if (allClasses[0]) fallbackStatus = 'active'
+
     programs.push({
-      id: 'prog-standard', name: 'Chương trình Chuẩn', subject: 'other',
-      level: student.level || 'Chuẩn', subLevel: student.subLevel || 'A', packages: allPackages,
-      totalSessions: student.totalSessions || 24,
-      studiedSessions: (student.totalSessions || 24) - (student.remainingSessions || 24),
-      remainingSessions: student.remainingSessions || 24, startDate: student.enrollmentDate, endDate: '2026-12-31',
-      currentClass: allClasses[0] || null, pastClasses: [],
-      programStatus: allClasses[0] ? 'active' : 'wait_for_assignment'
+      id: 'prog-standard',
+      name: 'Chương trình Chuẩn',
+      subject: (student.subject as 'math' | 'english' | 'stem' | 'other') || 'other',
+      level: student.level || 'Chuẩn',
+      subLevel: student.subLevel || 'A',
+      packages: allPackages,
+      totalSessions,
+      studiedSessions,
+      remainingSessions,
+      startDate: student.enrollmentDate,
+      endDate: '2026-12-31',
+      currentClass: allClasses[0] || null,
+      pastClasses: [],
+      programStatus: fallbackStatus,
+      reservedInfo: fallbackStatus === 'reserved' ? {
+        reservedSessions: remainingSessions,
+        startDate: '15/06/2026',
+        endDate: '15/09/2026',
+        duration: '3 tháng',
+        isHoldingClass: Boolean(allClasses[0]),
+        expiryDate: '15/10/2026',
+        reason: 'Bảo lưu theo đơn xin nghỉ của phụ huynh'
+      } : undefined,
     })
   }
 

@@ -88,10 +88,10 @@ export function OrderFeeTransferSummaryPopover({
 
           {/* Center Arrow & Dashed Divider */}
           <div className="hidden sm:flex flex-col items-center absolute left-1/2 top-0 bottom-0 -translate-x-1/2 pointer-events-none">
-            <div className="h-6 w-6 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-xs shrink-0 z-10 mt-1">
+            <div className="h-6 w-6 rounded-full bg-muted dark:bg-zinc-800 text-muted-foreground border border-border/70 flex items-center justify-center shadow-3xs shrink-0 z-10 mt-1">
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
             </div>
-            <div className="flex-1 w-px border-r border-dashed border-violet-400/80 dark:border-violet-600/80 mt-1" />
+            <div className="flex-1 w-px border-r border-dashed border-border/70 mt-1" />
           </div>
 
           {/* Right Column: GÓI MỚI */}

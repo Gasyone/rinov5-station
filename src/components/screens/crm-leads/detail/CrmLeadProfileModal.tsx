@@ -158,7 +158,7 @@ export function CrmLeadProfileModal({
                 <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">
                   1. Chân dung Phụ huynh / Người bảo trợ (Lead)
                 </span>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Người trả tiền &amp; quyết định
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function CrmLeadProfileModal({
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
                   2. Chân dung Học viên (Đối tượng học tập)
                 </span>
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   Trực tiếp học &amp; trải nghiệm
                 </span>
               </div>

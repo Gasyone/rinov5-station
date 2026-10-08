@@ -6,20 +6,18 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-  TableCell,
-  TableRow,
-} from '@/components/ui/table'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { StatusBadge, PersonnelCell, LocationCell } from '@/components/shared'
+import { StatusBadge } from '@/components/shared'
+import { cn } from '@/lib/utils'
 import type { ClassRecord } from '@/mocks/classRecords'
 import { CLASS_STATUS_LABELS } from '@/mocks/classRecords'
 import { ScheduleSummary } from './ScheduleSummary'
 import { SyllabusProfileHoverCard } from './SyllabusProfileHoverCard'
+import { TeacherProfileHoverCard } from './TeacherProfileHoverCard'
 import { ClassesSessionDetailDialog } from './detail/ClassesSessionDetailDialog'
 import { generateMockRoster, generateRoadmapSessions } from './detail/classesDetailHelpers'
 import type { RoadmapSession } from './detail/classesDetailTypes'
@@ -43,18 +41,22 @@ const formatDate = (dateStr?: string) => {
 
 interface ClassesTableRowProps {
   cls: ClassRecord
+  index?: number
+  isEven?: boolean
   isSelected: boolean
   onToggle: (id: string, checked: boolean) => void
   onRowClick: (id: string) => void
   onView: (id: string) => void
   onEdit: (id: string) => void
-  onDelete: (id: string) => void
+  onDelete?: (id: string) => void
   onManageRoadmap?: (id: string) => void
   onAddStudent?: (id: string) => void
 }
 
 export function ClassesTableRow({
   cls,
+  index = 0,
+  isEven: propIsEven,
   isSelected,
   onToggle,
   onRowClick,
@@ -78,6 +80,7 @@ export function ClassesTableRow({
 
   // Split teachers if combined (e.g. "Cô Lan & Cô Nga") into distinct personnel items
   const rawTeachers = cls.teacher && cls.teacher !== '—' ? cls.teacher.split(/\s*&\s*|\s*,\s*|\s+và\s+/i) : []
+  // Primary teachers from cls.teacher
   const primaryTeachers = rawTeachers.map((name) => {
     const trimmed = name.trim()
     const cleanName = formatTeacherFullName(trimmed)
@@ -93,20 +96,19 @@ export function ClassesTableRow({
     }
   })
 
-  const substituteTeachers = (cls.substituteTeachers || []).map((t) => ({
-    name: formatTeacherFullName(t.name),
-    phone: '',
-    role: '',
-    isSubstitute: true,
-    isLeave: false,
-    date: t.date,
-    reason: t.reason,
-  }))
-
-  const allTeachers = [
-    ...primaryTeachers,
-    ...substituteTeachers,
-  ].filter((t) => t.name && t.name !== '—')
+  // Filter substitute teachers: exclude any who share the same name as a primary teacher
+  const primaryNames = new Set(primaryTeachers.map((p) => p.name.toLowerCase()))
+  const substituteTeachers = (cls.substituteTeachers || [])
+    .map((t) => ({
+      name: formatTeacherFullName(t.name),
+      phone: '',
+      role: '',
+      isSubstitute: true,
+      isLeave: false,
+      date: t.date,
+      reason: t.reason,
+    }))
+    .filter((t) => t.name && !primaryNames.has(t.name.toLowerCase()))
 
   // ── Session Detail Dialog state (reuses ClassesSessionDetailDialog) ──
   const [sessionDialogOpen, setSessionDialogOpen] = useState(false)
@@ -161,248 +163,351 @@ export function ClassesTableRow({
     scheduleType: 'class',
   }
 
+  const isEven = propIsEven ?? (index % 2 === 1)
+
+  // Opaque solid background specifically for sticky fixed cells to prevent bleed-through when scrolling
+  const stickyBgClass = isSelected
+    ? 'bg-[color-mix(in_srgb,var(--primary)_10%,var(--background))] dark:bg-[color-mix(in_srgb,var(--primary)_18%,var(--background))]'
+    : isEven
+      ? 'bg-[color-mix(in_srgb,var(--muted)_40%,var(--background))] dark:bg-[color-mix(in_srgb,var(--muted)_25%,var(--background))] group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
+      : 'bg-background group-hover:bg-[color-mix(in_srgb,var(--accent)_50%,var(--background))] dark:group-hover:bg-[color-mix(in_srgb,var(--accent)_30%,var(--background))]'
+
   return (
     <TooltipProvider delayDuration={300}>
-      <TableRow className="group cursor-pointer border-b-0 hover:bg-muted/40" onClick={() => onRowClick(cls.id)}>
-      {/* Checkbox */}
-      <TableCell
-        className="sticky left-0 z-30 w-10 min-w-10 max-w-10 bg-background text-center group-hover:bg-muted"
-        onClick={(e) => e.stopPropagation()}
+      <tr
+        className={cn(
+          "group cursor-pointer border-b-0 border-none transition-colors align-middle [&>td]:py-1 [&>td]:px-2.5",
+          isSelected
+            ? '!bg-primary/10 dark:!bg-primary/20'
+            : isEven
+              ? 'bg-zinc-100/45 dark:bg-zinc-800/30 hover:bg-muted/70 dark:hover:bg-muted/50'
+              : 'bg-background hover:bg-muted/60 dark:hover:bg-muted/40'
+        )}
+        onClick={() => onRowClick(cls.id)}
       >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={(checked) => onToggle(cls.id, Boolean(checked))}
-        />
-      </TableCell>
+        {/* Checkbox: sticky left-0 */}
+        <td
+          className={cn(
+            "sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center py-1 px-1 border-none transition-colors",
+            stickyBgClass
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onToggle(cls.id, Boolean(checked))}
+            className="h-3.5 w-3.5 translate-y-[1px]"
+            aria-label={`Chọn lớp ${cls.name}`}
+          />
+        </td>
 
-      {/* Lớp học (PRIMARY FOCUS - STICKY) */}
-      <TableCell
-        className="sticky left-10 z-20 w-[280px] min-w-[280px] max-w-[280px] bg-background group-hover:bg-muted"
-        onClick={() => onView(cls.id)}
-      >
-        <div className="relative z-10 max-w-full overflow-hidden pr-16">
-          <div className="min-w-0 space-y-0.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p className="truncate font-bold text-sm text-foreground group-hover:text-primary transition-colors cursor-pointer">{cls.name}</p>
-              </TooltipTrigger>
-              <TooltipContent>{cls.name}</TooltipContent>
-            </Tooltip>
-            <p className="font-mono text-xs text-muted-foreground">{cls.code}</p>
-          </div>
-          <div
-            className="absolute right-0 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button variant="ghost" size="icon-sm" title="Chỉnh sửa" onClick={() => onEdit(cls.id)} className="h-6 w-6 bg-transparent shadow-none hover:bg-muted">
-              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              title={cls.syllabus && cls.syllabus !== '—' ? 'Đổi lộ trình' : 'Thêm lộ trình'}
-              onClick={() => onManageRoadmap?.(cls.id)}
-              className="h-6 w-6 bg-transparent shadow-none hover:bg-muted"
+        {/* Lớp học (PRIMARY FOCUS - STICKY left-8) */}
+        <td
+          className={cn(
+            "sticky left-8 z-30 w-[240px] min-w-[240px] max-w-[240px] overflow-hidden py-1 px-2.5 border-none transition-colors",
+            stickyBgClass
+          )}
+          onClick={() => onView(cls.id)}
+        >
+          <div className="relative z-10 max-w-full overflow-hidden pr-14">
+            <div className="min-w-0 space-y-0.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="truncate font-semibold text-xs text-foreground group-hover:text-primary transition-colors cursor-pointer">
+                    {cls.name}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>{cls.name}</TooltipContent>
+              </Tooltip>
+              <p className="text-xs text-muted-foreground truncate leading-tight">
+                <span className="font-mono">{cls.code}</span>
+                {cls.room && (
+                  <span className="ml-1.5 text-foreground/80 font-normal">
+                    • {cls.room.trim().toLowerCase().startsWith('p.') ? cls.room.trim() : `P. ${cls.room.trim().replace(/^phòng\s*/i, '')}`}
+                  </span>
+                )}
+              </p>
+            </div>
+            <div
+              className="absolute right-0 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 group-hover:flex bg-muted/90 rounded px-0.5"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              title="Thêm học viên"
-              onClick={() => onAddStudent?.(cls.id)}
-              className="h-6 w-6 bg-transparent shadow-none hover:bg-muted"
-            >
-              <UserPlus className="h-3.5 w-3.5 text-emerald-600" />
-            </Button>
-          </div>
-        </div>
-      </TableCell>
-
-      {/* Môn học - Trình độ */}
-      <TableCell className="min-w-36 text-xs">
-        <SyllabusProfileHoverCard cls={cls}>
-          <div className="space-y-0.5 cursor-pointer group/syllabus inline-block max-w-full">
-            <div className="font-medium text-foreground">{subjectDisplay}</div>
-            <div className="text-xs text-primary truncate max-w-[130px] group-hover/syllabus:underline">
-              {cls.syllabus && cls.syllabus !== '—' ? cls.syllabus : <span className="text-muted-foreground">Chưa gán</span>}
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title="Chỉnh sửa"
+                onClick={() => onEdit(cls.id)}
+                className="h-5 w-5 p-0 bg-transparent shadow-none hover:bg-background"
+              >
+                <Pencil className="h-3 w-3 text-muted-foreground" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title={cls.syllabus && cls.syllabus !== '—' ? 'Đổi lộ trình' : 'Thêm lộ trình'}
+                onClick={() => onManageRoadmap?.(cls.id)}
+                className="h-5 w-5 p-0 bg-transparent shadow-none hover:bg-background"
+              >
+                <Sparkles className="h-3 w-3 text-amber-500" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title="Thêm học viên"
+                onClick={() => onAddStudent?.(cls.id)}
+                className="h-5 w-5 p-0 bg-transparent shadow-none hover:bg-background"
+              >
+                <UserPlus className="h-3 w-3 text-emerald-600" />
+              </Button>
             </div>
           </div>
-        </SyllabusProfileHoverCard>
-      </TableCell>
+        </td>
 
-      {/* Giáo viên (Compact Avatar xs size) */}
-      <TableCell className="min-w-40">
-        <div className="flex flex-col gap-1 py-0.5">
-          {allTeachers.length === 0 || !cls.teacher || cls.teacher === 'Chưa gán' ? (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/50 text-xs font-bold shadow-2xs w-fit">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+        {/* Môn học - Trình độ */}
+        <td className="min-w-[130px] max-w-[145px] py-1 px-2.5 text-xs">
+          <SyllabusProfileHoverCard cls={cls}>
+            <div className="cursor-pointer group/syllabus space-y-0.5 max-w-full leading-tight">
+              <div className="font-normal text-foreground truncate max-w-[130px]">{subjectDisplay}</div>
+              <div className="text-xs text-muted-foreground truncate max-w-[130px] group-hover/syllabus:text-primary group-hover/syllabus:underline">
+                {cls.syllabus && cls.syllabus !== '—' ? cls.syllabus : <span className="text-muted-foreground italic">Chưa gán</span>}
+              </div>
+            </div>
+          </SyllabusProfileHoverCard>
+        </td>
+
+        {/* Giáo viên */}
+        <td className="min-w-[135px] max-w-[150px] py-1 px-2.5 text-xs">
+          {primaryTeachers.length === 0 || !cls.teacher || cls.teacher === 'Chưa gán' ? (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 text-xs font-normal w-fit">
+              <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
               <span>Chưa gán GV</span>
             </div>
           ) : (
-            <>
-              {allTeachers.map((t, idx) => (
-                <PersonnelCell
-                  key={idx}
-                  items={[t]}
-                  size="xs"
-                  mode="single"
-                />
-              ))}
-            </>
+            <div className="space-y-0.5 leading-tight">
+              <div className="flex items-center gap-1 min-w-0">
+                <TeacherProfileHoverCard
+                  teacherName={primaryTeachers[0].name}
+                  cls={cls}
+                  phone={primaryTeachers[0].phone}
+                  isLeave={primaryTeachers[0].isLeave}
+                >
+                  <span
+                    className="font-normal text-xs text-foreground truncate max-w-[110px] cursor-pointer hover:text-primary hover:underline transition-colors"
+                    title="Rê chuột xem hồ sơ giáo viên"
+                  >
+                    {primaryTeachers[0].name}
+                  </span>
+                </TeacherProfileHoverCard>
+                {primaryTeachers[0].isLeave && (
+                  <span className="text-xs text-rose-600 dark:text-rose-400 font-normal shrink-0">
+                    (Nghỉ)
+                  </span>
+                )}
+              </div>
+              {substituteTeachers.length > 0 ? (
+                <TeacherProfileHoverCard
+                  teacherName={substituteTeachers[0].name}
+                  cls={cls}
+                  isSubstitute={true}
+                  substituteDate={substituteTeachers[0].date}
+                  substituteReason={substituteTeachers[0].reason}
+                >
+                  <div
+                    className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1 truncate max-w-[135px] cursor-pointer hover:underline"
+                    title={`Dạy thay: ${substituteTeachers[0].name}${substituteTeachers[0].date ? ` (${substituteTeachers[0].date})` : ''}${substituteTeachers[0].reason ? ` - ${substituteTeachers[0].reason}` : ''}`}
+                  >
+                    <span className="px-1 py-0 rounded bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 font-normal text-xs shrink-0">
+                      Thay
+                    </span>
+                    <span className="truncate">{substituteTeachers[0].name}</span>
+                  </div>
+                </TeacherProfileHoverCard>
+              ) : primaryTeachers.length > 1 ? (
+                <TeacherProfileHoverCard
+                  teacherName={primaryTeachers[1].name}
+                  cls={cls}
+                  phone={primaryTeachers[1].phone}
+                  isLeave={primaryTeachers[1].isLeave}
+                >
+                  <div
+                    className="text-xs text-muted-foreground truncate max-w-[135px] cursor-pointer hover:text-primary hover:underline"
+                    title="Rê chuột xem hồ sơ giáo viên"
+                  >
+                    + {primaryTeachers[1].name}
+                  </div>
+                </TeacherProfileHoverCard>
+              ) : null}
+            </div>
           )}
-        </div>
-      </TableCell>
+        </td>
 
-      {/* Sĩ số */}
-      <TableCell className="min-w-28 text-xs">
-        <div className="space-y-0.5">
-          <div>
-            <span className="font-normal text-foreground">{cls.enrolledStudents}/{cls.maxStudents}</span>
-            <span className="ml-1 text-xs text-muted-foreground">({capacityPct}%)</span>
+        {/* Sĩ số */}
+        <td className="min-w-[90px] max-w-[105px] py-1 px-2.5 text-xs">
+          <div className="space-y-0.5 leading-tight">
+            <div className="flex items-center gap-1">
+              <span className="font-normal text-foreground">{cls.enrolledStudents}/{cls.maxStudents}</span>
+              <span className={cn('text-xs', capacityPct >= 80 ? 'text-emerald-600' : capacityPct < 50 ? 'text-amber-600' : 'text-muted-foreground')}>
+                ({capacityPct}%)
+              </span>
+            </div>
+            {(Boolean(cls.trialStudents) || getClassNewStudents(cls) > 0) && (
+              <div className="flex items-center gap-1 flex-wrap">
+                {typeof cls.trialStudents === 'number' && cls.trialStudents > 0 && (
+                  <span className="inline-flex items-center px-1 py-0 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 font-normal text-xs leading-tight">
+                    {cls.trialStudents} thử
+                  </span>
+                )}
+                {getClassNewStudents(cls) > 0 && (
+                  <span className="inline-flex items-center px-1 py-0 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 font-normal text-xs leading-tight">
+                    {getClassNewStudents(cls)} mới
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-          {(Boolean(cls.trialStudents) || getClassNewStudents(cls) > 0) && (
-            <div className="text-xs flex items-center gap-1 flex-wrap pt-0.5">
-              {typeof cls.trialStudents === 'number' && cls.trialStudents > 0 && (
-                <span className="inline-flex items-center px-1 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 font-semibold leading-none">
-                  Học thử: {cls.trialStudents}
+        </td>
+
+        {/* Lịch học */}
+        <td className="min-w-[130px] max-w-[145px] py-1 px-2.5 text-xs">
+          <div className="space-y-0.5 leading-tight">
+            <ScheduleSummary scheduleSlots={cls.scheduleSlots} className={cls.name} hideTime />
+            <div className="text-xs text-muted-foreground truncate">
+              {cls.status === 'dang_hoc' ? (
+                <span>
+                  Buổi tới:{' '}
+                  <SessionHoverCard session={sessionHoverData}>
+                    <button
+                      type="button"
+                      className="text-primary hover:underline cursor-pointer font-normal"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSessionDialogOpen(true)
+                      }}
+                    >
+                      {cls.nextSession?.date ||
+                        (cls.scheduleSlots?.find((s) => s.date)?.date ? `${cls.scheduleSlots.find((s) => s.date)?.date}/2026` : null) ||
+                        'Tuần này'}
+                    </button>
+                  </SessionHoverCard>
                 </span>
-              )}
-              {getClassNewStudents(cls) > 0 && (
-                <span className="inline-flex items-center px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40 font-semibold leading-none">
-                  Mới: {getClassNewStudents(cls)}
+              ) : cls.status === 'cho_khai_giang' || cls.status === 'mo_chieu_sinh' ? (
+                <span>
+                  Khai giảng:{' '}
+                  <SessionHoverCard session={sessionHoverData}>
+                    <button
+                      type="button"
+                      className="text-primary hover:underline cursor-pointer font-normal"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSessionDialogOpen(true)
+                      }}
+                    >
+                      {formatDate(cls.startDate)}
+                    </button>
+                  </SessionHoverCard>
+                </span>
+              ) : cls.status === 'tam_dung' ? (
+                <span className="text-amber-700 dark:text-amber-400">
+                  {cls.nextSession?.date ? (
+                    <>
+                      Học lại:{' '}
+                      <SessionHoverCard session={sessionHoverData}>
+                        <button
+                          type="button"
+                          className="text-primary hover:underline cursor-pointer font-normal"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSessionDialogOpen(true)
+                          }}
+                        >
+                          {cls.nextSession.date}
+                        </button>
+                      </SessionHoverCard>
+                    </>
+                  ) : (
+                    'Tạm dừng học'
+                  )}
+                </span>
+              ) : cls.status === 'nhap' ? (
+                <span>
+                  Dự kiến:{' '}
+                  <span className="font-normal text-muted-foreground">
+                    {cls.startDate ? formatDate(cls.startDate) : 'Chưa xếp lịch'}
+                  </span>
+                </span>
+              ) : cls.status === 'huy' ? (
+                <span>
+                  Kết thúc:{' '}
+                  <span className="font-normal text-muted-foreground">
+                    {cls.lastSession?.date || formatDate(cls.endDate) || 'Đã kết thúc'}
+                  </span>
+                </span>
+              ) : (
+                <span>
+                  {cls.nextSession ? `Buổi tới: ${cls.nextSession.date}` : formatDate(cls.startDate)}
                 </span>
               )}
             </div>
+          </div>
+        </td>
+
+        {/* Trạng thái */}
+        <td className="w-28 min-w-28 max-w-32 py-1 px-2.5 text-xs whitespace-nowrap">
+          <StatusBadge
+            status={cls.status}
+            label={CLASS_STATUS_LABELS[cls.status]}
+            className="text-xs font-medium px-1.5 py-0 h-5 leading-none rounded"
+          />
+        </td>
+
+        {/* CC & BTVN */}
+        <td className="min-w-[85px] max-w-[100px] py-1 px-2.5 text-xs">
+          <div className="space-y-0.5 leading-tight">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-xs text-muted-foreground font-normal">CC:</span>
+              {isInactive ? (
+                <span className="text-muted-foreground font-normal">—</span>
+              ) : (
+                <span className={cn('font-normal text-xs', attendanceRate < 85 ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-foreground')}>
+                  {attendanceRate}%
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-xs text-muted-foreground font-normal">BTVN:</span>
+              {isInactive ? (
+                <span className="text-muted-foreground font-normal">—</span>
+              ) : (
+                <span className={cn('font-normal text-xs', homeworkRate < 80 ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-foreground')}>
+                  {homeworkRate}%
+                </span>
+              )}
+            </div>
+          </div>
+        </td>
+
+        {/* Kiểm tra */}
+        <td className="w-16 min-w-16 py-1 px-2 text-center text-xs">
+          {isInactive ? (
+            <span className="text-muted-foreground">—</span>
+          ) : (
+            <span className="font-normal text-foreground">
+              {avgTestScore}<span className="text-xs text-muted-foreground font-normal">/10</span>
+            </span>
           )}
-        </div>
-      </TableCell>
+        </td>
 
-      {/* Lịch học */}
-      <TableCell className="min-w-44 text-xs">
-        <ScheduleSummary scheduleSlots={cls.scheduleSlots} className={cls.name} />
-      </TableCell>
-
-      {/* Trạng thái & Dòng ngày duy nhất — hover xem SessionProfileHoverCard, click mở ClassesSessionDetailDialog */}
-      <TableCell className="min-w-32 py-2 text-xs">
-        <div className="space-y-1">
-          <div>
-            <StatusBadge status={cls.status} label={CLASS_STATUS_LABELS[cls.status]} withDot className="bg-transparent dark:bg-transparent border-0 shadow-none px-0" />
-          </div>
-          <div className="text-xs text-muted-foreground leading-snug truncate">
-            {isInactive ? (
-              <span>
-                Khai giảng:{' '}
-                <SessionHoverCard session={sessionHoverData}>
-                  <button
-                    type="button"
-                    className="text-primary hover:underline cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSessionDialogOpen(true)
-                    }}
-                  >
-                    {formatDate(cls.startDate)}
-                  </button>
-                </SessionHoverCard>
-              </span>
-            ) : cls.nextSession ? (
-              <span>
-                Buổi tới:{' '}
-                <SessionHoverCard session={sessionHoverData}>
-                  <button
-                    type="button"
-                    className="text-primary hover:underline cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSessionDialogOpen(true)
-                    }}
-                  >
-                    {cls.nextSession.date}
-                  </button>
-                </SessionHoverCard>
-              </span>
-            ) : cls.lastSession ? (
-              <span>
-                Buổi cuối:{' '}
-                <SessionHoverCard session={sessionHoverData}>
-                  <button
-                    type="button"
-                    className="text-primary hover:underline cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSessionDialogOpen(true)
-                    }}
-                  >
-                    {cls.lastSession.date}
-                  </button>
-                </SessionHoverCard>
-              </span>
-            ) : (
-              <span>
-                Khai giảng:{' '}
-                <SessionHoverCard session={sessionHoverData}>
-                  <button
-                    type="button"
-                    className="text-primary hover:underline cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSessionDialogOpen(true)
-                    }}
-                  >
-                    {formatDate(cls.startDate)}
-                  </button>
-                </SessionHoverCard>
-              </span>
-            )}
-          </div>
-        </div>
-      </TableCell>
-
-      {/* Chi nhánh (Trường) */}
-      <TableCell className="min-w-40 text-xs">
-        <LocationCell branch={cls.branch} room={cls.room} />
-      </TableCell>
-
-      {/* Thống kê Chuyên cần (Sticky right) */}
-      <TableCell className="sticky right-[240px] z-20 w-[90px] min-w-[90px] max-w-[90px] bg-slate-50/90 dark:bg-slate-900/60 group-hover:bg-slate-100 dark:group-hover:bg-slate-800/90 text-center text-xs shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.08)]">
-        {isInactive ? (
-          <span className="text-muted-foreground">—</span>
-        ) : (
-          <span className="font-medium text-foreground">{attendanceRate}%</span>
-        )}
-      </TableCell>
-
-      {/* Thống kê BTVN (Sticky right) */}
-      <TableCell className="sticky right-[160px] z-20 w-[80px] min-w-[80px] max-w-[80px] bg-slate-50/90 dark:bg-slate-900/60 group-hover:bg-slate-100 dark:group-hover:bg-slate-800/90 text-center text-xs">
-        {isInactive ? (
-          <span className="text-muted-foreground">—</span>
-        ) : (
-          <span className="font-medium text-foreground">{homeworkRate}%</span>
-        )}
-      </TableCell>
-
-      {/* Kiểm tra (Sticky right) */}
-      <TableCell className="sticky right-[80px] z-20 w-[80px] min-w-[80px] max-w-[80px] bg-slate-50/90 dark:bg-slate-900/60 group-hover:bg-slate-100 dark:group-hover:bg-slate-800/90 text-center text-xs">
-        {isInactive ? (
-          <span className="text-muted-foreground">—</span>
-        ) : (
-          <div>
-            <span className="font-medium text-foreground">{avgTestScore}</span>
-            <span className="text-xs text-muted-foreground">/10</span>
-          </div>
-        )}
-      </TableCell>
-
-      {/* Cần CSĐB (Sticky right) */}
-      <TableCell className="sticky right-0 z-20 w-[80px] min-w-[80px] max-w-[80px] bg-slate-50/90 dark:bg-slate-900/60 group-hover:bg-slate-100 dark:group-hover:bg-slate-800/90 text-center text-xs">
-        {isInactive || specialCareCount === 0 ? (
-          <span className="text-muted-foreground">0</span>
-        ) : (
-          <span className="font-semibold text-rose-600 dark:text-rose-400">{specialCareCount} HV</span>
-        )}
-      </TableCell>
-      </TableRow>
+        {/* CSĐB */}
+        <td className="w-16 min-w-16 py-1 px-2 text-center text-xs">
+          {isInactive || specialCareCount === 0 ? (
+            <span className="text-muted-foreground">0</span>
+          ) : (
+            <span className="inline-flex items-center justify-center px-1.5 py-0 h-4.5 rounded font-normal text-xs bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-200/60 leading-none">
+              {specialCareCount} HV
+            </span>
+          )}
+        </td>
+      </tr>
 
       {/* Reuse ClassesSessionDetailDialog for next session profile */}
       {sessionDialogOpen && nextSessionRoadmap && (

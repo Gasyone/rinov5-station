@@ -106,7 +106,7 @@ export function ClassesSessionMediaCard({
           <div className="p-4 text-center">
             <FileText className="h-10 w-10 mx-auto text-sky-400 mb-1" />
             <span className="text-xs font-semibold text-zinc-200 block truncate" title={item.name}>{item.name}</span>
-            <span className="text-[10px] text-zinc-400 block mt-0.5">{item.size || 'Tài liệu'} • Nhấp để mở</span>
+            <span className="text-xs text-zinc-400 block mt-0.5">{item.size || 'Tài liệu'} • Nhấp để mở</span>
           </div>
         )}
 

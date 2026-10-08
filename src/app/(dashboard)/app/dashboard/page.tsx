@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import { HomeScreen } from '@/components/screens/home/HomeScreen'
 
 export default function DashboardPage() {
-  redirect('/app/calendar_class_schedule')
+  return <HomeScreen />
 }

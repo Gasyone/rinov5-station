@@ -298,7 +298,7 @@ export function SubjectSelect({
   subjects = [],
   options: customOptions,
   onValueChange,
-  allLabel = 'Tất cả môn',
+  allLabel = 'Tất cả các môn',
   allValue = 'all',
   includeAll,
   variant = 'toolbar',
@@ -491,10 +491,10 @@ export function ExpandableSearch({
   }
 
   return (
-    <div className={cn('flex items-center gap-1.5', open ? 'w-full sm:w-auto' : '', className)}>
-      <IconActionButton icon={Search} label={label} onClick={openSearch} />
+    <div className={cn('flex items-center', open ? 'w-full sm:w-auto' : '', className)}>
       {open ? (
         <div className="relative flex w-full items-center sm:w-72">
+          <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10" />
           <Input
             ref={inputRef}
             value={value}
@@ -517,7 +517,7 @@ export function ExpandableSearch({
             }}
             placeholder={placeholder}
             className={cn(
-              'h-8 w-full min-w-0 border border-input bg-background pl-3 pr-8 text-xs shadow-xs focus-visible:ring-[3px]',
+              'h-8 w-full min-w-0 border border-input bg-background pl-8 pr-8 text-xs shadow-xs focus-visible:ring-[3px]',
               inputClassName
             )}
           />
@@ -537,7 +537,9 @@ export function ExpandableSearch({
             </button>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        <IconActionButton icon={Search} label={label} onClick={openSearch} />
+      )}
     </div>
   )
 }

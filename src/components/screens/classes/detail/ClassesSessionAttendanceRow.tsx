@@ -114,7 +114,7 @@ export function ClassesSessionAttendanceRow({
               {/* Dòng 2: Tên tiếng Việt */}
               {nameParts.hasEnglishName && (
                 <div className="flex items-center gap-1.5 min-w-0 leading-tight mt-0.5">
-                  <span className="text-[11px] text-muted-foreground truncate font-normal">
+                  <span className="text-xs text-muted-foreground truncate font-normal">
                     {nameParts.vietnameseName}
                   </span>
                 </div>
@@ -124,7 +124,7 @@ export function ClassesSessionAttendanceRow({
               {(student.level || student.status === 'new' || student.status === 'trial') && (
                 <div className="flex items-center gap-1.5 mt-0.5 leading-none">
                   {student.level && (
-                    <span className="text-[10px] text-muted-foreground font-normal">
+                    <span className="text-xs text-muted-foreground font-normal">
                       {student.level}
                     </span>
                   )}
@@ -167,7 +167,7 @@ export function ClassesSessionAttendanceRow({
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:border-emerald-900 dark:text-emerald-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Check className="h-2.5 w-2.5 stroke-[3px]" />
                         <span>Đã đến</span>
@@ -180,7 +180,7 @@ export function ClassesSessionAttendanceRow({
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 border border-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:border-amber-900 dark:text-amber-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span>Đến muộn</span>
                       </Button>
@@ -192,7 +192,7 @@ export function ClassesSessionAttendanceRow({
                         type="button"
                         size="xs"
                         disabled={isAttendanceDisabled}
-                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 dark:border-rose-900 dark:text-rose-400 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span>Vắng</span>
                       </Button>
@@ -203,7 +203,7 @@ export function ClassesSessionAttendanceRow({
                       type="button"
                       size="xs"
                       disabled={isAttendanceDisabled}
-                      className="bg-zinc-50 border border-zinc-200 text-zinc-400 hover:bg-zinc-100 font-semibold text-[11px] h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-zinc-50 border border-zinc-200 text-zinc-400 hover:bg-zinc-100 font-semibold text-xs h-5.5 px-2 rounded-md cursor-pointer transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span>+ Điểm danh</span>
                     </Button>
@@ -240,7 +240,7 @@ export function ClassesSessionAttendanceRow({
           {isExcused && (
             <button
               onClick={() => handleOpenLeaveDialog(student)}
-              className="text-[10px] font-semibold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
+              className="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline cursor-pointer bg-transparent border-none p-0 inline-flex items-center gap-0.5 mt-0.5 shrink-0"
             >
               <span>Nghỉ phép</span>
               <ExternalLink className="h-2 w-2 shrink-0" />
@@ -266,7 +266,7 @@ export function ClassesSessionAttendanceRow({
                         if (isScoreDisabled) return
                         onOpenTestScoreDialog?.(student.id, sk)
                       }}
-                      className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
                       title="Chấm điểm / Đánh giá kỹ năng Nói"
                     >
                       <span>{skScore.score}/10</span>
@@ -283,7 +283,7 @@ export function ClassesSessionAttendanceRow({
                         }
                         toast.info(`Đang mở bài làm ${sk} của học viên ${student.name} trong tab mới`)
                       }}
-                      className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
+                      className="inline-flex items-center gap-1 text-xs font-extrabold text-sky-600 dark:text-sky-400 hover:underline hover:text-sky-700 font-mono bg-transparent border-none p-0 cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline disabled:hover:scale-100"
                       title={`Mở tab xem chi tiết bài thi ${sk} của học viên ${student.name}`}
                     >
                       <span>{skScore.score}/10</span>
@@ -297,7 +297,7 @@ export function ClassesSessionAttendanceRow({
                       size="xs"
                       disabled={isScoreDisabled}
                       onClick={() => onOpenTestScoreDialog?.(student.id, sk)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] uppercase h-5 px-1.5 rounded-md border-none cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs uppercase h-5 px-1.5 rounded-md border-none cursor-pointer transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Score
                     </Button>
@@ -312,7 +312,7 @@ export function ClassesSessionAttendanceRow({
                         }
                         toast.info(`Đang mở bài thi ${sk} của học viên ${student.name} trong tab mới`)
                       }}
-                      className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-[11px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
+                      className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 hover:underline font-extrabold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-transparent border-none p-0"
                       title={`Mở tab làm bài thi ${sk}`}
                     >
                       <span>Score</span>
@@ -320,7 +320,7 @@ export function ClassesSessionAttendanceRow({
                     </button>
                   )
                 ) : (
-                  <span className="text-zinc-400 dark:text-zinc-500 font-bold text-[11px] uppercase select-none tracking-wide">
+                  <span className="text-zinc-400 dark:text-zinc-500 font-bold text-xs uppercase select-none tracking-wide">
                     Not Start
                   </span>
                 )}
@@ -335,7 +335,7 @@ export function ClassesSessionAttendanceRow({
               const gradedSkills = skills.map(sk => testScores[student.id]?.[sk]).filter(s => s?.status === 'graded' && s.score !== null)
               
               if (gradedSkills.length === 0) {
-                return <span className="text-zinc-300 text-[11px] font-mono font-bold">- -</span>
+                return <span className="text-zinc-300 text-xs font-mono font-bold">- -</span>
               }
               
               const sum = gradedSkills.reduce((acc, curr) => acc + (curr.score ?? 0), 0)
@@ -343,7 +343,7 @@ export function ClassesSessionAttendanceRow({
               const rounded = Math.round(avg * 10) / 10
               
               return (
-                <span className="font-extrabold text-[11px] text-foreground font-mono">
+                <span className="font-extrabold text-xs text-foreground font-mono">
                   {rounded}/10
                 </span>
               )
@@ -359,7 +359,7 @@ export function ClassesSessionAttendanceRow({
                 href={projectUrl || 'https://scratch.mit.edu/projects/612048882'}
                 target="_blank"
                 rel="noreferrer"
-                className="text-primary hover:underline text-[11px] font-semibold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400"
+                className="text-primary hover:underline text-xs font-semibold inline-flex items-center gap-1 text-sky-600 dark:text-sky-400"
                 onClick={(e) => {
                   e.stopPropagation()
                   toast.info(`Đang mở bài mini project của học viên ${student.name}`)
@@ -372,7 +372,7 @@ export function ClassesSessionAttendanceRow({
             ) : isTestSession && isMath ? (
               <button
                 type="button"
-                className="text-primary hover:underline text-[11px] font-extrabold inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer font-mono"
+                className="text-primary hover:underline text-xs font-extrabold inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer font-mono"
                 onClick={() => {
                   if (onOpenTestScoreDialog) {
                     onOpenTestScoreDialog(student.id, 'KTĐK')
@@ -389,7 +389,7 @@ export function ClassesSessionAttendanceRow({
             ) : hwLink ? (
               <a
                 href={hwLink}
-                className="text-primary hover:underline text-[11px] font-medium inline-flex items-center gap-1"
+                className="text-primary hover:underline text-xs font-medium inline-flex items-center gap-1"
                 onClick={(e) => {
                   e.preventDefault()
                   toast.info(`Mở bài tập về nhà của học viên ${student.name}`)
@@ -399,7 +399,7 @@ export function ClassesSessionAttendanceRow({
                 BT1 - 6/6
               </a>
             ) : (
-              <span className="text-zinc-300 text-[11px]">—</span>
+              <span className="text-zinc-300 text-xs">—</span>
             )}
           </td>
 
@@ -424,7 +424,7 @@ export function ClassesSessionAttendanceRow({
                         <MessageSquarePlus className="h-3 w-3" />
                       </Button>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
+                    <p className="text-xs text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
                       {fb}
                     </p>
                   </div>
@@ -453,7 +453,7 @@ export function ClassesSessionAttendanceRow({
                 <div className="flex flex-col min-w-0 w-full gap-0.5">
                   <div className="flex items-center justify-between gap-1.5 w-full">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-medium text-muted-foreground shrink-0">Thái độ:</span>
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">Thái độ:</span>
                       <div className="flex items-center gap-0.5 text-amber-400">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
@@ -477,14 +477,14 @@ export function ClassesSessionAttendanceRow({
                       <MessageSquarePlus className="h-3 w-3" />
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
+                  <p className="text-xs text-muted-foreground leading-snug line-clamp-2 w-full" title={fb}>
                     {fb}
                   </p>
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-2 w-full">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[11px] font-medium text-muted-foreground shrink-0">Thái độ:</span>
+                    <span className="text-xs font-medium text-muted-foreground shrink-0">Thái độ:</span>
                     <div className="flex items-center gap-0.5 text-zinc-200 dark:text-zinc-700 shrink-0">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star

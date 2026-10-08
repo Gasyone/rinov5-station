@@ -265,7 +265,7 @@ export function BranchCreateDialog({
                 className="h-7 font-mono text-xs uppercase bg-background"
               />
               {codeError ? (
-                <span className="text-[11px] text-destructive mt-0.5 block">{codeError}</span>
+                <span className="text-xs text-destructive mt-0.5 block">{codeError}</span>
               ) : null}
             </FieldLabel>
 

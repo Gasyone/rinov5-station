@@ -2,15 +2,16 @@ import type { StatusConfigItem } from './trialClassTypes'
 
 export const STATUS_CONFIG: StatusConfigItem[] = [
   { id: 'pending_approval', label: 'Chờ xác nhận', status: 'pending_approval' },
-  { id: 'confirmed', label: 'Ghép lớp', status: 'confirmed' },
+  { id: 'confirmed', label: 'Đã ghép lớp', status: 'confirmed' },
   { id: 'rejected', label: 'Từ chối ghép', status: 'rejected' },
   { id: 'completed', label: 'Hoàn thành', status: 'completed' },
+  { id: 'no_show', label: 'Không đến', status: 'no_show' },
   { id: 'cancelled', label: 'Đã hủy', status: 'cancelled' },
 ]
 
 export const TRIAL_LIFECYCLE_CONFIG: StatusConfigItem[] = [
   { id: 'pending_approval', label: 'Chờ xác nhận', status: 'pending_approval' },
-  { id: 'confirmed', label: 'Ghép lớp', status: 'confirmed' },
+  { id: 'confirmed', label: 'Đã ghép lớp', status: 'confirmed' },
   { id: 'rejected', label: 'Từ chối ghép', status: 'rejected' },
   { id: 'completed', label: 'Hoàn thành', status: 'completed' },
 ]
@@ -108,3 +109,44 @@ export const MOCK_CLASS_OPTIONS: MockClassOption[] = [
   { classId: 'CLS-016', className: 'STEM Robotics S2', teacher: 'Mr. David', program: 'STEM Robotics', schedule: 'T3/T6 10:00', enrolledStudents: 8, maxStudents: 12, classType: 'Lớp chính thức' },
   { classId: 'CLS-019', className: 'Communication Junior J2', teacher: 'Ms. Anna', program: 'Communication Junior', schedule: 'T5/CN 18:30', enrolledStudents: 9, maxStudents: 15, classType: 'Lớp chính thức' },
 ]
+
+export interface CenterInfoItem {
+  name: string
+  distance: number
+  distanceStr: string
+  address: string
+}
+
+export const CENTER_DATA: CenterInfoItem[] = [
+  {
+    name: 'RinoEdu Nguyễn Tuân',
+    distance: 2.8,
+    distanceStr: '2.8 km',
+    address: 'Số 90 Nguyễn Tuân, Thanh Xuân',
+  },
+  {
+    name: 'RinoEdu Đống Đa',
+    distance: 4.5,
+    distanceStr: '4.5 km',
+    address: 'Số 142 Hào Nam, Đống Đa',
+  },
+  {
+    name: 'RinoEdu Cầu Giấy',
+    distance: 6.3,
+    distanceStr: '6.3 km',
+    address: 'Tòa Discovery Complex, 302 Cầu Giấy',
+  },
+  {
+    name: 'RinoEdu Smart City',
+    distance: 8.5,
+    distanceStr: '8.5 km',
+    address: 'Tòa S2.01 Vinhomes Smart City, Nam Từ Liêm',
+  },
+  {
+    name: 'RinoEdu Hà Đông',
+    distance: 9.8,
+    distanceStr: '9.8 km',
+    address: 'Số 48 Quang Trung, Hà Đông',
+  },
+]
+

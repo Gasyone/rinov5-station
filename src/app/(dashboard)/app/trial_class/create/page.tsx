@@ -1,14 +1,19 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { Suspense } from 'react'
-import { TrialClassCreateScreen } from '@/components/screens/trial-class/TrialClassCreateScreen'
-
-export default function TrialClassCreateRoute() {
-  return (
-    <div className="h-full min-h-0">
-      <Suspense fallback={null}>
-        <TrialClassCreateScreen />
-      </Suspense>
-    </div>
-  )
+export default async function TrialClassCreateRoute({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const params = await searchParams
+  const sp = new URLSearchParams()
+  for (const [key, val] of Object.entries(params)) {
+    if (typeof val === 'string') {
+      sp.set(key, val)
+    } else if (Array.isArray(val)) {
+      val.forEach((v) => sp.append(key, v))
+    }
+  }
+  const qs = sp.toString()
+  redirect(`/booking-trial${qs ? `?${qs}` : ''}`)
 }

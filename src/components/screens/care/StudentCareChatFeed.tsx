@@ -276,7 +276,10 @@ export function StudentCareChatFeed({
         hen_gap_lai: 'Hẹn gặp lại',
         vang_mat: 'Vắng mặt',
       }
-      outcomeText = ` | [Kết quả: ${labelMap[callOutcome] || callOutcome}]`
+      // Omit outcome label if it is already a success status (nghe_may, da_gap, etc.)
+      if (callOutcome && !['nghe_may', 'da_gap', 'da_nhan', 'da_phan_hoi'].includes(callOutcome)) {
+        outcomeText = ` | [Kết quả: ${labelMap[callOutcome] || callOutcome}]`
+      }
     }
 
     let callbackText = ''
@@ -323,10 +326,18 @@ export function StudentCareChatFeed({
       linkedOrder: linkedOrderData,
     })
 
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
+    const dateFormatted = `${y}-${m}-${d} ${hh}:${mm}`
+
     if (updated) {
       const newLog: CareInteractionLog = {
         id: `log-${Date.now()}`,
-        date: new Date().toISOString().split('T')[0],
+        date: dateFormatted,
         staffName: currentUser?.name || 'CS Staff',
         callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
         notes: notesWithPrefix,
@@ -346,6 +357,86 @@ export function StudentCareChatFeed({
       if (onRefresh) onRefresh()
     } else {
       toast.error('Có lỗi xảy ra khi lưu chăm sóc.')
+    }
+  }
+
+  // Ghi nhận nhanh các trạng thái chưa thành công (Không nghe máy, Máy bận, Vắng mặt, Chưa phản hồi) không bắt buộc nhập ghi chú
+  const handleQuickLogOutcome = (
+    channel: 'telephone' | 'direct' | 'zalo',
+    outcome: string,
+    outcomeLabel: string
+  ) => {
+    const recipientText = `[Đến: ${chatRecipient}]`
+    const channelText = `[Kênh: ${channel.toUpperCase()}]`
+    const outcomeText = ` | [Kết quả: ${outcomeLabel}]`
+
+    let topicPrefix = ''
+    if (expandedTopicCode) {
+      topicPrefix = `[Mốc/Thẻ: ${expandedTopicCode}] `
+    } else if (careMode === 'renewal') {
+      topicPrefix = `[Mốc/Thẻ: CSTP] `
+    }
+
+    let opinionText = ''
+    if (parentOpinionText.trim()) {
+      opinionText = ` | [Ý kiến PH: ${parentOpinionText.trim()}]`
+    }
+
+    const defaultNote =
+      channel === 'telephone'
+        ? `Cuộc gọi ${outcomeLabel.toLowerCase()}`
+        : channel === 'zalo'
+        ? `Tin nhắn ${outcomeLabel.toLowerCase()}`
+        : `Gặp trực tiếp - ${outcomeLabel.toLowerCase()}`
+    const noteBody = chatText.trim() || defaultNote
+    const notesWithPrefix = `${recipientText} ${channelText}${outcomeText} ${topicPrefix}${noteBody}${opinionText}`
+
+    const channelLabel =
+      channel === 'telephone'
+        ? (outcome === 'khong_nghe' ? 'KNM' : 'Đã gọi')
+        : channel === 'zalo'
+        ? 'Đã nhắn Zalo'
+        : 'Đã gặp trực tiếp'
+
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
+    const dateFormatted = `${y}-${m}-${d} ${hh}:${mm}`
+
+    const callConf = (channel === 'telephone' && outcome === 'khong_nghe' ? 'KNM' : channelLabel) as CareInteractionLog['callConfirmation']
+
+    const updated = updateCareAlertInteraction(student.id, {
+      staffName: currentUser?.name || 'CS Staff',
+      callConfirmation: callConf,
+      notes: notesWithPrefix,
+      parentOpinion: parentOpinionText.trim() || undefined,
+    })
+
+    if (updated) {
+      const newLog: CareInteractionLog = {
+        id: `log-${Date.now()}`,
+        date: dateFormatted,
+        staffName: currentUser?.name || 'CS Staff',
+        callConfirmation: callConf,
+        notes: notesWithPrefix,
+        parentOpinion: parentOpinionText.trim() || undefined,
+      }
+      setLocalLogs((prev) => [newLog, ...prev])
+      toast.success(`Đã ghi nhận: ${outcomeLabel}`)
+      setChatText('')
+      setParentOpinionText('')
+      setShowParentOpinion(false)
+
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+      }
+
+      if (onRefresh) onRefresh()
+    } else {
+      toast.error('Có lỗi xảy ra khi lưu lịch sử chăm sóc.')
     }
   }
 
@@ -377,6 +468,7 @@ export function StudentCareChatFeed({
           displayedTags={displayedTags}
           statusObj={statusObj}
           student={student}
+          effectiveLogs={effectiveLogs}
           isOverdueStatus={isOverdueStatus}
           selectedContact={selectedContact}
           contactsList={contactsList}
@@ -397,6 +489,7 @@ export function StudentCareChatFeed({
           setChatText={setChatText}
           expandedTopicCode={expandedTopicCode}
           handleSendChat={handleSendChat}
+          handleQuickLogOutcome={handleQuickLogOutcome}
           handleCompleteCare={handleCompleteCare}
           showParentOpinion={showParentOpinion}
           setShowParentOpinion={setShowParentOpinion}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
+import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import {
   FilterGroupAsidePanel,
   createFilterGroup,
@@ -21,14 +21,11 @@ import { Input } from '@/components/ui/input'
 import { mockClassRecords, type ClassRecord } from '@/mocks/classRecords'
 import { useAuthStore } from '@/stores/useAuthStore'
 import type { ClassFilterState, ClassStatusFilter } from './classesHelpers'
-import { filterClasses, getSubjectByLevel, getClassSpecialCareCount, getClassAttendanceRate, getClassHomeworkRate, hasTeacherLeave } from './classesHelpers'
-import { ClassesToolbar, type ClassViewMode, type ClassProblemFilter } from './ClassesToolbar'
+import { filterClasses, getSubjectByLevel, getClassSpecialCareCount, getClassAttendanceRate, getClassHomeworkRate, sortClassesByOperationalPriority } from './classesHelpers'
+import { ClassesToolbar, type ClassProblemFilter } from './ClassesToolbar'
 import { ClassesTable } from './ClassesTable'
 import { ClassesCreateDialog } from './ClassesCreateDialog'
 import { ClassesDetailDialog } from './detail/ClassesDetailDialog'
-import { ClassesStatsView } from './ClassesStatsView'
-import { ClassesTimetableView } from './ClassesTimetableView'
-import { MyClassesGrid } from '../my-classes/MyClassesGrid'
 
 
 export function ClassesScreen() {
@@ -44,7 +41,6 @@ export function ClassesScreen() {
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
   const [activeGrade, setActiveGrade] = useState('all')
-  const [viewMode, setViewMode] = useState<ClassViewMode>('list')
   const [activeStatus, setActiveStatus] = useState<ClassStatusFilter>('all')
   const [activeProblemFilter, setActiveProblemFilter] = useState<ClassProblemFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -119,12 +115,6 @@ export function ClassesScreen() {
     return true
   })
 
-  const specialCareClassesCount = baseForStatus.filter((c) => getClassSpecialCareCount(c) > 0).length
-  const unassignedTeacherClassesCount = baseForStatus.filter((c) => !c.teacher || c.teacher === 'Chưa gán' || c.teacher.trim() === '').length
-  const lowAcsClassesCount = baseForStatus.filter((c) => c.status !== 'nhap' && c.maxStudents > 0 && (c.enrolledStudents / c.maxStudents) < 0.5).length
-  const lowAttendanceClassesCount = baseForStatus.filter((c) => c.status !== 'nhap' && c.status !== 'cho_khai_giang' && getClassAttendanceRate(c) < 85).length
-  const lowHomeworkClassesCount = baseForStatus.filter((c) => c.status !== 'nhap' && c.status !== 'cho_khai_giang' && getClassHomeworkRate(c) < 80).length
-
   let filteredClasses = filterClasses(classes, {
     search: searchTerm,
     branch: activeBranch,
@@ -170,12 +160,8 @@ export function ClassesScreen() {
     })
   }
 
-  // Always bring classes with absent teachers (hasTeacherLeave) to the top of the list
-  filteredClasses.sort((a, b) => {
-    const aLeave = hasTeacherLeave(a) ? 1 : 0
-    const bLeave = hasTeacherLeave(b) ? 1 : 0
-    return bLeave - aLeave
-  })
+  // Sắp xếp mặc định thông minh theo thứ tự ưu tiên vận hành (Smart Operational Sort)
+  filteredClasses = sortClassesByOperationalPriority(filteredClasses)
 
   const activeFilterCount =
     filters.branches.length +
@@ -303,153 +289,108 @@ export function ClassesScreen() {
         activeBranch={activeBranch}
         activeSubject={activeSubject}
         activeGrade={activeGrade}
-        viewMode={viewMode}
         searchTerm={searchTerm}
         branchOptions={branchOptions}
         baseForStatus={baseForStatus}
         activeFilterCount={activeFilterCount}
         isTeacherRole={isTeacherRole}
-        specialCareCount={specialCareClassesCount}
-        unassignedTeacherCount={unassignedTeacherClassesCount}
-        lowAcsCount={lowAcsClassesCount}
-        lowAttendanceCount={lowAttendanceClassesCount}
-        lowHomeworkCount={lowHomeworkClassesCount}
         onStatusChange={(s) => { setActiveStatus(s); setPage(1) }}
         onProblemFilterChange={(pf) => { setActiveProblemFilter(pf); setPage(1) }}
         onBranchChange={(b) => { setActiveBranch(b); setPage(1) }}
         onSubjectChange={(sub) => { setActiveSubject(sub); setActiveGrade('all'); setPage(1) }}
         onGradeChange={(g) => { setActiveGrade(g); setPage(1) }}
-        onViewModeChange={setViewMode}
         onSearchChange={(v) => { setSearchTerm(v); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
         onCreateClass={() => setIsCreateOpen(true)}
       />
 
       {/* Container Nội dung Lớp học & Panel Bộ Lọc Ghim Cạnh Phải */}
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden">
-        <div className="flex-1 min-w-0 h-full overflow-hidden">
-          {viewMode === 'timetable' ? (
-            <div className="h-full overflow-hidden">
-              <ClassesTimetableView
-                classes={filteredClasses}
-                onView={(id) => handleOpenDetail(id, { editMode: false })}
-                onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
-              />
-            </div>
-          ) : viewMode === 'grid' ? (
-            <div className="flex flex-col h-full min-h-0">
-              <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 lg:px-3">
-                <MyClassesGrid
-                  classes={pagedClasses}
-                  onOpenDetail={(cls, tab) => handleOpenDetail(cls.id, { initialTab: tab || 'overview' })}
-                />
-              </div>
-              <div className="border-t bg-background px-3 py-2 shrink-0">
-                <DataTablePagination
-                  page={currentPage}
-                  total={filteredClasses.length}
-                  pageSize={pageSize}
-                  onPageChange={setPage}
-                  onPageSizeChange={setPageSize}
-                />
-              </div>
-            </div>
-          ) : viewMode === 'list' ? (
-            <div className="min-h-0 h-full overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
-              <DataTableFrame
-                footer={
-                  <DataTablePagination
-                    page={currentPage}
-                    total={filteredClasses.length}
-                    pageSize={pageSize}
-                    onPageChange={setPage}
-                    onPageSizeChange={setPageSize}
-                  />
-                }
-              >
-                <ClassesTable
-                  classes={pagedClasses}
-                  selectedIds={selectedIds}
-                  onToggleAll={toggleSelectAll}
-                  onToggleOne={toggleSelectOne}
-                  onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
-                  onView={(id) => handleOpenDetail(id, { editMode: false })}
-                  onEdit={(id) => handleOpenDetail(id, { editMode: true })}
-                  onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
-                  onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
-                  onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
-                />
-              </DataTableFrame>
-            </div>
-          ) : (
-            <div className="min-h-0 h-full overflow-hidden">
-              <ClassesStatsView classes={filteredClasses} />
-            </div>
-          )}
+      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2.5 pt-0.5 pb-2 lg:px-3">
+        <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
+          <ClassesTable
+            classes={pagedClasses}
+            selectedIds={selectedIds}
+            onToggleAll={toggleSelectAll}
+            onToggleOne={toggleSelectOne}
+            onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
+            onView={(id) => handleOpenDetail(id, { editMode: false })}
+            onEdit={(id) => handleOpenDetail(id, { editMode: true })}
+            onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
+            onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
+            onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
+            className="flex-1"
+            pagination={{
+              page: currentPage,
+              total: filteredClasses.length,
+              pageSize: pageSize,
+              onPageChange: setPage,
+              onPageSizeChange: setPageSize,
+              selectedCount: selectedIds.size,
+              onClearSelection: () => setSelectedIds(new Set()),
+            }}
+          />
         </div>
 
         {/* Panel bộ lọc ghim cạnh phải chuẩn màn Đơn hàng */}
         {isFilterOpen && (
-          <div className="pr-3 pb-3 pt-2 shrink-0 h-full">
-            <FilterGroupAsidePanel
-              title="Bộ lọc lớp học"
-              groups={filterGroups}
-              onClose={() => setIsFilterOpen(false)}
-              onToggle={(sectionId, value) => {
-                if (sectionId === 'branches') toggleFilterValue('branches', value)
-                if (sectionId === 'levels') toggleFilterValue('levels', value)
-                if (sectionId === 'teachers') toggleFilterValue('teachers', value)
-                if (sectionId === 'rooms') toggleFilterValue('rooms', value)
-                if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
-                if (sectionId === 'times') toggleFilterValue('times', value)
-                if (sectionId === 'subjects') toggleFilterValue('subjects', value)
-                if (sectionId === 'programs') toggleFilterValue('programs', value)
-                if (sectionId === 'learningPaths') toggleFilterValue('learningPaths', value)
-                if (sectionId === 'syllabuses') toggleFilterValue('syllabuses', value)
-                if (sectionId === 'packages') toggleFilterValue('packages', value)
-                if (sectionId === 'statuses') toggleFilterValue('statuses', value)
-                if (sectionId === 'dateRanges') toggleFilterValue('dateRanges', value)
-              }}
-              onClearAll={() => {
-                setFilters({
-                  branches: [],
-                  levels: [],
-                  teachers: [],
-                  rooms: [],
-                  weekdays: [],
-                  times: [],
-                  subjects: [],
-                  programs: [],
-                  learningPaths: [],
-                  syllabuses: [],
-                  packages: [],
-                  statuses: [],
-                  dateRanges: [],
-                  studentSearch: '',
-                })
-                setPage(1)
-              }}
-              onClearSection={(sectionId) => {
-                setFilters((current) => ({
-                  ...current,
-                  [sectionId]: [],
-                }))
-                setPage(1)
-              }}
-            >
-              <div className="border-b border-border/40 pb-3 pt-1">
-                <FieldLabel label="Tìm theo học viên">
-                  <Input
-                    id="student-search-input"
-                    placeholder="Nhập tên, SĐT hoặc mã học viên..."
-                    value={filters.studentSearch}
-                    onChange={(e) => handleStudentSearchChange(e.target.value)}
-                    className="mt-1 h-7 text-xs"
-                  />
-                </FieldLabel>
-              </div>
-            </FilterGroupAsidePanel>
-          </div>
+          <FilterGroupAsidePanel
+            title="Bộ lọc lớp học"
+            groups={filterGroups}
+            onClose={() => setIsFilterOpen(false)}
+            onToggle={(sectionId, value) => {
+              if (sectionId === 'branches') toggleFilterValue('branches', value)
+              if (sectionId === 'levels') toggleFilterValue('levels', value)
+              if (sectionId === 'teachers') toggleFilterValue('teachers', value)
+              if (sectionId === 'rooms') toggleFilterValue('rooms', value)
+              if (sectionId === 'weekdays') toggleFilterValue('weekdays', value)
+              if (sectionId === 'times') toggleFilterValue('times', value)
+              if (sectionId === 'subjects') toggleFilterValue('subjects', value)
+              if (sectionId === 'programs') toggleFilterValue('programs', value)
+              if (sectionId === 'learningPaths') toggleFilterValue('learningPaths', value)
+              if (sectionId === 'syllabuses') toggleFilterValue('syllabuses', value)
+              if (sectionId === 'packages') toggleFilterValue('packages', value)
+              if (sectionId === 'statuses') toggleFilterValue('statuses', value)
+              if (sectionId === 'dateRanges') toggleFilterValue('dateRanges', value)
+            }}
+            onClearAll={() => {
+              setFilters({
+                branches: [],
+                levels: [],
+                teachers: [],
+                rooms: [],
+                weekdays: [],
+                times: [],
+                subjects: [],
+                programs: [],
+                learningPaths: [],
+                syllabuses: [],
+                packages: [],
+                statuses: [],
+                dateRanges: [],
+                studentSearch: '',
+              })
+              setPage(1)
+            }}
+            onClearSection={(sectionId) => {
+              setFilters((current) => ({
+                ...current,
+                [sectionId]: [],
+              }))
+              setPage(1)
+            }}
+          >
+            <div className="border-b border-border/40 pb-3 pt-1">
+              <FieldLabel label="Tìm theo học viên">
+                <Input
+                  id="student-search-input"
+                  placeholder="Nhập tên, SĐT hoặc mã học viên..."
+                  value={filters.studentSearch}
+                  onChange={(e) => handleStudentSearchChange(e.target.value)}
+                  className="mt-1 h-7 text-xs"
+                />
+              </FieldLabel>
+            </div>
+          </FilterGroupAsidePanel>
         )}
       </div>
 

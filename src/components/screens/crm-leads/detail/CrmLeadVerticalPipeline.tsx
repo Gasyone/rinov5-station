@@ -342,7 +342,7 @@ export function CrmLeadVerticalPipeline({
             {/* Huy hiệu trạng thái hiện tại */}
             <Badge
               className={cn(
-                'h-5.5 px-2 text-[11px] font-semibold rounded-full inline-flex items-center shadow-none',
+                'h-5.5 px-2 text-xs font-semibold rounded-full inline-flex items-center shadow-none',
                 statusBadge
               )}
             >
@@ -350,7 +350,7 @@ export function CrmLeadVerticalPipeline({
             </Badge>
 
             {isCollapsed && (
-              <span className="text-[11px] text-muted-foreground font-normal">
+              <span className="text-xs text-muted-foreground font-normal">
                 (Chặng {Math.max(1, currentStageIndex + 1)}/{pipelineStages.length})
               </span>
             )}
@@ -365,7 +365,7 @@ export function CrmLeadVerticalPipeline({
                   variant="outline"
                   size="sm"
                   onClick={onOpenDropDialog}
-                  className="h-6.5 px-2 text-[11px] font-semibold text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900/50 dark:hover:bg-rose-950/40 cursor-pointer"
+                  className="h-6.5 px-2 text-xs font-semibold text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900/50 dark:hover:bg-rose-950/40 cursor-pointer"
                   title="Báo rớt Lead kèm lý do chuẩn hóa"
                 >
                   <UserX className="h-3 w-3 mr-1" />
@@ -376,7 +376,7 @@ export function CrmLeadVerticalPipeline({
                   type="button"
                   size="sm"
                   onClick={onAdvanceStage}
-                  className="h-6.5 px-2.5 text-[11px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+                  className="h-6.5 px-2.5 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
                   title="Chuyển Lead sang chặng tiếp theo"
                 >
                   <span>Tiếp tục</span>
@@ -387,7 +387,7 @@ export function CrmLeadVerticalPipeline({
 
             {isFailed && (
               <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="text-[11px] font-semibold bg-rose-50 text-rose-700 border-rose-200">
+                <Badge variant="outline" className="text-xs font-semibold bg-rose-50 text-rose-700 border-rose-200">
                   Đã báo rớt
                 </Badge>
                 {onReactivateCycle && (
@@ -395,7 +395,7 @@ export function CrmLeadVerticalPipeline({
                     type="button"
                     size="sm"
                     onClick={onReactivateCycle}
-                    className="h-6.5 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                    className="h-6.5 px-2 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
                     title="Kích hoạt Chu kỳ Bán mới (Win-back / Tái tiếp cận)"
                   >
                     <Sparkles className="h-3 w-3" />
@@ -407,7 +407,7 @@ export function CrmLeadVerticalPipeline({
 
             {isConverted && (
               <div className="flex items-center gap-1.5">
-                <Badge variant="outline" className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
+                <Badge variant="outline" className="text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
                   Chuyển đổi (WON)
                 </Badge>
                 {onReactivateCycle && (
@@ -415,7 +415,7 @@ export function CrmLeadVerticalPipeline({
                     type="button"
                     size="sm"
                     onClick={onReactivateCycle}
-                    className="h-6.5 px-2 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
+                    className="h-6.5 px-2 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs gap-1 cursor-pointer"
                     title="Kích hoạt bán mới (Học thêm môn / Tái ký / Tái tiếp cận)"
                   >
                     <Sparkles className="h-3 w-3" />
@@ -475,7 +475,7 @@ export function CrmLeadVerticalPipeline({
             <button
               type="button"
               onClick={() => setIsReassignModalOpen(true)}
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800 transition-colors cursor-pointer shadow-3xs"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-800 dark:hover:text-sky-200 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800 transition-colors cursor-pointer shadow-3xs"
               title="Điều chuyển phụ trách Lead cho nhân sự khác"
             >
               <UserCog className="h-3 w-3 text-sky-600 dark:text-sky-400" />
@@ -507,12 +507,12 @@ export function CrmLeadVerticalPipeline({
               </Button>
             )}
           </div>
-          <p className="text-[11px] text-rose-700 dark:text-rose-300">
+          <p className="text-xs text-rose-700 dark:text-rose-300">
             Lý do: <span className="font-semibold">{lead.dropRecord.reasonLabel}</span>
             {lead.dropRecord.note ? ` — "${lead.dropRecord.note}"` : ''}
           </p>
           {lead.dropRecord.reCareDate && (
-            <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
               Lịch làm ấm lại: {lead.dropRecord.reCareDate}
             </p>
           )}
@@ -566,7 +566,7 @@ export function CrmLeadVerticalPipeline({
                     <div className="flex items-center gap-2 shrink-0 ml-auto">
                       {/* Trạng thái đang chọn ở cạnh phải dòng trạng thái chính */}
                       {activeSub && (
-                        <span className="text-[11px] font-semibold text-primary">
+                        <span className="text-xs font-semibold text-primary">
                           {activeSub}
                         </span>
                       )}
@@ -574,7 +574,7 @@ export function CrmLeadVerticalPipeline({
                       <button
                         type="button"
                         onClick={() => setIsCollapsed(false)}
-                        className="text-[10px] text-sky-600 dark:text-sky-400 hover:underline font-medium cursor-pointer"
+                        className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium cursor-pointer"
                       >
                         Mở rộng
                       </button>
@@ -592,7 +592,7 @@ export function CrmLeadVerticalPipeline({
                             type="button"
                             onClick={(e) => handleSubStatusClick(sub, e)}
                             className={cn(
-                              'text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors border cursor-pointer',
+                              'text-xs px-2 py-0.5 rounded-md font-medium transition-colors border cursor-pointer',
                               isSelected
                                 ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
                                 : 'bg-background hover:bg-muted text-foreground/80 border-border/80'
@@ -692,7 +692,7 @@ export function CrmLeadVerticalPipeline({
                     <div className="flex items-center gap-2 shrink-0 ml-auto">
                       {/* Trạng thái đang chọn ở cạnh phải dòng trạng thái chính */}
                       {isCurrent && activeSub && (
-                        <span className="text-[11px] font-semibold text-primary">
+                        <span className="text-xs font-semibold text-primary">
                           {activeSub}
                         </span>
                       )}
@@ -713,7 +713,7 @@ export function CrmLeadVerticalPipeline({
                             type="button"
                             onClick={(e) => handleSubStatusClick(sub, e)}
                             className={cn(
-                              'text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors border cursor-pointer',
+                              'text-xs px-2 py-0.5 rounded-md font-medium transition-colors border cursor-pointer',
                               isSelected
                                 ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
                                 : 'bg-background hover:bg-muted text-foreground/80 border-border/80'

@@ -81,7 +81,7 @@ export function CrmLeadAssessmentSchedulePopover({
             <Clock className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
             <span>{timeDisplay}</span>
           </div>
-          <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+          <span className="inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800">
             Trải nghiệm
           </span>
         </div>
@@ -94,7 +94,7 @@ export function CrmLeadAssessmentSchedulePopover({
               <h4 className="font-bold text-sm text-foreground leading-tight">
                 {student.name || 'Hoàng Nam'}
               </h4>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
                 {currentSubject.statusLabel || 'Hoàn tất'}
               </span>
             </div>
@@ -138,7 +138,7 @@ export function CrmLeadAssessmentSchedulePopover({
 
           {/* Staff Section: PHỤ TRÁCH */}
           <div className="border-t border-border/50 pt-2 space-y-1 text-xs">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
               PHỤ TRÁCH:
             </div>
             <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export function CrmLeadAssessmentSchedulePopover({
         </div>
 
         {/* Footer Hint */}
-        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <div className="bg-muted/40 border-t border-border/60 px-3.5 py-1.5 text-xs text-muted-foreground flex items-center gap-1.5">
           <Info className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           <span>Nhấp vào thẻ để mở chi tiết &amp; thao tác</span>
         </div>

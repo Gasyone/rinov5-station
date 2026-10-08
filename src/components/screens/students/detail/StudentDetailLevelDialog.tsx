@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Pencil } from 'lucide-react'
 import {
   Dialog,
@@ -11,8 +11,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { InlineSelect } from '@/components/controls'
-
-import { Input } from '@/components/ui/input'
 
 interface StudentDetailLevelDialogProps {
   open: boolean
@@ -25,17 +23,54 @@ interface StudentDetailLevelDialogProps {
   onSave: (level: string, subLevel: string, schoolClass?: string, englishName?: string) => void
 }
 
-const LEVEL_OPTIONS = ['IELTS', 'TOEIC', 'Beginner', 'STEM', 'Math', 'Japanese', 'English'].map((l) => ({
-  value: l,
-  label: l,
-}))
+const BASE_LEVEL_OPTIONS = [
+  'Toán 1:6',
+  'Toán 1:1',
+  'Toán nâng cao',
+  'Toán tư duy',
+  'IELTS',
+  'TOEIC',
+  'Beginner',
+  'STEM',
+  'Math',
+  'English',
+  'Japanese',
+]
 
-const SUB_LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', '5.0-5.5', '5.5-6.0', '6.0-6.5', '6.5-7.0', '7.0-7.5', '7.5+', 'Algebra v1', 'Geometry v1'].map((sl) => ({
-  value: sl,
-  label: sl,
-}))
+const BASE_SUB_LEVEL_OPTIONS = [
+  'A',
+  'B',
+  'C',
+  'A1',
+  'A2',
+  'B1',
+  'B2',
+  'C1',
+  'C2',
+  '5.0-5.5',
+  '5.5-6.0',
+  '6.0-6.5',
+  '6.5-7.0',
+  '7.0-7.5',
+  '7.5+',
+  'Algebra v1',
+  'Geometry v1',
+]
 
-const SCHOOL_CLASS_OPTIONS = ['Lớp 1', 'Lớp 2', 'Lớp 3', 'Lớp 4', 'Lớp 5', 'Lớp 6', 'Lớp 7', 'Lớp 8', 'Lớp 9', 'Lớp 10', 'Lớp 11', 'Lớp 12'].map((sc) => ({
+const SCHOOL_CLASS_OPTIONS = [
+  'Lớp 1',
+  'Lớp 2',
+  'Lớp 3',
+  'Lớp 4',
+  'Lớp 5',
+  'Lớp 6',
+  'Lớp 7',
+  'Lớp 8',
+  'Lớp 9',
+  'Lớp 10',
+  'Lớp 11',
+  'Lớp 12',
+].map((sc) => ({
   value: sc,
   label: sc,
 }))
@@ -46,88 +81,118 @@ export function StudentDetailLevelDialog({
   initialLevel,
   initialSubLevel,
   initialSchoolClass = 'Lớp 6',
-  initialEnglishName = '',
   isEnglish = false,
   onSave,
 }: StudentDetailLevelDialogProps) {
   const [level, setLevel] = useState(initialLevel)
   const [subLevel, setSubLevel] = useState(initialSubLevel)
   const [schoolClass, setSchoolClass] = useState(initialSchoolClass)
-  const [englishName, setEnglishName] = useState(initialEnglishName)
 
-  // Sync state when dialog opens or initial values change
+  // Danh sách options level linh hoạt, tự động bổ sung initialLevel nếu chưa có
+  const levelOptions = useMemo(() => {
+    const list = [...BASE_LEVEL_OPTIONS]
+    if (initialLevel && !list.includes(initialLevel)) {
+      list.unshift(initialLevel)
+    }
+    return list.map((l) => ({ value: l, label: l }))
+  }, [initialLevel])
+
+  // Danh sách options sub-level linh hoạt, tự động bổ sung initialSubLevel nếu chưa có
+  const subLevelOptions = useMemo(() => {
+    const list = [...BASE_SUB_LEVEL_OPTIONS]
+    if (initialSubLevel && !list.includes(initialSubLevel)) {
+      list.unshift(initialSubLevel)
+    }
+    return list.map((sl) => ({ value: sl, label: sl }))
+  }, [initialSubLevel])
+
+  // Đồng bộ state khi mở modal
   useEffect(() => {
     if (open) {
       setLevel(initialLevel)
       setSubLevel(initialSubLevel)
       setSchoolClass(initialSchoolClass || 'Lớp 6')
-      setEnglishName(initialEnglishName || '')
     }
-  }, [open, initialLevel, initialSubLevel, initialSchoolClass, initialEnglishName])
+  }, [open, initialLevel, initialSubLevel, initialSchoolClass])
 
   const handleSave = () => {
-    onSave(level, subLevel, isEnglish ? undefined : schoolClass, englishName.trim())
+    onSave(level, subLevel, isEnglish ? undefined : schoolClass)
+    onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px] bg-background p-5 rounded-xl border shadow-lg">
-        <DialogHeader className="pb-3 border-b">
-          <DialogTitle className="text-sm font-bold flex items-center gap-1.5">
-            <Pencil className="h-4 w-4 text-primary" /> Cập nhật thông tin trình độ
+      <DialogContent className="sm:max-w-[320px] bg-background p-3 sm:p-3.5 rounded-xl border shadow-xl gap-2">
+        <DialogHeader className="pb-1.5 border-b border-border/50 text-left">
+          <DialogTitle className="text-xs sm:text-[12.5px] font-bold flex items-center gap-1.5 text-foreground leading-tight">
+            <Pencil className="h-3.5 w-3.5 text-primary shrink-0" /> Cập nhật thông tin trình độ
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Tên Tiếng Anh</label>
-            <Input
-              value={englishName}
-              onChange={(e) => setEnglishName(e.target.value)}
-              placeholder="Nhập tên tiếng Anh (VD: Alex)"
-              className="h-9 text-sm"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Trình độ (Level)</label>
+
+        <div className="space-y-2 py-1 text-left">
+          {/* Trình độ (Level) */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+              Trình độ (Level)
+            </label>
             <InlineSelect
               value={level}
-              options={LEVEL_OPTIONS}
+              options={levelOptions}
               placeholder="Chọn trình độ"
               onValueChange={setLevel}
-              className="w-full justify-between h-9 bg-background border border-border"
+              className="w-full justify-between h-7.5 text-xs bg-background border border-border"
               variant="solid"
             />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Sub-level (Trình độ phụ)</label>
+
+          {/* Sub-level (Trình độ phụ) */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+              Sub-level (Trình độ phụ)
+            </label>
             <InlineSelect
               value={subLevel}
-              options={SUB_LEVEL_OPTIONS}
+              options={subLevelOptions}
               placeholder="Chọn sub-level"
               onValueChange={setSubLevel}
-              className="w-full justify-between h-9 bg-background border border-border"
+              className="w-full justify-between h-7.5 text-xs bg-background border border-border"
               variant="solid"
             />
           </div>
+
+          {/* Lớp phổ thông / truyền thống (nếu không phải môn ngoại ngữ chuyên biệt) */}
           {!isEnglish && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-muted-foreground uppercase">Lớp (Lớp phổ thông / truyền thống)</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                Lớp (Lớp phổ thông / truyền thống)
+              </label>
               <InlineSelect
                 value={schoolClass}
                 options={SCHOOL_CLASS_OPTIONS}
                 placeholder="Chọn lớp"
                 onValueChange={setSchoolClass}
-                className="w-full justify-between h-9 bg-background border border-border"
+                className="w-full justify-between h-7.5 text-xs bg-background border border-border"
                 variant="solid"
               />
             </div>
           )}
         </div>
-        <div className="flex justify-end gap-2 pt-2 border-t">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="text-xs cursor-pointer">
+
+        {/* Footer actions */}
+        <div className="flex justify-end gap-1.5 pt-2 border-t border-border/50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+            className="h-7 px-2.5 text-xs cursor-pointer"
+          >
             Hủy
           </Button>
-          <Button size="sm" onClick={handleSave} className="bg-primary text-primary-foreground text-xs font-semibold cursor-pointer">
+          <Button
+            size="sm"
+            onClick={handleSave}
+            className="h-7 px-3 bg-primary text-primary-foreground text-xs font-semibold cursor-pointer shadow-3xs"
+          >
             Lưu thay đổi
           </Button>
         </div>

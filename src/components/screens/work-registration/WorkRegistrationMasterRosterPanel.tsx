@@ -286,9 +286,9 @@ export function WorkRegistrationMasterRosterPanel({
                                         className={cn(
                                           'shrink-0 tabular-nums leading-tight',
                                           isMatched
-                                            ? 'text-primary-foreground font-medium text-[11px]'
+                                            ? 'text-primary-foreground font-medium text-xs'
                                             : isFull
-                                            ? 'text-[11px] font-medium text-emerald-600 dark:text-emerald-400'
+                                            ? 'text-xs font-medium text-emerald-600 dark:text-emerald-400'
                                             : 'text-[9.5px] font-normal text-muted-foreground'
                                         )}
                                       >
@@ -311,10 +311,10 @@ export function WorkRegistrationMasterRosterPanel({
                                     sectionLabel: sec.label,
                                   })
                                 }}
-                                className="text-[11px] font-semibold text-primary hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-0.5 border-t border-border/30 mt-0.5"
+                                className="text-xs font-semibold text-primary hover:underline px-1 py-0.5 cursor-pointer flex items-center justify-between transition-colors pt-0.5 border-t border-border/30 mt-0.5"
                               >
                                 <span>+{remainingCount} khác...</span>
-                                <span className="text-[10px] font-normal text-muted-foreground">Chi tiết →</span>
+                                <span className="text-xs font-normal text-muted-foreground">Chi tiết →</span>
                               </div>
                             )}
 

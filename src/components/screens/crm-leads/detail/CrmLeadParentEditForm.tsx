@@ -33,7 +33,7 @@ export function CrmLeadParentEditForm({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Nghề nghiệp / Vị trí</label>
+            <label className="text-xs font-normal text-muted-foreground">Nghề nghiệp / Vị trí</label>
             <Input
               value={editedParent.occupation || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, occupation: e.target.value }))}
@@ -43,7 +43,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Ngân sách học tập / tháng</label>
+            <label className="text-xs font-normal text-muted-foreground">Ngân sách học tập / tháng</label>
             <Input
               value={editedParent.budgetPerMonth || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, budgetPerMonth: e.target.value }))}
@@ -53,7 +53,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="sm:col-span-2 space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Quyền hạn quyết định</label>
+            <label className="text-xs font-normal text-muted-foreground">Quyền hạn quyết định</label>
             <Input
               value={editedParent.decisionMakerRole || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, decisionMakerRole: e.target.value }))}
@@ -73,7 +73,7 @@ export function CrmLeadParentEditForm({
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Kênh ưu tiên</label>
+            <label className="text-xs font-normal text-muted-foreground">Kênh ưu tiên</label>
             <Select
               value={editedParent.preferredChannel}
               onValueChange={(val) => setEditedParent((p) => ({ ...p, preferredChannel: val }))}
@@ -92,7 +92,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Trạng thái Zalo</label>
+            <label className="text-xs font-normal text-muted-foreground">Trạng thái Zalo</label>
             <Select
               value={editedParent.zaloStatus}
               onValueChange={(val) => setEditedParent((p) => ({ ...p, zaloStatus: val }))}
@@ -109,7 +109,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="sm:col-span-2 space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Khung giờ vàng liên lạc</label>
+            <label className="text-xs font-normal text-muted-foreground">Khung giờ vàng liên lạc</label>
             <Input
               value={editedParent.bestTimeToCall || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, bestTimeToCall: e.target.value }))}
@@ -120,12 +120,12 @@ export function CrmLeadParentEditForm({
 
           {/* Các liên hệ khác (Mạng xã hội / Kênh mở rộng) */}
           <div className="sm:col-span-2 pt-1 border-t border-blue-100/60 dark:border-blue-900/20 space-y-2">
-            <span className="text-[11px] font-medium text-muted-foreground block">
+            <span className="text-xs font-medium text-muted-foreground block">
               Các kênh liên hệ khác (Mạng xã hội)
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] text-muted-foreground">Facebook</label>
+                <label className="text-xs text-muted-foreground">Facebook</label>
                 <Input
                   value={editedParent.facebook || ''}
                   onChange={(e) => setEditedParent((p) => ({ ...p, facebook: e.target.value }))}
@@ -134,7 +134,7 @@ export function CrmLeadParentEditForm({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] text-muted-foreground">Instagram</label>
+                <label className="text-xs text-muted-foreground">Instagram</label>
                 <Input
                   value={editedParent.instagram || ''}
                   onChange={(e) => setEditedParent((p) => ({ ...p, instagram: e.target.value }))}
@@ -143,7 +143,7 @@ export function CrmLeadParentEditForm({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] text-muted-foreground">Zalo (SĐT / Link)</label>
+                <label className="text-xs text-muted-foreground">Zalo (SĐT / Link)</label>
                 <Input
                   value={editedParent.zaloPhone || ''}
                   onChange={(e) => setEditedParent((p) => ({ ...p, zaloPhone: e.target.value }))}
@@ -165,7 +165,7 @@ export function CrmLeadParentEditForm({
         </div>
         <div className="space-y-2.5">
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Kỳ vọng đối với chương trình học của con</label>
+            <label className="text-xs font-normal text-muted-foreground">Kỳ vọng đối với chương trình học của con</label>
             <Textarea
               value={editedParent.parentExpectation || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, parentExpectation: e.target.value }))}
@@ -175,7 +175,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Nỗi đau / Rào cản từ trung tâm cũ</label>
+            <label className="text-xs font-normal text-muted-foreground">Nỗi đau / Rào cản từ trung tâm cũ</label>
             <Textarea
               value={editedParent.parentPainPoint || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, parentPainPoint: e.target.value }))}
@@ -185,7 +185,7 @@ export function CrmLeadParentEditForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] font-normal text-muted-foreground">Lưu ý tâm lý tư vấn &amp; Bí quyết chốt sales</label>
+            <label className="text-xs font-normal text-muted-foreground">Lưu ý tâm lý tư vấn &amp; Bí quyết chốt sales</label>
             <Textarea
               value={editedParent.parentPersonalityNote || ''}
               onChange={(e) => setEditedParent((p) => ({ ...p, parentPersonalityNote: e.target.value }))}

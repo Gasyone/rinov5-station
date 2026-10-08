@@ -104,7 +104,7 @@ export function HistoricalReportsDialog({
                           {item.title}
                         </span>
 
-                        <span className="hidden sm:inline text-[11px] text-muted-foreground shrink-0 truncate">
+                        <span className="hidden sm:inline text-xs text-muted-foreground shrink-0 truncate">
                           • GV: {item.teacherName} • {item.date}
                         </span>
                       </div>

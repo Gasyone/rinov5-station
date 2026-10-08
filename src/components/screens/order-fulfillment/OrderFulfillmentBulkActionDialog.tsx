@@ -92,7 +92,7 @@ export function OrderFulfillmentBulkActionDialog({
                 <Users className="h-3.5 w-3.5 text-primary" />
                 <span>Danh sách học viên nhận ({selectedRecords.length})</span>
               </span>
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-xs font-mono text-muted-foreground">
                 Tổng {totalProductsCount} món
               </span>
             </div>
@@ -101,10 +101,10 @@ export function OrderFulfillmentBulkActionDialog({
               {selectedRecords.map((r) => (
                 <span
                   key={r.id}
-                  className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-background border border-border/80 text-foreground font-medium"
+                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-background border border-border/80 text-foreground font-medium"
                 >
                   <span>{r.studentName}</span>
-                  <span className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     ({r.products.length} món)
                   </span>
                 </span>

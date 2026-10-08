@@ -4,27 +4,6 @@ import { getStatusColors } from '@/lib/statusColors'
 import type { BookingTestResult } from '@/mocks/bookingTests'
 import { cn } from '@/lib/utils'
 
-function ScoreChip({
-  label,
-  value,
-  className,
-}: {
-  label: string
-  value: string
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        'inline-flex h-5 items-center rounded border px-1.5 text-xs font-medium leading-none',
-        className
-      )}
-    >
-      {label}: {value}
-    </span>
-  )
-}
-
 export function SpeakingScore({
   result,
   compact = false,
@@ -32,8 +11,13 @@ export function SpeakingScore({
   result?: BookingTestResult
   compact?: boolean
 }) {
-  const warningChip = getStatusColors('warning').badge
-  const infoChip = getStatusColors('info').badge
+  const warningText = getStatusColors('warning').text
+  const infoText = getStatusColors('info').text
+  const scoreValue = result?.speakingScore || '0'
+  const isPositiveScore = Number(scoreValue) > 0
+  const scoreText = isPositiveScore
+    ? getStatusColors('success').text
+    : 'text-muted-foreground'
 
   return (
     <div className="min-w-0">
@@ -42,11 +26,15 @@ export function SpeakingScore({
           Điểm Speaking
         </p>
       ) : null}
-      <div className={cn('flex flex-wrap items-center gap-1', compact ? '' : 'mt-1')}>
-        <ScoreChip label="GV" value={result?.speaking || 'chưa có'} className={warningChip} />
-        <ScoreChip label="AI" value={result?.speakingAi || '0/0'} className={infoChip} />
-        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-border px-1.5 text-xs font-medium leading-none">
-          {result?.speakingScore || '0'}
+      <div className={cn('flex flex-wrap items-center gap-1.5', compact ? '' : 'mt-1')}>
+        <span className={cn('text-xs font-normal', warningText)}>
+          GV: {result?.speaking || 'chưa có'}
+        </span>
+        <span className={cn('text-xs font-normal', infoText)}>
+          AI: {result?.speakingAi || '0/0'}
+        </span>
+        <span className={cn('text-xs font-normal', scoreText)}>
+          {scoreValue}
         </span>
       </div>
     </div>
@@ -73,8 +61,8 @@ export function LwrScore({
       ) : null}
       <p
         className={cn(
-          'truncate font-semibold',
-          compact ? 'text-xs' : 'mt-1 text-sm'
+          'truncate',
+          compact ? 'text-xs text-muted-foreground font-normal leading-tight' : 'mt-1 text-sm font-semibold'
         )}
         title={`${level} - ${rawScore} - ${convertedScore}`}
       >

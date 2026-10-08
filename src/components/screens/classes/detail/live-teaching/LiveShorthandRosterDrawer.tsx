@@ -139,7 +139,7 @@ export function LiveShorthandRosterDrawer({
       <div className="px-3 py-2 border-b bg-zinc-50/80 dark:bg-zinc-850/80 shrink-0 space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-extrabold text-[11px] uppercase tracking-wider text-foreground flex items-center gap-1 truncate">
+            <span className="font-extrabold text-xs uppercase tracking-wider text-foreground flex items-center gap-1 truncate">
               <Sparkles className="h-3 w-3 text-primary shrink-0" />
               Tốc ký học viên ({students.length})
             </span>
@@ -210,7 +210,7 @@ export function LiveShorthandRosterDrawer({
                   <div className="flex items-center gap-1.5 min-w-0">
                     <div
                       className={cn(
-                        'h-5.5 w-5.5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-2xs',
+                        'h-5.5 w-5.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs',
                         getAvatarColor(student.id)
                       )}
                     >
@@ -275,7 +275,7 @@ export function LiveShorthandRosterDrawer({
 
                 {/* Banner trạng thái đang thu âm */}
                 {isRecording && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-[10px] font-medium animate-pulse">
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 text-xs font-medium animate-pulse">
                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping shrink-0" />
                     <span className="truncate">Đang thu âm... Chạm mic để dừng</span>
                   </div>
@@ -283,9 +283,9 @@ export function LiveShorthandRosterDrawer({
 
                 {/* Hiển thị đoạn text thu âm nhận xét ngắn */}
                 {!isRecording && log.hasVoiceMemo && (
-                  <div className="flex items-center justify-between gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-[10px]">
+                  <div className="flex items-center justify-between gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs">
                     <div className="flex items-center gap-1 min-w-0 truncate">
-                      <span className="text-[11px] shrink-0">🎙️</span>
+                      <span className="text-xs shrink-0">🎙️</span>
                       <span className="truncate italic font-medium">&quot;{log.voiceMemoText}&quot;</span>
                     </div>
                     <button
@@ -309,14 +309,14 @@ export function LiveShorthandRosterDrawer({
                         type="button"
                         onClick={() => handleToggleTag(student, tag)}
                         className={cn(
-                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border transition-all cursor-pointer select-none active:scale-95 leading-tight',
+                          'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium border transition-all cursor-pointer select-none active:scale-95 leading-tight',
                           isSelected
                             ? 'bg-primary text-primary-foreground border-primary font-bold shadow-2xs'
                             : `${tag.colorClass} hover:opacity-85`
                         )}
                         title={tag.label}
                       >
-                        <span className="text-[10px] leading-none">{tag.icon}</span>
+                        <span className="text-xs leading-none">{tag.icon}</span>
                         <span>{tag.shortLabel}</span>
                         {isSelected && <Check className="h-2 w-2 stroke-[3px] ml-0.5" />}
                       </button>

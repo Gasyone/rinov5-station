@@ -6,22 +6,18 @@ import {
   Clock,
   Users,
   ChevronDown,
-  ChevronUp,
   ChevronRight,
+  ChevronUp,
   Calendar as CalendarIcon,
-  GraduationCap,
-  UserCheck,
-  BookOpen,
-  Info,
   ExternalLink,
+  BookOpen,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ClassSessionHoverCard } from '../calendar/ClassSessionHoverCard'
 import { Calendar } from '@/components/ui/calendar'
 import type { DateRange } from 'react-day-picker'
-import { PersonnelHoverCard } from '@/components/shared'
-import { ClassSessionHoverCard } from '../calendar/ClassSessionHoverCard'
 import { ClassCodeHoverCell } from '../care/ClassCodeHoverCell'
 import { MOCK_CLASS_OPTIONS } from './trialClassConstants'
 import type { TrialSessionSelection } from './trialClassTypes'
@@ -235,6 +231,12 @@ const formatInputDate = (date?: Date) => {
   return `${y}-${m}-${d}`
 }
 
+const extractLevel = (className: string, program: string): string => {
+  const clean = className.replace(/\s*\([^)]*\)/g, '').trim()
+  const withoutProgram = clean.replace(program, '').trim()
+  return withoutProgram || 'A1'
+}
+
 export function TrialClassSchedulePanel({
   school,
   program,
@@ -265,16 +267,6 @@ export function TrialClassSchedulePanel({
   )
   const [prevKey, setPrevKey] = React.useState(`${school}_${program}`)
 
-  // Quản lý trạng thái mở rộng xem nội dung bài học theo từng ca học
-  const [expandedSessionIds, setExpandedSessionIds] = React.useState<string[]>([])
-
-  const toggleSessionExpand = (sessionId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    setExpandedSessionIds((prev) =>
-      prev.includes(sessionId) ? prev.filter((id) => id !== sessionId) : [...prev, sessionId]
-    )
-  }
-
   // Khi cơ sở hoặc chương trình thay đổi, cập nhật lớp mở rộng
   const currentKey = `${school}_${program}`
   if (prevKey !== currentKey) {
@@ -285,6 +277,15 @@ export function TrialClassSchedulePanel({
   const toggleClassExpand = (classId: string) => {
     setExpandedClassIds((prev) =>
       prev.includes(classId) ? prev.filter((id) => id !== classId) : [...prev, classId]
+    )
+  }
+
+  // Quản lý trạng thái mở rộng/thu gọn nội dung của từng buổi học
+  const [expandedSessionIds, setExpandedSessionIds] = React.useState<string[]>([])
+
+  const toggleSessionExpand = (sessionId: string) => {
+    setExpandedSessionIds((prev) =>
+      prev.includes(sessionId) ? prev.filter((id) => id !== sessionId) : [...prev, sessionId]
     )
   }
 
@@ -388,38 +389,6 @@ export function TrialClassSchedulePanel({
         </div>
       </div>
 
-      {/* Selected Session Notification */}
-      {selectedSessions.length > 0 ? (
-        <div className="rounded-xl border border-primary/40 bg-primary/5 px-4 py-2.5 text-xs text-primary font-medium flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
-            <span>
-              Đã chọn: <strong>{selectedSessions[0].className}</strong> &middot;{' '}
-              <strong>{selectedSessions[0].sessionName}</strong> ({selectedSessions[0].trialDate})
-              {selectedSessions[0].teacher && (
-                <> &middot; <strong className="text-primary font-semibold">GV: {selectedSessions[0].teacher}</strong></>
-              )}
-              {selectedSessions[0].assistantTeacher && (
-                <> &middot; <strong className="text-primary font-semibold">TG: {selectedSessions[0].assistantTeacher}</strong></>
-              )}
-              {selectedSessions[0].room && (
-                <> &middot; <span>Phòng: {selectedSessions[0].room}</span></>
-              )}
-            </span>
-          </div>
-          <span
-            className="text-xs opacity-80 cursor-pointer hover:underline shrink-0 ml-2"
-            onClick={() => onSelectSession(selectedSessions[0])}
-          >
-            (Bấm lại để bỏ chọn)
-          </span>
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-border px-4 py-2.5 text-xs text-muted-foreground bg-card shadow-2xs">
-          Chưa chọn ca học cụ thể (Phiếu học thử sẽ được lưu ở trạng thái &quot;Chờ xác nhận&quot; để Giáo vụ xếp lớp sau).
-        </div>
-      )}
-
       {/* Flat List: Mỗi lớp học là 1 Section riêng biệt dạng thẻ trắng phẳng */}
       <div className="space-y-3">
         {!isReadyToLoad ? (
@@ -427,10 +396,10 @@ export function TrialClassSchedulePanel({
             <Clock className="mb-2 h-8 w-8 opacity-20" />
             <p className="text-sm font-semibold text-foreground">
               {!school && !program
-                ? 'Vui lòng chọn Cơ sở và Chương trình học ở bên trái'
+                ? 'Vui lòng chọn Cơ sở và Chương trình học ở phía trên'
                 : !school
-                ? 'Vui lòng chọn Cơ sở mong muốn học ở bên trái'
-                : 'Vui lòng chọn Chương trình học ở bên trái'}
+                ? 'Vui lòng chọn Cơ sở mong muốn học ở phía trên'
+                : 'Vui lòng chọn Chương trình học ở phía trên'}
             </p>
             <p className="mt-1 text-xs opacity-70">
               Sau khi chọn đủ cơ sở và chương trình, danh sách lớp học và ca học khả dụng sẽ tự động hiển thị.
@@ -444,9 +413,8 @@ export function TrialClassSchedulePanel({
           matchingClasses.map((cls) => {
             const isClassFull = cls.enrolledStudents >= cls.maxStudents
             const isExpanded = expandedClassIds.includes(cls.classId)
-            const classSessions = isExpanded
-              ? generateSessionsForClass(cls, fromDate, toDate)
-              : []
+            const classSessions = generateSessionsForClass(cls, fromDate, toDate)
+            const classLevel = extractLevel(cls.className, cls.program)
 
             const selectedInThisClass = selectedSessions.find((s) => s.classId === cls.classId)
 
@@ -459,92 +427,69 @@ export function TrialClassSchedulePanel({
                   isExpanded ? "ring-1 ring-primary/20" : ""
                 )}
               >
-                {/* Class Accordion Header - Giáo viên theo buổi, không để ở cấp lớp */}
+                {/* Class Accordion Header - 1 dòng duy nhất: Mã lớp + Level + Sĩ số (x buổi) */}
                 <button
                   type="button"
                   onClick={() => toggleClassExpand(cls.classId)}
                   className={cn(
-                    "flex w-full items-center justify-between p-4 text-left transition-colors cursor-pointer",
+                    "flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors cursor-pointer",
                     isExpanded ? "bg-muted/15" : "hover:bg-muted/15"
                   )}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <div className="text-muted-foreground shrink-0">
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </div>
-                    <div className="min-w-0">
-                      {/* Dòng 1: Tên lớp, Level, Đã chọn */}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <h4 className="font-bold text-sm truncate text-foreground">
-                          {cls.className}
-                        </h4>
+                    <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                      {/* Reusable ClassCodeHoverCell (Mã lớp) */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <ClassCodeHoverCell
+                          classCode={cls.classId.toUpperCase()}
+                          subject={cls.program}
+                          level={classLevel}
+                          teacherCode="Ms. Sarah"
+                          schedule={cls.schedule}
+                          openInNewTab={true}
+                        />
+                      </div>
+
+                      {/* Level - bỏ nhãn "Level:", chỉ hiển thị giá trị level */}
+                      <Badge
+                        variant="outline"
+                        className="h-5 px-1.5 text-xs border-amber-300/60 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold"
+                      >
+                        {classLevel}
+                      </Badge>
+
+                      {selectedInThisClass && (
                         <Badge
-                          variant="outline"
-                          className="h-5 px-1.5 text-xs border-amber-300/60 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold"
+                          variant="secondary"
+                          className="h-5 px-1.5 text-xs bg-primary/15 text-primary font-semibold"
                         >
-                          Level: {cls.className.split(' ').pop()}
+                          Đã chọn: {selectedInThisClass.sessionName}
                         </Badge>
-
-                        {selectedInThisClass && (
-                          <Badge
-                            variant="secondary"
-                            className="h-5 px-1.5 text-xs bg-primary/15 text-primary font-semibold"
-                          >
-                            Đã chọn: {selectedInThisClass.sessionName}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Dòng 2: Mã lớp đặt trước lịch học, cùng dòng với lịch học */}
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                        {/* Reusable ClassCodeHoverCell (mã lớp kèm hover card chuẩn của hệ thống) */}
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <ClassCodeHoverCell
-                            classCode={cls.classId.toUpperCase()}
-                            subject={cls.program}
-                            level={cls.className.split(' ').pop() || 'A1'}
-                            teacherCode="Ms. Sarah"
-                            schedule={cls.schedule}
-                            openInNewTab={true}
-                          />
-                        </div>
-                        <span>&middot;</span>
-                        <span>
-                          Lịch học: <strong className="text-foreground font-medium">{cls.schedule.split(' ')[0].split('/').join(', ')}</strong> &middot; <span className="font-semibold text-primary">{cls.schedule.split(' ')[0].split('/').length} buổi/tuần</span>
-                        </span>
-                      </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-1 shrink-0 pl-3 border-l border-border/40">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      <span className="font-medium">{cls.enrolledStudents}/{cls.maxStudents} HS</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground/80 font-normal">
-                      {isExpanded ? `${classSessions.length} buổi tiếp theo` : 'Bấm để xem buổi học'}
+                  {/* Sĩ số kèm số buổi: 12/15 HS (3 buổi) */}
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 pl-2">
+                    <Users className="h-3.5 w-3.5" />
+                    <span className="font-medium">
+                      {cls.enrolledStudents}/{cls.maxStudents} HS ({classSessions.length} buổi)
                     </span>
                   </div>
                 </button>
 
-                {/* Danh sách buổi học trong khoảng thời gian đã chọn (Tối đa 5 buổi) */}
+                {/* Danh sách buổi học trong khoảng thời gian đã chọn: Thiết kế dạng List Row phẳng, phân cách bằng đường line */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-2 border-t border-border/70 space-y-2 animate-in fade-in slide-in-from-top-1">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground font-medium pb-1">
-                      <span>
-                        {classSessions.length > 0
-                          ? `Các ca học trong khoảng thời gian (${classSessions.length} buổi):`
-                          : 'Không có buổi học trong khoảng thời gian này'}
-                      </span>
-                      <span>Sĩ số & Bài học</span>
-                    </div>
-
+                  <div className="border-t border-border/70 animate-in fade-in slide-in-from-top-1">
                     {classSessions.length === 0 ? (
-                      <div className="py-4 text-center text-xs text-muted-foreground bg-muted/20 rounded-lg border border-dashed">
+                      <div className="p-4 text-center text-xs text-muted-foreground bg-muted/15">
                         Không có buổi học nào trong khoảng thời gian đã chọn. Vui lòng mở rộng khoảng thời gian ở trên.
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="divide-y divide-border/60">
                         {classSessions.map((session) => {
                           const isSessionFull = session.attendees >= session.capacity
                           const isSelected = selectedSessions.some(
@@ -553,17 +498,7 @@ export function TrialClassSchedulePanel({
                           const isSessionExpanded = expandedSessionIds.includes(session.id)
 
                           return (
-                            <div
-                              key={session.id}
-                              className={cn(
-                                "rounded-lg border transition-all overflow-hidden",
-                                isSelected
-                                  ? "bg-primary/5 border-primary ring-1 ring-primary/30 shadow-2xs"
-                                  : isSessionFull
-                                    ? "bg-muted/30 opacity-60 border-border/40"
-                                    : "hover:border-border/90 border-border/70 bg-card"
-                              )}
-                            >
+                            <div key={session.id} className="transition-colors">
                               {/* Dòng ca học chính */}
                               <div
                                 role="button"
@@ -580,193 +515,173 @@ export function TrialClassSchedulePanel({
                                     assistantTeacher: session.assistantTeacher,
                                     room: session.room,
                                     lessonTopic: session.lessonTopic,
+                                    lessonWords: session.lessonContent.words,
+                                    lessonSentences: session.lessonContent.sentences,
+                                    lessonPhonics: session.lessonContent.phonics,
                                   })
                                 }}
                                 className={cn(
-                                  "flex w-full items-center justify-between p-3 text-left select-none cursor-pointer transition-colors",
-                                  isSelected ? "bg-primary/10" : "hover:bg-muted/30"
+                                  "flex w-full items-center justify-between px-4 py-2.5 text-left select-none cursor-pointer transition-colors relative",
+                                  isSelected
+                                    ? "bg-primary/8 dark:bg-primary/15"
+                                    : isSessionFull
+                                    ? "bg-muted/30 opacity-60 cursor-not-allowed"
+                                    : "hover:bg-muted/40 bg-card"
                                 )}
                               >
-                                <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
+                                {/* Đầu dòng: Radio / Check icon + Tên buổi + Nút mở rộng nội dung */}
+                                <div className="flex items-center gap-2.5 min-w-0 mr-3">
                                   <div
                                     className={cn(
-                                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors",
+                                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
                                       isSelected
                                         ? "border-primary bg-primary text-primary-foreground"
                                         : "border-muted-foreground/40 bg-background",
                                       isSessionFull && "border-muted-foreground/30"
                                     )}
                                   >
-                                    {isSelected && <CheckCircle className="h-3.5 w-3.5" />}
+                                    {isSelected && <CheckCircle className="h-3 w-3" />}
                                   </div>
 
-                                  <div className="min-w-0 flex-1">
-                                    {/* Tên ca học với Reusable ClassSessionHoverCard & Icon mở tab chi tiết */}
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <ClassSessionHoverCard
-                                        session={{
-                                          id: session.id,
-                                          title: session.name,
-                                          className: cls.className,
-                                          classCode: cls.classId.toUpperCase(),
-                                          kctName: cls.program,
-                                          subject: cls.program,
-                                          level: cls.className.split(' ').pop(),
-                                          schoolRoom: session.room,
-                                          branch: school || 'RinoEdu Linh Đàm',
-                                          timeSlot: `${session.time} - ${session.time === '09:00' ? '10:30' : '19:30'}`,
-                                          timeLabel: session.time,
-                                          date: session.formattedDate,
-                                          teacher: session.teacher,
-                                          assistantTeacher: session.assistantTeacher,
-                                          totalStudents: session.attendees,
-                                          capacity: session.capacity,
-                                          trialStudents: 2,
-                                          lessonSubtitle: session.lessonTopic,
-                                          lessonNumber: session.name,
-                                          lessonContent: {
-                                            sessionNumber: session.name,
-                                            words: session.lessonContent.words,
-                                            sentences: session.lessonContent.sentences,
-                                            phonics: session.lessonContent.phonics,
-                                          },
-                                          status: 'dang_hoc',
-                                        }}
-                                        side="right"
+                                  {/* Tên buổi gắn textlink & ClassSessionHoverCard chuẩn hệ thống */}
+                                  <div onClick={(e) => e.stopPropagation()} className="min-w-0 flex items-center gap-2">
+                                    <ClassSessionHoverCard
+                                      session={{
+                                        id: session.id,
+                                        title: session.lessonTopic || session.name,
+                                        lessonSubtitle: session.name,
+                                        classCode: cls.classId,
+                                        className: cls.className,
+                                        kctName: cls.program,
+                                        subject: cls.program.includes('STEM')
+                                          ? 'STEM'
+                                          : cls.program.includes('Toán')
+                                          ? 'Toán tư duy'
+                                          : 'Tiếng Anh',
+                                        level: classLevel,
+                                        schoolRoom: session.room,
+                                        branch: school || 'RinoEdu',
+                                        timeSlot: `${session.time} (90p)`,
+                                        timeLabel: session.time,
+                                        date: session.date,
+                                        teacher: session.teacher,
+                                        teacherName: session.teacher,
+                                        assistantTeacher: session.assistantTeacher,
+                                        taName: session.assistantTeacher,
+                                        totalStudents: session.attendees,
+                                        capacity: session.capacity,
+                                        type: 'class_session',
+                                        typeLabel: 'Lớp học thử',
+                                        lessonContent: [
+                                          session.lessonContent.words
+                                            ? `Từ vựng: ${session.lessonContent.words}`
+                                            : null,
+                                          session.lessonContent.sentences
+                                            ? `Mẫu câu: ${session.lessonContent.sentences}`
+                                            : null,
+                                          session.lessonContent.phonics
+                                            ? `Hoạt động: ${session.lessonContent.phonics}`
+                                            : null,
+                                        ]
+                                          .filter(Boolean)
+                                          .join(' • '),
+                                      }}
+                                      side="right"
+                                    >
+                                      <button
+                                        type="button"
+                                        className={cn(
+                                          "inline-flex items-center gap-1 text-xs font-semibold hover:underline transition-colors cursor-pointer text-left truncate",
+                                          isSelected ? "text-primary font-bold" : "text-foreground/90 hover:text-primary"
+                                        )}
+                                        title="Rê chuột để xem profile chi tiết buổi học"
                                       >
-                                        <div
-                                          className="inline-flex items-center gap-1 group/sess cursor-pointer"
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            window.open('/app/calendar_class_schedule', '_blank')
-                                          }}
-                                          title="Xem chi tiết buổi học (Mở tab mới)"
-                                        >
-                                          <span
-                                            className={cn(
-                                              "text-xs font-bold truncate group-hover/sess:underline group-hover/sess:text-primary transition-colors",
-                                              isSelected ? "text-primary font-bold" : "text-foreground"
-                                            )}
-                                          >
-                                            {session.name}
-                                          </span>
-                                          <ExternalLink className="h-3 w-3 text-muted-foreground/60 group-hover/sess:text-primary group-hover/sess:opacity-100 transition-colors shrink-0" />
-                                        </div>
-                                      </ClassSessionHoverCard>
-                                    </div>
-
-                                    {/* Subtext: Ngày giờ, Giáo viên, Trợ giảng */}
-                                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                                      <span className="font-semibold text-foreground/90">
-                                        {session.weekdayName}, {session.formattedDate}
-                                      </span>
-                                      <span>&middot;</span>
-                                      <span className="font-mono font-medium">{session.time}</span>
-                                      <span>&middot;</span>
-
-                                      {/* Teacher Button with PersonnelHoverCard */}
-                                      <PersonnelHoverCard
-                                        person={{
-                                          id: `EMP-${session.teacher.split(' ').map((n) => n[0]).join('').toUpperCase()}`,
-                                          name: session.teacher,
-                                          role: 'Giáo viên chính',
-                                          phone: '0912 345 678',
-                                          email: `${session.teacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.com`,
-                                        }}
-                                        align="start"
-                                      >
-                                        <span
-                                          onClick={(e) => e.stopPropagation()}
-                                          className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium hover:text-blue-800 dark:hover:text-blue-300 hover:underline cursor-pointer transition-colors"
-                                          title={`Xem thông tin giáo viên ${session.teacher}`}
-                                        >
-                                          <GraduationCap className="h-3.5 w-3.5" />
-                                          <span>GV: {session.teacher}</span>
-                                        </span>
-                                      </PersonnelHoverCard>
-
-                                      {/* Assistant Teacher (if any) with PersonnelHoverCard */}
-                                      {session.assistantTeacher && (
-                                        <>
-                                          <span>&middot;</span>
-                                          <PersonnelHoverCard
-                                            person={{
-                                              id: `EMP-${session.assistantTeacher.split(' ').map((n) => n[0]).join('').toUpperCase()}`,
-                                              name: session.assistantTeacher,
-                                              role: 'Trợ giảng',
-                                              phone: '0988 765 432',
-                                              email: `${session.assistantTeacher.toLowerCase().replace(/[^a-z0-9]/g, '')}@rinoedu.com`,
-                                            }}
-                                            align="start"
-                                          >
-                                            <span
-                                              onClick={(e) => e.stopPropagation()}
-                                              className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400 font-medium hover:text-purple-800 dark:hover:text-purple-300 hover:underline cursor-pointer transition-colors"
-                                              title={`Xem thông tin trợ giảng ${session.assistantTeacher}`}
-                                            >
-                                              <UserCheck className="h-3.5 w-3.5" />
-                                              <span>TG: {session.assistantTeacher}</span>
-                                            </span>
-                                          </PersonnelHoverCard>
-                                        </>
-                                      )}
-                                    </div>
+                                        <span className="truncate">{session.name}</span>
+                                        <ExternalLink className="h-3 w-3 opacity-60 hover:opacity-100 shrink-0" />
+                                      </button>
+                                    </ClassSessionHoverCard>
                                   </div>
                                 </div>
 
-                                {/* Cột bên phải: Sĩ số & Nút mở rộng nội dung bài học */}
-                                <div className="flex flex-col items-end gap-1 shrink-0 pl-3 border-l border-border/40 min-w-[85px]">
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                                    <Users className="h-3.5 w-3.5" />
-                                    <span>{session.attendees}/{session.capacity}</span>
+                                {/* Cuối dòng: Lịch học + Icon nội dung + Nút toggle chevron */}
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <div className="text-xs text-muted-foreground font-medium text-right mr-1">
+                                    <span className={cn(isSelected ? "text-foreground font-semibold" : "text-foreground/90 font-medium")}>
+                                      {session.weekdayName}, {session.formattedDate}
+                                    </span>
+                                    <span className="mx-1 opacity-50">&middot;</span>
+                                    <span className="font-mono text-primary font-semibold">{session.time}</span>
                                   </div>
+
+                                  {/* Icon Nội dung (không text, không viền, không nền, đặt trước icon thu gọn/mở rộng) */}
                                   <button
                                     type="button"
-                                    onClick={(e) => toggleSessionExpand(session.id, e)}
-                                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors"
-                                    title="Xem chi tiết nội dung bài học"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      toggleSessionExpand(session.id)
+                                    }}
+                                    className={cn(
+                                      "p-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer",
+                                      isSessionExpanded && "text-primary"
+                                    )}
+                                    title={isSessionExpanded ? "Thu gọn nội dung buổi học" : "Xem nội dung chi tiết buổi học"}
                                   >
-                                    <BookOpen className="h-3 w-3 shrink-0 text-primary" />
-                                    <span>{isSessionExpanded ? 'Ẩn bài học' : 'Nội dung bài'}</span>
+                                    <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                                  </button>
+
+                                  {/* Nút toggle thu gọn / mở rộng */}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      toggleSessionExpand(session.id)
+                                    }}
+                                    className={cn(
+                                      "p-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer",
+                                      isSessionExpanded && "text-primary"
+                                    )}
+                                    title={isSessionExpanded ? "Thu gọn nội dung buổi học" : "Mở rộng xem nội dung buổi học"}
+                                  >
                                     {isSessionExpanded ? (
-                                      <ChevronUp className="h-3 w-3 shrink-0 text-primary" />
+                                      <ChevronUp className="h-3.5 w-3.5 shrink-0" />
                                     ) : (
-                                      <ChevronDown className="h-3 w-3 shrink-0 text-primary" />
+                                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
                                     )}
                                   </button>
                                 </div>
                               </div>
 
-                              {/* Mở rộng nội dung bài học dạng dữ liệu phẳng (không tách khối) */}
+                              {/* Khung nội dung chi tiết buổi học khi mở rộng */}
                               {isSessionExpanded && (
-                                <div
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="border-t border-border/40 bg-muted/10 px-3.5 py-2.5 text-xs space-y-1.5 animate-in fade-in slide-in-from-top-1"
-                                >
-                                  <div className="flex items-center justify-between flex-wrap gap-1">
-                                    <div className="flex items-center gap-1.5 font-bold text-foreground">
-                                      <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-                                      <span>Chủ đề:</span>
-                                      <span className="text-primary font-semibold">{session.lessonTopic}</span>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground font-mono">
-                                      Thời lượng: 90 phút &middot; {session.room}
+                                <div className="px-4 py-3 bg-muted/20 dark:bg-muted/10 border-t border-border/50 text-xs space-y-2.5 animate-in fade-in slide-in-from-top-1">
+                                  {/* Chủ đề bài học */}
+                                  <div className="flex items-center gap-2">
+                                    <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
+                                    <span className="font-semibold text-foreground text-xs">
+                                      Chủ đề: {session.lessonTopic || session.name}
                                     </span>
                                   </div>
 
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs pt-1 border-t border-border/30">
-                                    <div className="leading-relaxed">
-                                      <span className="text-foreground font-semibold">Từ vựng: </span>
-                                      <span className="text-muted-foreground">{session.lessonContent.words || '—'}</span>
-                                    </div>
-                                    <div className="leading-relaxed">
-                                      <span className="text-foreground font-semibold">Mẫu câu: </span>
-                                      <span className="text-muted-foreground">{session.lessonContent.sentences || '—'}</span>
-                                    </div>
-                                    <div className="leading-relaxed">
-                                      <span className="text-foreground font-semibold">Phát âm & Hoạt động: </span>
-                                      <span className="text-muted-foreground">{session.lessonContent.phonics || '—'}</span>
-                                    </div>
+                                  {/* Chi tiết nội dung: Từ vựng, mẫu câu, phonics/hoạt động */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-5 text-[11.5px] leading-relaxed">
+                                    {session.lessonContent.words && (
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="text-muted-foreground shrink-0 font-medium">• Từ vựng:</span>
+                                        <span className="text-foreground">{session.lessonContent.words}</span>
+                                      </div>
+                                    )}
+                                    {session.lessonContent.sentences && (
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="text-muted-foreground shrink-0 font-medium">• Mẫu câu:</span>
+                                        <span className="text-foreground italic">{session.lessonContent.sentences}</span>
+                                      </div>
+                                    )}
+                                    {session.lessonContent.phonics && (
+                                      <div className="flex items-start gap-1.5 sm:col-span-2">
+                                        <span className="text-muted-foreground shrink-0 font-medium">• Ngữ âm / Hoạt động:</span>
+                                        <span className="text-foreground">{session.lessonContent.phonics}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}

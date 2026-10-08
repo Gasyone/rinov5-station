@@ -592,7 +592,7 @@ export function BookingTestCreateDialog({
                     <span>Khung giờ test</span>
                   </div>
                   {selectedSlot && (
-                    <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
                       Ca: {selectedSlot}
                     </span>
                   )}
@@ -601,10 +601,10 @@ export function BookingTestCreateDialog({
                 <div className="space-y-2">
                   {TIME_GROUPS.map((group) => (
                     <div key={group.title} className="space-y-1">
-                      <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                      <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
                         <span>{group.icon}</span>
                         <span>{group.title}</span>
-                        <span className="text-[10px] text-muted-foreground font-normal">({group.slots.length} ca)</span>
+                        <span className="text-xs text-muted-foreground font-normal">({group.slots.length} ca)</span>
                       </div>
 
                       {/* Lưới 4 cột rộng rãi cho các ca test */}
@@ -645,7 +645,7 @@ export function BookingTestCreateDialog({
                               </span>
                               <span
                                 className={cn(
-                                  'text-[11px] font-medium shrink-0 ml-1 transition-colors truncate',
+                                  'text-xs font-medium shrink-0 ml-1 transition-colors truncate',
                                   isSlotSelected
                                     ? 'bg-primary-foreground/20 text-primary-foreground px-1.5 py-0.2 rounded font-semibold'
                                     : availableCount > 0
@@ -672,13 +672,13 @@ export function BookingTestCreateDialog({
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Phụ trách ca {selectedSlot}
                     </span>
-                    <span className="text-[11px] text-muted-foreground font-normal">
+                    <span className="text-xs text-muted-foreground font-normal">
                       (<span className="font-semibold text-foreground">{availableStaffCount}</span>/{currentSlotStaffList.length} rảnh)
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">Trung tâm:</span>
+                    <span className="text-xs text-muted-foreground font-medium hidden sm:inline">Trung tâm:</span>
                     <div className="w-[180px] sm:w-[200px]">
                       <InlineSelect
                         value={school}
@@ -708,7 +708,7 @@ export function BookingTestCreateDialog({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold truncate leading-tight">Chưa gán Phụ trách</p>
-                        <p className="text-[11px] text-muted-foreground opacity-75 truncate leading-tight mt-0.5">Phân công sau</p>
+                        <p className="text-xs text-muted-foreground opacity-75 truncate leading-tight mt-0.5">Phân công sau</p>
                       </div>
                     </div>
                     <div className="shrink-0 ml-1">
@@ -755,7 +755,7 @@ export function BookingTestCreateDialog({
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <div
                               className={cn(
-                                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white',
+                                'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
                                 t.colorClass || 'bg-primary'
                               )}
                             >
@@ -766,7 +766,7 @@ export function BookingTestCreateDialog({
                                 <p className="truncate text-xs font-semibold leading-tight">{t.name}</p>
                                 <span
                                   className={cn(
-                                    'inline-block text-[10px] px-1 py-0 rounded font-medium border shrink-0 leading-none',
+                                    'inline-block text-xs px-1 py-0 rounded font-medium border shrink-0 leading-none',
                                     t.role === 'CS'
                                       ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
                                       : t.role === 'Khác'
@@ -778,12 +778,12 @@ export function BookingTestCreateDialog({
                                 </span>
                               </div>
                               {isAvailable ? (
-                                <p className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 truncate leading-tight mt-0.5">
+                                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 truncate leading-tight mt-0.5">
                                   Rảnh
                                 </p>
                               ) : (
                                 <p
-                                  className="text-[11px] font-medium text-rose-600 dark:text-rose-400 truncate leading-tight mt-0.5"
+                                  className="text-xs font-medium text-rose-600 dark:text-rose-400 truncate leading-tight mt-0.5"
                                   title={item.conflictDetail}
                                 >
                                   Bận{item.conflictDetail ? ` · ${item.conflictDetail}` : ''}

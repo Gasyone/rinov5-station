@@ -3,9 +3,8 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState } from '@/components/shared'
 import { Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
-import { DataTablePagination } from '@/components/data-table'
+import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { AlertRow } from './AlertRow'
 
 interface OperationsAlertTableProps {
@@ -53,54 +52,56 @@ export function OperationsAlertTable({
   }
 
   return (
-    <div className={cn("rounded-lg border border-border bg-card overflow-hidden flex flex-col min-h-0", className)}>
-      <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-        <table className="w-full min-w-max text-xs text-left border-collapse">
-          <thead className="sticky top-0 z-10 bg-zinc-50 dark:bg-zinc-900 border-b border-border">
-            <tr className="border-b border-border bg-muted/40 dark:bg-muted/10 text-muted-foreground font-semibold">
-              <th className="py-1.5 px-2 w-9 text-center">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={(val) => onSelectAll(val === true)}
-                  aria-label="Chọn tất cả"
-                />
-              </th>
-              <th className="py-1.5 px-2 min-w-[210px]">Học viên</th>
-              <th className="py-1.5 px-2 min-w-[130px]">Liên hệ</th>
-              <th className="py-1.5 px-2 min-w-[135px]">Người chăm sóc</th>
-              <th className="py-1.5 px-2 text-left min-w-[260px]">Thẻ chăm sóc</th>
-              <th className="py-1.5 px-2 text-left min-w-[260px]">Nội dung chăm sóc</th>
-              <th className="py-1.5 px-2 text-left min-w-[110px]">Trạng thái</th>
-              <th className="py-1.5 px-2 min-w-[180px]">Lớp học</th>
-            </tr>
-          </thead>
-          <tbody>
-            {alerts.map((cls, index) => (
-              <AlertRow
-                key={cls.id}
-                cls={cls}
-                isSelected={selectedIds.includes(cls.id)}
-                onSelectChange={onSelectChange}
-                viewMode={viewMode}
-                rowIndex={index}
-                onRefresh={onRefresh}
-                onViewDetail={onViewDetail}
-                onOpenRoadmapModal={onOpenRoadmapModal}
+    <DataTableFrame
+      className={className}
+      footer={
+        pagination ? (
+          <DataTablePagination
+            page={pagination.page}
+            total={pagination.total}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.onPageChange}
+            onPageSizeChange={pagination.onPageSizeChange}
+            size="sm"
+          />
+        ) : null
+      }
+    >
+      <table className="w-full min-w-[1360px] text-xs text-left border-separate border-spacing-0">
+        <thead className="sticky top-0 z-40 bg-muted">
+          <tr className="bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80">
+            <th className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 text-center px-1 bg-muted">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(val) => onSelectAll(val === true)}
+                aria-label="Chọn tất cả"
               />
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {pagination && (
-        <DataTablePagination
-          page={pagination.page}
-          total={pagination.total}
-          pageSize={pagination.pageSize}
-          onPageChange={pagination.onPageChange}
-          onPageSizeChange={pagination.onPageSizeChange}
-          className="border-t border-border shrink-0"
-        />
-      )}
-    </div>
+            </th>
+            <th className="sticky top-0 left-8 z-50 w-[220px] min-w-[200px] max-w-[240px] px-2.5 bg-muted text-left border-none">Học viên</th>
+            <th className="sticky top-0 z-40 bg-muted min-w-[125px] px-2.5 text-left">Liên hệ</th>
+            <th className="sticky top-0 z-40 bg-muted min-w-[180px] px-2.5 text-left">Người chăm sóc</th>
+            <th className="sticky top-0 z-40 bg-muted min-w-[230px] px-2.5 text-left">Thẻ chăm sóc</th>
+            <th className="sticky top-0 z-40 bg-muted min-w-[240px] max-w-[280px] px-2.5 text-left">Nội dung chăm sóc</th>
+            <th className="sticky top-0 z-40 bg-muted w-28 min-w-28 max-w-32 px-2.5 text-left">Trạng thái</th>
+            <th className="sticky top-0 z-40 bg-muted min-w-[190px] px-2.5 text-left">Lớp học</th>
+          </tr>
+        </thead>
+        <tbody>
+          {alerts.map((cls, index) => (
+            <AlertRow
+              key={cls.id}
+              cls={cls}
+              isSelected={selectedIds.includes(cls.id)}
+              onSelectChange={onSelectChange}
+              viewMode={viewMode}
+              rowIndex={index}
+              onRefresh={onRefresh}
+              onViewDetail={onViewDetail}
+              onOpenRoadmapModal={onOpenRoadmapModal}
+            />
+          ))}
+        </tbody>
+      </table>
+    </DataTableFrame>
   )
 }

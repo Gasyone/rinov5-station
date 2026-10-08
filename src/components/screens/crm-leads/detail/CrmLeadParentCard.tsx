@@ -95,29 +95,29 @@ export function CrmLeadParentCard({
         <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
             {parent.isPrimary ? (
-              <Badge className="text-[10px] font-bold bg-sky-600 text-white h-5 px-1.5">
+              <Badge className="text-xs font-bold bg-sky-600 text-white h-5 px-1.5">
                 Liên hệ chính
               </Badge>
             ) : isGrandparent ? (
-              <Badge variant="outline" className="text-[10px] font-semibold border-amber-300 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 h-5 px-1.5">
+              <Badge variant="outline" className="text-xs font-semibold border-amber-300 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 h-5 px-1.5">
                 Ông / Bà
               </Badge>
             ) : isGuardian ? (
-              <Badge variant="outline" className="text-[10px] font-semibold border-purple-300 text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 h-5 px-1.5">
+              <Badge variant="outline" className="text-xs font-semibold border-purple-300 text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 h-5 px-1.5">
                 Giám hộ
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground h-5 px-1.5">
+              <Badge variant="outline" className="text-xs font-medium text-muted-foreground h-5 px-1.5">
                 Phụ huynh
               </Badge>
             )}
 
-            <Badge variant="secondary" className="text-[10px] font-bold py-0 h-5 px-1.5">
+            <Badge variant="secondary" className="text-xs font-bold py-0 h-5 px-1.5">
               {parent.role}
             </Badge>
           </div>
 
-          <span className="text-[11px] font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+          <span className="text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
             <span>Chi tiết</span>
             <ExternalLink className="h-3 w-3" />
           </span>
@@ -147,7 +147,7 @@ export function CrmLeadParentCard({
               {parent.name}
             </h4>
             {parent.decisionMakerRole && (
-              <div className="flex items-center gap-1 text-[11px] text-amber-800 dark:text-amber-300 font-medium truncate pt-0.5">
+              <div className="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-300 font-medium truncate pt-0.5">
                 <ShieldCheck className="h-3 w-3 text-amber-600 shrink-0" />
                 <span className="truncate">{parent.decisionMakerRole}</span>
               </div>
@@ -183,7 +183,7 @@ export function CrmLeadParentCard({
               size="sm"
               variant="outline"
               onClick={() => onZalo(parent.phone, parent.name)}
-              className="h-6 px-2 text-[11px] font-semibold text-sky-700 border-sky-300 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 rounded cursor-pointer flex items-center gap-1"
+              className="h-6 px-2 text-xs font-semibold text-sky-700 border-sky-300 hover:bg-sky-50 dark:border-sky-800 dark:text-sky-300 rounded cursor-pointer flex items-center gap-1"
             >
               <MessageSquare className="h-2.5 w-2.5 text-sky-600" />
               <span>Zalo</span>
@@ -193,7 +193,7 @@ export function CrmLeadParentCard({
               type="button"
               size="sm"
               onClick={() => onCall(parent.phone, parent.name)}
-              className="h-6 px-2.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow-2xs cursor-pointer flex items-center gap-1"
+              className="h-6 px-2.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow-2xs cursor-pointer flex items-center gap-1"
             >
               <PhoneCall className="h-2.5 w-2.5 fill-current" />
               <span>Gọi</span>
@@ -206,14 +206,14 @@ export function CrmLeadParentCard({
           {parent.occupation && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Briefcase className="h-3 w-3 text-sky-600 shrink-0" />
-              <span className="truncate text-foreground font-medium text-[11px]">{parent.occupation}</span>
+              <span className="truncate text-foreground font-medium text-xs">{parent.occupation}</span>
             </div>
           )}
 
           {parent.budgetPerMonth && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Wallet className="h-3 w-3 text-emerald-600 shrink-0" />
-              <span className="truncate text-[11px] text-foreground font-medium">
+              <span className="truncate text-xs text-foreground font-medium">
                 Ngân sách: <strong className="text-emerald-700 dark:text-emerald-400">{parent.budgetPerMonth}</strong>
               </span>
             </div>
@@ -222,7 +222,7 @@ export function CrmLeadParentCard({
           {parent.bestTimeToCall && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Clock className="h-3 w-3 text-amber-600 shrink-0" />
-              <span className="truncate text-[11px] text-foreground font-medium">
+              <span className="truncate text-xs text-foreground font-medium">
                 Giờ rảnh: {parent.bestTimeToCall}
               </span>
             </div>
@@ -231,7 +231,7 @@ export function CrmLeadParentCard({
 
         {/* Tóm tắt kỳ vọng / ghi chú ngắn */}
         {parent.parentExpectation ? (
-          <div className="p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 text-[11px] text-foreground flex items-start gap-1.5">
+          <div className="p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 text-xs text-foreground flex items-start gap-1.5">
             <Target className="h-3 w-3 text-emerald-600 mt-0.5 shrink-0" />
             <span className="line-clamp-1">
               <strong className="text-emerald-900 dark:text-emerald-300 font-semibold">Kỳ vọng:</strong>{' '}
@@ -239,7 +239,7 @@ export function CrmLeadParentCard({
             </span>
           </div>
         ) : parent.note ? (
-          <div className="p-2 rounded-lg bg-muted/40 border border-border/50 text-[11px] text-muted-foreground flex items-start gap-1.5">
+          <div className="p-2 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground flex items-start gap-1.5">
             <FileText className="h-3 w-3 text-muted-foreground/80 mt-0.5 shrink-0" />
             <span className="line-clamp-1">
               <strong className="text-foreground font-semibold">Lưu ý:</strong> {parent.note}
@@ -249,7 +249,7 @@ export function CrmLeadParentCard({
       </div>
 
       {/* FOOTER: XEM CHÂN DUNG 360° */}
-      <div className="pt-2 mt-2.5 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+      <div className="pt-2 mt-2.5 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1 text-sky-700 dark:text-sky-300 font-medium">
           <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
           <span>{parent.zaloStatus}</span>

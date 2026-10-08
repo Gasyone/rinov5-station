@@ -276,14 +276,14 @@ export function OrderFulfillmentCreateDialog({
                         <span>Bộ sản phẩm áp dụng cho mỗi học viên</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-[10px] py-0 px-2 font-mono font-medium">
+                        <Badge variant="secondary" className="text-xs py-0 px-2 font-mono font-medium">
                           {totalItemsPerStudent} món / bạn
                         </Badge>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="h-6 text-[11px] px-2 gap-1 cursor-pointer"
+                          className="h-6 text-xs px-2 gap-1 cursor-pointer"
                           onClick={handleAddProduct}
                         >
                           <Plus className="h-3 w-3" />
@@ -294,7 +294,7 @@ export function OrderFulfillmentCreateDialog({
 
                     {/* Mẫu nhanh Preset */}
                     <div className="flex items-center gap-1.5 flex-wrap bg-muted/40 p-2 rounded-lg border border-border/60">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                         <Sparkles className="h-3 w-3 text-amber-500" />
                         <span>Mẫu nhanh:</span>
                       </span>
@@ -304,7 +304,7 @@ export function OrderFulfillmentCreateDialog({
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="h-5 text-[10px] px-2 rounded cursor-pointer bg-background hover:bg-muted font-normal"
+                          className="h-5 text-xs px-2 rounded cursor-pointer bg-background hover:bg-muted font-normal"
                           onClick={() => handleApplyPreset(preset.items)}
                         >
                           {preset.name}
@@ -319,7 +319,7 @@ export function OrderFulfillmentCreateDialog({
                           key={p.id || idx}
                           className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border/70 shadow-2xs"
                         >
-                          <div className="text-muted-foreground font-mono text-[11px] w-4 text-center">
+                          <div className="text-muted-foreground font-mono text-xs w-4 text-center">
                             {idx + 1}.
                           </div>
 
@@ -343,7 +343,7 @@ export function OrderFulfillmentCreateDialog({
                           </div>
 
                           <div className="flex items-center gap-1 shrink-0">
-                            <span className="text-[11px] text-muted-foreground">SL:</span>
+                            <span className="text-xs text-muted-foreground">SL:</span>
                             <Input
                               type="number"
                               min={1}
@@ -393,7 +393,7 @@ export function OrderFulfillmentCreateDialog({
                         <Badge
                           variant={selectedStudents.length > 0 ? 'default' : 'outline'}
                           className={cn(
-                            'text-[10px] py-0 px-2 font-medium',
+                            'text-xs py-0 px-2 font-medium',
                             selectedStudents.length > 0
                               ? 'bg-primary text-primary-foreground'
                               : 'text-muted-foreground'
@@ -406,7 +406,7 @@ export function OrderFulfillmentCreateDialog({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-6 text-[11px] px-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                            className="h-6 text-xs px-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
                             onClick={handleClearAllStudents}
                           >
                             Xóa hết
@@ -438,7 +438,7 @@ export function OrderFulfillmentCreateDialog({
                         <p className="font-medium text-xs text-foreground">
                           Chưa có học viên nào trong đợt bàn giao này
                         </p>
-                        <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
+                        <p className="text-xs text-muted-foreground max-w-md mx-auto">
                           Mở bộ lọc để chọn học viên theo lớp học, cơ sở hoặc tìm kiếm theo tên và số điện thoại phụ huynh.
                         </p>
                         <Button
@@ -466,7 +466,7 @@ export function OrderFulfillmentCreateDialog({
                           <TableBody>
                             {selectedStudents.map((st, idx) => (
                               <TableRow key={st.id} className="hover:bg-muted/30">
-                                <TableCell className="text-center font-mono text-muted-foreground text-[10px] px-2">
+                                <TableCell className="text-center font-mono text-muted-foreground text-xs px-2">
                                   {idx + 1}
                                 </TableCell>
                                 <TableCell className="py-1.5 font-medium">
@@ -474,19 +474,19 @@ export function OrderFulfillmentCreateDialog({
                                 </TableCell>
                                 <TableCell className="py-1.5">
                                   {st.enrolledClass ? (
-                                    <Badge variant="outline" className="text-[10px] py-0 px-1 font-normal gap-1">
+                                    <Badge variant="outline" className="text-xs py-0 px-1 font-normal gap-1">
                                       <GraduationCap className="h-2.5 w-2.5 text-primary" />
                                       <span>{st.enrolledClass}</span>
                                     </Badge>
                                   ) : (
-                                    <span className="text-muted-foreground text-[11px]">—</span>
+                                    <span className="text-muted-foreground text-xs">—</span>
                                   )}
                                 </TableCell>
                                 <TableCell className="py-1.5">
-                                  <span className="text-foreground text-[11px]">
+                                  <span className="text-foreground text-xs">
                                     {st.parentName || 'Phụ huynh'}
                                   </span>{' '}
-                                  <span className="text-muted-foreground font-mono text-[10px]">
+                                  <span className="text-muted-foreground font-mono text-xs">
                                     ({maskPhoneNumber(st.parentPhone || st.phone)})
                                   </span>
                                 </TableCell>
@@ -615,7 +615,7 @@ export function OrderFulfillmentCreateDialog({
                         <Boxes className="h-4 w-4 text-primary" />
                         <span>Tổng kết xuất kho & Định mức</span>
                       </div>
-                      <Badge variant="outline" className="text-[10px] py-0 px-2 font-mono text-muted-foreground">
+                      <Badge variant="outline" className="text-xs py-0 px-2 font-mono text-muted-foreground">
                         {stockExportCode}
                       </Badge>
                     </div>
@@ -650,7 +650,7 @@ export function OrderFulfillmentCreateDialog({
                       </div>
                     </div>
 
-                    <div className="p-3 bg-muted/40 rounded-lg border border-border/60 text-[11px] text-muted-foreground leading-relaxed">
+                    <div className="p-3 bg-muted/40 rounded-lg border border-border/60 text-xs text-muted-foreground leading-relaxed">
                       Hệ thống sẽ tự động tạo <strong className="text-foreground">{selectedStudents.length}</strong> phiếu bàn giao tương ứng cho từng học viên và liên kết với chứng từ xuất kho <strong className="font-mono text-foreground">{stockExportCode}</strong>.
                     </div>
                   </div>

@@ -53,8 +53,8 @@ export function TuitionDebtToolbar({
             value={selectedBranch}
             onValueChange={onBranchChange}
             branches={branchOptions}
-            allLabel="Tất cả Cơ sở"
-            placeholder="Chọn Cơ sở"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
             ariaLabel="Cơ sở"
             className="h-8 text-xs min-w-[160px]"
           />
@@ -65,7 +65,7 @@ export function TuitionDebtToolbar({
           <ToolbarSelect
             value={selectedSubject}
             options={[
-              { value: 'all', label: 'Tất cả môn học' },
+              { value: 'all', label: 'Tất cả các môn', selectedLabel: 'Tất cả các môn' },
               { value: 'Tiếng Anh', label: 'Tiếng Anh' },
               { value: 'Toán tư duy', label: 'Toán tư duy' },
             ]}

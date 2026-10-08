@@ -55,6 +55,50 @@ interface OperationsAlertToolbarProps {
   onCsdbFilterChange: (val: string) => void
 }
 
+const PACKAGE_STATUS_FILTER_ITEMS: Array<{
+  id: 'all' | 'active' | 'pending_transfer' | 'wait_for_assignment' | 'reserve' | 'session_ended'
+  label: string
+  activeClass: string
+  hoverClass: string
+}> = [
+  {
+    id: 'all',
+    label: 'Tất cả',
+    activeClass: 'border-primary/50 bg-primary/10 text-primary font-normal border-solid',
+    hoverClass: 'hover:text-foreground',
+  },
+  {
+    id: 'active',
+    label: 'Đang học',
+    activeClass: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-normal border-solid',
+    hoverClass: 'hover:text-foreground hover:border-emerald-500/40',
+  },
+  {
+    id: 'pending_transfer',
+    label: 'Chờ chuyển lớp',
+    activeClass: 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-normal border-solid',
+    hoverClass: 'hover:text-foreground hover:border-amber-500/40',
+  },
+  {
+    id: 'wait_for_assignment',
+    label: 'Chờ xếp lớp',
+    activeClass: 'border-sky-500/50 bg-sky-500/10 text-sky-700 dark:text-sky-300 font-normal border-solid',
+    hoverClass: 'hover:text-foreground hover:border-sky-500/40',
+  },
+  {
+    id: 'reserve',
+    label: 'Bảo lưu',
+    activeClass: 'border-purple-500/50 bg-purple-500/10 text-purple-700 dark:text-purple-300 font-normal border-solid',
+    hoverClass: 'hover:text-foreground hover:border-purple-500/40',
+  },
+  {
+    id: 'session_ended',
+    label: 'Hết buổi',
+    activeClass: 'border-zinc-500/50 bg-zinc-500/10 text-foreground font-normal border-solid',
+    hoverClass: 'hover:text-foreground hover:border-zinc-500/40',
+  },
+]
+
 export function OperationsAlertToolbar({
   alerts,
   searchQuery,
@@ -147,76 +191,37 @@ export function OperationsAlertToolbar({
     },
   ]
 
-  const packageStatusOptions: ToolbarSelectOption[] = [
-    {
-      value: 'all',
-      label: 'Tất cả gói',
-      textValue: 'Tất cả gói',
-      selectedLabel: 'Tất cả gói',
-    },
-    {
-      value: 'active',
-      label: <span className="text-emerald-600 dark:text-emerald-400 font-medium">Đang học</span>,
-      textValue: 'Đang học',
-      selectedLabel: <span className="text-emerald-600 dark:text-emerald-400 font-medium">Đang học</span>,
-    },
-    {
-      value: 'pending_transfer',
-      label: <span className="text-amber-600 dark:text-amber-400 font-medium">Chờ chuyển lớp</span>,
-      textValue: 'Chờ chuyển lớp',
-      selectedLabel: <span className="text-amber-600 dark:text-amber-400 font-medium">Chờ chuyển lớp</span>,
-    },
-    {
-      value: 'wait_for_assignment',
-      label: <span className="text-sky-600 dark:text-sky-400 font-medium">Chờ xếp lớp</span>,
-      textValue: 'Chờ xếp lớp',
-      selectedLabel: <span className="text-sky-600 dark:text-sky-400 font-medium">Chờ xếp lớp</span>,
-    },
-    {
-      value: 'reserve',
-      label: <span className="text-purple-600 dark:text-purple-400 font-medium">Bảo lưu</span>,
-      textValue: 'Bảo lưu',
-      selectedLabel: <span className="text-purple-600 dark:text-purple-400 font-medium">Bảo lưu</span>,
-    },
-    {
-      value: 'session_ended',
-      label: <span className="text-zinc-600 dark:text-zinc-400 font-medium">Hết buổi</span>,
-      textValue: 'Hết buổi',
-      selectedLabel: <span className="text-zinc-600 dark:text-zinc-400 font-medium">Hết buổi</span>,
-    },
-  ]
-
   return (
-    <div className="flex flex-col gap-0 bg-background px-1.5 py-1.5 lg:px-1.5">
+    <div className="flex shrink-0 flex-col gap-1.5 bg-background px-2.5 pt-2 pb-1 lg:px-3">
       {/* Row 1: 4 Selections (Branch, Subject, CSDB, Due Date), Search + Filter + Export + Smartcard Popover */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pb-1.5">
-        <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-center justify-between flex-wrap gap-1.5 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
           {/* 1. Branch Selector */}
           <BranchSelect
             value={selectedBranch}
             onValueChange={onBranchChange}
             branches={branchOptions}
-            allLabel="Tất cả Cơ sở"
-            placeholder="Chọn Cơ sở"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
             ariaLabel="Cơ sở"
-            className="h-8 text-xs min-w-[145px]"
+            className="h-8 text-xs min-w-[130px] sm:min-w-[135px]"
           />
 
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
           {/* 2. Subject Selector */}
           <ToolbarSelect
             value={selectedSubject}
             options={[
-              { value: 'all', label: 'Tất cả môn học' },
+              { value: 'all', label: 'Tất cả các môn', selectedLabel: 'Tất cả các môn' },
               { value: 'Tiếng Anh', label: 'Tiếng Anh' },
               { value: 'Toán tư duy', label: 'Toán tư duy' }
             ]}
             onValueChange={onSubjectChange}
-            className="h-8 text-xs min-w-[130px]"
+            className="h-8 text-xs min-w-[115px] sm:min-w-[120px]"
           />
 
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
           {/* 3. Loại thẻ CS filter droplist */}
           <ToolbarSelect
@@ -228,29 +233,30 @@ export function OperationsAlertToolbar({
               { value: 'lowAttendance', label: 'Chuyên cần' },
             ]}
             onValueChange={onCsdbFilterChange}
-            className="h-8 text-xs min-w-[155px]"
+            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
             ariaLabel="Lọc theo Loại thẻ CS"
             placeholder="Loại thẻ CS"
           />
 
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden sm:block shrink-0" />
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
-          {/* 4. Hạn xử lý / Hạn chăm sóc Selector (được đưa lên cùng 3 selection ở trên) */}
+          {/* 4. Hạn xử lý / Hạn chăm sóc Selector */}
           <ToolbarSelect
             value={dueDateFilter}
             options={dueDateOptions}
             onValueChange={(val) => onDueDateFilterChange(val as 'all' | 'overdue' | 'today' | 'rescheduled')}
-            className="h-8 text-xs min-w-[150px]"
+            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
             ariaLabel="Lọc theo hạn xử lý"
             placeholder="Hạn xử lý"
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <ExpandableSearch
             value={searchQuery}
             onValueChange={onSearchChange}
             placeholder="Tìm kiếm..."
+            inputClassName="sm:w-60 text-xs h-8"
           />
           <FilterIconButton
             count={activeFilterCount > 0 ? activeFilterCount : undefined}
@@ -265,12 +271,12 @@ export function OperationsAlertToolbar({
             trigger={
               <Button
                 variant="outline"
-                size="xs"
-                className="h-8 text-xs flex items-center gap-1.5 bg-background hover:bg-muted border border-border shadow-none cursor-pointer"
+                size="sm"
+                className="h-8 text-xs flex items-center gap-1.5 bg-background hover:bg-muted border border-border shadow-xs cursor-pointer font-medium px-2.5"
                 title="Xuất danh sách sang Excel"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline font-semibold">Xuất dữ liệu</span>
+                <span className="hidden md:inline">Xuất dữ liệu</span>
               </Button>
             }
           />
@@ -281,113 +287,54 @@ export function OperationsAlertToolbar({
       </div>
 
       {/* Row 2: Care Status Pills (Left) + Package/Placement Status Filter (Right, responsive collapse) */}
-      <div className="flex items-center justify-between flex-wrap gap-3 border-t border-border/40 dark:border-zinc-800 pt-2 pb-1">
-        {/* Left: Trạng thái chăm sóc (Hiển thị đầy đủ tất cả nhãn, không thu gọn, xóa dot, đưa màu vào nền thống kê) */}
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 pt-0.5">
+        {/* Left: Trạng thái chăm sóc (compact, không thu gọn, xóa dot, đưa màu vào nền thống kê, chữ thường không in đậm) */}
+        <div className="min-w-0">
           <StatusTiles
             tiles={statusPillTiles}
             activeId={careStatusFilter}
             onSelect={(id) => onCareStatusFilterChange(id)}
             noOverflowCollapse={true}
+            compact={true}
             showDot={false}
             hideDot={true}
             coloredCount={true}
+            fontNormal={true}
           />
         </div>
 
-        {/* Right side: Trạng thái gói học viên (cột Lớp học) - Tự động gom lại nếu màn hình nhỏ */}
-        <div className="flex items-center gap-2 select-none shrink-0 pb-0.5">
-          {/* Màn hình lớn (>= xl): Hiển thị trải phẳng dạng Chip Group nổi bật, bỏ thống kê, đổ màu text khi chưa chọn, đổi màu khi đang chọn */}
-          <div className="hidden xl:flex items-center gap-1 bg-muted/50 dark:bg-muted/30 p-0.5 rounded-md border border-border/50">
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('all')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'all'
-                  ? "bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-background/50 font-medium"
-              )}
-            >
-              <span>Tất cả gói</span>
-            </button>
+        {/* Right side: Lọc nhanh theo gói học viên (Gói:) chuẩn hóa theo BookingTestConditionFilters (chữ thường không in đậm) */}
+        <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
+          <span className="text-xs font-normal text-muted-foreground shrink-0 mr-0.5">
+            Gói:
+          </span>
 
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('active')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'active'
-                  ? "bg-emerald-600 text-white dark:bg-emerald-600 dark:text-white font-bold shadow-xs"
-                  : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40 font-medium"
-              )}
-            >
-              <span>Đang học</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('pending_transfer')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'pending_transfer'
-                  ? "bg-amber-500 text-white dark:bg-amber-500 dark:text-white font-bold shadow-xs"
-                  : "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50/60 dark:hover:bg-amber-950/40 font-medium"
-              )}
-            >
-              <span>Chờ chuyển lớp</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('wait_for_assignment')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'wait_for_assignment'
-                  ? "bg-sky-600 text-white dark:bg-sky-600 dark:text-white font-bold shadow-xs"
-                  : "text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50/60 dark:hover:bg-sky-950/40 font-medium"
-              )}
-            >
-              <span>Chờ xếp lớp</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('reserve')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'reserve'
-                  ? "bg-purple-600 text-white dark:bg-purple-600 dark:text-white font-bold shadow-xs"
-                  : "text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50/60 dark:hover:bg-purple-950/40 font-medium"
-              )}
-            >
-              <span>Bảo lưu</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onPackageStatusFilterChange('session_ended')}
-              className={cn(
-                "h-7 px-2.5 rounded text-xs transition-all cursor-pointer flex items-center justify-center",
-                packageStatusFilter === 'session_ended'
-                  ? "bg-zinc-600 text-white dark:bg-zinc-400 dark:text-zinc-900 font-bold shadow-xs"
-                  : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 font-medium"
-              )}
-            >
-              <span>Hết buổi</span>
-            </button>
-          </div>
-
-          {/* Màn hình nhỏ (< xl): Tự động gom lại thành Selection gọn gàng */}
-          <div className="flex xl:hidden items-center">
-            <ToolbarSelect
-              value={packageStatusFilter}
-              options={packageStatusOptions}
-              onValueChange={(val) => onPackageStatusFilterChange(val)}
-              className="h-8 text-xs min-w-[160px]"
-              ariaLabel="Lọc theo trạng thái gói học viên"
-              placeholder="Trạng thái gói"
-            />
+          <div className="flex items-center gap-1 min-w-0 overflow-x-auto custom-scrollbar">
+            {PACKAGE_STATUS_FILTER_ITEMS.map((item) => {
+              const isActive = packageStatusFilter === item.id
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() =>
+                    onPackageStatusFilterChange(
+                      isActive && item.id !== 'all' ? 'all' : item.id
+                    )
+                  }
+                  className={cn(
+                    'inline-flex items-center h-6 rounded-md px-2 text-xs font-normal transition-colors cursor-pointer border select-none shrink-0 gap-1',
+                    isActive
+                      ? item.activeClass
+                      : cn(
+                          'border-border/70 border-dashed bg-background text-muted-foreground hover:bg-muted/60',
+                          item.hoverClass
+                        )
+                  )}
+                >
+                  <span>{item.label}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>

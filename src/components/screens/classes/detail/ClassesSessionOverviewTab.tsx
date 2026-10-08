@@ -252,7 +252,7 @@ export function ClassesSessionOverviewTab({
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 <span>Thông tin nhanh</span>
               </span>
-              <span className="text-[11px] text-muted-foreground font-normal">Đầu buổi</span>
+              <span className="text-xs text-muted-foreground font-normal">Đầu buổi</span>
             </div>
 
             {/* 4 Nhóm thông tin nhanh (2x2 Grid: HV mới, Xin phép, Học thử, Vận hành) */}
@@ -535,7 +535,7 @@ export function ClassesSessionOverviewTab({
                 className="flex items-start gap-2.5"
               >
                 {/* Left: Avatar (Compact h-8 w-8) */}
-                <div className={cn('h-8 w-8 rounded-full flex items-center justify-center font-bold text-[11px] shrink-0 border border-white dark:border-zinc-800 shadow-2xs mt-0.5', avatarColor)}>
+                <div className={cn('h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border border-white dark:border-zinc-800 shadow-2xs mt-0.5', avatarColor)}>
                   {initials}
                 </div>
 
@@ -551,7 +551,7 @@ export function ClassesSessionOverviewTab({
                     >
                       {nameParts.formattedName}
                     </button>
-                    <span className="text-[11px] text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
+                    <span className="text-xs text-muted-foreground font-mono font-normal shrink-0">({student.code})</span>
                   </div>
 
                   {/* Line 2+: Care Badge cards left-aligned straight under the student name */}
@@ -560,7 +560,7 @@ export function ClassesSessionOverviewTab({
                       <div
                         key={bIdx}
                         className={cn(
-                          'flex items-center justify-between p-1 px-2 rounded-md border text-[11px] leading-tight min-w-0',
+                          'flex items-center justify-between p-1 px-2 rounded-md border text-xs leading-tight min-w-0',
                           badge.code === 'CSĐB' || badge.code === 'CSKH'
                             ? 'border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200'
                             : badge.code === 'CSBH'
@@ -571,7 +571,7 @@ export function ClassesSessionOverviewTab({
                         {/* Left: Bold Colored Code Text (No box, no border) + Full Reason & Assigned Person */}
                         <div className="flex items-center gap-1.5 min-w-0 flex-1 me-2">
                           <span className={cn(
-                            'font-bold text-[11px] shrink-0 me-0.5',
+                            'font-bold text-xs shrink-0 me-0.5',
                             badge.code === 'CSĐB' || badge.code === 'CSKH'
                               ? 'text-rose-700 dark:text-rose-400'
                               : badge.code === 'CSBH'
@@ -581,7 +581,7 @@ export function ClassesSessionOverviewTab({
                             {badge.code}
                           </span>
 
-                          <div className="min-w-0 flex-1 text-[11px] truncate">
+                          <div className="min-w-0 flex-1 text-xs truncate">
                             <span className="font-semibold text-foreground me-1">{badge.fullLabel}</span>
                             <span className="text-muted-foreground font-normal">
                               · Phụ trách: <strong className="font-normal text-foreground">{badge.assigneeText || 'CS Nguyễn Thị Ngọc Anh'}</strong>

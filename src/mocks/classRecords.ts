@@ -192,26 +192,26 @@ export const mockClassRecords: ClassRecord[] = [
   { id: 'cls-019', code: 'CLS-MATH-019', name: 'Math Kindi 1A', level: 'Math Kindi', subLevel: 'Kindi', branch: 'RinoEdu Linh Đàm', teacher: 'Nguyễn Hoàng Nam', teacherPhone: '0912345678', room: 'M101', schedule: 'T2/4 17:30–19:00', startDate: '2026-05-01', endDate: '2026-08-01', maxStudents: 15, enrolledStudents: 12, status: 'dang_hoc', tuitionFee: 2500000, grade: 'Lớp 1', syllabus: 'Station_Toán tư duy (Col 4 tuổi)', learningPath: 'Math Kindi → Primary 1', classRatio: '1:6', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 2', date: '15/06', startTime: '17:30', endTime: '19:00' },
     { dayOfWeek: 'Thứ 4', date: '17/06', startTime: '17:30', endTime: '19:00' }
-  ] },
+  ], nextSession: { date: '15/06/2026', time: '17:30–19:00', topic: 'Số đếm 1-10', room: 'M101', status: 'upcoming' } },
   { id: 'cls-020', code: 'CLS-MATH-020', name: 'Math Kindi 1B', level: 'Math Kindi', subLevel: 'Kindi', branch: 'RinoEdu Linh Đàm', teacher: 'Nguyễn Hoàng Nam', teacherPhone: '0912345678', room: 'M102', schedule: 'T3/5 17:30–19:00', startDate: '2026-05-02', endDate: '2026-08-02', maxStudents: 15, enrolledStudents: 10, status: 'dang_hoc', tuitionFee: 2500000, grade: 'Lớp 1', syllabus: 'Station_Toán tư duy (Col 4 tuổi)', learningPath: 'Math Kindi → Primary 1', classRatio: '1:6', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 3', date: '16/06', startTime: '17:30', endTime: '19:00' },
     { dayOfWeek: 'Thứ 5', date: '18/06', startTime: '17:30', endTime: '19:00' }
-  ] },
+  ], nextSession: { date: '16/06/2026', time: '17:30–19:00', topic: 'Hình khối & màu sắc', room: 'M102', status: 'upcoming' } },
   { id: 'cls-021', code: 'CLS-MATH-021', name: 'Math Kindi 1C', level: 'Math Kindi', subLevel: 'Kindi', branch: 'RinoEdu Linh Đàm', teacher: 'Nguyễn Hoàng Nam', teacherPhone: '0912345678', room: 'M103', schedule: 'T6/CN 17:30–19:00', startDate: '2026-05-03', endDate: '2026-08-03', maxStudents: 15, enrolledStudents: 14, status: 'dang_hoc', tuitionFee: 2500000, grade: 'Lớp 1', syllabus: 'Station_Toán tư duy (Col 4 tuổi)', learningPath: 'Math Kindi → Primary 1', classRatio: '1:6', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 6', date: '19/06', startTime: '17:30', endTime: '19:00' },
     { dayOfWeek: 'Chủ nhật', date: '21/06', startTime: '17:30', endTime: '19:00' }
-  ] },
+  ], nextSession: { date: '19/06/2026', time: '17:30–19:00', topic: 'Phép so sánh', room: 'M103', status: 'upcoming' } },
   { id: 'cls-022', code: 'CLS-MATH-022', name: 'Math Primary 2A', level: 'Math Primary', subLevel: 'Primary', branch: 'RinoEdu Nguyễn Tuân', teacher: 'Nguyễn Thị Hoa', teacherPhone: '0912345679', room: 'M201', schedule: 'T7 08:30–10:30', startDate: '2026-05-10', endDate: '2026-08-10', maxStudents: 20, enrolledStudents: 18, status: 'dang_hoc', tuitionFee: 2800000, grade: 'Lớp 2', syllabus: 'Toán tư duy (Eins 8 tuổi)', learningPath: 'Math Primary 1 → Primary 5', classRatio: '1:8', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 7', date: '20/06', startTime: '08:30', endTime: '10:30' }
-  ] },
+  ], nextSession: { date: '20/06/2026', time: '08:30–10:30', topic: 'Bảng nhân 2, 3', room: 'M201', status: 'upcoming' } },
   { id: 'cls-023', code: 'CLS-MATH-023', name: 'Math Primary 3A', level: 'Math Primary', subLevel: 'Primary', branch: 'RinoEdu Nguyễn Tuân', teacher: 'Nguyễn Mạnh Hùng', teacherPhone: '0901234568', room: 'M301', schedule: 'T3/5 18:30–20:00', startDate: '2026-05-15', endDate: '2026-08-15', maxStudents: 20, enrolledStudents: 15, status: 'dang_hoc', tuitionFee: 2800000, grade: 'Lớp 3', syllabus: 'Toán tư duy (Eins 8 tuổi)', learningPath: 'Math Primary 1 → Primary 5', classRatio: '1:8', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 3', date: '16/06', startTime: '18:30', endTime: '20:00' },
     { dayOfWeek: 'Thứ 5', date: '18/06', startTime: '18:30', endTime: '20:00' }
-  ] },
+  ], nextSession: { date: '16/06/2026', time: '18:30–20:00', topic: 'Phép cộng có nhớ', room: 'M301', status: 'upcoming' } },
   { id: 'cls-024', code: 'CLS-MATH-024', name: 'Math Primary 4A', level: 'Math Primary', subLevel: 'Primary', branch: 'RinoEdu Linh Đàm', teacher: 'Trịnh Thúy Nga', teacherPhone: '0901234570', room: 'M401', schedule: 'T2/6 18:30–20:00', startDate: '2026-05-20', endDate: '2026-08-20', maxStudents: 20, enrolledStudents: 10, status: 'dang_hoc', tuitionFee: 2800000, grade: 'Lớp 4', syllabus: 'Toán tư duy (Eins 8 tuổi)', learningPath: 'Math Primary 1 → Primary 5', classRatio: '1:8', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 2', date: '15/06', startTime: '18:30', endTime: '20:00' },
     { dayOfWeek: 'Thứ 6', date: '19/06', startTime: '18:30', endTime: '20:00' }
-  ] },
+  ], nextSession: { date: '15/06/2026', time: '18:30–20:00', topic: 'Tìm số trung bình cộng', room: 'M401', status: 'upcoming' } },
 
   // ── Chờ khai giảng ──
   { id: 'cls-025', code: 'CLS-IELTS-025', name: 'IELTS Foundation 3A', level: 'IELTS', subLevel: '4.0–4.5', learningPath: 'IELTS Foundation → Academic', syllabus: 'IELTS Junior v2.1', branch: 'RinoEdu Linh Đàm', teacher: 'Lê Thị Lan', teacherPhone: '0901234567', room: 'A201', schedule: 'T2/4 18:00–19:30', startDate: '2026-08-15', endDate: '2026-11-15', maxStudents: 18, enrolledStudents: 6, trialStudents: 1, status: 'cho_khai_giang', tuitionFee: 3500000, classRatio: '1:7', teacherType: 'Việt Nam', scheduleSlots: [
@@ -252,6 +252,10 @@ export const mockClassRecords: ClassRecord[] = [
   ] },
   { id: 'cls-033', code: 'CLS-MATH-033', name: 'Math Primary 1B', level: 'Math Primary', subLevel: 'Primary', branch: 'RinoEdu Smart City', teacher: 'Nguyễn Hoàng Nam', teacherPhone: '0912345678', room: 'M105', schedule: 'T7 14:00–16:00', startDate: '2026-09-15', endDate: '2026-12-15', maxStudents: 20, enrolledStudents: 0, status: 'nhap', tuitionFee: 2800000, grade: 'Lớp 1', syllabus: 'Station_Toán tư duy (Col 4 tuổi)', learningPath: 'Math Kindi → Primary 1', classRatio: '1:8', teacherType: 'Việt Nam', scheduleSlots: [
     { dayOfWeek: 'Thứ 7', date: '15/09', startTime: '14:00', endTime: '16:00' },
+  ] },
+  { id: 'cls-eng-4a', code: 'ENG-IELTS-4A', name: 'Tiếng Anh IELTS Level 4 (NT01)', level: 'English', subLevel: 'Level 4', branch: 'RinoEdu Nguyễn Tuân', teacher: 'GV Sarah Miller', teacherPhone: '0901403055', room: 'P302', schedule: 'T3/6 17:30–19:00', startDate: '2023-07-31', endDate: '2024-01-15', maxStudents: 6, enrolledStudents: 6, status: 'huy', tuitionFee: 3200000, syllabus: 'Cambridge English Scale Level 4', learningPath: 'Lộ trình Tiếng Anh giao tiếp Cambridge', classRatio: '1:6', teacherType: 'Native', scheduleSlots: [
+    { dayOfWeek: 'Thứ 3', date: '15/07', startTime: '17:30', endTime: '19:00' },
+    { dayOfWeek: 'Thứ 6', date: '18/07', startTime: '17:30', endTime: '19:00' },
   ] },
 ]
 

@@ -24,12 +24,12 @@ export function CrmLeadOverviewTab({
             <div className="font-semibold text-amber-900 dark:text-amber-300 flex items-center gap-2 flex-wrap">
               <span>Hồ sơ Lead quay lại</span>
               {lead.returningReason && (
-                <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
                   • {lead.returningReason}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-amber-800/90 dark:text-amber-400/90 leading-relaxed">
+            <p className="text-xs text-amber-800/90 dark:text-amber-400/90 leading-relaxed">
               Học viên đã có lịch sử khảo sát &amp; đánh giá ở đợt trước. Vui lòng kiểm tra tab <strong>Test &amp; Thử</strong> để xem lại kết quả bài test cũ và tab <strong>Vận hành / Đơn hàng</strong> để nắm trọn vẹn thông tin.
             </p>
           </div>
@@ -168,7 +168,7 @@ export function CrmLeadOverviewTab({
                     {lead.testDate ? `${lead.testDate} ${lead.testTime ? `(${lead.testTime})` : ''}` : 'Chưa có lịch'}
                   </span>
                   {lead.testStatus && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border shrink-0 font-medium">
+                    <span className="text-xs px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border shrink-0 font-medium">
                       {lead.testStatus === 'completed' ? 'Đã test' : lead.testStatus === 'scheduled' ? 'Đã hẹn' : 'Vắng test'}
                     </span>
                   )}
@@ -189,7 +189,7 @@ export function CrmLeadOverviewTab({
                     {lead.trialClassName || 'Chưa đăng ký'}
                   </span>
                   {lead.trialStatus && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border shrink-0 font-medium">
+                    <span className="text-xs px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border shrink-0 font-medium">
                       {lead.trialStatus === 'completed' ? 'Đã học thử' : lead.trialStatus === 'scheduled' ? 'Chờ học' : 'Chưa học'}
                     </span>
                   )}
@@ -204,7 +204,7 @@ export function CrmLeadOverviewTab({
               </div>
 
               {lead.previousTest && (
-                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/50 text-[11px]">
+                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-border/50 text-xs">
                   <span className="text-amber-700 dark:text-amber-400 font-medium shrink-0 flex items-center gap-1">
                     <RotateCcw className="h-3 w-3" />
                     <span>Test kỳ trước:</span>
@@ -257,7 +257,7 @@ export function CrmLeadOverviewTab({
                 {lead.orderCode ? (
                   <span
                     className={cn(
-                      'text-[10px] px-1.5 py-0.5 rounded border font-semibold',
+                      'text-xs px-1.5 py-0.5 rounded border font-semibold',
                       lead.orderStatus === 'paid'
                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200/60'
                         : lead.orderStatus === 'partial'

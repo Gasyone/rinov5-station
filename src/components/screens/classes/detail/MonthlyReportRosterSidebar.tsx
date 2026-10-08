@@ -77,7 +77,7 @@ export function MonthlyReportRosterSidebar({
                     <Check className="h-3 w-3 stroke-[3]" />
                   </div>
                 ) : (
-                  <span className="text-[10px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
                     Chưa lập
                   </span>
                 )}

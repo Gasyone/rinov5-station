@@ -156,7 +156,7 @@ function OrgUnitCreateForm({
             className="h-8 font-mono text-xs uppercase"
           />
           {codeError ? (
-            <span className="text-[11px] text-destructive mt-1 block">{codeError}</span>
+            <span className="text-xs text-destructive mt-1 block">{codeError}</span>
           ) : null}
         </FieldLabel>
 

@@ -9,6 +9,7 @@ import { getNavigationGroupsForRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
 import { UserProfileDialog } from '@/components/shared'
+import { cn } from '@/lib/utils'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -54,6 +55,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     if (sidebarOpen) setSidebarOpen(false)
   }
 
+  const isHomeScreen =
+    activeMenu === 'dashboard' || activeMenu === 'home' || pathname === '/app/dashboard'
+
   return (
     <div className="ui-main-canvas flex overflow-hidden font-sans bg-background" style={{ height: 'var(--app-height, 100vh)' }}>
       <div className="relative flex h-full w-full flex-col bg-background">
@@ -62,21 +66,25 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         />
 
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
-          <SidebarNav
-            navigationGroups={navigationGroups}
-            activeMenu={activeMenu}
-            isOpen={sidebarOpen}
-            mobileOpen={mobileNavOpen}
-            onNavigate={handleNavigate}
-            onOpen={handleSidebarOpen}
-            onMobileClose={() => setMobileNavOpen(false)}
-          />
+          {!isHomeScreen && (
+            <SidebarNav
+              navigationGroups={navigationGroups}
+              activeMenu={activeMenu}
+              isOpen={sidebarOpen}
+              mobileOpen={mobileNavOpen}
+              onNavigate={handleNavigate}
+              onOpen={handleSidebarOpen}
+              onMobileClose={() => setMobileNavOpen(false)}
+            />
+          )}
 
           <main
-            className="ui-main-canvas custom-scrollbar relative min-w-0 flex-1 overflow-hidden"
+            className="ui-main-canvas relative min-w-0 flex-1 overflow-hidden"
             onPointerDownCapture={handleContentPointerDown}
           >
-            <div className="h-full w-full overflow-hidden flex flex-col">{children}</div>
+            <div className="h-full w-full overflow-hidden flex flex-col">
+              {children}
+            </div>
           </main>
         </div>
       </div>

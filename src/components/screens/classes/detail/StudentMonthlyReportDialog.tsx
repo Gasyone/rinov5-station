@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { BookOpen, Loader2, Check, Pencil, Send, ExternalLink, RotateCcw } from 'lucide-react'
+import { BookOpen, Loader2, Check, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { RosterStudent } from './classesDetailTypes'
@@ -24,6 +24,9 @@ import { MonthlyReportStatsCards } from './MonthlyReportStatsCards'
 import { MonthlyReportRosterSidebar } from './MonthlyReportRosterSidebar'
 import { MonthlyAwardCriteriaPopover } from './MonthlyAwardCriteriaPopover'
 import { MonthlyReportAcademicSection } from './MonthlyReportAcademicSection'
+import { MonthlyReportActivityPhotosSection } from './MonthlyReportActivityPhotosSection'
+import { MonthlyReportSummaryCard } from './MonthlyReportSummaryCard'
+import { downloadMonthlyReportImage } from './monthlyReportImageHelper'
 import { mockStudents } from '@/mocks/students'
 import { getStudentPhotos } from '@/mocks/studentPhotos'
 import {
@@ -34,6 +37,7 @@ import {
   getStudentReportMetrics,
   DetailedMonthlyReportForm,
   EMPTY_REPORT_FORM,
+  DEFAULT_SECTION_B2_WEEKS,
   AWARD_BADGES,
   ENGLISH_AWARD_BADGES,
   normalizeAwardBadge,
@@ -51,6 +55,23 @@ interface StudentMonthlyReportDialogProps {
   initialStudentId?: string
   initialMonthKey?: string
   subject?: string
+}
+
+interface StudentSubjectInfo {
+  packageName?: string
+  learningPath?: string
+  level?: string
+}
+
+function getIsMathSubject(
+  subject?: string,
+  studentDetail?: StudentSubjectInfo,
+  studentLevel?: string
+): boolean {
+  const combined = `${subject || ''} ${studentDetail?.packageName || ''} ${studentDetail?.learningPath || ''} ${studentDetail?.level || ''} ${studentLevel || ''}`.toLowerCase()
+  if (combined.includes('toán') || combined.includes('math')) return true
+  if (combined.includes('anh') || combined.includes('english') || combined.includes('ielts') || combined.includes('toeic') || combined.includes('cambridge')) return false
+  return false
 }
 
 function resolveMonthValue(key?: string): string {
@@ -82,16 +103,10 @@ export function StudentMonthlyReportDialog({
     setPrevOpen(open)
     if (open) {
       const sId = initialStudentId || students[0]?.id || ''
-      if (sId) {
-        setSelectedStudentId(sId)
-      }
+      if (sId) setSelectedStudentId(sId)
       const targetMKey = initialMonthKey ? resolveMonthValue(initialMonthKey) : selectedMonthKey
       if (initialMonthKey) setSelectedMonthKey(targetMKey)
-      const monthOpt = MONTH_OPTIONS.find((m) => m.value === targetMKey) || MONTH_OPTIONS[0]
-      const hasReport = getStudentMonthlyReports(sId).some(
-        (r) => r.monthOptionValue === targetMKey || r.monthKey.includes(monthOpt.current)
-      )
-      setIsEditing(!hasReport)
+      setIsEditing(false)
     }
   }
 
@@ -101,7 +116,7 @@ export function StudentMonthlyReportDialog({
     const monthOpt = MONTH_OPTIONS.find((m) => m.value === mKey) || MONTH_OPTIONS[0]
     const map: Record<string, boolean> = {}
     students.forEach((s) => {
-      const existing = getStudentMonthlyReports(s.id || s.name)
+      const existing = getStudentMonthlyReports(s.id, s.name, s.code)
       map[s.id] = existing.some(
         (r) => r.monthOptionValue === mKey || r.monthKey.includes(monthOpt.current)
       )
@@ -118,7 +133,7 @@ export function StudentMonthlyReportDialog({
   const getFormForStudentAndMonth = (sId: string, mKey: string): DetailedMonthlyReportForm => {
     const s = students.find((item) => item.id === sId) || students[0]
     if (!s) return { ...EMPTY_REPORT_FORM }
-    const reports = getStudentMonthlyReports(s.id || s.name)
+    const reports = getStudentMonthlyReports(s.id, s.name, s.code)
     const monthOpt = MONTH_OPTIONS.find((m) => m.value === mKey) || MONTH_OPTIONS[0]
     const existing = reports.find(
       (r) => r.monthOptionValue === mKey || r.monthKey.includes(monthOpt.current)
@@ -139,10 +154,46 @@ export function StudentMonthlyReportDialog({
         sectionB2Content: existing.sectionB2Content || '',
       }
     }
+
+    // Với các kỳ quá khứ (Tháng 3, Tháng 2, Tháng 1) nếu chưa có báo cáo thủ công:
+    // Tự động nạp báo cáo học bạ mẫu sinh động, có đầy đủ đánh giá thực tế theo môn học
+    if (mKey !== '4_5_2026') {
+      const sDetail = mockStudents.find((item) => item.id === s.id || item.name === s.name)
+      const isMathForStudent = getIsMathSubject(subject, sDetail, s.level)
+      const fallbackA1 = isMathForStudent
+        ? `Điểm nổi bật: Con có thái độ học tập tích cực, tập trung nghe giảng và chủ động hoàn thành bài tập trên lớp.\n\nĐiểm cần lưu ý: Khi gặp bài toán suy luận nhiều bước, con cần rèn thêm tính kiên nhẫn và cẩn thận kiểm tra lại đáp án.`
+        : `Điểm nổi bật: Con tự tin phát biểu, ngữ điệu nói tự nhiên và phát âm rõ ràng trong các hoạt động giao tiếp.\n\nĐiểm cần lưu ý: Cần chú ý phát âm các âm đuôi /s/, /t/ và rèn thêm tính kiên nhẫn khi đọc hiểu đoạn văn dài.`
+
+      const fallbackA2 = isMathForStudent
+        ? `Kiến thức & Tư duy: Nắm chắc các phép toán số học nền tảng, nhận biết tốt các dạng hình học và quy luật dãy số.\n\nKỹ năng giải toán: Cần rèn luyện thêm kỹ năng tính nhẩm nhanh và giải toán có lời văn ngắn.`
+        : `Từ vựng & Phonics: Ghi nhớ tốt các từ vựng chủ đề trong tháng, phát âm chuẩn các nguyên âm cơ bản.\n\nCấu trúc & Mẫu câu: Phản xạ nhanh với các mẫu câu giao tiếp quen thuộc, trả lời tròn câu.`
+
+      const fallbackB1 = isMathForStudent
+        ? `Tháng tới, con tiếp tục nâng cao kỹ năng tư duy hình học không gian, làm quen với các phép toán mở rộng và bài toán đố logic.`
+        : `Tháng tới, các con sẽ tiếp tục rèn luyện kỹ năng thuyết trình tự tin trước lớp, mở rộng vốn từ vựng và tham gia dự án nhóm.`
+
+      return {
+        monthPeriod: monthOpt.dateStr,
+        awardBadge: isMathForStudent ? '⭐️ NGÔI SAO CHĂM CHỈ' : '🌟 SIÊU SAO TIẾNG ANH',
+        teacherName: 'Ms.Chloe',
+        sectionAContent: `${fallbackA1}\n\n${fallbackA2}`,
+        sectionA1Content: fallbackA1,
+        sectionA2Content: fallbackA2,
+        galleryPhotos: getStudentPhotos(s.id).slice(0, 4),
+        sectionB1Content: fallbackB1,
+        sectionB2StartLesson: undefined,
+        sectionB2EndLesson: undefined,
+        sectionB2Weeks: DEFAULT_SECTION_B2_WEEKS,
+        sectionB2Content: 'Kế hoạch ôn tập 4 tuần theo bài học trọng tâm',
+      }
+    }
+
     return {
       ...EMPTY_REPORT_FORM,
       monthPeriod: monthOpt.dateStr,
       galleryPhotos: [],
+      sectionB2StartLesson: undefined,
+      sectionB2EndLesson: undefined,
     }
   }
 
@@ -168,11 +219,7 @@ export function StudentMonthlyReportDialog({
       ...prev,
       [selectedStudentId]: newForm,
     }))
-    const monthOpt = MONTH_OPTIONS.find((m) => m.value === newMonthKey) || MONTH_OPTIONS[0]
-    const hasReport = getStudentMonthlyReports(selectedStudentId).some(
-      (r) => r.monthOptionValue === newMonthKey || r.monthKey.includes(monthOpt.current)
-    )
-    setIsEditing(!hasReport)
+    setIsEditing(false)
     setReportStatusMap(computeStatusMap(newMonthKey))
   }
 
@@ -183,11 +230,7 @@ export function StudentMonthlyReportDialog({
       ...prev,
       [sId]: newForm,
     }))
-    const monthOpt = MONTH_OPTIONS.find((m) => m.value === selectedMonthKey) || MONTH_OPTIONS[0]
-    const hasReport = getStudentMonthlyReports(sId).some(
-      (r) => r.monthOptionValue === selectedMonthKey || r.monthKey.includes(monthOpt.current)
-    )
-    setIsEditing(!hasReport)
+    setIsEditing(false)
   }
 
   const handleCancelEdit = () => {
@@ -206,96 +249,58 @@ export function StudentMonthlyReportDialog({
     (s) => s.id === selectedStudentId || (selectedStudent && s.name === selectedStudent.name)
   )
 
-  const isMath = useMemo(() => {
-    const textToCheck = (currentForm.sectionA2Content || '').toLowerCase()
-    if (textToCheck.includes('từ vựng') || textToCheck.includes('phonics') || textToCheck.includes('letter') || textToCheck.includes('mẫu câu')) {
-      return false
-    }
-    if (textToCheck.includes('toán') || textToCheck.includes('hình học') || textToCheck.includes('không gian') || textToCheck.includes('giải toán')) {
-      return true
-    }
-    if (subject) {
-      const s = subject.toLowerCase()
-      if (s.includes('toán') || s.includes('math')) return true
-      if (s.includes('anh') || s.includes('english') || s.includes('ielts') || s.includes('toeic')) return false
-    }
-    if (studentDetail) {
-      const pkg = (studentDetail.packageName || '').toLowerCase()
-      const path = (studentDetail.learningPath || '').toLowerCase()
-      const lev = (studentDetail.level || '').toLowerCase()
-      if (
-        pkg.includes('toán') ||
-        pkg.includes('math') ||
-        path.includes('toán') ||
-        path.includes('math') ||
-        lev.includes('toán') ||
-        lev.includes('math')
-      )
-        return true
-      if (
-        pkg.includes('anh') ||
-        pkg.includes('english') ||
-        pkg.includes('ielts') ||
-        path.includes('anh') ||
-        path.includes('english') ||
-        lev.includes('english')
-      )
-        return false
-    }
-    if (selectedStudent?.level) {
-      const l = selectedStudent.level.toLowerCase()
-      if (l.includes('toán') || l.includes('math')) return true
-      if (l.includes('anh') || l.includes('english')) return false
-    }
-    return false
-  }, [subject, studentDetail, selectedStudent, currentForm.sectionA2Content])
+  const isMath = getIsMathSubject(subject, studentDetail, selectedStudent?.level)
 
   const activeLessons = useMemo(() => {
     return getLessonsReviewBySubject(subject, isMath)
   }, [subject, isMath])
 
   const startLessonObj = activeLessons.find(
-    (l) => l.lessonNumber === (currentForm.sectionB2StartLesson || (isMath ? 1 : 8))
+    (l) => l.lessonNumber === currentForm.sectionB2StartLesson
   )
   const endLessonObj = activeLessons.find(
-    (l) => l.lessonNumber === (currentForm.sectionB2EndLesson || (isMath ? 4 : 10))
+    (l) => l.lessonNumber === currentForm.sectionB2EndLesson
   )
 
-  const studentMetrics = useMemo(() => {
-    return getStudentReportMetrics(selectedStudent?.id, selectedStudent?.name, selectedStudent?.code)
-  }, [selectedStudent])
+  const studentMetrics = getStudentReportMetrics(selectedStudent?.id, selectedStudent?.name, selectedStudent?.code)
 
   // Step 1: Handle Start Lesson change
   const handleStartLessonChange = (startNum: number) => {
-    const endNum = currentForm.sectionB2EndLesson || (isMath ? 4 : 10)
-    const newReviewContent = getReviewContentForRange(startNum, endNum, isMath)
-    const newB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
-    handleUpdateForm({
+    const endNum = currentForm.sectionB2EndLesson
+    const updates: Partial<DetailedMonthlyReportForm> = {
       sectionB2StartLesson: startNum,
-      sectionB2Content: newReviewContent,
-      sectionB1Content: newB1Content,
-    })
+    }
+    if (endNum) {
+      updates.sectionB2Content = getReviewContentForRange(startNum, endNum, isMath)
+      updates.sectionB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
+    }
+    handleUpdateForm(updates)
   }
 
   // Step 1: Handle End Lesson change
   const handleEndLessonChange = (endNum: number) => {
-    const startNum = currentForm.sectionB2StartLesson || (isMath ? 1 : 8)
-    const newReviewContent = getReviewContentForRange(startNum, endNum, isMath)
-    const newB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
-    handleUpdateForm({
+    const startNum = currentForm.sectionB2StartLesson
+    const updates: Partial<DetailedMonthlyReportForm> = {
       sectionB2EndLesson: endNum,
-      sectionB2Content: newReviewContent,
-      sectionB1Content: newB1Content,
-    })
+    }
+    if (startNum) {
+      updates.sectionB2Content = getReviewContentForRange(startNum, endNum, isMath)
+      updates.sectionB1Content = getDirectLessonPlanForRange(startNum, endNum, isMath)
+    }
+    handleUpdateForm(updates)
   }
 
   // Handle loading sample lesson plan for Section B1
   const handleLoadNextMonthPlan = () => {
+    const startNum = currentForm.sectionB2StartLesson
+    const endNum = currentForm.sectionB2EndLesson
+    if (!startNum || !endNum) {
+      toast.info('Vui lòng chọn bài bắt đầu và kết thúc!')
+      return
+    }
     setIsSynthesizingAi(true)
     setTimeout(() => {
       setIsSynthesizingAi(false)
-      const startNum = currentForm.sectionB2StartLesson || (isMath ? 1 : 8)
-      const endNum = currentForm.sectionB2EndLesson || (isMath ? 4 : 10)
       const synthesizedText = getAiSynthesizedNextMonthPlan(startNum, endNum, isMath)
       handleUpdateForm({ sectionB1Content: synthesizedText })
       toast.success(`Đã nạp nội dung bài học tháng tới (Buổi ${startNum} đến Buổi ${endNum})!`)
@@ -341,141 +346,148 @@ export function StudentMonthlyReportDialog({
     return `${origin}/report/${selectedStudent.id}?month=${encodeURIComponent(selectedMonthKey)}`
   }
 
-  const handleSendToParent = () => {
-    const link = getLandingPageUrl()
+  const handleCopySummary = () => {
+    const badgeStr = currentForm.awardBadge ? `\n🏆 Danh hiệu: ${currentForm.awardBadge}` : ''
+    const generalStr = currentForm.sectionA1Content ? `\n📌 Nhận xét chung: ${currentForm.sectionA1Content}` : ''
+    const academicStr = currentForm.sectionA2Content ? `\n📚 Đánh giá học tập: ${currentForm.sectionA2Content}` : ''
+    const planStr = currentForm.sectionB1Content ? `\n🎯 Kế hoạch tháng tới: ${currentForm.sectionB1Content}` : ''
+    const teacherStr = currentForm.teacherName ? `\n👨‍🏫 Giáo viên: ${currentForm.teacherName}` : ''
+
+    const summaryText = `[RINO EDU] Báo cáo học tập - ${activeMonthConfig.current}/2026
+Học viên: ${selectedStudent.name} (${selectedStudent.code || 'HV'})
+Thời gian: ${activeMonthConfig.dateStr}${badgeStr}${generalStr}${academicStr}${planStr}${teacherStr}
+Link xem chi tiết: ${getLandingPageUrl()}`
+
     navigator.clipboard
-      .writeText(link)
-      .then(() => toast.success(`Đã sao chép liên kết Landing Page báo cáo ${activeMonthConfig.current} gửi phụ huynh học viên ${selectedStudent.name}!`))
-      .catch(() => toast.error('Không thể sao chép liên kết.'))
+      .writeText(summaryText)
+      .then(() => toast.success(`Đã sao chép tóm tắt báo cáo của học viên ${selectedStudent.name}!`))
+      .catch(() => toast.error('Không thể sao chép tóm tắt.'))
+  }
+
+  const handleDownloadImage = async () => {
+    try {
+      toast.loading('Đang khởi tạo và tải ảnh báo cáo...', { id: 'download-report-dialog' })
+      await downloadMonthlyReportImage({
+        student: selectedStudent,
+        monthTitle: activeMonthConfig.current,
+        nextMonthTitle: activeMonthConfig.next,
+        dateStr: activeMonthConfig.dateStr,
+        awardBadge: currentForm.awardBadge,
+        teacherName: currentForm.teacherName,
+        subject: subject || (isMath ? 'Toán tư duy' : 'Tiếng Anh'),
+        roadmap: isMath ? 'Toán Tư Duy Archimedes' : 'Cambridge Standard',
+        level: selectedStudent?.level || 'Lớp 4',
+        metrics: studentMetrics,
+        sectionA1Content: currentForm.sectionA1Content,
+        sectionA2Content: currentForm.sectionA2Content,
+        sectionB1Content: currentForm.sectionB1Content,
+        sectionB2Weeks: currentForm.sectionB2Weeks || DEFAULT_SECTION_B2_WEEKS,
+      })
+      toast.success(`Đã tải ảnh báo cáo tháng cho học viên ${selectedStudent.name}!`, { id: 'download-report-dialog' })
+    } catch (err) {
+      console.error(err)
+      toast.error('Không thể tạo file ảnh. Vui lòng thử lại!', { id: 'download-report-dialog' })
+    }
   }
 
   const currentWeeks = currentForm.sectionB2Weeks || []
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className={cn(
-            'max-w-[95vw] max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-3xl border bg-background shadow-2xl transition-all',
-            students.length > 1 ? 'lg:max-w-[1020px]' : 'md:max-w-[840px] lg:max-w-[860px]'
-          )}
-        >
-          {/* Top Header Bar (Xóa subtitle ở header modal) */}
-          <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between shrink-0 bg-muted/20">
-            <div className="space-y-0.5">
-              <DialogTitle className="text-base font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <span>BÁO CÁO HỌC TẬP</span>
-              </DialogTitle>
-            </div>
-
-            {/* Select Reporting Month Dropdown */}
-            <div className="flex items-center gap-2 me-6">
-              <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Kỳ báo cáo:</span>
-              <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
-                <SelectTrigger className="h-8 text-xs font-bold w-[280px] bg-background border-border/80 rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTH_OPTIONS.map((m) => (
-                    <SelectItem key={m.value} value={m.value} className="text-xs font-medium">
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </DialogHeader>
-
-          {/* Main Content Area (Sidebar Left + Form Right) */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Left Roster Student Sidebar (Only displayed when there are multiple students) */}
-            {students.length > 1 && (
-              <MonthlyReportRosterSidebar
-                students={students}
-                selectedStudentId={selectedStudentId}
-                reportStatusMap={reportStatusMap}
-                onSelectStudent={handleSelectStudent}
-              />
+      <DialogContent
+        className={cn(
+          'max-w-[96vw] max-h-[88vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border bg-background shadow-2xl transition-all',
+          students.length > 1 ? 'lg:max-w-[1060px]' : 'lg:max-w-[920px]'
+        )}
+      >
+        {/* Top Header Bar: Gọn gàng, giảm chiều cao, phân cấp nút rõ ràng */}
+        <DialogHeader className="px-4 py-2 flex flex-row items-center justify-between shrink-0 bg-background border-b border-border/40">
+          <div className="flex items-center gap-2">
+            <DialogTitle className="text-sm font-semibold text-foreground tracking-tight">
+              Báo cáo học tập
+            </DialogTitle>
+            {isEditing ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-300/60 dark:border-amber-700/60">
+                <Pencil className="h-3 w-3" />
+                <span>Chỉnh sửa</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/60">
+                <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                <span>Tự động</span>
+              </span>
             )}
+          </div>
 
-            {/* Right Report Detail Form */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar bg-background">
-              {/* Top Banner Notice */}
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30 space-y-3">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-                  <div className="text-muted-foreground font-medium">
-                    Kết quả học tập từ <strong className="text-foreground font-bold">{activeMonthConfig.dateStr}</strong>
-                  </div>
+          {/* Action button & Select Reporting Month Dropdown */}
+          <div className="flex items-center gap-2 me-6">
+            <Select value={selectedMonthKey} onValueChange={handleMonthChange}>
+              <SelectTrigger className="h-7 text-xs font-normal w-[180px] sm:w-[210px] bg-background border-border/70 rounded-md">
+                <SelectValue placeholder="Chọn kỳ báo cáo" />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTH_OPTIONS.map((m) => (
+                  <SelectItem key={m.value} value={m.value} className="text-xs font-normal">
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                  {/* Award Badge: Select danh hiệu theo môn học, Pill tĩnh khi xem */}
-                  {isEditing ? (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={currentForm.awardBadge || ''}
-                        onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
-                      >
-                        <SelectTrigger className="h-8 text-xs font-black bg-amber-400 text-amber-950 border-amber-500 rounded-full px-4 uppercase tracking-wide">
-                          <SelectValue placeholder="Chọn danh hiệu..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(isMath ? AWARD_BADGES : ENGLISH_AWARD_BADGES).map((badge) => (
-                            <SelectItem key={badge} value={badge} className="text-xs font-bold">
-                              {badge}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <MonthlyAwardCriteriaPopover
-                        selectedBadge={currentForm.awardBadge}
-                        onSelectBadge={(val) => handleUpdateForm({ awardBadge: val })}
-                        isEditing={true}
-                        isMath={isMath}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {currentForm.awardBadge ? (
-                        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-amber-950 font-black text-xs uppercase tracking-wide shadow-2xs">
-                          {currentForm.awardBadge}
-                        </div>
-                      ) : (
-                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-dashed border-amber-400/40 text-xs italic">
-                          Chưa đặt danh hiệu
-                        </div>
-                      )}
-
-                      <MonthlyAwardCriteriaPopover
-                        selectedBadge={currentForm.awardBadge}
-                        isEditing={false}
-                        isMath={isMath}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Teacher Note Row */}
-                {isEditing ? (
-                  <div className="pt-2 border-t border-amber-400/20 flex items-start gap-2 text-sm text-muted-foreground italic">
-                    <Pencil className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 not-italic stroke-[2.5] mt-0.5" />
-                    <span>
-                      Rino Edu xin chúc mừng con <strong className="text-primary font-bold not-italic">{selectedStudent.name}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng bứt phá từ giáo viên phụ trách{' '}
-                      <input
-                        type="text"
-                        value={currentForm.teacherName}
-                        onChange={(e) => handleUpdateForm({ teacherName: e.target.value })}
-                        placeholder="Tên Giáo viên"
-                        className="inline-block w-32 text-center text-sm font-bold text-primary border-b border-primary/40 bg-transparent focus:outline-none not-italic"
-                      />.
-                    </span>
-                  </div>
-                ) : (
-                  <div className="pt-2 border-t border-amber-400/20 text-sm text-foreground/90 leading-relaxed">
-                    Rino Edu xin chúc mừng con <strong className="text-primary font-bold">{selectedStudent.name}</strong> đã hoàn thành xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng bứt phá từ giáo viên phụ trách <strong className="text-primary font-bold">{currentForm.teacherName || 'Nguyễn Thu Thảo'}</strong>.
-                  </div>
-                )}
+            {!isEditing ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="h-7 text-xs font-medium px-2.5 rounded-md border-border text-foreground hover:bg-muted cursor-pointer gap-1.5"
+                title="Chỉnh sửa nội dung báo cáo"
+              >
+                <Pencil className="h-3 w-3 text-muted-foreground" />
+                <span>Chỉnh sửa</span>
+              </Button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  className="h-7 text-xs font-normal px-2.5 rounded-md cursor-pointer text-muted-foreground hover:text-foreground"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleSave}
+                  className="h-7 text-xs font-medium px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-3xs cursor-pointer gap-1"
+                >
+                  <Check className="h-3 w-3" />
+                  <span>Lưu thay đổi</span>
+                </Button>
               </div>
+            )}
+          </div>
+        </DialogHeader>
 
-              {/* Smartcard Section (Chuyên cần, BTVN, Điểm kiểm tra) đưa lên trên mục A */}
+        {/* Main Content Area (Sidebar Left + Split 2 Panels: Trái lớn, Phải nhỏ - Không line giữa) */}
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          {/* Left Roster Student Sidebar (Only displayed when there are multiple students) */}
+          {students.length > 1 && (
+            <MonthlyReportRosterSidebar
+              students={students}
+              selectedStudentId={selectedStudentId}
+              reportStatusMap={reportStatusMap}
+              onSelectStudent={handleSelectStudent}
+            />
+          )}
+
+          {/* 2-Panel Layout: Trái lớn (Thống kê + A + B có viền) | Phải nhỏ gọn (Kết quả + Khoảnh khắc + Tóm tắt) */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-w-0 gap-3 px-3.5 sm:px-4 pb-3 pt-1">
+            {/* PANEL TRÁI (LỚN): SECTION THỐNG KÊ TRÊN CÙNG + SECTION A, B CÓ VIỀN */}
+            <div className="flex-1 min-w-0 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar bg-background">
+              {/* SECTION THỐNG KÊ: CHUYÊN CẦN, BTVN, ĐIỂM KIỂM TRA ĐƯA LÊN TRÊN CÙNG */}
               <MonthlyReportStatsCards
                 currentMonth={activeMonthConfig.current}
                 attendanceRatio={studentMetrics.attendanceRatio}
@@ -484,81 +496,93 @@ export function StudentMonthlyReportDialog({
                 homeworkAvg={studentMetrics.homeworkAvg}
                 testScore={studentMetrics.testScore}
                 priorTestScore={studentMetrics.priorTestScore}
+                onOpenTestRemark={() => {
+                  const link = `${getLandingPageUrl()}#test-evaluation`
+                  window.open(link, '_blank')
+                  toast.success(`Đang mở nhận xét bài kiểm tra gần nhất của học viên ${selectedStudent.name} trong tab mới!`)
+                }}
                 onScrollToEvaluation={() => {
-                  document.getElementById('dialog-report-section-a')?.scrollIntoView({ behavior: 'smooth' })
+                  const el = document.getElementById('monthly-report-evaluation-section')
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }}
               />
 
-              {/* SECTION A: BÁO CÁO HỌC TẬP (TÁCH THÀNH CÁC MỤC VÀ MEDIA) */}
-              <MonthlyReportAcademicSection
-                isEditing={isEditing}
-                isMath={isMath}
-                monthTitle={activeMonthConfig.current}
-                studentId={selectedStudent.id}
-                studentName={selectedStudent.name}
-                sectionA1Content={currentForm.sectionA1Content}
-                sectionA2Content={currentForm.sectionA2Content}
-                onUpdateA1={(content, highlight, note) => {
-                  handleUpdateForm({
-                    sectionA1Highlight: highlight,
-                    sectionA1Note: note,
-                    sectionA1Content: content,
-                  })
-                }}
-                onUpdateA2={(content, knowledge, skill) => {
-                  handleUpdateForm({
-                    sectionA2Knowledge: knowledge,
-                    sectionA2Skill: skill,
-                    sectionA2Content: content,
-                  })
-                }}
-                galleryPhotos={currentForm.galleryPhotos || getStudentPhotos(selectedStudent.id).slice(0, 6)}
-                onChangePhotos={(newPhotos) => handleUpdateForm({ galleryPhotos: newPhotos })}
-                idPrefix="dialog-report"
-              />
+              {/* SECTION A: BÁO CÁO HỌC TẬP (CÓ VIỀN RIÊNG) */}
+              <div
+                id="monthly-report-evaluation-section"
+                className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 space-y-2 shadow-3xs scroll-mt-2"
+              >
+                <MonthlyReportAcademicSection
+                  isEditing={isEditing}
+                  isMath={isMath}
+                  monthTitle={activeMonthConfig.current}
+                  studentId={selectedStudent.id}
+                  studentName={selectedStudent.name}
+                  sectionA1Content={currentForm.sectionA1Content}
+                  sectionA2Content={currentForm.sectionA2Content}
+                  onUpdateA1={(content, highlight, note) => {
+                    handleUpdateForm({
+                      sectionA1Highlight: highlight,
+                      sectionA1Note: note,
+                      sectionA1Content: content,
+                    })
+                  }}
+                  onUpdateA2={(content, knowledge, skill) => {
+                    handleUpdateForm({
+                      sectionA2Knowledge: knowledge,
+                      sectionA2Skill: skill,
+                      sectionA2Content: content,
+                    })
+                  }}
+                  galleryPhotos={currentForm.galleryPhotos || getStudentPhotos(selectedStudent.id).slice(0, 6)}
+                  onChangePhotos={(newPhotos) => handleUpdateForm({ galleryPhotos: newPhotos })}
+                  idPrefix="dialog-report"
+                  showPhotosSection={false}
+                />
+              </div>
 
-              {/* SECTION B: KẾ HOẠCH HỌC TẬP CẢI THIỆN */}
-              <div className="space-y-4 pt-3 border-t">
+              {/* SECTION B: KẾ HOẠCH HỌC TẬP CẢI THIỆN (CÓ VIỀN RIÊNG) */}
+              <div className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 space-y-2 shadow-3xs">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-extrabold text-foreground uppercase tracking-wide">
-                    B - KẾ HOẠCH HỌC TẬP CẢI THIỆN {activeMonthConfig.next.toUpperCase()}
+                  <h4 className="text-xs sm:text-sm font-semibold text-foreground">
+                    B. Kế hoạch học tập cải thiện {activeMonthConfig.next}
                   </h4>
                   {isEditing && (
-                    <span className="text-xs font-semibold text-muted-foreground">Chọn khoảng bài học để nạp nội dung mẫu</span>
+                    <span className="text-[11px] font-medium text-muted-foreground hidden sm:inline">
+                      Chọn khoảng bài học để nạp nội dung mẫu
+                    </span>
                   )}
                 </div>
 
                 {/* Sub-section 1: Nội dung bài học tháng tới (Ô 01) */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-center justify-between gap-2 pb-1">
-                    <label className="text-xs font-bold text-foreground flex items-center gap-1.5 shrink-0">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <label className="text-xs font-normal text-muted-foreground flex items-center gap-1.5 shrink-0">
                       1. Nội dung bài học tháng tới
                     </label>
 
                     {/* Step 1 & Step 2 Controls chỉ hiện khi đang ở chế độ chỉnh sửa (isEditing) */}
                     {isEditing && (
-                      <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                        <span className="text-xs font-bold text-muted-foreground shrink-0">Chọn bài:</span>
-
-                        {/* Start Lesson Select */}
+                      <div className="flex items-center gap-1 shrink-0 ml-auto">
+                        {/* Start Lesson Select (Không in đậm, placeholder: Chọn bài) */}
                         <Select
-                          value={String(currentForm.sectionB2StartLesson || (isMath ? 1 : 8))}
+                          value={currentForm.sectionB2StartLesson ? String(currentForm.sectionB2StartLesson) : undefined}
                           onValueChange={(val) => handleStartLessonChange(Number(val))}
                         >
                           <SelectTrigger
-                            className="h-7.5 text-xs font-semibold w-28 sm:w-32 max-w-[130px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                            className="h-6.5 text-[11px] font-normal w-[88px] sm:w-[98px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-1.5 rounded-md text-foreground"
                             title={startLessonObj ? `Buổi ${startLessonObj.lessonNumber}: ${startLessonObj.title}` : undefined}
                           >
-                            <SelectValue placeholder="Bắt đầu" />
+                            <SelectValue placeholder="Chọn bài" />
                           </SelectTrigger>
-                          <SelectContent className="max-w-[420px] w-[340px]">
+                          <SelectContent className="max-w-[360px] w-[320px]">
                             {activeLessons.map((l) => (
                               <SelectItem
                                 key={l.lessonNumber}
                                 value={String(l.lessonNumber)}
-                                className="text-xs py-1.5 cursor-pointer"
+                                className="text-xs font-normal py-1.5 cursor-pointer"
                               >
-                                <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                                <span className="truncate block font-normal text-xs" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
                                   Buổi {l.lessonNumber}: {l.title}
                                 </span>
                               </SelectItem>
@@ -566,27 +590,27 @@ export function StudentMonthlyReportDialog({
                           </SelectContent>
                         </Select>
 
-                        <span className="text-xs font-bold text-muted-foreground shrink-0">→</span>
+                        <span className="text-[11px] text-muted-foreground shrink-0 select-none">→</span>
 
-                        {/* End Lesson Select */}
+                        {/* End Lesson Select (Không in đậm, placeholder: Chọn bài) */}
                         <Select
-                          value={String(currentForm.sectionB2EndLesson || (isMath ? 4 : 10))}
+                          value={currentForm.sectionB2EndLesson ? String(currentForm.sectionB2EndLesson) : undefined}
                           onValueChange={(val) => handleEndLessonChange(Number(val))}
                         >
                           <SelectTrigger
-                            className="h-7.5 text-xs font-semibold w-28 sm:w-32 max-w-[130px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-2"
+                            className="h-6.5 text-[11px] font-normal w-[88px] sm:w-[98px] bg-background border-border/80 shadow-2xs overflow-hidden [&>span]:truncate [&>span]:block text-left px-1.5 rounded-md text-foreground"
                             title={endLessonObj ? `Buổi ${endLessonObj.lessonNumber}: ${endLessonObj.title}` : undefined}
                           >
-                            <SelectValue placeholder="Kết thúc" />
+                            <SelectValue placeholder="Chọn bài" />
                           </SelectTrigger>
-                          <SelectContent className="max-w-[420px] w-[340px]">
+                          <SelectContent className="max-w-[360px] w-[320px]">
                             {activeLessons.map((l) => (
                               <SelectItem
                                 key={l.lessonNumber}
                                 value={String(l.lessonNumber)}
-                                className="text-xs py-1.5 cursor-pointer"
+                                className="text-xs font-normal py-1.5 cursor-pointer"
                               >
-                                <span className="truncate block" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
+                                <span className="truncate block font-normal text-xs" title={`Buổi ${l.lessonNumber}: ${l.title}`}>
                                   Buổi {l.lessonNumber}: {l.title}
                                 </span>
                               </SelectItem>
@@ -600,15 +624,15 @@ export function StudentMonthlyReportDialog({
                           size="sm"
                           onClick={handleLoadNextMonthPlan}
                           disabled={isSynthesizingAi}
-                          className="h-7.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-2.5 sm:px-3 shadow-2xs cursor-pointer gap-1.5 shrink-0"
-                          title="Nạp nội dung khung chương trình cho các buổi học đã chọn"
+                          className="h-6.5 text-[11px] font-normal bg-primary hover:bg-primary/90 text-primary-foreground rounded-md px-2 shadow-2xs cursor-pointer gap-1 shrink-0"
+                          title="Thêm nội dung khung chương trình cho các buổi học đã chọn"
                         >
                           {isSynthesizingAi ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
-                            <BookOpen className="h-3.5 w-3.5" />
+                            <BookOpen className="h-3 w-3" />
                           )}
-                          <span>Nạp bài học mẫu</span>
+                          <span>Thêm bài</span>
                         </Button>
                       </div>
                     )}
@@ -616,14 +640,14 @@ export function StudentMonthlyReportDialog({
 
                   {isEditing ? (
                     <textarea
-                      rows={8}
+                      rows={2}
                       value={currentForm.sectionB1Content}
                       onChange={(e) => handleUpdateForm({ sectionB1Content: e.target.value })}
-                      placeholder="Nhập hoặc chọn bài học rồi bấm 'Nạp bài học mẫu' để tự động điền nhanh..."
-                      className="w-full text-sm p-3.5 rounded-xl border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y"
+                      placeholder="Nhập hoặc chọn bài học rồi bấm 'Thêm bài' để tự động điền nhanh..."
+                      className="w-full text-xs p-2 rounded-lg border border-border/80 bg-background focus:border-primary focus:outline-none leading-relaxed font-sans resize-y min-h-[56px]"
                     />
                   ) : (
-                    <div className="w-full text-sm p-4 rounded-xl border border-border/40 bg-muted/20 text-foreground leading-relaxed font-sans whitespace-pre-line">
+                    <div className="rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs text-foreground/90 leading-relaxed font-sans whitespace-pre-line">
                       {currentForm.sectionB1Content || (
                         <span className="italic text-muted-foreground/60">Chưa có nội dung bài học tháng tới.</span>
                       )}
@@ -639,109 +663,126 @@ export function StudentMonthlyReportDialog({
                 />
               </div>
             </div>
-          </div>
 
-          {/* Footer Bar - Tách biệt rõ ràng giữa Chế độ xem (View mode) và Chế độ sửa (Edit mode) */}
-          <div className="px-6 py-3 border-t bg-muted/10 flex items-center justify-between shrink-0">
-            {/* Trạng thái bên trái */}
-            <div className="flex items-center gap-3 text-xs">
-              {isEditing ? (
-                <div className="flex items-center gap-1.5 font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-700">
-                  <Pencil className="h-3.5 w-3.5" />
-                  <span>Chế độ chỉnh sửa báo cáo</span>
+            {/* PANEL PHẢI (GỌN GÀNG, CÂN ĐỐI): KẾT QUẢ HỌC TẬP + KHOẢNH KHẮC + TÓM TẮT BÁO CÁO (KHÔNG ĐƯỜNG LINE GIỮA) */}
+            <div className="w-full lg:w-[310px] xl:w-[325px] shrink-0 overflow-y-auto space-y-2.5 custom-scrollbar bg-background">
+              {/* 1. SECTION THÔNG TIN: KẾT QUẢ HỌC TẬP TỪ... */}
+              <div className="p-2.5 rounded-xl bg-card border border-border/80 space-y-1.5 shadow-2xs">
+                <div className="flex flex-col gap-1 text-xs">
+                  <div className="text-muted-foreground font-normal flex items-center justify-between">
+                    <span>Kết quả học tập:</span>
+                    <span className="text-foreground font-medium">{activeMonthConfig.dateStr}</span>
+                  </div>
+
+                  {/* Award Badge: Select danh hiệu theo môn học, Pill tĩnh khi xem */}
+                  {isEditing ? (
+                    <div className="flex items-center justify-between gap-1.5">
+                      <Select
+                        value={currentForm.awardBadge || ''}
+                        onValueChange={(val) => handleUpdateForm({ awardBadge: val })}
+                      >
+                        <SelectTrigger className="h-7 text-xs font-medium bg-amber-50/70 text-amber-900 border-amber-200/80 rounded-full px-3 flex-1 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                          <SelectValue placeholder="Chọn danh hiệu..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(isMath ? AWARD_BADGES : ENGLISH_AWARD_BADGES).map((badge) => (
+                            <SelectItem key={badge} value={badge} className="text-xs font-normal">
+                              {badge}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <MonthlyAwardCriteriaPopover
+                        selectedBadge={currentForm.awardBadge}
+                        onSelectBadge={(val) => handleUpdateForm({ awardBadge: val })}
+                        isEditing={true}
+                        isMath={isMath}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-1.5">
+                      {currentForm.awardBadge ? (
+                        <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 font-medium text-xs">
+                          {currentForm.awardBadge}
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground border border-dashed border-border text-xs">
+                          Chưa đặt danh hiệu
+                        </div>
+                      )}
+
+                      <MonthlyAwardCriteriaPopover
+                        selectedBadge={currentForm.awardBadge}
+                        isEditing={false}
+                        isMath={isMath}
+                      />
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Báo cáo tự động hàng tháng</span>
-                </div>
-              )}
-            </div>
 
-            {/* Nhóm nút hành động bên phải */}
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      handleUpdateForm({
-                        ...EMPTY_REPORT_FORM,
-                        monthPeriod: activeMonthConfig.dateStr,
-                        galleryPhotos: [],
-                      })
-                      toast.info('Đã xóa trắng form báo cáo để bạn tự điền nội dung mới.')
-                    }}
-                    className="text-xs text-muted-foreground hover:text-foreground px-2.5 rounded-lg cursor-pointer gap-1.5"
-                    title="Xóa trắng toàn bộ nội dung để tự điền báo cáo mới từ đầu"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    <span>Xóa trắng</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                    className="text-xs font-semibold px-4 rounded-lg cursor-pointer"
-                  >
-                    Hủy
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleSave}
-                    className="text-xs font-bold px-5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-xs cursor-pointer transition-all active:scale-95 gap-1.5"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                    <span>Lưu thay đổi</span>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const link = getLandingPageUrl()
-                      window.open(link, '_blank')
-                    }}
-                    className="text-xs font-bold px-3.5 rounded-lg border-sky-500/40 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer gap-1.5 shadow-3xs"
-                    title="Mở toàn màn hình dạng Landing Page trên tab mới"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span>Xem Landing Page</span>
-                  </Button>
+                {/* Teacher Note Row */}
+                {isEditing ? (
+                  <div className="pt-1.5 border-t border-border/50 flex items-start gap-1.5 text-xs text-muted-foreground italic">
+                    <Pencil className="h-3 w-3 text-muted-foreground shrink-0 not-italic mt-0.5" />
+                    <span>
+                      Rino Edu chúc mừng con <strong className="text-foreground font-medium not-italic">{selectedStudent.name}</strong> đã hoàn thành kỳ học! GV:{' '}
+                      <input
+                        type="text"
+                        value={currentForm.teacherName}
+                        onChange={(e) => handleUpdateForm({ teacherName: e.target.value })}
+                        placeholder="Tên GV"
+                        className="inline-block w-24 text-center text-xs font-medium text-foreground border-b border-border bg-transparent focus:outline-none not-italic"
+                      />.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="pt-1.5 border-t border-border/50 text-xs text-muted-foreground leading-relaxed">
+                    Rino Edu chúc mừng con <span className="text-foreground font-medium">{selectedStudent.name}</span> đã hoàn thành kỳ học! Giáo viên phụ trách:{' '}
+                    <span className="text-foreground font-medium">{currentForm.teacherName || 'Nguyễn Thu Thảo'}</span>.
+                  </div>
+                )}
+              </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSendToParent}
-                    className="text-xs font-semibold px-3.5 rounded-lg border-primary/30 text-primary hover:bg-primary/5 cursor-pointer gap-1.5"
-                    title="Gửi báo cáo và sao chép liên kết cho phụ huynh"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                    <span>Gửi phụ huynh</span>
-                  </Button>
+              {/* 2. KHOẢNH KHẮC HỌC TẬP (ẢNH & VIDEO TRONG THÁNG) - Phẳng hoàn toàn, không viền, không nền */}
+              <MonthlyReportActivityPhotosSection
+                photos={currentForm.galleryPhotos || []}
+                onChange={(newPhotos) => handleUpdateForm({ galleryPhotos: newPhotos })}
+                readOnly={!isEditing}
+                studentId={selectedStudent.id}
+                studentName={selectedStudent.name}
+                monthName={activeMonthConfig.current}
+                className="space-y-1.5 px-0.5"
+              />
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="text-xs font-bold px-5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-xs cursor-pointer transition-all active:scale-95 gap-1.5"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    <span>Chỉnh sửa</span>
-                  </Button>
-                </>
-              )}
+              {/* 3. TÓM TẮT BÁO CÁO (CÓ NÚT SAO CHÉP MÀU XANH KHÔNG VIỀN & GỘP TOÀN BỘ NÚT HÀNH ĐỘNG VÀO ĐÂY) */}
+              <MonthlyReportSummaryCard
+                selectedStudent={selectedStudent}
+                monthTitle={activeMonthConfig.current}
+                awardBadge={currentForm.awardBadge}
+                summaryPreview={currentForm.sectionA1Content || currentForm.sectionA2Content || ''}
+                onCopySummary={handleCopySummary}
+                isEditing={isEditing}
+                onSaveReport={handleSave}
+                onCancelEdit={handleCancelEdit}
+                onResetForm={() => {
+                  handleUpdateForm({
+                    ...EMPTY_REPORT_FORM,
+                    monthPeriod: activeMonthConfig.dateStr,
+                    galleryPhotos: [],
+                  })
+                  toast.info('Đã xóa trắng form báo cáo để bạn tự điền nội dung mới.')
+                }}
+                onOpenLandingPage={() => {
+                  const link = getLandingPageUrl()
+                  window.open(link, '_blank')
+                }}
+                onDownloadImage={handleDownloadImage}
+              />
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

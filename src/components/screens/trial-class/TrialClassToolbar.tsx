@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, ListFilter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   BranchSelect,
@@ -10,19 +10,11 @@ import {
   SubjectSelect,
 } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
-import { getStatusColors } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
 import type { TrialClass } from '@/mocks/trialClasses'
 import { TRIAL_LIFECYCLE_CONFIG, TRIAL_RESULT_FILTERS } from './trialClassConstants'
 import { countStatus } from './trialClassHelpers'
 import type { StatusTileId, TrialResultFilterId } from './trialClassTypes'
-
-const RESULT_SEMANTIC_MAP: Record<string, 'completed' | 'error' | 'info' | 'neutral'> = {
-  unassigned: 'info',
-  completed: 'completed',
-  no_show: 'error',
-  expired: 'neutral',
-}
 
 interface TrialClassToolbarProps {
   activeBranch: string
@@ -75,46 +67,49 @@ export function TrialClassToolbar({
   ]
 
   return (
-    <div className="flex shrink-0 flex-col gap-3 bg-background px-3 pt-3 pb-1 lg:px-3">
+    <div className="flex shrink-0 flex-col gap-2 bg-background px-2 py-2.5 lg:px-3">
       {/* Row 1: Toolbar Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Left side: Branch Selector */}
-        <div className="flex flex-wrap items-center gap-2">
-          <SubjectSelect
-            value={activeSubject}
-            onValueChange={onSubjectChange}
-            className="h-9 min-w-36 text-sm"
-          />
+      <div className="flex items-center justify-between gap-2">
+        {/* Left side: Branch Selector & Subject Selector */}
+        <div className="flex items-center gap-2">
           <BranchSelect
             value={activeBranch}
             branches={branchOptions}
             onValueChange={onBranchChange}
-            className="h-9 min-w-40 text-sm"
+            allLabel="Tất cả cơ sở"
+            placeholder="Chọn cơ sở"
+            ariaLabel="Cơ sở"
+            className="h-8 min-w-38 text-xs"
+          />
+          <SubjectSelect
+            value={activeSubject}
+            onValueChange={onSubjectChange}
+            allLabel="Tất cả các môn"
+            placeholder="Chọn môn học"
+            className="h-8 min-w-32 text-xs"
           />
         </div>
 
         {/* Right side: Search, Filters, Create Button */}
-        <div className="flex items-center justify-end gap-2 self-stretch sm:self-auto">
-          <div className="flex-1 sm:flex-initial">
-            <ExpandableSearch
-              value={searchTerm}
-              onValueChange={onSearchChange}
-              label="Tìm Booking"
-              placeholder="Tìm mã, tên HV, SĐT..."
-              inputClassName="w-full sm:w-80"
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <ExpandableSearch
+            value={searchTerm}
+            onValueChange={onSearchChange}
+            label="Tìm Booking"
+            placeholder="Tìm mã, tên HV, SĐT..."
+            inputClassName="sm:w-60 text-xs h-8"
+          />
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
           {onCreateTrial ? (
-            <Button size="sm" onClick={onCreateTrial} className="gap-1.5 shadow-xs">
-              <Plus className="h-4 w-4" />
-              Tạo học thử mới
+            <Button size="sm" onClick={onCreateTrial} className="h-8 gap-1.5 shadow-xs text-xs font-medium cursor-pointer">
+              <Plus className="h-3.5 w-3.5" />
+              Tạo học thử
             </Button>
           ) : (
-            <Button asChild size="sm" className="gap-1.5 shadow-xs">
-              <Link href="/app/trial_class/create">
-                <Plus className="h-4 w-4" />
-                Tạo học thử mới
+            <Button asChild size="sm" className="h-8 gap-1.5 shadow-xs text-xs font-medium cursor-pointer">
+              <Link href="/booking-trial">
+                <Plus className="h-3.5 w-3.5" />
+                Tạo học thử
               </Link>
             </Button>
           )}
@@ -122,45 +117,47 @@ export function TrialClassToolbar({
       </div>
 
       {/* Row 2: Status Tiles (left) & Quick Result Filters (right) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 min-w-0">
-        <div className="overflow-x-auto min-w-0 flex-1">
-          <StatusTiles
-            tiles={tiles}
-            activeId={activeStatus}
-            onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
-          />
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+        <StatusTiles
+          tiles={tiles}
+          activeId={activeStatus}
+          onSelect={(id) => onStatusChange(activeStatus === id && id !== 'all' ? 'all' : id)}
+          noOverflowCollapse
+          compact
+          showDot={false}
+          hideDot={true}
+          coloredCount={true}
+        />
 
         {/* Quick Result Filters (Right Aligned) */}
-        <div className="flex items-center gap-1.5 shrink-0 text-xs">
-          <span className="text-xs font-semibold text-muted-foreground mr-0.5">
-            Lọc nhanh:
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span
+            title="Lọc nhanh"
+            aria-label="Lọc nhanh"
+            className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
+          >
+            <ListFilter className="h-3.5 w-3.5" />
           </span>
-          {TRIAL_RESULT_FILTERS.map((def) => {
-            const isActive = activeResultFilter === def.id
-            const semantic = RESULT_SEMANTIC_MAP[def.id] ?? 'neutral'
-            return (
-              <button
-                key={def.id}
-                type="button"
-                onClick={() => onResultFilterChange(activeResultFilter === def.id ? 'all' : def.id)}
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold transition-all cursor-pointer border',
-                  isActive
-                    ? getStatusColors(semantic).badge
-                    : 'border-border/60 bg-background text-muted-foreground hover:bg-muted hover:text-foreground shadow-2xs'
-                )}
-              >
-                <span>{def.label}</span>
-                <span className={cn(
-                  'rounded-full px-1.5 py-0 text-xs',
-                  isActive ? 'opacity-80' : 'bg-muted text-muted-foreground'
-                )}>
-                  {countStatus(baseForStatus, def.id)}
-                </span>
-              </button>
-            )
-          })}
+          <div className="flex items-center gap-1 min-w-0">
+            {TRIAL_RESULT_FILTERS.map((def) => {
+              const isActive = activeResultFilter === def.id
+              return (
+                <button
+                  key={def.id}
+                  type="button"
+                  onClick={() => onResultFilterChange(activeResultFilter === def.id ? 'all' : def.id)}
+                  className={cn(
+                    'inline-flex items-center h-6 rounded-md px-2 text-xs font-medium transition-colors cursor-pointer border select-none shrink-0',
+                    isActive
+                      ? 'border-primary/40 bg-primary/10 text-primary font-medium'
+                      : 'border-border/70 bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                  )}
+                >
+                  {def.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

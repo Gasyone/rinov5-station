@@ -33,7 +33,13 @@ interface ContactCellProps {
   showCallButton?: boolean
   /** Hiển thị biểu tượng điện thoại trước SĐT hay không */
   showPhoneIcon?: boolean
+  /** Hiển thị biểu tượng danh bạ gia đình hay không */
+  showFamilyIcon?: boolean
   className?: string
+  /** Class tùy chỉnh cho tên hiển thị */
+  nameClassName?: string
+  /** Class tùy chỉnh cho số điện thoại */
+  phoneClassName?: string
 }
 
 /**
@@ -52,7 +58,10 @@ export function ContactCell({
   additionalContacts = [],
   showCallButton = true,
   showPhoneIcon = true,
+  showFamilyIcon = true,
   className,
+  nameClassName,
+  phoneClassName,
 }: ContactCellProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const startCall = useCallStore((state) => state.startCall)
@@ -89,12 +98,12 @@ export function ContactCell({
       {/* Tên liên hệ chính hoặc nhãn phụ */}
       {name && (
         <div className="flex items-center gap-1">
-          <p className="truncate text-xs font-semibold text-muted-foreground" title={name}>
+          <p className={cn('truncate text-xs font-normal text-muted-foreground', nameClassName)} title={name}>
             {name}
           </p>
 
           {/* Nút hiển thị danh bạ phụ huynh/gia đình nếu có nhiều hơn 1 liên hệ */}
-          {hasAdditional && (
+          {hasAdditional && showFamilyIcon && (
             <Popover>
               <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button
@@ -161,7 +170,7 @@ export function ContactCell({
 
       {/* Số điện thoại chính */}
       {phone && (
-        <div className="flex items-center gap-1.5 font-mono text-xs text-foreground">
+        <div className={cn('flex items-center gap-1.5 font-mono text-xs text-muted-foreground', phoneClassName)}>
           {showPhoneIcon && <Phone className="h-3 w-3 text-muted-foreground shrink-0" />}
           <span className="truncate">{masked ? maskPhone(phone) : phone}</span>
 

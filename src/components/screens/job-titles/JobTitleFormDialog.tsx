@@ -169,7 +169,7 @@ function JobTitleFormFields({
             <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
               Thông tin chức danh
             </span>
-            <span className="text-[11px] text-muted-foreground">(* Bắt buộc)</span>
+            <span className="text-xs text-muted-foreground">(* Bắt buộc)</span>
           </div>
 
           {/* Tên chức danh */}
@@ -305,7 +305,7 @@ function JobTitleFormFields({
                 <button
                   type="button"
                   onClick={handleSelectAllFiltered}
-                  className="text-[11px] text-primary hover:underline cursor-pointer font-medium"
+                  className="text-xs text-primary hover:underline cursor-pointer font-medium"
                 >
                   {filteredEmployees.every((e) => assignedEmployeeIds.includes(e.id))
                     ? 'Bỏ chọn hiển thị'
@@ -369,11 +369,11 @@ function JobTitleFormFields({
                           >
                             {emp.name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground font-mono">
                             STAFF-{emp.id.toUpperCase()}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground truncate">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
                           <span>{emp.position || emp.department}</span>
                           <span>•</span>
                           <span>{maskPhoneNumber(emp.phone)}</span>
@@ -384,7 +384,7 @@ function JobTitleFormFields({
                     {isChecked && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] bg-primary/10 text-primary border-primary/30 shrink-0 font-normal py-0 px-1.5"
+                        className="text-xs bg-primary/10 text-primary border-primary/30 shrink-0 font-normal py-0 px-1.5"
                       >
                         Đã gán
                       </Badge>

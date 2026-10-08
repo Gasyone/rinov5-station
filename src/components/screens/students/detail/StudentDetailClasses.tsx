@@ -362,12 +362,12 @@ export function StudentDetailClasses({
         open={confirmReserveOpen}
         onOpenChange={setConfirmReserveOpen}
         title="Xác nhận Bảo lưu buổi học"
-        description={`Bạn có chắc chắn muốn xác nhận Bảo lưu chương trình "${program.name}" cho học viên ${studentName}? Lớp học hiện tại sẽ được tạm dừng và số buổi còn lại (${program.remainingSessions} buổi) được giữ lại.`}
+        description={`Bạn có chắc chắn muốn xác nhận Bảo lưu chương trình "${program.name}" cho học viên ${studentName}? Lớp học hiện tại sẽ được chuyển sang trạng thái bảo lưu và số buổi còn lại (${program.remainingSessions} buổi) được giữ lại.`}
         confirmLabel="Xác nhận Bảo lưu"
         variant="default"
         onConfirm={() => {
           if (program.currentClass) {
-            onChangeClassStatus(program.currentClass.classCode, 'paused')
+            onChangeClassStatus(program.currentClass.classCode, 'reserve')
             toast.success(`Đã cập nhật trạng thái bảo lưu chương trình ${program.name}!`)
           }
           setConfirmReserveOpen(false)

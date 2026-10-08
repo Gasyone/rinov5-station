@@ -112,7 +112,7 @@ export function CrmLeadStudentProfileView({
     if (onOpenBookingTest) {
       onOpenBookingTest()
     } else {
-      router.push(`/app/booking_test/create?leadId=${student.id}`)
+      window.open(`/booking-test?leadId=${student.id}`, '_blank')
     }
   }
 
@@ -120,7 +120,7 @@ export function CrmLeadStudentProfileView({
     if (onOpenTrialClass) {
       onOpenTrialClass()
     } else {
-      router.push(`/app/trial_class/create?leadId=${student.id}`)
+      window.open(`/booking-trial?leadId=${student.id}`, '_blank')
     }
   }
 
@@ -328,7 +328,7 @@ export function CrmLeadStudentProfileView({
                           {currentSubject.testBranch || currentSubject.branch || student.branch || 'RinoEdu Linh Đàm'}
                         </span>
                       </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800">
                         {currentSubject.statusLabel || 'Đang tư vấn'}
                       </span>
                     </div>
@@ -339,7 +339,7 @@ export function CrmLeadStudentProfileView({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   {/* Cột: Trình độ (Với Toán: chọn Lớp 1..12; Với Tiếng Anh: Trình độ mục tiêu) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">
+                    <span className="text-xs text-muted-foreground font-medium block">
                       Trình độ
                     </span>
                     {isMathSubject ? (
@@ -371,7 +371,7 @@ export function CrmLeadStudentProfileView({
 
                   {/* Cột: Trình độ đạt được */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">
+                    <span className="text-xs text-muted-foreground font-medium block">
                       Trình độ đạt được
                     </span>
                     <div className="h-6 flex items-center font-bold text-foreground text-xs">
@@ -384,7 +384,7 @@ export function CrmLeadStudentProfileView({
 
                   {/* Cột: Link kết quả (2 link: Phiếu kết quả & Bài làm online) */}
                   <div className="space-y-0.5">
-                    <span className="text-[11px] text-muted-foreground font-medium block">
+                    <span className="text-xs text-muted-foreground font-medium block">
                       Link kết quả
                     </span>
                     <div className="h-6 flex items-center gap-2 text-xs flex-wrap">
@@ -392,18 +392,18 @@ export function CrmLeadStudentProfileView({
                         href={currentSubject.detailReportLink || '/app/booking_test'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                        className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                         title="Xem phiếu kết quả đánh giá chi tiết"
                       >
                         <span>Phiếu kết quả</span>
                         <ExternalLink className="h-2.5 w-2.5" />
                       </a>
-                      <span className="text-muted-foreground/40 text-[10px]">|</span>
+                      <span className="text-muted-foreground/40 text-xs">|</span>
                       <a
                         href={currentSubject.ipadTestLink || 'https://rinoedu.ai'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                        className="text-xs text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
                         title="Xem bài làm trực tuyến từ iPad"
                       >
                         <Tablet className="h-3 w-3 shrink-0" />
@@ -438,7 +438,7 @@ export function CrmLeadStudentProfileView({
                     <p className="text-xs font-semibold text-foreground">
                       Chưa có lịch đánh giá hoặc học thử
                     </p>
-                    <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
+                    <p className="text-xs text-muted-foreground max-w-md mx-auto">
                       Học viên mới tiếp nhận chưa có dữ liệu đánh giá năng lực hoặc nhận xét học thử cho môn này.
                     </p>
                   </div>

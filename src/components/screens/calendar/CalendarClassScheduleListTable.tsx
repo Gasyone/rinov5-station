@@ -280,7 +280,7 @@ export function CalendarClassScheduleListTable({
                                     <div className="flex items-center gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" title={`Giáo viên phân công: ${originalTeacher}`}>
                                       <Avatar className="size-5 shrink-0 border border-border/60">
                                         <AvatarImage src={origPersonnel.avatar ?? undefined} alt={originalTeacher} />
-                                        <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-bold">
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-bold">
                                           {getInitials(originalTeacher)}
                                         </AvatarFallback>
                                       </Avatar>
@@ -289,12 +289,12 @@ export function CalendarClassScheduleListTable({
                                       </span>
                                     </div>
                                   </PersonnelHoverCard>
-                                  <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                                  <span className="text-muted-foreground/60 text-xs shrink-0 font-medium">→</span>
                                   <PersonnelHoverCard person={teacherPersonnel}>
                                     <div className="flex items-center gap-1 cursor-pointer hover:opacity-85 transition-opacity" title={`Dạy thay: ${subTeacher}`}>
                                       <Avatar className="size-5.5 shrink-0 border border-amber-300 dark:border-amber-700">
                                         <AvatarImage src={teacherPersonnel.avatar ?? undefined} alt={subTeacher} />
-                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-[10px] font-bold">
+                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-xs font-bold">
                                           {getInitials(subTeacher)}
                                         </AvatarFallback>
                                       </Avatar>
@@ -350,7 +350,7 @@ export function CalendarClassScheduleListTable({
                                     <div className="flex items-center gap-1 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" title={`Trợ giảng phân công: ${origAssistant}`}>
                                       <Avatar className="size-4.5 shrink-0 border border-border/60">
                                         <AvatarImage src={origPersonnel.avatar ?? undefined} alt={origAssistant} />
-                                        <AvatarFallback className="bg-muted text-muted-foreground text-[9px] font-bold">
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-bold">
                                           {getInitials(origAssistant)}
                                         </AvatarFallback>
                                       </Avatar>
@@ -359,12 +359,12 @@ export function CalendarClassScheduleListTable({
                                       </span>
                                     </div>
                                   </PersonnelHoverCard>
-                                  <span className="text-muted-foreground/60 text-[10px] shrink-0 font-medium">→</span>
+                                  <span className="text-muted-foreground/60 text-xs shrink-0 font-medium">→</span>
                                   <PersonnelHoverCard person={assistantPersonnel}>
                                     <div className="flex items-center gap-1 cursor-pointer hover:opacity-85 transition-opacity" title={`Trực thay: ${subAssistant}`}>
                                       <Avatar className="size-5 shrink-0 border border-amber-300 dark:border-amber-700">
                                         <AvatarImage src={assistantPersonnel.avatar ?? undefined} alt={subAssistant} />
-                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-[10px] font-bold">
+                                        <AvatarFallback className="bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 text-xs font-bold">
                                           {getInitials(subAssistant)}
                                         </AvatarFallback>
                                       </Avatar>

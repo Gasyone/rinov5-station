@@ -30,6 +30,7 @@ export interface RenewalAlertRowProps {
   isSelected: boolean
   onSelectChange: (id: string, checked: boolean) => void
   viewMode?: 'service' | 'academic' | 'total'
+  rowIndex?: number
   onOpenCallModal?: (student: StudentCareAlert) => void
   onRefresh?: () => void
   onViewDetail?: (id: string) => void
@@ -39,6 +40,7 @@ export function RenewalAlertRow({
   cls,
   isSelected,
   onSelectChange,
+  rowIndex,
   onRefresh,
   onViewDetail,
 }: RenewalAlertRowProps) {
@@ -199,19 +201,34 @@ export function RenewalAlertRow({
     });
   }
 
+  const isEvenRow = typeof rowIndex === 'number' ? rowIndex % 2 === 1 : false
+  const stickyBgClass = isSelected
+    ? '!bg-sky-100 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 group-hover:bg-slate-100 dark:group-hover:bg-zinc-800'
+  const rowBgClass = isSelected
+    ? '!bg-sky-50 dark:!bg-sky-950'
+    : isEvenRow
+      ? 'bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800'
+      : 'bg-white dark:bg-zinc-950 hover:bg-slate-100 dark:hover:bg-zinc-800'
+
   return (
     <tr
       onClick={() => onViewDetail?.(cls.id)}
       className={cn(
-        'group border-b border-border/40 hover:bg-muted/30 dark:hover:bg-muted/10 transition-colors cursor-pointer align-middle',
-        cls.careAlert === 'C90B' && cls.confirmC90B === 'CHƯA XÁC NHẬN'
-          ? 'bg-red-50/30 dark:bg-red-950/5'
-          : '',
-        isSelected ? 'bg-primary/5' : ''
+        'group cursor-pointer transition-colors align-middle [&>td]:py-1.5 [&>td]:px-2.5 border-b-0',
+        rowBgClass
       )}
     >
-      {/* Checkbox */}
-      <td className="py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+      {/* Checkbox (Sticky Left 0) */}
+      <td
+        className={cn(
+          'sticky left-0 z-30 w-8 min-w-8 max-w-8 overflow-hidden text-center px-1 transition-colors',
+          stickyBgClass
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Checkbox
           checked={isSelected}
           onCheckedChange={(val) => onSelectChange(cls.id, val === true)}
@@ -219,27 +236,30 @@ export function RenewalAlertRow({
         />
       </td>
 
-      {/* Học viên */}
-      <td className="py-3 px-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+      {/* Học viên (Sticky Left 8) */}
+      <td
+        className={cn(
+          'sticky left-8 z-30 w-[220px] min-w-[200px] max-w-[240px] px-2.5 transition-colors',
+          stickyBgClass
+        )}
+      >
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-2 min-w-0">
             <div
               className={cn(
-                'h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
+                'h-6.5 w-6.5 rounded flex items-center justify-center text-xs font-medium shrink-0 hover:opacity-80 transition-opacity',
                 getAvatarColor(cls.studentId)
               )}
             >
               {getInitials(cls.studentName)}
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1">
-                <span className="font-bold text-zinc-900 dark:text-zinc-50 text-sm truncate" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
-                  {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground font-medium mt-0.5">
+            <div className="min-w-0">
+              <p className="font-medium text-foreground text-xs truncate hover:underline hover:text-primary leading-tight" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
+                {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
+              </p>
+              <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 truncate">
                 {cls.subject} - {cls.level}
-              </div>
+              </p>
             </div>
           </div>
 
@@ -257,7 +277,7 @@ export function RenewalAlertRow({
                   variant="ghost"
                   size="icon-xs"
                   title="Tạo thẻ Tái phí mới"
-                  className="h-6 w-6 rounded-md shrink-0 shadow-none hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                  className="h-5 w-5 rounded shrink-0 shadow-none hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                   onClick={() => {
                     const record = mockCareAlerts.find(a => a.id === cls.id);
                     if (record) {
@@ -281,7 +301,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Liên hệ */}
-      <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
+      <td className="min-w-[125px]" onClick={(e) => e.stopPropagation()}>
         <ContactCell
           name={
             primaryContact
@@ -294,12 +314,14 @@ export function RenewalAlertRow({
           masked={true}
           showCallButton={false}
           showPhoneIcon={false}
+          nameClassName="text-xs font-normal text-foreground"
+          phoneClassName="text-xs font-mono text-muted-foreground"
         />
       </td>
 
       {/* Người chăm sóc */}
-      <td className="py-3 px-3 min-w-[160px]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-col gap-1.5 text-left">
+      <td className="min-w-[125px]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col gap-0.5 text-left">
           {/* Người chăm sóc CS */}
           {cls.csStaff ? (
             <PersonnelHoverCard
@@ -310,13 +332,11 @@ export function RenewalAlertRow({
                 email: `${cls.csStaff.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
               }}
             >
-              <div className="flex items-center gap-1.5 cursor-pointer hover:bg-muted/40 p-0.5 rounded transition-colors duration-150 w-fit">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground font-normal">
-                    CS
-                  </span>
-                  <span className="text-foreground text-xs hover:text-primary font-normal">{cls.csStaff}</span>
-                </div>
+              <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0 rounded transition-colors w-fit leading-tight">
+                <span className="text-xs text-muted-foreground font-normal">
+                  CS
+                </span>
+                <span className="text-foreground text-xs hover:text-primary font-normal leading-tight">{cls.csStaff}</span>
               </div>
             </PersonnelHoverCard>
           ) : (
@@ -325,9 +345,8 @@ export function RenewalAlertRow({
         </div>
       </td>
 
-
       {/* Nội dung chăm sóc */}
-      <td className="py-3 px-3 min-w-[260px]" onClick={(e) => e.stopPropagation()}>
+      <td className="min-w-[220px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
           const inProgress = isInProgress(cls)
@@ -377,7 +396,7 @@ export function RenewalAlertRow({
           const rescheduleInfo = getRescheduleInfo(cls)
 
           const cellContent = (
-            <div className="flex flex-col gap-1 py-0.5 text-left max-w-[260px] cursor-pointer group/care">
+            <div className="flex flex-col gap-0.5 py-0 text-left max-w-[260px] cursor-pointer group/care">
               {/* Dòng 1 (trên): Nội dung chăm sóc gần nhất */}
               {isUncared ? (
                 <div className="text-xs text-muted-foreground">
@@ -387,7 +406,7 @@ export function RenewalAlertRow({
                 latestLog && (
                   <div
                     className={cn(
-                      'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-snug',
+                      'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-tight',
                       rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 break-words'
                     )}
                     title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
@@ -400,13 +419,13 @@ export function RenewalAlertRow({
                 )
               )}
 
-              {/* Dòng 2 (dưới): Lịch hẹn gọi lại */}
+              {/* Dòng 2 (dưới): Lịch hẹn gọi lại (Màu tím nhạt) */}
               {rescheduleInfo.isRescheduled && (
                 <div
-                  className="text-xs text-purple-700 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap"
+                  className="text-xs text-purple-500 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap leading-tight mt-0.5"
                   title="Lịch hẹn gọi lại tiếp theo"
                 >
-                  <Calendar className="h-3 w-3 shrink-0 text-purple-600 dark:text-purple-400" />
+                  <Calendar className="h-3 w-3 shrink-0 text-purple-400 dark:text-purple-300" />
                   <span>Hẹn gọi lại: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
                 </div>
               )}
@@ -429,7 +448,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Trạng thái tái phí */}
-      <td className="py-3 px-3 min-w-[110px]">
+      <td className="w-28 min-w-28 max-w-32 whitespace-nowrap">
         {(() => {
           const classification = getRenewalClassification(cls)
           const label = getRenewalClassificationLabel(classification)
@@ -439,7 +458,7 @@ export function RenewalAlertRow({
               <Badge
                 variant="outline"
                 className={cn(
-                  'text-xs px-2 py-0.5 font-semibold',
+                  'text-xs font-medium px-1.5 py-0 h-5 leading-none',
                   getStatusBadgeClass(classification)
                 )}
               >
@@ -451,7 +470,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Đơn hàng */}
-      <td className="py-3 px-3 min-w-[240px]" onClick={(e) => e.stopPropagation()}>
+      <td className="min-w-[200px] max-w-[240px]" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const order = getStudentOrderInfo(cls)
           return (
@@ -459,12 +478,12 @@ export function RenewalAlertRow({
               {order.orderCode ? (
                 <>
                   {/* Dòng 1: Tên gói */}
-                  <div className="flex items-center gap-1.5 font-medium text-foreground">
+                  <div className="flex items-center gap-1.5 font-medium text-foreground leading-tight">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline flex items-center gap-1 text-emerald-800 dark:text-emerald-300 truncate"
+                      className="hover:underline flex items-center gap-1 text-emerald-800 dark:text-emerald-300 truncate text-xs"
                       title={`Mở Landing Page Báo Giá & Chi tiết Đơn hàng (${order.orderCode})`}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -474,7 +493,7 @@ export function RenewalAlertRow({
                   </div>
 
                   {/* Dòng 2: Mã đơn • Trạng thái thanh toán */}
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap leading-tight mt-0.5">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
@@ -491,7 +510,7 @@ export function RenewalAlertRow({
                         <StatusBadge
                           status={order.paymentStatus || 'paid'}
                           label={order.paymentStatusLabel}
-                          className="text-[10px] px-1.5 py-0 h-4 font-semibold shrink-0"
+                          className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
                         />
                       </>
                     )}
@@ -508,7 +527,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Lớp học */}
-      <td className="py-3 px-3 min-w-[180px]">
+      <td className="min-w-[145px]">
         {(() => {
           const studentInfo = mockStudents.find(
             (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
@@ -531,7 +550,7 @@ export function RenewalAlertRow({
           const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions, classification)
 
           return (
-            <div className="flex flex-col gap-1 text-left">
+            <div className="flex flex-col gap-0.5 text-left">
               {/* Hàng 1: Mã lớp cùng trạng thái */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {showClassHover ? (
@@ -568,7 +587,7 @@ export function RenewalAlertRow({
 
               {/* Hàng 2: Hạn */}
               {cls.expectedEndDate && (
-                <div className="flex items-center gap-1.5 flex-nowrap text-xs">
+                <div className="flex items-center gap-1 flex-nowrap text-xs leading-tight mt-0.5">
                   {expiryTier.label ? (
                     <span className={cn('font-bold shrink-0', expiryTier.textClass)}>
                       {expiryTier.label}

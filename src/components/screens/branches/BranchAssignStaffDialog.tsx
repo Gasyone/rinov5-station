@@ -305,12 +305,12 @@ export function BranchAssignStaffDialog({
                       {/* Thông tin nhân sự */}
                       <td className="py-2 px-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-[11px] shrink-0 border border-primary/20">
+                          <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-xs shrink-0 border border-primary/20">
                             {getInitials(emp.name)}
                           </div>
                           <div className="min-w-0">
                             <div className="font-semibold text-foreground truncate">{emp.name}</div>
-                            <div className="text-[11px] text-muted-foreground font-mono truncate">
+                            <div className="text-xs text-muted-foreground font-mono truncate">
                               {emp.email}
                             </div>
                           </div>
@@ -320,11 +320,11 @@ export function BranchAssignStaffDialog({
                       {/* Phòng ban & Chức danh */}
                       <td className="py-2 px-3">
                         <div className="font-medium text-foreground">{emp.position}</div>
-                        <div className="text-[11px] text-muted-foreground">{emp.department}</div>
+                        <div className="text-xs text-muted-foreground">{emp.department}</div>
                       </td>
 
                       {/* SĐT */}
-                      <td className="py-2 px-3 font-mono text-[11px] text-muted-foreground">
+                      <td className="py-2 px-3 font-mono text-xs text-muted-foreground">
                         {emp.phone}
                       </td>
 
@@ -349,7 +349,7 @@ export function BranchAssignStaffDialog({
                       <td className="py-2 px-3 text-center">
                         <span
                           className={cn(
-                            'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium border',
+                            'inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium border',
                             emp.contractType === 'Part-time'
                               ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
                               : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
