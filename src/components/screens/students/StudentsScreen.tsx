@@ -16,7 +16,7 @@ import { createStudentFilterOptionCounters, filterStudents, getInitialStudents }
 import { INITIAL_FILTER_STATE, type StudentFilterState } from './studentsTypes'
 import type { Student, EnrolledClass } from '@/mocks/students'
 import { Input } from '@/components/ui/input'
-import { FieldLabel } from '@/components/shared'
+import { FieldLabel, ModuleLoadingSkeleton } from '@/components/shared'
 
 export function StudentsScreen() {
   const searchParams = useSearchParams()
@@ -43,20 +43,26 @@ export function StudentsScreen() {
   const [filters, setFilters] = useState<StudentFilterState>(INITIAL_FILTER_STATE)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
 
-  // Quản lý danh sách học viên từ SQLite DB qua API, fallback về mock ban đầu
-  const [studentsList, setStudentsList] = useState<Student[]>(() => getInitialStudents())
+  // Quản lý danh sách học viên thuần Database Supabase qua API, fallback về mock khi ngoại tuyến
+  const [studentsList, setStudentsList] = useState<Student[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
+    setIsLoading(true)
     fetch('/api/students')
       .then((res) => res.json())
       .then((resData) => {
-        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+        if (isMounted && resData.success && Array.isArray(resData.data)) {
           setStudentsList(resData.data)
         }
       })
       .catch((err) => {
-        console.warn('Không thể kết nối API SQLite, tiếp tục dùng dữ liệu cục bộ:', err)
+        console.warn('Không thể kết nối API học viên, dùng dữ liệu dự phòng:', err)
+        if (isMounted) setStudentsList(getInitialStudents())
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
       })
     return () => {
       isMounted = false
@@ -325,33 +331,37 @@ export function StudentsScreen() {
       {/* Container Nội dung Bảng Học viên & Panel Bộ Lọc Ghim Cạnh Phải */}
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2 pt-1 pb-2 lg:px-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
-          <StudentsTable
-            students={paged}
-            selectedIds={selectedIds}
-            onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
-            onToggleOne={(id, checked) => {
-              setSelectedIds((cur) => {
-                const next = new Set(cur)
-                if (checked) next.add(id)
-                else next.delete(id)
-                return next
-              })
-            }}
-            onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
-            onView={(id) => setSelectedStudentId(id)}
-            onAssignClass={(student, pkg) => setAssigningData({ student, packageName: pkg })}
-            onEarlyReturn={(student, cls) => setEarlyReturnData({ student, enrolledClass: cls })}
-            className="flex-1"
-            pagination={{
-              page: currentPage,
-              total: filtered.length,
-              pageSize: pageSize,
-              onPageChange: setPage,
-              onPageSizeChange: setPageSize,
-              selectedCount: selectedIds.size,
-              onClearSelection: () => setSelectedIds(new Set()),
-            }}
-          />
+          {isLoading ? (
+            <ModuleLoadingSkeleton showToolbar={false} rows={8} columns={6} className="p-0 flex-1" />
+          ) : (
+            <StudentsTable
+              students={paged}
+              selectedIds={selectedIds}
+              onToggleAll={(checked, ids) => setSelectedIds(checked ? new Set(ids) : new Set())}
+              onToggleOne={(id, checked) => {
+                setSelectedIds((cur) => {
+                  const next = new Set(cur)
+                  if (checked) next.add(id)
+                  else next.delete(id)
+                  return next
+                })
+              }}
+              onCreateTicket={() => toast.info('Tính năng đang được phát triển!')}
+              onView={(id) => setSelectedStudentId(id)}
+              onAssignClass={(student, pkg) => setAssigningData({ student, packageName: pkg })}
+              onEarlyReturn={(student, cls) => setEarlyReturnData({ student, enrolledClass: cls })}
+              className="flex-1"
+              pagination={{
+                page: currentPage,
+                total: filtered.length,
+                pageSize: pageSize,
+                onPageChange: setPage,
+                onPageSizeChange: setPageSize,
+                selectedCount: selectedIds.size,
+                onClearSelection: () => setSelectedIds(new Set()),
+              }}
+            />
+          )}
         </div>
 
         {/* Panel bộ lọc ghim ở cạnh phải (khớp chuẩn màn Đơn hàng & Lớp học) */}

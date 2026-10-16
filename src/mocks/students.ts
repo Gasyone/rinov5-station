@@ -1,3 +1,9 @@
+/**
+ * @file students.ts
+ * NOTE: File này định nghĩa Types/Interfaces dùng chung và Dữ liệu Seed Fixtures cho Supabase DB (`prisma/seed.ts`).
+ * Màn hình Quản lý Học viên (`StudentsScreen`) đã chuyển sang Pure Database Mode (fetch từ `/api/students`).
+ */
+
 import { mockClassRecords, type ScheduleSlot } from './classRecords'
 
 export interface EnrolledClass {

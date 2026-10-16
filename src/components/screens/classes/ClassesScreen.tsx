@@ -17,7 +17,7 @@ import {
   getSyllabusFilterGroup,
   getPackageFilterGroup,
 } from '@/components/filters'
-import { FieldLabel, ConfirmDialog } from '@/components/shared'
+import { FieldLabel, ConfirmDialog, ModuleLoadingSkeleton } from '@/components/shared'
 import { Input } from '@/components/ui/input'
 import { mockClassRecords, type ClassRecord } from '@/mocks/classRecords'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -33,24 +33,32 @@ export function ClassesScreen() {
   const user = useAuthStore((s) => s.user)
   const isTeacherRole = user?.role === 'teacher'
 
-  const [classes, setClasses] = useState<ClassRecord[]>(() => {
-    return mockClassRecords.map((c) => {
-      const status = c.status === 'mo_chieu_sinh' ? ('cho_khai_giang' as const) : c.status
-      return { ...c, status }
-    })
-  })
+  const [classes, setClasses] = useState<ClassRecord[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
+    setIsLoading(true)
     fetch('/api/classes')
       .then((res) => res.json())
       .then((resData) => {
-        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+        if (isMounted && resData.success && Array.isArray(resData.data)) {
           setClasses(resData.data)
         }
       })
       .catch((err) => {
-        console.warn('Không thể kết nối API lớp học, dùng dữ liệu cục bộ:', err)
+        console.warn('Không thể kết nối API lớp học, dùng dữ liệu dự phòng:', err)
+        if (isMounted) {
+          setClasses(
+            mockClassRecords.map((c) => {
+              const status = c.status === 'mo_chieu_sinh' ? ('cho_khai_giang' as const) : c.status
+              return { ...c, status }
+            })
+          )
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
       })
     return () => {
       isMounted = false
@@ -331,28 +339,32 @@ export function ClassesScreen() {
       {/* Container Nội dung Lớp học & Panel Bộ Lọc Ghim Cạnh Phải */}
       <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-2.5 pt-0.5 pb-2 lg:px-3">
         <div className="flex-1 min-w-0 h-full overflow-hidden flex flex-col">
-          <ClassesTable
-            classes={pagedClasses}
-            selectedIds={selectedIds}
-            onToggleAll={toggleSelectAll}
-            onToggleOne={toggleSelectOne}
-            onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
-            onView={(id) => handleOpenDetail(id, { editMode: false })}
-            onEdit={(id) => handleOpenDetail(id, { editMode: true })}
-            onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
-            onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
-            onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
-            className="flex-1"
-            pagination={{
-              page: currentPage,
-              total: filteredClasses.length,
-              pageSize: pageSize,
-              onPageChange: setPage,
-              onPageSizeChange: setPageSize,
-              selectedCount: selectedIds.size,
-              onClearSelection: () => setSelectedIds(new Set()),
-            }}
-          />
+          {isLoading ? (
+            <ModuleLoadingSkeleton showToolbar={false} rows={8} columns={7} className="p-0 flex-1" />
+          ) : (
+            <ClassesTable
+              classes={pagedClasses}
+              selectedIds={selectedIds}
+              onToggleAll={toggleSelectAll}
+              onToggleOne={toggleSelectOne}
+              onRowClick={(id) => handleOpenDetail(id, { editMode: false })}
+              onView={(id) => handleOpenDetail(id, { editMode: false })}
+              onEdit={(id) => handleOpenDetail(id, { editMode: true })}
+              onManageRoadmap={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roadmap', roadmapWizard: true })}
+              onAddStudent={(id) => handleOpenDetail(id, { editMode: false, initialTab: 'roster', studentSelect: true })}
+              onDelete={(id) => { setDeleteDialog(classes.find((c) => c.id === id) ?? null) }}
+              className="flex-1"
+              pagination={{
+                page: currentPage,
+                total: filteredClasses.length,
+                pageSize: pageSize,
+                onPageChange: setPage,
+                onPageSizeChange: setPageSize,
+                selectedCount: selectedIds.size,
+                onClearSelection: () => setSelectedIds(new Set()),
+              }}
+            />
+          )}
         </div>
 
         {/* Panel bộ lọc ghim cạnh phải chuẩn màn Đơn hàng */}

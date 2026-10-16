@@ -1,3 +1,9 @@
+/**
+ * @file classRecords.ts
+ * NOTE: File này định nghĩa Types/Interfaces dùng chung và Dữ liệu Seed Fixtures cho Supabase DB (`prisma/seed.ts`).
+ * Màn hình Quản lý Lớp học (`ClassesScreen`) đã chuyển sang Pure Database Mode (fetch từ `/api/classes`).
+ */
+
 export type ClassCategory = 'nhap' | 'mo_chieu_sinh' | 'cho_khai_giang' | 'dang_hoc' | 'tam_dung' | 'huy'
 export const CLASS_CATEGORIES: ClassCategory[] = ['nhap', 'mo_chieu_sinh', 'cho_khai_giang', 'dang_hoc', 'tam_dung', 'huy']
 

@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import {
   ConfirmDialog,
   StatusTiles,
+  ModuleLoadingSkeleton,
 } from '@/components/shared'
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { mockBranches, type Branch, type BranchRoom } from '@/mocks/branches'
@@ -19,19 +20,25 @@ import {
 import type { BranchFilterState } from './branchesTypes'
 
 export function BranchesScreen() {
-  const [branches, setBranches] = useState<Branch[]>(() => [...mockBranches])
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
+    setIsLoading(true)
     fetch('/api/branches')
       .then((res) => res.json())
       .then((resData) => {
-        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+        if (isMounted && resData.success && Array.isArray(resData.data)) {
           setBranches(resData.data)
         }
       })
       .catch((err) => {
-        console.warn('Không thể kết nối API cơ sở, dùng dữ liệu cục bộ:', err)
+        console.warn('Không thể kết nối API cơ sở, dùng dữ liệu dự phòng:', err)
+        if (isMounted) setBranches(mockBranches)
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
       })
     return () => {
       isMounted = false
@@ -342,41 +349,45 @@ export function BranchesScreen() {
 
       {/* Data Table filling full height down to bottom */}
       <div className="min-h-0 flex-1 overflow-hidden px-4 pb-3 lg:px-6">
-        <DataTableFrame
-          className="h-full"
-          footer={
-            <DataTablePagination
-              page={currentPage}
-              pageSize={pageSize}
-              total={filteredBranches.length}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size)
-                setCurrentPage(1)
+        {isLoading ? (
+          <ModuleLoadingSkeleton showToolbar={false} rows={6} columns={6} className="p-0" />
+        ) : (
+          <DataTableFrame
+            className="h-full"
+            footer={
+              <DataTablePagination
+                page={currentPage}
+                pageSize={pageSize}
+                total={filteredBranches.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setCurrentPage(1)
+                }}
+              />
+            }
+          >
+            <BranchesTable
+              branches={paginatedBranches}
+              selectedIds={selectedIds}
+              onToggleSelect={handleToggleSelect}
+              onToggleSelectAll={handleToggleSelectAll}
+              onViewDetail={(branch, tab) => {
+                setSelectedBranch(branch)
+                setIsDetailEditMode(false)
+                setDetailInitialTab(tab || 'facilities')
+                setIsDetailOpen(true)
               }}
+              onEdit={(branch) => {
+                setSelectedBranch(branch)
+                setIsDetailEditMode(true)
+                setDetailInitialTab('facilities')
+                setIsDetailOpen(true)
+              }}
+              onToggleStatus={handleToggleStatusClick}
             />
-          }
-        >
-          <BranchesTable
-            branches={paginatedBranches}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            onToggleSelectAll={handleToggleSelectAll}
-            onViewDetail={(branch, tab) => {
-              setSelectedBranch(branch)
-              setIsDetailEditMode(false)
-              setDetailInitialTab(tab || 'facilities')
-              setIsDetailOpen(true)
-            }}
-            onEdit={(branch) => {
-              setSelectedBranch(branch)
-              setIsDetailEditMode(true)
-              setDetailInitialTab('facilities')
-              setIsDetailOpen(true)
-            }}
-            onToggleStatus={handleToggleStatusClick}
-          />
-        </DataTableFrame>
+          </DataTableFrame>
+        )}
       </div>
 
       {/* Create Dialog */}

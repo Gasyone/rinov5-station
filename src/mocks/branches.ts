@@ -1,3 +1,9 @@
+/**
+ * @file branches.ts
+ * NOTE: File này định nghĩa Types/Interfaces dùng chung và Dữ liệu Seed Fixtures cho Supabase DB (`prisma/seed.ts`).
+ * Màn hình Quản lý Cơ sở (`BranchesScreen`) đã chuyển sang Pure Database Mode (fetch từ `/api/branches`).
+ */
+
 export interface BranchRoom {
   id: string
   name: string
