@@ -110,6 +110,10 @@ export function BranchesScreen() {
       const result = await res.json()
       if (result.success && result.data) {
         setBranches((prev) => [result.data, ...prev])
+        setCurrentPage(1)
+        if (filters.status !== 'all' || filters.search) {
+          setFilters((prev) => ({ ...prev, status: 'all', search: '' }))
+        }
         toast.success('Đã khởi tạo cơ sở mới thành công vào Database!')
       } else {
         throw new Error(result.message || 'Lỗi khi tạo cơ sở')
