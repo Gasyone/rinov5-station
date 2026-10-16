@@ -524,7 +524,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
               className="w-full border-dashed border-primary/50 text-primary hover:bg-primary/5 font-semibold text-xs h-9"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Thêm sự cố khác vào đợt ghi nhận này
+              Thêm sự cố vi phạm khác
             </Button>
           </div>
         </div>

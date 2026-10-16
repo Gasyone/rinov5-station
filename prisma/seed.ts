@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { mockStudents } from '../src/mocks/students'
 import { mockBranches } from '../src/mocks/branches'
 import { mockClassRecords } from '../src/mocks/classRecords'
+import { mockQcIncidents } from '../src/mocks/qcChecks'
 
 const prisma = new PrismaClient()
 
@@ -130,6 +131,57 @@ async function main() {
     classCount++
   }
   console.log(`Đã nạp ${classCount} lớp học.`)
+
+  // 4. Seed QcIncidents
+  console.log('Seeding QcIncidents...')
+  await prisma.qcIncident.deleteMany({})
+  let incidentCount = 0
+  for (const inc of mockQcIncidents) {
+    await prisma.qcIncident.create({
+      data: {
+        id: inc.id,
+        code: inc.code,
+        title: inc.title,
+        targetGroup: inc.targetGroup,
+        criteria: inc.criteria,
+        source: inc.source || 'manual',
+        severity: inc.severity || 'medium',
+        status: inc.status || 'open',
+        branch: inc.branch,
+        classId: inc.classId || null,
+        className: inc.className || null,
+        subject: inc.subject || null,
+        sessionNumber: inc.sessionNumber ?? null,
+        sessionDate: inc.sessionDate || null,
+        roomId: inc.roomId || null,
+        teacherId: inc.teacherId || null,
+        teacherName: inc.teacherName || null,
+        csmId: inc.csmId || null,
+        csmName: inc.csmName || null,
+        assignee: inc.assignee,
+        issuedBy: inc.issuedBy,
+        description: inc.description,
+        recurrenceCount: inc.recurrenceCount ?? 0,
+        evidence: inc.evidence || null,
+        evidenceImage: inc.evidenceImage || null,
+        evidenceLink: inc.evidenceLink || null,
+        deadline: inc.deadline || null,
+        correctiveAction: inc.correctiveAction || null,
+        correctiveEvidence: inc.correctiveEvidence || null,
+        correctiveImage: inc.correctiveImage || null,
+        correctiveLink: inc.correctiveLink || null,
+        completionDate: inc.completionDate || null,
+        closureMethod: inc.closureMethod || null,
+        closedBy: inc.closedBy || null,
+        closedAt: inc.closedAt || null,
+        notes: inc.notes || null,
+        commentsJson: JSON.stringify(inc.comments || []),
+        logsJson: JSON.stringify(inc.logs || []),
+      },
+    })
+    incidentCount++
+  }
+  console.log(`Đã nạp ${incidentCount} sự cố chất lượng (QC Incidents).`)
 
   console.log('--- Hoàn tất nạp toàn bộ Seed vào Supabase PostgreSQL ---')
 }

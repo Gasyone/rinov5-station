@@ -111,3 +111,59 @@ model ClassRecord {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
+
+model QcIncident {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  title              String
+  targetGroup        String   // teacher | facility | operations
+  criteria           String   // attendance | student_care | facility_quality | pedagogy | feedback | safety_hygiene
+  source             String   @default("manual") // manual | system
+  severity           String   @default("medium") // low | medium | high | critical
+  status             String   @default("open")   // open | correcting | corrected | closed | not_met | cancelled
+
+  // Ngữ cảnh phát sinh
+  branch             String
+  classId            String?
+  className          String?
+  subject            String?
+  sessionNumber      Int?
+  sessionDate        String?
+  roomId             String?
+
+  // Nhân sự liên quan
+  teacherId          String?
+  teacherName        String?
+  csmId              String?
+  csmName            String?
+  assignee           String   // Người chịu trách nhiệm khắc phục
+  issuedBy           String   // Người hoặc Hệ thống tạo lỗi
+
+  // Chi tiết lỗi & Bằng chứng
+  description        String
+  recurrenceCount    Int      @default(0)
+  evidence           String?
+  evidenceImage      String?
+  evidenceLink       String?
+  deadline           String?
+
+  // Biện pháp khắc phục & Bằng chứng xử lý
+  correctiveAction   String?
+  correctiveEvidence String?
+  correctiveImage    String?
+  correctiveLink     String?
+  completionDate     String?
+
+  // Đóng & Phúc tra
+  closureMethod      String?  // manual | system_auto
+  closedBy           String?
+  closedAt           String?
+  notes              String?
+
+  // Trao đổi thảo luận & Lịch sử vết (JSON)
+  commentsJson       String?
+  logsJson           String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

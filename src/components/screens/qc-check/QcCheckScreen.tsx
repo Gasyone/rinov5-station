@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { ModuleLoadingSkeleton } from '@/components/shared'
 import { useAuthStore } from '@/stores/useAuthStore'
 import {
   mockQcIncidents,
@@ -57,7 +59,32 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   const authUser = useAuthStore((s) => s.user)
   const currentStaffName = authUser?.name || CURRENT_USER_NAME
 
-  const [incidents, setIncidents] = useState<QcIncident[]>(() => structuredClone(mockQcIncidents))
+  const [incidents, setIncidents] = useState<QcIncident[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+    setIsLoading(true)
+    fetch('/api/qc-incidents')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (isMounted && resData.success && Array.isArray(resData.data)) {
+          setIncidents(resData.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Lỗi khi tải dữ liệu sự cố QC từ DB, dùng dự phòng:', err)
+        if (isMounted) {
+          setIncidents(mockQcIncidents)
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
   const [activeCriteria, setActiveCriteria] = useState('all')
@@ -274,61 +301,38 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   const detailIncident = incidents.find((i) => i.id === detailIncidentId) ?? null
 
   // Create Batch Incidents
-  const handleCreateBatch = (form: CreateBatchIncidentForm) => {
+  const handleCreateBatch = async (form: CreateBatchIncidentForm) => {
     const inspector = INSPECTOR_OPTIONS.find((i) => i.id === form.inspectorId)
-    const inspectorName = inspector?.name || CURRENT_USER_NAME
-    const nowIso = new Date().toISOString()
+    const inspectorName = inspector?.name || currentStaffName
 
-    const newIncidents: QcIncident[] = form.incidents.map((item, idx) => {
-      const codeIndex = incidents.length + idx + 1
-      const year = new Date().getFullYear()
-      const code = `QC-${year}-${codeIndex.toString().padStart(3, '0')}`
-
-      return {
-        id: `inc_${Date.now()}_${idx}`,
-        code,
-        title: item.title || item.description.slice(0, 50),
-        targetGroup: item.targetGroup,
-        criteria: item.criteria,
-        source: 'manual',
-        branch: form.branch,
-        className: item.className,
-        sessionNumber: item.sessionNumber,
-        roomId: item.roomId,
-        teacherName: item.teacherName,
-        csmName: item.csmName,
-        description: item.description,
-        severity: item.severity,
-        status: 'open',
-        recurrenceCount: 0,
-        evidence: item.evidence || 'Ghi nhận trực tiếp lúc kiểm tra',
-        evidenceImage: item.evidenceImage || '',
-        evidenceLink: item.evidenceLink || '',
-        assignee: item.assignee || 'Bộ phận liên quan',
-        issuedBy: inspectorName,
-        createdAt: nowIso,
-        deadline: item.deadline || undefined,
-        notes: item.notes || '',
-        comments: [],
-        logs: [
-          {
-            id: `log_${Date.now()}_${idx}`,
-            userId: CURRENT_USER_ID,
-            userName: inspectorName,
-            action: 'Ghi nhận sự cố',
-            details: `Ghi nhận vi phạm ${item.title || item.description}`,
-            createdAt: nowIso,
-          },
-        ],
+    try {
+      const res = await fetch('/api/qc-incidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branch: form.branch,
+          inspectorId: form.inspectorId,
+          inspectorName,
+          incidents: form.incidents,
+        }),
+      })
+      const data = await res.json()
+      if (data.success && Array.isArray(data.data)) {
+        setIncidents((prev) => [...data.data, ...prev])
+        toast.success(`Đã ghi nhận ${data.data.length} sự cố vào hệ thống`)
+      } else {
+        toast.error(data.message || 'Lỗi khi ghi nhận sự cố')
       }
-    })
-
-    setIncidents((prev) => [...newIncidents, ...prev])
-    setIsCreateOpen(false)
+    } catch (err) {
+      console.error('Lỗi khi tạo sự cố:', err)
+      toast.error('Lỗi kết nối cơ sở dữ liệu')
+    } finally {
+      setIsCreateOpen(false)
+    }
   }
 
   // Update Status
-  const handleUpdateStatus = (incidentId: string, status: QcErrorStatus) => {
+  const handleUpdateStatus = async (incidentId: string, status: QcErrorStatus) => {
     const statusText =
       status === 'open'
         ? 'Mở'
@@ -344,25 +348,26 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
                   ? 'Chưa đáp ứng'
                   : status
 
+    const updates: { closedBy?: string; closedAt?: string; closureMethod?: 'manual' | 'system_auto' } = {}
+    if (status === 'closed' || status === 'cancelled') {
+      updates.closedBy = currentStaffName
+      updates.closedAt = new Date().toISOString()
+      updates.closureMethod = 'manual'
+    }
+
+    const newLog = {
+      id: `log_${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      userName: currentStaffName,
+      action: status === 'closed' ? 'Nghiệm thu đóng lỗi' : 'Cập nhật trạng thái',
+      details: `Chuyển trạng thái sang: ${statusText}`,
+      createdAt: new Date().toISOString(),
+    }
+
+    // Optimistic UI update
     setIncidents((prev) =>
       prev.map((inc) => {
         if (inc.id !== incidentId) return inc
-        const updates: { closedBy?: string; closedAt?: string; closureMethod?: 'manual' | 'system_auto' } = {}
-        if (status === 'closed' || status === 'cancelled') {
-          updates.closedBy = CURRENT_USER_NAME
-          updates.closedAt = new Date().toISOString()
-          updates.closureMethod = 'manual'
-        }
-
-        const newLog = {
-          id: `log_${Date.now()}`,
-          userId: CURRENT_USER_ID,
-          userName: CURRENT_USER_NAME,
-          action: status === 'closed' ? 'Nghiệm thu đóng lỗi' : 'Cập nhật trạng thái',
-          details: `Chuyển trạng thái sang: ${statusText}`,
-          createdAt: new Date().toISOString(),
-        }
-
         return {
           ...inc,
           status,
@@ -371,29 +376,45 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }
       })
     )
+
+    try {
+      await fetch(`/api/qc-incidents/${incidentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status,
+          ...updates,
+          newLog,
+        }),
+      })
+      toast.success(`Đã chuyển trạng thái sự cố sang: ${statusText}`)
+    } catch (err) {
+      console.error('Lỗi cập nhật trạng thái sự cố:', err)
+      toast.error('Lỗi khi đồng bộ trạng thái lên cơ sở dữ liệu')
+    }
   }
 
   // Submit Remediation
-  const handleUpdateRemediation = (
+  const handleUpdateRemediation = async (
     incidentId: string,
     correctiveAction: string,
     correctiveEvidence: string,
     correctiveImage?: string
   ) => {
     const nowIso = new Date().toISOString()
+    const newLog = {
+      id: `log_${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      userName: currentStaffName,
+      action: 'Báo cáo khắc phục sự cố',
+      details: `Nộp phương án khắc phục: ${correctiveAction.substring(0, 60)}...`,
+      createdAt: nowIso,
+    }
+
+    // Optimistic update
     setIncidents((prev) =>
       prev.map((inc) => {
         if (inc.id !== incidentId) return inc
-
-        const newLog = {
-          id: `log_${Date.now()}`,
-          userId: CURRENT_USER_ID,
-          userName: CURRENT_USER_NAME,
-          action: 'Báo cáo khắc phục sự cố',
-          details: `Nộp phương án khắc phục: ${correctiveAction.substring(0, 60)}...`,
-          createdAt: nowIso,
-        }
-
         return {
           ...inc,
           correctiveAction,
@@ -405,24 +426,44 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }
       })
     )
+
+    try {
+      await fetch(`/api/qc-incidents/${incidentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          correctiveAction,
+          correctiveEvidence,
+          correctiveImage,
+          completionDate: nowIso,
+          status: 'corrected',
+          newLog,
+        }),
+      })
+      toast.success('Đã nộp báo cáo khắc phục thành công')
+    } catch (err) {
+      console.error('Lỗi nộp khắc phục:', err)
+      toast.error('Lỗi khi lưu phương án khắc phục vào cơ sở dữ liệu')
+    }
   }
 
   // Re-check System (Auto-close bot issues)
-  const handleRecheckSystem = (incidentId: string) => {
+  const handleRecheckSystem = async (incidentId: string) => {
     const nowIso = new Date().toISOString()
+    const targetIncident = incidents.find((i) => i.id === incidentId)
+    const newLog = {
+      id: `log_${Date.now()}`,
+      userId: 'system',
+      userName: 'Hệ thống tự động',
+      action: 'Quét dữ liệu kiểm tra lại',
+      details: 'Hệ thống nhận diện dữ liệu điểm danh / chăm sóc đã được bổ sung hợp lệ. Tự động đóng sự cố.',
+      createdAt: nowIso,
+    }
+
+    // Optimistic update
     setIncidents((prev) =>
       prev.map((inc) => {
         if (inc.id !== incidentId) return inc
-
-        const newLog = {
-          id: `log_${Date.now()}`,
-          userId: 'system',
-          userName: 'Hệ thống tự động',
-          action: 'Quét dữ liệu kiểm tra lại',
-          details: 'Hệ thống nhận diện dữ liệu điểm danh / chăm sóc đã được bổ sung hợp lệ. Tự động đóng sự cố.',
-          createdAt: nowIso,
-        }
-
         return {
           ...inc,
           status: 'closed',
@@ -434,33 +475,52 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }
       })
     )
+
+    try {
+      await fetch(`/api/qc-incidents/${incidentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'closed',
+          closureMethod: 'system_auto',
+          closedBy: 'Hệ thống tự động (Bot)',
+          closedAt: nowIso,
+          correctiveAction: targetIncident?.correctiveAction || 'Hệ thống xác nhận thao tác nghiệp vụ đã được hoàn tất bù trên phần mềm.',
+          newLog,
+        }),
+      })
+      toast.success('Hệ thống đã phúc tra và tự động đóng sự cố')
+    } catch (err) {
+      console.error('Lỗi phúc tra tự động:', err)
+      toast.error('Lỗi khi lưu kết quả phúc tra')
+    }
   }
 
   // Add Comment
-  const handleAddComment = (incidentId: string, content: string) => {
+  const handleAddComment = async (incidentId: string, content: string) => {
     const nowIso = new Date().toISOString()
+    const newComment = {
+      id: `comm_${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      userName: currentStaffName,
+      userRole: 'Kiểm tra viên',
+      content,
+      createdAt: nowIso,
+    }
+
+    const newLog = {
+      id: `log_${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      userName: currentStaffName,
+      action: 'Gửi trao đổi',
+      details: `"${content.substring(0, 50)}..."`,
+      createdAt: nowIso,
+    }
+
+    // Optimistic update
     setIncidents((prev) =>
       prev.map((inc) => {
         if (inc.id !== incidentId) return inc
-
-        const newComment = {
-          id: `comm_${Date.now()}`,
-          userId: CURRENT_USER_ID,
-          userName: CURRENT_USER_NAME,
-          userRole: 'Kiểm tra viên',
-          content,
-          createdAt: nowIso,
-        }
-
-        const newLog = {
-          id: `log_${Date.now()}`,
-          userId: CURRENT_USER_ID,
-          userName: CURRENT_USER_NAME,
-          action: 'Gửi trao đổi',
-          details: `"${content.substring(0, 50)}..."`,
-          createdAt: nowIso,
-        }
-
         return {
           ...inc,
           comments: [...(inc.comments || []), newComment],
@@ -468,6 +528,21 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }
       })
     )
+
+    try {
+      await fetch(`/api/qc-incidents/${incidentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          newComment,
+          newLog,
+        }),
+      })
+      toast.success('Đã gửi phản hồi trao đổi')
+    } catch (err) {
+      console.error('Lỗi gửi trao đổi:', err)
+      toast.error('Lỗi khi lưu trao đổi vào cơ sở dữ liệu')
+    }
   }
 
   const toggleSelectAll = () => {
@@ -494,6 +569,10 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         : [...currentValues, value]
       return { ...current, [group]: next }
     })
+  }
+
+  if (isLoading) {
+    return <ModuleLoadingSkeleton />
   }
 
   return (
