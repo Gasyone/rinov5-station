@@ -66,9 +66,10 @@ interface StudentSubjectInfo {
 function getIsMathSubject(
   subject?: string,
   studentDetail?: StudentSubjectInfo,
-  studentLevel?: string
+  studentLevel?: string,
+  studentCode?: string
 ): boolean {
-  const combined = `${subject || ''} ${studentDetail?.packageName || ''} ${studentDetail?.learningPath || ''} ${studentDetail?.level || ''} ${studentLevel || ''}`.toLowerCase()
+  const combined = `${subject || ''} ${studentDetail?.packageName || ''} ${studentDetail?.learningPath || ''} ${studentDetail?.level || ''} ${studentLevel || ''} ${studentCode || ''}`.toLowerCase()
   if (combined.includes('toán') || combined.includes('math')) return true
   if (combined.includes('anh') || combined.includes('english') || combined.includes('ielts') || combined.includes('toeic') || combined.includes('cambridge')) return false
   return false
@@ -138,62 +139,46 @@ export function StudentMonthlyReportDialog({
     const existing = reports.find(
       (r) => r.monthOptionValue === mKey || r.monthKey.includes(monthOpt.current)
     )
+
     if (existing) {
       return {
         monthPeriod: existing.dateStr,
         awardBadge: normalizeAwardBadge(existing.awardBadge),
-        teacherName: existing.teacherName,
-        sectionAContent: existing.sectionAContent || `${existing.sectionA1Content}\n\n${existing.sectionA2Content}`,
-        sectionA1Content: existing.sectionA1Content,
-        sectionA2Content: existing.sectionA2Content,
+        teacherName: existing.teacherName || '',
+        testScore: existing.testScore !== undefined && existing.testScore !== null ? existing.testScore : '00',
+        priorTestScore: existing.priorTestScore !== undefined && existing.priorTestScore !== null ? existing.priorTestScore : '00',
+        testDocUrl: existing.testDocUrl || '',
+        testDocName: existing.testDocName || '',
+        sectionAContent: existing.sectionAContent || `${existing.sectionA1Content || ''}\n\n${existing.sectionA2Content || ''}`.trim(),
+        sectionA1Content: existing.sectionA1Content || '',
+        sectionA2Content: existing.sectionA2Content || '',
         galleryPhotos: existing.galleryPhotos || [],
-        sectionB1Content: existing.sectionB1Content,
+        sectionB1Content: existing.sectionB1Content || '',
         sectionB2StartLesson: existing.sectionB2StartLesson,
         sectionB2EndLesson: existing.sectionB2EndLesson,
-        sectionB2Weeks: existing.sectionB2Weeks,
+        sectionB2Weeks: existing.sectionB2Weeks || [],
         sectionB2Content: existing.sectionB2Content || '',
-      }
-    }
-
-    // Với các kỳ quá khứ (Tháng 3, Tháng 2, Tháng 1) nếu chưa có báo cáo thủ công:
-    // Tự động nạp báo cáo học bạ mẫu sinh động, có đầy đủ đánh giá thực tế theo môn học
-    if (mKey !== '4_5_2026') {
-      const sDetail = mockStudents.find((item) => item.id === s.id || item.name === s.name)
-      const isMathForStudent = getIsMathSubject(subject, sDetail, s.level)
-      const fallbackA1 = isMathForStudent
-        ? `Điểm nổi bật: Con có thái độ học tập tích cực, tập trung nghe giảng và chủ động hoàn thành bài tập trên lớp.\n\nĐiểm cần lưu ý: Khi gặp bài toán suy luận nhiều bước, con cần rèn thêm tính kiên nhẫn và cẩn thận kiểm tra lại đáp án.`
-        : `Điểm nổi bật: Con tự tin phát biểu, ngữ điệu nói tự nhiên và phát âm rõ ràng trong các hoạt động giao tiếp.\n\nĐiểm cần lưu ý: Cần chú ý phát âm các âm đuôi /s/, /t/ và rèn thêm tính kiên nhẫn khi đọc hiểu đoạn văn dài.`
-
-      const fallbackA2 = isMathForStudent
-        ? `Kiến thức & Tư duy: Nắm chắc các phép toán số học nền tảng, nhận biết tốt các dạng hình học và quy luật dãy số.\n\nKỹ năng giải toán: Cần rèn luyện thêm kỹ năng tính nhẩm nhanh và giải toán có lời văn ngắn.`
-        : `Từ vựng & Phonics: Ghi nhớ tốt các từ vựng chủ đề trong tháng, phát âm chuẩn các nguyên âm cơ bản.\n\nCấu trúc & Mẫu câu: Phản xạ nhanh với các mẫu câu giao tiếp quen thuộc, trả lời tròn câu.`
-
-      const fallbackB1 = isMathForStudent
-        ? `Tháng tới, con tiếp tục nâng cao kỹ năng tư duy hình học không gian, làm quen với các phép toán mở rộng và bài toán đố logic.`
-        : `Tháng tới, các con sẽ tiếp tục rèn luyện kỹ năng thuyết trình tự tin trước lớp, mở rộng vốn từ vựng và tham gia dự án nhóm.`
-
-      return {
-        monthPeriod: monthOpt.dateStr,
-        awardBadge: isMathForStudent ? '⭐️ NGÔI SAO CHĂM CHỈ' : '🌟 SIÊU SAO TIẾNG ANH',
-        teacherName: 'Ms.Chloe',
-        sectionAContent: `${fallbackA1}\n\n${fallbackA2}`,
-        sectionA1Content: fallbackA1,
-        sectionA2Content: fallbackA2,
-        galleryPhotos: getStudentPhotos(s.id).slice(0, 4),
-        sectionB1Content: fallbackB1,
-        sectionB2StartLesson: undefined,
-        sectionB2EndLesson: undefined,
-        sectionB2Weeks: DEFAULT_SECTION_B2_WEEKS,
-        sectionB2Content: 'Kế hoạch ôn tập 4 tuần theo bài học trọng tâm',
       }
     }
 
     return {
       ...EMPTY_REPORT_FORM,
       monthPeriod: monthOpt.dateStr,
+      awardBadge: '',
+      teacherName: '',
+      testScore: '00',
+      priorTestScore: '00',
+      testDocUrl: '',
+      testDocName: '',
+      sectionAContent: '',
+      sectionA1Content: '',
+      sectionA2Content: '',
       galleryPhotos: [],
+      sectionB1Content: '',
       sectionB2StartLesson: undefined,
       sectionB2EndLesson: undefined,
+      sectionB2Weeks: [],
+      sectionB2Content: '',
     }
   }
 
@@ -249,7 +234,7 @@ export function StudentMonthlyReportDialog({
     (s) => s.id === selectedStudentId || (selectedStudent && s.name === selectedStudent.name)
   )
 
-  const isMath = getIsMathSubject(subject, studentDetail, selectedStudent?.level)
+  const isMath = getIsMathSubject(subject, studentDetail, selectedStudent?.level, selectedStudent?.code)
 
   const activeLessons = useMemo(() => {
     return getLessonsReviewBySubject(subject, isMath)
@@ -324,6 +309,10 @@ export function StudentMonthlyReportDialog({
       dateStr: activeMonthConfig.dateStr,
       awardBadge: currentForm.awardBadge,
       teacherName: currentForm.teacherName,
+      testScore: currentForm.testScore,
+      priorTestScore: currentForm.priorTestScore,
+      testDocUrl: currentForm.testDocUrl,
+      testDocName: currentForm.testDocName,
       sectionA1Content: currentForm.sectionA1Content,
       sectionA2Content: currentForm.sectionA2Content,
       sectionAContent: `${currentForm.sectionA1Content}\n\n${currentForm.sectionA2Content}`,
@@ -348,6 +337,15 @@ export function StudentMonthlyReportDialog({
 
   const handleCopySummary = () => {
     const badgeStr = currentForm.awardBadge ? `\n🏆 Danh hiệu: ${currentForm.awardBadge}` : ''
+    const hasValidTestScore = Boolean(
+      currentForm.testScore !== undefined &&
+      currentForm.testScore !== null &&
+      currentForm.testScore !== '' &&
+      currentForm.testScore !== 0 &&
+      currentForm.testScore !== '0' &&
+      currentForm.testScore !== '00'
+    )
+    const scoreStr = hasValidTestScore ? `\n📝 Điểm kiểm tra: ${typeof currentForm.testScore === 'number' ? currentForm.testScore.toFixed(1) : currentForm.testScore}/10` : ''
     const generalStr = currentForm.sectionA1Content ? `\n📌 Nhận xét chung: ${currentForm.sectionA1Content}` : ''
     const academicStr = currentForm.sectionA2Content ? `\n📚 Đánh giá học tập: ${currentForm.sectionA2Content}` : ''
     const planStr = currentForm.sectionB1Content ? `\n🎯 Kế hoạch tháng tới: ${currentForm.sectionB1Content}` : ''
@@ -355,7 +353,7 @@ export function StudentMonthlyReportDialog({
 
     const summaryText = `[RINO EDU] Báo cáo học tập - ${activeMonthConfig.current}/2026
 Học viên: ${selectedStudent.name} (${selectedStudent.code || 'HV'})
-Thời gian: ${activeMonthConfig.dateStr}${badgeStr}${generalStr}${academicStr}${planStr}${teacherStr}
+Thời gian: ${activeMonthConfig.dateStr}${badgeStr}${scoreStr}${generalStr}${academicStr}${planStr}${teacherStr}
 Link xem chi tiết: ${getLandingPageUrl()}`
 
     navigator.clipboard
@@ -377,7 +375,11 @@ Link xem chi tiết: ${getLandingPageUrl()}`
         subject: subject || (isMath ? 'Toán tư duy' : 'Tiếng Anh'),
         roadmap: isMath ? 'Toán Tư Duy Archimedes' : 'Cambridge Standard',
         level: selectedStudent?.level || 'Lớp 4',
-        metrics: studentMetrics,
+        metrics: {
+          ...studentMetrics,
+          testScore: currentForm.testScore !== undefined && currentForm.testScore !== null ? currentForm.testScore : studentMetrics.testScore,
+          priorTestScore: currentForm.priorTestScore !== undefined && currentForm.priorTestScore !== null ? currentForm.priorTestScore : studentMetrics.priorTestScore,
+        },
         sectionA1Content: currentForm.sectionA1Content,
         sectionA2Content: currentForm.sectionA2Content,
         sectionB1Content: currentForm.sectionB1Content,
@@ -494,12 +496,23 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                 lateCount={studentMetrics.lateCount}
                 homeworkRatio={studentMetrics.homeworkRatio}
                 homeworkAvg={studentMetrics.homeworkAvg}
-                testScore={studentMetrics.testScore}
-                priorTestScore={studentMetrics.priorTestScore}
+                testScore={currentForm.testScore !== undefined && currentForm.testScore !== null ? currentForm.testScore : studentMetrics.testScore}
+                priorTestScore={currentForm.priorTestScore !== undefined && currentForm.priorTestScore !== null ? currentForm.priorTestScore : studentMetrics.priorTestScore}
+                isMath={isMath}
+                isEditing={isEditing}
+                onChangeTestScore={(score) => handleUpdateForm({ testScore: score })}
+                testDocUrl={currentForm.testDocUrl}
+                testDocName={currentForm.testDocName}
+                onChangeTestDoc={(url, name) => handleUpdateForm({ testDocUrl: url, testDocName: name })}
                 onOpenTestRemark={() => {
-                  const link = `${getLandingPageUrl()}#test-evaluation`
-                  window.open(link, '_blank')
-                  toast.success(`Đang mở nhận xét bài kiểm tra gần nhất của học viên ${selectedStudent.name} trong tab mới!`)
+                  if (isMath && currentForm.testDocUrl) {
+                    window.open(currentForm.testDocUrl, '_blank')
+                    toast.success(`Đang mở xem link tài liệu bài kiểm tra của học viên ${selectedStudent.name}!`)
+                  } else {
+                    const link = `${getLandingPageUrl()}#test-evaluation`
+                    window.open(link, '_blank')
+                    toast.success(`Đang mở nhận xét bài kiểm tra gần nhất của học viên ${selectedStudent.name} trong tab mới!`)
+                  }
                 }}
                 onScrollToEvaluation={() => {
                   const el = document.getElementById('monthly-report-evaluation-section')
@@ -729,7 +742,7 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                       Rino Edu chúc mừng con <strong className="text-foreground font-medium not-italic">{selectedStudent.name}</strong> đã hoàn thành kỳ học! GV:{' '}
                       <input
                         type="text"
-                        value={currentForm.teacherName}
+                        value={currentForm.teacherName || ''}
                         onChange={(e) => handleUpdateForm({ teacherName: e.target.value })}
                         placeholder="Tên GV"
                         className="inline-block w-24 text-center text-xs font-medium text-foreground border-b border-border bg-transparent focus:outline-none not-italic"
@@ -738,8 +751,15 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                   </div>
                 ) : (
                   <div className="pt-1.5 border-t border-border/50 text-xs text-muted-foreground leading-relaxed">
-                    Rino Edu chúc mừng con <span className="text-foreground font-medium">{selectedStudent.name}</span> đã hoàn thành kỳ học! Giáo viên phụ trách:{' '}
-                    <span className="text-foreground font-medium">{currentForm.teacherName || 'Nguyễn Thu Thảo'}</span>.
+                    Rino Edu chúc mừng con <span className="text-foreground font-medium">{selectedStudent.name}</span> đã hoàn thành kỳ học!
+                    {currentForm.teacherName ? (
+                      <>
+                        {' '}Giáo viên phụ trách:{' '}
+                        <span className="text-foreground font-medium">{currentForm.teacherName}</span>.
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground italic"> (Chưa điền tên giáo viên).</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -769,7 +789,21 @@ Link xem chi tiết: ${getLandingPageUrl()}`
                   handleUpdateForm({
                     ...EMPTY_REPORT_FORM,
                     monthPeriod: activeMonthConfig.dateStr,
+                    awardBadge: '',
+                    teacherName: '',
+                    testScore: '00',
+                    priorTestScore: '00',
+                    testDocUrl: '',
+                    testDocName: '',
+                    sectionAContent: '',
+                    sectionA1Content: '',
+                    sectionA2Content: '',
                     galleryPhotos: [],
+                    sectionB1Content: '',
+                    sectionB2StartLesson: undefined,
+                    sectionB2EndLesson: undefined,
+                    sectionB2Weeks: [],
+                    sectionB2Content: '',
                   })
                   toast.info('Đã xóa trắng form báo cáo để bạn tự điền nội dung mới.')
                 }}

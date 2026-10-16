@@ -72,7 +72,7 @@ export function MonthlyReportsList({
                     <FileText className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                     <div className="min-w-0 flex flex-col text-left">
                       <span className="font-normal text-foreground truncate">{displayTitle}</span>
-                      <span className="text-[9.5px] text-muted-foreground mt-0.5">{report.date}</span>
+                      <span className="text-xs text-muted-foreground mt-0.5">{report.date}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 ml-2">
@@ -135,19 +135,19 @@ export function MonthlyReportsList({
                   {/* Bottom: Scores in 4 columns */}
                   <div className="grid grid-cols-4 gap-1 text-xs font-normal w-full border-t border-amber-100/50 dark:border-amber-900/30 pt-1.5 mt-0.5 shrink-0 text-center">
                     <div className="flex flex-col items-center">
-                      <span className="text-[7.5px] uppercase tracking-wider text-muted-foreground">Ý thức</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">Ý thức</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-400">{evalItem.attitude}/5</span>
                     </div>
                     <div className="flex flex-col items-center">
-                      <span className="text-[7.5px] uppercase tracking-wider text-muted-foreground">K.thức</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">K.thức</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-400">{evalItem.knowledge}/5</span>
                     </div>
                     <div className="flex flex-col items-center">
-                      <span className="text-[7.5px] uppercase tracking-wider text-muted-foreground">K.năng</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">K.năng</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-400">{evalItem.skills}/5</span>
                     </div>
                     <div className="flex flex-col items-center">
-                      <span className="text-[7.5px] uppercase tracking-wider text-muted-foreground">T.tác</span>
+                      <span className="text-xs uppercase tracking-wider text-muted-foreground">T.tác</span>
                       <span className="font-semibold text-amber-700 dark:text-amber-400">{evalItem.interaction}/5</span>
                     </div>
                   </div>

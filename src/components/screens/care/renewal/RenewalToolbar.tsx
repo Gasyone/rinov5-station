@@ -64,7 +64,7 @@ export function RenewalToolbar({
             allLabel="Tất cả cơ sở"
             placeholder="Chọn cơ sở"
             ariaLabel="Cơ sở"
-            className="h-8 text-xs min-w-[130px] sm:min-w-[135px]"
+            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
@@ -78,7 +78,7 @@ export function RenewalToolbar({
               { value: 'Toán tư duy', label: 'Toán tư duy' },
             ]}
             onValueChange={onSubjectChange}
-            className="h-8 text-xs min-w-[115px] sm:min-w-[120px]"
+            className="h-8 text-xs min-w-[110px] sm:min-w-[115px]"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
@@ -87,7 +87,7 @@ export function RenewalToolbar({
           <ToolbarSelect
             value={selectedStudentStatus}
             options={[
-              { value: 'all', label: 'Chọn Trạng thái học viên', selectedLabel: 'Chọn Trạng thái HV' },
+              { value: 'all', label: 'Tất cả trạng thái học viên', selectedLabel: 'Tất cả trạng thái HV' },
               ...STUDENT_STATUS_CONFIG.map((s) => ({
                 value: s.id,
                 label: s.label,
@@ -103,7 +103,7 @@ export function RenewalToolbar({
             value={searchQuery}
             onValueChange={onSearchChange}
             placeholder="Tìm kiếm..."
-            inputClassName="sm:w-60 text-xs h-8"
+            inputClassName="w-32 sm:w-36 lg:w-44 xl:w-52 2xl:w-60 text-xs h-8"
           />
           <FilterIconButton
             count={activeFilterCount > 0 ? activeFilterCount : undefined}

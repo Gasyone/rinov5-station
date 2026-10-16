@@ -298,7 +298,7 @@ export function HistoricalClassesList({
                   {/* Dòng 1: Lớp + Sĩ số đưa về cạnh mã lớp */}
                   <div className="flex items-center gap-2 min-w-0 flex-wrap">
                     <div className="flex items-center gap-1.5 min-w-0" onClick={(e) => e.stopPropagation()}>
-                      <span className="text-muted-foreground font-normal text-[11px]">Lớp</span>
+                      <span className="text-muted-foreground font-normal text-xs 2xl:text-[12.5px]">Lớp</span>
                       <ClassCodeHoverCell
                         classCode={pkg.classCode}
                         subject={pkgIsEnglish ? 'Tiếng Anh' : 'Toán tư duy'}
@@ -307,13 +307,13 @@ export function HistoricalClassesList({
                         teacherCode={teacher.main}
                         schedule={pkg.schedule || 'Thứ 2, 6'}
                         openInNewTab={true}
-                        className="font-mono font-normal text-[11.5px]"
+                        className="font-mono font-normal text-xs 2xl:text-[12.5px]"
                       />
                     </div>
 
                     {/* Sĩ số đưa về cạnh mã lớp */}
                     <div
-                      className="flex items-center gap-1 text-[10.5px] text-muted-foreground font-normal shrink-0"
+                      className="flex items-center gap-1 text-xs 2xl:text-[12px] text-muted-foreground font-normal shrink-0"
                       title={`Sĩ số lớp: ${enrolled}/${max} học viên`}
                     >
                       <Users className="h-3 w-3 text-muted-foreground/70 shrink-0" />
@@ -322,7 +322,7 @@ export function HistoricalClassesList({
                   </div>
 
                   {/* Dòng 2: Thời gian: {dateRange} ({sessionsCount} buổi) - Xóa trình độ đi */}
-                  <div className="text-[10.5px] text-muted-foreground font-normal truncate">
+                  <div className="text-xs 2xl:text-[12px] text-muted-foreground font-normal truncate">
                     <span>Thời gian: {dateRange} ({sessionsCount} buổi)</span>
                   </div>
                 </div>
@@ -331,31 +331,31 @@ export function HistoricalClassesList({
                 <div className="flex items-center gap-1.5 shrink-0 ml-auto flex-wrap sm:flex-nowrap">
                   {/* Chuyên cần */}
                   <div
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-xs 2xl:text-[12px] select-none shadow-3xs"
                     title={`Chuyên cần: ${attendanceRatioDisplay}`}
                   >
                     <UserCheck className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground text-[10px]">Chuyên cần:</span>
+                    <span className="text-muted-foreground text-[10.5px] 2xl:text-[11px]">Chuyên cần:</span>
                     <span className="font-semibold text-emerald-600 dark:text-emerald-400">{attendanceRatioDisplay}</span>
                   </div>
 
                   {/* BTVN */}
                   <div
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-xs 2xl:text-[12px] select-none shadow-3xs"
                     title={`BTVN: ${hwRatioDisplay}`}
                   >
                     <BookOpen className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground text-[10px]">BTVN:</span>
+                    <span className="text-muted-foreground text-[10.5px] 2xl:text-[11px]">BTVN:</span>
                     <span className="font-semibold text-sky-600 dark:text-sky-400">{hwRatioDisplay}</span>
                   </div>
 
                   {/* Điểm kiểm tra */}
                   <div
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-[10.5px] select-none shadow-3xs"
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-background/60 dark:bg-zinc-800/40 border border-border/40 text-xs 2xl:text-[12px] select-none shadow-3xs"
                     title={`Điểm kiểm tra: ${testScoreDisplay}`}
                   >
                     <Award className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground text-[10px]">Điểm:</span>
+                    <span className="text-muted-foreground text-[10.5px] 2xl:text-[11px]">Điểm:</span>
                     <span className="font-semibold text-violet-600 dark:text-violet-400">{testScoreDisplay}</span>
                   </div>
 
@@ -388,7 +388,7 @@ export function HistoricalClassesList({
                             variant="outline"
                             size="sm"
                             onClick={onOpenLeaveReserveDialog}
-                            className="h-5.5 px-2 text-[11px] font-normal text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer shadow-3xs"
+                            className="h-6 2xl:h-6.5 px-2 2xl:px-2.5 text-xs 2xl:text-[12px] font-normal text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer shadow-3xs"
                           >
                             <FileText className="h-3 w-3 mr-1" />
                             <span>Xem đơn #BL002</span>
@@ -399,7 +399,7 @@ export function HistoricalClassesList({
                           variant="outline"
                           size="sm"
                           onClick={() => setEarlyReturnPkg(pkg)}
-                          className="h-5.5 px-2 text-[11px] font-normal text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-3xs"
+                          className="h-6 2xl:h-6.5 px-2 2xl:px-2.5 text-xs 2xl:text-[12px] font-normal text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50/70 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/60 cursor-pointer shadow-3xs"
                         >
                           <RotateCcw className="h-3 w-3 mr-1 text-sky-600 dark:text-sky-400" />
                           <span>Đi học lại</span>
@@ -409,9 +409,9 @@ export function HistoricalClassesList({
                   )}
 
                   {/* Nhận xét học tập Lớp học (AI Tổng hợp / Đã duyệt bởi GV) */}
-                  <div className="bg-muted/20 dark:bg-muted/10 rounded-lg p-2.5 space-y-1.5 text-xs text-left">
+                  <div className="bg-muted/20 dark:bg-muted/10 rounded-lg p-2.5 space-y-1.5 text-xs 2xl:text-[13px] text-left">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="font-semibold text-foreground text-xs tracking-normal">
+                      <span className="font-semibold text-foreground text-xs 2xl:text-[13px] tracking-normal">
                         {currentRemark.isAiGenerated
                           ? 'Nhận xét học tập lớp học (AI tổng hợp)'
                           : 'Nhận xét học tập lớp học (Đã duyệt bởi GV)'}
@@ -420,22 +420,22 @@ export function HistoricalClassesList({
                       <button
                         type="button"
                         onClick={() => setEditingRemarkPkg({ pkg, teacherName: teacher.main })}
-                        className="inline-flex items-center gap-1 text-[11px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors"
+                        className="inline-flex items-center gap-1 text-xs 2xl:text-[12px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors"
                       >
                         <Pencil className="h-3 w-3 shrink-0" />
                         <span>Chỉnh sửa</span>
                       </button>
                     </div>
 
-                    <p className="text-foreground/85 leading-relaxed text-[11px] italic font-normal">
+                    <p className="text-foreground/85 leading-relaxed text-xs 2xl:text-[12.5px] italic font-normal">
                       &ldquo;{currentRemark.text}&rdquo;
                     </p>
                   </div>
 
                   {/* Báo cáo học tập & Nhật ký buổi học */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap text-xs py-0.5 text-left select-none">
+                  <div className="flex items-center justify-between gap-2 flex-wrap text-xs 2xl:text-[13px] py-0.5 text-left select-none">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs 2xl:text-[12.5px] font-normal text-muted-foreground flex items-center gap-1.5 shrink-0">
                         <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                         <span>Báo cáo tháng:</span>
                       </span>
@@ -447,7 +447,7 @@ export function HistoricalClassesList({
                               <button
                                 type="button"
                                 onClick={() => handleCopyLink(item.url || `https://rinoedu.vn/reports/${pkg.classCode}/${item.id}`)}
-                                className="inline-flex items-center gap-1 text-[11px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer"
+                                className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer"
                                 title="Nhấp để sao chép liên kết báo cáo"
                               >
                                 <span>{item.monthBadge || item.title}</span>
@@ -457,7 +457,7 @@ export function HistoricalClassesList({
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[11px] text-muted-foreground italic font-normal">Chưa có báo cáo tháng</span>
+                        <span className="text-xs 2xl:text-[12.5px] text-muted-foreground italic font-normal">Chưa có báo cáo tháng</span>
                       )}
                     </div>
 
@@ -474,7 +474,7 @@ export function HistoricalClassesList({
                           packageId: pkg.id,
                           isHistorical: true,
                         })}
-                        className="h-6 px-2 text-[11px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs ml-auto"
+                        className="h-6 2xl:h-6.5 px-2 2xl:px-2.5 text-xs 2xl:text-[12px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs ml-auto"
                       >
                         <ClipboardList className="h-3 w-3" />
                         <span>Nhật ký {totalSessions} buổi</span>

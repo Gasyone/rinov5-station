@@ -120,7 +120,7 @@ export function MonthlyCommentsSection({
         monthTitle: 'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
         dateStr: '01/04/2026 đến 30/04/2026',
         awardBadge: '',
-        teacherName: 'Ms.Chloe',
+        teacherName: '',
         comment: 'Chưa có nhận xét - Bấm "Xem & sửa" để cập nhật báo cáo',
         sectionA1Content: '',
         sectionA2Content: '',
@@ -129,7 +129,7 @@ export function MonthlyCommentsSection({
         sectionB2StartLesson: undefined,
         sectionB2EndLesson: undefined,
         sectionB2Weeks: [],
-        evaluator: 'Ms.Chloe',
+        evaluator: '',
         date: '28/04/2026',
         isCurrent: true,
       },
@@ -158,7 +158,7 @@ export function MonthlyCommentsSection({
       enrollmentDate: '2025-09-01',
       attendanceRate: 95,
       homeworkRate: 90,
-      lastScore: 8.5,
+      lastScore: 0,
     }),
     [studentId, studentCode, studentName]
   )
@@ -168,13 +168,13 @@ export function MonthlyCommentsSection({
       {/* Header with soft background tint */}
       <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
         <div>
-          <h3 className="text-xs font-semibold text-foreground tracking-tight">
+          <h3 className="text-xs 2xl:text-[13.5px] font-semibold text-foreground tracking-tight">
             Báo cáo tháng của học viên
           </h3>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground font-normal">
+          <span className="text-xs 2xl:text-[12.5px] text-muted-foreground font-normal">
             Hiển thị {visibleComments.length}/{commentsList.length} kỳ báo cáo
           </span>
           {commentsList.length > 1 && (
@@ -183,7 +183,7 @@ export function MonthlyCommentsSection({
               <button
                 type="button"
                 onClick={() => setShowAllHistory(!showAllHistory)}
-                className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 <span>
                   {showAllHistory ? 'Thu gọn' : `Xem thêm (${commentsList.length - 1} kỳ)`}
@@ -205,7 +205,7 @@ export function MonthlyCommentsSection({
           return (
             <div
               key={mc.id || idx}
-              className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs"
+              className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs 2xl:text-[13px]"
             >
               {/* Card Header Bar: Toàn bộ chỉ 1 dòng duy nhất */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -217,7 +217,7 @@ export function MonthlyCommentsSection({
                       const url = `${origin}/report/${studentId}?month=${encodeURIComponent(mc.monthOptionValue || mc.month)}`
                       window.open(url, '_blank')
                     }}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 text-xs 2xl:text-[13px] font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer transition-colors shrink-0"
                     title={`Nhấp để mở Landing Page báo cáo ${mc.month}`}
                   >
                     <span>{mc.month}</span>
@@ -228,7 +228,7 @@ export function MonthlyCommentsSection({
                   {(mc.isCurrent !== undefined ? mc.isCurrent : idx === 0) && (
                     <span
                       className={cn(
-                        'text-[10.5px] font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
+                        'text-[10.5px] 2xl:text-[11.5px] font-normal px-2 py-0.5 rounded-full border leading-none shrink-0',
                         getStatusBadgeClass('current')
                       )}
                     >
@@ -238,21 +238,21 @@ export function MonthlyCommentsSection({
 
                   {/* Draft Badge if report is empty */}
                   {!mc.sectionA1Content && !mc.sectionAContent && (
-                    <span className="text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 leading-none shrink-0">
+                    <span className="text-[10.5px] 2xl:text-[11.5px] font-normal px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 leading-none shrink-0">
                       Bản dự thảo
                     </span>
                   )}
 
                   {/* Danh hiệu (Award Badge) đưa lên header */}
                   {mc.awardBadge && (
-                    <span className="text-[10.5px] font-normal px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none inline-flex items-center gap-1 shrink-0">
+                    <span className="text-[10.5px] 2xl:text-[11.5px] font-normal px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 leading-none inline-flex items-center gap-1 shrink-0">
                       <Award className="h-3 w-3 text-amber-600 dark:text-amber-400 stroke-[1.5]" />
                       <span>{mc.awardBadge}</span>
                     </span>
                   )}
 
                   {/* Teacher / Evaluator */}
-                  <span className="text-[11px] text-muted-foreground font-normal shrink-0">
+                  <span className="text-xs 2xl:text-[12.5px] text-muted-foreground font-normal shrink-0">
                     GV: <span className="text-foreground font-normal">{mc.teacherName || mc.evaluator || 'Ms.Chloe'}</span>
                   </span>
                 </div>
@@ -264,7 +264,7 @@ export function MonthlyCommentsSection({
                     variant="outline"
                     size="sm"
                     onClick={() => handleOpenReport(mc.monthOptionValue || mc.month)}
-                    className="h-6 px-2 text-[11px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs"
+                    className="h-6 2xl:h-6.5 px-2 2xl:px-2.5 text-xs 2xl:text-[12.5px] font-normal text-primary border-primary/30 hover:bg-primary/10 gap-1 cursor-pointer shadow-3xs"
                     title={`Mở xem và chỉnh sửa báo cáo ${mc.month} trong modal`}
                   >
                     <Pencil className="h-3 w-3" />

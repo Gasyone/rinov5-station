@@ -133,19 +133,16 @@ export function HomeManagedClassesSection({
                 onClick={() => onOpenClassDetail(cls)}
                 className="group flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg border border-border/70 bg-card/70 hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer shadow-2xs text-xs"
               >
-                {/* Left: Code, Name & Teacher */}
+                {/* Left: Mã lớp & Trình độ, Phòng học */}
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-medium text-sm text-foreground/90 group-hover:text-primary transition-colors truncate">
-                      {cls.name}
-                    </span>
-                    <span className="text-xs font-mono text-muted-foreground px-1.5 py-0.5 bg-muted/70 rounded shrink-0">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="font-semibold text-sm font-mono text-foreground/90 group-hover:text-primary transition-colors truncate">
                       {cls.code}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground truncate">
-                    <span className="truncate">{cls.teacher}</span>
+                    <span className="truncate">{cls.level || 'Tổng quát'}</span>
                     <span>•</span>
                     <span className="shrink-0">P.{cls.room}</span>
                   </div>

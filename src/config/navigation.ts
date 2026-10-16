@@ -110,7 +110,9 @@ export const navigationGroups: NavigationGroup[] = [
     label: 'Ticket & Chất lượng',
     icon: Ticket,
     items: [
-      { id: 'support_tickets', label: 'Quản lý Ticket & Chất lượng', href: '/app/support_tickets' },
+      { id: 'support_tickets', label: 'Quản lý Ticket & Hỗ trợ', href: '/app/support_tickets' },
+      { id: 'qc_check', label: 'Kiểm tra & Khắc phục chất lượng', href: '/app/qc_check' },
+      { id: 'session_feedback', label: 'Đánh giá buổi học', href: '/app/session_feedback' },
     ],
   },
   {

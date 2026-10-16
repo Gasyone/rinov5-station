@@ -185,8 +185,8 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
     return { default: QcCheckScreen }
   }),
   qc_remediation: safeLazy(async () => {
-    const { QcRemediationScreen } = await import('@/components/screens/qc-remediation/QcRemediationScreen')
-    return { default: QcRemediationScreen }
+    const { QcCheckScreen } = await import('@/components/screens/qc-check/QcCheckScreen')
+    return { default: () => <QcCheckScreen defaultViewMode="remediations" /> }
   }),
   system_config: safeLazy(async () => {
     const { SystemConfigScreen } = await import('@/components/screens/system-config/SystemConfigScreen')
@@ -195,6 +195,10 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
   job_titles: safeLazy(async () => {
     const { JobTitlesScreen } = await import('@/components/screens/job-titles/JobTitlesScreen')
     return { default: JobTitlesScreen }
+  }),
+  support_tickets: safeLazy(async () => {
+    const { SupportTicketsScreen } = await import('@/components/screens/tickets/SupportTicketsScreen')
+    return { default: SupportTicketsScreen }
   }),
 }
 

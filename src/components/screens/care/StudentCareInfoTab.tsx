@@ -53,7 +53,7 @@ export function StudentCareInfoTab({
           {/* Card 1: Chuyên cần */}
           <div className="bg-muted/10 border border-border/60 rounded-md px-2 py-1.5 flex flex-col justify-center text-left select-none">
             <div className="flex items-center justify-between w-full">
-              <span className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 Chuyên cần
               </span>
               <span className="text-xs font-bold text-foreground">
@@ -73,7 +73,7 @@ export function StudentCareInfoTab({
           {/* Card 2: Tỷ lệ BTVN */}
           <div className="bg-muted/10 border border-border/60 rounded-md px-2 py-1.5 flex flex-col justify-center text-left select-none">
             <div className="flex items-center justify-between w-full">
-              <span className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 Tỷ lệ BTVN
               </span>
               <span className="text-xs font-bold text-foreground">
@@ -93,7 +93,7 @@ export function StudentCareInfoTab({
           {/* Card 3: Điểm thi TB */}
           <div className="bg-muted/10 border border-border/60 rounded-md px-2 py-1.5 flex flex-col justify-center text-left select-none">
             <div className="flex items-center justify-between w-full">
-              <span className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 Điểm thi TB
               </span>
               <span className="text-xs font-bold text-foreground">
@@ -101,7 +101,7 @@ export function StudentCareInfoTab({
               </span>
             </div>
             <div className={cn(
-              "text-[9.5px] font-semibold leading-none mt-0.5 truncate",
+              "text-xs font-semibold leading-none mt-0.5 truncate",
               activePackage.lastTestScore >= activePackage.priorTestScore 
                 ? "text-emerald-600 dark:text-emerald-400" 
                 : "text-rose-600 dark:text-rose-400"
@@ -112,14 +112,14 @@ export function StudentCareInfoTab({
           {/* Card 4: Còn lại */}
           <div className="bg-muted/10 border border-border/60 rounded-md px-2 py-1.5 flex flex-col justify-center text-left select-none">
             <div className="flex items-center justify-between w-full">
-              <span className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-wide">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 Còn lại
               </span>
               <span className="text-xs font-bold text-foreground">
                 {activePackage.remainingSessions}/{activePackage.totalSessions}
               </span>
             </div>
-            <div className="text-[9.5px] font-semibold text-muted-foreground leading-none mt-0.5 truncate">
+            <div className="text-xs font-semibold text-muted-foreground leading-none mt-0.5 truncate">
               Hạn: {activePackage.endDate}
             </div>
           </div>
@@ -155,7 +155,7 @@ export function StudentCareInfoTab({
                 <span className="font-semibold text-foreground">
                   {activePackage.level} &mdash; Level {activePackage.subLevel}
                 </span>
-                <span className="ml-1.5 text-[8.5px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-1 py-px rounded select-none">
+                <span className="ml-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 rounded select-none">
                   Trình độ học viên
                 </span>
               </div>
@@ -241,7 +241,7 @@ export function StudentCareInfoTab({
                 <span className="font-semibold text-foreground">
                   {studentBranch} &bull; Phòng {(activePackage.classCode.charCodeAt(activePackage.classCode.length - 1) % 5) + 301}
                 </span>
-                <span className="ml-1.5 text-[8.5px] font-bold text-red-700 bg-red-50 dark:bg-red-950/20 dark:text-red-400 px-1 py-px rounded select-none">
+                <span className="ml-1.5 text-xs font-bold text-red-700 bg-red-50 dark:bg-red-950/20 dark:text-red-400 px-1.5 py-0.5 rounded select-none">
                   Cơ sở & Phòng
                 </span>
               </div>
@@ -292,7 +292,7 @@ export function StudentCareInfoTab({
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <p className="font-bold text-foreground truncate">{contact.name}</p>
                   {contact.isPrimary && (
-                    <Badge className="bg-primary/10 text-primary hover:bg-primary/10 font-bold px-1.5 py-px text-[8.5px] rounded border-none shadow-none leading-none select-none">
+                    <Badge className="bg-primary/10 text-primary hover:bg-primary/10 font-bold px-1.5 py-0.5 text-xs rounded border-none shadow-none leading-none select-none">
                       Chính
                     </Badge>
                   )}

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 import { mockClassRecords, CLASS_STATUS_LABELS } from '@/mocks/classRecords'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { Calendar, MapPin, Users, History, BookOpen, ExternalLink, GraduationCap } from 'lucide-react'
+import { Calendar, MapPin, Users, History, BookOpen, ExternalLink } from 'lucide-react'
 import { ClassesDetailDialog } from '../classes/detail/ClassesDetailDialog'
 import { ClassTeacherHistoryPopover } from './ClassTeacherHistoryPopover'
 import { SyllabusProfileHoverCard } from '../classes/SyllabusProfileHoverCard'
@@ -145,37 +145,45 @@ export function ClassCodeHoverCell({
                 <StatusBadge
                   status={classDetail.status}
                   label={CLASS_STATUS_LABELS[classDetail.status] || 'Đang học'}
-                  className="text-[10px] px-1.5 py-0 h-4 font-normal shrink-0"
+                  className="text-xs px-1.5 py-0 h-4.5 font-normal shrink-0"
                 />
               </div>
-              <div className="flex items-center gap-1 mt-1 flex-wrap">
-                <span className="px-1 py-0.5 bg-muted text-muted-foreground rounded text-[10px] font-mono font-medium uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded text-xs font-mono font-medium uppercase tracking-wider">
                   {classDetail.code}
                 </span>
-                <span className="px-1 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-medium">
-                  {classDetail.level}
-                </span>
-                {classDetail.subLevel && (
-                  <span className="px-1 py-0.5 bg-muted text-muted-foreground rounded text-[10px] font-medium">
-                    {classDetail.subLevel}
+                {(classDetail.level || classDetail.subLevel) && (
+                  <span className="text-xs text-muted-foreground font-normal">
+                    {classDetail.level}
+                    {classDetail.subLevel ? ` (${classDetail.subLevel})` : ''}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Info fields with titles */}
+            {/* Info fields */}
             <div className="space-y-1.5 text-xs">
-              {/* 1. Khung chương trình (KCT) - Có nhãn rõ ràng, hover hiện modal/card KCT */}
+              {/* 1. Sĩ số - Bỏ title, chỉ icon và data */}
               <div className="flex items-center justify-between gap-1.5">
                 <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-                  <BookOpen className="h-3 w-3 text-primary shrink-0" />
-                  <span className="font-medium text-foreground text-[11px]">Khung chương trình:</span>
+                  <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="font-semibold text-foreground text-xs leading-none">
+                    {classDetail.enrolledStudents}/{classDetail.maxStudents}
+                  </span>
                 </div>
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/50 shrink-0">
+                  +{classDetail.trialStudents || 2} mới, Trial
+                </span>
+              </div>
+
+              {/* 2. Khung chương trình - Bỏ nhãn, chỉ icon và data */}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
                 <SyllabusProfileHoverCard cls={classDetail} align="start">
                   <span
                     role="button"
                     tabIndex={0}
-                    className="font-semibold text-primary hover:underline cursor-pointer truncate max-w-[130px] text-right text-[11px]"
+                    className="font-medium text-primary hover:underline cursor-pointer truncate text-xs min-w-0"
                     title="Rê chuột để xem hồ sơ Khung chương trình"
                   >
                     {classDetail.syllabus || 'IELTS Junior v2.1'}
@@ -183,33 +191,25 @@ export function ClassCodeHoverCell({
                 </SyllabusProfileHoverCard>
               </div>
 
-              {/* 2. Trình độ & Trình độ phụ (1 dòng: Trình độ: Trình độ X - Trình độ phụ Y) */}
-              <div className="flex items-center justify-between gap-1.5">
-                <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-                  <GraduationCap className="h-3 w-3 text-primary shrink-0" />
-                  <span className="font-medium text-foreground text-[11px]">Trình độ:</span>
+              {/* 3. Cơ sở & Phòng học - Dưới KCT, cơ sở sát icon, phòng ở cạnh phải cùng dòng */}
+              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="font-medium text-foreground text-xs truncate" title={classDetail.branch || '—'}>
+                    {classDetail.branch || '—'}
+                  </span>
                 </div>
-                <span
-                  className="font-medium text-foreground text-right text-[11px] truncate max-w-[145px]"
-                  title={
-                    classDetail.level && classDetail.subLevel
-                      ? `${classDetail.level} - ${classDetail.subLevel}`
-                      : classDetail.level || classDetail.subLevel || '—'
-                  }
-                >
-                  {classDetail.level && classDetail.subLevel
-                    ? `${classDetail.level} - ${classDetail.subLevel}`
-                    : classDetail.level || classDetail.subLevel || '—'}
-                </span>
+                {classDetail.room && (
+                  <span className="text-xs text-muted-foreground font-medium shrink-0">
+                    Phòng {classDetail.room.replace(/^Phòng\s*/i, '')}
+                  </span>
+                )}
               </div>
 
-              {/* 2. Lịch học */}
-              <div className="space-y-1 border-t border-border/30 pt-1.5">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
-                  <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <span>Lịch học:</span>
-                </div>
-                <div className="pl-4 space-y-1">
+              {/* 4. Lịch học - Bỏ title, chỉ icon và data */}
+              <div className="flex items-start gap-1.5 border-t border-border/30 pt-1.5">
+                <Calendar className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1 min-w-0">
                   {classDetail.scheduleSlots && classDetail.scheduleSlots.length > 0 ? (
                     classDetail.scheduleSlots.map((slot, idx) => {
                       const slotTeacher = (slot.teachers && slot.teachers.length > 0)
@@ -242,10 +242,10 @@ export function ClassCodeHoverCell({
                         <div key={idx} className="flex items-center justify-between gap-2 border-b border-border/15 last:border-b-0 pb-1 last:pb-0">
                           {/* Bên trái: Thứ + Thời gian ở dưới */}
                           <div className="flex flex-col gap-0 text-left">
-                            <span className="text-[11px] font-medium text-foreground leading-tight">
+                            <span className="text-xs font-medium text-foreground leading-tight">
                               {slot.dayOfWeek}
                             </span>
-                            <span className="font-mono text-[10px] text-muted-foreground leading-tight">
+                            <span className="font-mono text-xs text-muted-foreground leading-tight">
                               {slot.startTime}–{slot.endTime}
                             </span>
                           </div>
@@ -257,8 +257,8 @@ export function ClassCodeHoverCell({
                                 className="cursor-pointer hover:opacity-80 transition-opacity truncate max-w-[120px] leading-tight"
                                 title={`Rê chuột để xem thông tin giáo viên: ${slotTeacher}`}
                               >
-                                <span className="text-muted-foreground text-[10px]">GV: </span>
-                                <span className="font-medium text-foreground text-[11px] hover:underline">{slotTeacher}</span>
+                                <span className="text-muted-foreground text-xs">GV: </span>
+                                <span className="font-medium text-foreground text-xs hover:underline">{slotTeacher}</span>
                               </div>
                             </PersonnelHoverCard>
 
@@ -267,8 +267,8 @@ export function ClassCodeHoverCell({
                                 className="cursor-pointer hover:opacity-80 transition-opacity truncate max-w-[120px] leading-tight"
                                 title={`Rê chuột để xem thông tin trợ giảng: ${slotAssistant}`}
                               >
-                                <span className="text-muted-foreground text-[10px]">TG: </span>
-                                <span className="font-medium text-foreground text-[11px] hover:underline">{slotAssistant}</span>
+                                <span className="text-muted-foreground text-xs">TG: </span>
+                                <span className="font-medium text-foreground text-xs hover:underline">{slotAssistant}</span>
                               </div>
                             </PersonnelHoverCard>
                           </div>
@@ -277,17 +277,17 @@ export function ClassCodeHoverCell({
                     })
                   ) : (
                     <div className="flex flex-col gap-0.5 text-xs">
-                      <span className="font-medium text-foreground text-[11px] leading-none">
+                      <span className="font-medium text-foreground text-xs leading-none">
                         {classDetail.schedule || '—'}
                       </span>
                       {classDetail.teacher && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           <span>GV: </span>
                           <span className="font-medium text-foreground">{classDetail.teacher}</span>
                         </span>
                       )}
                       {classDetail.assistant && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           <span>TG: </span>
                           <span className="font-medium text-foreground">{classDetail.assistant}</span>
                         </span>
@@ -302,10 +302,10 @@ export function ClassCodeHoverCell({
                       trigger={
                         <button
                           type="button"
-                          className="text-[10px] font-medium text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 text-left bg-transparent border-0 p-0"
+                          className="text-xs font-medium text-sky-600 dark:text-sky-400 hover:underline cursor-pointer inline-flex items-center gap-1 text-left bg-transparent border-0 p-0"
                           title="Bấm để xem lịch sử phân công giáo viên"
                         >
-                          <History className="h-2.5 w-2.5 shrink-0 text-sky-600 dark:text-sky-400" />
+                          <History className="h-3 w-3 shrink-0 text-sky-600 dark:text-sky-400" />
                           <span>Lịch sử đổi 3 lần giáo viên</span>
                         </button>
                       }
@@ -313,56 +313,18 @@ export function ClassCodeHoverCell({
                   </div>
                 </div>
               </div>
-
-              {/* 3. Cơ sở & Phòng học */}
-              <div className="space-y-0.5 border-t border-border/30 pt-1.5">
-                <div className="flex items-center justify-between gap-1.5">
-                  <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-                    <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
-                    <span className="font-medium text-foreground text-[11px]">Cơ sở:</span>
-                  </div>
-                  <span className="font-medium text-foreground text-[11px] text-right truncate max-w-[150px]">
-                    {classDetail.branch || '—'}
-                  </span>
-                </div>
-                {classDetail.room && (
-                  <div className="flex items-center justify-between gap-1.5 pl-4.5">
-                    <span className="text-muted-foreground text-[10px]">Phòng học:</span>
-                    <span className="font-medium text-foreground text-[11px]">
-                      Phòng {classDetail.room}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* 4. Sĩ số */}
-              <div className="flex items-center justify-between gap-1.5 border-t border-border/30 pt-1.5">
-                <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-                  <Users className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <span className="font-medium text-foreground text-[11px]">Sĩ số:</span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-foreground text-[11px] leading-none">
-                    {classDetail.enrolledStudents}/{classDetail.maxStudents}
-                  </span>
-                  <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1 py-0.5 rounded border border-emerald-200/50 shrink-0">
-                    +{classDetail.trialStudents || 2} mới, Trial
-                  </span>
-                </div>
-              </div>
             </div>
 
             <button
               type="button"
-              className="w-full pt-1.5 border-t border-border/30 text-[10px] text-muted-foreground italic text-center hover:text-primary hover:underline cursor-pointer bg-transparent border-none p-0 flex items-center justify-center gap-1"
+              className="w-full pt-1.5 border-t border-border/30 text-xs text-muted-foreground italic text-center hover:text-primary hover:underline cursor-pointer bg-transparent border-none p-0 flex items-center justify-center gap-1"
               onClick={(e) => {
                 e.preventDefault()
                 handleClick(e)
               }}
             >
               <span>Nhấp để đi tới chi tiết lớp học {openInNewTab ? '(Mở tab mới)' : ''}</span>
-              {openInNewTab && <ExternalLink className="h-2.5 w-2.5 inline opacity-70" />}
+              {openInNewTab && <ExternalLink className="h-3 w-3 inline opacity-70" />}
             </button>
           </div>
         </HoverCardContent>

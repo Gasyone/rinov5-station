@@ -17,9 +17,10 @@ import { mockStudents } from '@/mocks/students'
 import { getStatusBadgeClass, type StatusSemantic } from '@/lib/statusColors'
 import { stableHash, getInitials, getAvatarColor, getHistoryLogsForStudent, getRenewalClassification, getRenewalClassificationLabel, getStudentOrderInfo, getExpiryTier } from './renewalHelpers'
 import { RenewalClassCodeHoverCell } from './RenewalClassCodeHoverCell'
-import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo } from '../operationsAlertHelpers'
+import { getAcademicIssues, isCared, isInProgress, getRescheduleInfo, isMyCSStaff, isMyTeacher } from '../operationsAlertHelpers'
 import { formatRelativeCareTime } from '../AlertRow'
 import { OperationsAlertCareHistoryModal } from '../OperationsAlertCareHistoryModal'
+import { useSystemConfigStore } from '@/stores/useSystemConfigStore'
 import {
   resolveStudentPlacementStatus,
   PLACEMENT_STATUS_META,
@@ -44,6 +45,9 @@ export function RenewalAlertRow({
   onRefresh,
   onViewDetail,
 }: RenewalAlertRowProps) {
+  const currentStaffName = useSystemConfigStore((s) => s.currentStaffName)
+  const isMyCS = isMyCSStaff(cls.csStaff, currentStaffName)
+
   // Family contacts
   const contacts = getFamilyContacts(cls.studentId, cls.studentName)
   const primaryContact = contacts.find((c) => c.isPrimary) || contacts[0]
@@ -217,7 +221,7 @@ export function RenewalAlertRow({
     <tr
       onClick={() => onViewDetail?.(cls.id)}
       className={cn(
-        'group cursor-pointer transition-colors align-middle [&>td]:py-1.5 [&>td]:px-2.5 border-b-0',
+        'group cursor-pointer transition-colors align-middle [&>td]:py-1 [&>td]:px-2 xl:[&>td]:px-2.5 2xl:[&>td]:py-2 border-b-0',
         rowBgClass
       )}
     >
@@ -238,26 +242,31 @@ export function RenewalAlertRow({
 
       {/* Học viên (Sticky Left 8) */}
       <td
+        onClick={() => onViewDetail?.(cls.id)}
         className={cn(
-          'sticky left-8 z-30 w-[220px] min-w-[200px] max-w-[240px] px-2.5 transition-colors',
+          'sticky left-8 z-30 w-[210px] min-w-[195px] xl:w-[230px] 2xl:w-[260px] px-2 xl:px-2.5 transition-colors cursor-pointer',
           stickyBgClass
         )}
       >
         <div className="flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0">
             <div
               className={cn(
-                'h-6.5 w-6.5 rounded flex items-center justify-center text-xs font-medium shrink-0 hover:opacity-80 transition-opacity',
+                'h-6.5 w-6.5 2xl:h-8 2xl:w-8 rounded flex items-center justify-center text-xs 2xl:text-sm font-medium shrink-0 hover:opacity-80 transition-opacity',
                 getAvatarColor(cls.studentId)
               )}
             >
               {getInitials(cls.studentName)}
             </div>
             <div className="min-w-0">
-              <p className="font-medium text-foreground text-xs truncate hover:underline hover:text-primary leading-tight" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
+              <p
+                onClick={() => onViewDetail?.(cls.id)}
+                className="font-medium text-foreground text-xs 2xl:text-sm truncate hover:underline hover:text-primary leading-tight cursor-pointer"
+                title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}
+              >
                 {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
               </p>
-              <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 truncate">
+              <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1 truncate">
                 {cls.subject} - {cls.level}
               </p>
             </div>
@@ -266,7 +275,7 @@ export function RenewalAlertRow({
           {/* Hover actions */}
           {(() => {
             const activeTags = getCareTags()
-            const hasActiveCSTP = activeTags.some(t => t.label === 'CSTP')
+            const hasActiveCSTP = activeTags.some((t) => t.label === 'CSTP')
             if (hasActiveCSTP) return null
             return (
               <div 
@@ -279,11 +288,11 @@ export function RenewalAlertRow({
                   title="Tạo thẻ Tái phí mới"
                   className="h-5 w-5 rounded shrink-0 shadow-none hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                   onClick={() => {
-                    const record = mockCareAlerts.find(a => a.id === cls.id);
+                    const record = mockCareAlerts.find((a) => a.id === cls.id);
                     if (record) {
                       record.activeCSTP = true;
                       if (record.completedCareTags) {
-                        record.completedCareTags = record.completedCareTags.filter(t => t !== 'CSTP');
+                        record.completedCareTags = record.completedCareTags.filter((t) => t !== 'CSTP');
                       }
                       if (onRefresh) onRefresh();
                     }
@@ -301,7 +310,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Liên hệ */}
-      <td className="min-w-[125px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
         <ContactCell
           name={
             primaryContact
@@ -314,15 +323,15 @@ export function RenewalAlertRow({
           masked={true}
           showCallButton={false}
           showPhoneIcon={false}
-          nameClassName="text-xs font-normal text-foreground"
-          phoneClassName="text-xs font-mono text-muted-foreground"
+          nameClassName="text-xs 2xl:text-sm font-normal text-foreground"
+          phoneClassName="text-xs 2xl:text-xs font-mono text-muted-foreground"
         />
       </td>
 
       {/* Người chăm sóc */}
-      <td className="min-w-[125px]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-col gap-0.5 text-left">
-          {/* Người chăm sóc CS */}
+      <td className="w-[165px] min-w-[150px] xl:w-[185px] 2xl:w-[205px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col gap-0.5 2xl:gap-1 text-left">
+          {/* CS ở trên */}
           {cls.csStaff ? (
             <PersonnelHoverCard
               person={{
@@ -332,21 +341,75 @@ export function RenewalAlertRow({
                 email: `${cls.csStaff.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
               }}
             >
-              <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0 rounded transition-colors w-fit leading-tight">
+              <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0.5 rounded transition-colors w-fit leading-tight whitespace-nowrap">
                 <span className="text-xs text-muted-foreground font-normal">
                   CS
                 </span>
-                <span className="text-foreground text-xs hover:text-primary font-normal leading-tight">{cls.csStaff}</span>
+                <span className="text-xs 2xl:text-sm leading-tight text-foreground font-normal hover:text-primary max-w-[110px] xl:max-w-none truncate">
+                  {cls.csStaff}
+                </span>
+                {isMyCS && (
+                  <span className="text-xs text-sky-600 dark:text-sky-400 font-normal leading-none ml-0.5">
+                    (bạn)
+                  </span>
+                )}
               </div>
             </PersonnelHoverCard>
           ) : (
             <span className="text-xs text-muted-foreground italic">Chưa phân công</span>
           )}
+
+          {/* GV ở dưới (tối đa 1 dòng, nếu có nhiều GV thì hiển thị +N để không vượt quá 2 dòng) */}
+          {(() => {
+            const teachers = [
+              ...new Set([
+                ...(cls.teacherCode ? cls.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+                ...(cls.substituteTeacher ? cls.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+              ]),
+            ].filter(Boolean)
+
+            if (teachers.length === 0) return null
+            const primaryTeacher = teachers[0]
+            const remainingCount = teachers.length - 1
+            const isThisMyTeacher = isMyTeacher(primaryTeacher, currentStaffName)
+
+            return (
+              <div className="flex items-center gap-1 flex-nowrap">
+                <PersonnelHoverCard
+                  person={{
+                    name: primaryTeacher,
+                    role: 'Giáo viên Học thuật (GV)',
+                    phone: '0987 654 321',
+                    email: `${primaryTeacher.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
+                  }}
+                >
+                  <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0.5 rounded transition-colors w-fit leading-tight whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground font-normal">
+                      GV
+                    </span>
+                    <span className="text-xs 2xl:text-sm leading-tight text-foreground font-normal hover:text-primary max-w-[110px] xl:max-w-none truncate">
+                      {primaryTeacher}
+                    </span>
+                    {isThisMyTeacher && (
+                      <span className="text-xs text-purple-600 dark:text-purple-400 font-normal leading-none ml-0.5">
+                        (bạn)
+                      </span>
+                    )}
+                  </div>
+                </PersonnelHoverCard>
+                {remainingCount > 0 && (
+                  <Badge variant="outline" className="text-xs px-1.5 py-0 h-4.5 font-normal text-muted-foreground shrink-0" title={`Các GV khác: ${teachers.slice(1).join(', ')}`}>
+                    +{remainingCount}
+                  </Badge>
+                )}
+              </div>
+            )
+          })()}
         </div>
       </td>
 
       {/* Nội dung chăm sóc */}
-      <td className="min-w-[220px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[260px] min-w-[220px] max-w-[320px] xl:w-[290px] 2xl:w-[340px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
           const inProgress = isInProgress(cls)
@@ -396,7 +459,7 @@ export function RenewalAlertRow({
           const rescheduleInfo = getRescheduleInfo(cls)
 
           const cellContent = (
-            <div className="flex flex-col gap-0.5 py-0 text-left max-w-[260px] cursor-pointer group/care">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 py-0 text-left max-w-[250px] xl:max-w-[280px] 2xl:max-w-[330px] cursor-pointer group/care">
               {/* Dòng 1 (trên): Nội dung chăm sóc gần nhất */}
               {isUncared ? (
                 <div className="text-xs text-muted-foreground">
@@ -406,15 +469,15 @@ export function RenewalAlertRow({
                 latestLog && (
                   <div
                     className={cn(
-                      'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-tight',
-                      rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 break-words'
+                      'text-xs 2xl:text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-tight 2xl:leading-snug',
+                      rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 2xl:line-clamp-3 break-words'
                     )}
                     title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
                   >
-                    <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0">
+                    <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0 2xl:text-xs">
                       {formatRelativeCareTime(latestLog.date)}:
                     </span>
-                    <span className="text-zinc-600 dark:text-zinc-400">{latestLog.note}</span>
+                    <span className="text-zinc-600 dark:text-zinc-400 2xl:text-xs">{latestLog.note}</span>
                   </div>
                 )
               )}
@@ -422,10 +485,10 @@ export function RenewalAlertRow({
               {/* Dòng 2 (dưới): Lịch hẹn gọi lại (Màu tím nhạt) */}
               {rescheduleInfo.isRescheduled && (
                 <div
-                  className="text-xs text-purple-500 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap leading-tight mt-0.5"
+                  className="text-xs 2xl:text-xs text-purple-500 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap leading-tight mt-0.5 2xl:mt-1"
                   title="Lịch hẹn gọi lại tiếp theo"
                 >
-                  <Calendar className="h-3 w-3 shrink-0 text-purple-400 dark:text-purple-300" />
+                  <Calendar className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 shrink-0 text-purple-400 dark:text-purple-300" />
                   <span>Hẹn gọi lại: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
                 </div>
               )}
@@ -448,57 +511,59 @@ export function RenewalAlertRow({
       </td>
 
       {/* Trạng thái tái phí */}
-      <td className="w-28 min-w-28 max-w-32 whitespace-nowrap">
+      <td className="w-[135px] min-w-[125px] xl:w-[145px] 2xl:w-[160px] px-2 xl:px-2.5 whitespace-nowrap">
         {(() => {
           const classification = getRenewalClassification(cls)
           const label = getRenewalClassificationLabel(classification)
 
           return (
-            <div className="flex flex-col items-start gap-0.5">
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-xs font-medium px-1.5 py-0 h-5 leading-none',
-                  getStatusBadgeClass(classification)
-                )}
-              >
-                {label}
-              </Badge>
+            <div className="space-y-0.5 2xl:space-y-1 text-left">
+              <div className="flex items-center gap-1">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-xs font-normal px-1.5 2xl:px-2 py-0.5 h-5 leading-none',
+                    getStatusBadgeClass(classification)
+                  )}
+                >
+                  {label}
+                </Badge>
+              </div>
             </div>
           )
         })()}
       </td>
 
       {/* Đơn hàng */}
-      <td className="min-w-[200px] max-w-[240px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[175px] min-w-[160px] xl:w-[195px] 2xl:w-[225px] px-2 xl:px-2.5 overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const order = getStudentOrderInfo(cls)
           return (
-            <div className="flex flex-col gap-0.5 max-w-[240px] text-left">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 max-w-[165px] xl:max-w-[185px] 2xl:max-w-[215px] text-left min-w-0">
               {order.orderCode ? (
                 <>
                   {/* Dòng 1: Tên gói */}
-                  <div className="flex items-center gap-1.5 font-medium text-foreground leading-tight">
+                  <div className="flex items-center gap-1.5 font-medium text-foreground leading-tight min-w-0">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline flex items-center gap-1 text-emerald-800 dark:text-emerald-300 truncate text-xs"
+                      className="hover:underline flex items-center gap-1 text-emerald-800 dark:text-emerald-300 truncate text-xs 2xl:text-sm min-w-0"
                       title={`Mở Landing Page Báo Giá & Chi tiết Đơn hàng (${order.orderCode})`}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <ExternalLink className="h-3 w-3 text-emerald-600 shrink-0" />
+                      <ExternalLink className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-emerald-600 shrink-0" />
                       <span className="truncate">{order.packageName}</span>
                     </a>
                   </div>
 
                   {/* Dòng 2: Mã đơn • Trạng thái thanh toán */}
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap leading-tight mt-0.5">
+                  <div className="flex items-center gap-1.5 text-xs 2xl:text-xs text-muted-foreground flex-wrap leading-tight mt-0.5 2xl:mt-1 min-w-0">
                     <a
                       href={`/quote/${order.orderCode}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-foreground hover:text-primary hover:underline cursor-pointer"
+                      className="font-mono text-foreground hover:text-primary hover:underline cursor-pointer truncate"
                       title="Xem Landing Page Báo giá & Chi tiết Đơn hàng"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -510,7 +575,7 @@ export function RenewalAlertRow({
                         <StatusBadge
                           status={order.paymentStatus || 'paid'}
                           label={order.paymentStatusLabel}
-                          className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
+                          className="text-xs px-1.5 2xl:px-2 py-0.5 h-5 font-normal shrink-0 whitespace-nowrap leading-none"
                         />
                       </>
                     )}
@@ -527,7 +592,7 @@ export function RenewalAlertRow({
       </td>
 
       {/* Lớp học */}
-      <td className="min-w-[145px]">
+      <td className="w-[195px] min-w-[185px] xl:w-[215px] 2xl:w-[235px] px-2 xl:px-2.5">
         {(() => {
           const studentInfo = mockStudents.find(
             (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
@@ -550,9 +615,9 @@ export function RenewalAlertRow({
           const expiryTier = getExpiryTier(cls.expectedEndDate, cls.remainingSessions, classification)
 
           return (
-            <div className="flex flex-col gap-0.5 text-left">
-              {/* Hàng 1: Mã lớp cùng trạng thái */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 text-left min-w-0">
+              {/* Hàng 1: Mã lớp cùng trạng thái (không xuống dòng, size gọn, tối đa 1 dòng) */}
+              <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap min-w-0">
                 {showClassHover ? (
                   <span onClick={(e) => e.stopPropagation()}>
                     <RenewalClassCodeHoverCell
@@ -562,14 +627,15 @@ export function RenewalAlertRow({
                       subLevel={cls.subLevel}
                       teacherCode={cls.teacherCode}
                       schedule={cls.schedule}
+                      className="text-xs font-mono shrink-0"
                     />
                   </span>
                 ) : hasClassCode ? (
-                  <span className="text-xs text-foreground font-mono font-medium">
+                  <span className="text-xs text-foreground font-mono font-normal shrink-0">
                     {cls.classCode}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground italic">
+                  <span className="text-xs text-muted-foreground italic shrink-0">
                     Chưa có lớp
                   </span>
                 )}
@@ -581,13 +647,13 @@ export function RenewalAlertRow({
                       ? 'Bảo lưu (Giữ lớp)'
                       : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
                   }
-                  className="text-xs px-1.5 py-0 h-4 font-semibold shrink-0"
+                  className="text-xs px-1.5 2xl:px-2 py-0.5 h-5 font-normal shrink-0 whitespace-nowrap leading-none"
                 />
               </div>
 
-              {/* Hàng 2: Hạn */}
+              {/* Hàng 2: Hạn (tối đa 1 dòng) */}
               {cls.expectedEndDate && (
-                <div className="flex items-center gap-1 flex-nowrap text-xs leading-tight mt-0.5">
+                <div className="flex items-center gap-1 flex-nowrap text-xs leading-tight mt-0.5 2xl:mt-1 whitespace-nowrap">
                   {expiryTier.label ? (
                     <span className={cn('font-bold shrink-0', expiryTier.textClass)}>
                       {expiryTier.label}

@@ -621,6 +621,7 @@ export function RenewalScreen() {
     setSelectedStatuses(new Set())
     setSelectedOrderStatuses(new Set())
     setSelectedClasses(new Set())
+    setSearchQuery('')
     resetPagination()
   }
 
@@ -696,7 +697,7 @@ export function RenewalScreen() {
                 return checked ? [...otherIds, ...paginatedSingle.map((x) => x.id)] : otherIds
               })
             }}
-            className="border-zinc-200 dark:border-zinc-800 flex-1 min-h-0"
+            className="flex-1 min-h-0"
             pagination={{
               page: pageSingle,
               total: filtered.length,
@@ -716,12 +717,14 @@ export function RenewalScreen() {
         {isFilterOpen && (
           <FilterGroupAsidePanel
             title="Bộ lọc nâng cao"
-            description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
+            activeCount={activeFilterCount}
             groups={filterGroups}
             onToggle={handleFilterToggle}
             onClearAll={handleClearAllFilters}
             onClearSection={handleClearSection}
             onClose={() => setIsFilterOpen(false)}
+            onApply={() => setIsFilterOpen(false)}
+            showFooterActions={true}
           >
             {/* Search inside filter panel as requested */}
             <div className="mb-4">

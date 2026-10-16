@@ -9,8 +9,18 @@ import { MAX_IMAGE_DOC_SIZE_BYTES, MAX_VIDEO_SIZE_BYTES } from './classesSession
 export function generateInitialSessionMedia(
   sessionNumber: number,
   sessionId: string | undefined,
-  rosterStudents: RosterStudentOption[]
+  rosterStudents: RosterStudentOption[],
+  sessionStatus?: string
 ): SessionMediaItem[] {
+  // REQUIREMENT: Các lớp / buổi chờ diễn ra không có ảnh!
+  if (
+    sessionStatus === 'upcoming' ||
+    sessionStatus === 'cancelled' ||
+    (!sessionStatus && sessionNumber > 4)
+  ) {
+    return []
+  }
+
   const targetId = sessionId || `ses-${sessionNumber}`
   const st1 = rosterStudents[0]?.id || 'st-1'
   const st2 = rosterStudents[1]?.id || 'st-2'
@@ -31,6 +41,7 @@ export function generateInitialSessionMedia(
       uploadedBy: 'Cô Mai',
       uploadedAt: '19:35 09/05/2026',
       taggedStudentIds: [st1, st2],
+      status: 'active',
     },
     {
       id: `m-seed-${sessionNumber}-2`,
@@ -48,6 +59,7 @@ export function generateInitialSessionMedia(
       uploadedBy: 'Cô Mai',
       uploadedAt: '19:42 09/05/2026',
       taggedStudentIds: [st1],
+      status: 'active',
     },
     {
       id: `m-seed-${sessionNumber}-3`,
@@ -63,6 +75,7 @@ export function generateInitialSessionMedia(
       uploadedBy: 'Cô Mai',
       uploadedAt: '19:48 09/05/2026',
       taggedStudentIds: [],
+      status: 'active',
     },
     {
       id: `m-seed-${sessionNumber}-4`,
@@ -79,6 +92,7 @@ export function generateInitialSessionMedia(
       uploadedBy: 'Cô Mai',
       uploadedAt: '19:50 09/05/2026',
       taggedStudentIds: [],
+      status: 'inactive',
     },
   ]
 }

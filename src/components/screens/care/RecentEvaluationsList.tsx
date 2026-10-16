@@ -52,12 +52,12 @@ export function RecentEvaluationsList({ regularSessions, testSessions }: RecentE
               <div className="mt-2 min-w-0 flex-1 flex flex-col justify-between">
                 <div className="flex items-center gap-1.5 min-w-0 mb-2">
                   {s.rating > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[9.5px] font-bold text-amber-600 dark:text-amber-400 leading-none shrink-0" title={`Đánh giá: ${s.rating}/5 sao`}>
+                    <span className="inline-flex items-center gap-0.5 text-xs font-bold text-amber-600 dark:text-amber-400 leading-none shrink-0" title={`Đánh giá: ${s.rating}/5 sao`}>
                       <span>{s.rating}/5</span>
                       <Star className="h-3 w-3 text-amber-400 fill-amber-400 shrink-0" />
                     </span>
                   )}
-                  <span className="text-[10.5px] font-bold text-foreground leading-snug truncate" title={s.topic}>
+                  <span className="text-xs font-bold text-foreground leading-snug truncate" title={s.topic}>
                     {s.topic}
                   </span>
                 </div>

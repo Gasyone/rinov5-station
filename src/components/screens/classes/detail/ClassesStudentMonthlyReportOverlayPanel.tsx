@@ -96,7 +96,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   }, [student])
 
   const [awardBadge, setAwardBadge] = useState(() => normalizeAwardBadge(initialReport?.awardBadge) || '')
-  const [teacherName, setTeacherName] = useState(() => initialReport?.teacherName || 'Ms.Chloe')
+  const [teacherName, setTeacherName] = useState(() => initialReport?.teacherName || '')
   const [sectionA1Content, setSectionA1Content] = useState(() => initialReport?.sectionA1Content || '')
   const [sectionA2Content, setSectionA2Content] = useState(() => initialReport?.sectionA2Content || '')
   const [galleryPhotos, setGalleryPhotos] = useState<StudentGalleryPhoto[]>(
@@ -106,6 +106,10 @@ export function ClassesStudentMonthlyReportOverlayPanel({
   const [sectionB2StartLesson, setSectionB2StartLesson] = useState<number | undefined>(() => initialReport?.sectionB2StartLesson)
   const [sectionB2EndLesson, setSectionB2EndLesson] = useState<number | undefined>(() => initialReport?.sectionB2EndLesson)
   const [sectionB2Weeks, setSectionB2Weeks] = useState<WeekReviewItem[]>(() => initialReport?.sectionB2Weeks || [])
+  const [testScore, setTestScore] = useState<number | string | null>(() => initialReport?.testScore !== undefined && initialReport?.testScore !== null ? initialReport.testScore : '00')
+  const [priorTestScore, setPriorTestScore] = useState<number | string | null>(() => initialReport?.priorTestScore !== undefined && initialReport?.priorTestScore !== null ? initialReport.priorTestScore : '00')
+  const [testDocUrl, setTestDocUrl] = useState<string>(() => initialReport?.testDocUrl || '')
+  const [testDocName, setTestDocName] = useState<string>(() => initialReport?.testDocName || '')
   const [isSynthesizingAi, setIsSynthesizingAi] = useState(false)
   const [isSaved, setIsSaved] = useState(() => Boolean(initialReport))
   const [isEditing, setIsEditing] = useState(() => !initialReport)
@@ -161,24 +165,32 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       setIsSaved(true)
       setIsEditing(false)
       setAwardBadge(normalizeAwardBadge(report.awardBadge) || '')
-      setTeacherName(report.teacherName)
+      setTeacherName(report.teacherName || '')
       setSectionA1Content(report.sectionA1Content)
       setSectionA2Content(report.sectionA2Content)
       setSectionB1Content(report.sectionB1Content)
       setSectionB2StartLesson(report.sectionB2StartLesson)
       setSectionB2EndLesson(report.sectionB2EndLesson)
       setSectionB2Weeks(report.sectionB2Weeks)
+      setTestScore(report.testScore !== undefined && report.testScore !== null ? report.testScore : '00')
+      setPriorTestScore(report.priorTestScore !== undefined && report.priorTestScore !== null ? report.priorTestScore : '00')
+      setTestDocUrl(report.testDocUrl || '')
+      setTestDocName(report.testDocName || '')
     } else {
       setIsSaved(false)
       setIsEditing(true)
       setAwardBadge('')
-      setTeacherName('Ms.Chloe')
+      setTeacherName('')
       setSectionA1Content('')
       setSectionA2Content('')
       setGalleryPhotos([])
       setSectionB1Content('')
       setSectionB2StartLesson(undefined)
       setSectionB2EndLesson(undefined)
+      setTestScore('00')
+      setPriorTestScore('00')
+      setTestDocUrl('')
+      setTestDocName('')
       setSectionB2Weeks([
         { weekNum: 1, title: 'Tuần 1', content: '', docLink: '', thumbnailUrl: '' },
         { weekNum: 2, title: 'Tuần 2', content: '', docLink: '', thumbnailUrl: '' },
@@ -210,6 +222,10 @@ export function ClassesStudentMonthlyReportOverlayPanel({
         setSectionB2StartLesson(report.sectionB2StartLesson)
         setSectionB2EndLesson(report.sectionB2EndLesson)
         setSectionB2Weeks(report.sectionB2Weeks)
+        if (report.testScore !== undefined) setTestScore(report.testScore)
+        if (report.priorTestScore !== undefined) setPriorTestScore(report.priorTestScore)
+        if (report.testDocUrl) setTestDocUrl(report.testDocUrl)
+        if (report.testDocName) setTestDocName(report.testDocName)
       }
     }
     window.addEventListener('rinov5-monthly-reports-updated', handleUpdate)
@@ -264,6 +280,10 @@ export function ClassesStudentMonthlyReportOverlayPanel({
       dateStr: activeMonthConfig.dateStr,
       awardBadge,
       teacherName,
+      testScore,
+      priorTestScore,
+      testDocUrl,
+      testDocName,
       sectionA1Content,
       sectionA2Content,
       sectionAContent: `${sectionA1Content}\n\n${sectionA2Content}`,
@@ -425,7 +445,11 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                 <strong className="text-primary font-bold">{student.name}</strong> đã hoàn thành
                 xuất sắc kỳ học vừa qua! Dưới đây là phần đánh giá năng lực chi tiết và định hướng
                 rèn luyện từ giáo viên phụ trách{' '}
-                <strong className="text-primary font-bold">{teacherName || 'Ms.Chloe'}</strong>.
+                {teacherName ? (
+                  <strong className="text-primary font-bold">{teacherName}</strong>
+                ) : (
+                  <span className="text-muted-foreground italic">(Chưa điền tên giáo viên)</span>
+                )}.
               </div>
             )}
           </div>
@@ -437,8 +461,25 @@ export function ClassesStudentMonthlyReportOverlayPanel({
             lateCount={studentMetrics.lateCount}
             homeworkRatio={studentMetrics.homeworkRatio}
             homeworkAvg={studentMetrics.homeworkAvg}
-            testScore={studentMetrics.testScore}
-            priorTestScore={studentMetrics.priorTestScore}
+            testScore={testScore !== null && testScore !== undefined ? testScore : studentMetrics.testScore}
+            priorTestScore={priorTestScore !== null && priorTestScore !== undefined ? priorTestScore : studentMetrics.priorTestScore}
+            isMath={isMath}
+            isEditing={isEditing}
+            onChangeTestScore={(score) => setTestScore(score)}
+            testDocUrl={testDocUrl}
+            testDocName={testDocName}
+            onChangeTestDoc={(url, name) => {
+              setTestDocUrl(url)
+              setTestDocName(name)
+            }}
+            onOpenTestRemark={() => {
+              if (isMath && testDocUrl) {
+                window.open(testDocUrl, '_blank')
+                toast.success(`Đang mở xem link tài liệu bài kiểm tra của học viên ${student.name}!`)
+              } else {
+                toast.success(`Đang mở nhận xét bài kiểm tra gần nhất của học viên ${student.name} trong tab mới!`)
+              }
+            }}
             onScrollToEvaluation={() => {
               document.getElementById('overlay-section-a')?.scrollIntoView({ behavior: 'smooth' })
             }}
@@ -607,10 +648,10 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                     window.open(url, '_blank')
                   }}
                   className="flex items-center gap-1 text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs cursor-pointer"
-                  title="Mở toàn màn hình dạng Landing Page trên tab mới"
+                  title="Mở toàn màn hình dạng bản web trực tuyến trên tab mới"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  <span>Landing Page</span>
+                  <span>Xem bản Web</span>
                 </button>
 
                 {isSaved ? (
@@ -621,7 +662,7 @@ export function ClassesStudentMonthlyReportOverlayPanel({
                       const link = `${origin}/report/${student.id}?month=${encodeURIComponent(selectedMonthKey)}`
                       navigator.clipboard
                         .writeText(link)
-                        .then(() => toast.success(`Đã sao chép liên kết Landing Page báo cáo ${activeMonthConfig.current}!`))
+                        .then(() => toast.success(`Đã sao chép liên kết bản web báo cáo ${activeMonthConfig.current}!`))
                         .catch(() => toast.error('Không thể sao chép liên kết.'))
                     }}
                     className="flex items-center gap-1 text-primary hover:underline font-bold text-xs cursor-pointer"

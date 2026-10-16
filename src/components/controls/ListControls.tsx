@@ -243,13 +243,13 @@ export function BranchSelect({
 }: BranchSelectProps) {
   const shouldIncludeAll = includeAll ?? variant === 'toolbar'
   const leadingOption = shouldIncludeAll
-    ? { value: allValue, label: allLabel }
+    ? { value: allValue, label: allLabel, selectedLabel: allLabel }
     : variant === 'inline'
-      ? { value: '', label: placeholder }
+      ? { value: '', label: placeholder, selectedLabel: placeholder }
       : null
   const options = [
     ...(leadingOption ? [leadingOption] : []),
-    ...branches.map((branch) => ({ value: branch, label: branch })),
+    ...branches.map((branch) => ({ value: branch, label: branch, selectedLabel: branch })),
   ]
 
   if (variant === 'inline') {

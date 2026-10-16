@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { AppointmentSchedulePicker } from '@/components/controls'
 import { CallConnectionBanner } from '@/components/screens/care/CallConnectionBanner'
 import { StudentActiveCareCard } from '@/components/screens/care/StudentActiveCareCard'
 import type { Lead } from '@/mocks/crmLeads'
@@ -348,21 +349,11 @@ export function CrmLeadCareSection({
               <span className="text-xs text-muted-foreground font-medium shrink-0 w-[74px]">
                 Lịch hẹn:
               </span>
-              <input
-                type={callbackTime ? 'datetime-local' : 'text'}
+              <AppointmentSchedulePicker
                 value={callbackTime}
-                placeholder="Lên lịch"
-                onFocus={(e) => {
-                  e.target.type = 'datetime-local'
-                  try {
-                    e.target.showPicker()
-                  } catch {}
-                }}
-                onBlur={(e) => {
-                  if (!e.target.value) e.target.type = 'text'
-                }}
-                onChange={(e) => setCallbackTime(e.target.value)}
-                className="h-7 text-xs px-2 rounded-lg border border-sky-200/90 dark:border-sky-800/80 bg-white dark:bg-zinc-900 text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-3xs flex-1 min-w-0 placeholder:text-muted-foreground/70"
+                onChange={(val) => setCallbackTime(val)}
+                className="flex-1 h-7 rounded-lg border-sky-200/90 dark:border-sky-800/80 bg-white dark:bg-zinc-900"
+                align="start"
               />
             </div>
           </div>

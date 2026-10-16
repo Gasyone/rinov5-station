@@ -311,12 +311,12 @@ export function CareProjectMediaList({
         {/* Header with soft background tint */}
         <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
           <div>
-            <h3 className="text-xs font-semibold text-foreground tracking-tight">
+            <h3 className="text-xs 2xl:text-[13.5px] font-semibold text-foreground tracking-tight">
               Buổi học dự án & thực hành
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground font-normal">
+            <span className="text-xs 2xl:text-[12.5px] text-muted-foreground font-normal">
               Hiển thị {visibleProjects.length}/{filteredProjectSessions.length} buổi dự án
             </span>
             {filteredProjectSessions.length > 1 && (
@@ -325,7 +325,7 @@ export function CareProjectMediaList({
                 <button
                   type="button"
                   onClick={() => setShowAllProjects(!showAllProjects)}
-                  className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                   <span>
                     {showAllProjects ? 'Thu gọn' : `Xem thêm (${filteredProjectSessions.length - 1} buổi)`}
@@ -352,17 +352,17 @@ export function CareProjectMediaList({
             return (
               <div
                 key={project.id || idx}
-                className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs space-y-1.5"
+                className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs 2xl:text-[13px] space-y-1.5"
               >
                 <div className="flex items-center justify-between gap-2 min-w-0">
                   {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên dự án (truncate) - Bỏ giáo viên */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 shrink-0">
+                    <span className="text-xs 2xl:text-[13px] font-semibold text-sky-600 dark:text-sky-400 shrink-0">
                       {shortDay}, {shortDate}
                     </span>
 
                     <span
-                      className="font-normal text-foreground text-xs truncate min-w-0"
+                      className="font-normal text-foreground text-xs 2xl:text-[13px] truncate min-w-0"
                       title={project.title}
                     >
                       {project.title}
@@ -394,7 +394,7 @@ export function CareProjectMediaList({
                   <div className="relative pt-0.5">
                     <p
                       className={cn(
-                        'text-xs text-foreground/90 font-normal leading-relaxed cursor-pointer',
+                        'text-xs 2xl:text-[13px] text-foreground/90 font-normal leading-relaxed cursor-pointer',
                         !isProjectExpanded ? 'line-clamp-3 pr-20' : 'pr-20'
                       )}
                       onClick={() => toggleExpandProject(project.id, idx)}
@@ -405,7 +405,7 @@ export function CareProjectMediaList({
                       <button
                         type="button"
                         onClick={() => toggleExpandProject(project.id, idx)}
-                        className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
+                        className="absolute bottom-0 right-0 text-xs 2xl:text-[12.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
                       >
                         <span>{isProjectExpanded ? '... Thu gọn' : '... xem thêm'}</span>
                       </button>
@@ -445,9 +445,9 @@ export function CareProjectMediaList({
                         )}
 
                         {/* Title & duration */}
-                        <div className="relative z-10 text-[10.5px] text-white font-normal truncate leading-tight">
+                        <div className="relative z-10 text-xs 2xl:text-[12px] text-white font-normal truncate leading-tight">
                           {mediaItem.type === 'video' && (
-                            <span className="bg-sky-600 px-1 rounded text-[10px] font-mono mr-1">
+                            <span className="bg-sky-600 px-1 rounded text-[10px] 2xl:text-[11px] font-mono mr-1">
                               {mediaItem.duration}
                             </span>
                           )}

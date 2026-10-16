@@ -1,11 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig, getSchoolFilterGroup, getTeacherFilterGroup, getProgramFilterGroup, getSubjectFilterGroup, getSaleFilterGroup, getClassTypeFilterGroup, getClassFilterGroup, getRemainingSessionsFilterGroup, getGenderFilterGroup } from '@/components/filters'
 import { StudentsToolbar } from './StudentsToolbar'
 import { StudentsTable } from './StudentsTable'
+import { CreateStudentDialog } from './CreateStudentDialog'
 import { StudentDetailDialog } from './detail/StudentDetailDialog'
 import { StudentClassAssignmentDialog } from './detail/StudentClassAssignmentDialog'
 import { StudentCareEarlyReturnDialog } from '@/components/screens/care/StudentCareEarlyReturnDialog'
@@ -40,8 +41,29 @@ export function StudentsScreen() {
   // Advanced Filter Sheet States
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filters, setFilters] = useState<StudentFilterState>(INITIAL_FILTER_STATE)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
-  const allStudents = useMemo(() => getInitialStudents(), [])
+  // Quản lý danh sách học viên từ SQLite DB qua API, fallback về mock ban đầu
+  const [studentsList, setStudentsList] = useState<Student[]>(() => getInitialStudents())
+
+  useEffect(() => {
+    let isMounted = true
+    fetch('/api/students')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+          setStudentsList(resData.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Không thể kết nối API SQLite, tiếp tục dùng dữ liệu cục bộ:', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const allStudents = studentsList
   const filterOptionCounts = useMemo(
     () => createStudentFilterOptionCounters(allStudents),
     [allStudents]
@@ -297,6 +319,7 @@ export function StudentsScreen() {
         onSubjectChange={(sub) => { setSubjectFilter(sub); setPage(1) }}
         onFilterOpen={() => setIsFilterOpen(true)}
         activeFilterCount={activeFilterCount}
+        onOpenCreate={() => setIsCreateOpen(true)}
       />
 
       {/* Container Nội dung Bảng Học viên & Panel Bộ Lọc Ghim Cạnh Phải */}
@@ -402,6 +425,16 @@ export function StudentsScreen() {
           }}
         />
       )}
+
+      {/* Modal Nhập học viên mới lưu trực tiếp vào CSDL SQLite */}
+      <CreateStudentDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={(newStudent) => {
+          setStudentsList((prev) => [newStudent, ...prev])
+          setSelectedStudentId(newStudent.id)
+        }}
+      />
     </div>
   )
 }

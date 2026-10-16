@@ -3,23 +3,26 @@
 import { RefObject, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Phone, ChevronDown, Check, Copy, CheckCircle, Calendar, HelpCircle } from 'lucide-react'
+import { Phone, ChevronDown, Check, Copy, CheckCircle, HelpCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { isCSDBTag } from './operationsAlertHelpers'
+import { AppointmentSchedulePicker } from '@/components/controls'
+import { isCSDBTag, isInProgress } from './operationsAlertHelpers'
 import {
   type StudentCareAlert,
   type CareInteractionLog,
   linkOrderToStudentCareAlert,
   unlinkOrderFromStudentCareAlert,
   updateRenewalClassification,
+  updateCareAlertInteraction,
 } from '@/mocks/careAlerts'
 import type { CareTopic } from './studentCareDetailTypes'
 import { CallConnectionBanner } from './CallConnectionBanner'
 import { StudentActiveCareCard } from './StudentActiveCareCard'
 import { StudentRenewalLinkedOrderRow } from './StudentRenewalLinkedOrderRow'
 import { ConfirmDialog, StatusBadge } from '@/components/shared'
-import { getStudentOrderInfo, resolvePaymentStatusInfo } from './renewal/renewalHelpers'
+import { RenewalFailureModal, type RenewalFailureData } from './RenewalFailureModal'
+import { getStudentOrderInfo, resolvePaymentStatusInfo, getRenewalClassification } from './renewal/renewalHelpers'
 import { getStudentOrders } from './StudentOrdersTab'
 import { mockOrders } from '@/mocks/orders'
 
@@ -198,6 +201,7 @@ interface StudentCareFormCardProps {
     outcomeLabel: string
   ) => void
   handleCompleteCare?: () => void
+  onRecordRenewalFailure?: (data: RenewalFailureData) => void
   studentAttitudeNote?: string
   showParentOpinion?: boolean
   setShowParentOpinion?: (val: boolean) => void
@@ -227,6 +231,7 @@ export function StudentCareFormCard({
   selectedContactIndex,
   setSelectedContactIndex,
   activeContactPhone,
+  chatChannel = 'zalo',
   setChatChannel,
   setCallOutcome,
   callbackTime = '2026-07-20T14:00',
@@ -239,6 +244,7 @@ export function StudentCareFormCard({
   handleSendChat,
   handleQuickLogOutcome,
   handleCompleteCare,
+  onRecordRenewalFailure,
   parentOpinionText = '',
   setParentOpinionText,
   displayPinnedTopics,
@@ -253,9 +259,49 @@ export function StudentCareFormCard({
   const [isCallActive, setIsCallActive] = useState(false)
   const [renewalStatus, setRenewalStatus] = useState<string>('')
   const [isConfirmCompleteOpen, setIsConfirmCompleteOpen] = useState(false)
+  const [isConfirmFailureOpen, setIsConfirmFailureOpen] = useState(false)
   const chatRecipient = formatContactDisplayName(selectedContact.name, selectedContact.relationship)
   const isRenewalMode = careMode === 'renewal'
   const orderInfo = useMemo(() => (student ? getStudentOrderInfo(student) : null), [student])
+
+  const handleConfirmFailure = (data: RenewalFailureData) => {
+    setRenewalStatus('that_bai')
+    if (student) {
+      updateRenewalClassification(student.id, 'that_bai')
+    }
+    if (onCstpStatusChange) {
+      onCstpStatusChange('that_bai')
+    }
+    const finalNotes = data.notes ?? chatText
+    const finalOpinion = data.parentOpinion ?? parentOpinionText
+
+    if (onRecordRenewalFailure) {
+      onRecordRenewalFailure({
+        reason: data.reason,
+        notes: finalNotes,
+        parentOpinion: finalOpinion,
+      })
+    } else {
+      if (student) {
+        const recipientText = `[Đối tượng: ${chatRecipient}]`
+        const channelLabel = 'Đã tương tác'
+        const channelText = `[Kênh: ${chatChannel.toUpperCase()}]`
+        const reasonPrefix = data.reason ? `[Lý do: ${data.reason}] ` : ''
+        const fullNotes = `[CSTP] ${recipientText} ${channelText} ${reasonPrefix}${finalNotes || 'Ghi nhận tạm dừng học sau khi kết thúc khóa này.'}`.trim()
+        updateCareAlertInteraction(student.id, {
+          staffName: 'CS Staff',
+          callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
+          notes: fullNotes,
+          parentOpinion: finalOpinion?.trim() || undefined,
+        })
+      }
+      toast.success('Đã xác nhận thất bại và ghi nhận vào lịch sử chăm sóc!')
+      if (setChatText) setChatText('')
+      if (setParentOpinionText) setParentOpinionText('')
+      if (onRefresh) onRefresh()
+    }
+    setIsConfirmFailureOpen(false)
+  }
   const ordersCount = useMemo(() => {
     if (!student?.studentId) return 0
     return getStudentOrders(student.studentId, student.studentName).length
@@ -428,12 +474,12 @@ export function StudentCareFormCard({
     <div ref={careFormRef} className="space-y-1 text-left mb-1.5">
       {/* Top Header: Tab Chăm sóc / Tái phí + Các thẻ chăm sóc ngang (Nằm bên ngoài card) */}
       <div className="space-y-1">
-        <div className="w-full bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-zinc-700 h-7">
+        <div className="w-full bg-slate-100 dark:bg-zinc-800 p-0.5 rounded-lg flex items-center gap-1 border border-slate-200 dark:border-zinc-700 h-7 2xl:h-8">
           <button
             type="button"
             onClick={() => onCareModeChange('regular')}
             className={cn(
-              'flex-1 h-6 px-2 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              'flex-1 h-6 2xl:h-7 px-2 2xl:px-3 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
               careMode === 'regular'
                 ? 'bg-white dark:bg-zinc-900 text-foreground shadow-xs border border-border font-medium'
                 : 'text-muted-foreground hover:text-foreground hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-normal'
@@ -446,7 +492,7 @@ export function StudentCareFormCard({
             type="button"
             onClick={() => onCareModeChange('renewal')}
             className={cn(
-              'flex-1 h-6 px-2 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+              'flex-1 h-6 2xl:h-7 px-2 2xl:px-3 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
               careMode === 'renewal'
                 ? 'bg-emerald-600 text-white shadow-xs border border-emerald-600 font-medium dark:bg-emerald-600 dark:text-white'
                 : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/50 font-normal'
@@ -466,7 +512,7 @@ export function StudentCareFormCard({
               type="button"
               onClick={() => onCareModeChange('orders')}
               className={cn(
-                'flex-1 h-6 px-2 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
+                'flex-1 h-6 2xl:h-7 px-2 2xl:px-3 rounded text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5',
                 careMode === 'orders'
                   ? 'bg-white dark:bg-zinc-900 text-foreground shadow-xs border border-border font-medium'
                   : 'text-muted-foreground hover:text-foreground hover:bg-slate-200/70 dark:hover:bg-zinc-700/70 font-normal'
@@ -475,7 +521,7 @@ export function StudentCareFormCard({
               <span>Đơn hàng</span>
               <span
                 className={cn(
-                  'inline-flex items-center justify-center text-[10px] font-medium h-3.5 px-1 rounded-full min-w-[14px] transition-colors',
+                  'inline-flex items-center justify-center text-xs font-medium h-4 2xl:h-4.5 px-1.5 rounded-full min-w-[16px] transition-colors',
                   careMode === 'orders'
                     ? 'bg-muted text-foreground'
                     : 'bg-muted/80 text-muted-foreground'
@@ -513,7 +559,7 @@ export function StudentCareFormCard({
                 <div
                   key={topic.code}
                   className={cn(
-                    "w-full flex items-center gap-2 px-2 py-1 rounded-lg text-left select-none border",
+                    "w-full flex items-center gap-2 px-2 2xl:px-2.5 py-1 2xl:py-1.5 rounded-lg text-left select-none border",
                     rowBgStyle,
                     isCompletedTag && isCSDB && "opacity-65"
                   )}
@@ -567,7 +613,7 @@ export function StudentCareFormCard({
       {careMode !== 'orders' && (
         <div
           className={cn(
-            'rounded-xl shadow-2xs p-2 sm:p-2.5 space-y-1.5 border transition-colors',
+            'rounded-xl shadow-2xs p-2 sm:p-2.5 2xl:p-3 space-y-1.5 2xl:space-y-2 border transition-colors',
             isRenewalMode
               ? 'bg-emerald-50/25 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-900/50'
               : 'bg-sky-50/30 dark:bg-sky-950/20 border-sky-200/70 dark:border-sky-900/50'
@@ -692,36 +738,10 @@ export function StudentCareFormCard({
                   <span className="text-border/60 hidden sm:inline text-xs">|</span>
 
                   {/* Lịch hẹn đưa lên cạnh phải header liên hệ */}
-                  <div className="flex items-center gap-1 bg-background px-2 py-0.5 rounded-md border border-border/70 text-xs shadow-none">
-                    <span className="text-xs font-normal text-muted-foreground shrink-0 flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      Lịch hẹn:
-                    </span>
-                    <input
-                      type={callbackTime ? 'datetime-local' : 'text'}
-                      value={callbackTime}
-                      placeholder="Lên lịch"
-                      onFocus={(e) => {
-                        e.target.type = 'datetime-local'
-                        try { e.target.showPicker() } catch {}
-                      }}
-                      onBlur={(e) => {
-                        if (!e.target.value) e.target.type = 'text'
-                      }}
-                      onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                      className="h-4.5 text-xs text-foreground bg-transparent border-none focus:outline-none w-[115px] font-normal placeholder:text-muted-foreground/70 cursor-pointer"
-                    />
-                    {callbackTime && (
-                      <button
-                        type="button"
-                        onClick={() => setCallbackTime && setCallbackTime('')}
-                        className="text-muted-foreground hover:text-foreground text-xs p-0.5 rounded cursor-pointer leading-none"
-                        title="Xóa lịch hẹn"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                  <AppointmentSchedulePicker
+                    value={callbackTime}
+                    onChange={(val) => setCallbackTime && setCallbackTime(val)}
+                  />
                 </div>
               </div>
 
@@ -744,7 +764,7 @@ export function StudentCareFormCard({
                       ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
                       : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
                   }
-                  className="w-full min-h-[38px] max-h-[120px] p-2 text-xs bg-transparent text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed border-0"
+                  className="w-full min-h-[38px] 2xl:min-h-[46px] max-h-[140px] p-2 2xl:p-2.5 text-xs 2xl:text-[13px] bg-transparent text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed border-0"
                 />
 
                 {/* Input Phụ huynh phản hồi */}
@@ -760,7 +780,7 @@ export function StudentCareFormCard({
                       }
                     }}
                     placeholder="Nhập tóm tắt ý kiến / phản hồi của phụ huynh..."
-                    className="w-full h-5.5 text-xs px-1.5 rounded border border-border/60 bg-background text-foreground font-normal focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
+                    className="w-full h-6.5 2xl:h-7.5 text-xs 2xl:text-[13.5px] px-2 rounded border border-border/60 bg-background text-foreground font-normal focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
@@ -768,8 +788,8 @@ export function StudentCareFormCard({
               {/* Action Row: Lựa chọn trạng thái chưa liên lạc + Nút Tái phí (kèm menu trạng thái khác) + Hướng dẫn */}
               <div className="flex items-center justify-between gap-1.5 pt-0.5 flex-wrap">
                 {/* Cụm trạng thái chưa thành công để log lịch sử nhanh */}
-                <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-[11px] font-normal text-muted-foreground shrink-0 hidden sm:inline">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs 2xl:text-[13px] font-normal text-muted-foreground shrink-0 hidden sm:inline">
                     Chưa liên lạc:
                   </span>
                   
@@ -777,7 +797,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('telephone', 'khong_nghe', 'Không nghe máy')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2.5 2xl:px-3 text-xs 2xl:text-[13px] font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận cuộc gọi không nghe máy (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Không nghe</span>
@@ -787,7 +807,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('telephone', 'may_ban', 'Máy bận')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2.5 2xl:px-3 text-xs 2xl:text-[13px] font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận cuộc gọi máy bận (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Máy bận</span>
@@ -797,7 +817,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('direct', 'vang_mat', 'Vắng mặt')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2.5 2xl:px-3 text-xs 2xl:text-[13px] font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận gặp mặt vắng mặt (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Vắng mặt</span>
@@ -807,7 +827,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('zalo', 'chua_phan_hoi', 'Chưa phản hồi')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2.5 2xl:px-3 text-xs 2xl:text-[13px] font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận tin nhắn chưa có phản hồi (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Chưa phản hồi</span>
@@ -822,7 +842,7 @@ export function StudentCareFormCard({
                     <button
                       type="button"
                       onClick={handleCheckComplete}
-                      className="h-7 px-3.5 text-xs font-medium cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center"
+                      className="h-7.5 2xl:h-8.5 px-3.5 2xl:px-4 text-xs 2xl:text-[13px] font-medium cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center"
                       title="Xác nhận Tái phí thành công và kết thúc ca chăm sóc"
                     >
                       Tái phí
@@ -833,7 +853,7 @@ export function StudentCareFormCard({
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="h-7 px-1.5 bg-emerald-700 hover:bg-emerald-800 text-white/90 hover:text-white transition-colors cursor-pointer border-l border-emerald-500/60 flex items-center justify-center"
+                          className="h-7.5 2xl:h-8.5 px-2 2xl:px-2.5 bg-emerald-700 hover:bg-emerald-800 text-white/90 hover:text-white transition-colors cursor-pointer border-l border-emerald-500/60 flex items-center justify-center"
                           title="Chọn trạng thái tái phí khác (Cân nhắc, Tiềm năng, Hẹn tái, Thất bại)"
                           aria-label="Chọn trạng thái khác"
                         >
@@ -841,7 +861,7 @@ export function StudentCareFormCard({
                         </button>
                       </PopoverTrigger>
                       <PopoverContent side="top" align="end" className="w-48 p-1 text-xs space-y-0.5 shadow-md">
-                        <div className="px-2 py-1 text-[11px] font-normal text-muted-foreground border-b border-border/50 mb-0.5">
+                        <div className="px-2 py-1 text-xs font-normal text-muted-foreground border-b border-border/50 mb-0.5">
                           Chuyển trạng thái ca tái phí:
                         </div>
                         {[
@@ -857,6 +877,10 @@ export function StudentCareFormCard({
                               key={item.key}
                               type="button"
                               onClick={() => {
+                                if (item.key === 'that_bai') {
+                                  setIsConfirmFailureOpen(true)
+                                  return
+                                }
                                 setRenewalStatus(item.key)
                                 if (student) {
                                   updateRenewalClassification(student.id, item.key)
@@ -1029,36 +1053,10 @@ export function StudentCareFormCard({
                   <span className="text-border/60 hidden sm:inline text-xs">|</span>
 
                   {/* Lịch hẹn đưa lên cạnh phải header liên hệ */}
-                  <div className="flex items-center gap-1 bg-background px-2 py-0.5 rounded-md border border-border/70 text-xs shadow-none">
-                    <span className="text-xs font-normal text-muted-foreground shrink-0 flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      Lịch hẹn:
-                    </span>
-                    <input
-                      type={callbackTime ? 'datetime-local' : 'text'}
-                      value={callbackTime}
-                      placeholder="Lên lịch"
-                      onFocus={(e) => {
-                        e.target.type = 'datetime-local'
-                        try { e.target.showPicker() } catch {}
-                      }}
-                      onBlur={(e) => {
-                        if (!e.target.value) e.target.type = 'text'
-                      }}
-                      onChange={(e) => setCallbackTime && setCallbackTime(e.target.value)}
-                      className="h-4.5 text-xs text-foreground bg-transparent border-none focus:outline-none w-[115px] font-normal placeholder:text-muted-foreground/70 cursor-pointer"
-                    />
-                    {callbackTime && (
-                      <button
-                        type="button"
-                        onClick={() => setCallbackTime && setCallbackTime('')}
-                        className="text-muted-foreground hover:text-foreground text-xs p-0.5 rounded cursor-pointer leading-none"
-                        title="Xóa lịch hẹn"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                  <AppointmentSchedulePicker
+                    value={callbackTime}
+                    onChange={(val) => setCallbackTime && setCallbackTime(val)}
+                  />
                 </div>
               </div>
 
@@ -1081,7 +1079,7 @@ export function StudentCareFormCard({
                       ? `Nhập nội dung tương tác cho thẻ ghim [${expandedTopicCode}]...` 
                       : "Nhập ghi chú tóm tắt nội dung đã trao đổi..."
                   }
-                  className="w-full min-h-[38px] max-h-[120px] p-2 text-xs bg-transparent text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed border-0"
+                  className="w-full min-h-[38px] 2xl:min-h-[46px] max-h-[140px] p-2 2xl:p-2.5 text-xs 2xl:text-[13px] bg-transparent text-foreground placeholder:text-muted-foreground/70 font-normal focus:outline-none disabled:bg-muted/40 disabled:cursor-not-allowed resize-y overflow-y-auto leading-relaxed border-0"
                 />
 
                 {/* Input Phụ huynh phản hồi */}
@@ -1097,7 +1095,7 @@ export function StudentCareFormCard({
                       }
                     }}
                     placeholder="Nhập ý kiến / phản hồi của phụ huynh..."
-                    className="w-full h-5.5 text-xs px-1.5 rounded border border-border/60 bg-background text-foreground font-normal focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
+                    className="w-full h-5.5 2xl:h-6 text-xs 2xl:text-[13px] px-1.5 2xl:px-2 rounded border border-border/60 bg-background text-foreground font-normal focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
@@ -1106,7 +1104,7 @@ export function StudentCareFormCard({
               <div className="flex items-center justify-between gap-1.5 pt-0.5 flex-wrap">
                 {/* Cụm trạng thái chưa thành công của tất cả các kênh để log lịch sử nhanh */}
                 <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-[11px] font-normal text-muted-foreground shrink-0 hidden sm:inline">
+                  <span className="text-xs font-normal text-muted-foreground shrink-0 hidden sm:inline">
                     Chưa liên lạc:
                   </span>
                   
@@ -1114,7 +1112,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('telephone', 'khong_nghe', 'Không nghe máy')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2 2xl:px-2.5 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận cuộc gọi không nghe máy (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Không nghe</span>
@@ -1124,7 +1122,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('telephone', 'may_ban', 'Máy bận')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2 2xl:px-2.5 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận cuộc gọi máy bận (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Máy bận</span>
@@ -1134,7 +1132,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('direct', 'vang_mat', 'Vắng mặt')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2 2xl:px-2.5 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận gặp mặt vắng mặt (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Vắng mặt</span>
@@ -1144,7 +1142,7 @@ export function StudentCareFormCard({
                   <button
                     type="button"
                     onClick={() => handleQuickLogOutcome?.('zalo', 'chua_phan_hoi', 'Chưa phản hồi')}
-                    className="h-7 px-2 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
+                    className="h-7 2xl:h-8 px-2 2xl:px-2.5 text-xs font-normal rounded-md border border-border/80 bg-background text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-colors cursor-pointer inline-flex items-center shrink-0"
                     title="Ghi nhận tin nhắn chưa có phản hồi (Không bắt buộc nhập ghi chú)"
                   >
                     <span>Chưa phản hồi</span>
@@ -1162,7 +1160,7 @@ export function StudentCareFormCard({
                       handleSendChat()
                       setIsCallActive(false)
                     }}
-                    className="h-7 px-4 text-xs font-medium cursor-pointer shrink-0 rounded-md shadow-xs bg-sky-600 hover:bg-sky-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-7 2xl:h-8 px-4 2xl:px-5 text-xs font-medium cursor-pointer shrink-0 rounded-md shadow-xs bg-sky-600 hover:bg-sky-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Lưu nội dung tương tác vào lịch sử chăm sóc"
                   >
                     Lưu
@@ -1201,27 +1199,52 @@ export function StudentCareFormCard({
           )}
 
         {/* Active Care Card / Linked Order Section */}
-        <div className="border-t border-border/40 pt-1 mt-1 space-y-1">
-          {/* Thông tin Đơn hàng liên kết ở tab Tái phí: nhập trực tiếp trên dòng, không mở modal, có thể sửa */}
-          {isRenewalMode && (
-            <StudentRenewalLinkedOrderRow
-              orderInfo={orderInfo}
-              suggestedOrders={suggestedOrders}
-              onLinkOrder={handleLinkOrder}
-              onUnlinkOrder={handleUnlinkOrder}
-            />
-          )}
+        {(() => {
+          const currentRenewalStatus = renewalStatus || cstpStatus || (student ? getRenewalClassification(student) : 'moi')
+          const hasRegularInteractions = Boolean(
+            isCaredStatus ||
+            (student && isInProgress(student)) ||
+            (effectiveLogs && effectiveLogs.length > 0) ||
+            student?.interactionNotes
+          )
+          const hasRenewalLogs = Boolean(
+            effectiveLogs?.some(l => (l.notes || '').includes('[CSTP]') || (l.notes || '').toLowerCase().includes('tái phí')) ||
+            student?.interactionNotes
+          )
+          const hasRenewalInteractions = Boolean(
+            (currentRenewalStatus !== 'moi' && currentRenewalStatus !== 'chua_den_han') || hasRenewalLogs
+          )
+          const shouldShowCard = isRenewalMode ? hasRenewalInteractions : hasRegularInteractions
+          const shouldShowSection = Boolean((isRenewalMode && orderInfo?.orderCode) || shouldShowCard)
 
-          {/* Trạng thái & Nội dung chăm sóc gần nhất - Hiển thị cả Chăm sóc và Tái phí */}
-          <StudentActiveCareCard
-            student={student}
-            chatRecipient={chatRecipient}
-            isCaredStatus={isCaredStatus}
-            mode={careMode === 'renewal' ? 'renewal' : 'regular'}
-            cstpStatus={cstpStatus || renewalStatus}
-            logs={effectiveLogs || student?.interactionLogs}
-          />
-        </div>
+          if (!shouldShowSection) return null
+
+          return (
+            <div className="border-t border-border/40 pt-1 mt-1 space-y-1">
+              {/* Thông tin Đơn hàng liên kết ở tab Tái phí: nhập trực tiếp trên dòng, không mở modal, có thể sửa */}
+              {isRenewalMode && (
+                <StudentRenewalLinkedOrderRow
+                  orderInfo={orderInfo}
+                  suggestedOrders={suggestedOrders}
+                  onLinkOrder={handleLinkOrder}
+                  onUnlinkOrder={handleUnlinkOrder}
+                />
+              )}
+
+              {/* Trạng thái & Nội dung chăm sóc gần nhất - Hiển thị cả Chăm sóc và Tái phí */}
+              {shouldShowCard && (
+                <StudentActiveCareCard
+                  student={student}
+                  chatRecipient={chatRecipient}
+                  isCaredStatus={isCaredStatus}
+                  mode={careMode === 'renewal' ? 'renewal' : 'regular'}
+                  cstpStatus={cstpStatus || renewalStatus}
+                  logs={effectiveLogs || student?.interactionLogs}
+                />
+              )}
+            </div>
+          )
+        })()}
       </div>
     )}
 
@@ -1237,7 +1260,7 @@ export function StudentCareFormCard({
               <strong className="text-foreground">{student?.studentName}</strong>?
             </p>
             {isRenewalMode && orderInfo?.orderCode && (
-              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-[11.5px] space-y-1">
+              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-xs space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Đơn hàng liên kết:</span>
                   <strong className="font-mono text-foreground">{orderInfo.orderCode}</strong>
@@ -1280,6 +1303,17 @@ export function StudentCareFormCard({
           setIsConfirmCompleteOpen(false)
           if (onRefresh) onRefresh()
         }}
+      />
+
+      {/* Modal xác nhận Thất bại tái phí */}
+      <RenewalFailureModal
+        open={isConfirmFailureOpen}
+        onOpenChange={setIsConfirmFailureOpen}
+        student={student}
+        chatRecipient={chatRecipient}
+        notesPreview={chatText}
+        parentOpinionPreview={parentOpinionText}
+        onConfirm={handleConfirmFailure}
       />
       </div>
     )

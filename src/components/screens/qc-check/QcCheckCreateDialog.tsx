@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,389 +13,533 @@ import {
 import { BranchSelect, InlineSelect } from '@/components/controls'
 import { FieldLabel } from '@/components/shared'
 import {
-  QC_CHECK_TYPE_LABELS,
-  QC_CHECK_CATEGORIES,
+  QC_TARGET_GROUP_LABELS,
+  QC_CRITERIA_LABELS,
+  QC_ERROR_SEVERITY_LABELS,
   INSPECTOR_OPTIONS,
-  type QcCheckType,
+  type QcTargetGroup,
+  type QcEvaluationCriteria,
+  type QcErrorSeverity,
 } from '@/mocks/qcChecks'
 import { BRANCH_OPTIONS } from './qcCheckHelpers'
 
-export interface CreateQcError {
-  errorType: string // 'teacher' | 'facility'
+export interface CreateIncidentItem {
+  targetGroup: QcTargetGroup
+  criteria: QcEvaluationCriteria
+  title: string
   description: string
-  severity: string
+  severity: QcErrorSeverity
+  // Context fields
+  className?: string
+  sessionNumber?: number
+  roomId?: string
+  teacherName?: string
+  csmName?: string
+  // Evidence & Assignee
   evidence: string
   evidenceImage?: string
-  inspectorId: string
-  area: string
-  notes: string
+  evidenceLink?: string
+  assignee: string
+  deadline?: string
+  notes?: string
 }
 
-export interface CreateQcForm {
-  name: string
-  type: QcCheckType
+export interface CreateBatchIncidentForm {
   branch: string
   inspectorId: string
-  errors: CreateQcError[]
+  incidents: CreateIncidentItem[]
 }
 
-function buildEmptyForm(): CreateQcForm {
+const SAMPLE_CLASSES = [
+  'IELTS Intensive K24',
+  'Toán Tư Duy Bồi Dưỡng T5',
+  'Tiếng Anh Mầm Non K12',
+  'Tiếng Anh Giao Tiếp E3',
+  'Lập trình Scratch Nhí S2',
+]
+
+const SAMPLE_ROOMS = [
+  'Phòng A101',
+  'Phòng A201',
+  'Phòng A203',
+  'Phòng B102',
+  'Phòng Lab 2',
+  'Sảnh chính tầng 1',
+  'Hành lang tầng 3',
+  'Nhà vệ sinh tầng 2',
+]
+
+const SAMPLE_TEACHERS = [
+  'Thầy Hoàng Minh',
+  'Cô Lê Thùy Dung',
+  'Thầy Trần Quang Huy',
+  'Cô Hoàng Thu Thảo',
+  'Thầy Nguyễn Văn Đức',
+]
+
+const SAMPLE_CSMS = [
+  'Nguyễn Thị Mai',
+  'Lê Thị Hương',
+  'Phạm Đức Thắng',
+  'Trần Văn Bình',
+]
+
+function buildEmptyItem(defaultGroup: QcTargetGroup = 'teacher'): CreateIncidentItem {
   return {
-    name: '',
-    type: 'daily',
-    branch: '',
-    inspectorId: '',
-    errors: [
-      {
-        errorType: 'teacher',
-        description: '',
-        severity: 'medium',
-        evidence: 'Ghi nhận trực tiếp khi đánh giá',
-        evidenceImage: '',
-        inspectorId: '',
-        area: '',
-        notes: '',
-      }
-    ],
+    targetGroup: defaultGroup,
+    criteria: defaultGroup === 'teacher' ? 'attendance' : defaultGroup === 'facility' ? 'facility_quality' : 'student_care',
+    title: '',
+    description: '',
+    severity: 'medium',
+    className: defaultGroup === 'teacher' ? SAMPLE_CLASSES[0] : '',
+    sessionNumber: defaultGroup === 'teacher' ? 1 : undefined,
+    roomId: defaultGroup === 'facility' ? SAMPLE_ROOMS[1] : '',
+    teacherName: defaultGroup === 'teacher' ? SAMPLE_TEACHERS[0] : '',
+    csmName: defaultGroup === 'operations' ? SAMPLE_CSMS[0] : '',
+    evidence: 'Ghi nhận trực tiếp khi kiểm tra',
+    evidenceImage: '',
+    evidenceLink: '',
+    assignee: defaultGroup === 'teacher' ? SAMPLE_TEACHERS[0] : defaultGroup === 'facility' ? 'Võ Minh Tuấn (Kỹ thuật)' : SAMPLE_CSMS[0],
+    deadline: '',
+    notes: '',
+  }
+}
+
+function buildEmptyBatchForm(): CreateBatchIncidentForm {
+  return {
+    branch: BRANCH_OPTIONS[0],
+    inspectorId: 'ins_01',
+    incidents: [buildEmptyItem('teacher')],
   }
 }
 
 interface QcCheckCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (form: CreateQcForm) => void
+  onSubmit: (form: CreateBatchIncidentForm) => void
 }
 
 export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCreateDialogProps) {
-  const [form, setForm] = useState<CreateQcForm>(buildEmptyForm)
-  const [generalInspectorId, setGeneralInspectorId] = useState('')
+  const [form, setForm] = useState<CreateBatchIncidentForm>(buildEmptyBatchForm)
 
   const handleReset = () => {
-    setForm(buildEmptyForm())
-    setGeneralInspectorId('')
+    setForm(buildEmptyBatchForm())
   }
 
-  const handleUpdateErrorField = (index: number, field: keyof CreateQcError, value: string) => {
+  const handleUpdateItem = (
+    index: number,
+    field: keyof CreateIncidentItem,
+    value: CreateIncidentItem[keyof CreateIncidentItem]
+  ) => {
     setForm((prev) => {
-      const nextErrors = [...prev.errors]
-      nextErrors[index] = {
-        ...nextErrors[index],
-        [field]: value,
+      const nextIncidents = [...prev.incidents]
+      const current = { ...nextIncidents[index], [field]: value }
+
+      // Auto adjust defaults when changing targetGroup
+      if (field === 'targetGroup') {
+        const group = value as QcTargetGroup
+        if (group === 'teacher') {
+          current.criteria = 'attendance'
+          current.className = current.className || SAMPLE_CLASSES[0]
+          current.sessionNumber = current.sessionNumber || 1
+          current.teacherName = current.teacherName || SAMPLE_TEACHERS[0]
+          current.assignee = current.teacherName || SAMPLE_TEACHERS[0]
+        } else if (group === 'facility') {
+          current.criteria = 'facility_quality'
+          current.roomId = current.roomId || SAMPLE_ROOMS[1]
+          current.assignee = 'Võ Minh Tuấn (Kỹ thuật)'
+        } else {
+          current.criteria = 'student_care'
+          current.csmName = current.csmName || SAMPLE_CSMS[0]
+          current.assignee = current.csmName || SAMPLE_CSMS[0]
+        }
       }
-      return { ...prev, errors: nextErrors }
+
+      nextIncidents[index] = current
+      return { ...prev, incidents: nextIncidents }
     })
   }
 
-  const handleAddErrorRow = () => {
+  const handleAddRow = () => {
     setForm((prev) => {
-      const lastError = prev.errors[prev.errors.length - 1]
+      const lastGroup = prev.incidents[prev.incidents.length - 1]?.targetGroup || 'teacher'
       return {
         ...prev,
-        errors: [
-          ...prev.errors,
-          {
-            errorType: lastError?.errorType || 'teacher',
-            description: '',
-            severity: 'medium',
-            evidence: 'Ghi nhận trực tiếp khi đánh giá',
-            evidenceImage: '',
-            inspectorId: generalInspectorId,
-            area: lastError?.area || '', // pre-populate with last entered area for typing speed
-            notes: '',
-          },
-        ],
+        incidents: [...prev.incidents, buildEmptyItem(lastGroup)],
       }
     })
   }
 
-  const handleRemoveErrorRow = (index: number) => {
+  const handleRemoveRow = (index: number) => {
     setForm((prev) => ({
       ...prev,
-      errors: prev.errors.filter((_, idx) => idx !== index),
+      incidents: prev.incidents.filter((_, idx) => idx !== index),
     }))
   }
 
   const handleSubmit = () => {
     if (!form.branch) {
-      alert('Vui lòng chọn trường cho đợt kiểm tra.')
-      return
-    }
-    if (!generalInspectorId) {
-      alert('Vui lòng chọn Người kiểm tra.')
+      alert('Vui lòng chọn cơ sở ghi nhận sự cố.')
       return
     }
 
-    // Validate that rows are either completely empty (to be filtered out) or fully completed
-    const hasInvalidRow = form.errors.some((err) => {
-      const hasSomeContent = err.area.trim() || err.description.trim() || err.notes.trim() || err.evidenceImage
-      const isMissingRequired = !err.area.trim() || !err.description.trim()
-      return hasSomeContent && isMissingRequired
-    })
-
-    if (hasInvalidRow) {
-      alert('Vui lòng điền đầy đủ thông tin Khu vực và Mô tả cho tất cả các dòng lỗi đang nhập dở dang.')
+    const invalid = form.incidents.some((item) => !item.description.trim() && !item.title.trim())
+    if (invalid) {
+      alert('Vui lòng điền tiêu đề hoặc mô tả cho tất cả các sự cố đang nhập.')
       return
     }
 
-    // Filter out completely blank rows
-    const activeErrors = form.errors
-      .filter((err) => err.area.trim() && err.description.trim())
-      .map((err) => ({
-        ...err,
-        inspectorId: generalInspectorId,
-      }))
-
-    onSubmit({
-      ...form,
-      inspectorId: generalInspectorId,
-      errors: activeErrors,
-    })
+    onSubmit(form)
     handleReset()
   }
-
-  const allowedCategories = QC_CHECK_CATEGORIES.filter(
-    (c) => c.id === 'teacher' || c.id === 'facility'
-  )
 
   return (
     <Dialog
       open={open}
-      onOpenChange={(open) => {
-        if (!open) handleReset()
-        onOpenChange(open)
+      onOpenChange={(isOpen) => {
+        if (!isOpen) handleReset()
+        onOpenChange(isOpen)
       }}
     >
-      <DialogContent className="max-h-[92vh] w-[95vw] sm:max-w-[1200px] overflow-y-auto p-6" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader className="border-b border-border/50 pb-3">
-          <DialogTitle className="text-xl font-bold">Tạo đợt kiểm tra chất lượng (QC)</DialogTitle>
+      <DialogContent
+        className="max-h-[92vh] w-[95vw] sm:max-w-[1100px] overflow-hidden flex flex-col p-6"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="border-b border-border/50 pb-3 shrink-0">
+          <DialogTitle className="text-xl font-bold flex items-center justify-between">
+            <span>Ghi nhận sự cố chất lượng (QC Incident)</span>
+            <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
+              Hỗ trợ ghi nhận hàng loạt trong 1 lần
+            </span>
+          </DialogTitle>
         </DialogHeader>
 
-        {/* 2-Column Grid Layout: 1/3 Left (col-span-4) vs 2/3 Right (col-span-8) */}
-        <div className="grid grid-cols-1 gap-8 pt-4 md:grid-cols-12">
-          
-          {/* Left Column: General Info (1/3 width) */}
-          <div className="space-y-4 md:border-r md:border-border/50 md:pr-6 md:col-span-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary">1. Thông tin chung</h3>
-            
-            <FieldLabel label="Tên cuộc kiểm tra">
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="VD: Kiểm tra chuyên môn đột xuất..."
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs"
-              />
-            </FieldLabel>
+        {/* Form Body */}
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-5 py-4 pr-1">
+          {/* Section 1: General Info */}
+          <div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-2xs">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
+              1. Thông tin phiên ghi nhận
+            </h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <FieldLabel label="Cơ sở / Chi nhánh *">
+                <BranchSelect
+                  value={form.branch}
+                  branches={BRANCH_OPTIONS}
+                  variant="inline"
+                  includeAll={false}
+                  onValueChange={(v) => setForm((p) => ({ ...p, branch: v }))}
+                />
+              </FieldLabel>
 
-            <FieldLabel label="Loại đợt kiểm tra">
-              <InlineSelect
-                value={form.type}
-                ariaLabel="Loại đợt kiểm tra"
-                options={[
-                  { value: 'daily', label: QC_CHECK_TYPE_LABELS['daily'] },
-                  { value: 'patrol', label: QC_CHECK_TYPE_LABELS['patrol'] },
-                  { value: 'monthly', label: QC_CHECK_TYPE_LABELS['monthly'] },
-                ]}
-                onValueChange={(v) => setForm((p) => ({ ...p, type: v as QcCheckType }))}
-              />
-            </FieldLabel>
-
-            <FieldLabel label="Trường *">
-              <BranchSelect
-                value={form.branch}
-                branches={BRANCH_OPTIONS}
-                variant="inline"
-                includeAll={false}
-                onValueChange={(v) => setForm((p) => ({ ...p, branch: v }))}
-              />
-            </FieldLabel>
-
-            <FieldLabel label="Người kiểm tra (Người ghi nhận) *">
-              <InlineSelect
-                value={generalInspectorId}
-                ariaLabel="Chọn người kiểm tra"
-                options={[
-                  { value: '', label: 'Chọn người kiểm tra...' },
-                  ...INSPECTOR_OPTIONS.map((i) => ({ value: i.id, label: i.name })),
-                ]}
-                onValueChange={setGeneralInspectorId}
-              />
-            </FieldLabel>
-
-            {form.errors.filter(e => e.area.trim() && e.description.trim()).length > 0 && (
-              <div className="mt-4 bg-primary/5 rounded-lg border border-primary/20 p-3 text-xs text-primary font-medium flex items-center justify-between">
-                <span>Số lượng lỗi đã nhập đủ:</span>
-                <span className="text-sm font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                  {form.errors.filter(e => e.area.trim() && e.description.trim()).length}
-                </span>
-              </div>
-            )}
+              <FieldLabel label="Người ghi nhận (Kiểm tra viên / Chuyên môn) *">
+                <InlineSelect
+                  value={form.inspectorId}
+                  ariaLabel="Chọn người kiểm tra"
+                  options={INSPECTOR_OPTIONS.map((i) => ({ value: i.id, label: `${i.name} (${i.role})` }))}
+                  onValueChange={(v) => setForm((p) => ({ ...p, inspectorId: v }))}
+                />
+              </FieldLabel>
+            </div>
           </div>
 
-          {/* Right Column: Inline Multi-Error Logging (2/3 width) */}
-          <div className="space-y-3.5 md:col-span-8 flex flex-col min-h-0">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-primary">2. Ghi nhận lỗi</h3>
-            
-            {/* Header row for error list (only on desktop md screens) */}
-            <div className="hidden md:flex items-center gap-3 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0 mb-0.5">
-              <div className="w-7 text-center shrink-0">#</div>
-              <div className="flex-1 grid grid-cols-12 gap-2.5">
-                <div className="col-span-3">Hạng mục & Mức độ</div>
-                <div className="col-span-5">Khu vực & Mô tả chi tiết lỗi *</div>
-                <div className="col-span-4">Ghi chú & Ảnh bằng chứng</div>
-              </div>
+          {/* Section 2: Batch Incidents */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
+                2. Danh sách các sự cố phát hiện ({form.incidents.length})
+              </h4>
+              <span className="text-xs text-muted-foreground">
+                Ghi nhận bất kỳ lúc nào, có thể thêm nhiều sự cố cùng lúc
+              </span>
             </div>
 
-            {/* Scrollable Error Cards Container */}
-            <div className="space-y-2 max-h-[58vh] overflow-y-auto pr-1 min-h-0">
-              {form.errors.map((error, idx) => (
+            <div className="space-y-3.5">
+              {form.incidents.map((item, idx) => (
                 <div
                   key={idx}
-                  className="relative rounded-md border border-border bg-card p-2 shadow-xs transition-all hover:border-primary/30 flex gap-2.5 items-stretch"
+                  className="rounded-lg border border-border bg-card p-4 shadow-xs transition-all hover:border-primary/40 relative"
                 >
-                  {/* Left Column: Index & Delete */}
-                  <div className="w-7 shrink-0 flex flex-col justify-center items-center border-r border-border/40 pr-1.5">
-                    <span className="text-xs font-bold text-muted-foreground">#{idx + 1}</span>
-                    {form.errors.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveErrorRow(idx)}
-                        className="text-muted-foreground hover:text-destructive mt-1.5 transition-colors"
-                        aria-label="Xóa dòng lỗi"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
+                  {/* Top Bar of Item */}
+                  <div className="flex items-center justify-between border-b pb-2.5 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                        #{idx + 1}
+                      </span>
+                      <span className="text-xs font-semibold text-foreground">
+                        Sự cố {idx + 1}
+                      </span>
+                    </div>
 
-                  {/* Right Column: Form Inputs Grid */}
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-2">
-                    {/* Col 1: Category & Severity */}
-                    <div className="md:col-span-3 flex flex-col justify-between gap-1">
-                      {/* Category select buttons */}
-                      <div className="flex gap-1 h-6.5 shrink-0">
-                        {allowedCategories.map((cat) => (
+                    <div className="flex items-center gap-2">
+                      {/* Target Group Segmented Buttons */}
+                      <div className="flex rounded-md border p-0.5 bg-muted/30">
+                        {(['teacher', 'facility', 'operations'] as QcTargetGroup[]).map((group) => (
                           <button
+                            key={group}
                             type="button"
-                            key={cat.id}
-                            onClick={() => handleUpdateErrorField(idx, 'errorType', cat.id)}
-                            className={`flex-1 rounded-md text-xs font-bold border transition-all ${
-                              error.errorType === cat.id
-                                ? 'bg-primary/10 border-primary text-primary shadow-xs'
-                                : 'bg-background border-border text-muted-foreground hover:bg-muted/50'
+                            onClick={() => handleUpdateItem(idx, 'targetGroup', group)}
+                            className={`px-2 py-1 text-xs font-semibold rounded transition-all ${
+                              item.targetGroup === group
+                                ? 'bg-primary text-primary-foreground shadow-2xs'
+                                : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            {cat.label}
+                            {QC_TARGET_GROUP_LABELS[group]}
                           </button>
                         ))}
                       </div>
 
-                      {/* Severity select dropdown */}
-                      <InlineSelect
-                        value={error.severity}
-                        ariaLabel="Mức độ nghiêm trọng"
-                        className="h-6.5 text-xs py-0"
-                        options={[
-                          { value: 'low', label: 'Thấp' },
-                          { value: 'medium', label: 'Trung bình' },
-                          { value: 'high', label: 'Cao' },
-                          { value: 'critical', label: 'Nghiêm trọng' },
-                        ]}
-                        onValueChange={(val) => handleUpdateErrorField(idx, 'severity', val)}
-                      />
+                      {form.incidents.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(idx)}
+                          className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
+                          aria-label="Xóa sự cố"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Col 2: Area & Description */}
-                    <div className="md:col-span-5 flex flex-col justify-between gap-1">
-                      {/* Area input */}
-                      <input
-                        type="text"
-                        value={error.area}
-                        onChange={(e) => handleUpdateErrorField(idx, 'area', e.target.value)}
-                        placeholder="Khu vực * (VD: Phòng A201)"
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
-                      />
-
-                      {/* Description input */}
-                      <input
-                        type="text"
-                        value={error.description}
-                        onChange={(e) => handleUpdateErrorField(idx, 'description', e.target.value)}
-                        placeholder="Mô tả chi tiết lỗi phát hiện được... *"
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
-                      />
-                    </div>
-
-                    {/* Col 3: Notes & Evidence Upload */}
-                    <div className="md:col-span-4 flex flex-col justify-between gap-1">
-                      {/* Notes input */}
-                      <input
-                        type="text"
-                        value={error.notes}
-                        onChange={(e) => handleUpdateErrorField(idx, 'notes', e.target.value)}
-                        placeholder="Ghi chú thêm cho lỗi này..."
-                        className="flex h-6.5 w-full rounded-md border border-input bg-transparent px-2 text-xs shadow-xs placeholder:text-muted-foreground/75"
-                      />
-
-                      {/* Image upload preview row */}
-                      <div className="flex items-center gap-1.5 h-6.5">
-                        <label className="flex h-full flex-1 cursor-pointer items-center justify-center rounded-md border border-dashed border-border hover:bg-muted/40 transition-colors text-xs font-semibold text-muted-foreground">
-                          <span>+ Ảnh bằng chứng</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                handleUpdateErrorField(idx, 'evidenceImage', URL.createObjectURL(file))
-                              }
-                            }}
-                            className="hidden"
+                  {/* Context Fields based on Target Group */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 bg-muted/20 p-2.5 rounded-md border border-border/40">
+                    {item.targetGroup === 'teacher' && (
+                      <>
+                        <FieldLabel label="Lớp học">
+                          <InlineSelect
+                            value={item.className || ''}
+                            ariaLabel="Chọn lớp học"
+                            options={SAMPLE_CLASSES.map((c) => ({ value: c, label: c }))}
+                            onValueChange={(v) => handleUpdateItem(idx, 'className', v)}
                           />
-                        </label>
+                        </FieldLabel>
 
-                        {error.evidenceImage && (
-                          <div className="relative group w-9 h-full rounded border overflow-hidden shrink-0 cursor-zoom-in">
-                            <img src={error.evidenceImage} alt="Preview" className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateErrorField(idx, 'evidenceImage', '')}
-                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity"
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                        <FieldLabel label="Buổi học số">
+                          <input
+                            type="number"
+                            min={1}
+                            max={60}
+                            value={item.sessionNumber ?? 1}
+                            onChange={(e) => handleUpdateItem(idx, 'sessionNumber', Number(e.target.value) || 1)}
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Giáo viên đứng lớp">
+                          <InlineSelect
+                            value={item.teacherName || ''}
+                            ariaLabel="Chọn giáo viên"
+                            options={SAMPLE_TEACHERS.map((t) => ({ value: t, label: t }))}
+                            onValueChange={(v) => {
+                              handleUpdateItem(idx, 'teacherName', v)
+                              handleUpdateItem(idx, 'assignee', v)
+                            }}
+                          />
+                        </FieldLabel>
+                      </>
+                    )}
+
+                    {item.targetGroup === 'facility' && (
+                      <>
+                        <FieldLabel label="Phòng học / Khu vực">
+                          <InlineSelect
+                            value={item.roomId || ''}
+                            ariaLabel="Chọn phòng học"
+                            options={SAMPLE_ROOMS.map((r) => ({ value: r, label: r }))}
+                            onValueChange={(v) => handleUpdateItem(idx, 'roomId', v)}
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Người phụ trách sửa chữa">
+                          <input
+                            type="text"
+                            value={item.assignee}
+                            onChange={(e) => handleUpdateItem(idx, 'assignee', e.target.value)}
+                            placeholder="VD: Kỹ thuật Võ Minh Tuấn"
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Hạn xử lý (Deadline)">
+                          <input
+                            type="datetime-local"
+                            value={item.deadline ? item.deadline.slice(0, 16) : ''}
+                            onChange={(e) => handleUpdateItem(idx, 'deadline', e.target.value)}
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                          />
+                        </FieldLabel>
+                      </>
+                    )}
+
+                    {item.targetGroup === 'operations' && (
+                      <>
+                        <FieldLabel label="Nhân viên CS / Vận hành">
+                          <InlineSelect
+                            value={item.csmName || ''}
+                            ariaLabel="Chọn nhân viên CS"
+                            options={SAMPLE_CSMS.map((c) => ({ value: c, label: c }))}
+                            onValueChange={(v) => {
+                              handleUpdateItem(idx, 'csmName', v)
+                              handleUpdateItem(idx, 'assignee', v)
+                            }}
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Lớp học liên quan (nếu có)">
+                          <InlineSelect
+                            value={item.className || ''}
+                            ariaLabel="Chọn lớp học"
+                            options={[
+                              { value: '', label: 'Không gắn lớp cụ thể' },
+                              ...SAMPLE_CLASSES.map((c) => ({ value: c, label: c })),
+                            ]}
+                            onValueChange={(v) => handleUpdateItem(idx, 'className', v)}
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Buổi học số (nếu có)">
+                          <input
+                            type="number"
+                            min={1}
+                            max={60}
+                            value={item.sessionNumber ?? ''}
+                            onChange={(e) => handleUpdateItem(idx, 'sessionNumber', e.target.value ? Number(e.target.value) : undefined)}
+                            placeholder="VD: 1"
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                          />
+                        </FieldLabel>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Criteria, Severity & Assignee */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                    <FieldLabel label="Tiêu chí đánh giá *">
+                      <InlineSelect
+                        value={item.criteria}
+                        ariaLabel="Tiêu chí đánh giá"
+                        options={Object.entries(QC_CRITERIA_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+                        onValueChange={(v) => handleUpdateItem(idx, 'criteria', v as QcEvaluationCriteria)}
+                      />
+                    </FieldLabel>
+
+                    <FieldLabel label="Mức độ nghiêm trọng *">
+                      <InlineSelect
+                        value={item.severity}
+                        ariaLabel="Mức độ nghiêm trọng"
+                        options={Object.entries(QC_ERROR_SEVERITY_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+                        onValueChange={(v) => handleUpdateItem(idx, 'severity', v as QcErrorSeverity)}
+                      />
+                    </FieldLabel>
+
+                    <FieldLabel label="Người phụ trách khắc phục *">
+                      <input
+                        type="text"
+                        value={item.assignee}
+                        onChange={(e) => handleUpdateItem(idx, 'assignee', e.target.value)}
+                        placeholder="Chỉ định người xử lý..."
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                      />
+                    </FieldLabel>
+                  </div>
+
+                  {/* Title & Description */}
+                  <div className="space-y-2 mb-3">
+                    <FieldLabel label="Tiêu đề tóm tắt sự cố *">
+                      <input
+                        type="text"
+                        value={item.title}
+                        onChange={(e) => handleUpdateItem(idx, 'title', e.target.value)}
+                        placeholder="VD: Quên điểm danh trên phần mềm sau buổi 3..."
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs font-medium"
+                      />
+                    </FieldLabel>
+
+                    <FieldLabel label="Mô tả chi tiết vi phạm *">
+                      <textarea
+                        rows={2}
+                        value={item.description}
+                        onChange={(e) => handleUpdateItem(idx, 'description', e.target.value)}
+                        placeholder="Mô tả cụ thể hành vi vi phạm, số lượng học sinh bị ảnh hưởng, thời điểm..."
+                        className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs shadow-xs"
+                      />
+                    </FieldLabel>
+                  </div>
+
+                  {/* Evidence Upload */}
+                  <div className="rounded-md border border-dashed border-border/80 bg-muted/20 p-3">
+                    <span className="text-xs font-semibold text-muted-foreground block mb-2">
+                      Bằng chứng phát hiện vi phạm:
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <label className="flex h-9 px-3 cursor-pointer items-center justify-center rounded-md border border-border bg-background hover:bg-muted/50 transition-colors text-xs font-semibold text-primary gap-1.5">
+                        <ImageIcon className="h-4 w-4" />
+                        <span>+ Đính kèm ảnh bằng chứng</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              handleUpdateItem(idx, 'evidenceImage', URL.createObjectURL(file))
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <input
+                        type="text"
+                        value={item.evidenceLink || ''}
+                        onChange={(e) => handleUpdateItem(idx, 'evidenceLink', e.target.value)}
+                        placeholder="Dán link bằng chứng / log hệ thống (nếu có)..."
+                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs"
+                      />
+
+                      {item.evidenceImage && (
+                        <div className="relative group w-12 h-9 rounded border overflow-hidden shrink-0">
+                          <img src={item.evidenceImage} alt="Proof" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateItem(idx, 'evidenceImage', '')}
+                            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Add Error Row Button */}
+            {/* Add More Row Button */}
             <Button
               type="button"
               variant="outline"
-              onClick={handleAddErrorRow}
-              className="w-full border-dashed border-primary/50 text-primary hover:bg-primary/5 font-semibold text-xs h-9 mt-1.5 shrink-0"
+              onClick={handleAddRow}
+              className="w-full border-dashed border-primary/50 text-primary hover:bg-primary/5 font-semibold text-xs h-9"
             >
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Thêm dòng ghi lỗi mới
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Thêm sự cố khác vào đợt ghi nhận này
             </Button>
           </div>
         </div>
 
-        <DialogFooter className="mt-6 border-t border-border/50 pt-4 flex w-full items-center justify-between sm:justify-between shrink-0">
+        {/* Footer */}
+        <DialogFooter className="border-t border-border/50 pt-3 flex w-full items-center justify-between sm:justify-between shrink-0">
           <div className="text-xs text-muted-foreground font-medium">
-            Tổng cộng: <span className="font-bold text-foreground">{form.errors.filter(e => e.area.trim() && e.description.trim()).length}</span> lỗi hoàn thiện
+            Tổng cộng: <span className="font-bold text-foreground">{form.incidents.length}</span> sự cố sẽ được ghi nhận
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Hủy bỏ
             </Button>
-            <Button onClick={handleSubmit} disabled={!form.branch || !generalInspectorId}>
-              Tạo đợt QC
+            <Button onClick={handleSubmit} disabled={!form.branch}>
+              Ghi nhận {form.incidents.length} sự cố
             </Button>
           </div>
         </DialogFooter>

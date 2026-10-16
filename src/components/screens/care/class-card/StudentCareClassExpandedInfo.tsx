@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Calendar,
   MapPin,
@@ -8,8 +8,10 @@ import {
   ExternalLink,
   Pencil,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { StudentPackageHistoryPopover } from '@/components/screens/students/detail/StudentPackageHistoryPopover'
+import { StudentDetailSessionsDialog } from '@/components/screens/students/detail/StudentDetailSessionsDialog'
 import type { StudentProgram } from '@/components/screens/students/detail/studentDetailTypes'
 import type { StudentCareClassExpandedInfoProps } from './studentCareClassCardTypes'
 
@@ -17,13 +19,16 @@ export function StudentCareClassExpandedInfo({
   currentBranchName,
   attendedSessions,
   totalSessions,
+  remainingSessions: propRemainingSessions,
   startDateDisplay,
   endDateDisplay,
   pkg,
   pkgIsEnglish,
   className,
+  onUpdateSessions,
 }: StudentCareClassExpandedInfoProps) {
-  const remainingSessions = pkg.remainingSessions ?? Math.max(0, totalSessions - attendedSessions)
+  const [isEditSessionsOpen, setIsEditSessionsOpen] = useState(false)
+  const remainingSessions = propRemainingSessions ?? pkg.remainingSessions ?? Math.max(0, totalSessions - attendedSessions)
 
   // Quota nghỉ phép: Mặc định 2/8 buổi (còn 6 buổi) khớp 100% mẫu ảnh
   const totalLeaveQuota = 8
@@ -154,23 +159,24 @@ export function StudentCareClassExpandedInfo({
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Vế trái: Tên gói học in đậm */}
         <h4
-          className="text-xs sm:text-[13px] font-bold text-foreground truncate leading-tight"
+          className="text-xs sm:text-[13px] 2xl:text-[14px] font-bold text-foreground truncate leading-tight"
           title={pkg.packageName || (pkgIsEnglish ? 'Tiêu chuẩn Tiếng Anh 48B' : 'Toán Tư Duy STEM Rino')}
         >
           {pkg.packageName || (pkgIsEnglish ? 'Tiêu chuẩn Tiếng Anh 48B' : 'Toán Tư Duy STEM Rino')}
         </h4>
 
         {/* Vế phải: Số buổi học & còn lại + icon chỉnh sửa số buổi */}
-        <div className="flex items-center gap-1.5 text-xs shrink-0">
-          <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-          <span className="text-foreground font-bold text-xs sm:text-[12.5px] leading-tight">
+        <div className="flex items-center gap-1.5 text-xs 2xl:text-[13px] shrink-0">
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-foreground font-bold text-xs sm:text-[12.5px] 2xl:text-[13.5px] leading-tight">
             {attendedSessions}/{totalSessions} buổi
           </span>
-          <span className="text-muted-foreground font-normal text-[11px]">
+          <span className="text-muted-foreground font-normal text-xs 2xl:text-[12px]">
             (còn {remainingSessions})
           </span>
           <button
             type="button"
+            onClick={() => setIsEditSessionsOpen(true)}
             className="p-0.5 text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 cursor-pointer transition-colors -mr-0.5"
             title="Chỉnh sửa số buổi học"
           >
@@ -182,21 +188,21 @@ export function StudentCareClassExpandedInfo({
       {/* ── HÀNG 2: MÔN • LỚP • TRÌNH ĐỘ • LỊCH SỬ GÓI (TRÁI) & CƠ SỞ (PHẢI) ── */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Vế trái: Phân cấp gói + Popover lịch sử gói trước đó */}
-        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+        <div className="text-xs 2xl:text-[12.5px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
           <span>{packageSubInfo}</span>
           <span className="text-border/60">•</span>
           <StudentPackageHistoryPopover program={mockProgram} />
         </div>
 
         {/* Vế phải: Cơ sở */}
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
+        <div className="flex items-center gap-1 text-xs 2xl:text-[12.5px] text-muted-foreground shrink-0">
           <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
           <span>{currentBranchName || 'RinoEdu Nguyễn Tuân'}</span>
         </div>
       </div>
 
       {/* ── HÀNG 3: QUOTA NGHỈ (TRÁI), NHÃN TÁI PHÍ & HẠN DỰ KIẾN (PHẢI) ── */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-border/40 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-border/40 text-xs 2xl:text-[12.5px] text-muted-foreground">
         {/* Cạnh trái: Quota nghỉ */}
         <div className="flex items-center gap-1">
           <span>Quota nghỉ:</span>
@@ -212,10 +218,10 @@ export function StudentCareClassExpandedInfo({
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto flex-wrap">
           {expiryInfo.diffDays < 90 && expiryInfo.diffDays > 0 && (
             <span
-              className="h-4.5 px-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-300/40 inline-flex items-center gap-1 text-[10px] font-semibold cursor-pointer shadow-3xs"
+              className="h-4.5 px-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-300/40 inline-flex items-center gap-1 text-[10.5px] 2xl:text-[11.5px] font-semibold cursor-pointer shadow-3xs"
               title="Hạn dùng gói học còn dưới 90 ngày - Tái phí"
             >
-              <RefreshCw className="h-2 w-2 shrink-0" />
+              <RefreshCw className="h-2.5 w-2.5 shrink-0" />
               <span>Tái phí</span>
               <ExternalLink className="h-2 w-2 opacity-60" />
             </span>
@@ -238,6 +244,18 @@ export function StudentCareClassExpandedInfo({
           </div>
         </div>
       </div>
+
+      {/* Modal Chỉnh sửa số buổi học */}
+      <StudentDetailSessionsDialog
+        open={isEditSessionsOpen}
+        onOpenChange={setIsEditSessionsOpen}
+        totalSessions={totalSessions}
+        initialStudiedSessions={attendedSessions}
+        onSave={(newStudied) => {
+          onUpdateSessions?.(newStudied)
+          toast.success('Cập nhật số buổi học thành công!')
+        }}
+      />
     </div>
   )
 }

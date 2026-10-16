@@ -11,7 +11,11 @@ import type {
   CareAvatarItem,
   RenewalAvatarItem,
   DailyTodoItem,
+  HomeQcMetrics,
 } from './homeTypes'
+import { mockQcCheckEvents } from '@/mocks/qcChecks'
+import type { QcExtendedError } from '@/components/screens/qc-remediation/qcRemediationTypes'
+import { isErrorOverdue } from '@/components/screens/qc-remediation/qcRemediationTypes'
 
 const STUDENT_AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80',
@@ -402,3 +406,46 @@ export function getDailyTodos(
 
   return todos
 }
+
+export function getHomeQcErrors(branch: string = 'all'): QcExtendedError[] {
+  const flattened: QcExtendedError[] = mockQcCheckEvents.flatMap((e) =>
+    e.errors.map((err) => ({
+      ...err,
+      qcEventId: e.id,
+      eventCode: e.code,
+      eventName: e.name,
+      branch: e.branch,
+      itemId: err.itemId || 'item_01',
+      itemLabel: err.itemLabel || err.title,
+      errorType: (err.errorType || (err.targetGroup === 'teacher' ? 'personnel' : 'facility')) as any,
+      requiresCorrectiveAction: err.requiresCorrectiveAction ?? true,
+      correctiveAction: err.correctiveAction || '',
+      correctiveEvidence: err.correctiveEvidence || '',
+      notes: err.notes || '',
+    }))
+  )
+  if (branch === 'all') return flattened
+  return flattened.filter(
+    (err) =>
+      err.branch.toLowerCase().includes(branch.toLowerCase()) ||
+      branch.toLowerCase().includes(err.branch.toLowerCase())
+  )
+}
+
+export function computeHomeQcMetrics(errors: QcExtendedError[]): HomeQcMetrics {
+  const total = errors.length
+  const pending = errors.filter(
+    (e) => e.status === 'open' || e.status === 'correcting' || e.status === 'not_met'
+  ).length
+  const overdue = errors.filter(
+    (e) => isErrorOverdue(e) && e.status !== 'closed' && e.status !== 'cancelled'
+  ).length
+  const critical = errors.filter(
+    (e) => e.severity === 'critical' || e.severity === 'high'
+  ).length
+  const corrected = errors.filter((e) => e.status === 'corrected').length
+  const closed = errors.filter((e) => e.status === 'closed').length
+
+  return { total, pending, overdue, critical, corrected, closed }
+}
+

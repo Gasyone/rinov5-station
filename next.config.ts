@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns'],
+  },
 };
 
 export default nextConfig;

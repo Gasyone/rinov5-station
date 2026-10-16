@@ -253,7 +253,7 @@ export function StudentCareDetailDialogV1({
           <DialogTitle>Chi tiết học viên - {student.studentName}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
+        <div className="grid flex-1 grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
           
           {/* Left Column: Profile Info Header & Report Tab */}
           <main className="flex min-h-0 flex-col overflow-y-auto text-left bg-background pr-1.5 scrollbar-thin">
@@ -385,7 +385,7 @@ export function StudentCareDetailDialogV1({
                       {contact.relationship}
                     </Badge>
                     {contact.isPrimary && (
-                      <Badge className="bg-primary/10 text-primary hover:bg-primary/10 font-bold px-1 py-px text-[7.5px] rounded border-none shadow-none leading-none select-none">
+                      <Badge className="bg-primary/10 text-primary hover:bg-primary/10 font-bold px-1.5 py-0.5 text-xs rounded border-none shadow-none leading-none select-none">
                         Chính
                       </Badge>
                     )}

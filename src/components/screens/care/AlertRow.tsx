@@ -1,12 +1,38 @@
+'use client'
+
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ContactCell, PersonnelHoverCard, CareTagHoverCard, StatusBadge } from '@/components/shared'
-import {
-  Calendar,
-} from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
+import { mockStudents } from '@/mocks/students'
+import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
+import {
+  getInitials,
+  getAvatarColor,
+  getHistoryLogsForStudent,
+  getStudentCareTags,
+  getCareTagAssignees,
+  getRescheduleInfo,
+  isOverdue,
+  isToday,
+  isInProgress,
+  isCared,
+  isMyCSStaff,
+  isMyTeacher,
+  type CareTag,
+} from './operationsAlertHelpers'
+import { useSystemConfigStore } from '@/stores/useSystemConfigStore'
+import { ClassCodeHoverCell } from './ClassCodeHoverCell'
+import { StudentCareItemsDialog } from './StudentCareItemsDialog'
+import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
+import {
+  resolveStudentPlacementStatus,
+  PLACEMENT_STATUS_META,
+} from './class-card/studentCareClassCardHelpers'
 
 export function formatRelativeCareTime(dateStr?: string): string {
   if (!dateStr) return ''
@@ -48,18 +74,6 @@ export function formatRelativeCareTime(dateStr?: string): string {
 }
 
 export const getElapsedDaysText = formatRelativeCareTime
-import { type StudentCareAlert } from '@/mocks/careAlerts'
-import { getFamilyContacts } from '@/mocks/careAlerts'
-import { mockStudents } from '@/mocks/students'
-import { getStatusBadgeClass, getStatusColors } from '@/lib/statusColors'
-import { getInitials, getAvatarColor, getHistoryLogsForStudent, getStudentCareTags, getCareTagAssignees, getRescheduleInfo, isOverdue, isToday, isInProgress, isCared, type CareTag } from './operationsAlertHelpers'
-import { ClassCodeHoverCell } from './ClassCodeHoverCell'
-import { StudentCareItemsDialog } from './StudentCareItemsDialog'
-import { OperationsAlertCareHistoryModal } from './OperationsAlertCareHistoryModal'
-import {
-  resolveStudentPlacementStatus,
-  PLACEMENT_STATUS_META,
-} from './class-card/studentCareClassCardHelpers'
 
 export interface AlertRowProps {
   cls: StudentCareAlert
@@ -82,6 +96,8 @@ function getCareTagFullLabel(tag: CareTag): string {
 }
 
 export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh, onViewDetail }: AlertRowProps) {
+  const currentStaffName = useSystemConfigStore((s) => s.currentStaffName)
+  const isMyCS = isMyCSStaff(cls.csStaff, currentStaffName)
   const showTagsInColumn = true
 
   // Family contacts
@@ -100,9 +116,9 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
   })
 
   const [isItemsModalOpen, setIsItemsModalOpen] = useState(false)
-  const visibleCount = allTags.length > 2 ? 2 : allTags.length
-  const visibleTags = allTags.slice(0, visibleCount)
-  const remainingCount = allTags.length - visibleCount
+  const tag0 = allTags[0]
+  const tag1 = allTags[1]
+  const tag2 = allTags[2]
 
   const renderTagBadge = (tag: CareTag, idx: number) => {
     const isSpecialCare = tag.label === 'CĐB' || tag.label.startsWith('ĐB')
@@ -146,7 +162,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
         <Badge
           variant="outline"
           className={cn(
-            'text-xs px-1.5 py-0 h-5 font-normal flex items-center gap-0.5 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded shadow-none',
+            'text-xs 2xl:text-xs px-1.5 2xl:px-2 py-0 h-5 2xl:h-5.5 font-normal flex items-center gap-0.5 2xl:gap-1 shrink-0 relative border whitespace-nowrap text-left w-fit leading-none cursor-help transition-opacity hover:opacity-90 rounded shadow-none',
             colorClass
           )}
         >
@@ -181,7 +197,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
     <tr
       onClick={() => onViewDetail?.(cls.id)}
       className={cn(
-        'group cursor-pointer transition-colors align-middle [&>td]:py-1.5 [&>td]:px-2.5 border-b-0',
+        'group cursor-pointer transition-colors align-middle [&>td]:py-1 [&>td]:px-2 xl:[&>td]:px-2.5 2xl:[&>td]:py-2 border-b-0',
         rowBgClass
       )}
     >
@@ -202,25 +218,30 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
 
       {/* Học viên: Đồng bộ dùng AppAvatar như màn class_placement */}
       <td
+        onClick={() => onViewDetail?.(cls.id)}
         className={cn(
-          "sticky left-8 z-30 w-[220px] min-w-[200px] max-w-[240px] px-2.5 transition-colors",
+          "sticky left-8 z-30 w-[210px] min-w-[195px] xl:w-[230px] 2xl:w-[260px] px-2 xl:px-2.5 transition-colors cursor-pointer",
           stickyBgClass
         )}
       >
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0">
           <div
             className={cn(
-              'h-6.5 w-6.5 rounded flex items-center justify-center text-xs font-medium shrink-0 hover:opacity-80 transition-opacity',
+              'h-6.5 w-6.5 2xl:h-8 2xl:w-8 rounded flex items-center justify-center text-xs 2xl:text-sm font-medium shrink-0 hover:opacity-80 transition-opacity',
               getAvatarColor(cls.studentId)
             )}
           >
             {getInitials(cls.studentName)}
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-foreground text-xs truncate hover:underline hover:text-primary leading-tight" title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}>
+            <p
+              onClick={() => onViewDetail?.(cls.id)}
+              className="font-medium text-foreground text-xs 2xl:text-sm truncate hover:underline hover:text-primary leading-tight cursor-pointer"
+              title={cls.englishName ? `${cls.studentName} (${cls.englishName})` : cls.studentName}
+            >
               {cls.studentName} {cls.englishName ? `(${cls.englishName})` : ''}
             </p>
-            <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground font-normal leading-none mt-0.5 2xl:mt-1 truncate">
               {cls.subject} - {cls.level}
             </p>
           </div>
@@ -228,7 +249,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
       </td>
 
       {/* Liên hệ */}
-      <td className="min-w-[125px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[150px] min-w-[140px] xl:w-[165px] 2xl:w-[180px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
         <ContactCell
           name={
             primaryContact
@@ -241,14 +262,14 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
           masked={true}
           showCallButton={false}
           showPhoneIcon={false}
-          nameClassName="text-xs font-normal text-foreground"
-          phoneClassName="text-xs font-mono text-muted-foreground"
+          nameClassName="text-xs 2xl:text-sm font-normal text-foreground"
+          phoneClassName="text-xs 2xl:text-xs font-mono text-muted-foreground"
         />
       </td>
 
       {/* Người chăm sóc */}
-      <td className="min-w-[180px]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-col gap-0.5 text-left">
+      <td className="w-[165px] min-w-[150px] xl:w-[185px] 2xl:w-[205px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col gap-0.5 2xl:gap-1 text-left">
           {/* CS ở trên */}
           {cls.csStaff && (
             <PersonnelHoverCard
@@ -259,14 +280,23 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                 email: `${cls.csStaff.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
               }}
             >
-              <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0 rounded transition-colors w-fit leading-tight whitespace-nowrap">
-                <span className="text-xs text-muted-foreground font-normal">CS</span>
-                <span className="font-normal text-foreground text-xs hover:text-primary leading-tight">{cls.csStaff}</span>
+              <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0.5 rounded transition-colors w-fit leading-tight whitespace-nowrap">
+                <span className="text-xs text-muted-foreground font-normal">
+                  CS
+                </span>
+                <span className="text-xs 2xl:text-sm leading-tight text-foreground font-normal hover:text-primary max-w-[110px] xl:max-w-none truncate">
+                  {cls.csStaff}
+                </span>
+                {isMyCS && (
+                  <span className="text-xs text-sky-600 dark:text-sky-400 font-normal leading-none ml-0.5">
+                    (bạn)
+                  </span>
+                )}
               </div>
             </PersonnelHoverCard>
           )}
 
-          {/* GV ở dưới (có thể có nhiều GV) */}
+          {/* GV ở dưới (tối đa 1 dòng, nếu có nhiều GV thì hiển thị +N để không vượt quá 2 dòng) */}
           {(() => {
             const teachers = [
               ...new Set([
@@ -275,37 +305,63 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               ]),
             ].filter(Boolean)
 
-            return teachers.map((teacher, idx) => (
-              <PersonnelHoverCard
-                key={idx}
-                person={{
-                  name: teacher,
-                  role: 'Giáo viên Học thuật (GV)',
-                  phone: '0987 654 321',
-                  email: `${teacher.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
-                }}
-              >
-                <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0 rounded transition-colors w-fit leading-tight whitespace-nowrap">
-                  <span className="text-xs text-muted-foreground font-normal">GV</span>
-                  <span className="font-normal text-foreground text-xs hover:text-primary leading-tight">{teacher}</span>
-                </div>
-              </PersonnelHoverCard>
-            ))
+            if (teachers.length === 0) return null
+            const primaryTeacher = teachers[0]
+            const remainingCount = teachers.length - 1
+            const isThisMyTeacher = isMyTeacher(primaryTeacher, currentStaffName)
+
+            return (
+              <div className="flex items-center gap-1 flex-nowrap">
+                <PersonnelHoverCard
+                  person={{
+                    name: primaryTeacher,
+                    role: 'Giáo viên Học thuật (GV)',
+                    phone: '0987 654 321',
+                    email: `${primaryTeacher.toLowerCase().replace(/\s+/g, '')}@rinoedu.vn`
+                  }}
+                >
+                  <div className="flex items-center gap-1 cursor-pointer hover:bg-muted/40 px-1 py-0.5 rounded transition-colors w-fit leading-tight whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground font-normal">
+                      GV
+                    </span>
+                    <span className="text-xs 2xl:text-sm leading-tight text-foreground font-normal hover:text-primary max-w-[110px] xl:max-w-none truncate">
+                      {primaryTeacher}
+                    </span>
+                    {isThisMyTeacher && (
+                      <span className="text-xs text-purple-600 dark:text-purple-400 font-normal leading-none ml-0.5">
+                        (bạn)
+                      </span>
+                    )}
+                  </div>
+                </PersonnelHoverCard>
+                {remainingCount > 0 && (
+                  <Badge variant="outline" className="text-xs px-1.5 py-0 h-4.5 font-normal text-muted-foreground shrink-0" title={`Các GV khác: ${teachers.slice(1).join(', ')}`}>
+                    +{remainingCount}
+                  </Badge>
+                )}
+              </div>
+            )
           })()}
         </div>
       </td>
 
       {/* Thẻ chăm sóc (Hiển thị hàng ngang flex-wrap, gọn gàng) */}
-      <td className="min-w-[230px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[210px] min-w-[190px] xl:w-[235px] 2xl:w-[260px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
         {(() => {
           return (
-            <div className="flex flex-col gap-0.5 py-0 max-w-[300px]">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 py-0 max-w-[200px] xl:max-w-[225px] 2xl:max-w-[250px]">
               {showTagsInColumn && (
                 <div className="flex flex-wrap items-center gap-1">
                   {allTags.length > 0 ? (
                     <>
-                      {visibleTags.map((tag, idx) => renderTagBadge(tag, idx))}
-                      {remainingCount > 0 && (
+                      {tag0 && renderTagBadge(tag0, 0)}
+                      {tag1 && renderTagBadge(tag1, 1)}
+                      {tag2 && (
+                        <span className="hidden 2xl:inline-flex">
+                          {renderTagBadge(tag2, 2)}
+                        </span>
+                      )}
+                      {allTags.length === 3 && (
                         <Button
                           type="button"
                           variant="outline"
@@ -314,10 +370,26 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                             e.stopPropagation()
                             setIsItemsModalOpen(true)
                           }}
-                          className="h-5 px-1 text-xs font-medium text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded shrink-0 shadow-none cursor-pointer"
+                          className="2xl:hidden h-5 2xl:h-5.5 px-1 text-xs font-normal text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded shrink-0 shadow-none cursor-pointer"
                           title="Xem toàn bộ danh sách hạng mục chăm sóc"
                         >
-                          +{remainingCount}
+                          +1
+                        </Button>
+                      )}
+                      {allTags.length > 3 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="xs"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setIsItemsModalOpen(true)
+                          }}
+                          className="h-5 2xl:h-5.5 px-1 text-xs font-normal text-primary border-primary/40 bg-primary/5 hover:bg-primary/15 rounded shrink-0 shadow-none cursor-pointer"
+                          title="Xem toàn bộ danh sách hạng mục chăm sóc"
+                        >
+                          <span className="2xl:hidden">+{allTags.length - 2}</span>
+                          <span className="hidden 2xl:inline">+{allTags.length - 3}</span>
                         </Button>
                       )}
                     </>
@@ -331,7 +403,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                 <span className="text-xs text-muted-foreground font-medium">{cls.careAlert || 'Chăm sóc thường'}</span>
               )}
 
-              {remainingCount > 0 && (
+              {allTags.length > 2 && (
                 <StudentCareItemsDialog
                   open={isItemsModalOpen}
                   onOpenChange={setIsItemsModalOpen}
@@ -346,7 +418,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
       </td>
 
       {/* Nội dung chăm sóc */}
-      <td className="min-w-[240px] max-w-[280px]" onClick={(e) => e.stopPropagation()}>
+      <td className="w-[260px] min-w-[220px] max-w-[320px] xl:w-[290px] 2xl:w-[340px] px-2 xl:px-2.5" onClick={(e) => e.stopPropagation()}>
         {(() => {
           const isCompleted = isCared(cls)
           const inProgress = isInProgress(cls)
@@ -396,7 +468,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
           const rescheduleInfo = getRescheduleInfo(cls)
 
           const cellContent = (
-            <div className="flex flex-col gap-0.5 py-0 text-left max-w-[280px] cursor-pointer group/care">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 py-0 text-left max-w-[250px] xl:max-w-[280px] 2xl:max-w-[330px] cursor-pointer group/care">
               {/* Dòng 1 (trên): Nội dung chăm sóc gần nhất */}
               {isUncared && !rescheduleInfo.isRescheduled ? (
                 <div className="text-xs text-muted-foreground">
@@ -405,15 +477,15 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               ) : latestLog ? (
                 <div
                   className={cn(
-                    'text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-tight',
+                    'text-xs 2xl:text-xs text-muted-foreground group-hover/care:text-foreground transition-colors leading-tight 2xl:leading-snug',
                     rescheduleInfo.isRescheduled ? 'truncate' : 'line-clamp-2 break-words'
                   )}
                   title={`${latestLog.date} (${formatRelativeCareTime(latestLog.date)}): ${latestLog.note}`}
                 >
-                  <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0">
+                  <span className="font-semibold text-foreground dark:text-zinc-100 mr-1 shrink-0 2xl:text-xs">
                     {formatRelativeCareTime(latestLog.date)}:
                   </span>
-                  <span className="text-zinc-600 dark:text-zinc-400">{latestLog.note}</span>
+                  <span className="text-zinc-600 dark:text-zinc-400 2xl:text-xs">{latestLog.note}</span>
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">
@@ -424,10 +496,10 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               {/* Dòng 2 (dưới): Lịch hẹn gọi lại (Màu tím nhạt) */}
               {rescheduleInfo.isRescheduled && (
                 <div
-                  className="text-xs text-purple-500 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap leading-tight mt-0.5"
+                  className="text-xs 2xl:text-xs text-purple-500 dark:text-purple-400 flex items-center gap-1 whitespace-nowrap leading-tight mt-0.5 2xl:mt-1"
                   title="Lịch hẹn gọi lại tiếp theo"
                 >
-                  <Calendar className="h-3 w-3 shrink-0 text-purple-400 dark:text-purple-300" />
+                  <Calendar className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 shrink-0 text-purple-400 dark:text-purple-300" />
                   <span>Hẹn gọi lại: {rescheduleInfo.rescheduleDate} {rescheduleInfo.rescheduleTime}</span>
                 </div>
               )}
@@ -450,7 +522,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
       </td>
 
       {/* Trạng thái */}
-      <td className="w-28 min-w-28 max-w-32 whitespace-nowrap">
+      <td className="w-[130px] min-w-[120px] xl:w-[140px] 2xl:w-[155px] px-2 xl:px-2.5 whitespace-nowrap">
         {(() => {
           const isCompleted = isCared(cls)
           const isInProgressCall = isInProgress(cls)
@@ -472,16 +544,16 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
           const latestDate = latestLog ? latestLog.date : '12/07/2026'
 
           return (
-            <div className="space-y-0.5 text-left">
+            <div className="space-y-0.5 2xl:space-y-1 text-left">
               {/* Dòng 1: Trạng thái Vòng đời chăm sóc */}
               <div className="flex items-center gap-1">
-                <Badge variant="outline" className={cn("text-[11px] font-normal px-1.5 py-0 h-4.5 leading-none", lifecycleStatus.badgeClass)}>
+                <Badge variant="outline" className={cn("text-xs font-normal px-1.5 2xl:px-2 py-0.5 h-5 leading-none", lifecycleStatus.badgeClass)}>
                   {lifecycleStatus.label}
                 </Badge>
               </div>
 
-              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) - dùng cùng font với cột Lớp học */}
-              <div className="text-[11px] leading-tight mt-0.5">
+              {/* Dòng 2: Thời gian SLA (Gần nhất / Quá hạn / Đến hạn / Hạn) */}
+              <div className="text-xs leading-tight mt-0.5 2xl:mt-1">
                 {isCompleted ? (
                   <span className="text-muted-foreground font-normal">Gần nhất: {latestDate}</span>
                 ) : isOverdueAlert ? (
@@ -498,7 +570,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
       </td>
 
       {/* Lớp học */}
-      <td className="min-w-[190px]">
+      <td className="w-[195px] min-w-[185px] xl:w-[215px] 2xl:w-[235px] px-2 xl:px-2.5">
         {(() => {
           const studentInfo = mockStudents.find(
             (s) => s.id === cls.studentId || s.name.toLowerCase() === cls.studentName.toLowerCase()
@@ -519,7 +591,7 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
               isHoldingClass)
 
           return (
-            <div className="flex flex-col gap-0.5 text-left">
+            <div className="flex flex-col gap-0.5 2xl:gap-1 text-left">
               {/* Hàng 1: Mã lớp cùng trạng thái (không xuống dòng, size gọn) */}
               <div className="flex items-center gap-1.5 flex-nowrap whitespace-nowrap">
                 {showClassHover ? (
@@ -531,11 +603,11 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                       subLevel={cls.subLevel}
                       teacherCode={cls.teacherCode}
                       schedule={cls.schedule}
-                      className="text-[11px] font-mono shrink-0"
+                      className="text-xs font-mono shrink-0"
                     />
                   </span>
                 ) : hasClassCode ? (
-                  <span className="text-[11px] text-foreground font-mono font-normal shrink-0">
+                  <span className="text-xs text-foreground font-mono font-normal shrink-0">
                     {cls.classCode}
                   </span>
                 ) : (
@@ -551,13 +623,13 @@ export function AlertRow({ cls, isSelected, onSelectChange, rowIndex, onRefresh,
                       ? 'Bảo lưu (Giữ lớp)'
                       : PLACEMENT_STATUS_META[placementStatus]?.label || 'Đang học'
                   }
-                  className="text-[10px] px-1 py-0 h-4 font-normal shrink-0 whitespace-nowrap leading-none"
+                  className="text-xs px-1.5 py-0.5 h-5 font-normal shrink-0 whitespace-nowrap leading-none"
                 />
               </div>
 
               {/* Hàng 2: Hạn */}
               {cls.expectedEndDate && (
-                <div className="flex items-center gap-1 flex-nowrap text-[11px] text-muted-foreground leading-tight mt-0.5">
+                <div className="flex items-center gap-1 flex-nowrap text-xs text-muted-foreground leading-tight mt-0.5 2xl:mt-1">
                   <span>Hạn: {cls.expectedEndDate}</span>
                 </div>
               )}

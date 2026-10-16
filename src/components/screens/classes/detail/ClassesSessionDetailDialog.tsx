@@ -605,9 +605,12 @@ export function ClassesSessionDetailDialog({
             ) : (
               <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pt-1">
                 <ClassesSessionMediaTab
+                  key={session.id}
                   singleSessionMode={true}
                   sessionId={session.id}
                   sessionNumber={session.sessionNumber}
+                  sessionStatus={session.status}
+                  classStatus={cls.status}
                   className={cls.name}
                   rosterStudents={activeRoster.map((s) => ({
                     id: s.id,

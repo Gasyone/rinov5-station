@@ -19,7 +19,12 @@ export interface StudentMonthlyReport {
   dateStr: string
   awardBadge: string
   teacherName: string
-  
+  // Điểm kiểm tra định kỳ & Tài liệu đính kèm (dành cho môn Toán và Tiếng Anh)
+  testScore?: number | string | null
+  priorTestScore?: number | string | null
+  testDocUrl?: string
+  testDocName?: string
+
   // Section A: Báo cáo học tập chuyên sâu
   sectionA1Content: string
   sectionA2Content: string
@@ -142,6 +147,10 @@ function createSeedReport(
     dateStr,
     awardBadge,
     teacherName,
+    testScore: 8.5,
+    priorTestScore: 8.0,
+    testDocUrl: 'https://docs.google.com/document/d/learning-result-baohan',
+    testDocName: 'Phieu_kiem_tra_dinh_ky_Toan.pdf',
     sectionA1Content: sectionA1,
     sectionA2Content: sectionA2,
     sectionAContent: `${sectionA1}\n\n${sectionA2}`,
@@ -208,48 +217,54 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'Tháng tới, con tiếp tục rèn thói quen tự kiểm tra bài và tính nhẩm nhanh.'
   ),
 
-  // 2. Nguyễn Phương Vy (s14)
+  // 2. Nguyễn Phương Vy (s14 / 10210078) - Môn Tiếng Anh Level 4
   createSeedReport(
     'mr-s14-4_5_2026',
     's14',
     'Nguyễn Phương Vy',
-    'HV-S14-0',
+    '10210078',
     'Tháng 4/2026',
     '4_5_2026',
     'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     '01/04/2026 đến 30/04/2026',
-    '🌟 SIÊU SAO TOÁN HỌC',
+    '🌟 SIÊU SAO TIẾNG ANH',
     'Teacher Mark & Ms.Chloe',
-    true
+    true,
+    'Điểm nổi bật: Con tự tin phát biểu, ngữ điệu nói tự nhiên và phát âm chuẩn các âm đuôi /s/, /t/, /d/. Trong các hoạt động đóng vai hội thoại nhóm, con luôn chủ động dẫn dắt bạn học.\n\nĐiểm cần lưu ý: Cần chú ý tốc độ nói khi thuyết trình chủ đề dài để tránh nói vấp hoặc nuốt âm.',
+    'Từ vựng & Ngữ pháp: Nắm vững từ vựng chủ đề Environmental Conservation và sử dụng tốt các mẫu câu so sánh hơn, so sánh nhất. Bài kiểm tra định kỳ Unit 4 đạt 9.8/10 điểm xuất sắc.',
+    'Tháng 5/2026, con tiếp tục hoàn thiện kỹ năng thuyết trình tự tin trước đám đông và làm quen với dạng bài viết luận ngắn 80-100 từ theo chuẩn Cambridge Flyers.'
   ),
   createSeedReport(
     'mr-s14-3_4_2026',
     's14',
     'Nguyễn Phương Vy',
-    'HV-S14-0',
+    '10210078',
     'Tháng 3/2026',
     '3_4_2026',
     'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
     '01/03/2026 đến 31/03/2026',
-    '🏆 CAO THỦ GIẢI TOÁN',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Teacher Mark & Ms.Chloe',
-    false
+    false,
+    'Điểm nổi bật: Con tham gia rất sôi nổi các trò chơi ngôn ngữ, phản xạ nghe hiểu câu hỏi của thầy giáo bản ngữ rất nhanh nhẹn.\n\nĐiểm cần lưu ý: Cần rèn thêm tính kiên nhẫn khi đọc hiểu các đoạn văn dài có nhiều từ mới.',
+    'Phonics & Speaking: Phát âm chuẩn xác các nguyên âm đôi, ngữ điệu câu hỏi và câu cảm thán rất tự nhiên. Đạt điểm 9.5/10 ở bài kiểm tra định kỳ Unit 3.',
+    'Tháng tới con sẽ thực hiện dự án thuyết trình nhóm "My Dream City" và ôn tập chuyên sâu các thì cơ bản (Hiện tại đơn, Quá khứ đơn).'
   ),
   createSeedReport(
     'mr-s14-2_3_2026',
     's14',
     'Nguyễn Phương Vy',
-    'HV-S14-0',
+    '10210078',
     'Tháng 2/2026',
     '2_3_2026',
     'BÁO CÁO HỌC TẬP THÁNG 2 VÀ KẾ HOẠCH HỌC TẬP THÁNG 3',
     '01/02/2026 đến 28/02/2026',
-    '⭐️ NGÔI SAO BỨT PHÁ',
+    '⭐️ NGÔI SAO CHĂM CHỈ',
     'Teacher Mark & Ms.Chloe',
     false,
-    'Điểm nổi bật: Con học tập chăm chỉ và đạt điểm kiểm tra đầu vào xuất sắc.',
-    'Kiến thức & Kỹ năng: Tiếp thu bài nhanh, khả năng quan sát và suy luận sắc bén.',
-    'Tháng tới con duy trì nhịp độ học tập và thử sức với các bài toán mở rộng.'
+    'Điểm nổi bật: Con đi học chuyên cần 100%, nộp bài tập về nhà đầy đủ và tương tác rất tích cực với giáo viên nước ngoài.\n\nĐiểm cần lưu ý: Đôi khi còn e dè khi nói chuyện 1-1 với giáo viên bản xứ.',
+    'Từ vựng & Mẫu câu: Ghi nhớ tốt các từ vựng chủ đề Daily Routines và School Activities. Khả năng nghe hiểu câu lệnh cơ bản tốt.',
+    'Tháng tới con tiếp tục mở rộng vốn từ vựng học thuật và rèn phản xạ giao tiếp tự tin hơn.'
   ),
 
   // 3. Nguyễn An (Alex) (s1 / s1-act-0 / HV-S4-10)
@@ -369,7 +384,11 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     monthTitle: 'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
     dateStr: '01/04/2026 đến 30/04/2026',
     awardBadge: '', // Trắng để người dùng tự chọn
-    teacherName: 'Ms.Chloe',
+    teacherName: '', // Trống khi tạo lần đầu
+    testScore: '00', // Mặc định 00
+    priorTestScore: '00', // Mặc định 00
+    testDocUrl: '',
+    testDocName: '',
     sectionA1Content: '', // Trắng để người dùng tự điền
     sectionA2Content: '', // Trắng để người dùng tự điền
     sectionAContent: '',
@@ -516,18 +535,58 @@ export const mockMonthlyReports: StudentMonthlyReport[] = [
     'Nghe & Đọc: Đạt điểm tối đa phần thi nghe hiểu và đọc hiểu văn bản nâng cao.',
     'Tháng tới con tiếp tục chuẩn bị luyện thi chứng chỉ Cambridge PET.'
   ),
+  // 10. Đỗ Minh Quân (s-minhquan / 10700889) - Tiếng Anh IELTS Junior
   createSeedReport(
-    'mr-s15-3_4_2026',
-    's15',
-    'Hoàng Minh Khôi',
-    '2024015',
-    'Tháng 3/2026',
-    '3_4_2026',
-    'BÁO CÁO HỌC TẬP THÁNG 3 VÀ KẾ HOẠCH HỌC TẬP THÁNG 4',
-    '01/03/2026 đến 31/03/2026',
-    '🏆 CAO THỦ TIẾNG ANH',
+    'mr-minhquan-4_5_2026',
+    's-minhquan',
+    'Đỗ Minh Quân',
+    '10700889',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🚀 NGÔI SAO BỨT PHÁ',
     'Teacher Mark & Ms.Chloe',
-    false
+    true,
+    'Điểm nổi bật: Kỹ năng nghe hiểu và đọc hiểu văn bản học thuật IELTS rất tốt, tốc độ làm bài nhanh và chính xác.\n\nĐiểm cần lưu ý: Cần trau chuốt thêm phần phát âm nối âm và ngữ điệu trong bài thi Speaking Part 2.',
+    'Từ vựng & Kỹ năng: Nắm chắc từ vựng chủ đề Academic Education và Global Warming. Điểm thi thử IELTS đạt 7.5 Listening và 8.0 Reading.',
+    'Tháng tới con sẽ luyện tập chuyên sâu dạng bài Describe an Experience trong phần thi Speaking và hoàn thiện kỹ năng viết Task 1.'
+  ),
+
+  // 11. Nguyễn Hà Phương (s15 / 9986363) - Tiếng Anh Level 5
+  createSeedReport(
+    'mr-haphuong-4_5_2026',
+    's15',
+    'Nguyễn Hà Phương',
+    '9986363',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🌟 SIÊU SAO TIẾNG ANH',
+    'Teacher Mark & Ms.Chloe',
+    true,
+    'Điểm nổi bật: Kỹ năng tranh biện và thuyết trình tiếng Anh rất chững chạc, vốn từ vựng phong phú và phản xạ tự nhiên.',
+    'Nghe & Đọc: Đạt điểm tối đa phần thi nghe hiểu và đọc hiểu văn bản nâng cao. Bài kiểm tra định kỳ đạt 8.0/10.',
+    'Tháng tới con tiếp tục chuẩn bị luyện thi chứng chỉ Cambridge PET và rèn luyện kỹ năng viết đoạn văn nghị luận.'
+  ),
+
+  // 12. Vũ Thảo Nhi (s-thaonhi / 10701024) - Tiếng Anh Level 4
+  createSeedReport(
+    'mr-thaonhi-4_5_2026',
+    's-thaonhi',
+    'Vũ Thảo Nhi',
+    '10701024',
+    'Tháng 4/2026',
+    '4_5_2026',
+    'BÁO CÁO HỌC TẬP THÁNG 4 VÀ KẾ HOẠCH HỌC TẬP THÁNG 5',
+    '01/04/2026 đến 30/04/2026',
+    '🌟 SIÊU SAO TIẾNG ANH',
+    'Teacher Mark & Ms.Chloe',
+    true,
+    'Điểm nổi bật: Con rất hào hứng với các hoạt động đọc truyện và diễn kịch tiếng Anh, ghi nhớ tốt từ vựng chủ đề School và Family.\n\nĐiểm cần lưu ý: Cần chú ý thêm phát âm âm đuôi và tự tin hơn khi nói 1-1 với giáo viên.',
+    'Từ vựng & Mẫu câu: Nhớ tốt các từ vựng chủ đề Daily Routines. Bài kiểm tra đầu vào đạt 8.5/10.',
+    'Tháng tới con tiếp tục nâng cao phản xạ giao tiếp tự tin trước lớp và luyện tập thuyết trình ngắn.'
   ),
 ]
 
@@ -660,7 +719,11 @@ export function saveStudentMonthlyReport(
     monthTitle,
     dateStr,
     awardBadge: data.awardBadge || '',
-    teacherName: data.teacherName || 'Ms.Chloe',
+    teacherName: data.teacherName !== undefined ? data.teacherName : existingIndex >= 0 ? mockMonthlyReports[existingIndex].teacherName : '',
+    testScore: data.testScore !== undefined ? data.testScore : existingIndex >= 0 ? mockMonthlyReports[existingIndex].testScore : '00',
+    priorTestScore: data.priorTestScore !== undefined ? data.priorTestScore : existingIndex >= 0 ? mockMonthlyReports[existingIndex].priorTestScore : '00',
+    testDocUrl: data.testDocUrl !== undefined ? data.testDocUrl : (existingIndex >= 0 ? mockMonthlyReports[existingIndex].testDocUrl : ''),
+    testDocName: data.testDocName !== undefined ? data.testDocName : (existingIndex >= 0 ? mockMonthlyReports[existingIndex].testDocName : ''),
     sectionA1Content: data.sectionA1Content !== undefined ? data.sectionA1Content : '',
     sectionA2Content: data.sectionA2Content !== undefined ? data.sectionA2Content : '',
     sectionAContent: data.sectionAContent || `${data.sectionA1Content || ''}\n\n${data.sectionA2Content || ''}`.trim(),

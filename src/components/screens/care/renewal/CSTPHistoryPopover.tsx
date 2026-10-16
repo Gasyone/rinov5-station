@@ -478,7 +478,7 @@ export function CSTPHistoryPopover({
                               )}
 
                               {/* Secondary details at the bottom, hidden by default (opacity-0), shown on hover (opacity-100) */}
-                              <div className="mt-1.5 flex items-center justify-between gap-1.5 flex-wrap text-[9.5px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
+                              <div className="mt-1.5 flex items-center justify-between gap-1.5 flex-wrap text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
                                 <span>
                                   <span className="font-semibold text-zinc-655 dark:text-zinc-400">{log.staff}</span>
                                   {" "}<span>{log.action}</span>

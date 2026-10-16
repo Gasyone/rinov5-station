@@ -20,6 +20,8 @@ import { mockLeaveReserveRequests, type LeaveReserveRequest } from '@/mocks/leav
 import { CareJourneyModal } from './CareJourneyModal'
 import { StudentDetailDialog } from '../students/detail/StudentDetailDialog'
 import { StudentCareEarlyReturnDialog } from './StudentCareEarlyReturnDialog'
+import { BookOpen, Headphones } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   getCareTopicsForStudent,
   getSimulatedLogs,
@@ -66,6 +68,7 @@ export function StudentCareDetailPage({
   const [isCreateLeaveReserveOpen, setIsCreateLeaveReserveOpen] = useState(false)
   const [createLeaveReserveType, setCreateLeaveReserveType] = useState<'off' | 'reservation'>('off')
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+  const [mobileTab, setMobileTab] = useState<'learning' | 'care'>('learning')
 
   const handleOpenCreateLeaveReserve = (type: 'off' | 'reservation') => {
     setCreateLeaveReserveType(type)
@@ -410,11 +413,44 @@ export function StudentCareDetailPage({
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
       {/* Direct direct-split layout without top header bar */}
-      <div className="flex-1 min-h-0 px-2.5 pb-2.5 pt-1.5 flex flex-col">
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-2 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 px-2.5 pb-2.5 pt-1.5 2xl:px-4 2xl:pb-3.5 2xl:pt-2 flex flex-col">
+        {/* Mobile Tab Switcher: Only visible on small screens (< md) */}
+        <div className="md:hidden flex items-center bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg border border-border/60 mb-1.5 shrink-0 select-none">
+          <button
+            type="button"
+            onClick={() => setMobileTab('learning')}
+            className={cn(
+              "flex-1 py-1 px-2.5 rounded-md text-xs font-medium transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer",
+              mobileTab === 'learning'
+                ? "bg-white dark:bg-zinc-900 text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>Học tập & Lớp học</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('care')}
+            className={cn(
+              "flex-1 py-1 px-2.5 rounded-md text-xs font-medium transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer",
+              mobileTab === 'care'
+                ? "bg-white dark:bg-zinc-900 text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Headphones className="h-3.5 w-3.5" />
+            <span>Chăm sóc & Tương tác</span>
+          </button>
+        </div>
+
+        <div className="grid flex-1 grid-cols-1 md:grid-cols-2 gap-2.5 xl:gap-3 2xl:gap-3.5 min-h-0 overflow-hidden">
           
           {/* Left Column: Profile Info Header & Report Tab */}
-          <main className="flex min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1 scrollbar-thin">
+          <main className={cn(
+            "min-h-0 flex-col overflow-y-auto bg-background border-none shadow-none pr-1 2xl:pr-1.5 scrollbar-thin",
+            mobileTab === 'learning' ? "flex" : "hidden md:flex"
+          )}>
             
             {/* Thông tin học viên (Độc lập cho màn Chi tiết Chăm sóc) */}
             {resolvedStudent && (
@@ -423,7 +459,7 @@ export function StudentCareDetailPage({
                 address={address}
                 onEditProfile={() => setIsEditProfileOpen(true)}
                 onUpdateNote={handleUpdateNote}
-                className="mb-1.5 shrink-0"
+                className="mb-1.5 2xl:mb-2 shrink-0"
               />
             )}
 
@@ -448,7 +484,10 @@ export function StudentCareDetailPage({
           </main>
 
           {/* Right Panel: Interaction Timeline Feed */}
-          <aside className="flex min-h-0 flex-col text-left">
+          <aside className={cn(
+            "min-h-0 flex-col text-left",
+            mobileTab === 'care' ? "flex" : "hidden md:flex"
+          )}>
             <StudentCareChatFeed
               key={student.studentId}
               student={student}

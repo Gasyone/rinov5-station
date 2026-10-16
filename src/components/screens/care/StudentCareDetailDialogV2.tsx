@@ -252,7 +252,7 @@ export function StudentCareDetailDialogV2({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] lg:max-w-[1380px] w-full h-[90vh] max-h-[900px] p-4 flex flex-col overflow-hidden bg-background text-foreground border border-border shadow-2xl rounded-2xl">
         
-        <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
+        <div className="grid flex-1 grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 min-h-0 overflow-hidden">
           
           {/* Column Left (50%): Profile Info Header & Report Tab */}
           <main className="flex min-h-0 flex-col overflow-y-auto bg-background pr-1.5 scrollbar-thin">

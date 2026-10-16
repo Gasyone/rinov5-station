@@ -395,103 +395,101 @@ export function StudentPhotoPickerModal({
       {previewPhoto && (
         <Dialog open={Boolean(previewPhoto)} onOpenChange={(open) => !open && setPreviewPhoto(null)}>
           <DialogContent
-            className="sm:max-w-4xl md:max-w-5xl lg:max-w-6xl w-[96vw] max-w-[96vw] h-[88vh] max-h-[88vh] p-0 bg-zinc-950/95 border border-white/15 text-white rounded-3xl overflow-hidden z-[10000] shadow-2xl flex flex-col [&>button]:hidden select-none"
+            className="w-full sm:max-w-3xl lg:max-w-4xl max-w-[90vw] aspect-video max-h-[80vh] p-0 bg-transparent border-none text-white rounded-xl overflow-hidden z-[10000] shadow-2xl [&>button]:hidden flex items-center justify-center select-none"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Top Bar Preview */}
-            <div className="px-6 py-3.5 border-b border-white/10 bg-black/40 flex items-center justify-between gap-4 shrink-0">
-              <div className="min-w-0 flex items-center gap-3">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary/25 text-primary border border-primary/40 shrink-0">
-                  {previewPhoto.type === 'video' ? 'Video' : 'Ảnh'} {previewIndex >= 0 ? `${previewIndex + 1} / ${filteredMedia.length}` : ''}
-                </span>
-                <DialogTitle className="text-sm sm:text-base font-bold text-white truncate drop-shadow-xs flex items-center gap-2">
-                  {(() => {
-                    const cleanDate = formatSessionDate(previewPhoto.sessionDate || previewPhoto.date)
-                    return (
+            {/* Standard 16:9 Media Preview Frame */}
+            <div className="relative w-full h-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-zinc-950 flex items-center justify-center border border-white/15 group">
+              {/* Header Bar Overlay with Semi-Transparent Backdrop */}
+              <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/90 via-black/60 to-transparent p-3 sm:p-4 pb-8 z-20 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0 pr-2">
+                  <span className="shrink-0 px-2 py-0.5 rounded-md bg-white/20 text-xs font-bold tracking-wider uppercase text-white backdrop-blur-xs border border-white/10">
+                    {previewPhoto.type === 'video' ? 'Video' : 'Ảnh'} {previewIndex >= 0 ? `${previewIndex + 1}/${filteredMedia.length}` : ''}
+                  </span>
+                  <DialogTitle className="font-bold text-sm sm:text-base truncate text-white drop-shadow-xs flex items-center gap-1.5">
+                    {(() => {
+                      const cleanDate = formatSessionDate(previewPhoto.sessionDate || previewPhoto.date)
+                      return (
+                        <>
+                          {cleanDate && <span className="text-white/80 font-normal">{cleanDate} •</span>}
+                          <span className="truncate">{previewPhoto.title || previewPhoto.name}</span>
+                        </>
+                      )
+                    })()}
+                  </DialogTitle>
+                </div>
+
+                {/* Actions: Nút chọn/bỏ chọn ảnh & Nút đóng X */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleTogglePhoto(previewPhoto.id)}
+                    className={cn(
+                      'h-8 px-3 text-xs font-bold rounded-lg cursor-pointer transition-all gap-1.5 shadow-sm',
+                      selectedIds.includes(previewPhoto.id)
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/40'
+                        : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                    )}
+                  >
+                    {selectedIds.includes(previewPhoto.id) ? (
                       <>
-                        {cleanDate && <span className="text-white/80 font-normal">{cleanDate} •</span>}
-                        <span>{previewPhoto.title || previewPhoto.name}</span>
+                        <Check className="h-3.5 w-3.5 stroke-[3]" />
+                        <span>Đã chọn</span>
                       </>
-                    )
-                  })()}
-                </DialogTitle>
+                    ) : (
+                      <>
+                        <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                        <span>{previewPhoto.type === 'video' ? 'Chọn video' : 'Chọn ảnh'}</span>
+                      </>
+                    )}
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPreviewPhoto(null)}
+                    className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white flex items-center justify-center transition-colors border border-white/20 shrink-0 cursor-pointer"
+                    title="Đóng preview"
+                  >
+                    <X className="h-4 w-4 stroke-[2.5]" />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2.5 shrink-0">
-                {/* Decision Toggle Button inside Top Bar */}
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => handleTogglePhoto(previewPhoto.id)}
-                  className={cn(
-                    'h-8 px-3.5 text-xs font-bold rounded-xl cursor-pointer transition-all gap-1.5 shadow-xs',
-                    selectedIds.includes(previewPhoto.id)
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                  )}
-                >
-                  {selectedIds.includes(previewPhoto.id) ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 stroke-[3]" />
-                      <span>Đã chọn</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                      <span>{previewPhoto.type === 'video' ? 'Chọn video này' : 'Chọn ảnh này'}</span>
-                    </>
-                  )}
-                </Button>
-
-                {/* Close Button */}
-                <button
-                  type="button"
-                  onClick={() => setPreviewPhoto(null)}
-                  className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors border border-white/20 cursor-pointer"
-                  title="Đóng preview"
-                >
-                  <X className="h-4 w-4 stroke-[2.5]" />
-                </button>
-              </div>
-            </div>
-
-            {/* Main Preview Screen with Previous/Next Controls */}
-            <div className="relative flex-1 bg-black flex items-center justify-center p-2 sm:p-4 overflow-hidden w-full h-full min-h-0">
-              {/* Previous Button */}
+              {/* Navigation Arrows: Nút chuyển ảnh trước/sau nổi nhẹ bên trong khung media */}
               {filteredMedia.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const prevIdx = previewIndex > 0 ? previewIndex - 1 : filteredMedia.length - 1
-                    setPreviewPhoto(filteredMedia[prevIdx])
-                  }}
-                  className="absolute left-3 sm:left-5 z-20 h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-black/70 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center border border-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
-                  title="Tệp trước đó (Mũi tên trái ←)"
-                >
-                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const prevIdx = previewIndex > 0 ? previewIndex - 1 : filteredMedia.length - 1
+                      setPreviewPhoto(filteredMedia[prevIdx])
+                    }}
+                    className="absolute left-3 z-30 h-9 w-9 rounded-full bg-black/40 hover:bg-black/70 text-white/80 hover:text-white backdrop-blur-md flex items-center justify-center border border-white/15 shadow-md cursor-pointer transition-all active:scale-95"
+                    title="Tệp trước đó (←)"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const nextIdx = previewIndex < filteredMedia.length - 1 ? previewIndex + 1 : 0
+                      setPreviewPhoto(filteredMedia[nextIdx])
+                    }}
+                    className="absolute right-3 z-30 h-9 w-9 rounded-full bg-black/40 hover:bg-black/70 text-white/80 hover:text-white backdrop-blur-md flex items-center justify-center border border-white/15 shadow-md cursor-pointer transition-all active:scale-95"
+                    title="Tệp tiếp theo (→)"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
               )}
 
-              {/* Next Button */}
-              {filteredMedia.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const nextIdx = previewIndex < filteredMedia.length - 1 ? previewIndex + 1 : 0
-                    setPreviewPhoto(filteredMedia[nextIdx])
-                  }}
-                  className="absolute right-3 sm:right-5 z-20 h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-black/70 hover:bg-black/90 text-white/90 hover:text-white flex items-center justify-center border border-white/20 shadow-lg cursor-pointer transition-all active:scale-95"
-                  title="Tệp tiếp theo (Mũi tên phải →)"
-                >
-                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-                </button>
-              )}
-
-              {/* Media Element (Được mở rộng kích thước tối đa, sắc nét và giữ đúng tỷ lệ) */}
+              {/* Main Media Content */}
               {previewPhoto.type === 'video' ? (
-                <div className="relative w-full h-full max-w-5xl flex items-center justify-center">
+                <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
                   <video
                     key={previewPhoto.url}
                     src={previewPhoto.url}
@@ -499,68 +497,33 @@ export function StudentPhotoPickerModal({
                     controls
                     autoPlay
                     playsInline
-                    className="w-full h-full max-h-[76vh] object-contain rounded-2xl shadow-2xl bg-black outline-none"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               ) : (
-                <div className="relative w-full h-full max-w-5xl flex items-center justify-center">
-                  {/* Blurred ambient glow */}
+                <div className="relative w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden">
+                  {/* Subtle ambient blurred background glow */}
                   <div
-                    className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-20 scale-105 pointer-events-none"
+                    className="absolute inset-0 bg-cover bg-center filter blur-2xl opacity-25 scale-110 pointer-events-none"
                     style={{ backgroundImage: `url(${previewPhoto.thumbnailUrl || previewPhoto.url})` }}
+                    aria-hidden="true"
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewPhoto.url || previewPhoto.thumbnailUrl}
                     alt={previewPhoto.title || previewPhoto.name}
-                    className="relative z-10 w-full h-full max-h-[76vh] object-contain rounded-2xl shadow-2xl"
+                    className="relative z-10 max-w-full max-h-full object-contain block transition-transform duration-300"
                   />
                 </div>
               )}
-            </div>
 
-            {/* Bottom Decision Bar */}
-            <div className="px-6 py-3.5 border-t border-white/10 bg-black/60 flex items-center justify-between shrink-0">
-              <div className="text-xs text-zinc-400">
-                {previewPhoto.sessionTitle || 'Hình ảnh hoạt động học tập'}
-                {previewPhoto.duration && ` • Thời lượng: ${previewPhoto.duration}`}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPreviewPhoto(null)}
-                  className="h-8.5 text-xs font-semibold px-4 border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl cursor-pointer"
-                >
-                  Quay lại thư viện
-                </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => handleTogglePhoto(previewPhoto.id)}
-                  className={cn(
-                    'h-8.5 text-xs font-bold px-5 rounded-xl cursor-pointer transition-all gap-1.5 shadow-md',
-                    selectedIds.includes(previewPhoto.id)
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                  )}
-                >
-                  {selectedIds.includes(previewPhoto.id) ? (
-                    <>
-                      <Check className="h-4 w-4 stroke-[3]" />
-                      <span>{previewPhoto.type === 'video' ? 'Đã chọn video này (Bấm để bỏ chọn)' : 'Đã chọn ảnh này (Bấm để bỏ chọn)'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 stroke-[2.5]" />
-                      <span>{previewPhoto.type === 'video' ? 'Chọn video này vào báo cáo' : 'Chọn ảnh này vào báo cáo'}</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+              {/* Bottom Caption Overlay: Gọn gàng, tinh tế, không chiếm diện tích màn hình */}
+              {previewPhoto.sessionTitle && (
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-6 z-20 flex items-center justify-between text-xs text-white/70 pointer-events-none">
+                  <span className="truncate">{previewPhoto.sessionTitle}</span>
+                  {previewPhoto.duration && <span className="shrink-0">{previewPhoto.duration}</span>}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>

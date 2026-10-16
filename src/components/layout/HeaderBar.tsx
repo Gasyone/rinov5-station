@@ -117,8 +117,8 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
 
         {menuLabel && (
           <div className="flex items-center gap-1.5 border-l border-border pl-2.5 md:pl-3">
-            {GroupIcon && <GroupIcon className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />}
-            <span className="text-xs font-semibold text-foreground tracking-tight truncate max-w-[140px] sm:max-w-none">
+            {GroupIcon && <GroupIcon className="h-4 w-4 text-muted-foreground/80 shrink-0" />}
+            <span className="text-sm font-semibold text-foreground tracking-tight truncate max-w-[160px] sm:max-w-none">
               {menuLabel}
             </span>
           </div>

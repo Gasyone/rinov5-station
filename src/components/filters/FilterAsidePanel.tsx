@@ -14,6 +14,7 @@ export interface FilterAsidePanelProps {
   activeCount?: number
   onReset?: () => void
   resetLabel?: string
+  hideHeaderReset?: boolean
   onClose: () => void
   ariaLabel?: string
   width?: string
@@ -36,6 +37,7 @@ export function FilterAsidePanel({
   activeCount = 0,
   onReset,
   resetLabel = 'Đặt lại',
+  hideHeaderReset = false,
   onClose,
   ariaLabel = 'Panel bộ lọc nâng cao',
   width = 'w-[310px]',
@@ -75,7 +77,7 @@ export function FilterAsidePanel({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          {onReset && (
+          {!hideHeaderReset && onReset && (
             <Button
               type="button"
               variant="ghost"

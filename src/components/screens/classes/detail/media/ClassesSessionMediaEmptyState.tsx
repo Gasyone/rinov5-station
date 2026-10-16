@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { UploadCloud, Upload, SearchX } from 'lucide-react'
+import { UploadCloud, Upload, SearchX, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +13,7 @@ export interface ClassesSessionMediaEmptyStateProps {
   onUploadClick: () => void
   onDropFiles?: (files: FileList) => void
   singleSessionMode?: boolean
+  isUpcomingSession?: boolean
 }
 
 export function ClassesSessionMediaEmptyState({
@@ -23,6 +24,7 @@ export function ClassesSessionMediaEmptyState({
   onUploadClick,
   onDropFiles,
   singleSessionMode = true,
+  isUpcomingSession = false,
 }: ClassesSessionMediaEmptyStateProps) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -75,7 +77,22 @@ export function ClassesSessionMediaEmptyState({
     )
   }
 
-  // Case 2: Session has no media uploaded yet
+  // Case 2: Session is upcoming (Chờ diễn ra) - Không có ảnh!
+  if (isUpcomingSession) {
+    return (
+      <div className="py-8 px-4 text-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20">
+        <div className="mx-auto w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-2.5 shadow-2xs">
+          <Clock className="h-5 w-5" />
+        </div>
+        <h4 className="text-xs font-bold text-foreground">Buổi học chờ diễn ra</h4>
+        <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
+          Buổi học này chưa diễn ra nên chưa có ảnh hoặc media hoạt động của lớp. Bạn có thể tải ảnh lên sau khi buổi học bắt đầu hoặc đã kết thúc.
+        </p>
+      </div>
+    )
+  }
+
+  // Case 3: Session has no media uploaded yet
   return (
     <div
       onDragOver={handleDragOver}

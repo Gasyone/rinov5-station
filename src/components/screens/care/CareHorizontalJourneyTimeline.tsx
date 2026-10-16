@@ -40,7 +40,7 @@ interface MonthColumnData {
   milestones: MonthMilestone[]
 }
 
-export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimelineProps> = ({ workItem }) => {
+export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimelineProps> = ({ workItem: _workItem }) => {
   const [startIndex, setStartIndex] = useState(0)
 
   // Full 6-Month / 12-Month Roadmap divided into Month Columns with rich care history for hover speech bubble
@@ -50,7 +50,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 7/2026',
       milestones: [
         {
-          code: 'TH-01',
+          code: 'CBH',
           name: 'Prestudy (Trước khai giảng)',
           role: 'CS',
           date: '01/07/2026',
@@ -66,7 +66,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           },
         },
         {
-          code: 'TH-02',
+          code: 'CBH',
           name: 'Buổi 1-2 (Hòa nhập ban đầu)',
           role: 'CS',
           date: '05/07/2026',
@@ -81,7 +81,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           },
         },
         {
-          code: 'ĐX-01',
+          code: 'CYC',
           name: 'Chăm sóc Đột xuất',
           role: 'CS',
           date: '15/07/2026 09:30',
@@ -97,7 +97,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           },
         },
         {
-          code: 'ĐK-01',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 7/2026',
           role: 'GV',
           date: '25/07/2026',
@@ -120,7 +120,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 8/2026',
       milestones: [
         {
-          code: 'ĐK-02',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 8/2026',
           role: 'GV',
           date: '25/08/2026',
@@ -134,7 +134,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 9/2026',
       milestones: [
         {
-          code: 'TH-03',
+          code: 'CBH',
           name: 'Mini Project 1 (Dự án bài học)',
           role: 'GV',
           date: '15/09/2026',
@@ -142,7 +142,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           status: 'upcoming',
         },
         {
-          code: 'ĐK-03',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 9/2026',
           role: 'GV',
           date: '25/09/2026',
@@ -156,7 +156,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 10/2026',
       milestones: [
         {
-          code: 'TH-04',
+          code: 'CBH',
           name: 'Progress Test 1 (Giữa kỳ)',
           role: 'GV',
           date: '18/10/2026',
@@ -164,7 +164,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           status: 'upcoming',
         },
         {
-          code: 'ĐK-04',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 10/2026',
           role: 'GV',
           date: '25/10/2026',
@@ -178,7 +178,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 11/2026',
       milestones: [
         {
-          code: 'ĐK-05',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 11/2026',
           role: 'GV',
           date: '25/11/2026',
@@ -192,7 +192,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
       monthName: 'THÁNG 12/2026',
       milestones: [
         {
-          code: 'ĐK-06',
+          code: 'CĐK',
           name: 'Báo cáo Chăm sóc Tháng 12/2026',
           role: 'GV',
           date: '25/12/2026',
@@ -200,7 +200,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
           status: 'upcoming',
         },
         {
-          code: 'TH-05',
+          code: 'CBH',
           name: 'Mini Project 2 (Dự án nhóm)',
           role: 'GV',
           date: '15/01/2027',
@@ -295,7 +295,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                       >
                         {/* Milestone Top Line: Code & Role */}
                         <div className="flex items-center justify-between gap-1">
-                          <span className={cn('font-mono text-[9.5px] font-bold px-1.5 py-0.5 rounded border shrink-0', getMilestoneTagAbbrev(m.code).badgeClass)}>
+                          <span className={cn('font-mono text-xs font-bold px-1.5 py-0.5 rounded border shrink-0', getMilestoneTagAbbrev(m.code).badgeClass)}>
                             {getMilestoneTagAbbrev(m.code).label}
                           </span>
                           <span className="px-1.5 py-0.5 rounded text-xs font-extrabold uppercase bg-muted text-muted-foreground tracking-wider border">
@@ -344,7 +344,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                       {/* Bubble Header */}
                       <div className="flex items-center justify-between border-b pb-2 gap-2">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="font-mono text-[10.5px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950 px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800">
+                          <span className="font-mono text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950 px-1.5 py-0.5 rounded border border-sky-200 dark:border-sky-800">
                             {m.code}
                           </span>
                           <span className="font-bold text-xs text-foreground truncate">{m.name}</span>
@@ -426,7 +426,7 @@ export const CareHorizontalJourneyTimeline: React.FC<CareHorizontalJourneyTimeli
                                       📅 Hẹn gọi lại: {historyLog.date.split(' ')[0]} 14:00
                                     </span>
                                   </div>
-                                  <p className="text-[10.5px] text-muted-foreground/90 italic pl-3 leading-relaxed w-full">
+                                  <p className="text-xs text-muted-foreground/90 italic pl-3 leading-relaxed w-full">
                                     * Ghi chú: Chuông reo 5 tiếng phụ huynh không nghe máy
                                   </p>
                                 </div>

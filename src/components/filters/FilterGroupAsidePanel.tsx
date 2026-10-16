@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   FilterAsidePanel,
   FilterCollapsibleSection,
@@ -29,6 +30,11 @@ export interface FilterGroupAsidePanelProps {
   resetLabel?: string
   children?: React.ReactNode
   footer?: React.ReactNode
+  onApply?: () => void
+  applyLabel?: string
+  clearLabel?: string
+  showFooterActions?: boolean
+  hideHeaderReset?: boolean
 }
 
 /**
@@ -51,6 +57,11 @@ export function FilterGroupAsidePanel({
   resetLabel = 'Đặt lại',
   children,
   footer,
+  onApply,
+  applyLabel = 'Áp dụng',
+  clearLabel = 'Xóa',
+  showFooterActions = false,
+  hideHeaderReset,
 }: FilterGroupAsidePanelProps) {
   const sections = useMemo(() => buildFilterSections(groups), [groups])
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({})
@@ -72,6 +83,36 @@ export function FilterGroupAsidePanel({
     }))
   }
 
+  const shouldShowFooter = Boolean(footer || showFooterActions || onApply)
+  const isHeaderResetHidden = hideHeaderReset ?? shouldShowFooter
+
+  const defaultFooter = (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={totalActiveCount === 0}
+        onClick={onClearAll}
+        className="flex-1 h-8 text-xs font-normal cursor-pointer"
+      >
+        {clearLabel}
+      </Button>
+      <Button
+        type="button"
+        variant="default"
+        size="sm"
+        onClick={() => {
+          onApply?.()
+          onClose()
+        }}
+        className="flex-1 h-8 text-xs font-medium cursor-pointer"
+      >
+        {applyLabel}
+      </Button>
+    </div>
+  )
+
   return (
     <FilterAsidePanel
       title={title}
@@ -79,11 +120,12 @@ export function FilterGroupAsidePanel({
       activeCount={totalActiveCount}
       onReset={onClearAll}
       resetLabel={resetLabel}
+      hideHeaderReset={isHeaderResetHidden}
       onClose={onClose}
       width={width}
       className={className}
       bodyClassName={bodyClassName}
-      footer={footer}
+      footer={footer ?? (shouldShowFooter ? defaultFooter : undefined)}
     >
       {/* 1. Phần mở rộng nếu có (ví dụ: bộ chọn ngày độc quyền) */}
       {children}

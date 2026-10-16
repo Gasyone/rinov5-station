@@ -60,18 +60,18 @@ export function CalendarClassScheduleWeekView({
       ) : (
         <div className="flex flex-1 flex-col overflow-hidden min-h-0">
           <WeekHeader days={weekDays} today={today} sessions={filteredSessions} />
-          <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 p-3 space-y-3">
             {/* Ca Sáng (Chỉ hiển thị khi có lớp ca sáng trong tuần) */}
             {totalMorningCount > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <button
                   type="button"
                   onClick={() => setIsMorningOpen(!isMorningOpen)}
-                  className="group flex w-full items-center gap-1.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-400 hover:opacity-85 transition cursor-pointer select-none"
+                  className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-amber-700 dark:text-amber-400 hover:opacity-85 transition cursor-pointer select-none"
                 >
                   <ChevronRight
                     className={cn(
-                      "h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                      "h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 transition-transform duration-200 group-hover:translate-x-0.5",
                       isMorningOpen && "rotate-90"
                     )}
                   />
@@ -82,7 +82,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isMorningOpen && (
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = morningSessionsByDay[idx]
                       const isToday =
@@ -93,7 +93,7 @@ export function CalendarClassScheduleWeekView({
                         <div
                           key={day.toISOString()}
                           className={cn(
-                            "space-y-1 min-w-0 p-0 transition-colors",
+                            "space-y-1.5 min-w-0 p-0 transition-colors",
                             isToday && "bg-primary/[0.02] rounded-md"
                           )}
                         >
@@ -101,7 +101,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-xs text-muted-foreground/30 text-center py-1 select-none">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
                               —
                             </div>
                           )}
@@ -115,15 +115,15 @@ export function CalendarClassScheduleWeekView({
 
             {/* Ca Chiều (Chỉ hiển thị khi có lớp ca chiều trong tuần) */}
             {totalAfternoonCount > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <button
                   type="button"
                   onClick={() => setIsAfternoonOpen(!isAfternoonOpen)}
-                  className="group flex w-full items-center gap-1.5 py-1 text-xs font-bold text-sky-700 dark:text-sky-400 hover:opacity-85 transition cursor-pointer select-none"
+                  className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-sky-700 dark:text-sky-400 hover:opacity-85 transition cursor-pointer select-none"
                 >
                   <ChevronRight
                     className={cn(
-                      "h-3.5 w-3.5 shrink-0 text-sky-600 dark:text-sky-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                      "h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400 transition-transform duration-200 group-hover:translate-x-0.5",
                       isAfternoonOpen && "rotate-90"
                     )}
                   />
@@ -134,7 +134,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isAfternoonOpen && (
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = afternoonSessionsByDay[idx]
                       const isToday =
@@ -145,7 +145,7 @@ export function CalendarClassScheduleWeekView({
                         <div
                           key={day.toISOString()}
                           className={cn(
-                            "space-y-1 min-w-0 p-0 transition-colors",
+                            "space-y-1.5 min-w-0 p-0 transition-colors",
                             isToday && "bg-primary/[0.02] rounded-md"
                           )}
                         >
@@ -153,7 +153,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-xs text-muted-foreground/30 text-center py-1 select-none">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
                               —
                             </div>
                           )}
@@ -167,15 +167,15 @@ export function CalendarClassScheduleWeekView({
 
             {/* Ca Tối (Chỉ hiển thị khi có lớp ca tối trong tuần) */}
             {totalEveningCount > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <button
                   type="button"
                   onClick={() => setIsEveningOpen(!isEveningOpen)}
-                  className="group flex w-full items-center gap-1.5 py-1 text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:opacity-85 transition cursor-pointer select-none"
+                  className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-indigo-700 dark:text-indigo-400 hover:opacity-85 transition cursor-pointer select-none"
                 >
                   <ChevronRight
                     className={cn(
-                      "h-3.5 w-3.5 shrink-0 text-indigo-600 dark:text-indigo-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                      "h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 transition-transform duration-200 group-hover:translate-x-0.5",
                       isEveningOpen && "rotate-90"
                     )}
                   />
@@ -186,7 +186,7 @@ export function CalendarClassScheduleWeekView({
                 </button>
 
                 {isEveningOpen && (
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-2">
                     {weekDays.map((day, idx) => {
                       const daySessions = eveningSessionsByDay[idx]
                       const isToday =
@@ -197,7 +197,7 @@ export function CalendarClassScheduleWeekView({
                         <div
                           key={day.toISOString()}
                           className={cn(
-                            "space-y-1 min-w-0 p-0 transition-colors",
+                            "space-y-1.5 min-w-0 p-0 transition-colors",
                             isToday && "bg-primary/[0.02] rounded-md"
                           )}
                         >
@@ -205,7 +205,7 @@ export function CalendarClassScheduleWeekView({
                             <SessionCard key={session.id} session={session} onClick={() => onSelectSession(session)} />
                           ))}
                           {daySessions.length === 0 && (
-                            <div className="text-xs text-muted-foreground/30 text-center py-1 select-none">
+                            <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
                               —
                             </div>
                           )}
@@ -248,21 +248,21 @@ function WeekHeader({
             <div
               key={day.toISOString()}
               className={cn(
-                "flex items-center justify-center gap-1.5 py-1 px-1 transition-colors border-r border-border/20 last:border-r-0 text-xs min-h-[28px] overflow-hidden whitespace-nowrap",
+                "flex items-center justify-center gap-1.5 py-1.5 px-1 transition-colors border-r border-border/20 last:border-r-0 text-xs min-h-[34px] overflow-hidden whitespace-nowrap",
                 isToday && "bg-primary/5"
               )}
             >
               <span className={cn(
-                'flex h-4.5 w-4.5 items-center justify-center rounded-full text-[11px] font-bold shrink-0',
+                'flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold shrink-0',
                 isToday ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-foreground font-semibold'
               )}>
                 {day.getDate()}
               </span>
-              <span className={cn('text-[11px] font-medium', isToday ? 'text-primary font-bold' : 'text-muted-foreground')}>
+              <span className={cn('text-xs font-semibold', isToday ? 'text-primary font-bold' : 'text-muted-foreground')}>
                 {weekdayStr}
               </span>
               <span className={cn(
-                "text-[11px]",
+                "text-xs",
                 count > 0 ? (isToday ? "text-primary font-semibold" : "text-muted-foreground font-medium") : "text-muted-foreground/60"
               )}>
                 ({count})

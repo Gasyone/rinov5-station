@@ -14,7 +14,7 @@ interface CareJourneyStepperProps {
 }
 
 export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
-  workItem,
+  workItem: _workItem,
   isMini = false,
   isVertical = false,
   roleFilter = 'all',
@@ -22,7 +22,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
   const roadmapMilestones: RoadmapMilestoneItem[] = [
     {
       id: 'm1',
-      code: 'TH-01',
+      code: 'CBH',
       title: 'Prestudy (Trước khai giảng)',
       roleOwner: 'CS PHỤ TRÁCH',
       status: 'completed',
@@ -40,7 +40,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm2',
-      code: 'TH-02',
+      code: 'CBH',
       title: 'Buổi 1-2 (Hòa nhập ban đầu)',
       roleOwner: 'CS PHỤ TRÁCH',
       status: 'completed',
@@ -58,7 +58,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm3',
-      code: 'ĐX-01',
+      code: 'CYC',
       title: 'Chăm sóc Đột xuất (Hỏi xe đưa đón & ngoại khóa)',
       roleOwner: 'CS PHỤ TRÁCH',
       status: 'completed',
@@ -76,7 +76,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm4',
-      code: 'ĐK-01',
+      code: 'CĐK',
       title: 'Báo cáo Chăm sóc Tháng 7/2026',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'overdue',
@@ -101,7 +101,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm5',
-      code: 'ĐK-02',
+      code: 'CĐK',
       title: 'Báo cáo Chăm sóc Tháng 8/2026',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'future',
@@ -110,7 +110,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm6',
-      code: 'TH-03',
+      code: 'CBH',
       title: 'Mini Project 1 (Dự án bài học)',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'future',
@@ -119,7 +119,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm7',
-      code: 'ĐK-03',
+      code: 'CĐK',
       title: 'Báo cáo Chăm sóc Tháng 9/2026',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'future',
@@ -128,7 +128,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm8',
-      code: 'TH-04',
+      code: 'CBH',
       title: 'Progress Test 1 (Giữa kỳ)',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'future',
@@ -137,7 +137,7 @@ export const CareJourneyStepper: React.FC<CareJourneyStepperProps> = ({
     },
     {
       id: 'm9',
-      code: 'ĐK-04',
+      code: 'CĐK',
       title: 'Báo cáo Chăm sóc Tháng 10/2026',
       roleOwner: 'GV PHỤ TRÁCH',
       status: 'future',

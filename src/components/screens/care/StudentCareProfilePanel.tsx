@@ -131,7 +131,7 @@ export function StudentCareProfilePanel({
   }, [rawNotes, student, attitudeNote])
 
   // Luôn hiển thị tối đa 2 dòng + "... xem thêm" khi thu gọn
-  const maxCollapsedChars = 92
+  const maxCollapsedChars = 160
   const noteLines = useMemo(
     () => attitudeNote.split('\n').filter((l) => l.trim().length > 0),
     [attitudeNote]
@@ -234,9 +234,9 @@ export function StudentCareProfilePanel({
   return (
     <div className={cn('space-y-2 pr-0.5', className)}>
       {/* THẺ THÔNG TIN HỌC VIÊN CHUẨN MÀN CHĂM SÓC */}
-      <div className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 shadow-2xs space-y-1.5 text-left">
+      <div className="rounded-xl border border-border/80 bg-card p-2.5 sm:p-3 2xl:p-3.5 shadow-2xs space-y-1.5 2xl:space-y-2 text-left">
         {/* Top block: Avatar + Nút Mã ID | Cột thông tin 3 dòng thẳng cột */}
-        <div className="flex items-start gap-2.5 min-w-0">
+        <div className="flex items-start gap-2.5 2xl:gap-3 min-w-0">
           {/* Cột trái: Avatar (h-13 w-13) + Nút Mã ID */}
           <div className="flex flex-col items-center gap-1 shrink-0">
             <div
@@ -250,7 +250,7 @@ export function StudentCareProfilePanel({
               <AppAvatar
                 src={studentAvatar}
                 name={student.name}
-                className="h-13 w-13 rounded-full border-2 border-background shadow-xs ring-1 ring-border/50 transition-transform group-hover:scale-105"
+                className="h-13 w-13 2xl:h-14 2xl:w-14 rounded-full border-2 border-background shadow-xs ring-1 ring-border/50 transition-transform group-hover:scale-105"
               />
               {onEditProfile && (
                 <span className="absolute -bottom-0.5 -right-0.5 p-1 bg-background rounded-full border border-border/80 shadow-xs text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
@@ -264,18 +264,18 @@ export function StudentCareProfilePanel({
               type="button"
               onClick={() => setShowCodes((prev) => !prev)}
               className={cn(
-                'inline-flex items-center justify-center gap-1 text-[10.5px] transition-all cursor-pointer select-none shrink-0 h-5 px-1.5 rounded-md border',
+                'inline-flex items-center justify-center gap-1 text-xs 2xl:text-[12.5px] transition-all cursor-pointer select-none shrink-0 h-5.5 2xl:h-6 px-2 rounded-md border',
                 showCodes
                   ? 'text-primary font-bold bg-primary/10 border-primary/30'
                   : 'text-muted-foreground hover:text-foreground font-medium border-transparent bg-transparent hover:border-border/70 hover:bg-muted/60'
               )}
               title={showCodes ? 'Ẩn danh sách mã hệ thống' : 'Hiện mã CID, UID, SID'}
             >
-              <ShieldCheck className="h-2.5 w-2.5 text-primary shrink-0" />
+              <ShieldCheck className="h-3 w-3 text-primary shrink-0" />
               <span>Mã ID</span>
               <ChevronDown
                 className={cn(
-                  'h-2.5 w-2.5 shrink-0 transition-transform duration-200',
+                  'h-3 w-3 shrink-0 transition-transform duration-200',
                   showCodes && 'rotate-180'
                 )}
               />
@@ -283,15 +283,15 @@ export function StudentCareProfilePanel({
           </div>
 
           {/* Cột phải: 3 dòng thẳng cột */}
-          <div className="min-w-0 flex-1 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1 2xl:space-y-1.5">
             {/* Dòng 1: Tên học viên + Tên tiếng anh + Nhãn sinh nhật cạnh tên tiếng anh | Nút Sửa */}
             <div className="flex items-center justify-between gap-1">
               <div className="flex items-center gap-1.5 truncate min-w-0 flex-wrap sm:flex-nowrap">
-                <span className="text-[14px] sm:text-[15px] font-bold text-foreground truncate leading-tight">
+                <span className="text-[15px] sm:text-[16px] 2xl:text-[17.5px] font-bold text-foreground truncate leading-tight">
                   {student.name}
                 </span>
                 {student.englishName && (
-                  <span className="text-[11px] text-muted-foreground font-medium truncate">
+                  <span className="text-xs 2xl:text-[13.5px] text-muted-foreground font-medium truncate">
                     ({student.englishName})
                   </span>
                 )}
@@ -299,12 +299,12 @@ export function StudentCareProfilePanel({
                 {bdayInfo && (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 text-[10.5px] font-normal shrink-0 leading-tight select-none',
+                      'inline-flex items-center gap-1 text-xs 2xl:text-[13px] font-normal shrink-0 leading-tight select-none',
                       bdayInfo.textColor
                     )}
                     title={bdayInfo.tooltip}
                   >
-                    <Cake className={cn('h-3 w-3 shrink-0', bdayInfo.iconClass)} />
+                    <Cake className={cn('h-3.5 w-3.5 2xl:h-4 2xl:w-4 shrink-0', bdayInfo.iconClass)} />
                     <span>{bdayInfo.label}</span>
                   </span>
                 )}
@@ -314,21 +314,21 @@ export function StudentCareProfilePanel({
                 <button
                   type="button"
                   onClick={onEditProfile}
-                  className="inline-flex items-center gap-1 text-[11px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer shrink-0 transition-colors p-0.5 -my-0.5"
+                  className="inline-flex items-center gap-1 text-xs 2xl:text-[13px] font-normal text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:underline cursor-pointer shrink-0 transition-colors p-0.5 -my-0.5"
                   title="Chỉnh sửa thông tin học viên (Ảnh, Tên, Giới tính, Ngày sinh)"
                 >
-                  <Pencil className="h-3 w-3" />
+                  <Pencil className="h-3 w-3 2xl:h-3.5 2xl:w-3.5" />
                   <span>Chỉnh sửa</span>
                 </button>
               )}
             </div>
 
             {/* Dòng 2: Giới tính • Ngày sinh (Tuổi) • Địa chỉ */}
-            <div className="flex items-center gap-1.5 text-[11.5px] min-w-0 text-muted-foreground font-normal flex-wrap">
+            <div className="flex items-center gap-1.5 text-xs 2xl:text-[13px] min-w-0 text-muted-foreground font-normal flex-wrap">
               <span className="text-foreground/85 font-normal">{genderLabel}</span>
               <span className="text-border/60">•</span>
               <span className="inline-flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-muted-foreground/70 shrink-0" />
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
                 <span>{birthDate}</span>
                 {ageText && <span className="text-muted-foreground">({ageText})</span>}
               </span>
@@ -341,35 +341,35 @@ export function StudentCareProfilePanel({
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-1 text-[11.5px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer min-w-0 truncate leading-snug"
+                    className="group inline-flex items-center gap-1 text-xs 2xl:text-[13px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer min-w-0 truncate leading-snug"
                     title={`Xem trên Google Maps: ${address}`}
                   >
-                    <MapPin className="h-3 w-3 text-muted-foreground shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="truncate text-foreground/85 group-hover:text-foreground font-normal underline-offset-2 group-hover:underline max-w-[200px] sm:max-w-[280px]">
+                    <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="truncate text-foreground/85 group-hover:text-foreground font-normal underline-offset-2 group-hover:underline max-w-[200px] sm:max-w-[280px] 2xl:max-w-[500px]">
                       {address}
                     </span>
-                    <ExternalLink className="h-2.5 w-2.5 text-muted-foreground/70 group-hover:text-foreground shrink-0 transition-colors" />
+                    <ExternalLink className="h-3 w-3 text-muted-foreground/70 group-hover:text-foreground shrink-0 transition-colors" />
                   </a>
                 </>
               )}
             </div>
 
             {/* Dòng 3: Phụ huynh thẳng cột với dòng 1, 2 */}
-            <div className="flex items-center justify-between gap-1 text-[11.5px] select-none pt-0.5">
+            <div className="flex items-center justify-between gap-1 text-xs 2xl:text-[13px] select-none pt-0.5">
               <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
                 <User className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
-                <span className="font-normal text-foreground shrink-0 text-xs">
+                <span className="font-normal text-foreground shrink-0 text-[13px] 2xl:text-[14px]">
                   {primaryParent.name}{' '}
                   <span className="text-muted-foreground font-normal">
                     ({primaryParent.relationship})
                   </span>
                 </span>
-                <span className="text-[9px] font-normal px-1 py-0.2 rounded bg-muted text-muted-foreground border border-border/60 leading-none shrink-0">
+                <span className="text-xs font-normal px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60 leading-none shrink-0">
                   Chính
                 </span>
                 <span className="text-border">•</span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="font-mono font-normal text-xs text-foreground/90">
+                  <span className="font-mono font-normal text-[13px] 2xl:text-[14px] text-foreground/90">
                     {primaryParent.phone}
                   </span>
                   <button
@@ -421,7 +421,7 @@ export function StudentCareProfilePanel({
                 {displayFamilyMembers.slice(1).map((contact, idx) => (
                   <div
                     key={contact.id || idx + 1}
-                    className="flex items-center justify-between gap-1 text-[11.5px] select-none text-muted-foreground/90 hover:text-foreground transition-colors py-0.5"
+                    className="flex items-center justify-between gap-1 text-xs select-none text-muted-foreground/90 hover:text-foreground transition-colors py-0.5"
                   >
                     <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
                       <User className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
@@ -464,7 +464,7 @@ export function StudentCareProfilePanel({
 
         {/* Dải hiển thị Mã ID mở rộng */}
         {showCodes && (
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-muted-foreground select-none py-1 px-2.5 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200 w-full">
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground select-none py-1 px-2.5 bg-muted/40 dark:bg-zinc-800/40 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-1 duration-200 w-full">
             <span className="flex items-center gap-1 font-mono">
               <ShieldCheck className="h-3 w-3 text-primary shrink-0" />
               <span>CID:</span>
@@ -520,7 +520,7 @@ export function StudentCareProfilePanel({
         )}
 
         {/* Ghi chú: text xem thêm và icon lịch sử cùng màu với note */}
-        <div className="pt-1 border-t border-border/30 text-[11px] text-amber-900/85 dark:text-amber-200/85">
+        <div className="pt-1 border-t border-border/30 text-xs text-amber-900/85 dark:text-amber-200/85">
           {isEditingNote ? (
             <div className="space-y-1.5 w-full">
               <div className="flex items-start gap-1.5">
@@ -540,7 +540,7 @@ export function StudentCareProfilePanel({
                     setNoteDraft(attitudeNote)
                     setIsEditingNote(false)
                   }}
-                  className="h-5.5 px-2 text-[10.5px] rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
+                  className="h-6 px-2.5 text-xs rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer transition-colors"
                 >
                   Hủy
                 </button>
@@ -552,7 +552,7 @@ export function StudentCareProfilePanel({
                     setIsEditingNote(false)
                     toast.success('Đã cập nhật ghi chú học viên!')
                   }}
-                  className="h-5.5 px-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-[10.5px] rounded cursor-pointer transition-colors"
+                  className="h-6 px-2.5 bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs rounded cursor-pointer transition-colors"
                 >
                   Lưu
                 </button>
@@ -566,15 +566,15 @@ export function StudentCareProfilePanel({
                 className="p-0.5 -ml-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 rounded text-amber-600 dark:text-amber-400 cursor-pointer transition-colors shrink-0"
                 title="Nhấp để sửa ghi chú học viên"
               >
-                <Pencil className="h-3 w-3 shrink-0" />
+                <Pencil className="h-3.5 w-3.5 shrink-0" />
               </button>
-              <div className="flex-1 min-w-0 text-left text-[11px] leading-snug">
+              <div className="flex-1 min-w-0 text-left text-xs 2xl:text-[13px] leading-snug 2xl:leading-relaxed">
                 <span className="italic font-normal">{displayedNoteText}</span>
                 {isLongNote && (
                   <button
                     type="button"
                     onClick={() => setIsNoteExpanded((prev) => !prev)}
-                    className="inline text-[10.5px] text-amber-900/85 dark:text-amber-200/85 hover:underline italic font-normal cursor-pointer select-none ml-1 align-baseline"
+                    className="inline text-xs 2xl:text-[12.5px] text-amber-900/85 dark:text-amber-200/85 hover:underline italic font-normal cursor-pointer select-none ml-1 align-baseline"
                   >
                     {isNoteExpanded ? 'thu gọn' : '... xem thêm'}
                   </button>
@@ -601,7 +601,7 @@ export function StudentCareProfilePanel({
                       <History className="h-3.5 w-3.5 text-primary" />
                       <span>Lịch sử ghi chú</span>
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">
+                    <span className="text-xs font-mono text-muted-foreground">
                       {notesHistory.length} ghi chú
                     </span>
                   </div>
@@ -611,15 +611,15 @@ export function StudentCareProfilePanel({
                         key={note.id}
                         className="p-2 rounded-lg bg-muted/40 border border-border/50 space-y-1 text-left"
                       >
-                        <div className="flex items-center justify-between text-[10.5px] text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className="font-semibold text-foreground/90">
                             {note.author}
                           </span>
-                          <span className="font-mono text-[10px]">
+                          <span className="font-mono text-xs">
                             {note.timestamp}
                           </span>
                         </div>
-                        <p className="text-[11.5px] text-foreground/80 leading-relaxed">
+                        <p className="text-xs text-foreground/80 leading-relaxed">
                           {note.text}
                         </p>
                       </div>

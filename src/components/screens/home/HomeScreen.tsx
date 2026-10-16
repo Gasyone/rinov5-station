@@ -13,13 +13,13 @@ import { mockLeaveReserveRequests } from '@/mocks/leaveReserve'
 import { toast } from 'sonner'
 
 import { HomeWorkdayHeader } from './HomeWorkdayHeader'
-import { HomeTodayScheduleSection } from './HomeTodayScheduleSection'
-import { HomeManagedClassesSection } from './HomeManagedClassesSection'
+import { HomeScheduleAndClassesPanel } from './HomeScheduleAndClassesPanel'
 import { HomeUpdatesFeedSection } from './HomeUpdatesFeedSection'
 
 import { ClassesDetailDialog } from '@/components/screens/classes/detail/ClassesDetailDialog'
 import { SessionDetailDialog } from '@/components/screens/calendar/SessionDetailDialog'
 import { BookingTestDetailDialog } from '@/components/screens/booking-test/BookingTestDetailDialog'
+import { QcRemediationDetailDialog } from '@/components/screens/qc-remediation/QcRemediationDetailDialog'
 import { HomeStudentDetailModal } from './HomeStudentDetailModal'
 import { HomeMenuHubDialog } from './HomeMenuHubDialog'
 
@@ -30,12 +30,15 @@ import {
   getRenewalAvatarItems,
   getDailyTodos,
   toDateKeyString,
+  getHomeQcErrors,
+  computeHomeQcMetrics,
 } from './homeHelpers'
 import type {
   TodayScheduleItem,
   CareAvatarItem,
   RenewalAvatarItem,
 } from './homeTypes'
+import type { QcExtendedError } from '@/components/screens/qc-remediation/qcRemediationTypes'
 
 export function HomeScreen() {
   const router = useRouter()
@@ -61,7 +64,25 @@ export function HomeScreen() {
   const [activeCareStudent, setActiveCareStudent] = useState<CareAvatarItem | null>(null)
   const [activeRenewalStudent, setActiveRenewalStudent] = useState<RenewalAvatarItem | null>(null)
 
-  // Memoized computations
+  // QC Remediation & Feed Tab states
+  const [feedTab, setFeedTab] = useState<'feed' | 'tasks' | 'qc'>('feed')
+  const [activeQcError, setActiveQcError] = useState<QcExtendedError | null>(null)
+  const [errorOverrides, setErrorOverrides] = useState<Record<string, Partial<QcExtendedError>>>({})
+
+  const baseQcErrors = useMemo(() => {
+    return getHomeQcErrors(selectedBranch)
+  }, [selectedBranch])
+
+  const localQcErrors = useMemo(() => {
+    return baseQcErrors.map((err) => ({
+      ...err,
+      ...(errorOverrides[err.id] || {}),
+    }))
+  }, [baseQcErrors, errorOverrides])
+
+  const qcMetrics = useMemo(() => {
+    return computeHomeQcMetrics(localQcErrors)
+  }, [localQcErrors])
   const classMetrics = useMemo(() => {
     return computeHomeClassMetrics(mockClassRecords, selectedBranch)
   }, [selectedBranch])
@@ -200,6 +221,8 @@ export function HomeScreen() {
             careAvatarItems={careAvatarItems}
             renewalAvatarItems={renewalAvatarItems}
             pendingLeaveCount={pendingLeaveCount}
+            qcMetrics={qcMetrics}
+            onNavigateQc={() => setFeedTab('qc')}
             onOpenCareStudent={handleOpenCareStudent}
             onOpenRenewalStudent={handleOpenRenewalStudent}
             onNavigateCare={() => handleNavigate('/app/student_operations_alert')}
@@ -209,27 +232,28 @@ export function HomeScreen() {
           />
         </div>
 
-        {/* 2. Hoạt động chính: Thu hẹp section Lớp & Lịch, tăng bề rộng Thông tin cập nhật */}
-        <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)_300px] gap-2 items-stretch flex-1 min-h-0">
-          {/* Cột 1 (Bên trái, thu hẹp): Lớp học (Thống kê 1 dòng, có viền cho từng lớp, selection filter) */}
-          <HomeManagedClassesSection
+        {/* 2. Hoạt động chính: 2 Cột (Cột trái: Lớp & Lịch gộp chung; Cột phải: Bảng tin vận hành & QC) */}
+        <div className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[440px_minmax(0,1fr)] 2xl:grid-cols-[480px_minmax(0,1fr)] gap-2.5 items-stretch flex-1 min-h-0">
+          {/* Cột 1 (Bên trái): Gộp Lớp học & Lịch hôm nay với bộ chuyển tab & chế độ xem cả 2 */}
+          <HomeScheduleAndClassesPanel
             classes={mockClassRecords}
+            sessions={todayScheduleItems}
             onOpenClassDetail={(cls) => setActiveClass(cls)}
+            onOpenSessionDetail={handleOpenScheduleSession}
             onNavigateClasses={() => handleNavigate('/app/classes')}
+            onNavigateCalendar={() => handleNavigate('/app/calendar_class_schedule')}
           />
 
-          {/* Cột 2 (Ở giữa, tăng bề rộng): Bảng tin vận hành & việc cần xử lý */}
+          {/* Cột 2 (Bên phải): Bảng tin vận hành, Việc cần xử lý & Khắc phục QC */}
           <HomeUpdatesFeedSection
             todos={dailyTodos}
+            qcErrors={localQcErrors}
+            qcMetrics={qcMetrics}
+            activeTab={feedTab}
+            onActiveTabChange={setFeedTab}
+            onOpenQcDetail={(err) => setActiveQcError(err)}
             onNavigate={handleNavigate}
             userName={user?.name || 'Admin'}
-          />
-
-          {/* Cột 3 (Bên phải, thu hẹp): Lịch hôm nay (Thống kê 1 dòng, có viền cho từng lịch, selection filter) */}
-          <HomeTodayScheduleSection
-            sessions={todayScheduleItems}
-            onOpenSessionDetail={handleOpenScheduleSession}
-            onNavigateCalendar={() => handleNavigate('/app/calendar_class_schedule')}
           />
         </div>
       </div>
@@ -328,6 +352,43 @@ export function HomeScreen() {
         onOpenChange={(open) => !open && setActiveRenewalStudent(null)}
         onNavigateCare={() => handleNavigate('/app/student_operations_alert')}
         onNavigateRenewal={() => handleNavigate('/app/renewal')}
+      />
+
+      {/* QC Remediation Detail Modal */}
+      <QcRemediationDetailDialog
+        error={activeQcError}
+        open={Boolean(activeQcError)}
+        onOpenChange={(open) => {
+          if (!open) setActiveQcError(null)
+        }}
+        onUpdateError={(errorId, status) => {
+          setErrorOverrides((prev) => ({
+            ...prev,
+            [errorId]: { ...(prev[errorId] || {}), status },
+          }))
+          if (activeQcError && activeQcError.id === errorId) {
+            setActiveQcError((prev) => (prev ? { ...prev, status } : null))
+          }
+          toast.success('Đã cập nhật trạng thái lỗi QC')
+        }}
+        onUpdateCorrectiveAction={(errorId, correctiveAction, correctiveEvidence) => {
+          setErrorOverrides((prev) => ({
+            ...prev,
+            [errorId]: {
+              ...(prev[errorId] || {}),
+              correctiveAction,
+              correctiveEvidence,
+              status: 'corrected',
+            },
+          }))
+          if (activeQcError && activeQcError.id === errorId) {
+            setActiveQcError((prev) =>
+              prev ? { ...prev, correctiveAction, correctiveEvidence, status: 'corrected' } : null
+            )
+          }
+          toast.success('Đã lưu biện pháp khắc phục QC')
+        }}
+        currentUserId="ins_01"
       />
     </div>
   )

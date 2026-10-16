@@ -77,6 +77,7 @@ export interface StudentCareClassExpandedInfoProps {
   currentBranchName: string
   attendedSessions: number
   totalSessions: number
+  remainingSessions?: number
   startDateDisplay: string
   endDateDisplay: string
   pkg: SimulatedPackage
@@ -101,4 +102,5 @@ export interface StudentCareClassExpandedInfoProps {
   }>
   isRenewal?: boolean
   className?: string
+  onUpdateSessions?: (newStudied: number) => void
 }

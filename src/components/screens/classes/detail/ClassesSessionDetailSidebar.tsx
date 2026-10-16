@@ -22,7 +22,6 @@ import type { ClassRecord } from '@/mocks/classRecords'
 import type { RoadmapSession, RosterStudent } from './classesDetailTypes'
 import { cleanTeacherName } from './classesDetailHelpers'
 import { ClassesSessionSyllabusTab } from './ClassesSessionSyllabusTab'
-import { ClassesSessionMediaTab } from './ClassesSessionMediaTab'
 import { ClassCodeHoverCell } from '@/components/screens/care/ClassCodeHoverCell'
 import { ClassesSessionQualityEvaluation } from './ClassesSessionQualityEvaluation'
 

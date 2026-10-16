@@ -387,6 +387,10 @@ export interface DetailedMonthlyReportForm {
   monthPeriod: string
   awardBadge: string
   teacherName: string
+  testScore?: number | string | null
+  priorTestScore?: number | string | null
+  testDocUrl?: string
+  testDocName?: string
   sectionAContent: string
   sectionA1Content: string
   sectionA2Content: string
@@ -590,7 +594,7 @@ export function normalizeAwardBadge(badge?: string): string {
 export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
   monthPeriod: '01/04/2026 đến 30/04/2026',
   awardBadge: '',
-  teacherName: 'Ms.Chloe',
+  teacherName: '',
   sectionAContent: '',
   sectionA1Content: '',
   sectionA2Content: '',
@@ -605,7 +609,11 @@ export const DEFAULT_FILLED_REPORT_FORM: DetailedMonthlyReportForm = {
 export const EMPTY_REPORT_FORM: DetailedMonthlyReportForm = {
   monthPeriod: '01/04/2026 đến 30/04/2026',
   awardBadge: '',
-  teacherName: 'Ms.Chloe',
+  teacherName: '',
+  testScore: '00',
+  priorTestScore: '00',
+  testDocUrl: '',
+  testDocName: '',
   sectionAContent: '',
   sectionA1Content: '',
   sectionA2Content: '',
@@ -707,8 +715,8 @@ export function getStudentReportMetrics(studentId?: string, studentName?: string
       lateCount: alert.attendanceRatio?.includes('5/7') ? 1 : 0,
       homeworkRatio: `${Math.round(7 * ((alert.homeworkCompletion || 90) / 100))}/7`,
       homeworkAvg: '7.5',
-      testScore: alert.lastTestScore ?? 8.0,
-      priorTestScore: alert.priorTestScore ?? 5.5,
+      testScore: alert.lastTestScore !== undefined ? alert.lastTestScore : '00',
+      priorTestScore: alert.priorTestScore !== undefined ? alert.priorTestScore : '00',
     }
   }
 
@@ -717,8 +725,8 @@ export function getStudentReportMetrics(studentId?: string, studentName?: string
     lateCount: 1,
     homeworkRatio: '7/7',
     homeworkAvg: '7.5',
-    testScore: 8.0,
-    priorTestScore: 5.5,
+    testScore: '00',
+    priorTestScore: '00',
   }
 }
 

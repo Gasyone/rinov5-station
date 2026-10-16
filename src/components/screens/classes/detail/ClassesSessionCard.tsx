@@ -36,14 +36,12 @@ import {
 import { formatDateWithDay, splitDateWithDay } from './classesSessionDetailHelpers'
 import { cleanTeacherName, cleanAssistantName } from './classesDetailHelpers'
 import { ConfirmDialog } from '@/components/shared'
-import { ClassesSessionCardMediaModal } from './ClassesSessionCardMediaModal'
 
 import type { ClassesSessionCardProps } from './session-card/sessionCardTypes'
 import { getSessionMetrics, getSessionTone } from './session-card/sessionCardTypes'
 import { SessionCardAssistantDialog } from './session-card/SessionCardAssistantDialog'
 import { SessionCardLessonsExpand } from './session-card/SessionCardLessonsExpand'
 import { SessionCardRemark } from './session-card/SessionCardRemark'
-import { SessionCardMaterials } from './session-card/SessionCardMaterials'
 
 export type { ClassesSessionCardProps }
 export { getSessionMetrics }
@@ -57,13 +55,11 @@ export function ClassesSessionCard({
   onEditRoom,
   onUpload,
   onReschedule,
-  onDeleteMaterial,
   onUpdateSession,
 }: ClassesSessionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isAddingAssistant, setIsAddingAssistant] = useState(false)
   const [, setAssistantNameState] = useState<string | null>(session.assistantName || null)
-  const [previewMedia, setPreviewMedia] = useState<{ name: string; url: string; type?: string; thumbnailUrl?: string } | null>(null)
 
   const [revertConfirm, setRevertConfirm] = useState<{
     open: boolean
@@ -181,8 +177,7 @@ export function ClassesSessionCard({
   const hasBottomContent = Boolean(
     session.description ||
     isEditingRemark ||
-    isExpanded ||
-    (isCompleted && session.materials && session.materials.length > 0)
+    isExpanded
   )
 
   return (
@@ -580,15 +575,6 @@ export function ClassesSessionCard({
         onEditChange={setIsEditingRemark}
       />
 
-      {/* Attached Media / Photos list (only for completed sessions) */}
-      {isCompleted && (
-        <SessionCardMaterials
-          session={session}
-          onDeleteMaterial={onDeleteMaterial}
-          onPreviewMedia={(media) => setPreviewMedia(media)}
-        />
-      )}
-
       {/* Assistant selection modal dialog */}
       <SessionCardAssistantDialog
         isOpen={isAddingAssistant}
@@ -601,12 +587,6 @@ export function ClassesSessionCard({
 
       {/* Expanded Lessons Content from Roadmap */}
       {isExpanded && <SessionCardLessonsExpand session={session} />}
-
-      {/* Lightbox / Media Preview Dialog */}
-      <ClassesSessionCardMediaModal
-        previewMedia={previewMedia}
-        onClose={() => setPreviewMedia(null)}
-      />
 
       {/* Confirmation Dialog for Reverting/Restoring Session changes */}
       <ConfirmDialog

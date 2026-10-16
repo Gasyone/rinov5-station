@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { History, ChevronDown, ChevronUp, ShoppingBag, CheckCircle, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayButton } from './AudioPlayButton'
 import { CareTagHoverCard, PersonnelHoverCard, StatusBadge } from '@/components/shared'
-import { formatFullStaffName } from './operationsAlertHelpers'
+import { formatFullStaffName, getCareNatureAbbrev } from './operationsAlertHelpers'
 import { formatCareHistoryTime } from './studentCareDetailHelpers'
 import type { CareInteractionLog } from '@/mocks/careAlerts'
 
@@ -143,13 +143,27 @@ export function HistoryLogCardItem({
 
   const timeInfo = formatCareHistoryTime(effectiveDate)
 
+  const logReason = useMemo(() => {
+    const rawNotes = log.notes || ''
+    const match = rawNotes.match(/\[Lý do:\s*([^\]]+)\]/i)
+    if (match) return match[1].trim()
+    const prefixMatch = rawNotes.match(/Lý do:\s*([^.\n]+)/i)
+    if (prefixMatch) return prefixMatch[1].trim()
+    return null
+  }, [log.notes])
+
+  const isFailedLog = useMemo(() => {
+    const rawNotes = (log.notes || '').toLowerCase()
+    return Boolean(logReason) || rawNotes.includes('thất bại') || rawNotes.includes('dừng học')
+  }, [log.notes, logReason])
+
   return (
-    <div className="flex items-start gap-2.5 text-xs text-left">
+    <div className="flex items-start gap-2.5 text-xs 2xl:text-[13px] text-left">
       {/* Đề xuất 2: GV / CS ở ngoài (bên trái) dạng bo tròn, bỏ in đậm */}
       <div className="shrink-0 pt-0.5">
         <span
           className={cn(
-            'inline-flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium select-none',
+            'inline-flex items-center justify-center h-5.5 w-5.5 2xl:h-6 2xl:w-6 rounded-full text-xs 2xl:text-[12.5px] font-medium select-none',
             isGV
               ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'
               : 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
@@ -162,68 +176,79 @@ export function HistoryLogCardItem({
       {/* Cột chính: Bắt đầu từ Tên người chăm sóc, và Nội dung chăm sóc thụt lùi vào thẳng hàng với Tên người chăm sóc */}
       <div className="flex-1 min-w-0 space-y-1">
         {/* Header row: Tên người gọi • Kênh/kết quả + Tên người nhận • Thời gian */}
-        <div className="flex items-center justify-between gap-2 flex-wrap py-0.5 select-none">
-          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+        <div className="flex items-center justify-between gap-1.5 min-w-0 overflow-hidden py-0.5 select-none">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
             <PersonnelHoverCard person={getStaffPerson(effectiveStaffName, isGV)}>
-              <span className="font-normal text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+              <span className="font-medium text-foreground text-xs 2xl:text-[13px] cursor-pointer hover:underline hover:text-primary transition-colors shrink-0 whitespace-nowrap">
                 {effectiveStaffName}
               </span>
             </PersonnelHoverCard>
 
-            <span className="text-xs text-muted-foreground font-normal truncate">
+            <span
+              className="text-xs 2xl:text-[13px] text-muted-foreground font-normal truncate min-w-0 shrink"
+              title={`${actionText} ${effectiveRecipient}`}
+            >
               • {actionText} <span className="text-foreground font-normal">{effectiveRecipient}</span>
             </span>
 
             {isKnM && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60 shrink-0">
+              <span className="px-1.5 py-0.2 rounded text-[10.5px] 2xl:text-[11.5px] font-medium bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60 shrink-0 whitespace-nowrap">
                 Không nghe máy
               </span>
             )}
             {isMayBan && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60 shrink-0">
+              <span className="px-1.5 py-0.2 rounded text-[10.5px] 2xl:text-[11.5px] font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60 shrink-0 whitespace-nowrap">
                 Máy bận
               </span>
             )}
             {isVangMat && (
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0">
+              <span className="px-1.5 py-0.2 rounded text-[10.5px] 2xl:text-[11.5px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 shrink-0 whitespace-nowrap">
                 Vắng mặt
               </span>
             )}
 
             <span
-              className="text-xs text-muted-foreground font-normal shrink-0 cursor-default"
+              className="text-xs 2xl:text-[13px] text-muted-foreground font-normal shrink-0 whitespace-nowrap cursor-default"
               title={timeInfo.full}
             >
               • {timeInfo.display}
             </span>
           </div>
 
-          {/* Care Tag Badge on Far Right of Header Row - CSTP/CTP đứng độc lập */}
+          {/* Care Tag Badge on Far Right of Header Row - CGH đứng độc lập */}
           {topic && (
-            <div className="shrink-0">
-              {topic === 'CSTP' || topic === 'CTP' || topic.includes('CSTP') || topic.includes('CTP') ? (
-                log.notes?.toLowerCase().includes('thất bại') ? (
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800">
+            <div className="shrink-0 whitespace-nowrap">
+              {topic === 'CGH' || topic === 'CSTP' || topic === 'CTP' || topic.includes('CGH') || topic.includes('CSTP') || topic.includes('CTP') ? (
+                isFailedLog ? (
+                  <span className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-medium px-2 py-0.5 rounded-full border bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800 whitespace-nowrap">
                     <XCircle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-                    <span>CTP • Thất bại</span>
+                    <span>CGH</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[10.5px] font-medium px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
+                  <span className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-medium px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap">
                     <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                    <span>CSTP • Tái phí</span>
+                    <span>CGH • Tái phí</span>
                   </span>
                 )
               ) : (
-                <CareTagHoverCard code={topic} label={topic} description="Thẻ tương tác chăm sóc" />
+                <CareTagHoverCard code={topic} label={getCareNatureAbbrev(topic)} description="Thẻ tương tác chăm sóc" />
               )}
             </div>
           )}
         </div>
 
         {/* Khung nội dung chăm sóc (Đóng khung, bỏ đường line) */}
-        <div className="rounded-lg border border-border/60 bg-muted/20 dark:bg-zinc-900/30 p-2 space-y-1 text-xs text-left">
-          {/* Continuous Stream: Audio (nếu có) + Ghi chú + Phụ huynh phản hồi */}
-          <div className="text-xs text-foreground/90 font-normal leading-relaxed">
+        <div className="rounded-lg border border-border/60 bg-muted/20 dark:bg-zinc-900/30 p-2 space-y-1 text-xs 2xl:text-[13px] text-left">
+          {/* Dòng lý do (nếu có) */}
+          {logReason && (
+            <div className="text-xs 2xl:text-[13px] leading-relaxed text-foreground/90 font-normal">
+              <span className="text-muted-foreground font-medium">Lý do: </span>
+              <span className="text-foreground font-medium">{logReason}</span>
+            </div>
+          )}
+
+          {/* Continuous Stream: Audio (nếu có) + Ghi chú + Phụ huynh phản hồi trên cùng 1 dòng */}
+          <div className="text-xs 2xl:text-[13px] text-foreground/90 font-normal leading-relaxed">
             {log.audioDuration && (
               <span className="inline-flex items-center align-middle mr-2">
                 <AudioPlayButton duration={log.audioDuration} />
@@ -244,7 +269,7 @@ export function HistoryLogCardItem({
           </div>
 
           {/* Đơn hàng liên kết trong Lịch sử chăm sóc */}
-          {effectiveLinkedOrder && (
+          {effectiveLinkedOrder ? (
             <div className="mt-1 flex items-center gap-1.5 text-xs flex-wrap text-muted-foreground">
               <ShoppingBag className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="font-medium text-muted-foreground">Đơn hàng liên kết:</span>
@@ -272,7 +297,13 @@ export function HistoryLogCardItem({
                 </>
               )}
             </div>
-          )}
+          ) : (topic === 'CSTP' || topic === 'CTP' || (log.notes || '').includes('[CSTP]')) && log.notes?.toLowerCase().includes('thất bại') ? (
+            <div className="mt-1 flex items-center gap-1.5 text-xs flex-wrap text-muted-foreground">
+              <ShoppingBag className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+              <span className="font-medium text-muted-foreground">Đơn hàng liên kết:</span>
+              <span className="text-muted-foreground/80 italic font-medium">Không liên kết</span>
+            </div>
+          ) : null}
 
           {/* Lịch sử ghi nhận chăm sóc trước đó (Accordion) */}
           {log.missedCallsList && log.missedCallsList.length > 0 && (

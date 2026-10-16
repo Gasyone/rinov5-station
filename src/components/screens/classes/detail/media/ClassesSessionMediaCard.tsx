@@ -48,9 +48,15 @@ export function ClassesSessionMediaCard({
   handleToggleStudentTagInPopover,
   onPreview,
 }: ClassesSessionMediaCardProps) {
-  const taggedNames = rosterStudents.filter((st) => item.taggedStudentIds.includes(st.id))
+  const taggedNames = rosterStudents.filter((st, idx) =>
+    item.taggedStudentIds.includes(st.id) || item.taggedStudentIds.includes(`s${idx + 1}`)
+  )
 
   const handleCardClick = () => {
+    if (item.status === 'inactive') {
+      setActivePopoverItemId(item.id)
+      return
+    }
     if (item.type === 'doc') {
       if (item.url && item.url !== '#') {
         window.open(item.url, '_blank')
@@ -68,7 +74,9 @@ export function ClassesSessionMediaCard({
       onClick={handleCardClick}
       className={cn(
         'group/card relative rounded-2xl border overflow-hidden transition-all bg-zinc-100 dark:bg-zinc-900 text-white shadow-2xs hover:shadow-xs cursor-pointer',
-        isSelected
+        item.status === 'inactive'
+          ? 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/50 shadow-md shadow-amber-500/10'
+          : isSelected
           ? 'border-sky-500 ring-2 ring-sky-500/30'
           : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
       )}
@@ -88,19 +96,21 @@ export function ClassesSessionMediaCard({
             ) : (
               <Film className="h-12 w-12 text-zinc-600" />
             )}
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onPreview?.(item)
-                }}
-                className="h-11 w-11 rounded-full bg-sky-600/90 hover:bg-sky-500 text-white flex items-center justify-center shadow-lg border border-white/20 transition-transform group-hover/card:scale-110 cursor-pointer"
-                title="Phát video"
-              >
-                <Play className="h-5 w-5 fill-white ml-0.5" />
-              </button>
-            </div>
+            {item.status !== 'inactive' && (
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onPreview?.(item)
+                  }}
+                  className="h-11 w-11 rounded-full bg-sky-600/90 hover:bg-sky-500 text-white flex items-center justify-center shadow-lg border border-white/20 transition-transform group-hover/card:scale-110 cursor-pointer"
+                  title="Phát video"
+                >
+                  <Play className="h-5 w-5 fill-white ml-0.5" />
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-4 text-center">
@@ -141,141 +151,191 @@ export function ClassesSessionMediaCard({
           </div>
         </div>
 
-        {/* Hover Overlay with Action Buttons */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2 z-20">
-          <div className="flex items-center gap-2">
-            {item.type !== 'doc' ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onPreview?.(item)
-                }}
-                className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
-                title={item.type === 'video' ? 'Xem video' : 'Xem ảnh lớn'}
-              >
-                {item.type === 'video' ? <Play className="h-4 w-4 fill-white ml-0.5" /> : <Eye className="h-4.5 w-4.5" />}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (item.url && item.url !== '#') {
-                    window.open(item.url, '_blank')
-                    toast.success(`Đang mở tài liệu: ${item.name}`)
-                  } else {
-                    handleDownloadFile(item)
-                  }
-                }}
-                className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
-                title="Mở trong tab mới"
-              >
-                <ExternalLink className="h-4.5 w-4.5" />
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleShareLink(item)
-              }}
-              className="h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
-              title="Chia sẻ (Copy link)"
-            >
-              <Share2 className="h-4.5 w-4.5" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDownloadFile(item)
-              }}
-              className="h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
-              title="Tải về"
-            >
-              <Download className="h-4.5 w-4.5" />
-            </button>
-          </div>
-
-          {/* INDIVIDUAL CARD TAGGING POPOVER */}
-          <Popover
-            open={activePopoverItemId === item.id}
-            onOpenChange={(open) => {
-              if (open) {
-                setActivePopoverItemId(item.id)
-              } else {
-                setActivePopoverItemId(null)
-              }
-            }}
-          >
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
+        {/* CASE A: CHƯA GÁN (inactive) - HIỂN THỊ DUY NHẤT BUTTON GÁN, KHÔNG CẦN HOVER, HIỂN THỊ MẶC ĐỊNH LUÔN */}
+        {item.status === 'inactive' ? (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-3 z-20 pointer-events-auto">
+            <Popover
+              open={activePopoverItemId === item.id}
+              onOpenChange={(open) => {
+                if (open) {
                   setActivePopoverItemId(item.id)
-                }}
-                className="px-3.5 py-1.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-md cursor-pointer transition-transform hover:scale-105 flex items-center gap-1.5"
-              >
-                <UserPlus className="h-3.5 w-3.5 shrink-0" />
-                <span>Gắn học viên</span>
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              align="center"
-              side="bottom"
-              sideOffset={5}
-              className="p-0 border-0 bg-transparent shadow-none z-[9999]"
-              onClick={(e) => e.stopPropagation()}
+                } else {
+                  setActivePopoverItemId(null)
+                }
+              }}
             >
-              <StudentSelectorPopoverContent
-                title="Gắn học viên"
-                subtitle={`Danh sách thuộc lớp ${className}`}
-                rosterStudents={rosterStudents}
-                selectedStudentIds={item.taggedStudentIds}
-                targetItems={[item]}
-                showClassWideOption={true}
-                onSelectOption={(id) => handleToggleStudentTagInPopover(item.id, id)}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActivePopoverItemId(item.id)
+                  }}
+                  className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-lg shadow-black/40 cursor-pointer transition-all hover:scale-105 flex items-center gap-1.5 border border-white/30"
+                >
+                  <UserPlus className="h-4 w-4 shrink-0" />
+                  <span>Gán</span>
+                </button>
+              </PopoverTrigger>
 
-        {/* Bottom Overlay: Tagged Avatars Only */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-6 flex flex-col gap-1 z-10 pointer-events-none">
-          {/* Tagged Student Avatar Circles */}
-          {item.taggedStudentIds.length === 0 ? (
-            <div className="flex items-center gap-1 text-xs text-zinc-300 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Dành cho cả lớp</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 flex-wrap pointer-events-auto">
-              {taggedNames.map((st) => {
-                const bg = st.colorBg || 'bg-amber-100 dark:bg-amber-950/60'
-                const text = st.colorText || 'text-amber-800 dark:text-amber-300'
-                return (
-                  <div
-                    key={st.id}
+              <PopoverContent
+                align="center"
+                side="bottom"
+                sideOffset={6}
+                className="p-0 border-0 bg-transparent shadow-none z-[9999]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <StudentSelectorPopoverContent
+                  title="Gán học viên"
+                  subtitle={`Danh sách thuộc lớp ${className}`}
+                  rosterStudents={rosterStudents}
+                  selectedStudentIds={item.taggedStudentIds}
+                  targetItems={[item]}
+                  showClassWideOption={true}
+                  onSelectOption={(id) => handleToggleStudentTagInPopover(item.id, id)}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        ) : (
+          /* CASE B: ĐÃ GÁN (active) - Hover Overlay (Eye/Play, Share, Download, Gắn thêm) + Bottom Avatars / Cả lớp */
+          <>
+            {/* Hover Overlay with Action Buttons */}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/card:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-2 z-20">
+              <div className="flex items-center gap-2">
+                {item.type !== 'doc' ? (
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleRemoveStudentTag(item.id, st.id, st.name)
+                      onPreview?.(item)
                     }}
-                    className={`group/avatar relative flex items-center justify-center h-6 w-6 rounded-full ${bg} ${text} text-xs font-bold border shadow-xs transition-transform hover:scale-110 cursor-pointer`}
-                    title={`${st.name} (Nhấp để xóa học viên)`}
+                    className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
+                    title={item.type === 'video' ? 'Xem video' : 'Xem ảnh lớn'}
                   >
-                    <span>{st.initials || st.name.slice(0, 1).toUpperCase()}</span>
-                    <span className="absolute inset-0 rounded-full bg-rose-600 text-white opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity">
-                      <X className="h-3 w-3 stroke-[3]" />
-                    </span>
-                  </div>
-                )
-              })}
+                    {item.type === 'video' ? <Play className="h-4 w-4 fill-white ml-0.5" /> : <Eye className="h-4.5 w-4.5" />}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (item.url && item.url !== '#') {
+                        window.open(item.url, '_blank')
+                        toast.success(`Đang mở tài liệu: ${item.name}`)
+                      } else {
+                        handleDownloadFile(item)
+                      }
+                    }}
+                    className="h-9 w-9 rounded-full bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer shadow-md"
+                    title="Mở trong tab mới"
+                  >
+                    <ExternalLink className="h-4.5 w-4.5" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleShareLink(item)
+                  }}
+                  className="h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
+                  title="Chia sẻ (Copy link)"
+                >
+                  <Share2 className="h-4.5 w-4.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDownloadFile(item)
+                  }}
+                  className="h-9 w-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
+                  title="Tải về"
+                >
+                  <Download className="h-4.5 w-4.5" />
+                </button>
+              </div>
+
+              {/* INDIVIDUAL CARD TAGGING POPOVER */}
+              <Popover
+                open={activePopoverItemId === item.id}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setActivePopoverItemId(item.id)
+                  } else {
+                    setActivePopoverItemId(null)
+                  }
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActivePopoverItemId(item.id)
+                    }}
+                    className="px-3.5 py-1.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-md cursor-pointer transition-transform hover:scale-105 flex items-center gap-1.5"
+                  >
+                    <UserPlus className="h-3.5 w-3.5 shrink-0" />
+                    <span>Gắn học viên</span>
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent
+                  align="center"
+                  side="bottom"
+                  sideOffset={5}
+                  className="p-0 border-0 bg-transparent shadow-none z-[9999]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <StudentSelectorPopoverContent
+                    title="Gắn học viên"
+                    subtitle={`Danh sách thuộc lớp ${className}`}
+                    rosterStudents={rosterStudents}
+                    selectedStudentIds={item.taggedStudentIds}
+                    targetItems={[item]}
+                    showClassWideOption={true}
+                    onSelectOption={(id) => handleToggleStudentTagInPopover(item.id, id)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-          )}
-        </div>
+
+            {/* Bottom Overlay: Tagged Avatars Only or Class-Wide */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-6 flex flex-col gap-1 z-10 pointer-events-none">
+              {item.taggedStudentIds.length === 0 ? (
+                <div className="flex items-center gap-1 text-xs text-zinc-300 font-medium">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Dành cho cả lớp</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 flex-wrap pointer-events-auto">
+                  {taggedNames.map((st) => {
+                    const bg = st.colorBg || 'bg-amber-100 dark:bg-amber-950/60'
+                    const text = st.colorText || 'text-amber-800 dark:text-amber-300'
+                    return (
+                      <div
+                        key={st.id}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemoveStudentTag(item.id, st.id, st.name)
+                        }}
+                        className={`group/avatar relative flex items-center justify-center h-6 w-6 rounded-full ${bg} ${text} text-xs font-bold border shadow-xs transition-transform hover:scale-110 cursor-pointer`}
+                        title={`${st.name} (Nhấp để xóa học viên)`}
+                      >
+                        <span>{st.initials || st.name.slice(0, 1).toUpperCase()}</span>
+                        <span className="absolute inset-0 rounded-full bg-rose-600 text-white opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition-opacity">
+                          <X className="h-3 w-3 stroke-[3]" />
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

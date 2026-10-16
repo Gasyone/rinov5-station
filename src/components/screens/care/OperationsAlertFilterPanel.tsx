@@ -24,6 +24,8 @@ export interface FilterState {
   selectedMonths: Set<string>
   fromDate: string
   toDate: string
+  selectedCSStaff: Set<string>
+  selectedTeachers: Set<string>
 }
 
 export interface FilterActions {
@@ -44,6 +46,8 @@ export interface FilterActions {
   setSelectedMonths: React.Dispatch<React.SetStateAction<Set<string>>>
   setFromDate: (v: string) => void
   setToDate: (v: string) => void
+  setSelectedCSStaff: React.Dispatch<React.SetStateAction<Set<string>>>
+  setSelectedTeachers: React.Dispatch<React.SetStateAction<Set<string>>>
   resetPagination: () => void
 }
 
@@ -52,10 +56,14 @@ interface OperationsAlertFilterPanelProps {
   onOpenChange: (open: boolean) => void
   branchOptions: string[]
   classList: string[]
+  csStaffOptions: string[]
+  teacherOptions: string[]
   searchQuery: string
   onSearchQueryChange: (q: string) => void
   state: FilterState
   actions: FilterActions
+  activeCount?: number
+  onApply?: () => void
 }
 
 export function OperationsAlertFilterPanel({
@@ -63,10 +71,14 @@ export function OperationsAlertFilterPanel({
   onOpenChange,
   branchOptions,
   classList,
+  csStaffOptions,
+  teacherOptions,
   searchQuery,
   onSearchQueryChange,
   state,
   actions,
+  activeCount,
+  onApply,
 }: OperationsAlertFilterPanelProps) {
 
   const handleFilterToggle = (groupId: string, value: string) => {
@@ -81,6 +93,8 @@ export function OperationsAlertFilterPanel({
     }
     
     if (groupId === 'branches') actions.setSelectedBranches(updateSet)
+    else if (groupId === 'csStaff') actions.setSelectedCSStaff(updateSet)
+    else if (groupId === 'teachers') actions.setSelectedTeachers(updateSet)
     else if (groupId === 'statuses') actions.setSelectedStatuses(updateSet)
     else if (groupId === 'careStatuses') actions.setSelectedCareStatuses(updateSet)
     else if (groupId === 'careAlerts') actions.setSelectedAlerts(updateSet)
@@ -93,6 +107,8 @@ export function OperationsAlertFilterPanel({
 
   const handleClearAllFilters = () => {
     actions.setSelectedBranches(new Set())
+    actions.setSelectedCSStaff(new Set())
+    actions.setSelectedTeachers(new Set())
     actions.setSelectedStatuses(new Set())
     actions.setSelectedCareStatuses(new Set())
     actions.setSelectedAlerts(new Set())
@@ -114,6 +130,8 @@ export function OperationsAlertFilterPanel({
 
   const handleClearSection = (groupId: string) => {
     if (groupId === 'branches') actions.setSelectedBranches(new Set())
+    else if (groupId === 'csStaff') actions.setSelectedCSStaff(new Set())
+    else if (groupId === 'teachers') actions.setSelectedTeachers(new Set())
     else if (groupId === 'timeFilter') {
       actions.setSelectedMonths(new Set())
       actions.setFromDate('')
@@ -150,6 +168,24 @@ export function OperationsAlertFilterPanel({
         options: branchOptions,
         selectedValues: state.selectedBranches,
         defaultOpen: true,
+      }),
+      createFilterGroup({
+        id: 'csStaff',
+        title: 'Chuyên viên CS phụ trách',
+        options: csStaffOptions,
+        selectedValues: state.selectedCSStaff,
+        defaultOpen: false,
+        searchable: true,
+        scrollable: true,
+      }),
+      createFilterGroup({
+        id: 'teachers',
+        title: 'Giáo viên phụ trách',
+        options: teacherOptions,
+        selectedValues: state.selectedTeachers,
+        defaultOpen: false,
+        searchable: true,
+        scrollable: true,
       }),
       createFilterGroup({
         id: 'timeFilter',
@@ -551,7 +587,11 @@ export function OperationsAlertFilterPanel({
     ]
   }, [
     branchOptions,
+    csStaffOptions,
+    teacherOptions,
     state.selectedBranches,
+    state.selectedCSStaff,
+    state.selectedTeachers,
     state.selectedStatuses,
     state.selectedCareStatuses,
     state.selectedAlerts,
@@ -577,12 +617,17 @@ export function OperationsAlertFilterPanel({
   return (
     <FilterGroupAsidePanel
       title="Bộ lọc nâng cao"
-      description="Kết hợp bộ lọc để tìm kiếm học viên chính xác."
+      activeCount={activeCount}
       groups={filterGroups}
       onToggle={handleFilterToggle}
       onClearAll={handleClearAllFilters}
       onClearSection={handleClearSection}
       onClose={() => onOpenChange(false)}
+      onApply={() => {
+        onApply?.()
+        onOpenChange(false)
+      }}
+      showFooterActions={true}
     >
       <div className="mb-4">
         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">

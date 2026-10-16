@@ -9,6 +9,7 @@ interface RenewalClassCodeHoverCellProps {
   subLevel?: string
   teacherCode: string
   schedule: string
+  className?: string
 }
 
 export function RenewalClassCodeHoverCell(props: RenewalClassCodeHoverCellProps) {

@@ -460,12 +460,29 @@ export function generateRoadmapSessions(cls: ClassRecord): RoadmapSession[] {
     // Session 8: Rescheduled Date -> test Hủy đổi giờ
     // Session 9: TA Cover (Thu Hà) -> test Xóa TA cover
     let status: RoadmapSession['status'] = 'upcoming'
-    if (sessionNum <= 3) {
+
+    if (cls.status === 'nhap' || cls.status === 'cho_khai_giang' || cls.status === 'mo_chieu_sinh') {
+      // 1. Lớp chưa bắt đầu học (Chờ khai giảng / Nháp / Chiêu sinh) -> Toàn bộ là upcoming
+      status = 'upcoming'
+    } else if (cls.status === 'huy' || (cls.status === 'tam_dung' && cls.id === 'cls-007')) {
+      // 2. Lớp đã hoàn thành hoặc kết thúc -> Toàn bộ là completed
       status = 'completed'
-    } else if (sessionNum === 4) {
-      status = 'ongoing'
-    } else if (sessionNum === 6) {
-      status = 'cancelled'
+    } else {
+      // 3. Lớp đang học ('dang_hoc') hoặc 'tam_dung'
+      // - cls-001: Có buổi đang học hôm nay (Buổi 4 ongoing)
+      // - cls-002, cls-019: Hôm nay KHÔNG có lịch học (Off-day, Buổi 1-4 completed, Buổi 5 upcoming)
+      const isOffDay = cls.id === 'cls-002' || cls.id === 'cls-019' || cls.id === 'cls-021' || (stableHash(cls.id) % 2 === 1 && cls.id !== 'cls-001')
+      const completedCount = isOffDay ? 4 : 3
+
+      if (sessionNum <= completedCount) {
+        status = 'completed'
+      } else if (!isOffDay && sessionNum === completedCount + 1) {
+        status = 'ongoing' // Hôm nay có buổi học
+      } else if (sessionNum === 6 && cls.id === 'cls-001') {
+        status = 'cancelled'
+      } else {
+        status = 'upcoming' // Buổi học sắp tới
+      }
     }
 
     // Substitute teacher mock

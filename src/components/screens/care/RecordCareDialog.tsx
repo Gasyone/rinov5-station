@@ -213,7 +213,7 @@ export function RecordCareDialog({ cls, onRefresh, trigger, onSuccess, excludeTa
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-violet-500/5 border border-violet-500/10 rounded-lg text-[10.5px] leading-relaxed text-muted-foreground font-medium">
+                  <div className="p-2.5 bg-violet-500/5 border border-violet-500/10 rounded-lg text-xs leading-relaxed text-muted-foreground font-medium">
                     <strong className="text-foreground">Mô tả:</strong> {selectedTagObject.description}
                   </div>
                 </div>

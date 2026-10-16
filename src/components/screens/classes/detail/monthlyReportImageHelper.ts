@@ -22,8 +22,8 @@ export interface MonthlyReportImageOptions {
     lateCount: number
     homeworkRatio: string
     homeworkAvg: string
-    testScore: number | null
-    priorTestScore: number | null
+    testScore?: number | string | null
+    priorTestScore?: number | string | null
   }
   sectionA1Content?: string
   sectionA2Content?: string
@@ -140,8 +140,8 @@ export async function downloadMonthlyReportImage(options: MonthlyReportImageOpti
       lateCount: 0,
       homeworkRatio: '6/7',
       homeworkAvg: '7.5',
-      testScore: 8.5,
-      priorTestScore: 8.0,
+      testScore: '00',
+      priorTestScore: '00',
     },
     sectionA1Content = '',
     sectionA2Content = '',
@@ -365,9 +365,18 @@ export async function downloadMonthlyReportImage(options: MonthlyReportImageOpti
     bLineY += 23
   })
 
-  // 4. KHỐI 3 THẺ CHỈ SỐ THỐNG KÊ (Chuẩn MonthlyReportStatsCards: Chỉ số trên, Text dưới)
+  // 4. KHỐI THẺ CHỈ SỐ THỐNG KÊ (Chuẩn MonthlyReportStatsCards: 3 thẻ hoặc 2 thẻ nếu tháng không có bài kiểm tra)
+  const hasValidScore =
+    metrics.testScore !== null &&
+    metrics.testScore !== undefined &&
+    metrics.testScore !== '' &&
+    metrics.testScore !== 0 &&
+    metrics.testScore !== '0' &&
+    metrics.testScore !== '00'
+  const shouldRenderTestCard = Boolean(hasValidScore)
+
   const statsY = 280
-  const statCardW = (contentW - 24) / 3 // 320px
+  const statCardW = shouldRenderTestCard ? (contentW - 24) / 3 : (contentW - 12) / 2
   const statCardH = 90
 
   // Card 1: Chuyên cần (Emerald)
@@ -421,31 +430,49 @@ export async function downloadMonthlyReportImage(options: MonthlyReportImageOpti
   ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   ctx.fillText('BÀI TẬP VỀ NHÀ', stat2X + 18, statsY + 72)
 
-  // Card 3: Kiểm tra định kỳ (Violet)
-  const stat3X = stat2X + statCardW + 12
-  ctx.fillStyle = '#F5F3FF'
-  ctx.beginPath()
-  ctx.roundRect(stat3X, statsY, statCardW, statCardH, 12)
-  ctx.fill()
-  ctx.strokeStyle = '#DDD6FE'
-  ctx.lineWidth = 1
-  ctx.stroke()
+  // Card 3: Kiểm tra định kỳ (Violet - Chỉ render khi tháng có điểm kiểm tra hợp lệ)
+  if (shouldRenderTestCard) {
+    const stat3X = stat2X + statCardW + 12
+    ctx.fillStyle = '#F5F3FF'
+    ctx.beginPath()
+    ctx.roundRect(stat3X, statsY, statCardW, statCardH, 12)
+    ctx.fill()
+    ctx.strokeStyle = '#DDD6FE'
+    ctx.lineWidth = 1
+    ctx.stroke()
 
-  // Chỉ số lên trên (Top row: Điểm & Điểm trước)
-  ctx.fillStyle = '#6D28D9'
-  ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText(metrics.testScore !== null ? metrics.testScore.toFixed(1) : '8.5', stat3X + 18, statsY + 44)
+    // Chỉ số lên trên (Top row: Điểm & Điểm trước)
+    ctx.fillStyle = '#6D28D9'
+    ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    const scoreText =
+      metrics.testScore !== null && metrics.testScore !== undefined && metrics.testScore !== ''
+        ? typeof metrics.testScore === 'number'
+          ? metrics.testScore === 0
+            ? '00'
+            : metrics.testScore.toFixed(1)
+          : String(metrics.testScore)
+        : '00'
+    ctx.fillText(scoreText, stat3X + 18, statsY + 44)
 
-  ctx.fillStyle = '#7C3AED'
-  ctx.font = '600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  ctx.textAlign = 'right'
-  ctx.fillText(`Trước: ${metrics.priorTestScore !== null ? metrics.priorTestScore.toFixed(1) : '8.0'}`, stat3X + statCardW - 18, statsY + 42)
-  ctx.textAlign = 'left'
+    ctx.fillStyle = '#7C3AED'
+    ctx.font = '600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.textAlign = 'right'
+    const priorScoreText =
+      metrics.priorTestScore !== null && metrics.priorTestScore !== undefined && metrics.priorTestScore !== ''
+        ? typeof metrics.priorTestScore === 'number'
+          ? metrics.priorTestScore === 0
+            ? '00'
+            : metrics.priorTestScore.toFixed(1)
+          : String(metrics.priorTestScore)
+        : '00'
+    ctx.fillText(`Trước: ${priorScoreText}`, stat3X + statCardW - 18, statsY + 42)
+    ctx.textAlign = 'left'
 
-  // Text xuống dưới (Bottom row: Nhãn danh mục)
-  ctx.fillStyle = '#5B21B6'
-  ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText('KIỂM TRA ĐỊNH KỲ', stat3X + 18, statsY + 72)
+    // Text xuống dưới (Bottom row: Nhãn danh mục)
+    ctx.fillStyle = '#5B21B6'
+    ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText('KIỂM TRA ĐỊNH KỲ', stat3X + 18, statsY + 72)
+  }
 
   // 5. KHUNG BÁO CÁO CHI TIẾT (SECTION A + SECTION B)
   ctx.fillStyle = '#FFFFFF'

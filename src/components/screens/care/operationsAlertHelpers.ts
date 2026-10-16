@@ -20,9 +20,9 @@ export function isCSDBTag(code?: string): boolean {
 export function getCareNatureAbbrev(code: string): 'CĐB' | 'CGH' | 'CĐK' | 'CBH' | 'CYC' {
   const upper = (code || '').trim().toUpperCase()
   if (upper.startsWith('ĐB') || upper === 'CSĐB' || upper === 'CĐB' || upper === 'CSCĐ') return 'CĐB'
-  if (upper === 'CSTP' || upper === 'TP' || upper === 'CGH' || upper === 'CSGH' || upper.startsWith('GO')) return 'CGH'
-  if (upper.startsWith('ĐK') || upper.startsWith('CĐK')) return 'CĐK'
-  if (upper.startsWith('TB') || upper === 'CBH' || upper === 'THT' || upper === 'CSBH' || upper.startsWith('TH') || upper.startsWith('LH')) return 'CBH'
+  if (upper === 'CSTP' || upper === 'TP' || upper === 'CGH' || upper === 'CSGH' || upper.startsWith('GO') || upper.startsWith('CTP')) return 'CGH'
+  if (upper.startsWith('ĐK') || upper.startsWith('CĐK') || upper.startsWith('TK')) return 'CĐK'
+  if (upper.startsWith('TB') || upper === 'CBH' || upper === 'THT' || upper === 'CSBH' || upper.startsWith('TH') || upper.startsWith('LH') || upper.startsWith('HT') || upper.startsWith('XN')) return 'CBH'
   return 'CYC'
 }
 
@@ -54,6 +54,39 @@ export function formatFullStaffName(name?: string): string {
   if (codeMap[clean]) return codeMap[clean]
 
   return clean
+}
+
+export const DEFAULT_CARE_EXPORT_FIELDS = [
+  { id: 'studentId', label: 'Mã học viên', defaultChecked: true },
+  { id: 'customerCode', label: 'Mã khách hàng', defaultChecked: true },
+  { id: 'studentName', label: 'Họ và tên học viên', defaultChecked: true },
+  { id: 'startDate', label: 'Ngày bắt đầu học', defaultChecked: true },
+  { id: 'subjectAndClass', label: 'Môn học & Mã lớp', defaultChecked: true },
+  { id: 'branch', label: 'Cơ sở phụ trách', defaultChecked: true },
+  { id: 'schedule', label: 'Lịch học', defaultChecked: true },
+  { id: 'teacher', label: 'Giáo viên giảng dạy', defaultChecked: true },
+  { id: 'attendanceRatio', label: 'Gói sản phẩm', defaultChecked: true },
+  { id: 'homeworkCompletion', label: 'Tỷ lệ hoàn thành BTVN (%)', defaultChecked: true },
+  { id: 'lastTestScore', label: 'Điểm đánh giá gần nhất', defaultChecked: true },
+  { id: 'evaluationComment', label: 'Nhận xét của Giáo viên', defaultChecked: true },
+  { id: 'careAlerts', label: 'Trạng thái Cảnh báo CS', defaultChecked: true },
+  { id: 'c90bConfirmation', label: 'Xác nhận C90B', defaultChecked: true },
+  { id: 'latestCareNote', label: 'Ghi chú tương tác gần nhất', defaultChecked: true },
+  { id: 'csStaff', label: 'Người chăm sóc', defaultChecked: true }
+]
+
+export function parseToYYYYMMDD(dStr: string): string | null {
+  if (!dStr) return null
+  const clean = dStr.split(' ')[0]
+  if (clean.includes('/')) {
+    const parts = clean.split('/')
+    if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
+  }
+  if (clean.includes('-')) {
+    const parts = clean.split('-')
+    if (parts.length === 3) return clean
+  }
+  return null
 }
 
 /**
@@ -699,6 +732,11 @@ export const isInProgress = (item: StudentCareAlert): boolean => {
   return hash % 3 !== 0
 }
 
+export const isUncared = (item: StudentCareAlert): boolean => {
+  if (!item) return false
+  return !isCared(item) && !isInProgress(item)
+}
+
 export const isWeakAcademic = (item: StudentCareAlert): boolean => {
   const active = getStudentActiveTags(item)
   if (active.length === 0) return false
@@ -880,6 +918,57 @@ export function calculateStaffPerformanceMetrics(alerts: StudentCareAlert[]): {
   staffList.sort((a, b) => b.overdueCount - a.overdueCount || b.assignedCount - a.assignedCount)
 
   return { csSummary, gvSummary, staffList }
+}
+
+/**
+ * Checks if a specific CS staff name matches the current user
+ */
+export function isMyCSStaff(csStaff?: string, currentStaffName?: string): boolean {
+  if (!csStaff || !currentStaffName) return false
+  const cleanStaff = currentStaffName.trim().toLowerCase()
+  const formattedStaff = formatFullStaffName(currentStaffName).toLowerCase()
+  const cs = csStaff.trim().toLowerCase()
+  const csFormatted = formatFullStaffName(csStaff).toLowerCase()
+  return (
+    cs === cleanStaff ||
+    cs === formattedStaff ||
+    csFormatted === formattedStaff ||
+    cs.includes(cleanStaff) ||
+    cleanStaff.includes(cs)
+  )
+}
+
+/**
+ * Checks if a specific Teacher name or code matches the current user
+ */
+export function isMyTeacher(teacherStr?: string, currentStaffName?: string): boolean {
+  if (!teacherStr || !currentStaffName) return false
+  const cleanStaff = currentStaffName.trim().toLowerCase()
+  const formattedStaff = formatFullStaffName(currentStaffName).toLowerCase()
+  const cleanT = teacherStr.trim().toLowerCase()
+  const formattedT = formatFullStaffName(teacherStr).toLowerCase()
+  return (
+    cleanT === cleanStaff ||
+    cleanT === formattedStaff ||
+    formattedT === formattedStaff ||
+    cleanStaff.includes(cleanT) ||
+    cleanT.includes(cleanStaff)
+  )
+}
+
+/**
+ * Checks if a care alert belongs to the current user (either as CS Staff or as Teacher)
+ */
+export function isMyCareAlert(item: StudentCareAlert, staffName?: string): boolean {
+  if (!staffName) return false
+  if (isMyCSStaff(item.csStaff, staffName)) return true
+
+  const teachers = [
+    ...(item.teacherCode ? item.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+    ...(item.substituteTeacher ? item.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []),
+  ]
+
+  return teachers.some((t) => isMyTeacher(t, staffName))
 }
 
 

@@ -26,15 +26,21 @@ import {
   getConsecutiveMissingHomework,
   getConsecutiveLowScores,
   getUnassignedStaffStatus,
+  isMyCareAlert,
+  DEFAULT_CARE_EXPORT_FIELDS,
+  parseToYYYYMMDD,
 } from './operationsAlertHelpers'
 import { resolveStudentPlacementStatus } from './class-card/studentCareClassCardHelpers'
 import { OperationsAlertFilterPanel } from './OperationsAlertFilterPanel'
+import { useSystemConfigStore } from '@/stores/useSystemConfigStore'
 
 export function OperationsAlertScreen() {
+  const currentStaffName = useSystemConfigStore((s) => s.currentStaffName)
   const [searchQuery, setSearchQuery] = useState('')
   const [careViewMode, setCareViewMode] = useState<'service' | 'academic' | 'total'>('total')
   const [selectedToolbarBranch, setSelectedToolbarBranch] = useState('all')
   const [selectedSubject, setSelectedSubject] = useState('all')
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('all')
   const [careStatusFilter, setCareStatusFilter] = useState<'all' | 'pending' | 'in_progress' | 'cared'>('all')
   const [dueDateFilter, setDueDateFilter] = useState<'all' | 'overdue' | 'today' | 'rescheduled'>('all')
   const [packageStatusFilter, setPackageStatusFilter] = useState<string>('all')
@@ -44,6 +50,8 @@ export function OperationsAlertScreen() {
 
   // Advanced filters state (Sets for multi-select checkboxes)
   const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
+  const [selectedCSStaff, setSelectedCSStaff] = useState<Set<string>>(new Set())
+  const [selectedTeachers, setSelectedTeachers] = useState<Set<string>>(new Set())
   const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(new Set())
   const [selectedCareStatuses, setSelectedCareStatuses] = useState<Set<string>>(new Set())
   const [selectedAlerts, setSelectedAlerts] = useState<Set<string>>(new Set())
@@ -83,26 +91,23 @@ export function OperationsAlertScreen() {
     }
     return null
   })
+
+  const handleSelectStudentDetail = (id: string | null) => {
+    setActiveDetailStudentId(id)
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      if (id) {
+        url.searchParams.set('studentId', id)
+      } else {
+        url.searchParams.delete('studentId')
+      }
+      window.history.replaceState({}, '', url.toString())
+    }
+  }
+
   const [roadmapModalStudent, setRoadmapModalStudent] = useState<StudentCareAlert | null>(null)
 
-  const exportFields = [
-    { id: 'studentId', label: 'Mã học viên', defaultChecked: true },
-    { id: 'customerCode', label: 'Mã khách hàng', defaultChecked: true },
-    { id: 'studentName', label: 'Họ và tên học viên', defaultChecked: true },
-    { id: 'startDate', label: 'Ngày bắt đầu học', defaultChecked: true },
-    { id: 'subjectAndClass', label: 'Môn học & Mã lớp', defaultChecked: true },
-    { id: 'branch', label: 'Cơ sở phụ trách', defaultChecked: true },
-    { id: 'schedule', label: 'Lịch học', defaultChecked: true },
-    { id: 'teacher', label: 'Giáo viên giảng dạy', defaultChecked: true },
-    { id: 'attendanceRatio', label: 'Gói sản phẩm', defaultChecked: true },
-    { id: 'homeworkCompletion', label: 'Tỷ lệ hoàn thành BTVN (%)', defaultChecked: true },
-    { id: 'lastTestScore', label: 'Điểm đánh giá gần nhất', defaultChecked: true },
-    { id: 'evaluationComment', label: 'Nhận xét của Giáo viên', defaultChecked: true },
-    { id: 'careAlerts', label: 'Trạng thái Cảnh báo CS', defaultChecked: true },
-    { id: 'c90bConfirmation', label: 'Xác nhận C90B', defaultChecked: true },
-    { id: 'latestCareNote', label: 'Ghi chú tương tác gần nhất', defaultChecked: true },
-    { id: 'csStaff', label: 'Người chăm sóc', defaultChecked: true }
-  ]
+  const exportFields = DEFAULT_CARE_EXPORT_FIELDS
 
   const handleConfirmExport = (
     selectedFieldIds: string[],
@@ -138,8 +143,61 @@ export function OperationsAlertScreen() {
     []
   )
 
-  // 2. Perform search and filtering logic (before care progress tab)
-  const baseFiltered = useMemo(() => {
+  const csStaffOptions = useMemo(() => {
+    const list = mockCareAlerts.map((item) => item.csStaff).filter(Boolean)
+    return Array.from(new Set(list)).sort()
+  }, [])
+
+  const teacherOptions = useMemo(() => {
+    const allTeachers: string[] = []
+    mockCareAlerts.forEach((item) => {
+      if (item.teacherCode) {
+        item.teacherCode.split(/[,;\s/]+/).forEach((t) => {
+          const clean = t.trim()
+          if (clean) allTeachers.push(clean)
+        })
+      }
+      if (item.substituteTeacher) {
+        item.substituteTeacher.split(/[,;\s/]+/).forEach((t) => {
+          const clean = t.trim()
+          if (clean) allTeachers.push(clean)
+        })
+      }
+    })
+    return Array.from(new Set(allTeachers)).sort()
+  }, [])
+
+  const assigneeOptions = useMemo(() => {
+    return [
+      {
+        value: 'all',
+        label: 'Tất cả người phụ trách',
+        selectedLabel: 'Tất cả người phụ trách',
+        textValue: 'Tất cả người phụ trách',
+      },
+      {
+        value: 'my',
+        label: `⭐ Thẻ của tôi (${currentStaffName})`,
+        selectedLabel: '⭐ Thẻ của tôi',
+        textValue: `Thẻ của tôi (${currentStaffName})`,
+      },
+      ...csStaffOptions.map((cs) => ({
+        value: `cs:${cs}`,
+        label: `CS: ${cs}`,
+        selectedLabel: `CS: ${cs}`,
+        textValue: `CS ${cs}`,
+      })),
+      ...teacherOptions.map((t) => ({
+        value: `gv:${t}`,
+        label: `GV: ${t}`,
+        selectedLabel: `GV: ${t}`,
+        textValue: `GV ${t}`,
+      })),
+    ]
+  }, [currentStaffName, csStaffOptions, teacherOptions])
+
+  // 2. Perform search and filtering logic (before assignee & care progress tab)
+  const preAssigneeFiltered = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     refreshTrigger; // Trigger recalculation
     
@@ -154,6 +212,20 @@ export function OperationsAlertScreen() {
           (s) => s.id === item.studentId || s.name === item.studentName
         )
         return student && selectedBranches.has(student.branch)
+      })
+    }
+
+    // Filter by CS Staff (Advanced filter)
+    if (selectedCSStaff.size > 0) {
+      res = res.filter((item) => selectedCSStaff.has(item.csStaff))
+    }
+
+    // Filter by Teachers (Advanced filter)
+    if (selectedTeachers.size > 0) {
+      res = res.filter((item) => {
+        const tCodes = item.teacherCode ? item.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []
+        const subCodes = item.substituteTeacher ? item.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []
+        return Array.from(selectedTeachers).some((t) => tCodes.includes(t) || subCodes.includes(t))
       })
     }
 
@@ -300,24 +372,10 @@ export function OperationsAlertScreen() {
           if (log.date) dates.push(log.date)
         })
 
-        const toYYYYMMDD = (dStr: string): string | null => {
-          if (!dStr) return null
-          const clean = dStr.split(' ')[0]
-          if (clean.includes('/')) {
-            const parts = clean.split('/')
-            if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`
-          }
-          if (clean.includes('-')) {
-            const parts = clean.split('-')
-            if (parts.length === 3) return clean
-          }
-          return null
-        }
-
         let monthMatch = true
         if (selectedMonths.size > 0) {
           monthMatch = dates.some((dStr) => {
-            const parsed = toYYYYMMDD(dStr)
+            const parsed = parseToYYYYMMDD(dStr)
             if (!parsed) return false
             const [year, month] = parsed.split('-')
             const itemMonthYear = `${month}/${year}`
@@ -328,7 +386,7 @@ export function OperationsAlertScreen() {
         let rangeMatch = true
         if (fromDate !== '' || toDate !== '') {
           rangeMatch = dates.some((dStr) => {
-            const parsed = toYYYYMMDD(dStr)
+            const parsed = parseToYYYYMMDD(dStr)
             if (!parsed) return false
             if (fromDate !== '' && parsed < fromDate) return false
             if (toDate !== '' && parsed > toDate) return false
@@ -356,6 +414,8 @@ export function OperationsAlertScreen() {
     return res.filter(hasActiveTags)
   }, [
     selectedBranches,
+    selectedCSStaff,
+    selectedTeachers,
     selectedStatuses,
     selectedCareStatuses,
     selectedAlerts,
@@ -377,6 +437,30 @@ export function OperationsAlertScreen() {
     selectedSubject,
     refreshTrigger
   ])
+
+  // Count alerts belonging to the current user (within the current branch/subject/search scope)
+  const myAlertsCount = useMemo(() => {
+    return preAssigneeFiltered.filter((item) => isMyCareAlert(item, currentStaffName)).length
+  }, [preAssigneeFiltered, currentStaffName])
+
+  // Apply Toolbar assignee selection ('my', 'cs:name', 'gv:name', or 'all')
+  const baseFiltered = useMemo(() => {
+    let res = preAssigneeFiltered
+    if (selectedAssignee === 'my') {
+      res = res.filter((item) => isMyCareAlert(item, currentStaffName))
+    } else if (selectedAssignee.startsWith('cs:')) {
+      const staff = selectedAssignee.replace('cs:', '')
+      res = res.filter((item) => item.csStaff === staff)
+    } else if (selectedAssignee.startsWith('gv:')) {
+      const teacher = selectedAssignee.replace('gv:', '')
+      res = res.filter((item) => {
+        const tCodes = item.teacherCode ? item.teacherCode.split(/[,;\s/]+/).map((t) => t.trim()) : []
+        const subCodes = item.substituteTeacher ? item.substituteTeacher.split(/[,;\s/]+/).map((t) => t.trim()) : []
+        return tCodes.includes(teacher) || subCodes.includes(teacher)
+      })
+    }
+    return res
+  }, [preAssigneeFiltered, selectedAssignee, currentStaffName])
 
   // Compute care status counts from baseFiltered
   const careStatusCounts = useMemo(() => {
@@ -508,6 +592,9 @@ export function OperationsAlertScreen() {
   const activeFilterCount = useMemo(() => {
     return [
       selectedBranches.size > 0,
+      selectedCSStaff.size > 0,
+      selectedTeachers.size > 0,
+      selectedAssignee !== 'all',
       selectedStatuses.size > 0,
       selectedCareStatuses.size > 0,
       selectedAlerts.size > 0,
@@ -525,6 +612,9 @@ export function OperationsAlertScreen() {
     ].filter(Boolean).length
   }, [
     selectedBranches,
+    selectedCSStaff,
+    selectedTeachers,
+    selectedAssignee,
     selectedStatuses,
     selectedCareStatuses,
     selectedAlerts,
@@ -544,44 +634,18 @@ export function OperationsAlertScreen() {
   ])
 
   const filterState = {
-    selectedBranches,
-    selectedStatuses,
-    selectedCareStatuses,
-    selectedAlerts,
-    selectedCareTypes,
-    selectedAbsences,
-    selectedHomeworks,
-    selectedLowScores,
-    selectedCalls,
-    selectedClasses,
-    scoreMin,
-    scoreMax,
-    sessionMin,
-    sessionMax,
-    selectedMonths,
-    fromDate,
-    toDate,
+    selectedBranches, selectedCSStaff, selectedTeachers, selectedStatuses,
+    selectedCareStatuses, selectedAlerts, selectedCareTypes, selectedAbsences,
+    selectedHomeworks, selectedLowScores, selectedCalls, selectedClasses,
+    scoreMin, scoreMax, sessionMin, sessionMax, selectedMonths, fromDate, toDate,
   }
 
   const filterActions = {
-    setSelectedBranches,
-    setSelectedStatuses,
-    setSelectedCareStatuses,
-    setSelectedAlerts,
-    setSelectedCareTypes,
-    setSelectedAbsences,
-    setSelectedHomeworks,
-    setSelectedLowScores,
-    setSelectedCalls,
-    setSelectedClasses,
-    setScoreMin,
-    setScoreMax,
-    setSessionMin,
-    setSessionMax,
-    setSelectedMonths,
-    setFromDate,
-    setToDate,
-    resetPagination,
+    setSelectedBranches, setSelectedCSStaff, setSelectedTeachers, setSelectedStatuses,
+    setSelectedCareStatuses, setSelectedAlerts, setSelectedCareTypes, setSelectedAbsences,
+    setSelectedHomeworks, setSelectedLowScores, setSelectedCalls, setSelectedClasses,
+    setScoreMin, setScoreMax, setSessionMin, setSessionMax, setSelectedMonths,
+    setFromDate, setToDate, resetPagination,
   }
 
   if (activeDetailStudentId) {
@@ -589,11 +653,11 @@ export function OperationsAlertScreen() {
       <StudentCareDetailPage
         studentId={activeDetailStudentId}
         onBack={() => {
-          setActiveDetailStudentId(null)
+          handleSelectStudentDetail(null)
         }}
         alerts={mockCareAlerts}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
-        onStudentSelect={(id) => setActiveDetailStudentId(id)}
+        onStudentSelect={(id) => handleSelectStudentDetail(id)}
       />
     )
   }
@@ -614,6 +678,11 @@ export function OperationsAlertScreen() {
         branchOptions={branchOptions}
         selectedSubject={selectedSubject}
         onSubjectChange={(s) => { setSelectedSubject(s); resetPagination() }}
+        selectedAssignee={selectedAssignee}
+        onAssigneeChange={(val) => { setSelectedAssignee(val); resetPagination() }}
+        assigneeOptions={assigneeOptions}
+        myAlertsCount={myAlertsCount}
+        currentStaffName={currentStaffName}
         careStatusFilter={careStatusFilter}
         onCareStatusFilterChange={(s) => { setCareStatusFilter(s); setSelectedCareStatuses(new Set()); resetPagination() }}
         careStatusCounts={careStatusCounts}
@@ -652,9 +721,7 @@ export function OperationsAlertScreen() {
             }}
             viewMode={careViewMode}
             onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
-            onViewDetail={(id) => {
-              setActiveDetailStudentId(id)
-            }}
+            onViewDetail={handleSelectStudentDetail}
             onOpenRoadmapModal={(alert) => {
               setRoadmapModalStudent(alert)
             }}
@@ -667,10 +734,14 @@ export function OperationsAlertScreen() {
           onOpenChange={setIsFilterOpen}
           branchOptions={branchOptions}
           classList={classList}
+          csStaffOptions={csStaffOptions}
+          teacherOptions={teacherOptions}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
           state={filterState}
           actions={filterActions}
+          activeCount={activeFilterCount}
+          onApply={() => setIsFilterOpen(false)}
         />
       </div>
 

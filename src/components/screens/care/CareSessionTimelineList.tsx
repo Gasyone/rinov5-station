@@ -402,7 +402,7 @@ export function CareSessionTimelineList({
                 <button
                   type="button"
                   onClick={() => toggleExpand(session.id, idx)}
-                  className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
+                  className="absolute bottom-0 right-0 text-xs 2xl:text-[12.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
                 >
                   <span>{isExpanded ? '... Thu gọn' : '... xem thêm'}</span>
                 </button>
@@ -614,12 +614,12 @@ export function CareSessionTimelineList({
           {/* Header with soft background tint */}
           <div className="-mx-2.5 -mt-2.5 py-1.5 px-3 bg-muted/40 dark:bg-zinc-800/50 border-b border-border/50 flex items-center justify-between gap-2 flex-wrap mb-1.5">
             <div>
-              <h3 className="text-xs font-semibold text-foreground tracking-tight">
+              <h3 className="text-xs 2xl:text-[13.5px] font-semibold text-foreground tracking-tight">
                 Kiểm tra
               </h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground font-normal">
+              <span className="text-xs 2xl:text-[12.5px] text-muted-foreground font-normal">
                 Hiển thị {testCompletedSessions.length}/{allTestSessions.length} bài kiểm tra
               </span>
               {allTestSessions.length > 1 && (
@@ -628,7 +628,7 @@ export function CareSessionTimelineList({
                   <button
                     type="button"
                     onClick={() => setShowAllTests(!showAllTests)}
-                    className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs 2xl:text-[12.5px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     <span>
                       {showAllTests ? 'Thu gọn' : `Xem thêm (${allTestSessions.length - 1} bài)`}
@@ -654,12 +654,12 @@ export function CareSessionTimelineList({
               return (
                 <div
                   key={session.id}
-                  className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs space-y-1.5"
+                  className="p-2 sm:px-2.5 rounded-lg border border-border/50 bg-muted/15 dark:bg-zinc-800/25 hover:bg-muted/30 hover:border-border/80 transition-colors text-xs 2xl:text-[13px] space-y-1.5"
                 >
                   <div className="flex items-center justify-between gap-2 min-w-0">
                     {/* Cụm trái: [Thứ, Ngày/Tháng] + Tên bài kiểm tra (truncate) */}
                     <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-xs font-normal text-sky-600 dark:text-sky-400 shrink-0">
+                      <span className="text-xs 2xl:text-[13px] font-normal text-sky-600 dark:text-sky-400 shrink-0">
                         {shortDay}, {shortDate}
                       </span>
 
@@ -676,7 +676,7 @@ export function CareSessionTimelineList({
                     </div>
 
                     {/* Cụm phải: Điểm danh • BT • Điểm số */}
-                    <div className="flex items-center gap-1.5 shrink-0 ml-auto whitespace-nowrap text-xs">
+                    <div className="flex items-center gap-1.5 shrink-0 ml-auto whitespace-nowrap text-xs 2xl:text-[13px]">
                       {/* Điểm danh */}
                       {renderAttendanceBadge(session)}
 
@@ -712,7 +712,7 @@ export function CareSessionTimelineList({
                       {/* Điểm số */}
                       {session.score && (
                         <span
-                          className="font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/60 px-2 py-0.5 rounded-full border border-violet-200/80 dark:border-violet-800/60 text-[11px] leading-none shrink-0"
+                          className="font-semibold text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/60 px-2 py-0.5 rounded-full border border-violet-200/80 dark:border-violet-800/60 text-xs 2xl:text-[12px] leading-none shrink-0"
                           title={`Điểm bài kiểm tra: ${session.score}/10`}
                         >
                           {session.score}/10
@@ -726,7 +726,7 @@ export function CareSessionTimelineList({
                     <div className="relative pt-0.5">
                       <p
                         className={cn(
-                          'text-xs text-foreground/90 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
+                          'text-xs 2xl:text-[13px] text-foreground/90 font-normal leading-relaxed whitespace-pre-line cursor-pointer',
                           !isTestExpanded ? 'line-clamp-3 pr-20' : 'pr-20'
                         )}
                         onClick={() => toggleExpandTest(session.id, idx)}
@@ -737,7 +737,7 @@ export function CareSessionTimelineList({
                         <button
                           type="button"
                           onClick={() => toggleExpandTest(session.id, idx)}
-                          className="absolute bottom-0 right-0 text-[10.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
+                          className="absolute bottom-0 right-0 text-xs 2xl:text-[12.5px] italic text-sky-600 dark:text-sky-400 hover:underline cursor-pointer bg-card dark:bg-zinc-900 pl-1 leading-relaxed inline-flex items-center gap-0.5"
                         >
                           <span>{isTestExpanded ? '... Thu gọn' : '... xem thêm'}</span>
                         </button>

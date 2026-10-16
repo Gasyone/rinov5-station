@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ChevronDown, History, ShoppingBag } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
 import { cn } from '@/lib/utils'
-import { type StudentCareAlert } from '@/mocks/careAlerts'
+import { type StudentCareAlert, getFamilyContacts } from '@/mocks/careAlerts'
 import {
   getHistoryLogsForStudent,
   getRescheduleInfo,
@@ -91,6 +91,17 @@ export function OperationsAlertCareHistoryModal({
   const rescheduleInfo = getRescheduleInfo(cls)
   const currentLogs = defaultTab === 'renewal' ? renewalLogs : operationalLogs
 
+  // Thông tin người nhận: Vai trò & Tên phụ huynh (VD: "Mẹ Trần Thị An")
+  const recipientDisplay = useMemo(() => {
+    const contacts = getFamilyContacts(cls.studentId, cls.studentName)
+    const primary = contacts.find((c) => c.isPrimary) || contacts[0]
+    if (!primary) return 'Mẹ'
+    const rel = primary.relationship || 'Mẹ'
+    const name = primary.name || ''
+    if (name.startsWith(rel)) return name
+    return `${rel} ${name}`.trim()
+  }, [cls.studentId, cls.studentName])
+
   // Lần chăm sóc cuối cùng (mới nhất - index 0)
   const latestLog = currentLogs[0]
   // Các lần chăm sóc trước đó (index 1 trở đi)
@@ -128,7 +139,7 @@ export function OperationsAlertCareHistoryModal({
             : "bg-muted/30 hover:bg-muted/50 border border-border/60 rounded-md p-2.5"
         )}
       >
-        {/* Hàng tiêu đề: Tên CS/GV · Kênh · Người nhận  ---  Ngày */}
+        {/* Hàng tiêu đề: Tên CS/GV · Kênh · Vai trò & Tên phụ huynh  ---  Ngày */}
         <div className="flex items-center justify-between gap-1 text-xs flex-wrap">
           <div className="font-bold text-foreground flex items-center gap-1.5 flex-wrap">
             <span className="text-sky-700 dark:text-sky-400 font-semibold">
@@ -137,9 +148,7 @@ export function OperationsAlertCareHistoryModal({
             <span className="text-muted-foreground font-normal">·</span>
             <span className="font-medium text-foreground">{channelLabel}</span>
             <span className="text-muted-foreground font-normal">·</span>
-            <span className="text-muted-foreground font-normal">
-              Người nhận: <span className="text-foreground font-medium">{log.staff.includes('GV') ? `${cls.studentName} (Học viên)` : `Phụ huynh ${cls.studentName}`}</span>
-            </span>
+            <span className="text-foreground font-medium">{recipientDisplay}</span>
           </div>
           <span className="text-muted-foreground font-mono shrink-0">{log.date}</span>
         </div>
@@ -268,7 +277,7 @@ export function OperationsAlertCareHistoryModal({
                   <button
                     type="button"
                     onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                    className="flex items-center justify-between w-full text-[10.5px] font-semibold text-sky-700 dark:text-sky-400 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-900/80 rounded-md px-2.5 py-1.5 hover:bg-sky-100/80 transition-colors"
+                    className="flex items-center justify-between w-full text-xs font-semibold text-sky-700 dark:text-sky-400 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-900/80 rounded-md px-2.5 py-1.5 hover:bg-sky-100/80 transition-colors"
                   >
                     <span className="flex items-center gap-1.5">
                       <History className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400 shrink-0" />

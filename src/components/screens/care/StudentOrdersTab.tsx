@@ -280,18 +280,18 @@ export function StudentOrdersTab({
   }, [])
 
   return (
-    <div className="space-y-1.5 text-left">
+    <div className="space-y-1.5 2xl:space-y-2 text-left">
       {/* ── TOP TOOLBAR: Xem đơn các con khác (đưa ra đầu) ── Nút Tạo đơn (bên phải) ── */}
-      <div className="flex items-center justify-between py-0 text-[11px] flex-wrap gap-2">
+      <div className="flex items-center justify-between py-0 text-xs 2xl:text-[13px] flex-wrap gap-2">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Checkbox mở rộng xem đơn hàng của các con khác (đưa ra đầu) */}
           {hasOtherChildrenOrders && (
-            <label className="flex items-center gap-1.5 text-[11px] font-normal text-muted-foreground cursor-pointer select-none hover:text-foreground">
+            <label className="flex items-center gap-1.5 text-xs 2xl:text-[13px] font-normal text-muted-foreground cursor-pointer select-none hover:text-foreground">
               <input
                 type="checkbox"
                 checked={showOtherChildrenOrders}
                 onChange={(e) => setShowOtherChildrenOrders(e.target.checked)}
-                className="rounded border-border text-sky-600 focus:ring-sky-500 h-3 w-3 cursor-pointer accent-sky-600"
+                className="rounded border-border text-sky-600 focus:ring-sky-500 h-3.5 w-3.5 cursor-pointer accent-sky-600"
               />
               <span>Xem đơn các con khác</span>
             </label>
@@ -303,16 +303,16 @@ export function StudentOrdersTab({
           type="button"
           onClick={handleCreateNewOrder}
           variant="outline"
-          className="h-6 px-2 text-[11px] font-medium border-border/80 hover:bg-muted text-foreground flex items-center gap-1 shrink-0 cursor-pointer shadow-3xs"
+          className="h-6.5 2xl:h-7.5 px-2.5 2xl:px-3 text-xs 2xl:text-[13px] font-medium border-border/80 hover:bg-muted text-foreground flex items-center gap-1.5 shrink-0 cursor-pointer shadow-3xs"
         >
-          <Plus className="h-3 w-3" />
+          <Plus className="h-3.5 w-3.5" />
           <span>Tạo đơn</span>
         </Button>
       </div>
 
       {/* ── DANH SÁCH TẤT CẢ ĐƠN HÀNG & PHIẾU CHUYỂN PHÍ (DÒNG THỜI GIAN THỐNG NHẤT) ── */}
       {timelineItems.length > 0 ? (
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 2xl:space-y-2">
           {timelineItems.map((item) => {
             if (item.type === 'order') {
               return (
@@ -343,7 +343,7 @@ export function StudentOrdersTab({
           })}
         </div>
       ) : (
-        <div className="p-4 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center text-xs text-muted-foreground">
+        <div className="p-4 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center text-xs 2xl:text-[13px] text-muted-foreground">
           Chưa có đơn hàng nào được ghi nhận.
         </div>
       )}

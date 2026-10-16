@@ -9,6 +9,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 import type { RosterStudentOption, SessionMediaItem } from './classesSessionMediaTypes'
 import { StudentSelectorPopoverContent } from './StudentSelectorPopoverContent'
@@ -26,11 +28,13 @@ export interface ClassesSessionMediaToolbarProps {
   fileInputRef: RefObject<HTMLInputElement | null>
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   handleBulkDeleteConfirm: () => void
-  handleBatchTagStudents: (studentId: string | 'all' | 'class_wide') => void
+  handleBatchTagStudents: (studentId: string | 'all' | 'class_wide' | 'inactive') => void
   className: string
+  onOpenUploadDialog?: () => void
   mediaTypeFilter?: 'all' | 'image' | 'video' | 'doc'
   setMediaTypeFilter?: (type: 'all' | 'image' | 'video' | 'doc') => void
   countsByType?: { all: number; image: number; video: number; doc: number }
+  isUpcomingSession?: boolean
 }
 
 export function ClassesSessionMediaToolbar({
@@ -48,6 +52,8 @@ export function ClassesSessionMediaToolbar({
   handleBulkDeleteConfirm,
   handleBatchTagStudents,
   className,
+  onOpenUploadDialog,
+  isUpcomingSession = false,
 }: ClassesSessionMediaToolbarProps) {
 
   return (
@@ -95,7 +101,6 @@ export function ClassesSessionMediaToolbar({
             />
           </PopoverContent>
         </Popover>
-
       </div>
 
       {/* Hidden file input for uploads */}
@@ -124,43 +129,85 @@ export function ClassesSessionMediaToolbar({
               Xóa
             </Button>
 
-            {/* Button Gắn HV (BULK TAG POPOVER) */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  className="h-7 px-3 text-xs font-bold border-sky-400 dark:border-sky-600 bg-transparent text-[#0284c7] dark:text-sky-400 hover:bg-white dark:hover:bg-zinc-900 hover:text-sky-700 hover:border-sky-500 rounded-lg cursor-pointer transition-all shadow-2xs"
-                >
-                  Gắn HV
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="p-0 border-0 bg-transparent shadow-none z-[9999]">
-                <StudentSelectorPopoverContent
-                  title={`Gắn học viên cho ${selectedItemIds.length} tệp đã chọn`}
-                  subtitle={`Danh sách thuộc lớp ${className}`}
-                  rosterStudents={rosterStudents}
-                  targetItems={items.filter((item) => selectedItemIds.includes(item.id))}
-                  showClassWideOption={true}
-                  onSelectOption={(id) => handleBatchTagStudents(id)}
-                />
-              </PopoverContent>
-            </Popover>
+            {/* Button Gắn HV / Kích hoạt (BULK TAG POPOVER) */}
+            {(() => {
+              const hasInactiveSelected = items.some(
+                (item) => selectedItemIds.includes(item.id) && item.status === 'inactive'
+              )
+              return (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      className={cn(
+                        'h-7 px-3 text-xs font-bold rounded-lg cursor-pointer transition-all shadow-2xs',
+                        hasInactiveSelected
+                          ? 'border-amber-400 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 hover:border-amber-500'
+                          : 'border-sky-400 dark:border-sky-600 bg-transparent text-[#0284c7] dark:text-sky-400 hover:bg-white dark:hover:bg-zinc-900 hover:text-sky-700 hover:border-sky-500'
+                      )}
+                    >
+                      {hasInactiveSelected ? 'Kích hoạt' : 'Gắn HV'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="p-0 border-0 bg-transparent shadow-none z-[9999]">
+                    <StudentSelectorPopoverContent
+                      title={
+                        hasInactiveSelected
+                          ? `Kích hoạt & Gán học viên (${selectedItemIds.length} tệp)`
+                          : `Gắn học viên cho ${selectedItemIds.length} tệp đã chọn`
+                      }
+                      subtitle={
+                        hasInactiveSelected
+                          ? 'Chọn cả lớp hoặc học viên để kích hoạt'
+                          : `Danh sách thuộc lớp ${className}`
+                      }
+                      rosterStudents={rosterStudents}
+                      targetItems={items.filter((item) => selectedItemIds.includes(item.id))}
+                      showClassWideOption={true}
+                      onSelectOption={(id) => handleBatchTagStudents(id)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              )
+            })()}
           </div>
         )}
 
         {/* Button Tải lên */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="xs"
-          onClick={() => fileInputRef.current?.click()}
-          className="h-7 px-2.5 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/60 rounded-lg cursor-pointer transition-colors gap-1"
-        >
-          <Upload className="h-3.5 w-3.5" />
-          <span>Tải lên</span>
-        </Button>
+        {isUpcomingSession ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              toast.info('Buổi học chờ diễn ra. Bạn chỉ có thể tải ảnh cho buổi đã học hoặc đang học hôm nay!')
+            }}
+            className="h-7 px-2.5 text-xs font-semibold text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-not-allowed opacity-60 transition-colors gap-1"
+            title="Buổi học chờ diễn ra (Chưa thể tải ảnh)"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            <span>Tải lên</span>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => {
+              if (onOpenUploadDialog) {
+                onOpenUploadDialog()
+              } else {
+                fileInputRef.current?.click()
+              }
+            }}
+            className="h-7 px-2.5 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/60 rounded-lg cursor-pointer transition-colors gap-1"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            <span>Tải lên</span>
+          </Button>
+        )}
       </div>
     </div>
   )

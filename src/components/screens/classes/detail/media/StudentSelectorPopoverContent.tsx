@@ -17,7 +17,7 @@ export interface StudentSelectorPopoverContentProps {
   allCount?: number
   items?: SessionMediaItem[]
   targetItems?: SessionMediaItem[]
-  onSelectOption: (id: string | 'all' | 'class_wide') => void
+  onSelectOption: (id: string | 'all' | 'class_wide' | 'inactive') => void
 }
 
 function TriStateCheckbox({
@@ -52,7 +52,6 @@ export function StudentSelectorPopoverContent({
   selectedSingleId,
   isFilterMode = false,
   showClassWideOption = true,
-  allCount = 0,
   items = [],
   targetItems,
   onSelectOption,
@@ -67,17 +66,27 @@ export function StudentSelectorPopoverContent({
     )
   }, [rosterStudents, searchQuery])
 
+  const inactiveCount = useMemo(() => {
+    if (!items) return 0
+    return items.filter((i) => i.status === 'inactive').length
+  }, [items])
+
   // Compute multi-item or single-item tagging state for "Dành cho cả lớp"
-  const { cwState, cwCount } = useMemo(() => {
-    if (isFilterMode) return { cwState: 'unchecked' as const, cwCount: 0 }
+  const { cwState } = useMemo(() => {
+    if (isFilterMode) return { cwState: 'unchecked' as const }
     if (targetItems && targetItems.length > 0) {
-      const count = targetItems.filter((i) => i.taggedStudentIds.length === 0).length
-      if (count === targetItems.length) return { cwState: 'checked' as const, cwCount: count }
-      if (count > 0) return { cwState: 'indeterminate' as const, cwCount: count }
-      return { cwState: 'unchecked' as const, cwCount: 0 }
+      // If item is inactive, it's NOT assigned to cả lớp yet
+      const activeClassWideItems = targetItems.filter(
+        (i) => i.status !== 'inactive' && i.taggedStudentIds.length === 0
+      )
+      const count = activeClassWideItems.length
+      if (count === targetItems.length) return { cwState: 'checked' as const }
+      if (count > 0) return { cwState: 'indeterminate' as const }
+      return { cwState: 'unchecked' as const }
     }
-    const isChecked = selectedStudentIds.length === 0
-    return { cwState: isChecked ? ('checked' as const) : ('unchecked' as const), cwCount: isChecked ? 1 : 0 }
+    const isInactive = targetItems?.some((i) => i.status === 'inactive')
+    const isChecked = !isInactive && selectedStudentIds.length === 0
+    return { cwState: isChecked ? ('checked' as const) : ('unchecked' as const) }
   }, [isFilterMode, targetItems, selectedStudentIds])
 
   return (
@@ -117,6 +126,27 @@ export function StudentSelectorPopoverContent({
               <span>Tất cả tệp</span>
             </div>
             {selectedSingleId === 'all' && <Check className="h-4 w-4 text-sky-600 dark:text-sky-400 stroke-[2.5]" />}
+          </div>
+        )}
+
+        {/* Option: Chưa kích hoạt (Filter Mode only) */}
+        {isFilterMode && (
+          <div
+            onClick={() => onSelectOption('inactive')}
+            className={cn(
+              'flex items-center justify-between p-2 rounded-xl cursor-pointer transition-colors text-xs font-semibold',
+              selectedSingleId === 'inactive'
+                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold'
+                : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-amber-700 dark:text-amber-400'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+              <span>Chưa kích hoạt {inactiveCount > 0 ? `(${inactiveCount})` : ''}</span>
+            </div>
+            {selectedSingleId === 'inactive' && (
+              <Check className="h-4 w-4 text-amber-600 dark:text-amber-400 stroke-[2.5]" />
+            )}
           </div>
         )}
 

@@ -89,7 +89,7 @@ export function OperationsAlertSmartcardPopover({
           <div className="flex items-center gap-1">
             <Award className="h-3 w-3 text-primary" />
             <span className="font-bold text-xs text-primary">{metrics.inTimeRate}%</span>
-            <span className="text-xs text-muted-foreground hidden lg:inline">SLA</span>
+            <span className="text-xs text-muted-foreground hidden 2xl:inline">SLA</span>
           </div>
 
           <span className="text-muted-foreground/30 font-light text-xs">|</span>
@@ -98,7 +98,7 @@ export function OperationsAlertSmartcardPopover({
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3 text-muted-foreground" />
             <span className="font-semibold text-xs text-foreground">{metrics.total}</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">ca</span>
+            <span className="text-xs text-muted-foreground hidden 2xl:inline">ca</span>
           </div>
 
           <span className="text-muted-foreground/30 font-light text-xs">|</span>
@@ -109,7 +109,7 @@ export function OperationsAlertSmartcardPopover({
             <span className="font-semibold text-xs text-emerald-600 dark:text-emerald-400">
               {metrics.cared}
             </span>
-            <span className="text-xs text-muted-foreground hidden md:inline">đã CS</span>
+            <span className="text-xs text-muted-foreground hidden 2xl:inline">đã CS</span>
           </div>
 
           {/* Metric 3: Quá hạn SLA (visible on md screens up if > 0) */}
@@ -121,7 +121,7 @@ export function OperationsAlertSmartcardPopover({
                 <span className="font-medium text-xs text-rose-600 dark:text-rose-400">
                   {metrics.overdue}
                 </span>
-                <span className="text-xs text-muted-foreground">quá hạn</span>
+                <span className="text-xs text-muted-foreground hidden 2xl:inline">quá hạn</span>
               </div>
             </>
           ) : null}

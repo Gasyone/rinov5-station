@@ -32,6 +32,9 @@ interface QcRemediationTableProps {
   onToggleOne: (id: string) => void
   onRowClick: (id: string) => void
   onAssign: (errorId: string, assigneeId: string) => void
+  onQuickApprove?: (errorId: string) => void
+  onQuickReject?: (errorId: string) => void
+  onQuickStart?: (errorId: string) => void
 }
 
 export function QcRemediationTable({
@@ -41,6 +44,9 @@ export function QcRemediationTable({
   onToggleOne,
   onRowClick,
   onAssign,
+  onQuickApprove,
+  onQuickReject,
+  onQuickStart,
 }: QcRemediationTableProps) {
   const [assigneeSearch, setAssigneeSearch] = useState('')
 
@@ -128,6 +134,7 @@ export function QcRemediationTable({
             <th className="w-[120px] px-3 py-2 text-left text-xs font-medium">Khắc phục / Hành động</th>
             <th className="w-[120px] px-3 py-2 text-left text-xs font-medium">Trạng thái</th>
             <th className="w-[90px] px-3 py-2 text-left text-xs font-medium">Hoàn thành</th>
+            <th className="w-[140px] px-3 py-2 text-right text-xs font-medium">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -344,6 +351,69 @@ export function QcRemediationTable({
                 {/* Ngày hoàn thành */}
                 <td className="px-3 py-2.5 cursor-pointer text-xs tabular-nums">
                   {error.completionDate ? formatDate(error.completionDate) : '—'}
+                </td>
+
+                {/* Thao tác */}
+                <td className="px-3 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
+                  {error.status === 'corrected' && (
+                    <div className="flex items-center justify-end gap-1">
+                      {onQuickApprove && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400"
+                          onClick={() => onQuickApprove(error.id)}
+                          title="Duyệt đạt & đóng lỗi"
+                        >
+                          Duyệt
+                        </Button>
+                      )}
+                      {onQuickReject && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400"
+                          onClick={() => onQuickReject(error.id)}
+                          title="Trả lại yêu cầu khắc phục lại"
+                        >
+                          Trả lại
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {error.status === 'open' && onQuickStart && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => onQuickStart(error.id)}
+                    >
+                      Nhận xử lý
+                    </Button>
+                  )}
+                  {error.status === 'not_met' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs text-amber-700 border-amber-300 hover:bg-amber-50"
+                      onClick={() => onRowClick(error.id)}
+                    >
+                      Sửa lại
+                    </Button>
+                  )}
+                  {error.status === 'correcting' && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs text-muted-foreground"
+                      onClick={() => onRowClick(error.id)}
+                    >
+                      Báo cáo
+                    </Button>
+                  )}
+                  {error.status === 'closed' && (
+                    <span className="text-xs text-emerald-600 font-medium">Đã duyệt</span>
+                  )}
                 </td>
               </tr>
             )

@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useState, useEffect, useRef } from 'react'
-import { User, Camera, Upload, RotateCcw, Calendar, Check } from 'lucide-react'
+import { User, Camera, Upload, RotateCcw, Calendar as CalendarIcon, Check } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/controls'
 import { AppAvatar } from '@/components/shared'
 import { cn } from '@/lib/utils'
 
@@ -242,14 +243,18 @@ export function StudentDetailEditProfileDialog({
             {/* Ngày sinh */}
             <div className="space-y-1">
               <label className="text-[10.5px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <CalendarIcon className="h-3 w-3 text-muted-foreground" />
                 <span>Ngày sinh</span>
               </label>
-              <Input
-                type="date"
+              <DatePicker
                 value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                className="h-8 text-xs font-mono"
+                onChange={setDob}
+                placeholder="Chọn ngày sinh"
+                captionLayout="dropdown"
+                startMonth={new Date(2000, 0)}
+                endMonth={new Date(2028, 11)}
+                showClear
+                showToday
               />
             </div>
           </div>

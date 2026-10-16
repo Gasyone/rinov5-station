@@ -131,3 +131,13 @@ export type CareFollowCategory =
   | 'grading'
   | 'care'
   | 'renewal'
+
+export interface HomeQcMetrics {
+  total: number
+  pending: number
+  overdue: number
+  critical: number
+  corrected: number
+  closed: number
+}
+

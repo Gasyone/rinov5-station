@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Student {
+  id                  String   @id @default(cuid())
+  name                String
+  englishName         String?
+  email               String?
+  phone               String?
+  avatar              String?
+  gender              String   @default("Male")
+  dob                 String?
+  status              String   @default("wait_for_assignment")
+  branch              String?  @default("CS1")
+  schoolName          String?
+  parentName          String?
+  parentPhone         String?
+  packageName         String?
+  packageSessions     Int      @default(0)
+  usedSessions        Int      @default(0)
+  remainingSessions   Int      @default(0)
+  notes               String?
+  placementAttempt    Int      @default(1)
+  enrolledClassesJson String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}

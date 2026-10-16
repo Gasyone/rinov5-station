@@ -455,6 +455,64 @@ export function StudentCareChatFeed({
     }
   }
 
+  const handleRecordRenewalFailure = (params: {
+    reason: string
+    notes?: string
+    parentOpinion?: string
+  }) => {
+    if (!student) return
+
+    updateRenewalClassification(student.id, 'that_bai')
+    setCstpStatus('that_bai')
+
+    const recipientText = `[Đối tượng: ${chatRecipient}]`
+    const channelLabel = chatChannel === 'telephone' ? 'Đã gọi' : chatChannel === 'zalo' ? 'Đã nhắn Zalo' : 'Đã gặp trực tiếp'
+    const channelText = `[Kênh: ${chatChannel.toUpperCase()}]`
+    const reasonPrefix = params.reason ? `[Lý do: ${params.reason}] ` : ''
+    const detailNotes = params.notes?.trim() || ''
+    const notesWithPrefix = `[CSTP] ${recipientText} ${channelText} ${reasonPrefix}${detailNotes || 'Ghi nhận tạm dừng học sau khi kết thúc khóa này.'}`.trim()
+    const finalOpinion = params.parentOpinion?.trim() || parentOpinionText.trim() || undefined
+
+    const updated = updateCareAlertInteraction(student.id, {
+      staffName: currentUser?.name || 'CS Staff',
+      callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
+      notes: notesWithPrefix,
+      parentOpinion: finalOpinion,
+    })
+
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
+    const dateFormatted = `${y}-${m}-${d} ${hh}:${mm}`
+
+    if (updated) {
+      const newLog: CareInteractionLog = {
+        id: `log-${Date.now()}`,
+        date: dateFormatted,
+        staffName: currentUser?.name || 'CS Staff',
+        callConfirmation: channelLabel as CareInteractionLog['callConfirmation'],
+        notes: notesWithPrefix,
+        parentOpinion: finalOpinion,
+      }
+      setLocalLogs((prev) => [newLog, ...prev])
+      toast.success('Đã xác nhận thất bại và ghi nhận vào lịch sử chăm sóc!')
+      setChatText('')
+      setParentOpinionText('')
+      setShowParentOpinion(false)
+
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+      }
+
+      if (onRefresh) onRefresh()
+    } else {
+      toast.error('Có lỗi xảy ra khi lưu lịch sử chăm sóc.')
+    }
+  }
+
   return (
     <div className={cn("flex-1 min-h-0 bg-transparent flex flex-col border-none shadow-none overflow-y-auto custom-scrollbar relative", className)}>
       {/* Chat Stream (Right - Full Width) */}
@@ -491,6 +549,7 @@ export function StudentCareChatFeed({
           handleSendChat={handleSendChat}
           handleQuickLogOutcome={handleQuickLogOutcome}
           handleCompleteCare={handleCompleteCare}
+          onRecordRenewalFailure={handleRecordRenewalFailure}
           showParentOpinion={showParentOpinion}
           setShowParentOpinion={setShowParentOpinion}
           parentOpinionText={parentOpinionText}

@@ -113,15 +113,15 @@ export function QcCheckErrorDialog({
       const timer = setTimeout(() => {
         if (initialData) {
           setForm({
-            itemId: initialData.itemId,
-            errorType: initialData.errorType,
+            itemId: initialData.itemId || '',
+            errorType: (initialData.errorType as QcErrorType) || 'process',
             description: initialData.description,
             severity: initialData.severity,
             status: initialData.status,
             evidence: initialData.evidence,
             evidenceLink: initialData.evidenceLink || '',
             evidenceImage: initialData.evidenceImage || '',
-            requiresCorrectiveAction: initialData.requiresCorrectiveAction,
+            requiresCorrectiveAction: !!initialData.requiresCorrectiveAction,
             correctiveAction: initialData.correctiveAction || '',
             correctiveEvidence: initialData.correctiveEvidence || '',
             correctiveLink: initialData.correctiveLink || '',
@@ -130,7 +130,7 @@ export function QcCheckErrorDialog({
             notes: initialData.notes || '',
             deadline: initialData.deadline || '',
           })
-          const item = QC_CHECK_ITEMS.find((i) => i.id === initialData.itemId)
+          const item = initialData.itemId ? QC_CHECK_ITEMS.find((i) => i.id === initialData.itemId) : null
           if (item) {
             setActiveCategory(item.category)
           }
@@ -215,7 +215,7 @@ export function QcCheckErrorDialog({
               <InlineSelect
                 value={form.errorType}
                 ariaLabel="Loại lỗi"
-                options={Object.entries(QC_ERROR_TYPE_LABELS).map(([v, l]) => ({ value: v, label: l }))}
+                options={Object.entries(QC_ERROR_TYPE_LABELS).map(([v, l]) => ({ value: v, label: String(l) }))}
                 onValueChange={(v) => setForm((p) => ({ ...p, errorType: v as QcErrorType }))}
               />
             </FieldLabel>

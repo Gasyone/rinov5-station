@@ -1,29 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ClassRecord } from '@/mocks/classRecords'
-import { cn } from '@/lib/utils'
-import { BookOpen, Calendar, Clock, FolderOpen, GraduationCap, LayoutGrid, Map, Sparkles, Users } from 'lucide-react'
-import { EmptyState } from '@/components/shared'
 
 // Import Sub-components
-import { ClassesDetailOverview } from './ClassesDetailOverview'
-import { ClassesDetailRoster } from './ClassesDetailRoster'
-import { ClassesDetailSessionsV2 } from './ClassesDetailSessionsV2'
-import { ClassesDetailSchedule } from './ClassesDetailSchedule'
-import { ClassesAddScheduleDialog } from './ClassesAddScheduleDialog'
 import { ClassesRoadmapWizardView } from './ClassesRoadmapWizardView'
-import { ClassesSessionMediaTab } from './ClassesSessionMediaTab'
-import { ClassesDetailHeaderV2 } from './ClassesDetailHeaderV2'
-import type { ClassesStatusChangeRequest } from './ClassesDetailHeader'
-
-import { toast } from 'sonner'
+import { ClassesAddScheduleDialog } from './ClassesAddScheduleDialog'
 import { ClassesDetailDialogs } from './ClassesDetailDialogs'
-import { ClassesDetailInteractionPanelV2 } from './ClassesDetailInteractionPanelV2'
-import { ClassesStudentCareOverlayPanel } from './ClassesStudentCareOverlayPanel'
-import { ClassesStudentMonthlyReportOverlayPanel } from './ClassesStudentMonthlyReportOverlayPanel'
+import { ClassesDetailViewV1Body } from './ClassesDetailViewV1Body'
+import { ClassesDetailOverviewV2Hub } from './ClassesDetailOverviewV2Hub'
+import { ClassesDetailDrilldownView } from './ClassesDetailDrilldownView'
+import type { ClassesStatusChangeRequest } from './ClassesDetailHeader'
 import type { SelectedStudentItem } from '../RosterSessionSelectionDialog'
 import { mockStudents } from '@/mocks/students'
 import {
@@ -59,6 +48,8 @@ export function ClassesDetailViewV2({
   hideClassType = true,
 }: ClassesDetailViewV2Props) {
   const [activeTab, setActiveTab] = useState(initialTab === 'overview' ? 'roster' : (initialTab || 'roster'))
+  const [viewMode, setViewMode] = useState<'v1' | 'v2'>('v1')
+  const [drilldownSubject, setDrilldownSubject] = useState<'students' | 'sessions' | 'media' | 'logs' | null>(null)
 
   const [isStudentSelectOpen, setIsStudentSelectOpen] = useState(false)
   const [tempSelectedStudents, setTempSelectedStudents] = useState<SelectedStudentItem[] | null>(null)
@@ -341,6 +332,65 @@ export function ClassesDetailViewV2({
     }
   }
 
+  const handleRemoveStudent = (studentId: string) => {
+    const student = rosterState.find((s) => s.id === studentId)
+    if (!student) return
+
+    const nextRoster = rosterState.filter((s) => s.id !== studentId)
+    setRosterState(nextRoster)
+
+    const now = new Date()
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now
+      .getMinutes()
+      .toString()
+      .padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, '0')}/${now.getFullYear()}`
+
+    const auditLogs = [
+      {
+        id: Math.random().toString(),
+        action: `Đã xóa học viên ${student.name} khỏi lớp học.`,
+        operator: 'Giáo vụ Lan',
+        timestamp: timeStr,
+      },
+    ]
+
+    const activeStudentsCount = nextRoster.filter(
+      (s) => s.status === 'active' || s.status === 'new' || s.status === 'trial'
+    ).length
+
+    let newStatus = cls?.status || 'dang_hoc'
+    let finalRoster = nextRoster
+    if (cls?.status === 'dang_hoc' && activeStudentsCount === 0) {
+      newStatus = 'huy'
+      finalRoster = []
+      setRosterState([])
+      auditLogs.unshift({
+        id: Math.random().toString(),
+        action: `Lớp học tự động chuyển sang Đã kết thúc do không còn học viên đang học. Đã giải phóng toàn bộ học viên khỏi roster.`,
+        operator: 'Hệ thống',
+        timestamp: timeStr,
+      })
+    }
+
+    setLogs((prev) => [...auditLogs, ...prev])
+
+    if (onSave && cls) {
+      onSave({
+        ...cls,
+        status: newStatus,
+        enrolledStudents: finalRoster.filter((s) => s.status === 'active').length,
+      })
+    }
+
+    if (onStatusChange && cls && newStatus !== cls.status) {
+      onStatusChange(cls.id, newStatus)
+    }
+  }
+
   const handleRosterConfirm = (selectedSession: RoadmapSession) => {
     if (!cls) return
     const now = new Date()
@@ -461,283 +511,91 @@ export function ClassesDetailViewV2({
             }}
           />
         </>
+      ) : viewMode === 'v2' ? (
+        drilldownSubject ? (
+          <ClassesDetailDrilldownView
+            cls={cls}
+            subject={drilldownSubject}
+            sessions={sessionsState}
+            roster={rosterState}
+            logs={logs}
+            classNotes={notes}
+            onBack={() => setDrilldownSubject(null)}
+            onAddStudent={() => setIsStudentSelectOpen(true)}
+            onStudentClick={(id) => setSelectedStudentId(id)}
+            onCareClick={(student) => {
+              setActiveCareStudent(student)
+              setActiveMonthlyReportStudent(null)
+            }}
+            onMonthlyReportClick={(student) => {
+              setActiveMonthlyReportStudent(student)
+              setActiveCareStudent(null)
+            }}
+            onRemoveStudent={handleRemoveStudent}
+            onUpdateSession={handleUpdateSession}
+            onAddClassNote={handleAddNote}
+            onEditRoadmap={() => setIsRoadmapWizardOpen(true)}
+            validationErrors={validationErrors}
+          />
+        ) : (
+          <ClassesDetailOverviewV2Hub
+            cls={cls}
+            sessions={sessionsState}
+            roster={rosterState}
+            logs={logs}
+            isEditing={isEditing}
+            onStartEdit={() => setIsEditing(true)}
+            onCancelEdit={() => {
+              setIsEditing(false)
+              setEditFormState(cls)
+              setValidationErrors({})
+            }}
+            onSave={handleSave}
+            onStatusChange={handleStatusChange}
+            onRequestStatusChange={setConfirmStatusChange}
+            onToggleViewMode={() => setViewMode('v1')}
+            onNavigateToSubject={(s) => setDrilldownSubject(s)}
+            onAddStudent={() => setIsStudentSelectOpen(true)}
+            onRescheduleClick={() => setIsScheduleModalOpen(true)}
+            onEditRoadmap={() => setIsRoadmapWizardOpen(true)}
+          />
+        )
       ) : (
-        <>
-          {/* Main Layout: Left Column (Header Card + Tabs & Roster/Sessions) & Right Column Panel */}
-          <div className="grid min-h-0 flex-1 gap-3 p-3 lg:p-3.5 lg:grid-cols-[1fr_275px] h-full overflow-hidden bg-background">
-            {/* Left Panel Container */}
-            <main className="flex min-h-0 flex-col overflow-hidden h-full space-y-2">
-              {/* Section Thông tin lớp học (Header trái) */}
-              <ClassesDetailHeaderV2
-                cls={cls}
-                isEditing={isEditing}
-                rosterCount={rosterState.length}
-                onStartEdit={() => {
-                  setIsEditing(true)
-                  setEditFormState(cls)
-                }}
-                onCancelEdit={() => {
-                  setIsEditing(false)
-                  setEditFormState(cls)
-                }}
-                onSave={handleSave}
-                onStatusChange={handleStatusChange}
-                onRequestStatusChange={setConfirmStatusChange}
-              />
-
-              {/* Body Section underneath Left Section Header */}
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex min-h-0 flex-1 flex-col h-full">
-                  {/* Segmented Control Filter Tabs (4 Tabs: Học viên, Buổi học, Tài liệu & media, Lịch sử cập nhật) */}
-                  <TabsList className="shrink-0 inline-flex w-auto max-w-full items-center gap-1 bg-muted/60 p-0.5 h-7.5 rounded-lg border border-border/40 mb-1">
-                    <TabsTrigger
-                      value="roster"
-                      className={cn(
-                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                        "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                        "hover:text-foreground",
-                        hasRosterError && "text-destructive data-[state=active]:!text-destructive"
-                      )}
-                    >
-                      <Users className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                      <span>Học viên</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0 text-[10.5px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
-                        {rosterState.length}
-                      </span>
-                    </TabsTrigger>
-
-                    <TabsTrigger
-                      value="sessions"
-                      className={cn(
-                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                        "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                        "hover:text-foreground"
-                      )}
-                    >
-                      <GraduationCap className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                      <span>Buổi học</span>
-                    </TabsTrigger>
-
-                    <TabsTrigger
-                      value="media"
-                      className={cn(
-                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                        "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                        "hover:text-foreground"
-                      )}
-                    >
-                      <FolderOpen className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                      <span>Tài liệu & media</span>
-                    </TabsTrigger>
-
-                    <TabsTrigger
-                      value="logs"
-                      className={cn(
-                        "h-6.5 px-2.5 rounded-md bg-transparent text-muted-foreground font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                        "data-[state=active]:!bg-background data-[state=active]:!text-foreground data-[state=active]:!font-bold data-[state=active]:shadow-2xs",
-                        "hover:text-foreground"
-                      )}
-                    >
-                      <Clock className="h-3.5 w-3.5 shrink-0 text-[#0088cc]" />
-                      <span>Lịch sử cập nhật</span>
-                      <span className="ml-1 rounded-full bg-muted-foreground/15 px-1.5 py-0 text-[10.5px] font-bold text-muted-foreground data-[state=active]:!bg-muted data-[state=active]:!text-foreground">
-                        {logs.length}
-                      </span>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* Scrollable Container */}
-                  <div className="flex-1 min-h-0 overflow-y-auto pr-1 flex flex-col h-full pt-1">
-                    {/* Tab 1: Roster */}
-                    <TabsContent value="roster" className="m-0 focus-visible:outline-none">
-                      <ClassesDetailRoster
-                        students={rosterState}
-                        subject={cls.level}
-                        onAddStudent={() => setIsStudentSelectOpen(true)}
-                        onStudentClick={(id) => setSelectedStudentId(id)}
-                        onCareClick={(student) => {
-                          setActiveCareStudent(student)
-                          setActiveMonthlyReportStudent(null)
-                        }}
-                        onMonthlyReportOverlayClick={(student) => {
-                          setActiveMonthlyReportStudent(student)
-                          setActiveCareStudent(null)
-                        }}
-                        rosterError={validationErrors?.roster}
-                        onRemoveStudent={(studentId) => {
-                          const student = rosterState.find((s) => s.id === studentId)
-                          if (!student) return
-
-                          const nextRoster = rosterState.filter((s) => s.id !== studentId)
-                          setRosterState(nextRoster)
-
-                          const now = new Date()
-                          const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now
-                            .getMinutes()
-                            .toString()
-                            .padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(
-                            now.getMonth() + 1
-                          )
-                            .toString()
-                            .padStart(2, '0')}/${now.getFullYear()}`
-
-                          const auditLogs = [
-                            {
-                              id: Math.random().toString(),
-                              action: `Đã xóa học viên ${student.name} khỏi lớp học.`,
-                              operator: 'Giáo vụ Lan',
-                              timestamp: timeStr,
-                            },
-                          ]
-
-                          const activeStudentsCount = nextRoster.filter(
-                            (s) => s.status === 'active' || s.status === 'new' || s.status === 'trial'
-                          ).length
-
-                          let newStatus = cls.status
-                          let finalRoster = nextRoster
-                          if (cls.status === 'dang_hoc' && activeStudentsCount === 0) {
-                            newStatus = 'huy'
-                            finalRoster = []
-                            setRosterState([])
-                            auditLogs.unshift({
-                              id: Math.random().toString(),
-                              action: `Lớp học tự động chuyển sang Đã kết thúc do không còn học viên đang học. Đã giải phóng toàn bộ học viên khỏi roster.`,
-                              operator: 'Hệ thống',
-                              timestamp: timeStr,
-                            })
-                          }
-
-                          setLogs((prev) => [...auditLogs, ...prev])
-
-                          if (onSave) {
-                            onSave({
-                              ...cls,
-                              status: newStatus,
-                              enrolledStudents: finalRoster.filter((s) => s.status === 'active').length,
-                            })
-                          }
-
-                          if (onStatusChange && newStatus !== cls.status) {
-                            onStatusChange(cls.id, newStatus)
-                          }
-                        }}
-                      />
-                    </TabsContent>
-
-                    {/* Tab 3: Sessions */}
-                    <TabsContent value="sessions" className="m-0 focus-visible:outline-none">
-                      <ClassesDetailSessionsV2
-                        cls={cls}
-                        sessions={sessionsState}
-                        roster={rosterState}
-                        onUpdateSession={handleUpdateSession}
-                        classNotes={notes}
-                        classLogs={logs}
-                        onAddClassNote={handleAddNote}
-                        onEditRoadmap={() => setIsRoadmapWizardOpen(true)}
-                      />
-                    </TabsContent>
-
-                    {/* Tab 4: Tài liệu & media (Danh sách tổng hợp từ tất cả các buổi học) */}
-                    <TabsContent value="media" className="m-0 focus-visible:outline-none flex-1">
-                      <ClassesSessionMediaTab
-                        rosterStudents={rosterState.map((s) => ({
-                          id: s.id,
-                          name: s.name,
-                          code: s.code,
-                          initials: s.name ? s.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'HV',
-                        }))}
-                        className={cls?.name || 'Lớp học'}
-                      />
-                    </TabsContent>
-
-                    {/* Tab 4: Logs (Lịch sử cập nhật) */}
-                    <TabsContent value="logs" className="m-0 focus-visible:outline-none flex-1 pb-2">
-                      <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
-                        {/* Header with light gray background matching Overview headers */}
-                        <div className="bg-muted/40 dark:bg-muted/20 px-3.5 py-2 border-b border-border flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <h4 className="text-xs font-normal text-muted-foreground">
-                              Lịch sử cập nhật ({logs.length})
-                            </h4>
-                          </div>
-                        </div>
-
-                        {/* Clean history rows without dots, vertical lines, or individual card borders */}
-                        {logs.length === 0 ? (
-                          <div className="p-3">
-                            <EmptyState
-                              icon={<Clock className="h-6 w-6 text-muted-foreground/40" />}
-                              title="Chưa có lịch sử cập nhật nào"
-                              description="Lịch sử cập nhật trạng thái, thêm học viên và đổi lịch học sẽ được ghi vết tự động tại đây."
-                              className="border-dashed border-border/70 rounded-lg bg-muted/15 py-6"
-                            />
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-border/40">
-                            {logs.map((log) => (
-                              <div key={log.id} className="px-3.5 py-2 text-xs space-y-0.5 hover:bg-muted/20 transition-colors">
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                  <span className="font-semibold text-foreground">
-                                    {log.operator}
-                                  </span>
-                                  <span className="font-mono text-xs">{formatNoteTimestamp(log.timestamp)}</span>
-                                </div>
-                                <p className="font-normal text-foreground/90 leading-relaxed text-[11.5px]">
-                                  {log.action}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </div>
-            </main>
-
-            {/* Right Side Panel: Class Info, Interactions OR Overlay Student Care Panel OR Overlay Monthly Report Panel */}
-            {activeCareStudent ? (
-              <ClassesStudentCareOverlayPanel
-                student={activeCareStudent}
-                onClose={() => setActiveCareStudent(null)}
-              />
-            ) : activeMonthlyReportStudent ? (
-              <ClassesStudentMonthlyReportOverlayPanel
-                key={activeMonthlyReportStudent.id}
-                student={activeMonthlyReportStudent}
-                subject={cls.level || cls.name}
-                onClose={() => setActiveMonthlyReportStudent(null)}
-              />
-            ) : (
-              <ClassesDetailInteractionPanelV2
-                cls={cls}
-                notes={notes}
-                logs={logs}
-                roster={rosterState}
-                onAddNote={handleAddNote}
-                isEditing={isEditing}
-                editFormState={editFormState}
-                onEditStateChange={handleEditFormStateChange}
-                validationErrors={validationErrors}
-                onStartEdit={() => setIsEditing(true)}
-                onRescheduleClick={() => setIsScheduleModalOpen(true)}
-                onCancelEdit={() => {
-                  setIsEditing(false)
-                  setEditFormState(cls)
-                  setValidationErrors({})
-                }}
-                onSave={handleSave}
-                onRequestStatusChange={setConfirmStatusChange}
-                onAddStudent={() => setIsStudentSelectOpen(true)}
-                onEditRoadmap={() => setIsRoadmapWizardOpen(true)}
-              />
-            )}
-          </div>
-        </>
+        <ClassesDetailViewV1Body
+          cls={cls}
+          isEditing={isEditing}
+          editFormState={editFormState}
+          rosterState={rosterState}
+          sessionsState={sessionsState}
+          logs={logs}
+          notes={notes}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          hasRosterError={hasRosterError}
+          validationErrors={validationErrors}
+          activeCareStudent={activeCareStudent}
+          setActiveCareStudent={setActiveCareStudent}
+          activeMonthlyReportStudent={activeMonthlyReportStudent}
+          setActiveMonthlyReportStudent={setActiveMonthlyReportStudent}
+          onStartEdit={() => setIsEditing(true)}
+          onCancelEdit={() => {
+            setIsEditing(false)
+            setEditFormState(cls)
+            setValidationErrors({})
+          }}
+          onSave={handleSave}
+          onStatusChange={handleStatusChange}
+          onRequestStatusChange={setConfirmStatusChange}
+          onToggleViewMode={() => setViewMode('v2')}
+          onAddStudent={() => setIsStudentSelectOpen(true)}
+          onStudentClick={(id) => setSelectedStudentId(id)}
+          onRemoveStudent={handleRemoveStudent}
+          onUpdateSession={handleUpdateSession}
+          onAddNote={handleAddNote}
+          onRescheduleClick={() => setIsScheduleModalOpen(true)}
+          onEditStateChange={handleEditFormStateChange}
+          onEditRoadmap={() => setIsRoadmapWizardOpen(true)}
+        />
       )}
 
       {/* Dialogs Layer */}

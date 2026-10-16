@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 
+import { getCareNatureAbbrev } from '@/components/screens/care/operationsAlertHelpers'
+
 export interface CareTagHoverCardProps {
   code: string
   label?: string
@@ -19,6 +21,22 @@ export interface CareTagHoverCardProps {
   isDueToday?: boolean
   slaText?: string
   children?: React.ReactNode
+}
+
+export function getCareNatureBadgeClass(abbrev: 'CĐB' | 'CGH' | 'CĐK' | 'CBH' | 'CYC'): string {
+  switch (abbrev) {
+    case 'CĐB':
+      return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900'
+    case 'CGH':
+      return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900'
+    case 'CĐK':
+      return 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900'
+    case 'CBH':
+      return 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-900'
+    case 'CYC':
+    default:
+      return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+  }
 }
 
 function resolveTagDefaults(
@@ -46,17 +64,17 @@ function resolveTagDefaults(
     resolvedConfigRule = resolvedConfigRule || 'Điểm chạm kiểm tra tiến độ học tập hàng tháng'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Trao đổi học tập hàng tháng và cập nhật kết quả'
     resolvedSla = resolvedSla || '28/07/2026'
-  } else if (c.includes('ĐK2') || c === 'CSĐK2' || c === 'CSTP' || c === 'TP' || c === 'CGH' || c === 'CSGH' || c.startsWith('GO')) {
+  } else if (c.includes('ĐK2') || c === 'CSĐK2' || c === 'CSTP' || c === 'TP' || c === 'CGH' || c === 'CSGH' || c.startsWith('GO') || c.startsWith('CTP')) {
     resolvedFullLabel = resolvedFullLabel || 'CGH - Chăm sóc gia hạn'
     resolvedConfigRule = resolvedConfigRule || 'Cảnh báo hạn gia hạn và đóng học phí khóa mới'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Hạn đóng phí dự kiến: 30/07/2026'
     resolvedSla = resolvedSla || '30/07/2026'
-  } else if (c.includes('TB') || c === 'CSBH' || c === 'CBH' || c === 'THT' || c.startsWith('TH') || c.startsWith('LH')) {
+  } else if (c.includes('TB') || c === 'CSBH' || c === 'CBH' || c === 'THT' || c.startsWith('TH') || c.startsWith('LH') || c.startsWith('HT') || c.startsWith('XN')) {
     resolvedFullLabel = resolvedFullLabel || 'CBH - Chăm sóc theo buổi học'
     resolvedConfigRule = resolvedConfigRule || 'Thiếu bài tập về nhà từ 2 buổi liên tiếp hoặc mốc hành trình buổi học'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Nhắc nhở chuyên cần & nộp bổ sung BTVN'
     resolvedSla = resolvedSla || '26/07/2026'
-  } else if (c === 'CYC' || c === 'TYC' || c === 'T1') {
+  } else if (c === 'CYC' || c === 'TYC' || c === 'T1' || c.startsWith('ĐX')) {
     resolvedFullLabel = resolvedFullLabel || 'CYC - Chăm sóc theo yêu cầu'
     resolvedConfigRule = resolvedConfigRule || 'Phát sinh yêu cầu chăm sóc từ phụ huynh / học viên'
     resolvedRealDataIssue = resolvedRealDataIssue || 'Hỗ trợ giải đáp và xử lý các yêu cầu phát sinh'
@@ -117,7 +135,7 @@ export function CareTagHoverCard({
   code,
   label,
   fullLabel,
-  colorClass = 'bg-purple-50/40 text-purple-700 border-purple-200/50 dark:bg-purple-950/20 dark:text-purple-300',
+  colorClass,
   description,
   configRule,
   realDataIssue,
@@ -128,11 +146,14 @@ export function CareTagHoverCard({
   slaText,
   children,
 }: CareTagHoverCardProps) {
-  const defaults = resolveTagDefaults(code, fullLabel, description, configRule, realDataIssue, slaText)
-  const codeUpper = (code || label || '').trim().toUpperCase()
-  const assignees: ('CS' | 'GV')[] = (codeUpper.includes('CSCĐ') || codeUpper === 'CĐB' || codeUpper.includes('ĐB') || codeUpper === 'CBH' || codeUpper.includes('TB1'))
+  const natureAbbrev = getCareNatureAbbrev(label || code || '')
+  const defaults = resolveTagDefaults(natureAbbrev, fullLabel, description, configRule, realDataIssue, slaText)
+  const displayLabel = natureAbbrev
+  const effectiveColorClass = colorClass || getCareNatureBadgeClass(natureAbbrev)
+
+  const assignees: ('CS' | 'GV')[] = (natureAbbrev === 'CĐB' || natureAbbrev === 'CBH')
     ? ['CS', 'GV']
-    : (codeUpper.includes('ĐK1') || codeUpper.includes('TB2'))
+    : (natureAbbrev === 'CĐK')
     ? ['GV']
     : ['CS']
   const assigneeText = assignees.length > 1 ? 'CS/GV' : assignees[0] || 'CS'
@@ -145,10 +166,10 @@ export function CareTagHoverCard({
             variant="outline"
             className={cn(
               'text-xs px-2 py-0.5 min-h-[22px] font-normal cursor-help shadow-none border whitespace-nowrap leading-none rounded-md transition-opacity hover:opacity-90 inline-flex items-center gap-1',
-              colorClass
+              effectiveColorClass
             )}
           >
-            <span className="font-normal text-xs">{label || code}</span>
+            <span className="font-normal text-xs">{displayLabel}</span>
             <span className="text-xs font-normal opacity-85 shrink-0 ml-0.5" title={`Người chăm sóc: ${assigneeText}`}>
               {assigneeText}
             </span>
@@ -164,8 +185,8 @@ export function CareTagHoverCard({
         {/* Header: Title on left, Deadline badge on top-right */}
         <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-1.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={cn('px-1.5 py-0.5 rounded text-xs font-bold border shrink-0', colorClass)}>
-              {code}
+            <span className={cn('px-1.5 py-0.5 rounded text-xs font-bold border shrink-0', effectiveColorClass)}>
+              {natureAbbrev}
             </span>
             <span className="font-bold text-foreground text-xs truncate">{defaults.fullLabel}</span>
           </div>

@@ -1,466 +1,488 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { DataTableFrame, DataTablePagination, DEFAULT_PAGE_SIZE } from '@/components/data-table'
+import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import { FilterGroupAsidePanel, createFilterGroup, type FilterGroupConfig } from '@/components/filters'
+import { useAuthStore } from '@/stores/useAuthStore'
 import {
-  mockQcCheckEvents,
-  QC_CHECK_STATUS_LABELS,
-  QC_CHECK_ITEMS,
+  mockQcIncidents,
   INSPECTOR_OPTIONS,
-  type QcCheckEvent,
-  type QcError,
+  type QcIncident,
   type QcErrorStatus,
-  type Inspector,
+  type QcTargetGroup,
+  type QcSourceType,
+  type QcErrorSeverity,
 } from '@/mocks/qcChecks'
 import {
-  type StatusTileId,
+  type IncidentStatusFilter,
+  type IncidentDeadlineFilter,
   type FilterState,
-  computeStatusTotal,
-  STATUS_TILE_CONFIG_EXPORT,
+  BRANCH_OPTIONS,
+  ADVANCED_STATUS_OPTIONS,
+  matchesDeadlineFilter,
+  computeIncidentStatusTotal,
 } from './qcCheckTypes'
-import type { CreateQcForm } from './QcCheckCreateDialog'
-import type { QcErrorForm } from './QcCheckErrorDialog'
 import { QcCheckToolbar } from './QcCheckToolbar'
 import { QcCheckTable } from './QcCheckTable'
-import { QcCheckCreateDialog } from './QcCheckCreateDialog'
+import { QcCheckCreateDialog, type CreateBatchIncidentForm } from './QcCheckCreateDialog'
 import { QcCheckDetailDialog } from './QcCheckDetailDialog'
-import { generateEventCode, getCalculatedStatus } from './qcCheckHelpers'
+import { sortQcIncidents, type QcSortMode } from './qcCheckHelpers'
 
 const CURRENT_USER_ID = 'ins_01'
+const CURRENT_USER_NAME = 'Trần Văn Kiên'
 
-const BRANCH_OPTIONS = ['RinoEdu Nguyễn Tuân', 'RinoEdu Linh Đàm', 'RinoEdu Smart City']
-const STATUS_OPTIONS = Object.entries(QC_CHECK_STATUS_LABELS).map(([v, l]) => ({ value: v, label: l }))
+const TARGET_GROUP_OPTIONS = [
+  { value: 'teacher', label: 'Giáo viên' },
+  { value: 'facility', label: 'Cơ sở vật chất' },
+  { value: 'operations', label: 'Vận hành (CS)' },
+]
 
-export function QcCheckScreen() {
-  const [events, setEvents] = useState<QcCheckEvent[]>(() => structuredClone(mockQcCheckEvents))
-  const [activeType, setActiveType] = useState('all')
+const SOURCE_OPTIONS = [
+  { value: 'manual', label: 'Thủ công' },
+  { value: 'system', label: 'Hệ thống tự tạo' },
+]
+
+const SEVERITY_OPTIONS = [
+  { value: 'low', label: 'Thấp' },
+  { value: 'medium', label: 'Trung bình' },
+  { value: 'high', label: 'Cao' },
+  { value: 'critical', label: 'Nghiêm trọng' },
+]
+
+export interface QcCheckScreenProps {
+  defaultViewMode?: string
+}
+
+export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
+  const authUser = useAuthStore((s) => s.user)
+  const currentStaffName = authUser?.name || CURRENT_USER_NAME
+
+  const [incidents, setIncidents] = useState<QcIncident[]>(() => structuredClone(mockQcIncidents))
   const [activeBranch, setActiveBranch] = useState('all')
-  const [activeStatus, setActiveStatus] = useState<StatusTileId>('all')
+  const [activeSubject, setActiveSubject] = useState('all')
+  const [activeCriteria, setActiveCriteria] = useState('all')
+  const [activeDeadline, setActiveDeadline] = useState<IncidentDeadlineFilter>('all')
+  const [selectedAssignee, setSelectedAssignee] = useState('all')
+  const [activeTargetGroup, setActiveTargetGroup] = useState('all')
+  const [activeStatus, setActiveStatus] = useState<IncidentStatusFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortMode, setSortMode] = useState<QcSortMode>('severity_deadline')
+
   const [filters, setFilters] = useState<FilterState>({
     branches: [],
+    targetGroups: [],
+    sources: [],
+    criteriaList: [],
+    severities: [],
     statuses: [],
   })
+
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [page, setPage] = useState(1)
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [detailEventId, setDetailEventId] = useState('')
+  const [detailIncidentId, setDetailIncidentId] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
-  const filteredEvents = useMemo(() => events.filter((e) => {
-    if (activeType !== 'all' && e.type !== activeType) return false
-    if (activeBranch !== 'all' && e.branch !== activeBranch) return false
-    if (activeStatus !== 'all' && getCalculatedStatus(e) !== activeStatus) return false
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase()
-      const nameMatch = e.name.toLowerCase().includes(q) || e.code.toLowerCase().includes(q)
-      const inspectorMatch = e.inspectors.some((i) => i.name.toLowerCase().includes(q))
-      const branchMatch = e.branch.toLowerCase().includes(q)
-      if (!nameMatch && !inspectorMatch && !branchMatch) return false
+  // Dynamic list of assignees for the personnel filter dropdown
+  const assigneeOptions = useMemo(() => {
+    const names = Array.from(new Set(incidents.map((i) => i.assignee?.trim()).filter(Boolean))).sort()
+    return [
+      { value: 'all', label: 'Tất cả nhân sự', selectedLabel: 'Tất cả nhân sự' },
+      { value: 'my', label: `Lỗi của tôi (${currentStaffName})`, selectedLabel: 'Lỗi của tôi' },
+      ...names.map((name) => ({ value: name, label: name, selectedLabel: name })),
+    ]
+  }, [incidents, currentStaffName])
+
+  // Count of incidents assigned to or involving the current staff member
+  const myIncidentsCount = useMemo(() => {
+    const target = currentStaffName.toLowerCase().trim()
+    return incidents.filter((inc) => {
+      if (activeBranch !== 'all' && inc.branch !== activeBranch) return false
+      return (
+        inc.assignee.toLowerCase().includes(target) ||
+        (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
+        (inc.csmName && inc.csmName.toLowerCase().includes(target))
+      )
+    }).length
+  }, [incidents, activeBranch, currentStaffName])
+
+  // Filter & 2-Tier Sort logic (Level 1: Severity, Level 2: Deadline)
+  const filteredIncidents = useMemo(() => {
+    const base = incidents.filter((inc) => {
+      if (activeBranch !== 'all' && inc.branch !== activeBranch) return false
+      if (activeSubject !== 'all' && inc.subject && inc.subject !== activeSubject) return false
+      if (activeCriteria !== 'all' && inc.criteria !== activeCriteria) return false
+      if (activeTargetGroup !== 'all' && inc.targetGroup !== activeTargetGroup) return false
+      if (!matchesDeadlineFilter(inc, activeDeadline)) return false
+
+      if (selectedAssignee === 'my') {
+        const target = currentStaffName.toLowerCase().trim()
+        const isMine =
+          inc.assignee.toLowerCase().includes(target) ||
+          (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
+          (inc.csmName && inc.csmName.toLowerCase().includes(target))
+        if (!isMine) return false
+      } else if (selectedAssignee !== 'all') {
+        const target = selectedAssignee.toLowerCase().trim()
+        if (!inc.assignee.toLowerCase().includes(target)) return false
+      }
+
+      // Lọc trạng thái (kết hợp tab nhanh và filter nâng cao)
+      if (filters.statuses.length > 0) {
+        if (!filters.statuses.includes(inc.status)) return false
+      } else {
+        if (activeStatus === 'all') {
+          // 1. Đã hủy đưa vào filter nâng cao, không hiển thị ở đây
+          if (inc.status === 'cancelled') return false
+        } else if (activeStatus === 'correcting') {
+          // 2. Chưa đáp ứng vẫn là đang khắc phục
+          if (inc.status !== 'correcting' && inc.status !== 'not_met') return false
+        } else if (inc.status !== activeStatus) {
+          return false
+        }
+      }
+
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase()
+        const codeMatch = inc.code.toLowerCase().includes(q)
+        const titleMatch = inc.title.toLowerCase().includes(q)
+        const descMatch = inc.description.toLowerCase().includes(q)
+        const classMatch = inc.className?.toLowerCase().includes(q) ?? false
+        const teacherMatch = inc.teacherName?.toLowerCase().includes(q) ?? false
+        const csmMatch = inc.csmName?.toLowerCase().includes(q) ?? false
+        const roomMatch = inc.roomId?.toLowerCase().includes(q) ?? false
+        const assigneeMatch = inc.assignee.toLowerCase().includes(q)
+
+        if (!codeMatch && !titleMatch && !descMatch && !classMatch && !teacherMatch && !csmMatch && !roomMatch && !assigneeMatch) {
+          return false
+        }
+      }
+
+      if (filters.branches.length > 0 && !filters.branches.includes(inc.branch)) return false
+      if (filters.targetGroups.length > 0 && !filters.targetGroups.includes(inc.targetGroup)) return false
+      if (filters.sources.length > 0 && !filters.sources.includes(inc.source)) return false
+      if (filters.severities.length > 0 && !filters.severities.includes(inc.severity)) return false
+
+      return true
+    })
+
+    return sortQcIncidents(base, sortMode)
+  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, activeStatus, searchTerm, filters, sortMode])
+
+  // Status totals according to active filters (Rule 5: Status Tiles update dynamically according to all active filters)
+  const statusTileTotals = useMemo(() => {
+    const totals: Record<string, number> = {}
+    const baseFiltered = incidents.filter((inc) => {
+      if (activeBranch !== 'all' && inc.branch !== activeBranch) return false
+      if (activeSubject !== 'all' && inc.subject && inc.subject !== activeSubject) return false
+      if (activeCriteria !== 'all' && inc.criteria !== activeCriteria) return false
+      if (activeTargetGroup !== 'all' && inc.targetGroup !== activeTargetGroup) return false
+      if (!matchesDeadlineFilter(inc, activeDeadline)) return false
+      if (selectedAssignee === 'my') {
+        const target = currentStaffName.toLowerCase().trim()
+        const isMine =
+          inc.assignee.toLowerCase().includes(target) ||
+          (inc.teacherName && inc.teacherName.toLowerCase().includes(target)) ||
+          (inc.csmName && inc.csmName.toLowerCase().includes(target))
+        if (!isMine) return false
+      } else if (selectedAssignee !== 'all') {
+        const target = selectedAssignee.toLowerCase().trim()
+        if (!inc.assignee.toLowerCase().includes(target)) return false
+      }
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase()
+        const codeMatch = inc.code.toLowerCase().includes(q)
+        const titleMatch = inc.title.toLowerCase().includes(q)
+        const descMatch = inc.description.toLowerCase().includes(q)
+        const classMatch = inc.className?.toLowerCase().includes(q) ?? false
+        const teacherMatch = inc.teacherName?.toLowerCase().includes(q) ?? false
+        const csmMatch = inc.csmName?.toLowerCase().includes(q) ?? false
+        const roomMatch = inc.roomId?.toLowerCase().includes(q) ?? false
+        const assigneeMatch = inc.assignee.toLowerCase().includes(q)
+        if (!codeMatch && !titleMatch && !descMatch && !classMatch && !teacherMatch && !csmMatch && !roomMatch && !assigneeMatch) {
+          return false
+        }
+      }
+      if (filters.branches.length > 0 && !filters.branches.includes(inc.branch)) return false
+      if (filters.targetGroups.length > 0 && !filters.targetGroups.includes(inc.targetGroup)) return false
+      if (filters.sources.length > 0 && !filters.sources.includes(inc.source)) return false
+      if (filters.severities.length > 0 && !filters.severities.includes(inc.severity)) return false
+      if (filters.statuses.length > 0 && !filters.statuses.includes(inc.status)) return false
+      return true
+    })
+
+    const tileKeys: IncidentStatusFilter[] = ['all', 'open', 'correcting', 'corrected', 'closed']
+    const hasCancelledFilter = filters.statuses.includes('cancelled')
+    for (const key of tileKeys) {
+      totals[key] = computeIncidentStatusTotal(baseFiltered, key, hasCancelledFilter)
     }
-    if (filters.branches.length > 0 && !filters.branches.includes(e.branch)) return false
-    if (filters.statuses.length > 0 && !filters.statuses.includes(getCalculatedStatus(e))) return false
-    return true
-  }), [events, activeType, activeBranch, activeStatus, searchTerm, filters.branches, filters.statuses])
+    return totals
+  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, searchTerm, filters])
 
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / pageSize))
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredIncidents.length / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const pagedEvents = filteredEvents.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  )
+  const pagedIncidents = filteredIncidents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
-  const statusTileTotals: Record<string, number> = {}
-  const tileIds: StatusTileId[] = ['all', ...STATUS_TILE_CONFIG_EXPORT().slice(1).map((t) => t.id)]
-  for (const tileId of tileIds) {
-    statusTileTotals[tileId] = computeStatusTotal(filteredEvents, tileId)
-  }
-
+  // Filter panel configuration
   const filterGroups = useMemo<FilterGroupConfig[]>(() => [
+    createFilterGroup({
+      id: 'statuses',
+      title: 'Trạng thái sự cố',
+      options: ADVANCED_STATUS_OPTIONS,
+      selectedValues: filters.statuses,
+      getOptionCount: (val) => incidents.filter((i) => i.status === val).length,
+    }),
     createFilterGroup({
       id: 'branches',
       options: BRANCH_OPTIONS,
       selectedValues: filters.branches,
-      getOptionCount: (branch) => events.filter((event) => event.branch === branch).length,
+      getOptionCount: (branch) => incidents.filter((i) => i.branch === branch).length,
     }),
     createFilterGroup({
-      id: 'statuses',
-      options: STATUS_OPTIONS,
-      selectedValues: filters.statuses,
-      getOptionCount: (status) => events.filter((event) => getCalculatedStatus(event) === status).length,
+      id: 'targetGroups',
+      title: 'Đối tượng đánh giá',
+      options: TARGET_GROUP_OPTIONS,
+      selectedValues: filters.targetGroups,
+      getOptionCount: (val) => incidents.filter((i) => i.targetGroup === val).length,
     }),
-  ], [events, filters.branches, filters.statuses])
+    createFilterGroup({
+      id: 'sources',
+      title: 'Nguồn phát hiện',
+      options: SOURCE_OPTIONS,
+      selectedValues: filters.sources,
+      getOptionCount: (val) => incidents.filter((i) => i.source === val).length,
+    }),
+    createFilterGroup({
+      id: 'severities',
+      title: 'Mức độ vi phạm',
+      options: SEVERITY_OPTIONS,
+      selectedValues: filters.severities,
+      getOptionCount: (val) => incidents.filter((i) => i.severity === val).length,
+    }),
+  ], [incidents, filters])
 
-  const activeFilterCount = filters.branches.length + filters.statuses.length
+  const activeFilterCount =
+    filters.branches.length +
+    filters.targetGroups.length +
+    filters.sources.length +
+    filters.severities.length +
+    filters.statuses.length
 
-  const detailEvent = events.find((e) => e.id === detailEventId) ?? null
+  const detailIncident = incidents.find((i) => i.id === detailIncidentId) ?? null
 
-  const handleCreate = (form: CreateQcForm) => {
-    const newEventId = `qc_${Date.now()}`
-    const eventCode = generateEventCode(events)
+  // Create Batch Incidents
+  const handleCreateBatch = (form: CreateBatchIncidentForm) => {
+    const inspector = INSPECTOR_OPTIONS.find((i) => i.id === form.inspectorId)
+    const inspectorName = inspector?.name || CURRENT_USER_NAME
+    const nowIso = new Date().toISOString()
 
-    const inspectors: Inspector[] = []
-    const mainIns = INSPECTOR_OPTIONS.find((i) => i.id === form.inspectorId)
-    if (mainIns) {
-      inspectors.push(mainIns)
-    }
-    form.errors.forEach((err) => {
-      const ins = INSPECTOR_OPTIONS.find((i) => i.id === err.inspectorId)
-      if (ins && !inspectors.some((i) => i.id === ins.id)) {
-        inspectors.push(ins)
-      }
-    })
+    const newIncidents: QcIncident[] = form.incidents.map((item, idx) => {
+      const codeIndex = incidents.length + idx + 1
+      const year = new Date().getFullYear()
+      const code = `QC-${year}-${codeIndex.toString().padStart(3, '0')}`
 
-    const areas = Array.from(new Set(form.errors.map((e) => e.area).filter(Boolean)))
-
-    const mappedErrors = form.errors.map((err, idx) => {
-      const errorIndex = idx + 1
       return {
-        id: `err_${Date.now()}_${errorIndex}`,
-        code: `${eventCode}.${errorIndex.toString().padStart(2, '0')}`,
-        qcEventId: newEventId,
-        eventCode: eventCode,
-        itemId: `custom_${Date.now()}_${errorIndex}`,
-        itemLabel: err.errorType === 'teacher' ? 'Lỗi Giáo viên' : 'Lỗi Cơ sở vật chất',
-        errorType: (err.errorType === 'teacher' ? 'personnel' : 'facility') as QcError['errorType'],
-        description: err.description,
-        severity: err.severity as QcError['severity'],
-        status: 'open' as const,
+        id: `inc_${Date.now()}_${idx}`,
+        code,
+        title: item.title || item.description.slice(0, 50),
+        targetGroup: item.targetGroup,
+        criteria: item.criteria,
+        source: 'manual',
+        branch: form.branch,
+        className: item.className,
+        sessionNumber: item.sessionNumber,
+        roomId: item.roomId,
+        teacherName: item.teacherName,
+        csmName: item.csmName,
+        description: item.description,
+        severity: item.severity,
+        status: 'open',
         recurrenceCount: 0,
-        requiresCorrectiveAction: true,
-        evidence: err.evidence || 'Ghi nhận trực tiếp khi đánh giá',
-        evidenceLink: '',
-        evidenceImage: err.evidenceImage || '',
-        correctiveAction: '',
-        correctiveEvidence: '',
-        assignee: 'Bộ phận liên quan',
-        issuedBy: err.inspectorId,
-        notes: err.notes,
-        createdAt: new Date().toISOString(),
+        evidence: item.evidence || 'Ghi nhận trực tiếp lúc kiểm tra',
+        evidenceImage: item.evidenceImage || '',
+        evidenceLink: item.evidenceLink || '',
+        assignee: item.assignee || 'Bộ phận liên quan',
+        issuedBy: inspectorName,
+        createdAt: nowIso,
+        deadline: item.deadline || undefined,
+        notes: item.notes || '',
+        comments: [],
+        logs: [
+          {
+            id: `log_${Date.now()}_${idx}`,
+            userId: CURRENT_USER_ID,
+            userName: inspectorName,
+            action: 'Ghi nhận sự cố',
+            details: `Ghi nhận vi phạm ${item.title || item.description}`,
+            createdAt: nowIso,
+          },
+        ],
       }
     })
 
-    const newEvent: QcCheckEvent = {
-      id: newEventId,
-      code: eventCode,
-      name: form.name || 'Chưa đặt tên',
-      type: form.type,
-      status: 'draft',
-      date: new Date().toISOString().split('T')[0],
-      branch: form.branch,
-      inspectors,
-      areas,
-      errors: mappedErrors,
-      comments: [],
-      logs: [
-        {
-          id: `log_${Date.now()}`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Tạo đợt QC (Nháp)',
-          createdAt: new Date().toISOString(),
-        }
-      ],
-      notes: '',
-      createdAt: new Date().toISOString(),
-    }
-    setEvents((prev) => [...prev, newEvent])
+    setIncidents((prev) => [...newIncidents, ...prev])
     setIsCreateOpen(false)
   }
 
-  const handleAddError = (eventId: string, form: QcErrorForm) => {
-    const item = form.itemId ? QC_CHECK_ITEMS.find((i) => i.id === form.itemId) : null
+  // Update Status
+  const handleUpdateStatus = (incidentId: string, status: QcErrorStatus) => {
+    const statusText =
+      status === 'open'
+        ? 'Mở'
+        : status === 'correcting'
+          ? 'Đang khắc phục'
+          : status === 'corrected'
+            ? 'Chờ duyệt'
+            : status === 'closed'
+              ? 'Đã đóng'
+              : status === 'cancelled'
+                ? 'Đã hủy'
+                : status === 'not_met'
+                  ? 'Chưa đáp ứng'
+                  : status
 
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const errorIndex = e.errors.length + 1
-        const newError = {
-          id: `err_${Date.now()}`,
-          code: `${e.code}.${errorIndex.toString().padStart(2, '0')}`,
-          qcEventId: eventId,
-          eventCode: e.code,
-          itemId: form.itemId,
-          itemLabel: item?.label ?? '',
-          errorType: form.errorType as QcError['errorType'],
-          description: form.description,
-          severity: form.severity as QcError['severity'],
-          status: form.status as QcError['status'],
-          recurrenceCount: 0,
-          requiresCorrectiveAction: form.requiresCorrectiveAction,
-          evidence: form.evidence,
-          evidenceLink: form.evidenceLink || '',
-          evidenceImage: form.evidenceImage || '',
-          correctiveAction: form.requiresCorrectiveAction ? form.correctiveAction : '',
-          correctiveEvidence: form.requiresCorrectiveAction ? form.correctiveEvidence : '',
-          correctiveLink: form.requiresCorrectiveAction ? form.correctiveLink : '',
-          correctiveImage: form.requiresCorrectiveAction ? form.correctiveImage : '',
-          assignee: form.assignee,
-          issuedBy: CURRENT_USER_ID,
-          notes: form.notes,
-          createdAt: new Date().toISOString(),
-          deadline: form.requiresCorrectiveAction && form.deadline ? form.deadline : undefined,
+    setIncidents((prev) =>
+      prev.map((inc) => {
+        if (inc.id !== incidentId) return inc
+        const updates: { closedBy?: string; closedAt?: string; closureMethod?: 'manual' | 'system_auto' } = {}
+        if (status === 'closed' || status === 'cancelled') {
+          updates.closedBy = CURRENT_USER_NAME
+          updates.closedAt = new Date().toISOString()
+          updates.closureMethod = 'manual'
         }
+
         const newLog = {
-          id: `log_${Date.now()}_err`,
+          id: `log_${Date.now()}`,
           userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Ghi nhận lỗi',
-          details: `Thêm lỗi ${newError.code} (${newError.itemLabel})`,
+          userName: CURRENT_USER_NAME,
+          action: status === 'closed' ? 'Nghiệm thu đóng lỗi' : 'Cập nhật trạng thái',
+          details: `Chuyển trạng thái sang: ${statusText}`,
           createdAt: new Date().toISOString(),
         }
+
         return {
-          ...e,
-          errors: [...e.errors, newError],
-          logs: [...(e.logs || []), newLog]
+          ...inc,
+          status,
+          ...updates,
+          logs: [...(inc.logs || []), newLog],
         }
       })
     )
   }
 
-  const handleUpdateErrorStatus = (eventId: string, errorId: string, status: QcErrorStatus) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const errorItem = e.errors.find((err) => err.id === errorId)
-        
-        // Log details
-        const statusText = 
-          status === 'open'
-            ? 'Mở'
-            : status === 'correcting'
-              ? 'Đang khắc phục'
-              : status === 'corrected'
-                ? 'Đã khắc phục (chờ duyệt)'
-                : status === 'closed'
-                  ? 'Đóng lỗi (Đạt)'
-                  : status === 'not_met'
-                    ? 'Chưa đáp ứng'
-                    : status
-
-        const updatedErrors = e.errors.map((err) => {
-          if (err.id !== errorId) return err
-          const updates: { completionDate?: string; closedBy?: string; closedAt?: string } = {}
-          if (status === 'corrected') {
-            updates.completionDate = new Date().toISOString()
-          }
-          if (status === 'closed') {
-            updates.closedBy = CURRENT_USER_ID
-            updates.closedAt = new Date().toISOString()
-          }
-          return { ...err, status, ...updates }
-        })
-
-        const allClosed = updatedErrors.length > 0 && updatedErrors.every((err) => err.status === 'closed')
-        const nextEventStatus = allClosed ? ('completed' as const) : e.status
+  // Submit Remediation
+  const handleUpdateRemediation = (
+    incidentId: string,
+    correctiveAction: string,
+    correctiveEvidence: string,
+    correctiveImage?: string
+  ) => {
+    const nowIso = new Date().toISOString()
+    setIncidents((prev) =>
+      prev.map((inc) => {
+        if (inc.id !== incidentId) return inc
 
         const newLog = {
-          id: `log_${Date.now()}_status`,
+          id: `log_${Date.now()}`,
           userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: status === 'closed' ? 'Đóng lỗi (Đạt)' : status === 'not_met' ? 'Đánh giá chưa đạt' : 'Cập nhật trạng thái lỗi',
-          details: allClosed
-            ? `Lỗi ${errorItem?.code} chuyển trạng thái sang: ${statusText}. Đã duyệt đạt tất cả các lỗi, đóng đợt QC.`
-            : `Lỗi ${errorItem?.code} chuyển trạng thái sang: ${statusText}`,
-          createdAt: new Date().toISOString(),
+          userName: CURRENT_USER_NAME,
+          action: 'Báo cáo khắc phục sự cố',
+          details: `Nộp phương án khắc phục: ${correctiveAction.substring(0, 60)}...`,
+          createdAt: nowIso,
         }
 
         return {
-          ...e,
-          status: nextEventStatus,
-          errors: updatedErrors,
-          logs: [...(e.logs || []), newLog]
+          ...inc,
+          correctiveAction,
+          correctiveEvidence,
+          correctiveImage,
+          completionDate: nowIso,
+          status: 'corrected',
+          logs: [...(inc.logs || []), newLog],
         }
       })
     )
   }
 
-  const handleDeleteError = (eventId: string, errorId: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const errorItem = e.errors.find((err) => err.id === errorId)
+  // Re-check System (Auto-close bot issues)
+  const handleRecheckSystem = (incidentId: string) => {
+    const nowIso = new Date().toISOString()
+    setIncidents((prev) =>
+      prev.map((inc) => {
+        if (inc.id !== incidentId) return inc
+
         const newLog = {
-          id: `log_${Date.now()}_del`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Xóa ghi nhận lỗi',
-          details: `Xóa lỗi ${errorItem?.code} (${errorItem?.itemLabel})`,
-          createdAt: new Date().toISOString(),
+          id: `log_${Date.now()}`,
+          userId: 'system',
+          userName: 'Hệ thống tự động',
+          action: 'Quét dữ liệu kiểm tra lại',
+          details: 'Hệ thống nhận diện dữ liệu điểm danh / chăm sóc đã được bổ sung hợp lệ. Tự động đóng sự cố.',
+          createdAt: nowIso,
         }
+
         return {
-          ...e,
-          errors: e.errors.filter((err) => err.id !== errorId),
-          logs: [...(e.logs || []), newLog]
+          ...inc,
+          status: 'closed',
+          closureMethod: 'system_auto',
+          closedBy: 'Hệ thống tự động (Bot)',
+          closedAt: nowIso,
+          correctiveAction: inc.correctiveAction || 'Hệ thống xác nhận thao tác nghiệp vụ đã được hoàn tất bù trên phần mềm.',
+          logs: [...(inc.logs || []), newLog],
         }
       })
     )
   }
 
-  const handleEditError = (eventId: string, errorId: string, form: QcErrorForm) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const errorItem = e.errors.find((err) => err.id === errorId)
-        const isResubmit = errorItem?.status === 'not_met'
-        const nextStatus = isResubmit ? 'corrected' : form.status
+  // Add Comment
+  const handleAddComment = (incidentId: string, content: string) => {
+    const nowIso = new Date().toISOString()
+    setIncidents((prev) =>
+      prev.map((inc) => {
+        if (inc.id !== incidentId) return inc
 
-        const newLog = {
-          id: `log_${Date.now()}_edit`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: isResubmit ? 'Gửi lại khắc phục' : 'Chỉnh sửa thông tin lỗi',
-          details: `Lỗi ${errorItem?.code} đã được chỉnh sửa cập nhật${isResubmit ? ' và gửi lại báo cáo khắc phục mới' : ''}`,
-          createdAt: new Date().toISOString(),
-        }
-
-        return {
-          ...e,
-          errors: e.errors.map((err) => {
-            if (err.id !== errorId) return err
-            const updates: { completionDate?: string } = {}
-            if (nextStatus === 'corrected') {
-              updates.completionDate = new Date().toISOString()
-            }
-            return {
-              ...err,
-              description: form.description,
-              severity: form.severity,
-              status: nextStatus,
-              evidence: form.evidence,
-              evidenceLink: form.evidenceLink,
-              evidenceImage: form.evidenceImage,
-              requiresCorrectiveAction: form.requiresCorrectiveAction,
-              correctiveAction: form.correctiveAction,
-              correctiveEvidence: form.correctiveEvidence,
-              correctiveLink: form.correctiveLink,
-              correctiveImage: form.correctiveImage,
-               assignee: form.assignee,
-              notes: form.notes,
-              deadline: form.requiresCorrectiveAction && form.deadline ? form.deadline : undefined,
-              ...updates,
-            }
-          }),
-          logs: [...(e.logs || []), newLog]
-        }
-      })
-    )
-  }
-
-  const handleAddComment = (eventId: string, commentContent: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
         const newComment = {
           id: `comm_${Date.now()}`,
           userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          userRole: 'Thanh tra viên',
-          content: commentContent,
-          createdAt: new Date().toISOString(),
+          userName: CURRENT_USER_NAME,
+          userRole: 'Kiểm tra viên',
+          content,
+          createdAt: nowIso,
         }
+
         const newLog = {
-          id: `log_${Date.now()}_comm`,
+          id: `log_${Date.now()}`,
           userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Gửi trao đổi bình luận',
-          details: `"${commentContent.substring(0, 50)}${commentContent.length > 50 ? '...' : ''}"`,
-          createdAt: new Date().toISOString(),
+          userName: CURRENT_USER_NAME,
+          action: 'Gửi trao đổi',
+          details: `"${content.substring(0, 50)}..."`,
+          createdAt: nowIso,
         }
+
         return {
-          ...e,
-          comments: [...(e.comments || []), newComment],
-          logs: [...(e.logs || []), newLog]
+          ...inc,
+          comments: [...(inc.comments || []), newComment],
+          logs: [...(inc.logs || []), newLog],
         }
       })
     )
   }
 
-  const handlePublishEvent = (eventId: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const newLog = {
-          id: `log_${Date.now()}_pub`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Phát hành đợt QC',
-          createdAt: new Date().toISOString(),
-        }
-        const publishDate = new Date().toISOString().split('T')[0]
-        return {
-          ...e,
-          status: 'published' as const,
-          date: publishDate,
-          publishedAt: new Date().toISOString(),
-          logs: [...(e.logs || []), newLog]
-        }
-      })
-    )
+  const toggleSelectAll = () => {
+    const allIds = filteredIncidents.map((i) => i.id)
+    const isAll = allIds.every((id) => selectedIds.has(id))
+    setSelectedIds(isAll ? new Set() : new Set(allIds))
   }
 
-  const handleCloseEvent = (eventId: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const newLog = {
-          id: `log_${Date.now()}_close`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Đóng đợt QC',
-          createdAt: new Date().toISOString(),
-        }
-        return {
-          ...e,
-          status: 'closed' as const,
-          completedAt: new Date().toISOString(),
-          logs: [...(e.logs || []), newLog]
-        }
-      })
-    )
-  }
-
-  const handleCancelEvent = (eventId: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const newLog = {
-          id: `log_${Date.now()}_cancel`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Hủy đợt QC',
-          createdAt: new Date().toISOString(),
-        }
-        return {
-          ...e,
-          status: 'cancelled' as const,
-          logs: [...(e.logs || []), newLog]
-        }
-      })
-    )
-  }
-
-  const handleNotMet = (eventId: string) => {
-    setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e
-        const newLog = {
-          id: `log_${Date.now()}_notmet`,
-          userId: CURRENT_USER_ID,
-          userName: 'Trần Văn Kiên',
-          action: 'Đánh giá Đợt QC Chưa đạt',
-          createdAt: new Date().toISOString(),
-        }
-        return {
-          ...e,
-          status: 'not_met' as const,
-          logs: [...(e.logs || []), newLog]
-        }
-      })
-    )
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   const toggleFilterValue = <T extends string>(group: keyof FilterState, value: T) => {
@@ -474,76 +496,75 @@ export function QcCheckScreen() {
     })
   }
 
-  const toggleSelectAll = () => {
-    const allIds = filteredEvents.map((e) => e.id)
-    const isAllSelected = allIds.every((id) => selectedIds.has(id))
-    if (isAllSelected) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(allIds))
-    }
-  }
-
-  const toggleSelectOne = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <QcCheckToolbar
-        activeType={activeType}
+        sortMode={sortMode}
+        onSortModeChange={setSortMode}
         activeBranch={activeBranch}
+        activeSubject={activeSubject}
+        activeCriteria={activeCriteria}
+        activeDeadline={activeDeadline}
+        onDeadlineChange={(d) => { setActiveDeadline(d); setPage(1) }}
+        selectedAssignee={selectedAssignee}
+        onAssigneeChange={(a) => { setSelectedAssignee(a); setPage(1) }}
+        assigneeOptions={assigneeOptions}
+        myIncidentsCount={myIncidentsCount}
+        currentStaffName={currentStaffName}
+        activeTargetGroup={activeTargetGroup}
         activeStatus={activeStatus}
         searchTerm={searchTerm}
         activeFilterCount={activeFilterCount}
         statusTileTotals={statusTileTotals}
-        onTypeChange={(type) => { setActiveType(type); setPage(1) }}
-        onBranchChange={(branch) => { setActiveBranch(branch); setPage(1) }}
-        onStatusChange={(status) => { setActiveStatus(status); setPage(1) }}
-        onSearchChange={(value) => { setSearchTerm(value); setPage(1) }}
+        onBranchChange={(b) => { setActiveBranch(b); setPage(1) }}
+        onSubjectChange={(s) => { setActiveSubject(s); setPage(1) }}
+        onCriteriaChange={(c) => { setActiveCriteria(c); setPage(1) }}
+        onTargetGroupChange={(g) => { setActiveTargetGroup(g); setPage(1) }}
+        onStatusChange={(s) => {
+          setActiveStatus(s)
+          if (filters.statuses.length > 0) {
+            setFilters((current) => ({ ...current, statuses: [] }))
+          }
+          setPage(1)
+        }}
+        onSearchChange={(v) => { setSearchTerm(v); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
         onCreate={() => setIsCreateOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0 w-full gap-3 overflow-hidden px-3 pb-3 pt-2 lg:px-3 lg:pb-3">
+      <div className="flex flex-1 min-h-0 w-full gap-2 overflow-hidden px-2.5 pb-2 pt-1 lg:px-3 lg:pb-2.5">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
-          <DataTableFrame
-            footer={
-              <DataTablePagination
-                page={currentPage}
-                total={filteredEvents.length}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
-              />
-            }
-          >
-            <QcCheckTable
-              events={pagedEvents}
-              selectedIds={selectedIds}
-              onToggleAll={toggleSelectAll}
-              onToggleOne={toggleSelectOne}
-              onRowClick={setDetailEventId}
-            />
-          </DataTableFrame>
+          <QcCheckTable
+            incidents={pagedIncidents}
+            selectedIds={selectedIds}
+            onToggleAll={toggleSelectAll}
+            onToggleOne={toggleSelectOne}
+            onRowClick={setDetailIncidentId}
+            onQuickApprove={(id) => handleUpdateStatus(id, 'closed')}
+            onQuickRecheck={handleRecheckSystem}
+            sortMode={sortMode}
+            onSortModeChange={setSortMode}
+            pagination={{
+              page: currentPage,
+              total: filteredIncidents.length,
+              pageSize,
+              onPageChange: setPage,
+              onPageSizeChange: setPageSize,
+            }}
+          />
         </div>
 
         {isFilterOpen && (
           <FilterGroupAsidePanel
-            title="Bộ lọc kiểm tra QC"
+            title="Bộ lọc nâng cao"
             groups={filterGroups}
-            description="Kết hợp bộ lọc theo chi nhánh và trạng thái."
+            description="Lọc sự cố theo trạng thái, cơ sở, đối tượng đánh giá, nguồn phát hiện và mức độ."
             onToggle={(sectionId, value) => {
+              if (sectionId === 'statuses') toggleFilterValue('statuses', value as QcErrorStatus)
               if (sectionId === 'branches') toggleFilterValue('branches', value)
-              if (sectionId === 'statuses') toggleFilterValue('statuses', value)
+              if (sectionId === 'targetGroups') toggleFilterValue('targetGroups', value as QcTargetGroup)
+              if (sectionId === 'sources') toggleFilterValue('sources', value as QcSourceType)
+              if (sectionId === 'severities') toggleFilterValue('severities', value as QcErrorSeverity)
             }}
             onClearSection={(sectionId) => {
               setPage(1)
@@ -553,7 +574,14 @@ export function QcCheckScreen() {
               }))
             }}
             onClearAll={() => {
-              setFilters({ branches: [], statuses: [] })
+              setFilters({
+                branches: [],
+                targetGroups: [],
+                sources: [],
+                criteriaList: [],
+                severities: [],
+                statuses: [],
+              })
               setPage(1)
             }}
             onClose={() => setIsFilterOpen(false)}
@@ -561,26 +589,24 @@ export function QcCheckScreen() {
         )}
       </div>
 
+      {/* Batch Create Dialog */}
       <QcCheckCreateDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
-        onSubmit={handleCreate}
+        onSubmit={handleCreateBatch}
       />
 
+      {/* Detail Dialog */}
       <QcCheckDetailDialog
-        event={detailEvent}
-        open={!!detailEvent}
-        onOpenChange={(open) => { if (!open) setDetailEventId('') }}
-        onAddError={handleAddError}
-        onUpdateError={handleUpdateErrorStatus}
-        onPublish={handlePublishEvent}
-        onCloseEvent={handleCloseEvent}
-        onCancelEvent={handleCancelEvent}
-        onNotMet={handleNotMet}
-        currentUserId={CURRENT_USER_ID}
-        onEditError={handleEditError}
+        incident={detailIncident}
+        open={!!detailIncident}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDetailIncidentId('')
+        }}
+        onUpdateStatus={handleUpdateStatus}
+        onUpdateRemediation={handleUpdateRemediation}
+        onRecheckSystem={handleRecheckSystem}
         onAddComment={handleAddComment}
-        onDeleteError={handleDeleteError}
       />
     </div>
   )

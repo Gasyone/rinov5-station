@@ -103,6 +103,23 @@ export function getFamilyContacts(studentId: string, studentName: string): Famil
     cleanNum = "161"
   }
 
+  if (studentName === "Hoàng Đức Anh") {
+    contacts.push({
+      name: "Trần Thị An",
+      relationship: "Mẹ",
+      phone: `090${cleanNum}294`,
+      isPrimary: true,
+      note: "Người liên hệ chính. Rất quan tâm lộ trình của con, thích trao đổi qua Zalo."
+    })
+    contacts.push({
+      name: "Hoàng Văn Tuấn",
+      relationship: "Bố",
+      phone: `091${cleanNum}999`,
+      note: "Chỉ liên hệ khi khẩn cấp hoặc không gọi được cho mẹ."
+    })
+    return contacts
+  }
+
   if (studentName === "Trần Minh Châu" || studentName === "Kim Nhật Anh" || lastDigit % 3 === 0) {
     contacts.push({
       name: "Nguyễn Thị Mai",
@@ -152,8 +169,8 @@ export const mockCareAlerts: StudentCareAlert[] = [
     expectedEndDate: "14/08/2027",
     attendanceRatio: "6/7",
     homeworkCompletion: 85.0,
-    lastTestScore: 8.5,
-    priorTestScore: 8.0,
+    lastTestScore: 0,
+    priorTestScore: 0,
     studentFolderLink: "https://docs.google.com/document/d/rinov5-student-folder-baohan",
     realtimeStatus: "Đang học",
     learningResultsLink: "https://docs.google.com/document/d/learning-result-baohan",
@@ -185,6 +202,15 @@ export const mockCareAlerts: StudentCareAlert[] = [
           totalPaidAmount: 2800000,
           amountText: '2.800.000đ',
         },
+      },
+      {
+        id: 'log-baohan-failed-cstp',
+        date: '2026-06-25 15:30',
+        staffName: 'Trần Thảo Anh 20',
+        callConfirmation: 'Đã gọi',
+        audioDuration: '02:40',
+        notes: '[CSTP] [Đối tượng: Lê Thu Thủy (Mẹ)] [Lý do: Trùng lịch học văn hóa / Không thu xếp được lịch] Liên hệ tư vấn gia hạn khóa học tiếp theo trước kỳ thi chuyển cấp. Phụ huynh trao đổi con bận lịch học thêm văn hóa ở trường và tạm thời chưa có kế hoạch học thêm buổi tối.',
+        parentOpinion: 'Mẹ cảm ơn trung tâm đã hỗ trợ và đồng hành cùng con suốt năm học qua, đợt này con ôn thi chuyên nên gia đình xin phép tạm dừng, chưa đăng ký tái phí và chưa lên đơn hàng mới nhé ạ.',
       },
     ]
   },
@@ -1801,7 +1827,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     callConfirmation: "Đã gọi",
     completedCareTags: ['CTP'],
     studentNote: 'Gia đình có kế hoạch định cư nước ngoài từ tháng 8/2026.',
-    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại.",
+    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] [Lý do: Chuyển nơi sinh sống / Đi định cư nước ngoài] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới.",
     interactionLogs: [
       {
         id: "log-37-1",
@@ -1809,7 +1835,8 @@ export const mockCareAlerts: StudentCareAlert[] = [
         staffName: "Trần Thảo Anh 20 (CS)",
         callConfirmation: "Đã gọi",
         audioDuration: "04:12",
-        notes: "[CTP] [Đối tượng: Phụ huynh] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới. Đóng ca chăm sóc thất bại."
+        notes: "[CTP] [Đối tượng: Phụ huynh] [Lý do: Chuyển nơi sinh sống / Đi định cư nước ngoài] Liên hệ tư vấn tái tục khóa học tiếp theo. Phụ huynh thông báo gia đình chuyển nơi sinh sống sang nước ngoài từ tháng 8, không có nhu cầu tiếp tục theo học chương trình mới.",
+        parentOpinion: "Gia đình chuyển sang định cư nước ngoài nên xin phép dừng học sau khi kết thúc khóa này, cảm ơn trung tâm đã hỗ trợ bé suốt thời gian qua."
       }
     ],
     hasLinkedOrder: false,
@@ -1844,7 +1871,7 @@ export const mockCareAlerts: StudentCareAlert[] = [
     callConfirmation: "Đã gọi",
     completedCareTags: ['CTP'],
     studentNote: 'Phụ huynh bận lịch học ở trường chuyên nên dừng học thêm.',
-    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh. Đóng ca thất bại.",
+    interactionNotes: "[CTP] [Đối tượng: Phụ huynh] [Lý do: Trùng lịch học văn hóa / Không thu xếp được lịch] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh.",
     interactionLogs: [
       {
         id: "log-38-1",
@@ -1852,7 +1879,8 @@ export const mockCareAlerts: StudentCareAlert[] = [
         staffName: "Nguyễn Thị Ngọc Anh",
         callConfirmation: "Đã gọi",
         audioDuration: "03:40",
-        notes: "[CTP] [Đối tượng: Phụ huynh] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh. Đóng ca thất bại."
+        notes: "[CTP] [Đối tượng: Phụ huynh] [Lý do: Trùng lịch học văn hóa / Không thu xếp được lịch] Gọi điện tư vấn tái phí. Phụ huynh phản hồi con đỗ vào trường chuyên, lịch học buổi tối kín nên tạm dừng khóa học tiếng Anh.",
+        parentOpinion: "Con đỗ vào trường chuyên, lịch học buổi tối kín nên gia đình xin phép tạm dừng khóa học tiếng Anh."
       }
     ],
     hasLinkedOrder: false,

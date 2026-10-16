@@ -110,18 +110,18 @@ export function SessionCardRemark({
 
   return (
     <div
-      className="mt-1 flex items-start gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-1 text-xs text-foreground group/remark"
+      className="mt-1 flex items-start gap-1.5 px-0.5 py-0.5 text-xs text-foreground group/remark"
       onClick={(e) => e.stopPropagation()}
     >
-      <FileText className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-      <div className="flex-1 min-w-0 leading-snug font-normal text-[11.5px]">
-        <span className="font-semibold me-1 text-amber-700 dark:text-amber-300">Ghi chú:</span>
+      <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0 leading-snug font-normal text-[11.5px] text-muted-foreground">
+        <span className="font-semibold me-1 text-foreground">Ghi chú:</span>
         {renderFormattedNote(session.description)}
       </div>
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="p-0.5 rounded hover:bg-amber-500/20 text-muted-foreground/70 hover:text-primary transition-colors cursor-pointer shrink-0"
+        className="p-0.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-foreground transition-colors cursor-pointer shrink-0"
         title="Chỉnh sửa ghi chú"
       >
         <Pencil className="h-3 w-3" />

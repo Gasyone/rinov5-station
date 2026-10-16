@@ -11,12 +11,13 @@ import {
   AlertTriangle,
   CreditCard,
   ClipboardCheck,
+  ShieldAlert,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { BranchSelect } from '@/components/controls'
-import { AppAvatar, StudentProfileHoverCard } from '@/components/shared'
-import type { CareAvatarItem, RenewalAvatarItem } from './homeTypes'
+import { AppAvatar, StudentProfileHoverCard, type StudentProfileItem } from '@/components/shared'
+import type { CareAvatarItem, RenewalAvatarItem, HomeQcMetrics } from './homeTypes'
 
 export interface HomeWorkdayHeaderProps {
   selectedBranch: string
@@ -28,6 +29,8 @@ export interface HomeWorkdayHeaderProps {
   careAvatarItems: CareAvatarItem[]
   renewalAvatarItems: RenewalAvatarItem[]
   pendingLeaveCount: number
+  qcMetrics?: HomeQcMetrics
+  onNavigateQc?: () => void
   onOpenCareStudent: (studentId: string) => void
   onOpenRenewalStudent: (studentId: string) => void
   onNavigateCare: () => void
@@ -45,7 +48,7 @@ type UnifiedAvatarItem = {
   typeLabel: string
   badgeColor: 'red' | 'amber' | 'blue' | 'emerald' | 'purple'
   tooltip: string
-  profileItem: any
+  profileItem: StudentProfileItem
 }
 
 export function HomeWorkdayHeader({
@@ -58,6 +61,8 @@ export function HomeWorkdayHeader({
   careAvatarItems = [],
   renewalAvatarItems = [],
   pendingLeaveCount = 0,
+  qcMetrics,
+  onNavigateQc,
   onOpenCareStudent,
   onOpenRenewalStudent,
   onNavigateCare,
@@ -299,6 +304,22 @@ export function HomeWorkdayHeader({
             >
               <span>{pendingLeaveCount} đơn</span>
             </span>
+          )}
+
+          {qcMetrics && qcMetrics.pending > 0 && (
+            <button
+              type="button"
+              onClick={onNavigateQc}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-normal border leading-tight text-xs transition-colors cursor-pointer ${
+                qcMetrics.overdue > 0
+                  ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/20'
+                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+              }`}
+              title={`${qcMetrics.pending} lỗi QC cần khắc phục (${qcMetrics.overdue} quá hạn)`}
+            >
+              <ShieldAlert className="w-3 h-3 shrink-0" />
+              <span>{qcMetrics.pending} QC {qcMetrics.overdue > 0 ? `(${qcMetrics.overdue} trễ)` : ''}</span>
+            </button>
           )}
         </div>
 

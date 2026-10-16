@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "prisma generate && next build",
     "dev": "next dev --webpack --port 3001",
     "dev:turbo": "next dev --turbopack --port 3001",
     "runtime:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-runtime.ps1",
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@prisma/client": "^6.19.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -74,6 +75,7 @@
     "msw-storybook-addon": "^2.0.7",
     "playwright": "^1.60.0",
     "postcss": "^8.5.14",
+    "prisma": "^6.19.3",
     "storybook": "^10.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",

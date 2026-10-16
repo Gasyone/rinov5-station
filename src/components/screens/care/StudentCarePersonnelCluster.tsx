@@ -177,7 +177,7 @@ export function StudentCarePersonnelCluster({
                 autoFocus
               />
             </div>
-            <div className="text-[10.5px] font-semibold text-muted-foreground uppercase px-1 pb-0.5 border-b border-border/40">
+            <div className="text-xs font-semibold text-muted-foreground uppercase px-1 pb-0.5 border-b border-border/40">
               Chọn nhân sự phụ trách CS
             </div>
             <div className="flex-1 overflow-y-auto space-y-1 max-h-52 pr-0.5">

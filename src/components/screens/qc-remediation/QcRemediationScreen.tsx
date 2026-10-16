@@ -38,12 +38,20 @@ export function QcRemediationScreen() {
   const allErrors: QcExtendedError[] = useMemo(() => {
     return events.flatMap((e) =>
       e.errors
-        .filter((err) => err.errorType === 'personnel' || err.errorType === 'facility')
+        .filter((err) => (err.errorType || (err.targetGroup === 'teacher' ? 'personnel' : 'facility')) === 'personnel' || (err.errorType || (err.targetGroup === 'teacher' ? 'personnel' : 'facility')) === 'facility')
         .map((err) => ({
           ...err,
+          qcEventId: e.id,
           eventCode: e.code,
           eventName: e.name,
           branch: e.branch,
+          itemId: err.itemId || 'item_01',
+          itemLabel: err.itemLabel || err.title,
+          errorType: (err.errorType || (err.targetGroup === 'teacher' ? 'personnel' : 'facility')) as any,
+          requiresCorrectiveAction: err.requiresCorrectiveAction ?? true,
+          correctiveAction: err.correctiveAction || '',
+          correctiveEvidence: err.correctiveEvidence || '',
+          notes: err.notes || '',
         }))
     )
   }, [events])

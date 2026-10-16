@@ -85,8 +85,8 @@ export function SidebarNav({
   const renderNavContent = (open: boolean) => (
     <div
       className={cn(
-        'custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-0.5 overflow-y-auto py-2',
-        open ? 'px-2' : 'px-1.5'
+        'custom-scrollbar sidebar-scrollbar hover-scroll flex-1 space-y-1 overflow-y-auto py-2.5',
+        open ? 'px-2.5' : 'px-1.5'
       )}
     >
       {visibleNavigationGroups.map((group) => {
@@ -106,11 +106,11 @@ export function SidebarNav({
               className={cn(
                 'flex items-center rounded-md font-medium transition-all',
                 isGroupActive
-                  ? 'bg-accent/80 text-foreground'
+                  ? 'bg-accent/80 text-foreground font-semibold'
                   : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
                 open
-                  ? 'h-[34px] w-full justify-between px-2.5 py-1 text-xs'
-                  : 'h-8 w-8 justify-center p-0'
+                  ? 'h-9 w-full justify-between px-2.5 py-1 text-sm'
+                  : 'h-9 w-9 justify-center p-0'
               )}
               aria-expanded={!singleMenuGroup ? groupExpanded : undefined}
               title={!open ? group.label : ''}
@@ -118,13 +118,13 @@ export function SidebarNav({
             >
               {open ? (
                 <span className="flex min-w-0 flex-1 items-center gap-2.5 pr-1">
-                  <group.icon className="h-4 w-4 shrink-0" />
-                  <span className="flex-1 truncate text-left text-xs font-medium text-inherit">
+                  <group.icon className="h-4.5 w-4.5 shrink-0" />
+                  <span className="flex-1 truncate text-left text-[13px] font-semibold text-inherit">
                     {group.label}
                   </span>
                 </span>
               ) : (
-                <group.icon className="h-4 w-4 shrink-0" />
+                <group.icon className="h-4.5 w-4.5 shrink-0" />
               )}
 
               {open && !singleMenuGroup ? (
@@ -138,7 +138,7 @@ export function SidebarNav({
             </Button>
 
             {groupExpanded && open && !singleMenuGroup ? (
-              <div className="mt-0.5 space-y-0.5 overflow-hidden py-0.5 pl-4">
+              <div className="mt-0.5 space-y-0.5 overflow-hidden py-0.5 pl-3.5">
                 {group.items.map((item) => {
                   const active = isItemActive(item.id)
                   return (
@@ -148,15 +148,15 @@ export function SidebarNav({
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        'h-[30px] w-full justify-start rounded-md px-2 text-left text-xs transition-all',
+                        'h-[34px] w-full justify-start rounded-md px-2.5 text-left transition-all',
                         active
-                          ? 'bg-accent text-accent-foreground font-medium'
+                          ? 'bg-accent text-accent-foreground font-medium shadow-2xs'
                           : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground font-normal'
                       )}
                       title={item.label}
                       onClick={() => handleItemClick(item.id)}
                     >
-                      <span className="truncate text-xs text-inherit">{item.label}</span>
+                      <span className="truncate text-[13px] text-inherit">{item.label}</span>
                     </Button>
                   )
                 })}
@@ -177,7 +177,7 @@ export function SidebarNav({
         }}
         className={cn(
           'hidden h-full min-h-0 flex-shrink-0 flex-col transition-all duration-300 md:flex',
-          isOpen ? 'w-60' : 'w-14 items-center'
+          isOpen ? 'w-64' : 'w-14 items-center'
         )}
       >
         {renderNavContent(isOpen)}
@@ -192,9 +192,9 @@ export function SidebarNav({
             className="absolute inset-0 h-auto w-auto rounded-none bg-foreground/40 p-0 hover:bg-foreground/40"
             onClick={onMobileClose}
           />
-          <aside className="relative flex h-full w-60 max-w-[85vw] flex-col bg-background shadow-lg">
+          <aside className="relative flex h-full w-64 max-w-[85vw] flex-col bg-background shadow-lg">
             <div className="flex h-11 items-center justify-between border-b border-border px-3">
-              <span className="text-xs font-semibold">Navigation</span>
+              <span className="text-sm font-semibold">Navigation</span>
               <Button
                 type="button"
                 variant="ghost"

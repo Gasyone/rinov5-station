@@ -3,14 +3,16 @@
 import { useState, useMemo } from 'react'
 import { History, ChevronUp, ChevronDown } from 'lucide-react'
 import { AudioPlayButton } from './AudioPlayButton'
-import { formatFullStaffName } from './operationsAlertHelpers'
+import { formatFullStaffName, isUncared, isCared } from './operationsAlertHelpers'
 import {
   cleanMessageNotes,
   parseRecipient,
+  parseLogTopic,
   formatCareHistoryTime,
 } from './studentCareDetailHelpers'
+import { getRenewalClassification, getRenewalClassificationLabel, type RenewalClassification } from './renewal/renewalHelpers'
 import type { StudentCareAlert, CareInteractionLog } from '@/mocks/careAlerts'
-
+import { getStatusBadgeClass } from '@/lib/statusColors'
 import { PersonnelHoverCard } from '@/components/shared'
 import { cn } from '@/lib/utils'
 
@@ -54,41 +56,11 @@ export function StudentActiveCareCard({
 
   const isRenewal = mode === 'renewal'
   const csStaffName = formatFullStaffName(student?.csStaff || 'Lê Thị Lan (CS)')
-  const isMath = student?.subject === 'Toán tư duy'
 
-  // Trạng thái hiển thị
-  let statusLabel = 'Đang xử lý'
-  let statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
+  const completed = isCaredStatus || (student ? isCared(student) : false)
+  const uncared = student ? isUncared(student) : false
 
-  if (isRenewal) {
-    const rawStatus = cstpStatus || student?.renewalClassification || 'can_nhac'
-    if (rawStatus === 'tai_phi') {
-      statusLabel = 'Đã tái phí'
-      statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-    } else if (rawStatus === 'hen_tai') {
-      statusLabel = 'Hẹn tái'
-      statusBadgeClass = 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300'
-    } else if (rawStatus === 'tiem_nang') {
-      statusLabel = 'Tiềm năng'
-      statusBadgeClass = 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950 dark:text-sky-300'
-    } else if (rawStatus === 'that_bai') {
-      statusLabel = 'Thất bại'
-      statusBadgeClass = 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
-    } else {
-      statusLabel = 'Cân nhắc'
-      statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-    }
-  } else {
-    if (isCaredStatus) {
-      statusLabel = 'Đã chăm sóc'
-      statusBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-    } else {
-      statusLabel = 'Đang xử lý'
-      statusBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-    }
-  }
-
-  // 1. Tập hợp các logs tương tác thực tế của học viên (bao gồm các lần log vừa tạo)
+  // 1. Tập hợp các logs tương tác thực tế của học viên
   const allLogs = useMemo(() => {
     const rawList = logs && logs.length > 0 ? logs : (student?.interactionLogs || [])
     return [...rawList].sort((a, b) => {
@@ -98,7 +70,40 @@ export function StudentActiveCareCard({
     })
   }, [logs, student?.interactionLogs])
 
-  const activeLog = allLogs.length > 0 ? allLogs[0] : null
+  const renewalLogs = useMemo(() => {
+    return allLogs.filter(
+      (l) =>
+        (l.notes || '').includes('[CSTP]') ||
+        (l.notes || '').toLowerCase().includes('tái phí') ||
+        parseLogTopic(l.notes) === 'CSTP'
+    )
+  }, [allLogs])
+
+  // Trạng thái hiển thị đồng bộ 100% với danh sách ngoài bảng
+  let statusLabel = 'Đang xử lý'
+  let statusBadgeClass = getStatusBadgeClass('in_progress')
+
+  const rawStatus = isRenewal ? (cstpStatus || (student ? getRenewalClassification(student) : 'moi')) : 'in_progress'
+
+  if (isRenewal) {
+    statusLabel = getRenewalClassificationLabel(rawStatus as RenewalClassification)
+    statusBadgeClass = getStatusBadgeClass(rawStatus)
+  } else {
+    if (completed) {
+      statusLabel = 'Hoàn thành'
+      statusBadgeClass = getStatusBadgeClass('completed')
+    } else if (uncared && allLogs.length === 0 && !student?.interactionNotes) {
+      statusLabel = 'Chưa chăm sóc'
+      statusBadgeClass = getStatusBadgeClass('info')
+    } else {
+      statusLabel = 'Đang xử lý'
+      statusBadgeClass = getStatusBadgeClass('in_progress')
+    }
+  }
+
+  const activeLog = isRenewal
+    ? (renewalLogs.length > 0 ? renewalLogs[0] : (student?.interactionNotes ? null : allLogs[0]))
+    : (allLogs.length > 0 ? allLogs[0] : null)
 
   // Tương tác gần nhất (Active Log hoặc student.interactionNotes)
   const latestInteraction = activeLog ? activeLog.notes : (student?.interactionNotes || '')
@@ -124,7 +129,7 @@ export function StudentActiveCareCard({
     actionLabel = 'Đã nhắn Zalo'
   }
 
-  // Nội dung ghi chú chăm sóc mẫu theo ngữ cảnh
+  // Nội dung ghi chú chăm sóc
   let careNote = ''
   let parentOpinion = ''
   let audioDuration = ''
@@ -141,33 +146,11 @@ export function StudentActiveCareCard({
     const opinionMatch = student.interactionNotes.match(/\[Ý kiến PH:\s*([^\]]+)\]/i)
     parentOpinion = opinionMatch ? opinionMatch[1].trim() : ''
   } else if (isRenewal) {
-    if (statusLabel === 'Đã tái phí') {
-      careNote = isMath
-        ? '[CSTP] Đã gọi điện trao đổi lộ trình học Toán tư duy nâng cao giai đoạn 2. Phụ huynh rất hài lòng về kết quả thi học kỳ của con và đã hoàn tất chuyển khoản gia hạn gói học mới.'
-        : '[CSTP] Đã gọi điện trao đổi lộ trình luyện thi IELTS C1 cam kết đầu ra 7.0+. Phụ huynh đánh giá cao sự tiến bộ của con và đã hoàn tất thanh toán toàn bộ khóa học mới.'
-      parentOpinion = 'Phụ huynh rất vui và gửi lời cảm ơn thầy cô đã nhiệt tình kèm cặp con trong suốt khóa vừa qua.'
-      audioDuration = '03:15'
-      appointmentText = 'Đã hoàn tất ca tái phí'
-    } else if (statusLabel === 'Hẹn tái') {
-      careNote = isMath
-        ? '[CSTP] Đã gọi trao đổi gia hạn gói Toán tư duy mới. Phụ huynh đồng ý giữ chỗ cho con ca thứ 7 và đã nộp tiền cọc đợt 1, hẹn tuần tới đóng nốt số tiền còn lại.'
-        : '[CSTP] Đã gọi trao đổi lộ trình học Tiếng Anh tiếp theo. Phụ huynh đã đặt cọc giữ chỗ lớp cô Mai, hẹn chuyển nốt phần phí còn lại trước ngày khai giảng.'
-      parentOpinion = 'Phụ huynh hẹn cuối tuần đi công tác về sẽ ra quầy trung tâm hoặc chuyển khoản nốt số tiền còn lại.'
-      audioDuration = '02:20'
-      appointmentText = 'Hẹn thanh toán nốt: 22/07 17:00'
-    } else {
-      careNote = isMath
-        ? '[CSTP] Đã liên hệ phụ huynh tư vấn gia hạn khóa Toán tư duy Archimedes 12 tháng. Phụ huynh quan tâm chương trình ưu đãi đóng sớm và xin thêm thông tin về lịch học thứ 7.'
-        : '[CSTP] Đã liên hệ phụ huynh tư vấn gia hạn lộ trình Tiếng Anh nâng cao. Học viên học lực tốt, phụ huynh đang cân nhắc sắp xếp lịch học thêm của con ở trường.'
-      parentOpinion = 'Bố mẹ cần trao đổi lại với con về lịch học trên trường, hẹn chuyên viên tư vấn gọi lại vào chiều mai.'
-      audioDuration = '02:45'
-      appointmentText = 'Hẹn liên hệ lại: 21/07 15:00'
-    }
+    careNote = `[CSTP] Đang theo dõi tái phí: ${statusLabel}`
+    parentOpinion = ''
+    audioDuration = ''
   } else {
-    // Regular care (chưa có ghi chú)
-    careNote = isMath
-      ? '[HT-01] Giáo viên và CSM trao đổi về tình hình bài tập về nhà Buổi 14 & hướng dẫn ôn tập phần hình học không gian.'
-      : '[HT-01] Trao đổi với phụ huynh về tình hình chuyên cần và kết quả bài kiểm tra định kỳ 4 kỹ năng của con.'
+    careNote = 'Đang theo dõi và chăm sóc học viên.'
     parentOpinion = ''
     audioDuration = ''
   }
@@ -182,40 +165,18 @@ export function StudentActiveCareCard({
 
   const effectiveCareNote = cleanMessageNotes(careNote)
   const parsedRec = parseRecipient(activeLog?.notes || student?.interactionNotes)
-  const effectiveRecipient = parsedRec || chatRecipient || 'Châu Mẹ Nguyễn Thị Mai (Mẹ)'
+  const effectiveRecipient = parsedRec || chatRecipient || 'Phụ huynh'
   const latestLogDate = activeLog?.date || (student?.interactionLogs && student.interactionLogs.length > 0
     ? student.interactionLogs[student.interactionLogs.length - 1].date
-    : '2026-07-20 14:00')
+    : new Date().toISOString())
   const timeInfo = formatCareHistoryTime(latestLogDate)
   const effectiveCSStaffName = formatFullStaffName(activeLog?.staffName || csStaffName)
 
-  const defaultMockMissedLogs = useMemo(() => [
-    {
-      time: '18/07 09:30',
-      status: 'Gọi KNM',
-      nextCallback: '18/07 14:15',
-      duration: '',
-      note: 'Đã gọi trao đổi nhưng phụ huynh không nghe máy, gửi tin nhắn hẹn gọi lại.',
-      parentOpinion: undefined,
-      staffName: effectiveCSStaffName,
-      recipient: effectiveRecipient,
-    },
-    {
-      time: '19/07 14:15',
-      status: 'Gọi máy bận',
-      nextCallback: '20/07 10:00',
-      duration: '',
-      note: 'Đã liên hệ lại theo lịch hẹn, đường dây phụ huynh bận.',
-      parentOpinion: undefined,
-      staffName: effectiveCSStaffName,
-      recipient: effectiveRecipient,
-    },
-  ], [effectiveCSStaffName, effectiveRecipient])
-
+  // Gom các lần log trước đó (từ vị trí 1 trở đi trong danh sách thực tế)
   const missedLogs = useMemo(() => {
-    // Gom tất cả các lần log trước đó (từ vị trí 1 trở đi trong danh sách đã sắp xếp)
-    if (allLogs.length > 1) {
-      const priorLogs = allLogs.slice(1).map((logItem) => {
+    const listToSlice = isRenewal && renewalLogs.length > 0 ? renewalLogs : allLogs
+    if (listToSlice.length > 1) {
+      return listToSlice.slice(1).map((logItem) => {
         const notes = logItem.notes || ''
         const isPriorKnM = logItem.callConfirmation === 'KNM' || notes.includes('Không nghe')
         const isPriorMayBan = notes.includes('Máy bận')
@@ -245,25 +206,27 @@ export function StudentActiveCareCard({
           recipient: parseRecipient(notes) || effectiveRecipient,
         }
       })
-      return [...priorLogs, ...defaultMockMissedLogs]
     }
-    return defaultMockMissedLogs
-  }, [allLogs, effectiveCSStaffName, effectiveRecipient, defaultMockMissedLogs])
+    return []
+  }, [allLogs, renewalLogs, isRenewal, effectiveCSStaffName, effectiveRecipient])
 
   const dateRangeText = useMemo(() => {
     if (missedLogs.length === 0) return ''
-    const hasToday = missedLogs.some(
-      (m) =>
-        m.time.includes('Vừa xong') ||
-        m.time.includes('Hôm nay') ||
-        m.time.includes('phút') ||
-        m.time.includes('giờ')
-    )
-    if (hasToday) {
-      return '18/07 - Hôm nay'
-    }
-    return '18/07 - 19/07'
+    const times = missedLogs.map(m => m.time).filter(Boolean)
+    if (times.length === 1) return times[0]
+    return `${times[times.length - 1]} - ${times[0]}`
   }, [missedLogs])
+
+  // Điều kiện hiển thị (Hooks đã được gọi đầy đủ ở trên)
+  if (isRenewal) {
+    if ((rawStatus === 'moi' || rawStatus === 'chua_den_han') && renewalLogs.length === 0 && !student?.interactionNotes) {
+      return null
+    }
+  } else {
+    if (uncared && allLogs.length === 0 && !student?.interactionNotes) {
+      return null
+    }
+  }
 
   return (
     <div className="space-y-1 text-left select-none pt-0.5">
@@ -288,7 +251,7 @@ export function StudentActiveCareCard({
             </span>
             <span
               className="text-xs text-muted-foreground font-normal shrink-0"
-              title="2026-07-20 14:00"
+              title={latestLogDate}
             >
               • {timeInfo.display}
             </span>
@@ -303,11 +266,11 @@ export function StudentActiveCareCard({
           )}
         </div>
 
-        {/* Active Care Card Body - Đóng khung ngoài tinh gọn */}
+        {/* Active Care Card Body */}
         <div
           className={cn(
             'rounded-lg p-2 sm:p-2.5 space-y-1 text-xs text-left border',
-            isRenewal && statusLabel === 'Đã tái phí'
+            (isRenewal && statusLabel === 'Đã tái phí') || statusLabel === 'Hoàn thành'
               ? 'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/20'
               : 'border-amber-200/80 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20'
           )}
@@ -333,82 +296,84 @@ export function StudentActiveCareCard({
             )}
           </div>
 
-          {/* Lịch sử ghi nhận chăm sóc trước đó (Accordion) - Mảnh gọn, không có đường line phân cách */}
-          <div className="pt-0.5 select-none">
-            <button
-              type="button"
-              onClick={() => setShowMissedCalls(!showMissedCalls)}
-              className="w-full text-left text-xs font-normal italic text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
-            >
-              <span className="flex items-center gap-1 underline decoration-sky-300 dark:decoration-sky-700">
-                <History className="h-3 w-3 text-sky-500 shrink-0 no-underline" />
-                <span>
-                  Lịch sử ({missedLogs.length}) lần {isUnreachedActive ? 'chưa liên hệ được' : 'chăm sóc'} trước đó
-                </span>
-                {dateRangeText && (
-                  <span className="font-mono text-xs text-muted-foreground font-normal ml-1">
-                    {dateRangeText}
+          {/* Lịch sử ghi nhận chăm sóc trước đó (Accordion) - chỉ hiện khi có lịch sử thực tế */}
+          {missedLogs.length > 0 && (
+            <div className="pt-0.5 select-none">
+              <button
+                type="button"
+                onClick={() => setShowMissedCalls(!showMissedCalls)}
+                className="w-full text-left text-xs font-normal italic text-sky-600 hover:text-sky-700 dark:text-sky-400 flex items-center justify-between cursor-pointer py-0.5 bg-transparent border-0 p-0 transition-colors"
+              >
+                <span className="flex items-center gap-1 underline decoration-sky-300 dark:decoration-sky-700">
+                  <History className="h-3 w-3 text-sky-500 shrink-0 no-underline" />
+                  <span>
+                    Lịch sử ({missedLogs.length}) lần {isUnreachedActive ? 'chưa liên hệ được' : 'chăm sóc'} trước đó
                   </span>
+                  {dateRangeText && (
+                    <span className="font-mono text-xs text-muted-foreground font-normal ml-1">
+                      {dateRangeText}
+                    </span>
+                  )}
+                </span>
+                {showMissedCalls ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-sky-500 shrink-0" />
                 )}
-              </span>
-              {showMissedCalls ? (
-                <ChevronUp className="h-3.5 w-3.5 text-sky-500 shrink-0" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-sky-500 shrink-0" />
-              )}
-            </button>
+              </button>
 
-            {showMissedCalls && (
-              <div className="mt-1.5 space-y-2 text-xs text-muted-foreground font-normal animate-in fade-in-50 duration-150 pl-1">
-                {missedLogs.map((mCall, mIdx) => (
-                  <div key={mIdx} className="space-y-1 pt-1 border-t border-border/40 first:border-t-0 first:pt-0">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                        <PersonnelHoverCard person={getCSStaffPerson(mCall.staffName || effectiveCSStaffName)}>
-                          <span className="font-normal text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
-                            {mCall.staffName || effectiveCSStaffName}
+              {showMissedCalls && (
+                <div className="mt-1.5 space-y-2 text-xs text-muted-foreground font-normal animate-in fade-in-50 duration-150 pl-1">
+                  {missedLogs.map((mCall, mIdx) => (
+                    <div key={mIdx} className="space-y-1 pt-1 border-t border-border/40 first:border-t-0 first:pt-0">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          <PersonnelHoverCard person={getCSStaffPerson(mCall.staffName || effectiveCSStaffName)}>
+                            <span className="font-normal text-foreground text-xs cursor-pointer hover:underline hover:text-primary transition-colors">
+                              {mCall.staffName || effectiveCSStaffName}
+                            </span>
+                          </PersonnelHoverCard>
+
+                          <span className="text-xs text-muted-foreground font-normal truncate">
+                            • {mCall.status} - <span className="text-foreground font-normal">{mCall.recipient || effectiveRecipient}</span>
                           </span>
-                        </PersonnelHoverCard>
-
-                        <span className="text-xs text-muted-foreground font-normal truncate">
-                          • {mCall.status} - <span className="text-foreground font-normal">{mCall.recipient || effectiveRecipient}</span>
-                        </span>
-                        <span className="text-xs text-muted-foreground font-normal shrink-0">
-                          • {mCall.time}
-                        </span>
+                          <span className="text-xs text-muted-foreground font-normal shrink-0">
+                            • {mCall.time}
+                          </span>
+                        </div>
+                        {mCall.nextCallback && (
+                          <span className="text-xs font-normal text-muted-foreground shrink-0">
+                            📅 Hẹn gọi lại: {mCall.nextCallback}
+                          </span>
+                        )}
                       </div>
-                      {mCall.nextCallback && (
-                        <span className="text-xs font-normal text-muted-foreground shrink-0">
-                          📅 Hẹn gọi lại: {mCall.nextCallback}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs text-foreground/90 leading-relaxed font-normal">
-                      {mCall.duration && (
-                        <span className="inline-flex items-center align-middle mr-2">
-                          <AudioPlayButton duration={mCall.duration} />
-                        </span>
-                      )}
-                      <span className="align-middle text-muted-foreground/90">
-                        {mCall.note}
-                      </span>
-                      {mCall.parentOpinion && (
-                        <span>
-                          {' '}
-                          <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
-                            • Phụ huynh phản hồi:
-                          </span>{' '}
-                          <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
-                            “{mCall.parentOpinion}”
+                      <div className="text-xs text-foreground/90 leading-relaxed font-normal">
+                        {mCall.duration && (
+                          <span className="inline-flex items-center align-middle mr-2">
+                            <AudioPlayButton duration={mCall.duration} />
                           </span>
+                        )}
+                        <span className="align-middle text-muted-foreground/90">
+                          {mCall.note}
                         </span>
-                      )}
+                        {mCall.parentOpinion && (
+                          <span>
+                            {' '}
+                            <span className="align-middle text-emerald-800 dark:text-emerald-300 font-normal">
+                              • Phụ huynh phản hồi:
+                            </span>{' '}
+                            <span className="align-middle italic font-normal text-emerald-700 dark:text-emerald-400">
+                              “{mCall.parentOpinion}”
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

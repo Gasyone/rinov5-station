@@ -1,174 +1,185 @@
 'use client'
 
+import React from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
-import { Table } from '@/components/ui/table'
-import { StatusBadge } from '@/components/shared'
-import { getStatusBadgeClass } from '@/lib/statusColors'
-import {
-  QC_CHECK_STATUS_LABELS,
-  type QcCheckEvent,
-  type QcCheckType,
-} from '@/mocks/qcChecks'
-import {
-  formatShortDate,
-  getQcTypeLabel,
-  getQcStatusSemantic,
-  getCalculatedStatus,
-} from './qcCheckHelpers'
+import { EmptyState } from '@/components/shared'
+import { DataTableFrame, DataTablePagination } from '@/components/data-table'
+import { ClipboardList, ArrowDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import type { QcIncident } from '@/mocks/qcChecks'
+import type { QcSortMode } from './qcCheckHelpers'
+import { QcIncidentRow } from './QcIncidentRow'
 
-type BadgeVariant = 'secondary' | 'destructive' | 'outline' | 'default' | null | undefined
-
-const TYPE_BADGE_MAP: Record<QcCheckType, BadgeVariant> = {
-  daily: 'secondary',
-  patrol: 'destructive',
-  monthly: 'outline',
-}
-
-interface QcCheckTableProps {
-  events: QcCheckEvent[]
+export interface QcCheckTableProps {
+  incidents: QcIncident[]
   selectedIds: Set<string>
   onToggleAll: () => void
   onToggleOne: (id: string) => void
   onRowClick: (id: string) => void
+  onQuickApprove?: (incidentId: string) => void
+  onQuickRecheck?: (incidentId: string) => void
+  sortMode?: QcSortMode
+  onSortModeChange?: (mode: QcSortMode) => void
+  className?: string
+  pagination?: {
+    page: number
+    total: number
+    pageSize: number
+    onPageChange: (page: number) => void
+    onPageSizeChange: (size: number) => void
+  }
+  // Backwards compatibility props
+  events?: unknown[]
 }
 
-export function QcCheckTable({ events, selectedIds, onToggleAll, onToggleOne, onRowClick }: QcCheckTableProps) {
-  if (events.length === 0) {
+export function QcCheckTable({
+  incidents = [],
+  selectedIds,
+  onToggleAll,
+  onToggleOne,
+  onRowClick,
+  sortMode = 'severity_deadline',
+  onSortModeChange,
+  className,
+  pagination,
+}: QcCheckTableProps) {
+  const allSelected = incidents.length > 0 && incidents.every((inc) => selectedIds.has(inc.id))
+
+  if (incidents.length === 0) {
     return (
-      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-        Không có đợt kiểm tra nào phù hợp với bộ lọc.
-      </div>
+      <EmptyState
+        icon={<ClipboardList className="h-7 w-7 text-muted-foreground" />}
+        title="Không tìm thấy sự cố"
+        description="Điều chỉnh tìm kiếm hoặc bộ lọc để hiển thị kết quả sự cố chất lượng."
+        className="py-10 border border-border rounded-lg bg-card"
+      />
     )
   }
 
-  const isAllSelected = events.length > 0 && events.every((e) => selectedIds.has(e.id))
-
   return (
-    <Table>
-        <thead>
-          <tr className="bg-muted/50">
-            <th className="sticky top-0 z-10 w-[40px] px-3 py-2 bg-muted/90 backdrop-blur-sm border-b">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={onToggleAll}
-                aria-label="Chọn tất cả"
-              />
-            </th>
-            <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Tên cuộc kiểm tra</th>
-            <th className="sticky top-0 z-10 w-[100px] px-3 py-2 text-left text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Loại</th>
-            <th className="sticky top-0 z-10 w-[110px] px-3 py-2 text-left text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Ngày</th>
-            <th className="sticky top-0 z-10 px-3 py-2 text-left text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Chi nhánh</th>
-            <th className="sticky top-0 z-10 w-[80px] px-3 py-2 text-center text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Lỗi</th>
-            <th className="sticky top-0 z-10 w-[120px] px-3 py-2 text-center text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Lặp lại</th>
-            <th className="sticky top-0 z-10 w-[110px] px-3 py-2 text-center text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Đã khắc phục</th>
-            <th className="sticky top-0 z-10 w-[110px] px-3 py-2 text-center text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Đã thực hiện HK</th>
-            <th className="sticky top-0 z-10 w-[140px] px-3 py-2 text-left text-xs font-medium bg-muted/90 backdrop-blur-sm border-b">Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map((event) => {
-            const errorCount = event.errors.length
-            const correctedCount = event.errors.filter(
-              (e) => e.status === 'corrected' || e.status === 'closed'
-            ).length
-            const correctiveActionDone = event.errors.filter(
-              (e) => e.correctiveAction && e.correctiveAction.length > 0
-            ).length
-            const recurrenceTotal = event.errors.reduce(
-              (sum, err) => sum + (err.recurrenceCount || 0),
-              0
-            )
-
-            return (
-              <tr
-                key={event.id}
-                className={`border-b border-border/40 transition-colors ${
-                  selectedIds.has(event.id) ? 'bg-muted/50' : 'hover:bg-muted/50'
-                }`}
-                onClick={() => onRowClick(event.id)}
+    <div className={cn('flex flex-col h-full min-h-0', className)}>
+      <DataTableFrame className="flex-1 min-h-0">
+        <table className="w-full min-w-[1050px] table-fixed text-left border-separate border-spacing-0">
+          <colgroup>
+            <col className="w-8" />
+            <col className="w-[210px]" />
+            <col className="w-[55%]" />
+            <col className="w-[45%]" />
+            <col className="w-[140px]" />
+            <col className="w-[110px]" />
+          </colgroup>
+          <thead className="sticky top-0 z-40 bg-muted">
+            <tr className="bg-muted hover:bg-muted [&>th]:h-8 [&>th]:py-1 [&>th]:text-xs [&>th]:font-normal [&>th]:text-muted-foreground [&>th]:border-b [&>th]:border-border/80 [&>th]:whitespace-nowrap">
+              <th className="sticky top-0 left-0 z-50 w-8 min-w-8 max-w-8 text-center px-1 bg-muted border-b border-border/80">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={onToggleAll}
+                  aria-label="Chọn tất cả sự cố"
+                />
+              </th>
+              {/* Đối tượng: Sticky left-8 (Khóa cứng 210px để đồng bộ với dòng) */}
+              <th className="sticky top-0 left-8 z-50 w-[210px] min-w-[210px] max-w-[210px] px-2.5 bg-muted text-left border-b border-border/80">
+                Đối tượng
+              </th>
+              {/* Tiêu chí & Vi phạm: Sắp xếp theo mức độ vi phạm */}
+              <th
+                className={cn(
+                  'sticky top-0 z-40 bg-muted px-2.5 text-left border-b border-border/80 transition-colors',
+                  onSortModeChange && 'cursor-pointer hover:bg-muted/80 select-none'
+                )}
+                onClick={() => onSortModeChange?.(sortMode === 'severity_deadline' ? 'deadline_severity' : 'severity_deadline')}
+                title="Bấm để chuyển đổi ưu tiên sắp xếp giữa Mức độ và Thời hạn"
               >
-                <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={selectedIds.has(event.id)}
-                    onCheckedChange={() => onToggleOne(event.id)}
-                    aria-label={`Chọn ${event.code}`}
-                  />
-                </td>
-                <td className="px-3 py-2.5 cursor-pointer max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap">
-                  <div className="font-medium text-sm text-foreground">
-                    {event.name || <span className="text-muted-foreground italic">Chưa đặt tên</span>}
-                  </div>
-                  <div className="font-mono text-xs text-muted-foreground mt-0.5">
-                    {event.code}
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 cursor-pointer">
-                  <Badge variant={TYPE_BADGE_MAP[event.type]} className="text-xs">
-                    {getQcTypeLabel(event.type)}
-                  </Badge>
-                </td>
-                <td className="px-3 py-2.5 cursor-pointer text-sm">
-                  {event.status === 'draft' ? <span className="text-muted-foreground">—</span> : formatShortDate(event.date)}
-                </td>
-                <td className="px-3 py-2.5 cursor-pointer max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-                  {event.branch}
-                </td>
-                <td className="px-3 py-2.5 text-center cursor-pointer text-sm tabular-nums">
-                  {errorCount === 0 ? (
-                    <span className="text-muted-foreground">0</span>
-                  ) : (
-                    errorCount
-                  )}
-                </td>
-                <td className="px-3 py-2.5 text-center cursor-pointer text-sm tabular-nums">
-                  {recurrenceTotal === 0 ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    recurrenceTotal
-                  )}
-                </td>
-                <td className="px-3 py-2.5 text-center cursor-pointer">
-                  {errorCount > 0 ? (
-                    <Badge
-                      className={
-                        correctedCount === errorCount
-                          ? getStatusBadgeClass('qc_error_corrected')
-                          : correctedCount > 0
-                            ? getStatusBadgeClass('qc_error_correcting')
-                            : getStatusBadgeClass('qc_error_open')
-                      }
+                <div className="flex items-center gap-1.5">
+                  <span>Tiêu chí & Vi phạm</span>
+                  {sortMode === 'severity_deadline' && (
+                    <span
+                      className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-primary/10 text-primary text-xs font-medium leading-none"
+                      title="Sắp xếp Cấp 1: Mức độ vi phạm (Nghiêm trọng -> Cao -> Trung bình -> Thấp)"
                     >
-                      {correctedCount}/{errorCount}
-                    </Badge>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
-                  )}
-                </td>
-                <td className="px-3 py-2.5 text-center cursor-pointer">
-                  {errorCount > 0 ? (
-                    <span className="text-sm tabular-nums">
-                      {correctiveActionDone}/{errorCount}
+                      <ArrowDown className="h-3 w-3 shrink-0" />
+                      <span>Cấp 1</span>
                     </span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
                   )}
-                </td>
-                <td className="px-3 py-2.5 cursor-pointer">
-                  {(() => {
-                    const calculatedStatus = getCalculatedStatus(event)
-                    return (
-                      <StatusBadge
-                        status={getQcStatusSemantic(calculatedStatus)}
-                        label={QC_CHECK_STATUS_LABELS[calculatedStatus]}
-                      />
-                    )
-                  })()}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </Table>
+                  {sortMode === 'deadline_severity' && (
+                    <span
+                      className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-muted-foreground/10 text-muted-foreground text-xs font-normal leading-none"
+                      title="Sắp xếp Cấp 2: Mức độ vi phạm"
+                    >
+                      <span>Cấp 2</span>
+                    </span>
+                  )}
+                </div>
+              </th>
+              <th className="sticky top-0 z-40 bg-muted px-2.5 text-left border-b border-border/80">
+                Khắc phục & Minh chứng
+              </th>
+              {/* Thời gian: Sắp xếp theo thời hạn SLA */}
+              <th
+                className={cn(
+                  'sticky top-0 z-40 bg-muted w-[140px] min-w-[140px] max-w-[140px] px-2.5 text-left border-b border-border/80 transition-colors',
+                  onSortModeChange && 'cursor-pointer hover:bg-muted/80 select-none'
+                )}
+                onClick={() => onSortModeChange?.(sortMode === 'deadline_severity' ? 'severity_deadline' : 'deadline_severity')}
+                title="Bấm để chuyển đổi ưu tiên sắp xếp giữa Thời hạn và Mức độ"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Thời gian</span>
+                  {sortMode === 'severity_deadline' && (
+                    <span
+                      className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-primary/10 text-primary text-xs font-normal leading-none"
+                      title="Sắp xếp Cấp 2: Thời hạn (Gấp nhất / Hôm nay lên trước)"
+                    >
+                      <ArrowDown className="h-3 w-3 shrink-0" />
+                      <span>Cấp 2</span>
+                    </span>
+                  )}
+                  {sortMode === 'deadline_severity' && (
+                    <span
+                      className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 bg-primary/10 text-primary text-xs font-medium leading-none"
+                      title="Sắp xếp Cấp 1: Thời hạn (Gấp nhất / Hôm nay lên trước)"
+                    >
+                      <ArrowDown className="h-3 w-3 shrink-0" />
+                      <span>Cấp 1</span>
+                    </span>
+                  )}
+                </div>
+              </th>
+              <th className="sticky top-0 z-40 bg-muted w-[110px] min-w-[110px] max-w-[110px] px-2.5 text-left border-b border-border/80">
+                Trạng thái
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {incidents.map((incident, index) => (
+              <QcIncidentRow
+                key={incident.id}
+                incident={incident}
+                isSelected={selectedIds.has(incident.id)}
+                onSelectChange={onToggleOne}
+                rowIndex={index}
+                onViewDetail={onRowClick}
+              />
+            ))}
+          </tbody>
+        </table>
+      </DataTableFrame>
+
+      {pagination ? (
+        <div className="shrink-0 pt-1 pb-0">
+          <DataTablePagination
+            page={pagination.page}
+            total={pagination.total}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.onPageChange}
+            onPageSizeChange={pagination.onPageSizeChange}
+            selectedCount={selectedIds.size}
+            onClearSelection={onToggleAll}
+            size="sm"
+            className="!bg-transparent border-0 border-none shadow-none px-0 py-0"
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }

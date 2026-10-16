@@ -2,27 +2,26 @@
 
 import React, { useState, useMemo } from 'react'
 import {
-  Megaphone,
   Pin,
   AlertTriangle,
   Plus,
   ArrowUpRight,
-  CheckCircle2,
   Check,
   CheckCheck,
   ArrowRight,
   MessageSquare,
-  ListTodo,
   Radio,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { AppAvatar, EmptyState } from '@/components/shared'
+import { EmptyState } from '@/components/shared'
 import { INITIAL_BULLETIN_POSTS } from './homeBulletinMocks'
 import { HomeCreatePostDialog } from './HomeCreatePostDialog'
 import { HomeBulletinDetailDialog } from './HomeBulletinDetailDialog'
-import type { DailyTodoItem, BulletinPost, BulletinCategory } from './homeTypes'
+import { HomeQcRemediationTab } from './HomeQcRemediationTab'
+import type { DailyTodoItem, BulletinPost, HomeQcMetrics } from './homeTypes'
+import type { QcExtendedError } from '@/components/screens/qc-remediation/qcRemediationTypes'
 
 export function formatAbbreviatedTime(raw: string): string {
   if (!raw) return ''
@@ -74,15 +73,35 @@ interface HomeUpdatesFeedSectionProps {
   todos: DailyTodoItem[]
   onNavigate: (url: string) => void
   userName?: string
+  qcErrors?: QcExtendedError[]
+  qcMetrics?: HomeQcMetrics
+  onOpenQcDetail?: (error: QcExtendedError) => void
+  activeTab?: 'feed' | 'tasks' | 'qc'
+  onActiveTabChange?: (tab: 'feed' | 'tasks' | 'qc') => void
 }
 
 export function HomeUpdatesFeedSection({
   todos,
   onNavigate,
   userName = 'Admin',
+  qcErrors = [],
+  qcMetrics,
+  onOpenQcDetail,
+  activeTab: controlledActiveTab,
+  onActiveTabChange,
 }: HomeUpdatesFeedSectionProps) {
   // Default view is BẢNG TIN per user request
-  const [activeTab, setActiveTab] = useState<'feed' | 'tasks'>('feed')
+  const [internalActiveTab, setInternalActiveTab] = useState<'feed' | 'tasks' | 'qc'>('feed')
+  const activeTab = controlledActiveTab ?? internalActiveTab
+
+  const handleTabChange = (tab: 'feed' | 'tasks' | 'qc') => {
+    if (onActiveTabChange) {
+      onActiveTabChange(tab)
+    } else {
+      setInternalActiveTab(tab)
+    }
+  }
+
   const [posts, setPosts] = useState<BulletinPost[]>(INITIAL_BULLETIN_POSTS)
   const [feedCategoryFilter, setFeedCategoryFilter] = useState<'all' | 'pinned' | 'urgent' | 'handover' | 'operational'>('all')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -198,7 +217,7 @@ export function HomeUpdatesFeedSection({
           <div className="inline-flex items-center rounded-md bg-muted/60 p-0.5 text-xs shrink-0">
             <button
               type="button"
-              onClick={() => setActiveTab('feed')}
+              onClick={() => handleTabChange('feed')}
               className={`px-2 py-0.5 rounded text-xs leading-none transition-all cursor-pointer ${
                 activeTab === 'feed'
                   ? 'bg-background text-foreground shadow-2xs font-medium'
@@ -209,7 +228,7 @@ export function HomeUpdatesFeedSection({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('tasks')}
+              onClick={() => handleTabChange('tasks')}
               className={`px-2 py-0.5 rounded text-xs leading-none transition-all cursor-pointer ${
                 activeTab === 'tasks'
                   ? 'bg-background text-foreground shadow-2xs font-medium'
@@ -217,6 +236,29 @@ export function HomeUpdatesFeedSection({
               }`}
             >
               Việc cần xử lý
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('qc')}
+              className={`px-2 py-0.5 rounded text-xs leading-none transition-all cursor-pointer flex items-center gap-1 ${
+                activeTab === 'qc'
+                  ? 'bg-background text-foreground shadow-2xs font-medium'
+                  : 'text-muted-foreground hover:text-foreground font-normal'
+              }`}
+              title="Khắc phục vi phạm và sự cố chất lượng QC"
+            >
+              <span>Khắc phục QC</span>
+              {(qcMetrics?.pending ?? 0) > 0 && (
+                <span
+                  className={`text-[10px] px-1 rounded-full font-medium leading-tight ${
+                    (qcMetrics?.overdue ?? 0) > 0
+                      ? 'bg-rose-500 text-white'
+                      : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                  }`}
+                >
+                  {qcMetrics?.pending}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -398,7 +440,7 @@ export function HomeUpdatesFeedSection({
             </div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'tasks' ? (
         /* 3. CHẾ ĐỘ 2: VIỆC CẦN XỬ LÝ (TO-DO CHECKLIST VẬN HÀNH) */
         <div className="space-y-1.5 flex-1 min-h-0 flex flex-col justify-between">
           {/* Thanh tiến độ */}
@@ -495,6 +537,25 @@ export function HomeUpdatesFeedSection({
             </div>
           </div>
         </div>
+      ) : (
+        /* 4. CHẾ ĐỘ 3: KHẮC PHỤC LỖI QC */
+        <HomeQcRemediationTab
+          errors={qcErrors}
+          metrics={
+            qcMetrics || {
+              total: qcErrors.length,
+              pending: qcErrors.filter(
+                (e) => e.status === 'open' || e.status === 'correcting' || e.status === 'not_met'
+              ).length,
+              overdue: 0,
+              critical: 0,
+              corrected: 0,
+              closed: 0,
+            }
+          }
+          onOpenDetail={onOpenQcDetail || (() => {})}
+          onNavigateQc={() => onNavigate('/app/qc_remediation')}
+        />
       )}
 
       {/* 3. Modal đăng thông báo mới cho Admin / Quản lý */}

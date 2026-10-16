@@ -3,7 +3,7 @@
 import { ExpandableSearch, FilterIconButton, ToolbarSelect, BranchSelect, type ToolbarSelectOption } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
 import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
+import { Download, UserCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { StudentCareAlert } from '@/mocks/careAlerts'
 import { CompactExportPopover } from './CompactExportPopover'
@@ -53,6 +53,11 @@ interface OperationsAlertToolbarProps {
   }
   csdbFilter: string
   onCsdbFilterChange: (val: string) => void
+  selectedAssignee: string
+  onAssigneeChange: (assignee: string) => void
+  assigneeOptions: ToolbarSelectOption[]
+  myAlertsCount: number
+  currentStaffName: string
 }
 
 const PACKAGE_STATUS_FILTER_ITEMS: Array<{
@@ -115,16 +120,18 @@ export function OperationsAlertToolbar({
   careStatusCounts,
   dueDateFilter,
   onDueDateFilterChange,
-  dueDateCounts,
   packageStatusFilter,
   onPackageStatusFilterChange,
-  packageStatusCounts,
   alertsCount,
   exportFields,
   onConfirmExport,
-  csdbCounts,
   csdbFilter,
   onCsdbFilterChange,
+  selectedAssignee,
+  onAssigneeChange,
+  assigneeOptions,
+  myAlertsCount,
+  currentStaffName,
 }: OperationsAlertToolbarProps) {
 
   const statusPillTiles: StatusTile<'all' | 'pending' | 'in_progress' | 'cared'>[] = [
@@ -193,7 +200,7 @@ export function OperationsAlertToolbar({
 
   return (
     <div className="flex shrink-0 flex-col gap-1.5 bg-background px-2.5 pt-2 pb-1 lg:px-3">
-      {/* Row 1: 4 Selections (Branch, Subject, CSDB, Due Date), Search + Filter + Export + Smartcard Popover */}
+      {/* Row 1: 5 Selections (Branch, Subject, Assignee, CSDB, Due Date), Search + Filter + Export + Smartcard Popover */}
       <div className="flex items-center justify-between flex-wrap gap-1.5 min-w-0">
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
           {/* 1. Branch Selector */}
@@ -204,7 +211,7 @@ export function OperationsAlertToolbar({
             allLabel="Tất cả cơ sở"
             placeholder="Chọn cơ sở"
             ariaLabel="Cơ sở"
-            className="h-8 text-xs min-w-[130px] sm:min-w-[135px]"
+            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
@@ -218,12 +225,24 @@ export function OperationsAlertToolbar({
               { value: 'Toán tư duy', label: 'Toán tư duy' }
             ]}
             onValueChange={onSubjectChange}
-            className="h-8 text-xs min-w-[115px] sm:min-w-[120px]"
+            className="h-8 text-xs min-w-[110px] sm:min-w-[115px]"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
-          {/* 3. Loại thẻ CS filter droplist */}
+          {/* 3. Assignee Selector (Người phụ trách) */}
+          <ToolbarSelect
+            value={selectedAssignee}
+            options={assigneeOptions}
+            onValueChange={onAssigneeChange}
+            className="h-8 text-xs min-w-[135px] sm:min-w-[145px]"
+            ariaLabel="Lọc theo người phụ trách"
+            placeholder="Người phụ trách"
+          />
+
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
+
+          {/* 4. Loại thẻ CS filter droplist */}
           <ToolbarSelect
             value={csdbFilter}
             options={[
@@ -233,19 +252,19 @@ export function OperationsAlertToolbar({
               { value: 'lowAttendance', label: 'Chuyên cần' },
             ]}
             onValueChange={onCsdbFilterChange}
-            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
+            className="h-8 text-xs min-w-[120px] sm:min-w-[125px]"
             ariaLabel="Lọc theo Loại thẻ CS"
             placeholder="Loại thẻ CS"
           />
 
           <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 hidden 2xl:block shrink-0" />
 
-          {/* 4. Hạn xử lý / Hạn chăm sóc Selector */}
+          {/* 5. Hạn xử lý / Hạn chăm sóc Selector */}
           <ToolbarSelect
             value={dueDateFilter}
             options={dueDateOptions}
             onValueChange={(val) => onDueDateFilterChange(val as 'all' | 'overdue' | 'today' | 'rescheduled')}
-            className="h-8 text-xs min-w-[125px] sm:min-w-[130px]"
+            className="h-8 text-xs min-w-[120px] sm:min-w-[125px]"
             ariaLabel="Lọc theo hạn xử lý"
             placeholder="Hạn xử lý"
           />
@@ -256,7 +275,7 @@ export function OperationsAlertToolbar({
             value={searchQuery}
             onValueChange={onSearchChange}
             placeholder="Tìm kiếm..."
-            inputClassName="sm:w-60 text-xs h-8"
+            inputClassName="w-32 sm:w-36 lg:w-44 xl:w-52 2xl:w-60 text-xs h-8"
           />
           <FilterIconButton
             count={activeFilterCount > 0 ? activeFilterCount : undefined}
@@ -272,11 +291,11 @@ export function OperationsAlertToolbar({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs flex items-center gap-1.5 bg-background hover:bg-muted border border-border shadow-xs cursor-pointer font-medium px-2.5"
+                className="h-8 text-xs flex items-center gap-1.5 bg-background hover:bg-muted border border-border shadow-xs cursor-pointer font-medium px-2 sm:px-2.5"
                 title="Xuất danh sách sang Excel"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span className="hidden md:inline">Xuất dữ liệu</span>
+                <span className="hidden xl:inline">Xuất dữ liệu</span>
               </Button>
             }
           />
@@ -286,10 +305,44 @@ export function OperationsAlertToolbar({
         </div>
       </div>
 
-      {/* Row 2: Care Status Pills (Left) + Package/Placement Status Filter (Right, responsive collapse) */}
+      {/* Row 2: "Thẻ của tôi" + Care Status Pills (Left) + Package/Placement Status Filter (Right, responsive collapse) */}
       <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 pt-0.5">
-        {/* Left: Trạng thái chăm sóc (compact, không thu gọn, xóa dot, đưa màu vào nền thống kê, chữ thường không in đậm) */}
-        <div className="min-w-0">
+        {/* Left: Quick "Thẻ của tôi" + Trạng thái chăm sóc */}
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          {/* Quick Toggle: Thẻ của tôi */}
+          <button
+            type="button"
+            onClick={() => {
+              if (selectedAssignee === 'my') {
+                onAssigneeChange('all')
+              } else {
+                onAssigneeChange('my')
+              }
+            }}
+            className={cn(
+              'h-7 px-2.5 rounded-full text-xs font-normal border inline-flex items-center gap-1.5 transition-colors cursor-pointer select-none shrink-0',
+              selectedAssignee === 'my'
+                ? 'bg-primary text-primary-foreground border-primary font-medium shadow-xs'
+                : 'bg-background border-border text-foreground/80 hover:bg-accent hover:text-foreground'
+            )}
+            title={`Lọc nhanh các thẻ chăm sóc do ${currentStaffName} phụ trách`}
+          >
+            <UserCheck className="h-3.5 w-3.5" />
+            <span>Thẻ của tôi</span>
+            <span
+              className={cn(
+                'px-1.5 py-0.5 rounded-full text-xs leading-none',
+                selectedAssignee === 'my'
+                  ? 'bg-primary-foreground text-primary font-semibold'
+                  : 'bg-muted text-muted-foreground font-normal'
+              )}
+            >
+              {myAlertsCount}
+            </span>
+          </button>
+
+          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+
           <StatusTiles
             tiles={statusPillTiles}
             activeId={careStatusFilter}

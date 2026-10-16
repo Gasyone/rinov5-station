@@ -65,7 +65,7 @@ function getTrendIcon(trend: TrendType) {
   }
 }
 
-function computeStudentProgress(student: RosterStudent) {
+export function computeStudentProgress(student: RosterStudent) {
   const hash = stableHash(student.id)
   const totalSessions = 20
   const attended = totalSessions - (hash % 4)
@@ -92,7 +92,7 @@ function computeStudentProgress(student: RosterStudent) {
   return { attendanceRate, attended, totalSessions, hwRate, hwDone, hwTotal, avgScore, prevScore, avgRating, trend, latestComment }
 }
 
-interface CareTagItem {
+export interface CareTagItem {
   code: string
   label: string
   fullLabel: string
@@ -104,7 +104,7 @@ interface CareTagItem {
   slaText: string
 }
 
-function getCareTagsForRosterStudent(student: RosterStudent, progress: ReturnType<typeof computeStudentProgress>): CareTagItem[] {
+export function getCareTagsForRosterStudent(student: RosterStudent, progress: ReturnType<typeof computeStudentProgress>): CareTagItem[] {
   const hash = stableHash(student.id || student.name)
   const tags: CareTagItem[] = []
 

@@ -55,6 +55,7 @@ export function StudentCareActiveClassCard({
   const [isExpanded, setIsExpanded] = useState(false)
   const [selectedCSName, setSelectedCSName] = useState<string | null>(null)
   const [isEarlyReturnOpen, setIsEarlyReturnOpen] = useState(false)
+  const [sessionOverrides, setSessionOverrides] = useState<Record<string, number>>({})
 
   // Reset selectedCSName khi chuyển học viên
   const [prevStudentId, setPrevStudentId] = useState<string | null>(student?.studentId || null)
@@ -150,7 +151,9 @@ export function StudentCareActiveClassCard({
     : '14/08/2024'
   const endDateDisplay = pkg.endDate || '14/08/2027'
   const totalSessions = pkg.totalSessions || 48
-  const remainingSessions = pkg.remainingSessions ?? 30
+  const remainingSessions = sessionOverrides[pkg.id] !== undefined
+    ? sessionOverrides[pkg.id]
+    : (pkg.remainingSessions ?? 30)
   const attendedSessions = Math.max(0, totalSessions - remainingSessions)
 
   // Xác định trường hợp bảo lưu nhưng không thoát lớp (giữ lớp)
@@ -209,19 +212,19 @@ export function StudentCareActiveClassCard({
                   toast.success(`Đang xem gói: ${displayPackageName}`)
                 }}
                 className={cn(
-                  'shrink-0 relative flex flex-col items-start justify-center rounded-lg px-2 py-0.5 text-left transition-all cursor-pointer shadow-3xs h-[34px] min-w-[92px] max-w-[128px]',
+                  'shrink-0 relative flex flex-col items-start justify-center rounded-lg px-2.5 2xl:px-3 py-1 text-left transition-all cursor-pointer shadow-3xs h-[36px] 2xl:h-[40px] min-w-[96px] max-w-[136px] 2xl:min-w-[140px] 2xl:max-w-[220px]',
                   isSelected
                     ? 'border border-sky-300 dark:border-sky-700 bg-sky-50/80 dark:bg-sky-950/40 text-foreground'
                     : 'border border-border/80 bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground'
                 )}
                 title={`${displayPackageName} - ${line2Info.isStatus ? `Trạng thái: ${line2Info.text}` : `Mã lớp: ${line2Info.text}`}`}
               >
-                <span className="text-[10.5px] font-semibold text-foreground truncate w-full leading-tight">
+                <span className="text-xs 2xl:text-[13px] font-semibold text-foreground truncate w-full leading-tight">
                   {displayPackageName}
                 </span>
                 <span
                   className={cn(
-                    'font-mono text-[9px] leading-tight pt-0.5 truncate w-full',
+                    'font-mono text-xs leading-tight pt-0.5 truncate w-full',
                     isSelected
                       ? 'text-sky-600 dark:text-sky-400 font-medium'
                       : line2Info.isStatus
@@ -290,12 +293,12 @@ export function StudentCareActiveClassCard({
 
       {/* THÔNG TIN HIỂN THỊ CHÍNH (2 Cột: Cột 1 gồm Mã lớp & Lịch học, Cột 2 gồm Giáo viên) */}
       {showClassInfo && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-left items-start pt-0.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 2xl:gap-6 text-left items-start pt-0.5">
           {/* Cột 1: Mã lớp (ở trên, bỏ nhãn 'Mã lớp', bỏ nhãn 'Đang học') & Lịch học (ở dưới, bỏ nhãn 'Lịch học') */}
           <div className="space-y-0.5 min-w-0">
             {/* Dòng 1: Mã lớp */}
-            <div className="flex items-center gap-1.5 text-xs font-medium text-foreground flex-wrap">
-              <BookOpen className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+            <div className="flex items-center gap-1.5 text-xs 2xl:text-[13px] font-medium text-foreground flex-wrap">
+              <BookOpen className="h-3.5 w-3.5 2xl:h-4 2xl:w-4 text-muted-foreground/80 shrink-0" />
               <ClassCodeHoverCell
                 classCode={classCode}
                 subject={pkgIsEnglish ? 'Tiếng Anh' : 'Toán tư duy'}
@@ -305,25 +308,25 @@ export function StudentCareActiveClassCard({
                 schedule={pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
               />
               {placementStatus === 'draft_class' && (
-                <StatusBadge status="draft_class" label="Lớp nháp" className="text-[9.5px] py-0 px-1.5" />
+                <StatusBadge status="draft_class" label="Lớp nháp" className="text-xs py-0.5 px-2" />
               )}
               {placementStatus === 'awaiting_opening' && (
-                <StatusBadge status="awaiting_opening" label="Chờ khai giảng" className="text-[9.5px] py-0 px-1.5" />
+                <StatusBadge status="awaiting_opening" label="Chờ khai giảng" className="text-xs py-0.5 px-2" />
               )}
               {placementStatus === 'trial' && (
-                <StatusBadge status="trial" label="Học thử" className="text-[9.5px] py-0 px-1.5" />
+                <StatusBadge status="trial" label="Học thử" className="text-xs py-0.5 px-2" />
               )}
               {placementStatus === 'session_ended' && (
-                <StatusBadge status="expired" label="Hết buổi (Lớp cũ)" className="text-[9.5px] py-0 px-1.5" />
+                <StatusBadge status="expired" label="Hết buổi (Lớp cũ)" className="text-xs py-0.5 px-2" />
               )}
               {isHoldingClass && (
-                <StatusBadge status="reserve" label="Bảo lưu (Giữ lớp)" className="text-[9.5px] py-0 px-1.5" />
+                <StatusBadge status="reserve" label="Bảo lưu (Giữ lớp)" className="text-xs py-0.5 px-2" />
               )}
             </div>
 
             {/* Dòng 2: Lịch học (dòng phụ thu gọn, bỏ icon, bỏ in đậm, giảm cỡ chữ, thẳng hàng với mã lớp) */}
             <div
-              className="pl-5 text-[10.5px] font-normal text-muted-foreground truncate leading-tight"
+              className="pl-5 text-xs 2xl:text-[12.5px] font-normal text-muted-foreground truncate leading-tight"
               title={pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)'}
             >
               {formatCompactSchedule(pkg.schedule || 'Thứ 2, 6 (17:30 - 19:00)')}
@@ -333,8 +336,8 @@ export function StudentCareActiveClassCard({
           {/* Cột 2: Phụ trách CS (Dòng 1, bỏ icon đổi) & Giáo viên (Dòng 2) */}
           <div className="space-y-0.5 min-w-0">
             {/* Dòng 1: Phụ trách CS (đưa lên trên GV, bỏ icon đổi, text thường không in đậm) */}
-            <div className="flex items-center gap-1.5 text-xs font-normal text-foreground flex-wrap">
-              <Headphones className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+            <div className="flex items-center gap-1.5 text-xs 2xl:text-[13px] font-normal text-foreground flex-wrap">
+              <Headphones className="h-3.5 w-3.5 2xl:h-4 2xl:w-4 text-muted-foreground/80 shrink-0" />
               <PersonnelHoverCard person={csPersonnelItem}>
                 <span className="hover:underline cursor-pointer font-normal text-foreground truncate">
                   {currentCSObj.name}
@@ -343,8 +346,8 @@ export function StudentCareActiveClassCard({
             </div>
 
             {/* Dòng 2: Giáo viên (text thường không in đậm) */}
-            <div className="flex items-center gap-1.5 min-w-0 text-xs font-normal text-foreground flex-wrap">
-              <GraduationCap className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0 text-xs 2xl:text-[13px] font-normal text-foreground flex-wrap">
+              <GraduationCap className="h-3.5 w-3.5 2xl:h-4 2xl:w-4 text-muted-foreground/80 shrink-0" />
               <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
                 {classTeachers.length > 0 ? (
                   classTeachers.map((teacher, idx) => {
@@ -387,10 +390,18 @@ export function StudentCareActiveClassCard({
           currentBranchName={currentBranchName}
           attendedSessions={attendedSessions}
           totalSessions={totalSessions}
+          remainingSessions={remainingSessions}
           startDateDisplay={startDateDisplay}
           endDateDisplay={endDateDisplay}
           pkg={pkg}
           pkgIsEnglish={pkgIsEnglish}
+          onUpdateSessions={(newStudied) => {
+            const newRemaining = Math.max(0, totalSessions - newStudied)
+            setSessionOverrides((prev) => ({
+              ...prev,
+              [pkg.id]: newRemaining,
+            }))
+          }}
         />
       )}
 
@@ -399,7 +410,7 @@ export function StudentCareActiveClassCard({
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10.5px] font-normal text-muted-foreground hover:text-foreground bg-card dark:bg-zinc-900 hover:bg-muted/80 border border-border/80 hover:border-border rounded-full shadow-3xs transition-all cursor-pointer select-none active:scale-95"
+          className="inline-flex items-center gap-1 px-3 py-1 text-xs 2xl:text-[12.5px] font-normal text-muted-foreground hover:text-foreground bg-card dark:bg-zinc-900 hover:bg-muted/80 border border-border/80 hover:border-border rounded-full shadow-3xs transition-all cursor-pointer select-none active:scale-95"
           title={isExpanded ? 'Thu gọn chi tiết gói học' : 'Mở rộng chi tiết gói học'}
         >
           <span className="font-normal">{isExpanded ? 'Thu gọn' : 'Mở rộng'}</span>
@@ -424,7 +435,7 @@ export function StudentCareActiveClassCard({
         isHoldingClass={isHoldingClass}
         expectedReturnDate={isHoldingClass ? '16/09/2026' : '01/08/2026'}
         reserveDuration={isHoldingClass ? '15/06/2026 ➔ 15/09/2026' : '01/06/2026 ➔ 31/07/2026'}
-        remainingSessions={pkg.remainingSessions || 14}
+        remainingSessions={remainingSessions}
         branchName={currentBranchName}
       />
     </div>

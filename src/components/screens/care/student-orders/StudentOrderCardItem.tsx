@@ -74,7 +74,7 @@ export function StudentOrderCardItem({
     <div
       id={`order-card-${order.orderNo || order.id}`}
       className={cn(
-        'bg-card dark:bg-zinc-900 border border-border/70 rounded-lg p-2 shadow-3xs space-y-1 text-left transition-all group overflow-hidden',
+        'bg-card dark:bg-zinc-900 border border-border/70 rounded-lg p-2 2xl:p-2.5 shadow-3xs space-y-1 2xl:space-y-1.5 text-left transition-all group overflow-hidden',
         isDraft
           ? 'border-amber-200/80 dark:border-amber-900/60 bg-amber-50/15 dark:bg-amber-950/10'
           : 'border-border/70'
@@ -83,7 +83,7 @@ export function StudentOrderCardItem({
       {/* Unified Top Header Area (Combined Draft Link & Order Header with 1 background color) */}
       <div
         className={cn(
-          '-mx-2 -mt-2 px-2 py-1 border-b text-[11px] space-y-0.5 rounded-t-lg',
+          '-mx-2 -mt-2 2xl:-mx-2.5 2xl:-mt-2.5 px-2 2xl:px-2.5 py-1 2xl:py-1.5 border-b text-[11px] 2xl:text-xs space-y-0.5 rounded-t-lg',
           isDraft
             ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200/50'
             : 'bg-muted/40 dark:bg-zinc-800/40 border-border/20'
@@ -164,23 +164,23 @@ export function StudentOrderCardItem({
         )}
 
         {/* Line 2: Order Summary Row */}
-        <div className="flex items-center justify-between gap-2 flex-wrap text-[11px]">
+        <div className="flex items-center justify-between gap-2 flex-wrap text-[11px] 2xl:text-xs">
           {/* Left Side: Order Code Link + (Student Name when viewing other children) + Status Tag + Fee Transfer Summary */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               onClick={() => onViewDetail(order)}
-              className="font-mono text-[11.5px] font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
+              className="font-mono text-[11.5px] 2xl:text-xs font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline cursor-pointer flex items-center gap-1"
               title="Nhấp xem chi tiết đơn hàng"
             >
               <span>{order.orderNo || order.id}</span>
-              <ExternalLink className="h-2.5 w-2.5 text-sky-500/70" />
+              <ExternalLink className="h-2.5 w-2.5 2xl:h-3 2xl:w-3 text-sky-500/70" />
             </button>
 
             <span className="text-muted-foreground/60">/</span>
             <span
               className={cn(
-                'text-[11px] font-normal',
+                'text-[11px] 2xl:text-xs font-normal',
                 isCancelled
                   ? 'text-zinc-500'
                   : 'text-foreground'
@@ -197,10 +197,10 @@ export function StudentOrderCardItem({
           </div>
 
           <div
-            className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground shrink-0 font-normal"
+            className="inline-flex items-center gap-1 text-[10.5px] 2xl:text-[11.5px] text-muted-foreground shrink-0 font-normal"
             title={`Người lên đơn: ${order.saleRep || order.saleBy || 'Lê Phương Thảo'}${order.saleDate ? ` (${order.saleDate})` : ''}`}
           >
-            <User className="h-3 w-3 text-muted-foreground/80 shrink-0" />
+            <User className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/80 shrink-0" />
             <span className="text-foreground font-normal">
               {order.saleRep || order.saleBy || 'Lê Phương Thảo'} {order.saleDate ? `(${order.saleDate})` : ''}
             </span>
@@ -259,7 +259,7 @@ export function StudentOrderCardItem({
                   </div>
 
                   {/* Right: Tên con (ở phía trước số lượng) + SL + TT (bỏ tích xanh) */}
-                  <div className="flex items-center gap-2 text-[10.5px] shrink-0 font-sans ml-auto">
+                  <div className="flex items-center gap-2 text-xs 2xl:text-[12.5px] shrink-0 font-sans ml-auto">
                     {itemStudentName && (
                       <span className="text-muted-foreground font-normal">
                         HV: <span className="text-foreground font-normal">{itemStudentName}</span>
@@ -271,7 +271,7 @@ export function StudentOrderCardItem({
                     </span>
 
                     <span className="text-muted-foreground font-normal">
-                      TT: <span className="font-normal font-mono text-foreground text-[11.5px]">{formatCurrency(item.subtotal || item.unitPrice * item.quantity)}</span>
+                      TT: <span className="font-normal font-mono text-foreground text-xs 2xl:text-[13px]">{formatCurrency(item.subtotal || item.unitPrice * item.quantity)}</span>
                     </span>
                   </div>
                 </div>
@@ -281,7 +281,7 @@ export function StudentOrderCardItem({
                   {item.comboItems.map((sub, sIdx) => (
                     <div
                       key={sIdx}
-                      className="flex items-center justify-between gap-2 text-[10.5px] text-muted-foreground flex-nowrap py-0"
+                      className="flex items-center justify-between gap-2 text-xs 2xl:text-[12.5px] text-muted-foreground flex-nowrap py-0"
                     >
                       {/* Left: Dấu chấm tròn • + Tên sản phẩm con */}
                       <div className="flex items-center gap-1 flex-1 min-w-0 pr-2">
@@ -292,13 +292,13 @@ export function StudentOrderCardItem({
                       </div>
 
                       {/* Right: Thời lượng (Đồng hồ) + Số buổi tặng thêm (Đồng hồ cát) */}
-                      <div className="flex items-center gap-2.5 sm:gap-3 text-[10.5px] font-sans shrink-0 ml-auto whitespace-nowrap">
+                      <div className="flex items-center gap-2.5 sm:gap-3 text-xs 2xl:text-[12px] font-sans shrink-0 ml-auto whitespace-nowrap">
                         <div className="flex items-center gap-1 w-[60px] shrink-0 justify-start text-left">
-                          <Clock className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                          <Clock className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                           <span>{sub.durationText || '--'}</span>
                         </div>
                         <div className="flex items-center gap-1 w-[120px] shrink-0 justify-start text-left">
-                          <Hourglass className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                          <Hourglass className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                           <span>{sub.bonusText || '--'}</span>
                         </div>
                       </div>
@@ -308,8 +308,8 @@ export function StudentOrderCardItem({
 
                 {/* Hộp quà tặng kèm - Chỉ hiển thị khi có quà thực tế */}
                 {item.giftText && item.giftText !== '--' && item.giftText.trim() !== '' && (
-                  <div className="mx-0 mt-0.5 px-1.5 py-0.5 rounded border border-border/30 bg-muted/15 flex items-center gap-1 text-[10.5px] text-muted-foreground">
-                    <Gift className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                  <div className="mx-0 mt-0.5 px-1.5 py-0.5 rounded border border-border/30 bg-muted/15 flex items-center gap-1 text-xs 2xl:text-[12.5px] text-muted-foreground">
+                    <Gift className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                     <span>{item.giftText}</span>
                   </div>
                 )}
@@ -321,25 +321,25 @@ export function StudentOrderCardItem({
           return (
             <div
               key={idx}
-              className="space-y-0.5 text-[11px]"
+              className="space-y-0.5 text-xs 2xl:text-[13px]"
             >
               {/* Product Info Line */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 {/* Left: Book Icon + Product Name + Nhãn Mua mới/Gia hạn (sau tên SP) */}
                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                  <BookOpen className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                  <span className="font-normal text-[11.5px] text-foreground leading-tight truncate">
+                  <BookOpen className="h-3.5 w-3.5 2xl:h-4 2xl:w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <span className="font-normal text-xs 2xl:text-[13px] text-foreground leading-tight truncate">
                     {item.productName}
                   </span>
                   {item.orderType && item.orderType !== '--' && (
-                    <span className="text-[9px] font-normal px-1 py-0 rounded bg-muted text-muted-foreground border border-border/40 shrink-0 font-sans">
+                    <span className="text-[10px] 2xl:text-[11px] font-normal px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border/40 shrink-0 font-sans">
                       {item.orderType}
                     </span>
                   )}
                 </div>
 
                 {/* Right: Tên con (ở phía trước số lượng) + SL + TT (sát cạnh phải) */}
-                <div className="flex items-center gap-2 text-[10.5px] shrink-0 font-sans ml-auto">
+                <div className="flex items-center gap-2 text-xs 2xl:text-[12.5px] shrink-0 font-sans ml-auto">
                   {itemStudentName && (
                     <span className="text-muted-foreground font-normal">
                       HV: <span className="text-foreground font-normal">{itemStudentName}</span>
@@ -349,29 +349,29 @@ export function StudentOrderCardItem({
                     SL: <span className="font-normal font-mono text-foreground">{item.quantity}</span>
                   </span>
                   <span className="text-muted-foreground font-normal">
-                    TT: <span className="font-normal font-mono text-foreground text-[11.5px]">{formatCurrency(item.subtotal || item.unitPrice * item.quantity)}</span>
+                    TT: <span className="font-normal font-mono text-foreground text-xs 2xl:text-[13px]">{formatCurrency(item.subtotal || item.unitPrice * item.quantity)}</span>
                   </span>
                 </div>
               </div>
 
               {/* Sub-line: Duration (Clock), Bonus Extra Sessions (Hourglass), Gift */}
-              <div className="flex items-center gap-2.5 text-[10.5px] text-muted-foreground pl-4.5 flex-wrap">
+              <div className="flex items-center gap-2.5 text-xs 2xl:text-[12px] text-muted-foreground pl-4.5 2xl:pl-5 flex-wrap">
                 {/* Duration / Sessions */}
                 <div className="flex items-center gap-1 font-sans whitespace-nowrap">
-                  <Clock className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                  <Clock className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                   <span>{item.durationText && item.durationText !== '--' ? item.durationText : '48 buổi'}</span>
                 </div>
 
                 {/* Bonus Extra Sessions (Hourglass) */}
                 <div className="flex items-center gap-1 font-sans whitespace-nowrap">
-                  <Hourglass className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                  <Hourglass className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                   <span>{item.bonusText && item.bonusText !== '--' ? item.bonusText : '--'}</span>
                 </div>
 
                 {/* Gift (Gift icon) - Only display when gift is present */}
                 {item.giftText && item.giftText !== '--' && item.giftText.trim() !== '' && (
                   <div className="flex items-center gap-1 font-sans">
-                    <Gift className="h-2.5 w-2.5 text-muted-foreground/70 shrink-0" />
+                    <Gift className="h-3 w-3 2xl:h-3.5 2xl:w-3.5 text-muted-foreground/70 shrink-0" />
                     <span>{item.giftText}</span>
                   </div>
                 )}
@@ -383,38 +383,38 @@ export function StudentOrderCardItem({
 
       {/* LỊCH SỬ THANH TOÁN (Collapsible Payments Section - Only for Paid/Purchased Orders) */}
       {!isDraft && (
-        <div className="pt-1 border-t border-border/30 space-y-0.5 text-[11px]">
+        <div className="pt-1 border-t border-border/30 space-y-0.5 text-[11px] 2xl:text-xs">
           {/* Payment Header Row */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 type="button"
                 onClick={() => onToggleExpandPayments(order.id)}
-                className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] 2xl:text-xs font-normal text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                <span className="text-[11px] font-normal text-muted-foreground">
+                <span className="text-[11px] 2xl:text-xs font-normal text-muted-foreground">
                   Lịch sử thanh toán
                 </span>
-                <span className="text-[10px] text-muted-foreground/80 font-normal font-mono">
+                <span className="text-[10px] 2xl:text-[10.5px] text-muted-foreground/80 font-normal font-mono">
                   ({order.payments?.length ?? 0})
                 </span>
-                {isPaymentsExpanded ? <ChevronUp className="h-2.5 w-2.5 text-muted-foreground/70" /> : <ChevronDown className="h-2.5 w-2.5 text-muted-foreground/70" />}
+                {isPaymentsExpanded ? <ChevronUp className="h-2.5 w-2.5 2xl:h-3 2xl:w-3 text-muted-foreground/70" /> : <ChevronDown className="h-2.5 w-2.5 2xl:h-3 2xl:w-3 text-muted-foreground/70" />}
               </button>
 
               {/* Nhãn cọc phía sau title Lịch sử thanh toán */}
               {(isDepositOrder || order.hasDepositStudyNow || order.hasDepositPre) && (
-                <span className="text-[10.5px] font-normal text-emerald-600 dark:text-emerald-400 font-sans">
+                <span className="text-[10.5px] 2xl:text-[11.5px] font-normal text-emerald-600 dark:text-emerald-400 font-sans">
                   {order.hasDepositStudyNow ? 'Cọc học luôn' : 'Cọc'}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[10.5px] shrink-0 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[10.5px] 2xl:text-[11.5px] shrink-0 flex-wrap">
               <span className="text-muted-foreground font-normal">
                 Thanh toán:{' '}
                 <span
                   className={cn(
-                    'font-mono font-normal text-[11px]',
+                    'font-mono font-normal text-[11px] 2xl:text-xs',
                     (order.totalPaidAmount ?? 0) >= order.finalAmount && order.finalAmount > 0
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : 'text-orange-600 dark:text-orange-500'
@@ -482,13 +482,13 @@ export function StudentOrderCardItem({
                   return (
                     <div
                       key={pm.id}
-                      className="py-0.5 text-[11px] space-y-0.5"
+                      className="py-0.5 text-xs 2xl:text-[13px] space-y-0.5"
                     >
-                      <div className="flex items-center justify-between gap-2 flex-wrap text-[10.5px]">
+                      <div className="flex items-center justify-between gap-2 flex-wrap text-xs 2xl:text-[12.5px]">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span
                             className={cn(
-                              'text-[9.5px] font-medium px-1.5 py-0.2 rounded border shrink-0',
+                              'text-[10px] 2xl:text-[11px] font-medium px-1.5 py-0.2 rounded border shrink-0',
                               pm.statusLabel === 'Chờ xử lý'
                                 ? 'bg-blue-600 text-white dark:bg-blue-600 dark:text-white border-blue-600'
                                 : pm.status === 'pending' || pm.statusLabel === 'Chờ thanh toán'
@@ -508,12 +508,12 @@ export function StudentOrderCardItem({
                           </span>
 
                           {pm.timestamp && (
-                            <span className="font-mono text-muted-foreground text-[10px] shrink-0">
+                            <span className="font-mono text-muted-foreground text-[10.5px] 2xl:text-[11.5px] shrink-0">
                               {pm.timestamp}
                             </span>
                           )}
 
-                          <span className="font-normal text-foreground truncate text-[11px]">
+                          <span className="font-normal text-foreground truncate text-xs 2xl:text-[12.5px]">
                             <span className="font-mono">{pm.code}</span> - <span className="font-mono font-normal text-foreground">{formatCurrency(pm.amount)}</span> / <span className="font-sans text-muted-foreground">{pm.method}</span>
                           </span>
 
@@ -524,7 +524,7 @@ export function StudentOrderCardItem({
 
                         {pm.saleBy && (
                           <span
-                            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0 font-sans"
+                            className="inline-flex items-center gap-1 text-[10.5px] 2xl:text-[11.5px] text-muted-foreground shrink-0 font-sans"
                             title={`Người lên đơn: ${pm.saleBy}`}
                           >
                             <User className="h-2.5 w-2.5 text-muted-foreground/80 shrink-0" />
@@ -536,11 +536,11 @@ export function StudentOrderCardItem({
                       {/* Single Product Note & Session Conversion (Chỉ hiển thị khi đơn cọc học luôn hoặc đơn nhận chuyển phí) */}
                       {showConversion && (pm.note || pm.convertedSessions !== undefined || pm.convertedAmount !== undefined) && (
                         <div className="space-y-0.5 pt-0">
-                          <div className="flex items-center justify-between text-[11px] flex-wrap gap-1.5">
-                            <span className="font-sans font-normal text-[11px] text-foreground leading-tight">
+                          <div className="flex items-center justify-between text-xs 2xl:text-[12.5px] flex-wrap gap-1.5">
+                            <span className="font-sans font-normal text-xs 2xl:text-[12.5px] text-foreground leading-tight">
                               {pm.note || order.detailedItems?.[0]?.productName || order.items?.[0]?.productName}
                             </span>
-                            <div className="flex items-center gap-2.5 text-[10.5px] text-muted-foreground">
+                            <div className="flex items-center gap-2.5 text-xs 2xl:text-[12px] text-muted-foreground">
                               {pm.convertedSessions !== undefined && (
                                 <span>Quy đổi: <span className="text-foreground font-medium font-mono">{pm.convertedSessions} (buổi)</span></span>
                               )}
@@ -552,9 +552,9 @@ export function StudentOrderCardItem({
 
                           {/* Quy đổi còn lại: chỉ hiển thị khi còn buổi hoặc còn thiếu tiền (> 0) */}
                           {hasRemainingConversion(pm.remainingConversion) && (
-                            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[10.5px] font-medium pt-0">
+                            <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-xs 2xl:text-[12.5px] font-medium pt-0">
                               <span className="font-medium">Quy đổi còn lại</span>
-                              <div className="flex items-center gap-1 font-mono text-[10.5px]">
+                              <div className="flex items-center gap-1 font-mono text-xs 2xl:text-[12.5px]">
                                 {Boolean(pm.remainingConversion?.sessions) && (
                                   <span>{pm.remainingConversion!.sessions} buổi</span>
                                 )}
@@ -576,17 +576,17 @@ export function StudentOrderCardItem({
 
                       {/* Multi-Package Allocation Breakdown Tree (Chỉ hiển thị khi đơn cọc học luôn hoặc đơn nhận chuyển phí) */}
                       {showConversion && pm.allocations && pm.allocations.length > 0 && (
-                        <div className="space-y-1 pt-0.5 text-[10.5px] font-sans">
+                        <div className="space-y-1 pt-0.5 text-xs 2xl:text-[12px] font-sans">
                           {pm.allocations.map((alloc, aIdx) => (
                             <div key={aIdx} className="space-y-0.5">
-                              <div className="flex items-center justify-between font-normal text-[11px] text-foreground">
-                                <span className="font-sans text-[11px] text-foreground leading-tight">{alloc.groupName}</span>
-                                <span className="font-mono text-muted-foreground font-normal text-[10px]">
+                              <div className="flex items-center justify-between font-normal text-xs 2xl:text-[12.5px] text-foreground">
+                                <span className="font-sans text-xs 2xl:text-[12.5px] text-foreground leading-tight">{alloc.groupName}</span>
+                                <span className="font-mono text-muted-foreground font-normal text-[10.5px] 2xl:text-[11.5px]">
                                   Tiền quy đổi: {formatCurrency(alloc.groupConvertedAmount ?? 0)}
                                 </span>
                               </div>
                               {alloc.subItems?.map((sub, sIdx) => (
-                                <div key={sIdx} className="flex items-center justify-between text-muted-foreground pl-2.5 text-[10px]">
+                                <div key={sIdx} className="flex items-center justify-between text-muted-foreground pl-2.5 text-[10.5px] 2xl:text-[11.5px]">
                                   <span className="font-sans text-foreground/90">• {sub.name}</span>
                                   <div className="flex items-center gap-2 font-mono">
                                     {sub.convertedSessions !== undefined && (
@@ -601,9 +601,9 @@ export function StudentOrderCardItem({
 
                               {/* Remaining Conversion Summary Row: ẩn nếu bằng 0 */}
                               {hasRemainingConversion(alloc.remainingConversion) && (
-                                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-[10.5px] font-medium pt-0.5 pl-0.5">
+                                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400 text-xs 2xl:text-[12.5px] font-medium pt-0.5 pl-0.5">
                                   <span className="font-medium">Quy đổi còn lại</span>
-                                  <div className="flex items-center gap-1 font-mono text-[10.5px]">
+                                  <div className="flex items-center gap-1 font-mono text-xs 2xl:text-[12.5px]">
                                     {(alloc.remainingConversion?.missingAmount ?? alloc.remainingConversion?.amount) ? (
                                       <span className="font-normal">
                                         Còn thiếu: {formatCurrency(alloc.remainingConversion!.missingAmount ?? alloc.remainingConversion!.amount ?? 0)}
@@ -631,10 +631,10 @@ export function StudentOrderCardItem({
                                 toast.info(`Tạo đơn hoàn tất cho đơn cọc ${order.orderNo}`)
                               }
                             }}
-                            className="h-5 px-2 rounded bg-sky-600 hover:bg-sky-700 text-white font-medium text-[10.5px] shadow-3xs transition-all cursor-pointer inline-flex items-center gap-1"
+                            className="h-5.5 2xl:h-6 px-2.5 rounded bg-sky-600 hover:bg-sky-700 text-white font-medium text-xs 2xl:text-[12.5px] shadow-3xs transition-all cursor-pointer inline-flex items-center gap-1"
                           >
                             <span>Tạo đơn hoàn tất</span>
-                            <ExternalLink className="h-2.5 w-2.5" />
+                            <ExternalLink className="h-3 w-3" />
                           </Button>
                         </div>
                       )}

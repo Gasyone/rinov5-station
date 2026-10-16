@@ -102,13 +102,13 @@ export function CalendarClassScheduleDayView({
                 type="button"
                 onClick={() => togglePeriod(p.id)}
                 className={cn(
-                  "group flex w-full items-center gap-1.5 py-1 text-xs font-bold hover:opacity-85 transition cursor-pointer select-none",
+                  "group flex w-full items-center gap-2 py-1 text-sm font-bold hover:opacity-85 transition cursor-pointer select-none",
                   p.textColor
                 )}
               >
                 <ChevronRight
                   className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5",
+                    "h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5",
                     p.iconColor,
                     isOpen && "rotate-90"
                   )}
@@ -121,7 +121,7 @@ export function CalendarClassScheduleDayView({
 
               {/* Flat Grid of Session Cards */}
               {isOpen && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {p.sessions.map((session) => (
                     <SessionCard
                       key={session.id}

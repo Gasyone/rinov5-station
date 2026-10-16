@@ -143,8 +143,20 @@ export const screens: Record<string, ScreenConfig> = {
     description: 'Quản lý Topic phân loại, Nhóm quyền và Ma trận cấp phép hành động RBAC & Data Scope',
   },
   support_tickets: {
-    label: 'Quản lý Ticket & Chất lượng',
+    label: 'Quản lý Ticket & Hỗ trợ',
     description: 'Ghi nhận và xử lý phản ánh, khiếu nại và yêu cầu hỗ trợ từ học viên/phụ huynh',
+  },
+  qc_check: {
+    label: 'Kiểm tra & Khắc phục chất lượng',
+    description: 'Quản lý các đợt kiểm tra chất lượng (QC) và quy trình khắc phục, duyệt / trả lại các hạng mục lỗi sự cố',
+  },
+  qc_remediation: {
+    label: 'Khắc phục sự cố QC (Đã tích hợp vào QC)',
+    description: 'Theo dõi tiến độ khắc phục và phúc tra các lỗi/sự cố phát hiện từ các đợt kiểm tra chất lượng',
+  },
+  session_feedback: {
+    label: 'Đánh giá buổi học',
+    description: 'Tổng hợp đánh giá của học viên/phụ huynh sau từng buổi học và ghi nhận phản hồi chất lượng đào tạo',
   },
   branches: {
     label: 'Quản lý cơ sở',

@@ -1,9 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
-import { ListFilter } from 'lucide-react'
+import { ListFilter, UserPlus } from 'lucide-react'
 import { BranchSelect, ExpandableSearch, FilterIconButton, SubjectSelect } from '@/components/controls'
 import { StatusTiles, type StatusTile } from '@/components/shared'
+import { Button } from '@/components/ui/button'
 import { mockStudents, getStudents } from '@/mocks/students'
 import { resolveStatusSemantic } from '@/lib/statusColors'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ interface StudentsToolbarProps {
   onSubjectChange: (subject: string) => void
   onFilterOpen: () => void
   activeFilterCount?: number
+  onOpenCreate?: () => void
 }
 
 export function StudentsToolbar({
@@ -43,6 +45,7 @@ export function StudentsToolbar({
   onSubjectChange,
   onFilterOpen,
   activeFilterCount = 0,
+  onOpenCreate,
 }: StudentsToolbarProps) {
   const branches = useMemo(
     () => [...new Set(mockStudents.map((s) => s.branch))].filter(Boolean),
@@ -125,6 +128,17 @@ export function StudentsToolbar({
             count={activeFilterCount > 0 ? activeFilterCount : undefined}
             onClick={onFilterOpen}
           />
+          {onOpenCreate && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={onOpenCreate}
+              className="h-8 gap-1 px-2.5 text-xs font-medium cursor-pointer shadow-xs"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Thêm học viên</span>
+            </Button>
+          )}
         </div>
       </div>
 

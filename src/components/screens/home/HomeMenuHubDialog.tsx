@@ -91,7 +91,9 @@ const ALL_MENU_GROUPS: MenuModuleGroup[] = [
     items: [
       { id: 'student_operations_alert', title: 'Chăm sóc học viên', path: '/app/student_operations_alert' },
       { id: 'renewal', title: 'Tái phí học viên', path: '/app/renewal' },
-      { id: 'support_tickets', title: 'Quản lý Ticket & Chất lượng', path: '/app/support_tickets' },
+      { id: 'support_tickets', title: 'Quản lý Ticket & Hỗ trợ', path: '/app/support_tickets' },
+      { id: 'qc_check', title: 'Kiểm tra & Khắc phục chất lượng', path: '/app/qc_check' },
+      { id: 'session_feedback', title: 'Đánh giá buổi học', path: '/app/session_feedback' },
     ],
   },
   {

@@ -19,7 +19,8 @@ import { ClassesSessionMediaCard } from './media/ClassesSessionMediaCard'
 import { ClassesSessionMediaToolbar } from './media/ClassesSessionMediaToolbar'
 import { ClassesSessionUploadingCard } from './media/ClassesSessionUploadingCard'
 import { ClassesSessionMediaEmptyState } from './media/ClassesSessionMediaEmptyState'
-import { generateInitialSessionMedia, createUploadMediaItems } from './media/classesSessionMediaHelpers'
+import { ClassesSessionUploadDialog } from './media/ClassesSessionUploadDialog'
+import { generateInitialSessionMedia } from './media/classesSessionMediaHelpers'
 
 export type { RosterStudentOption, SessionMediaItem }
 export { DEFAULT_ROSTER_STUDENTS, INITIAL_MOCK_MEDIA, INITIAL_DEMO_UPLOADING }
@@ -38,6 +39,8 @@ interface ClassesSessionMediaTabProps {
   rosterStudents?: RosterStudentOption[]
   sessionId?: string
   sessionNumber?: number
+  sessionStatus?: 'completed' | 'ongoing' | 'upcoming' | 'cancelled' | 'absent'
+  classStatus?: string
   singleSessionMode?: boolean
 }
 
@@ -46,15 +49,31 @@ export function ClassesSessionMediaTab({
   rosterStudents = DEFAULT_ROSTER_STUDENTS,
   sessionId,
   sessionNumber,
+  sessionStatus,
+  classStatus,
   singleSessionMode = false,
 }: ClassesSessionMediaTabProps) {
+  // REQUIREMENT: "Lưu ý, các lớp chờ diễn ra không có ảnh. Các lớp đã học hoặc học hôm nay có ảnh và thêm cơ chế cho các buổi đó"
+  const isUpcoming = useMemo(() => {
+    if (sessionStatus === 'upcoming' || sessionStatus === 'cancelled') return true
+    if (classStatus === 'cho_khai_giang' || classStatus === 'nhap' || classStatus === 'mo_chieu_sinh') return true
+    if (singleSessionMode && sessionNumber !== undefined && sessionNumber > 4 && sessionStatus !== 'completed' && sessionStatus !== 'ongoing') {
+      return true
+    }
+    return false
+  }, [sessionStatus, classStatus, singleSessionMode, sessionNumber])
+
   const [items, setItems] = useState<SessionMediaItem[]>(() => {
+    // If upcoming / waiting to happen: 0 photos!
+    if (isUpcoming) {
+      return []
+    }
     if (singleSessionMode && sessionNumber !== undefined) {
       const hasCurrent = INITIAL_MOCK_MEDIA.some(
         (item) => item.sessionNumber === sessionNumber || (sessionId && item.sessionId === sessionId)
       )
       if (!hasCurrent) {
-        return [...INITIAL_MOCK_MEDIA, ...generateInitialSessionMedia(sessionNumber, sessionId, rosterStudents)]
+        return [...INITIAL_MOCK_MEDIA, ...generateInitialSessionMedia(sessionNumber, sessionId, rosterStudents, sessionStatus)]
       }
     }
     return INITIAL_MOCK_MEDIA
@@ -63,13 +82,31 @@ export function ClassesSessionMediaTab({
   const [selectedStudentFilter, setSelectedStudentFilter] = useState<string>('all')
   const [previewMedia, setPreviewMedia] = useState<MediaPreviewItem | null>(null)
 
-  const [uploadingItems, setUploadingItems] = useState<UploadingMediaItem[]>(INITIAL_DEMO_UPLOADING)
+  const [uploadingItems, setUploadingItems] = useState<UploadingMediaItem[]>(() => {
+    if (isUpcoming) return []
+    return INITIAL_DEMO_UPLOADING
+  })
   const uploadTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([])
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState<boolean>(false)
+  const [uploadInitialFiles, setUploadInitialFiles] = useState<File[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleOpenUploadModal = (initialFilesList: File[] = []) => {
+    if (isUpcoming) {
+      toast.info('Buổi học chờ diễn ra. Bạn chỉ có thể tải ảnh cho buổi đã học hoặc đang học hôm nay!')
+      return
+    }
+    setUploadInitialFiles(initialFilesList)
+    setIsUploadDialogOpen(true)
+  }
+
+  const handleCompleteUpload = (newItems: SessionMediaItem[]) => {
+    setItems((prev) => [...newItems, ...prev])
+  }
 
   const handlePreviewItem = (item: SessionMediaItem) => {
     if (item.type === 'doc') {
@@ -192,74 +229,8 @@ export function ClassesSessionMediaTab({
       return
     }
 
-    const targetSessionId = sessionId || (sessionNumber !== undefined ? `ses-${sessionNumber}` : 'ses-5')
-    const targetSessionNum = sessionNumber !== undefined ? sessionNumber : 5
-
-    const validNewUploads = createUploadMediaItems(files, targetSessionId, targetSessionNum)
-    if (validNewUploads.length === 0) return
-
-    setUploadingItems((prev) => [...validNewUploads, ...prev])
-
-    validNewUploads.forEach((uploadItem) => {
-      const stepIncrement = 2
-      const intervalMs = 800
-
-      const timer = setInterval(() => {
-        setUploadingItems((prev) => {
-          const current = prev.find((u) => u.id === uploadItem.id)
-          if (!current) {
-            clearInterval(timer)
-            uploadTimersRef.current.delete(uploadItem.id)
-            return prev
-          }
-
-          const nextProgress = Math.min(100, current.progress + stepIncrement)
-          const nextLoadedBytes = Math.min(current.totalBytes, Math.round((nextProgress / 100) * current.totalBytes))
-
-          if (nextProgress >= 100) {
-            clearInterval(timer)
-            uploadTimersRef.current.delete(uploadItem.id)
-
-            const objectUrl = uploadItem.rawFile
-              ? URL.createObjectURL(uploadItem.rawFile)
-              : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
-            const completedItem: SessionMediaItem = {
-              id: uploadItem.id,
-              sessionId: uploadItem.sessionId,
-              sessionNumber: uploadItem.sessionNumber,
-              sessionTitle: uploadItem.sessionTitle,
-              sessionDate: uploadItem.sessionDate,
-              sessionTime: uploadItem.sessionTime,
-              name: uploadItem.name,
-              type: uploadItem.type,
-              url: objectUrl,
-              thumbnailUrl: uploadItem.type === 'image' ? objectUrl : undefined,
-              size: uploadItem.size,
-              uploadedBy: 'Giáo viên',
-              uploadedAt: 'Vừa xong',
-              duration: uploadItem.type === 'video' ? '00:45' : undefined,
-              taggedStudentIds: [],
-            }
-
-            setItems((prevItems) => {
-              if (prevItems.some((item) => item.id === completedItem.id)) {
-                return prevItems
-              }
-              return [completedItem, ...prevItems]
-            })
-            toast.success(`Đã tải lên thành công: ${uploadItem.name}!`)
-
-            return prev.filter((u) => u.id !== uploadItem.id)
-          }
-
-          return prev.map((u) =>
-            u.id === uploadItem.id ? { ...u, progress: nextProgress, loadedBytes: nextLoadedBytes } : u
-          )
-        })
-      }, intervalMs)
-
-      uploadTimersRef.current.set(uploadItem.id, timer)
-    })
+    // Open the 2-step upload dialog with selected files
+    handleOpenUploadModal(files)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,6 +239,10 @@ export function ClassesSessionMediaTab({
   }
 
   const handleDropFiles = (files: FileList) => {
+    if (isUpcoming) {
+      toast.info('Buổi học chờ diễn ra. Bạn chỉ có thể tải ảnh cho buổi đã học hoặc đang học hôm nay!')
+      return
+    }
     processFiles(Array.from(files))
   }
 
@@ -303,9 +278,11 @@ export function ClassesSessionMediaTab({
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === itemId) {
+          const updated = item.taggedStudentIds.filter((id) => id !== studentId)
           return {
             ...item,
-            taggedStudentIds: item.taggedStudentIds.filter((id) => id !== studentId),
+            taggedStudentIds: updated,
+            status: updated.length === 0 ? 'inactive' : 'active', // REQUIREMENT: "Chưa gán là chưa active luôn"
           }
         }
         return item
@@ -314,19 +291,38 @@ export function ClassesSessionMediaTab({
     toast.info(`Đã xóa học viên ${studentName}`)
   }
 
-  const handleToggleStudentTagInPopover = (itemId: string, studentId: string | 'all' | 'class_wide') => {
+  const handleToggleStudentTagInPopover = (itemId: string, studentId: string | 'all' | 'class_wide' | 'inactive') => {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id === itemId) {
           if (studentId === 'class_wide') {
-            return { ...item, taggedStudentIds: [] }
+            const isCurrentlyClassWide = item.status === 'active' && item.taggedStudentIds.length === 0
+            if (isCurrentlyClassWide) {
+              toast.info(`Đã hủy gán cả lớp cho "${item.name}". Tệp chuyển về chưa kích hoạt!`)
+              return { ...item, status: 'inactive' }
+            }
+            toast.success(`Đã kích hoạt và chuyển "${item.name}" sang "Dành cho cả lớp"!`)
+            return { ...item, taggedStudentIds: [], status: 'active' }
           }
-          if (studentId === 'all') return item
+          if (studentId === 'all' || studentId === 'inactive') return item
           const exists = item.taggedStudentIds.includes(studentId)
           const newIds = exists
             ? item.taggedStudentIds.filter((id) => id !== studentId)
             : [...item.taggedStudentIds, studentId]
-          return { ...item, taggedStudentIds: newIds }
+
+          const willBeActive = newIds.length > 0
+          const wasInactive = item.status === 'inactive'
+          if (wasInactive && willBeActive) {
+            const stName = rosterStudents.find((s) => s.id === studentId)?.name || 'Học viên'
+            toast.success(`Đã kích hoạt và gắn "${stName}" cho "${item.name}"!`)
+          } else if (!wasInactive && !willBeActive) {
+            toast.info(`Đã gỡ hết học viên khỏi "${item.name}". Tệp chuyển về chưa kích hoạt!`)
+          }
+          return {
+            ...item,
+            taggedStudentIds: newIds,
+            status: willBeActive ? 'active' : 'inactive', // REQUIREMENT: "Chưa gán là chưa active luôn"
+          }
         }
         return item
       })
@@ -347,34 +343,42 @@ export function ClassesSessionMediaTab({
     setIsDeleteDialogOpen(false)
   }
 
-  const handleBatchTagStudents = (studentId: string | 'all' | 'class_wide') => {
+  const handleBatchTagStudents = (studentId: string | 'all' | 'class_wide' | 'inactive') => {
     if (selectedItemIds.length === 0) return
 
     const selectedTargetItems = items.filter((item) => selectedItemIds.includes(item.id))
     const totalSelected = selectedTargetItems.length
 
     if (studentId === 'class_wide') {
-      const allClassWide = selectedTargetItems.every((i) => i.taggedStudentIds.length === 0)
+      const allClassWide = selectedTargetItems.every(
+        (i) => i.status !== 'inactive' && i.taggedStudentIds.length === 0
+      )
       if (allClassWide) {
-        toast.info('Tất cả các tệp được chọn đã ở trạng thái Dành cho cả lớp')
+        setItems((prev) =>
+          prev.map((item) => {
+            if (selectedItemIds.includes(item.id)) {
+              return { ...item, status: 'inactive' }
+            }
+            return item
+          })
+        )
+        toast.info(`Đã hủy gán cả lớp cho ${totalSelected} tệp. Các tệp chuyển về chưa kích hoạt!`)
         return
       }
       setItems((prev) =>
         prev.map((item) => {
           if (selectedItemIds.includes(item.id)) {
-            return { ...item, taggedStudentIds: [] }
+            return { ...item, taggedStudentIds: [], status: 'active' }
           }
           return item
         })
       )
-      toast.success(`Đã chuyển ${totalSelected} tệp sang "Dành cho cả lớp"!`)
+      toast.success(`Đã kích hoạt và chuyển ${totalSelected} tệp sang "Dành cho cả lớp"!`)
       return
     }
 
-    if (studentId === 'all') return
+    if (studentId === 'all' || studentId === 'inactive') return
 
-    // If ALL selected items already have this student -> toggle OFF (remove)
-    // If SOME or NONE have this student -> toggle ON (add to all)
     const allHaveStudent = selectedTargetItems.every((i) => i.taggedStudentIds.includes(studentId))
     const stName = rosterStudents.find((s) => s.id === studentId)?.name || 'Học viên'
 
@@ -382,9 +386,11 @@ export function ClassesSessionMediaTab({
       setItems((prev) =>
         prev.map((item) => {
           if (selectedItemIds.includes(item.id)) {
+            const updated = item.taggedStudentIds.filter((id) => id !== studentId)
             return {
               ...item,
-              taggedStudentIds: item.taggedStudentIds.filter((id) => id !== studentId),
+              taggedStudentIds: updated,
+              status: updated.length === 0 ? 'inactive' : 'active', // REQUIREMENT: "Chưa gán là chưa active luôn"
             }
           }
           return item
@@ -399,12 +405,13 @@ export function ClassesSessionMediaTab({
             return {
               ...item,
               taggedStudentIds: exists ? item.taggedStudentIds : [...item.taggedStudentIds, studentId],
+              status: 'active', // Activate when tagged!
             }
           }
           return item
         })
       )
-      toast.success(`Đã gắn "${stName}" cho ${totalSelected} tệp được chọn!`)
+      toast.success(`Đã kích hoạt và gắn "${stName}" cho ${totalSelected} tệp được chọn!`)
     }
   }
 
@@ -442,7 +449,11 @@ export function ClassesSessionMediaTab({
       : items
 
     const matched = baseItems.filter((item) => {
+      if (selectedStudentFilter === 'inactive') {
+        return item.status === 'inactive'
+      }
       if (selectedStudentFilter === 'class_wide') {
+        if (item.status === 'inactive') return false
         if (item.taggedStudentIds.length !== 0) return false
       } else if (selectedStudentFilter !== 'all') {
         if (!item.taggedStudentIds.includes(selectedStudentFilter)) return false
@@ -452,15 +463,27 @@ export function ClassesSessionMediaTab({
     })
 
     const seenIds = new Set<string>()
-    return matched.filter((item) => {
+    const deduped = matched.filter((item) => {
       if (seenIds.has(item.id)) return false
       seenIds.add(item.id)
       return true
+    })
+
+    // REQUIREMENT: "Làm nổi bật ảnh chưa kích hoạt và nó luôn ở trên cùng."
+    // Inactive items ALWAYS on top!
+    return deduped.sort((a, b) => {
+      const aInactive = a.status === 'inactive' ? 1 : 0
+      const bInactive = b.status === 'inactive' ? 1 : 0
+      if (aInactive !== bInactive) {
+        return bInactive - aInactive // 1 (inactive) before 0 (active)
+      }
+      return 0
     })
   }, [items, currentSessionItems, singleSessionMode, sessionId, sessionNumber, selectedStudentFilter])
 
   const selectedStudentFilterLabel = useMemo(() => {
     if (selectedStudentFilter === 'all') return 'Tất cả tệp'
+    if (selectedStudentFilter === 'inactive') return 'Chưa kích hoạt'
     if (selectedStudentFilter === 'class_wide') return 'Dành cho cả lớp'
     const found = rosterStudents.find((st) => st.id === selectedStudentFilter)
     return found ? found.name : 'Đã chọn học viên'
@@ -493,17 +516,32 @@ export function ClassesSessionMediaTab({
       map.get(key)!.items.push(item)
     })
 
+    // Sort items within each session group so inactive items are always at top
+    map.forEach((grp) => {
+      grp.items.sort((a, b) => {
+        const aInactive = a.status === 'inactive' ? 1 : 0
+        const bInactive = b.status === 'inactive' ? 1 : 0
+        if (aInactive !== bInactive) {
+          return bInactive - aInactive
+        }
+        return 0
+      })
+    })
+
     return Array.from(map.values()).sort((a, b) => b.sessionNumber - a.sessionNumber)
   }, [filteredItems])
 
   const handleStudentFilterChange = (filterId: string) => {
     setSelectedStudentFilter(filterId)
-    // [CASE-10] Automatically sync selectedItemIds to only keep items that match the new filter
+    // Automatically sync selectedItemIds to only keep items that match the new filter
     setSelectedItemIds((prevSelected) => {
       if (prevSelected.length === 0) return prevSelected
       const matchingItems = currentSessionItems.filter((item) => {
+        if (filterId === 'inactive') {
+          return item.status === 'inactive'
+        }
         if (filterId === 'class_wide') {
-          return item.taggedStudentIds.length === 0
+          return item.status !== 'inactive' && item.taggedStudentIds.length === 0
         } else if (filterId !== 'all') {
           return item.taggedStudentIds.includes(filterId)
         }
@@ -538,6 +576,8 @@ export function ClassesSessionMediaTab({
         handleBulkDeleteConfirm={handleBulkDeleteConfirm}
         handleBatchTagStudents={handleBatchTagStudents}
         className={className}
+        onOpenUploadDialog={() => handleOpenUploadModal([])}
+        isUpcomingSession={isUpcoming}
       />
 
       {/* ── MEDIA LISTING ── */}
@@ -547,9 +587,10 @@ export function ClassesSessionMediaTab({
           filterLabel={selectedStudentFilterLabel}
           totalSessionItemsCount={singleSessionMode ? currentSessionItems.length : items.length}
           onClearFilter={() => setSelectedStudentFilter('all')}
-          onUploadClick={() => fileInputRef.current?.click()}
+          onUploadClick={() => handleOpenUploadModal([])}
           onDropFiles={handleDropFiles}
           singleSessionMode={singleSessionMode}
+          isUpcomingSession={isUpcoming}
         />
       ) : singleSessionMode ? (
         /* Single Session Mode: Direct Grid without session group header label */
@@ -687,6 +728,18 @@ export function ClassesSessionMediaTab({
       <MediaPreviewModal
         previewMedia={previewMedia}
         onClose={() => setPreviewMedia(null)}
+      />
+
+      {/* ── 2-STEP PHOTO UPLOAD & ACTIVATION DIALOG ── */}
+      <ClassesSessionUploadDialog
+        isOpen={isUploadDialogOpen}
+        onClose={() => setIsUploadDialogOpen(false)}
+        sessionId={sessionId || (sessionNumber !== undefined ? `ses-${sessionNumber}` : 'ses-5')}
+        sessionNumber={sessionNumber !== undefined ? sessionNumber : 5}
+        className={className}
+        rosterStudents={rosterStudents}
+        initialFiles={uploadInitialFiles}
+        onCompleteUpload={handleCompleteUpload}
       />
     </div>
   )

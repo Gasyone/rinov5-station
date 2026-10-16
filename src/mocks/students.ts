@@ -1125,7 +1125,18 @@ export const mockStudents: Student[] = [
     packageName: "Gói Toán tư duy Archimedes 48 buổi",
     remainingSessions: 24,
     totalSessions: 48,
-    enrolledClasses: []
+    enrolledClass: "LD_TOAN_00011",
+    enrolledClasses: [
+      {
+        classCode: "LD_TOAN_00011",
+        className: "Lớp Toán Tư Duy Archimedes",
+        type: "offline",
+        scheduleSlots: [],
+        teacherName: "Hoàng Thị Mai",
+        status: "active",
+        progress: "24/48",
+      }
+    ]
   },
   {
     id: "s35",

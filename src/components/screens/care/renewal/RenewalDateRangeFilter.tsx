@@ -63,7 +63,7 @@ export function RenewalDateRangeFilter({
         </div>
       </div>
       {hasCustomDates && (
-        <p className="text-[10.5px] text-primary font-medium">
+        <p className="text-xs text-primary font-medium">
           Đang lọc hạn học phí từ {startDate ? startDate.split('-').reverse().join('/') : '...'} đến {endDate ? endDate.split('-').reverse().join('/') : '...'}
         </p>
       )}

@@ -1,9 +1,9 @@
 import { type StudentCareAlert, type CareInteractionLog } from '@/mocks/careAlerts'
 import { mockOrders } from '@/mocks/orders'
 import { mockStudents } from '@/mocks/students'
-import { stableHash } from './operationsAlertHelpers'
+import { stableHash, isUncared } from './operationsAlertHelpers'
 import { type SimulatedPackage, type CareTopic, type CareTopicStatus, ALL_STANDARD_TAGS } from './studentCareDetailTypes'
-import { getStudentOrderInfo, getProductSku } from './renewal/renewalHelpers'
+import { getStudentOrderInfo, getProductSku, getRenewalClassification } from './renewal/renewalHelpers'
 
 // Parse care topic prefix from notes (e.g. "[ĐB1]")
 export function parseLogTopic(notes?: string | null): string {
@@ -30,8 +30,9 @@ export function cleanMessageNotes(notes?: string | null): string {
   let text = notes.trim()
 
   // Remove system metadata brackets: [Đến: ...], [Kênh: ...], [Mốc/Thẻ: ...], [Kết quả: ...]
-  text = text.replace(/\[(Đến|Kênh|Mốc\/Thẻ|Kết quả|Hẹn gọi lại|Ý kiến PH|Đối tượng|CSKH Nội bộ|Chỉ CSKH)[^\]]*\]/gi, '').trim()
+  text = text.replace(/\[(Đến|Kênh|Mốc\/Thẻ|Kết quả|Hẹn gọi lại|Ý kiến PH|Đối tượng|CSKH Nội bộ|Chỉ CSKH|Thất bại|Lý do)[^\]]*\]/gi, '').trim()
   text = text.replace(/^\[[A-Z0-9]{2,6}(-[0-9]{2})?\]\s*/i, '').trim()
+  text = text.replace(/^Lý do(\s+thất\s+bại)?:\s*[^.\n]+(\.|\n)?\s*/i, '').trim()
   text = text.replace(/^(\||:|-|\s)+/, '').trim()
   text = text.replace(/(\||:|-|\s)+$/, '').trim()
 
@@ -379,7 +380,15 @@ function sortTopicsByLatestInteraction(topics: CareTopic[], logs: CareInteractio
 
 // Generate pre-populated mock logs for each topic if empty
 export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopic[]): CareInteractionLog[] {
-  const logs = [...student.interactionLogs]
+  const logs = [...(student.interactionLogs || [])]
+
+  // Nếu học viên là "Chưa chăm sóc" (chưa từng gọi/tương tác, không có logs):
+  // Tuyệt đối không sinh bất kỳ log ảo nào để đảm bảo trạng thái chi tiết đồng bộ hoàn toàn với ngoài bảng!
+  if (isUncared(student) || (student.callConfirmation === 'Chưa gọi' && logs.length === 0 && !student.careAlert?.includes('Hẹn'))) {
+    return []
+  }
+
+  const renewalClassification = getRenewalClassification(student)
 
   topicsList.forEach((topic) => {
     if (topic.code === 'TOTAL') return
@@ -472,6 +481,10 @@ export function getSimulatedLogs(student: StudentCareAlert, topicsList: CareTopi
           notes: `[ĐK2] [Đối tượng: Châu Mẹ Nguyễn Thị Mai (Mẹ)] Gọi nhắc gia hạn học phí gói Toán tư duy mới. Mẹ xác nhận sẽ đóng trước ngày 15/07.`,
         })
       } else if (topic.code === 'CSTP') {
+        // Chỉ sinh log tái phí giả lập nếu học viên thực sự ở trạng thái đã chăm sóc tái phí (không phải Mới / Chưa đến hạn)
+        if (renewalClassification === 'moi' || renewalClassification === 'chua_den_han' || student.activeCSTP === false) {
+          return
+        }
         const orderInfo = getStudentOrderInfo(student)
         const orderData = orderInfo?.orderCode
           ? {

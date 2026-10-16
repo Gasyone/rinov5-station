@@ -22,7 +22,7 @@ Tài liệu gốc chỉ mô tả đúng 5 điểm thay đổi cụ thể trên g
    - Điều kiện hiển thị mới: **Chỉ hiển thị khi có từ 2 lần chăm sóc trở lên** (thay thế cho hiển thị gọi nhỡ trước đó).
 3. **Cấu trúc hiển thị lịch sử chăm sóc trước đó:**
    - Cấu trúc 3 hàng cho chăm sóc thông thường:
-     + Hàng 1 (Đầu mục): `[CS/GV]: [Tên nhân sự]` · `[Kênh: Cuộc gọi / Zalo / Trực tiếp]` · `Người nhận: [Phụ huynh / Học viên]` --- `[dd/mm/yyyy]`.
+     + Hàng 1 (Đầu mục): `[CS/GV]: [Tên nhân sự]` · `[Kênh: Cuộc gọi / Zalo / Trực tiếp]` · `[Vai trò & Tên: Mẹ Trần Thị An]` --- `[dd/mm/yyyy]`.
      + Hàng 2 (Trình phát ghi âm - nếu là cuộc gọi): Nút Play/Pause kèm thời lượng (ví dụ: `▶ 01:45`), nghe lại trực tiếp ngay trong bảng nổi.
      + Hàng 3 (Nội dung & Ý kiến): Ghi chú đầy đủ, ý kiến phụ huynh tách riêng chữ nghiêng xanh ngọc: `• Phụ huynh phản hồi: "..."`.
 4. **Đơn hàng liên kết dành riêng cho Tái phí (Section B & C):**
@@ -68,7 +68,7 @@ Tài liệu gốc chỉ mô tả đúng 5 điểm thay đổi cụ thể trên g
 * **Giả sử:** Danh sách lịch sử chăm sóc cũ đang mở rộng.
 * **Khi:** Người dùng quan sát thông tin của từng lần chăm sóc.
 * **Thì:**
-  1. **Dòng đầu mục:** Hiển thị `[CS/GV]: [Tên nhân sự]` · `[Kênh]` · `Người nhận: [Phụ huynh / Học viên]` --- `[dd/mm/yyyy]`.
+  1. **Dòng đầu mục:** Hiển thị `[CS/GV]: [Tên nhân sự]` · `[Kênh]` · `[Vai trò & Tên: Mẹ Trần Thị An]` --- `[dd/mm/yyyy]`.
   2. **Trình phát ghi âm:** Chỉ hiển thị khi Kênh là `Cuộc gọi`, có biểu tượng Play/Pause kèm thời lượng (ví dụ: `▶ 01:45`). Nhấp vào có thể nghe lại trực tiếp âm thanh ngay trong bảng nổi.
   3. **Nội dung & Ý kiến:** Hiển thị trọn vẹn ghi chú, đoạn ý kiến phụ huynh tách riêng bằng chữ in nghiêng màu xanh ngọc: `• Phụ huynh phản hồi: "..."`.
 

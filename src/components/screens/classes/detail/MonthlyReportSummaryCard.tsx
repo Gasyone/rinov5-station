@@ -114,10 +114,10 @@ export function MonthlyReportSummaryCard({
               size="sm"
               onClick={onOpenLandingPage}
               className="text-xs font-normal h-7.5 px-2 rounded-md border-border text-foreground hover:bg-muted cursor-pointer gap-1.5 shadow-3xs justify-center"
-              title="Mở toàn màn hình dạng Landing Page trên tab mới"
+              title="Mở toàn màn hình dạng bản web trực tuyến trên tab mới"
             >
               <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span className="truncate">Landing Page</span>
+              <span className="truncate">Xem bản Web</span>
             </Button>
 
             <Button
