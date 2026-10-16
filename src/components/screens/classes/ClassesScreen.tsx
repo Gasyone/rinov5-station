@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import { DEFAULT_PAGE_SIZE } from '@/components/data-table'
 import {
   FilterGroupAsidePanel,
@@ -38,6 +39,23 @@ export function ClassesScreen() {
       return { ...c, status }
     })
   })
+
+  useEffect(() => {
+    let isMounted = true
+    fetch('/api/classes')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+          setClasses(resData.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Không thể kết nối API lớp học, dùng dữ liệu cục bộ:', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
   const [activeBranch, setActiveBranch] = useState('all')
   const [activeSubject, setActiveSubject] = useState('all')
   const [activeGrade, setActiveGrade] = useState('all')
@@ -217,10 +235,16 @@ export function ClassesScreen() {
     })
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setClasses((prev) => prev.filter((c) => c.id !== id))
     setSelectedIds((prev) => { const next = new Set(prev); next.delete(id); return next })
     setDeleteDialog(null)
+    try {
+      await fetch(`/api/classes/${id}`, { method: 'DELETE' })
+      toast.success('Đã xóa lớp học thành công khỏi Database!')
+    } catch (err) {
+      console.warn('API error deleting class:', err)
+    }
   }
 
   const filterGroups = [
@@ -408,8 +432,24 @@ export function ClassesScreen() {
         key={isCreateOpen ? "open" : "closed"}
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
-        onSuccess={(newClass) => {
-          setClasses((prev) => [newClass, ...prev])
+        onSuccess={async (newClass) => {
+          try {
+            const res = await fetch('/api/classes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newClass),
+            })
+            const result = await res.json()
+            if (result.success && result.data) {
+              setClasses((prev) => [result.data, ...prev])
+              toast.success('Đã lưu lớp học mới vào Database thành công!')
+            } else {
+              setClasses((prev) => [newClass, ...prev])
+            }
+          } catch (err) {
+            console.warn('API error creating class, saving locally:', err)
+            setClasses((prev) => [newClass, ...prev])
+          }
           setIsCreateOpen(false)
         }}
       />
@@ -434,21 +474,42 @@ export function ClassesScreen() {
           setDetailClassId('')
           handleOpenDetail(id, { editMode: true })
         }}
-        onSave={(updatedClass) => {
+        onSave={async (updatedClass) => {
           const now = new Date()
           const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
           let finalStatus = updatedClass.status
           if (updatedClass.endDate && updatedClass.endDate <= todayStr && finalStatus !== 'huy' && finalStatus !== 'nhap') {
             finalStatus = 'huy'
           }
+          const finalClass = { ...updatedClass, status: finalStatus }
           setClasses((prev) =>
-            prev.map((c) => (c.id === updatedClass.id ? { ...updatedClass, status: finalStatus } : c))
+            prev.map((c) => (c.id === updatedClass.id ? finalClass : c))
           )
+          try {
+            await fetch(`/api/classes/${updatedClass.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(finalClass),
+            })
+            toast.success('Đã lưu cập nhật lớp học vào Database!')
+          } catch (err) {
+            console.warn('API error updating class:', err)
+          }
         }}
-        onStatusChange={(id, newStatus) => {
+        onStatusChange={async (id, newStatus) => {
           setClasses((prev) =>
             prev.map((c) => (c.id === id ? { ...c, status: newStatus, enrolledStudents: newStatus === 'huy' ? 0 : c.enrolledStudents } : c))
           )
+          try {
+            await fetch(`/api/classes/${id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: newStatus }),
+            })
+            toast.success('Đã cập nhật trạng thái lớp học vào Database!')
+          } catch (err) {
+            console.warn('API error updating class status:', err)
+          }
         }}
       />
     </div>

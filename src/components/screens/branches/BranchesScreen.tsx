@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   ConfirmDialog,
   StatusTiles,
 } from '@/components/shared'
 import { DataTableFrame, DataTablePagination } from '@/components/data-table'
 import { mockBranches, type Branch, type BranchRoom } from '@/mocks/branches'
+import { toast } from 'sonner'
 import { BranchesToolbar } from './BranchesToolbar'
 import { BranchesTable } from './BranchesTable'
 import { BranchCreateDialog } from './BranchCreateDialog'
@@ -19,6 +20,23 @@ import type { BranchFilterState } from './branchesTypes'
 
 export function BranchesScreen() {
   const [branches, setBranches] = useState<Branch[]>(() => [...mockBranches])
+
+  useEffect(() => {
+    let isMounted = true
+    fetch('/api/branches')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (isMounted && resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+          setBranches(resData.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Không thể kết nối API cơ sở, dùng dữ liệu cục bộ:', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
   const [filters, setFilters] = useState<BranchFilterState>({
     search: '',
     status: 'all',
@@ -75,50 +93,67 @@ export function BranchesScreen() {
     }
   }
 
-  const handleCreateBranch = (newBranchData: Partial<Branch>) => {
-    const newBranch: Branch = {
-      id: `br-${Date.now()}`,
-      code: newBranchData.code || 'BR_NEW',
-      name: newBranchData.name || 'Cơ sở mới',
-      type: newBranchData.type || 'training_center',
-      typeLabel: newBranchData.typeLabel || 'Trung tâm Đào tạo',
-      region: newBranchData.region || 'Miền Bắc - Hà Nội',
-      province: newBranchData.province || 'Hà Nội',
-      district: newBranchData.district || '',
-      address: newBranchData.address || '',
-      phone: newBranchData.phone || '',
-      email: newBranchData.email || '',
-      coordinates: newBranchData.coordinates || '',
-      status: 'setup',
-      statusLabel: 'Mới thiết lập',
-      managerId: 'emp-new',
-      managerName: newBranchData.managerName || 'Chưa phân công',
-      managerPhone: newBranchData.managerPhone || '',
-      managerEmail: newBranchData.managerEmail || '',
-      roomCount: newBranchData.roomCount || 1,
-      totalCapacity: newBranchData.totalCapacity || 20,
-      activeClassesCount: 0,
-      activeStudentsCount: 0,
-      businessHours: newBranchData.businessHours || {
-        openTime: '08:00',
-        closeTime: '21:30',
-        daysOfWeek: 'Thứ 2 - Chủ Nhật',
-      },
-      rooms: newBranchData.rooms || [],
-      history: [
-        {
-          id: `h-${Date.now()}`,
-          timestamp: new Date().toLocaleString('vi-VN'),
-          actor: 'Admin Hệ thống',
-          action: 'Khởi tạo cơ sở',
-          details: 'Tạo mới chi nhánh cơ sở vật chất',
+  const handleCreateBranch = async (newBranchData: Partial<Branch>) => {
+    try {
+      const res = await fetch('/api/branches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBranchData),
+      })
+      const result = await res.json()
+      if (result.success && result.data) {
+        setBranches((prev) => [result.data, ...prev])
+        toast.success('Đã khởi tạo cơ sở mới thành công vào Database!')
+      } else {
+        throw new Error(result.message || 'Lỗi khi tạo cơ sở')
+      }
+    } catch (err: unknown) {
+      console.warn('API error, fallback local update:', err)
+      const newBranch: Branch = {
+        id: `br-${Date.now()}`,
+        code: newBranchData.code || 'BR_NEW',
+        name: newBranchData.name || 'Cơ sở mới',
+        type: newBranchData.type || 'training_center',
+        typeLabel: newBranchData.typeLabel || 'Trung tâm Đào tạo',
+        region: newBranchData.region || 'Miền Bắc - Hà Nội',
+        province: newBranchData.province || 'Hà Nội',
+        district: newBranchData.district || '',
+        address: newBranchData.address || '',
+        phone: newBranchData.phone || '',
+        email: newBranchData.email || '',
+        coordinates: newBranchData.coordinates || '',
+        status: 'setup',
+        statusLabel: 'Mới thiết lập',
+        managerId: 'emp-new',
+        managerName: newBranchData.managerName || 'Chưa phân công',
+        managerPhone: newBranchData.managerPhone || '',
+        managerEmail: newBranchData.managerEmail || '',
+        roomCount: newBranchData.roomCount || 1,
+        totalCapacity: newBranchData.totalCapacity || 20,
+        activeClassesCount: 0,
+        activeStudentsCount: 0,
+        businessHours: newBranchData.businessHours || {
+          openTime: '08:00',
+          closeTime: '21:30',
+          daysOfWeek: 'Thứ 2 - Chủ Nhật',
         },
-      ],
-      createdAt: new Date().toISOString().slice(0, 10),
-      updatedAt: new Date().toISOString().slice(0, 10),
-    }
+        rooms: newBranchData.rooms || [],
+        history: [
+          {
+            id: `h-${Date.now()}`,
+            timestamp: new Date().toLocaleString('vi-VN'),
+            actor: 'Admin Hệ thống',
+            action: 'Khởi tạo cơ sở',
+            details: 'Tạo mới chi nhánh cơ sở vật chất',
+          },
+        ],
+        createdAt: new Date().toISOString().slice(0, 10),
+        updatedAt: new Date().toISOString().slice(0, 10),
+      }
 
-    setBranches((prev) => [newBranch, ...prev])
+      setBranches((prev) => [newBranch, ...prev])
+      toast.success('Đã khởi tạo cơ sở (lưu tạm cục bộ)')
+    }
   }
 
   const handleToggleStatusClick = (branch: Branch) => {
@@ -126,11 +161,19 @@ export function BranchesScreen() {
     setIsConfirmOpen(true)
   }
 
-  const handleConfirmStatusChange = () => {
+  const handleConfirmStatusChange = async () => {
     if (!confirmTarget) return
 
     const nextStatus = confirmTarget.status === 'active' ? 'inactive' : 'active'
     const nextLabel = nextStatus === 'active' ? 'Đang hoạt động' : 'Tạm dừng'
+    const newHistoryItem = {
+      id: `h-${Date.now()}`,
+      timestamp: new Date().toLocaleString('vi-VN'),
+      actor: 'Admin Hệ thống',
+      action: nextStatus === 'active' ? 'Kích hoạt hoạt động' : 'Tạm dừng cơ sở',
+      details: `Chuyển trạng thái cơ sở sang ${nextLabel}`,
+    }
+    const updatedHistory = [newHistoryItem, ...(confirmTarget.history || [])]
 
     setBranches((prev) =>
       prev.map((b) => {
@@ -139,16 +182,7 @@ export function BranchesScreen() {
           ...b,
           status: nextStatus,
           statusLabel: nextLabel,
-          history: [
-            {
-              id: `h-${Date.now()}`,
-              timestamp: new Date().toLocaleString('vi-VN'),
-              actor: 'Admin Hệ thống',
-              action: nextStatus === 'active' ? 'Kích hoạt hoạt động' : 'Tạm dừng cơ sở',
-              details: `Chuyển trạng thái cơ sở sang ${nextLabel}`,
-            },
-            ...b.history,
-          ],
+          history: updatedHistory,
         }
       })
     )
@@ -160,35 +194,53 @@ export function BranchesScreen() {
               ...prev,
               status: nextStatus,
               statusLabel: nextLabel,
+              history: updatedHistory,
             }
           : null
       )
     }
 
     setIsConfirmOpen(false)
+    const targetId = confirmTarget.id
     setConfirmTarget(null)
+
+    try {
+      await fetch(`/api/branches/${targetId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: nextStatus,
+          statusLabel: nextLabel,
+          history: updatedHistory,
+        }),
+      })
+      toast.success(`Đã cập nhật trạng thái cơ sở sang: ${nextLabel}`)
+    } catch (err) {
+      console.warn('API error on updating branch status:', err)
+    }
   }
 
-  const handleAddRoom = (branchId: string, room: BranchRoom) => {
+  const handleAddRoom = async (branchId: string, room: BranchRoom) => {
+    const branch = branches.find((b) => b.id === branchId)
+    const updatedRooms = branch ? [...branch.rooms, room] : [room]
+    const newHistoryItem = {
+      id: `h-${Date.now()}`,
+      timestamp: new Date().toLocaleString('vi-VN'),
+      actor: 'Admin Hệ thống',
+      action: 'Khai báo phòng học',
+      details: `Thêm mới ${room.name} (Sức chứa ${room.capacity} HV)`,
+    }
+    const updatedHistory = [newHistoryItem, ...(branch?.history || [])]
+
     setBranches((prev) =>
       prev.map((b) => {
         if (b.id !== branchId) return b
-        const updatedRooms = [...b.rooms, room]
         return {
           ...b,
           rooms: updatedRooms,
           roomCount: updatedRooms.length,
           totalCapacity: updatedRooms.reduce((sum, r) => sum + r.capacity, 0),
-          history: [
-            {
-              id: `h-${Date.now()}`,
-              timestamp: new Date().toLocaleString('vi-VN'),
-              actor: 'Admin Hệ thống',
-              action: 'Khai báo phòng học',
-              details: `Thêm mới ${room.name} (Sức chứa ${room.capacity} HV)`,
-            },
-            ...b.history,
-          ],
+          history: updatedHistory,
         }
       })
     )
@@ -196,18 +248,44 @@ export function BranchesScreen() {
     if (selectedBranch && selectedBranch.id === branchId) {
       setSelectedBranch((prev) => {
         if (!prev) return null
-        const updatedRooms = [...prev.rooms, room]
         return {
           ...prev,
           rooms: updatedRooms,
           roomCount: updatedRooms.length,
           totalCapacity: updatedRooms.reduce((sum, r) => sum + r.capacity, 0),
+          history: updatedHistory,
         }
       })
     }
+
+    try {
+      await fetch(`/api/branches/${branchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rooms: updatedRooms,
+          roomCount: updatedRooms.length,
+          totalCapacity: updatedRooms.reduce((sum, r) => sum + r.capacity, 0),
+          history: updatedHistory,
+        }),
+      })
+      toast.success(`Đã thêm phòng học ${room.name} vào CSDL!`)
+    } catch (err) {
+      console.warn('API error adding room:', err)
+    }
   }
 
-  const handleUpdateBranch = (branchId: string, updates: Partial<Branch>) => {
+  const handleUpdateBranch = async (branchId: string, updates: Partial<Branch>) => {
+    const branch = branches.find((b) => b.id === branchId)
+    const newHistoryItem = {
+      id: `h-${Date.now()}`,
+      timestamp: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      actor: 'Admin Hệ thống',
+      action: 'Cập nhật thông tin',
+      details: 'Cập nhật thuộc tính hồ sơ chi nhánh',
+    }
+    const updatedHistory = [newHistoryItem, ...(branch?.history || [])]
+
     setBranches((prev) =>
       prev.map((b) => {
         if (b.id !== branchId) return b
@@ -215,22 +293,27 @@ export function BranchesScreen() {
           ...b,
           ...updates,
           updatedAt: new Date().toISOString().slice(0, 10),
-          history: [
-            {
-              id: `h-${Date.now()}`,
-              timestamp: new Date().toISOString().slice(0, 16).replace('T', ' '),
-              actor: 'Admin Hệ thống',
-              action: 'Cập nhật thông tin',
-              details: 'Cập nhật thuộc tính hồ sơ chi nhánh',
-            },
-            ...b.history,
-          ],
+          history: updatedHistory,
         }
         return updatedBranch
       })
     )
 
-    setSelectedBranch((prev) => (prev && prev.id === branchId ? { ...prev, ...updates } : prev))
+    setSelectedBranch((prev) => (prev && prev.id === branchId ? { ...prev, ...updates, history: updatedHistory } : prev))
+
+    try {
+      await fetch(`/api/branches/${branchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...updates,
+          history: updatedHistory,
+        }),
+      })
+      toast.success('Đã lưu cập nhật cơ sở vào CSDL!')
+    } catch (err) {
+      console.warn('API error updating branch:', err)
+    }
   }
 
   const statusTilesOptions = [

@@ -32,3 +32,82 @@ model Student {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
+
+model Branch {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  name                String
+  type                String   @default("training_center")
+  typeLabel           String?
+  region              String?  @default("Miền Bắc")
+  province            String?  @default("Hà Nội")
+  district            String?
+  address             String?
+  phone               String?
+  email               String?
+  coordinates         String?
+  status              String   @default("active")
+  statusLabel         String?
+  managerId           String?
+  managerName         String?
+  managerPhone        String?
+  managerEmail        String?
+  managerAvatar       String?
+  roomCount           Int      @default(0)
+  totalCapacity       Int      @default(0)
+  activeClassesCount  Int      @default(0)
+  activeStudentsCount Int      @default(0)
+  roomsJson           String?
+  staffJson           String?
+  businessHoursJson   String?
+  historyJson         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ClassRecord {
+  id                     String   @id @default(cuid())
+  code                   String   @unique
+  name                   String
+  level                  String   @default("Beginner")
+  subLevel               String?
+  subject                String?  @default("Tiếng Anh")
+  grade                  String?
+  branch                 String?  @default("CS1")
+  room                   String?  @default("P.101")
+  teacher                String?
+  teacherPhone           String?
+  assistant              String?
+  assistantPhone         String?
+  schedule               String?
+  startDate              String?
+  endDate                String?
+  status                 String   @default("cho_khai_giang")
+  maxStudents            Int      @default(20)
+  enrolledStudents       Int      @default(0)
+  tuitionFee             Int      @default(0)
+  totalSessions          Int      @default(24)
+  completedSessions      Int      @default(0)
+  trialStudents          Int      @default(0)
+  specialCareCount       Int      @default(0)
+  attendanceRate         Float?   @default(100)
+  homeworkRate           Float?   @default(100)
+  avgTestScore           Float?   @default(0)
+  classType              String?  @default("Chính thức")
+  classRatio             String?
+  teacherType            String?
+  learningPath           String?
+  syllabus               String?
+  curriculumName         String?
+  programName            String?
+  packageName            String?
+  notes                  String?
+  scheduleSlotsJson      String?
+  substituteTeachersJson String?
+  teacherHistoryJson     String?
+  nextSessionJson        String?
+  lastSessionJson        String?
+  studentsJson           String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
