@@ -360,6 +360,16 @@ export function hasOperationalAlert(cls: ClassRecord): boolean {
  */
 export function sortClassesByOperationalPriority(classes: ClassRecord[]): ClassRecord[] {
   return [...classes].sort((a, b) => {
+    // Bậc 0: Ưu tiên các lớp mới khởi tạo trên hệ thống lên đầu bảng để người dùng kiểm tra ngay
+    const isNewA = a.id.startsWith('cls-17') ? 1 : 0
+    const isNewB = b.id.startsWith('cls-17') ? 1 : 0
+    if (isNewA !== isNewB) {
+      return isNewB - isNewA
+    }
+    if (isNewA && isNewB) {
+      return b.id.localeCompare(a.id)
+    }
+
     // Bậc 1: Cảnh báo vận hành cần xử lý gấp
     const alertA = hasOperationalAlert(a) ? 1 : 0
     const alertB = hasOperationalAlert(b) ? 1 : 0

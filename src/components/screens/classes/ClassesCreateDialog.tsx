@@ -53,13 +53,14 @@ interface ScheduleDayState {
 interface ClassesCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: (newClass: ClassRecord) => void
+  onSuccess: (newClass: ClassRecord) => Promise<void> | void
 }
 
 export function ClassesCreateDialog({ open, onOpenChange, onSuccess }: ClassesCreateDialogProps) {
   const branchOptions = [...new Set(mockClassRecords.map((c) => c.branch))].sort()
 
   // State variables
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [className, setClassName] = useState('')
   const [classCode, setClassCode] = useState('')
@@ -475,8 +476,15 @@ export function ClassesCreateDialog({ open, onOpenChange, onSuccess }: ClassesCr
       assistantPhone: assistantPhone,
     }
 
-    onSuccess(newClass)
-    onOpenChange(false)
+    setIsSubmitting(true)
+    try {
+      await onSuccess(newClass)
+      onOpenChange(false)
+    } catch (err) {
+      console.error('Error creating class:', err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -605,25 +613,27 @@ export function ClassesCreateDialog({ open, onOpenChange, onSuccess }: ClassesCr
           )}
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button variant="ghost" disabled={isSubmitting} onClick={() => onOpenChange(false)}>
               Hủy
             </Button>
 
             {currentStep === 1 ? (
               <>
-                <Button variant="secondary" onClick={() => handleFormSubmit('nhap')}>
+                <Button variant="secondary" disabled={isSubmitting} onClick={() => handleFormSubmit('nhap')}>
                   <Plus className="h-4 w-4 mr-1.5 inline-block" /> Tạo nháp
                 </Button>
-                <Button onClick={() => setCurrentStep(2)}>
+                <Button disabled={isSubmitting} onClick={() => setCurrentStep(2)}>
                   Tiếp theo <ArrowRight className="h-4 w-4 ml-1.5 inline-block" />
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="secondary" onClick={() => handleFormSubmit('nhap')}>
+                <Button variant="secondary" disabled={isSubmitting} onClick={() => handleFormSubmit('nhap')}>
                   <Plus className="h-4 w-4 mr-1.5 inline-block" /> Tạo lớp nháp
                 </Button>
-                <Button onClick={() => handleFormSubmit('cho_khai_giang')}>Khai giảng</Button>
+                <Button disabled={isSubmitting} onClick={() => handleFormSubmit('cho_khai_giang')}>
+                  {isSubmitting ? 'Đang lưu vào CSDL...' : 'Khai giảng'}
+                </Button>
               </>
             )}
           </div>

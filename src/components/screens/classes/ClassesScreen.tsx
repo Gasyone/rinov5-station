@@ -454,13 +454,17 @@ export function ClassesScreen() {
             const result = await res.json()
             if (result.success && result.data) {
               setClasses((prev) => [result.data, ...prev])
-              toast.success('Đã lưu lớp học mới vào Database thành công!')
+              setPage(1)
+              toast.success(`Đã lưu lớp "${result.data.name}" (${result.data.code}) vào Database thành công!`)
             } else {
               setClasses((prev) => [newClass, ...prev])
+              setPage(1)
+              toast.success(`Đã tạo lớp "${newClass.name}"`)
             }
           } catch (err) {
             console.warn('API error creating class, saving locally:', err)
             setClasses((prev) => [newClass, ...prev])
+            setPage(1)
           }
           setIsCreateOpen(false)
         }}
