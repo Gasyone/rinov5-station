@@ -191,12 +191,30 @@ export function sortQcIncidents(
   incidents: QcIncident[],
   sortMode: QcSortMode = 'severity_deadline'
 ): QcIncident[] {
+  const now = Date.now()
+  const FIFTEEN_MINUTES = 15 * 60 * 1000
+
   return [...incidents].sort((a, b) => {
+    // Bậc 0: Ưu tiên sự cố mới ghi nhận (trong vòng 15 phút) lên dòng đầu bảng để người dùng kiểm tra ngay
+    const timeA = new Date(a.createdAt).getTime()
+    const timeB = new Date(b.createdAt).getTime()
+    const isRecentA = !isNaN(timeA) && now - timeA < FIFTEEN_MINUTES ? 1 : 0
+    const isRecentB = !isNaN(timeB) && now - timeB < FIFTEEN_MINUTES ? 1 : 0
+
+    if (sortMode !== 'oldest') {
+      if (isRecentA !== isRecentB) {
+        return isRecentB - isRecentA
+      }
+      if (isRecentA && isRecentB) {
+        return timeB - timeA
+      }
+    }
+
     if (sortMode === 'newest') {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return timeB - timeA
     }
     if (sortMode === 'oldest') {
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      return timeA - timeB
     }
 
     if (sortMode === 'deadline_severity') {

@@ -319,6 +319,13 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
       const data = await res.json()
       if (data.success && Array.isArray(data.data)) {
         setIncidents((prev) => [...data.data, ...prev])
+        setPage(1)
+        if (activeStatus !== 'all' && activeStatus !== 'open') {
+          setActiveStatus('all')
+        }
+        if (activeBranch !== 'all' && form.branch !== activeBranch) {
+          setActiveBranch('all')
+        }
         toast.success(`Đã ghi nhận ${data.data.length} sự cố vào hệ thống`)
       } else {
         toast.error(data.message || 'Lỗi khi ghi nhận sự cố')
