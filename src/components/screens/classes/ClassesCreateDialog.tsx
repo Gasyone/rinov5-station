@@ -354,7 +354,7 @@ export function ClassesCreateDialog({ open, onOpenChange, onSuccess }: ClassesCr
     }))
 
   // Form submission
-  const handleFormSubmit = (statusParam: 'nhap' | 'cho_khai_giang' = 'nhap') => {
+  const handleFormSubmit = async (statusParam: 'nhap' | 'cho_khai_giang' = 'nhap') => {
     const errors: Record<string, string> = {}
 
     if (statusParam === 'cho_khai_giang') {
