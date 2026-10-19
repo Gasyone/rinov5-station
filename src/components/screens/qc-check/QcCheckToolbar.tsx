@@ -1,9 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Plus, UserCheck, ArrowUpDown } from 'lucide-react'
+import { Plus, UserCheck, ListFilter, SlidersHorizontal } from 'lucide-react'
 import {
   FilterIconButton,
+  IconActionButton,
   ExpandableSearch,
   SegmentedControl,
   type SegmentedControlOption,
@@ -22,7 +23,6 @@ import {
   type IncidentStatusFilter,
   type IncidentDeadlineFilter,
 } from './qcCheckTypes'
-import { SORT_OPTIONS, type QcSortMode } from './qcCheckHelpers'
 
 const TARGET_GROUP_OPTIONS: SegmentedControlOption<string>[] = [
   { value: 'all', label: 'Tất cả' },
@@ -32,8 +32,6 @@ const TARGET_GROUP_OPTIONS: SegmentedControlOption<string>[] = [
 ]
 
 export interface QcCheckToolbarProps {
-  sortMode?: QcSortMode
-  onSortModeChange?: (mode: QcSortMode) => void
   activeBranch: string
   activeSubject: string
   activeCriteria: string
@@ -56,6 +54,7 @@ export interface QcCheckToolbarProps {
   onStatusChange: (status: IncidentStatusFilter) => void
   onSearchChange: (value: string) => void
   onOpenFilters: () => void
+  onOpenSlaConfig?: () => void
   onCreate: () => void
 
   // Backwards compatibility props
@@ -71,8 +70,6 @@ export interface QcCheckToolbarProps {
 }
 
 export function QcCheckToolbar({
-  sortMode = 'severity_deadline',
-  onSortModeChange,
   activeBranch,
   activeSubject,
   activeCriteria,
@@ -95,6 +92,7 @@ export function QcCheckToolbar({
   onStatusChange,
   onSearchChange,
   onOpenFilters,
+  onOpenSlaConfig,
   onCreate,
 }: QcCheckToolbarProps) {
   const tiles: StatusTile<IncidentStatusFilter>[] = STATUS_TILE_CONFIG.map((cfg) => ({
@@ -179,6 +177,15 @@ export function QcCheckToolbar({
 
           <FilterIconButton count={activeFilterCount} onClick={onOpenFilters} />
 
+          {onOpenSlaConfig && (
+            <IconActionButton
+              icon={SlidersHorizontal}
+              label="Thiết lập tiêu chí & SLA"
+              onClick={onOpenSlaConfig}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground border border-border/60 hover:border-border"
+            />
+          )}
+
           <Button
             size="sm"
             onClick={onCreate}
@@ -240,35 +247,20 @@ export function QcCheckToolbar({
           />
         </div>
 
-        {/* Cạnh phải: Bộ sắp xếp 2 cấp + Lọc theo Đối tượng đánh giá */}
-        <div className="flex items-center gap-2 select-none shrink-0 min-w-0">
-          {onSortModeChange && (
-            <div className="flex items-center gap-1">
-              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <ToolbarSelect
-                value={sortMode}
-                options={SORT_OPTIONS}
-                onValueChange={(val) => onSortModeChange(val as QcSortMode)}
-                className="h-7 text-xs min-w-[155px] bg-background"
-                ariaLabel="Sắp xếp danh sách sự cố"
-                placeholder="Sắp xếp"
-              />
-            </div>
-          )}
-
-          {onSortModeChange && <div className="h-3.5 w-px bg-zinc-200 dark:bg-zinc-800 shrink-0" />}
-
-          {/* Lọc theo Đối tượng đánh giá */}
-          <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
-            <span className="text-xs font-normal text-muted-foreground shrink-0 mr-0.5">
-              Đối tượng:
-            </span>
-            <SegmentedControl
-              options={TARGET_GROUP_OPTIONS}
-              value={activeTargetGroup}
-              onValueChange={onTargetGroupChange}
-            />
-          </div>
+        {/* Cạnh phải: Lọc theo Đối tượng đánh giá */}
+        <div className="flex items-center gap-1.5 select-none shrink-0 min-w-0">
+          <span
+            title="Lọc nhanh theo đối tượng"
+            aria-label="Lọc nhanh theo đối tượng"
+            className="inline-flex items-center text-muted-foreground shrink-0 mr-0.5 select-none"
+          >
+            <ListFilter className="h-3.5 w-3.5" />
+          </span>
+          <SegmentedControl
+            options={TARGET_GROUP_OPTIONS}
+            value={activeTargetGroup}
+            onValueChange={onTargetGroupChange}
+          />
         </div>
       </div>
     </div>

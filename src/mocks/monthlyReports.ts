@@ -8,6 +8,19 @@ export interface WeekReviewItem {
   thumbnailUrl?: string
 }
 
+export interface MonthlyFeaturedVideo {
+  id: string
+  title: string
+  url: string
+  thumbnailUrl: string
+  date: string
+  duration?: string
+  sessionTitle?: string
+  teacherName?: string
+  description?: string
+  badgeLabel?: string
+}
+
 export interface StudentMonthlyReport {
   id: string
   studentId: string
@@ -24,6 +37,9 @@ export interface StudentMonthlyReport {
   priorTestScore?: number | string | null
   testDocUrl?: string
   testDocName?: string
+
+  // Video đặc biệt điểm nhấn của tháng (hiển thị trực tiếp trên báo cáo)
+  featuredVideo?: MonthlyFeaturedVideo
 
   // Section A: Báo cáo học tập chuyên sâu
   sectionA1Content: string
@@ -677,13 +693,48 @@ export function getMonthlyReportById(
   monthOptionValue?: string
 ): StudentMonthlyReport {
   const reports = getStudentMonthlyReports(idOrStudentId)
+  let report: StudentMonthlyReport | undefined
   if (monthOptionValue) {
-    const matched = reports.find(
+    report = reports.find(
       (r) => r.monthOptionValue === monthOptionValue || r.monthKey.includes(monthOptionValue)
     )
-    if (matched) return matched
   }
-  return reports[0] || mockMonthlyReports[0]
+  const base = report || reports[0] || mockMonthlyReports[0]
+  const finalReport: StudentMonthlyReport = { ...base }
+
+  // Luôn đảm bảo có featuredVideo của tháng (từ gallery video hoặc clip mẫu)
+  if (!finalReport.featuredVideo) {
+    const videoFromGallery = finalReport.galleryPhotos?.find((p) => p.type === 'video')
+    if (videoFromGallery) {
+      finalReport.featuredVideo = {
+        id: videoFromGallery.id,
+        title: videoFromGallery.title,
+        url: videoFromGallery.url,
+        thumbnailUrl: videoFromGallery.thumbnailUrl,
+        date: videoFromGallery.sessionDate || videoFromGallery.date,
+        duration: videoFromGallery.duration || '01:45',
+        sessionTitle: videoFromGallery.sessionTitle,
+        teacherName: videoFromGallery.teacherName || finalReport.teacherName,
+        badgeLabel: 'Video điểm nhấn tháng',
+        description: 'Khoảnh khắc con tự tin tương tác, tích cực phát biểu và rèn luyện kỹ năng trong buổi học.',
+      }
+    } else {
+      finalReport.featuredVideo = {
+        id: `fv-${finalReport.id}`,
+        title: 'Video con tự tin thuyết trình đoạn văn ngắn & giải toán tư duy',
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+        date: finalReport.dateStr,
+        duration: '01:45',
+        sessionTitle: 'Reading Strategies & Skimming/Scanning • Buổi 5',
+        teacherName: finalReport.teacherName || 'Hoàng Thị Mai',
+        badgeLabel: 'Video điểm nhấn tháng',
+        description: 'Khoảnh khắc con tự tin xung phong lên bảng thuyết trình lưu loát trước cả lớp.',
+      }
+    }
+  }
+
+  return finalReport
 }
 
 /**

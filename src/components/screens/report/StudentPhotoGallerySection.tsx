@@ -10,11 +10,13 @@ import {
   Play,
   Images,
   Share2,
+  Sparkles,
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { getStudentPhotos, type StudentGalleryPhoto } from '@/mocks/studentPhotos'
+import { StudentPhotoLiveShowModal } from './StudentPhotoLiveShowModal'
 
 interface StudentPhotoGallerySectionProps {
   studentId?: string
@@ -35,6 +37,7 @@ function formatLightboxDate(rawDate: string = ''): string {
 
 export function StudentPhotoGallerySection({
   studentId,
+  studentName = 'Học viên',
   initialPhotos,
   className = '',
 }: StudentPhotoGallerySectionProps) {
@@ -44,10 +47,17 @@ export function StudentPhotoGallerySection({
       : getStudentPhotos(studentId)
   const [lightboxOpen, setLightboxOpen] = useState<boolean>(false)
   const [currentIndex, setCurrentIndex] = useState<number>(0)
+  const [liveShowOpen, setLiveShowOpen] = useState<boolean>(false)
+  const [liveShowIndex, setLiveShowIndex] = useState<number>(0)
 
   const openLightboxAt = (index: number) => {
     setCurrentIndex(index)
     setLightboxOpen(true)
+  }
+
+  const handleOpenLiveShow = (startIndex = 0) => {
+    setLiveShowIndex(startIndex)
+    setLiveShowOpen(true)
   }
 
   const handlePrev = useCallback(() => {
@@ -94,7 +104,7 @@ export function StudentPhotoGallerySection({
 
   return (
     <div className={`rounded-xl bg-card border border-border/80 p-3 sm:p-3.5 shadow-2xs space-y-2.5 ${className}`}>
-      {/* ── HEADER: Rút gọn tối đa, bỏ icon, bỏ subtitle, bỏ badge đếm, đưa nút Tải toàn bộ sang phải ── */}
+      {/* ── HEADER: Rút gọn tối đa, bỏ icon, chỉ để nút Tải toàn bộ sang phải ── */}
       <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/40">
         <h3 className="text-xs font-semibold text-foreground tracking-tight">
           Khoảnh khắc học tập
@@ -166,22 +176,22 @@ export function StudentPhotoGallerySection({
         })}
       </div>
 
-      {/* ── NÚT XEM TẤT CẢ ── */}
+      {/* ── NÚT XEM SHOW KHOẢNH KHẮC (CHẠY SHOW LUÔN) ── */}
       <Button
         type="button"
-        variant="outline"
         size="sm"
-        onClick={() => openLightboxAt(0)}
-        className="w-full h-7.5 text-xs font-semibold rounded-lg border-border/80 hover:bg-muted text-foreground gap-1.5 cursor-pointer transition-all active:scale-98"
+        onClick={() => handleOpenLiveShow(0)}
+        className="w-full h-8 text-xs font-semibold rounded-lg bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white gap-2 shadow-xs cursor-pointer transition-all active:scale-98"
+        title="Bấm để phát trình chiếu Show khoảnh khắc của con"
       >
-        <Images className="h-3.5 w-3.5 text-primary" />
-        <span>Xem toàn bộ {mediaList.length} ảnh & video của con</span>
+        <Sparkles className="h-4 w-4 fill-white" />
+        <span>Xem Show khoảnh khắc ({mediaList.length} kỷ niệm)</span>
       </Button>
 
       {/* ── LIGHTBOX VIEWER DIALOG (HỖ TRỢ CẢ VIDEO VÀ ẢNH) ── */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
         <DialogContent
-          className="w-[94vw] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[90vh] p-0 bg-zinc-950 border border-white/15 text-white rounded-xl overflow-hidden z-[9999] shadow-2xl flex flex-col [&>button]:hidden select-none"
+          className="w-[95vw] sm:max-w-4xl md:max-w-5xl lg:max-w-5xl xl:max-w-6xl h-[88vh] max-h-[820px] min-h-[520px] p-0 bg-zinc-950 border border-white/15 text-white rounded-xl overflow-hidden z-[9999] shadow-2xl flex flex-col [&>button]:hidden select-none outline-none"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Top Bar của Lightbox - Gọn gàng, thanh lịch */}
@@ -204,6 +214,20 @@ export function StudentPhotoGallerySection({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  setLightboxOpen(false)
+                  handleOpenLiveShow(currentIndex)
+                }}
+                className="h-7.5 px-2.5 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg gap-1.5 cursor-pointer shadow-xs"
+                title="Chuyển sang chế độ trình chiếu tự động (Live Show)"
+              >
+                <Sparkles className="h-3.5 w-3.5 fill-white" />
+                <span className="hidden sm:inline">Phát Show</span>
+              </Button>
+
               <Button
                 type="button"
                 variant="ghost"
@@ -241,20 +265,20 @@ export function StudentPhotoGallerySection({
             </div>
           </div>
 
-          {/* Vùng hiển thị Media chính (Ảnh hoặc Video) căn chỉnh tỷ lệ chuẩn - Bỏ khoảng cách thừa */}
-          <div className="relative flex-1 min-h-[280px] max-h-[72vh] flex items-center justify-center p-0 sm:p-1 bg-black overflow-hidden">
+          {/* Vùng hiển thị Media chính (Ảnh hoặc Video) căn chỉnh tỷ lệ chuẩn - Cố định khung, không bị giật kích thước */}
+          <div className="relative flex-1 w-full h-full min-h-0 flex items-center justify-center p-2 sm:p-4 bg-black overflow-hidden">
             {/* Nút lùi ảnh (Prev) */}
             <button
               type="button"
               onClick={handlePrev}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 backdrop-blur-md transition-all cursor-pointer z-30 shadow-md hover:scale-105 active:scale-95"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 backdrop-blur-md transition-all cursor-pointer z-30 shadow-md hover:scale-105 active:scale-95"
               title="Ảnh trước (Mũi tên trái)"
             >
-              <ChevronLeft className="h-4.5 w-4.5" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
 
             {/* Khung nội dung hiển thị Media (Video hoặc Ảnh) */}
-            <div className="relative h-full w-full flex items-center justify-center">
+            <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
               {currentMedia.type === 'video' ? (
                 <video
                   key={currentMedia.url}
@@ -262,7 +286,7 @@ export function StudentPhotoGallerySection({
                   poster={currentMedia.thumbnailUrl}
                   controls
                   autoPlay
-                  className="w-full max-h-[70vh] aspect-video object-contain shadow-2xl focus:outline-none bg-black"
+                  className="max-h-full max-w-full w-auto h-auto object-contain shadow-2xl focus:outline-none bg-black"
                 />
               ) : (
                 /* eslint-disable-next-line @next/next/no-img-element */
@@ -270,7 +294,7 @@ export function StudentPhotoGallerySection({
                   key={currentMedia.url}
                   src={currentMedia.url}
                   alt={currentMedia.title}
-                  className="max-h-[70vh] max-w-full w-auto h-auto object-contain shadow-2xl transition-all duration-200"
+                  className="max-h-full max-w-full w-auto h-auto object-contain shadow-2xl transition-all duration-200"
                 />
               )}
             </div>
@@ -279,10 +303,10 @@ export function StudentPhotoGallerySection({
             <button
               type="button"
               onClick={handleNext}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 backdrop-blur-md transition-all cursor-pointer z-30 shadow-md hover:scale-105 active:scale-95"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 backdrop-blur-md transition-all cursor-pointer z-30 shadow-md hover:scale-105 active:scale-95"
               title="Ảnh sau (Mũi tên phải)"
             >
-              <ChevronRight className="h-4.5 w-4.5" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
@@ -318,6 +342,15 @@ export function StudentPhotoGallerySection({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── LIVE SHOW STORY MODAL (CHẾ ĐỘ TRÌNH CHIẾU TỰ ĐỘNG) ── */}
+      <StudentPhotoLiveShowModal
+        open={liveShowOpen}
+        onOpenChange={setLiveShowOpen}
+        mediaList={mediaList}
+        studentName={studentName}
+        initialIndex={liveShowIndex}
+      />
     </div>
   )
 }

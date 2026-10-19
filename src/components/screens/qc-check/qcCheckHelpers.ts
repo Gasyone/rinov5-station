@@ -136,7 +136,7 @@ export function formatDate(d: string): string {
   return formatShortDate(d)
 }
 
-/* ─── 2-Tier Incident Sorting: Level 1 Severity, Level 2 Deadline ─── */
+/* ─── Tự động sắp xếp sự cố đa tầng (Auto-Sort by Status, Severity, Deadline & Recency) ─── */
 
 export type QcSortMode = 'severity_deadline' | 'deadline_severity' | 'newest' | 'oldest'
 
@@ -146,33 +146,6 @@ export const SEVERITY_WEIGHT: Record<QcErrorSeverity, number> = {
   medium: 2,
   low: 1,
 }
-
-export const SORT_OPTIONS: Array<{
-  value: QcSortMode
-  label: string
-  selectedLabel?: string
-}> = [
-  {
-    value: 'severity_deadline',
-    label: '⚡ Mức độ → Thời hạn (Mặc định)',
-    selectedLabel: 'Mức độ → Thời hạn',
-  },
-  {
-    value: 'deadline_severity',
-    label: '⏰ Thời hạn → Mức độ',
-    selectedLabel: 'Thời hạn → Mức độ',
-  },
-  {
-    value: 'newest',
-    label: '🆕 Mới ghi nhận nhất',
-    selectedLabel: 'Mới ghi nhận',
-  },
-  {
-    value: 'oldest',
-    label: '⏳ Cũ nhất trước',
-    selectedLabel: 'Cũ nhất trước',
-  },
-]
 
 export function getDeadlineTimestamp(incident: QcIncident): number {
   if (incident.deadline) {
@@ -187,10 +160,15 @@ export function getDeadlineTimestamp(incident: QcIncident): number {
   return Infinity
 }
 
-export function sortQcIncidents(
-  incidents: QcIncident[],
-  sortMode: QcSortMode = 'severity_deadline'
-): QcIncident[] {
+/**
+ * Tự động sắp xếp danh sách sự cố theo các yếu tố nghiệp vụ đa tầng:
+ * 1. Bậc 0: Sự cố mới ghi nhận tức thì (< 15 phút) -> Đẩy lên đầu danh sách để kiểm tra ngay
+ * 2. Bậc 1: Trạng thái hành động (Active vs Inactive) -> Các lỗi còn đang xử lý (open, pending_approval, correcting, not_met) ưu tiên trước lỗi đã đóng (closed) hoặc đã hủy (cancelled)
+ * 3. Bậc 2 (Cấp 1): Mức độ vi phạm (Critical -> High -> Medium -> Low)
+ * 4. Bậc 3 (Cấp 2): Thời hạn SLA / Deadline (Quá hạn / Đến hạn hôm nay / Hạn gần nhất lên đầu)
+ * 5. Bậc 4: Thời gian tạo mới nhất (createdAt giảm dần)
+ */
+export function sortQcIncidents(incidents: QcIncident[]): QcIncident[] {
   const now = Date.now()
   const FIFTEEN_MINUTES = 15 * 60 * 1000
 
@@ -201,58 +179,108 @@ export function sortQcIncidents(
     const isRecentA = !isNaN(timeA) && now - timeA < FIFTEEN_MINUTES ? 1 : 0
     const isRecentB = !isNaN(timeB) && now - timeB < FIFTEEN_MINUTES ? 1 : 0
 
-    if (sortMode !== 'oldest') {
-      if (isRecentA !== isRecentB) {
-        return isRecentB - isRecentA
-      }
-      if (isRecentA && isRecentB) {
-        return timeB - timeA
-      }
+    if (isRecentA !== isRecentB) {
+      return isRecentB - isRecentA
     }
-
-    if (sortMode === 'newest') {
+    if (isRecentA && isRecentB) {
       return timeB - timeA
     }
-    if (sortMode === 'oldest') {
-      return timeA - timeB
+
+    // Bậc 1: Active trước Inactive (Đã đóng/Đã hủy xếp xuống sau)
+    const isInactiveA = a.status === 'closed' || a.status === 'cancelled' ? 1 : 0
+    const isInactiveB = b.status === 'closed' || b.status === 'cancelled' ? 1 : 0
+    if (isInactiveA !== isInactiveB) {
+      return isInactiveA - isInactiveB
     }
 
-    if (sortMode === 'deadline_severity') {
-      // Cấp 1: Thời hạn (Active trước Closed, Thời hạn gấp nhất lên đầu)
-      const isInactiveA = a.status === 'closed' || a.status === 'cancelled' ? 1 : 0
-      const isInactiveB = b.status === 'closed' || b.status === 'cancelled' ? 1 : 0
-      if (isInactiveA !== isInactiveB) return isInactiveA - isInactiveB
-
-      const dlA = getDeadlineTimestamp(a)
-      const dlB = getDeadlineTimestamp(b)
-      if (dlA !== dlB) return dlA - dlB
-
-      // Cấp 2: Mức độ (Nghiêm trọng -> Cao -> Trung bình -> Thấp)
-      const sevA = SEVERITY_WEIGHT[a.severity] ?? 0
-      const sevB = SEVERITY_WEIGHT[b.severity] ?? 0
-      return sevB - sevA
-    }
-
-    // Mặc định: 'severity_deadline' (Cơ chế 2 cấp: Mức độ ở trên cùng, Thời hạn ở thứ 2)
-    // Cấp 1: Mức độ vi phạm (Critical -> High -> Medium -> Low)
+    // Bậc 2 (Cấp 1): Mức độ vi phạm (Critical -> High -> Medium -> Low)
     const sevA = SEVERITY_WEIGHT[a.severity] ?? 0
     const sevB = SEVERITY_WEIGHT[b.severity] ?? 0
     if (sevA !== sevB) {
       return sevB - sevA
     }
 
-    // Cấp 2: Thời hạn (Active trước Closed, Quá hạn / Đến hạn hôm nay / Hạn gần nhất lên đầu)
-    const isInactiveA = a.status === 'closed' || a.status === 'cancelled' ? 1 : 0
-    const isInactiveB = b.status === 'closed' || b.status === 'cancelled' ? 1 : 0
-    if (isInactiveA !== isInactiveB) return isInactiveA - isInactiveB
-
+    // Bậc 3 (Cấp 2): Thời hạn SLA (Quá hạn / Đến hạn hôm nay / Hạn gần nhất lên đầu)
     const dlA = getDeadlineTimestamp(a)
     const dlB = getDeadlineTimestamp(b)
     if (dlA !== dlB) {
       return dlA - dlB
     }
 
-    // Tiêu chí phụ: Mới tạo lên trước
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    // Bậc 4: Mới tạo lên trước
+    return timeB - timeA
   })
 }
+
+/* ─── Incident Quick Templates by Target Group & Criteria ─── */
+
+export interface QuickTemplateItem {
+  title: string
+  criteria: QcEvaluationCriteria
+  severity: QcErrorSeverity
+  desc: string
+}
+
+export const QUICK_TEMPLATES_MAP: Record<string, QuickTemplateItem[]> = {
+  teacher_attendance: [
+    { title: 'Quên điểm danh', criteria: 'attendance', severity: 'medium', desc: 'Chưa cập nhật sĩ số và điểm danh sau buổi học theo quy định.' },
+    { title: 'Sai lệch sĩ số', criteria: 'attendance', severity: 'high', desc: 'Sĩ số học viên thực tế trong lớp không khớp với danh sách điểm danh.' },
+    { title: 'Điểm danh muộn', criteria: 'attendance', severity: 'low', desc: 'Cập nhật điểm danh trễ quá 24h sau khi kết thúc buổi dạy.' },
+  ],
+  teacher_pedagogy: [
+    { title: 'Vào lớp muộn', criteria: 'pedagogy', severity: 'high', desc: 'Giáo viên vào lớp muộn hơn giờ học không có thông báo trước.' },
+    { title: 'Không nộp giáo án', criteria: 'pedagogy', severity: 'medium', desc: 'Giáo viên chưa nộp kế hoạch bài dạy trước buổi học.' },
+    { title: 'Sai đồng phục', criteria: 'pedagogy', severity: 'low', desc: 'Không mặc đúng đồng phục hoặc tác phong không đạt chuẩn.' },
+    { title: 'Rời lớp sớm', criteria: 'pedagogy', severity: 'high', desc: 'Kết thúc buổi dạy và cho học viên ra về sớm hơn quy định.' },
+  ],
+  teacher_feedback: [
+    { title: 'Chưa nhận xét HS', criteria: 'feedback', severity: 'low', desc: 'Chưa hoàn thiện phiếu đánh giá / nhận xét học viên định kỳ.' },
+    { title: 'Chưa chấm bài tập', criteria: 'feedback', severity: 'medium', desc: 'Bài tập về nhà của học viên chưa được chấm chữa theo lịch.' },
+    { title: 'Nhận xét sơ sài', criteria: 'feedback', severity: 'low', desc: 'Nội dung nhận xét đánh giá học viên chưa chi tiết, không sát thực tế.' },
+  ],
+  facility_facility_quality: [
+    { title: 'Hỏng điều hòa', criteria: 'facility_quality', severity: 'medium', desc: 'Điều hòa không mát hoặc chảy nước gây ảnh hưởng buổi học.' },
+    { title: 'Lỗi máy chiếu', criteria: 'facility_quality', severity: 'high', desc: 'Máy chiếu chập chờn, mất tín hiệu kết nối trong giờ dạy.' },
+    { title: 'Hỏng bàn ghế', criteria: 'facility_quality', severity: 'low', desc: 'Bàn ghế học sinh bị lung lay hoặc hư hỏng cơ học.' },
+    { title: 'Mất loa / mic', criteria: 'facility_quality', severity: 'medium', desc: 'Hệ thống âm thanh hoặc micro không hoạt động trong phòng học.' },
+  ],
+  facility_safety_hygiene: [
+    { title: 'Vệ sinh chưa đạt', criteria: 'safety_hygiene', severity: 'low', desc: 'Khu vực chưa được quét dọn sạch sẽ sau ca học.' },
+    { title: 'Sàn trơn trượt', criteria: 'safety_hygiene', severity: 'high', desc: 'Khu vực sảnh/hành lang ẩm ướt, nguy cơ trượt ngã, chưa đặt biển cảnh báo.' },
+    { title: 'Rác chưa dọn', criteria: 'safety_hygiene', severity: 'low', desc: 'Thùng rác đầy tràn chưa được thu gom và thay túi rác.' },
+    { title: 'Cháy bóng đèn', criteria: 'safety_hygiene', severity: 'medium', desc: 'Đèn chiếu sáng khu vực chập chờn hoặc không sáng, thiếu ánh sáng.' },
+  ],
+  operations_student_care: [
+    { title: 'Chưa CS học viên vắng', criteria: 'student_care', severity: 'medium', desc: 'Chưa gọi điện kiểm tra lý do học sinh nghỉ học và hẹn học bù.' },
+    { title: 'Chưa xử lý phản ánh', criteria: 'student_care', severity: 'high', desc: 'Phản ánh của phụ huynh chưa được tiếp nhận xử lý đúng SLA 24h.' },
+    { title: 'Chưa xếp lịch bù', criteria: 'student_care', severity: 'medium', desc: 'Học sinh có đơn nghỉ nhưng chưa được điều phối xếp lớp học bù.' },
+  ],
+  operations_attendance: [
+    { title: 'Chưa chốt sĩ số', criteria: 'attendance', severity: 'low', desc: 'Chưa rà soát và cập nhật sĩ số thực tế trên hệ thống.' },
+    { title: 'Chưa cập nhật bảo lưu', criteria: 'attendance', severity: 'medium', desc: 'Học viên có đơn bảo lưu nhưng chưa được cập nhật trạng thái lớp.' },
+  ],
+  operations_feedback: [
+    { title: 'Chậm phản hồi tin nhắn', criteria: 'feedback', severity: 'medium', desc: 'Tin nhắn trao đổi của phụ huynh để quá 4 giờ chưa trả lời.' },
+    { title: 'Chưa gửi báo cáo tháng', criteria: 'feedback', severity: 'low', desc: 'Chưa xuất và gửi báo cáo học tập định kỳ tháng cho phụ huynh.' },
+  ],
+}
+
+export function getQuickTemplates(targetGroup: QcTargetGroup, criteria: QcEvaluationCriteria): QuickTemplateItem[] {
+  return QUICK_TEMPLATES_MAP[`${targetGroup}_${criteria}`] ?? []
+}
+
+export function matchesIncidentSearch(inc: QcIncident, query: string): boolean {
+  if (!query) return true
+  const q = query.toLowerCase()
+  return (
+    inc.code.toLowerCase().includes(q) ||
+    inc.title.toLowerCase().includes(q) ||
+    inc.description.toLowerCase().includes(q) ||
+    (inc.className?.toLowerCase().includes(q) ?? false) ||
+    (inc.teacherName?.toLowerCase().includes(q) ?? false) ||
+    (inc.csmName?.toLowerCase().includes(q) ?? false) ||
+    (inc.roomId?.toLowerCase().includes(q) ?? false) ||
+    inc.assignee.toLowerCase().includes(q)
+  )
+}
+

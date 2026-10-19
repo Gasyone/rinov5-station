@@ -44,7 +44,7 @@ export type QcCheckStatus =
 export const QC_TARGET_GROUP_LABELS: Record<QcTargetGroup, string> = {
   teacher: 'Giáo viên',
   facility: 'Cơ sở vật chất',
-  operations: 'Vận hành (CS)',
+  operations: 'Vận hành',
 }
 
 export const QC_SOURCE_LABELS: Record<QcSourceType, string> = {
@@ -59,6 +59,12 @@ export const QC_CRITERIA_LABELS: Record<QcEvaluationCriteria, string> = {
   feedback: 'Nhận xét học viên',
   pedagogy: 'Tác phong giảng dạy',
   safety_hygiene: 'An toàn & Vệ sinh',
+}
+
+export const QC_TARGET_GROUP_CRITERIA: Record<QcTargetGroup, QcEvaluationCriteria[]> = {
+  teacher: ['attendance', 'pedagogy', 'feedback'],
+  facility: ['facility_quality', 'safety_hygiene'],
+  operations: ['student_care', 'attendance', 'feedback'],
 }
 
 export const QC_ERROR_SEVERITY_LABELS: Record<QcErrorSeverity, string> = {
@@ -164,6 +170,26 @@ export interface QcLog {
   createdAt: string
 }
 
+/* ─── Multi-Round Remediation & Review (2 Cấp) ─────────────── */
+
+export interface QcRemediationRound {
+  id: string
+  roundNumber: number
+  // Cấp 1: Người nhập
+  submittedBy: string
+  submittedAt: string
+  action: string
+  evidence?: string
+  image?: string
+  link?: string
+  preventiveAction?: string
+  // Cấp 2: Người duyệt
+  reviewedBy?: string
+  reviewedAt?: string
+  reviewStatus?: 'approved' | 'rejected'
+  reviewNote?: string
+}
+
 /* ─── Core Entity: QC Quality Incident ───────────────────── */
 
 export interface QcIncident {
@@ -181,6 +207,7 @@ export interface QcIncident {
   subject?: string
   sessionNumber?: number
   sessionDate?: string
+  sessionInfo?: string
   roomId?: string
 
   // Associated Actors
@@ -209,7 +236,9 @@ export interface QcIncident {
   correctiveEvidence?: string
   correctiveImage?: string
   correctiveLink?: string
+  preventiveAction?: string
   completionDate?: string
+  remediationRounds?: QcRemediationRound[]
 
   // Closure
   closureMethod?: QcClosureMethod
@@ -283,16 +312,42 @@ export const mockQcIncidents: QcIncident[] = [
     description: 'Hệ thống tự động phát hiện lớp IELTS Intensive K24 kết thúc lúc 19:30 ngày 14/10 nhưng sau 30 phút vẫn chưa có thao tác chốt sổ điểm danh của giáo viên.',
     severity: 'high',
     status: 'open',
-    recurrenceCount: 1,
+    recurrenceCount: 2,
     evidence: 'Ghi nhận tự động từ nhật ký hệ thống: Không có bản ghi điểm danh lúc 20:00.',
-    evidenceImage: '',
+    evidenceImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600',
     evidenceLink: '',
     assignee: 'Thầy Hoàng Minh',
     issuedBy: 'Hệ thống tự động (Bot)',
     createdAt: '2026-10-14T20:00:00',
     deadline: '2026-10-15T12:00:00',
     closureMethod: 'system_auto',
-    notes: 'Lỗi phát sinh tự động khi vi phạm thời gian quy định.',
+    notes: 'Lỗi phát sinh tự động khi vi phạm thời gian quy định. Đã bị QC trả về lần 1 do chưa nhập lý do vắng.',
+    remediationRounds: [
+      {
+        id: 'round_01_1',
+        roundNumber: 1,
+        submittedBy: 'Thầy Hoàng Minh',
+        submittedAt: '2026-10-14T21:00:00',
+        action: 'Đã bổ sung chốt sổ điểm danh bù trên ứng dụng quản lý lớp.',
+        evidence: 'Ảnh chụp màn hình chốt danh sách học viên trên app.',
+        image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600',
+        preventiveAction: 'Đặt báo thức điện thoại 19h35 nhắc chốt sổ ngay khi tan lớp.',
+        reviewedBy: 'Nguyễn Thị Mai',
+        reviewedAt: '2026-10-14T22:00:00',
+        reviewStatus: 'rejected',
+        reviewNote: 'Kiểm tra thấy chưa nhập lý do vắng của 2 học sinh và thiếu nhận xét chuyên cần. Yêu cầu nhập đầy đủ trước 12h ngày mai.',
+      },
+      {
+        id: 'round_01_2',
+        roundNumber: 2,
+        submittedBy: 'Thầy Hoàng Minh',
+        submittedAt: '2026-10-15T08:30:00',
+        action: 'Đã hoàn tất nhập nhận xét chi tiết 15 học viên và bổ sung giấy phép vắng của 2 bạn.',
+        evidence: 'Ảnh chụp danh sách điểm danh và ghi chú phép của phụ huynh.',
+        image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600',
+        preventiveAction: 'In sẵn phiếu theo dõi chuyên cần tại bàn giáo viên mỗi buổi học.',
+      },
+    ],
     comments: [
       {
         id: 'comm_01',
@@ -311,6 +366,110 @@ export const mockQcIncidents: QcIncident[] = [
         action: 'Tự động tạo sự cố',
         details: 'Phát hiện lớp học kết thúc 30 phút chưa có dữ liệu điểm danh.',
         createdAt: '2026-10-14T20:00:00',
+      },
+      {
+        id: 'log_01_b',
+        userId: 'tch_01',
+        userName: 'Thầy Hoàng Minh',
+        action: 'Báo cáo khắc phục lần 1',
+        details: 'Đã bổ sung điểm danh bù trên app.',
+        createdAt: '2026-10-14T21:00:00',
+      },
+      {
+        id: 'log_01_c',
+        userId: 'ins_04',
+        userName: 'Nguyễn Thị Mai',
+        action: 'Đánh giá Chưa đạt',
+        details: 'Thiếu lý do vắng của 2 học sinh và nhận xét chuyên cần.',
+        createdAt: '2026-10-14T22:00:00',
+      },
+      {
+        id: 'log_01_d',
+        userId: 'tch_01',
+        userName: 'Thầy Hoàng Minh',
+        action: 'Báo cáo khắc phục lần 2',
+        details: 'Đã hoàn tất nhận xét và bổ sung lý do vắng.',
+        createdAt: '2026-10-15T08:30:00',
+      },
+    ],
+  },
+  {
+    id: 'inc_01_prev',
+    code: 'QC-2026-009',
+    title: 'Không gửi báo cáo nhận xét học viên sau buổi học số 2',
+    targetGroup: 'teacher',
+    criteria: 'feedback',
+    source: 'manual',
+    branch: 'RinoEdu Nguyễn Tuân',
+    classId: 'CLS-IEL-01',
+    className: 'IELTS Intensive K24',
+    subject: 'Tiếng Anh',
+    sessionNumber: 2,
+    sessionDate: '2026-10-10',
+    roomId: 'Phòng A201',
+    teacherId: 'tch_01',
+    teacherName: 'Thầy Hoàng Minh',
+    csmId: 'csm_01',
+    csmName: 'Nguyễn Thị Mai',
+    description: 'Quy định trung tâm yêu cầu gửi nhận xét học viên trong vòng 12h sau ca học, giáo viên chưa gửi báo cáo buổi 2 cho phụ huynh.',
+    severity: 'medium',
+    status: 'closed',
+    recurrenceCount: 1,
+    evidence: 'Chưa có dữ liệu nhận xét buổi 2 trên cổng thông tin phụ huynh.',
+    evidenceImage: 'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=600',
+    assignee: 'Thầy Hoàng Minh',
+    issuedBy: 'Nguyễn Thị Mai (Tổ trưởng CM)',
+    createdAt: '2026-10-11T09:00:00',
+    deadline: '2026-10-11T18:00:00',
+    correctiveAction: 'Đã hoàn thành gửi nhận xét chi tiết 15 học viên lên hệ thống.',
+    correctiveEvidence: 'Toàn bộ 15 học sinh đã có nhận xét và đánh giá sao.',
+    correctiveImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600',
+    completionDate: '2026-10-11T15:00:00',
+    remediationRounds: [
+      {
+        id: 'round_01_p1',
+        roundNumber: 1,
+        submittedBy: 'Thầy Hoàng Minh',
+        submittedAt: '2026-10-11T14:30:00',
+        action: 'Đã hoàn tất gửi nhận xét chi tiết và đánh giá chuyên cần cho 15 học sinh.',
+        evidence: 'Ảnh chụp màn hình cổng phụ huynh đã nhận nhận xét.',
+        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600',
+        preventiveAction: 'Lên lịch soạn nhận xét ngay sau khi kết thúc buổi học.',
+        reviewedBy: 'Nguyễn Thị Mai',
+        reviewedAt: '2026-10-11T16:00:00',
+        reviewStatus: 'approved',
+        reviewNote: 'Đã kiểm tra nhận xét cá nhân hóa chất lượng tốt. Duyệt đạt và đóng lỗi.',
+      },
+    ],
+    closureMethod: 'manual',
+    closedBy: 'Nguyễn Thị Mai',
+    closedAt: '2026-10-11T16:00:00',
+    notes: 'Đã hoàn tất nghiệm thu và đóng sự cố.',
+    comments: [],
+    logs: [
+      {
+        id: 'log_09_a',
+        userId: 'ins_04',
+        userName: 'Nguyễn Thị Mai',
+        action: 'Ghi nhận sự cố',
+        details: 'Chưa gửi nhận xét học viên buổi 2.',
+        createdAt: '2026-10-11T09:00:00',
+      },
+      {
+        id: 'log_09_b',
+        userId: 'tch_01',
+        userName: 'Thầy Hoàng Minh',
+        action: 'Báo cáo khắc phục',
+        details: 'Đã hoàn tất nhận xét 15 học viên.',
+        createdAt: '2026-10-11T14:30:00',
+      },
+      {
+        id: 'log_09_c',
+        userId: 'ins_04',
+        userName: 'Nguyễn Thị Mai',
+        action: 'Duyệt đạt & Đóng lỗi',
+        details: 'Nhận xét chi tiết đạt yêu cầu.',
+        createdAt: '2026-10-11T16:00:00',
       },
     ],
   },
@@ -337,6 +496,7 @@ export const mockQcIncidents: QcIncident[] = [
     status: 'correcting',
     recurrenceCount: 0,
     evidence: 'Trạng thái chăm sóc học viên mới vẫn ở trạng thái Chưa liên hệ sau 24h.',
+    evidenceImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600',
     assignee: 'Lê Thị Hương',
     issuedBy: 'Hệ thống tự động (Bot)',
     createdAt: '2026-10-14T18:00:00',
@@ -442,7 +602,7 @@ export const mockQcIncidents: QcIncident[] = [
     evidence: 'Ảnh chụp vũng nước trên mặt bàn và máng điều hòa ứ đọng nước.',
     evidenceImage: 'https://images.unsplash.com/photo-1562408590-e32931084e23?w=400',
     assignee: 'Võ Minh Tuấn (Kỹ thuật cơ sở)',
-    issuedBy: 'Trần Văn Kiên (Thanh tra viên)',
+    issuedBy: 'Trần Văn Kiên',
     createdAt: '2026-10-12T14:30:00',
     deadline: '2026-10-13T12:00:00',
     correctiveAction: 'Đã thông ống thoát nước bằng khí nén, vệ sinh dàn lạnh và lưới lọc bụi. Test chạy 45 phút không còn rò rỉ.',
@@ -453,6 +613,22 @@ export const mockQcIncidents: QcIncident[] = [
     closedBy: 'Trần Văn Kiên',
     closedAt: '2026-10-13T09:00:00',
     notes: 'Đã hoàn tất nghiệm thu và đóng lỗi.',
+    remediationRounds: [
+      {
+        id: 'round_04_1',
+        roundNumber: 1,
+        submittedBy: 'Võ Minh Tuấn (Kỹ thuật cơ sở)',
+        submittedAt: '2026-10-12T17:00:00',
+        action: 'Đã thông ống thoát nước ngưng bằng khí nén, vệ sinh dàn lạnh và lưới lọc bụi. Đã chạy thử nghiệm 45 phút không còn rò rỉ.',
+        evidence: 'Biên bản nghiệm thu kỹ thuật và ảnh chụp dàn lạnh khô ráo.',
+        image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400',
+        preventiveAction: 'Thêm hạng mục kiểm tra máng thoát nước vào checklist bảo trì 2 tuần/lần.',
+        reviewedBy: 'Trần Văn Kiên',
+        reviewedAt: '2026-10-13T09:00:00',
+        reviewStatus: 'approved',
+        reviewNote: 'Đã nghiệm thu hiện trường phòng A201 khô ráo, chạy êm. Duyệt đạt đóng sự cố.',
+      },
+    ],
     comments: [],
     logs: [
       {
@@ -492,13 +668,39 @@ export const mockQcIncidents: QcIncident[] = [
     evidence: 'Ảnh chụp sảnh vắng lúc 17h15 hiển thị trên camera giám sát cơ sở.',
     evidenceImage: 'https://images.unsplash.com/photo-1595246140625-573b715d11dc?w=400',
     assignee: 'Phạm Đức Thắng',
-    issuedBy: 'Trần Văn Kiên (Thanh tra viên)',
+    issuedBy: 'Trần Văn Kiên',
     createdAt: '2026-10-13T17:20:00',
     deadline: '2026-10-14T12:00:00',
     correctiveAction: 'Nhân viên giải trình đi photo tài liệu khẩn cấp.',
     correctiveEvidence: 'Bản giải trình viết tay của nhân viên.',
     closureMethod: 'manual',
     notes: 'QC đánh giá giải trình chưa đạt yêu cầu vì giờ cao điểm bắt buộc phải có ít nhất 1 người cố định tại quầy đón trả.',
+    remediationRounds: [
+      {
+        id: 'round_01',
+        roundNumber: 1,
+        submittedBy: 'Phạm Đức Thắng',
+        submittedAt: '2026-10-13T17:35:00',
+        action: 'Nhân viên giải trình đi photo tài liệu khẩn cấp.',
+        evidence: 'Bản giải trình viết tay của nhân viên.',
+        image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600',
+        preventiveAction: 'Phân công 2 nhân viên luân phiên trực chéo trong khung giờ 16h45 - 17h45.',
+        reviewedBy: 'Trần Văn Kiên',
+        reviewedAt: '2026-10-14T10:00:00',
+        reviewStatus: 'rejected',
+        reviewNote: 'Không chấp nhận giải trình đi photo trong khung giờ cao điểm đón học sinh mầm non. Đề nghị Giám đốc chi nhánh phân công lại ca trực và có phương án dự phòng.',
+      },
+      {
+        id: 'round_02',
+        roundNumber: 2,
+        submittedBy: 'Phạm Đức Thắng',
+        submittedAt: '2026-10-14T14:00:00',
+        action: 'Đã lập lịch phân công trực đón trả kép (2 người/ca) có chữ ký phê duyệt của Giám đốc chi nhánh Linh Đàm.',
+        evidence: 'Bản phân công ca trực niêm yết tại quầy lễ tân có chữ ký GĐ.',
+        image: 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?w=600',
+        preventiveAction: 'Quy định không rời vị trí khi chưa có người bàn giao thay thế.',
+      },
+    ],
     comments: [
       {
         id: 'comm_03',
@@ -522,9 +724,45 @@ export const mockQcIncidents: QcIncident[] = [
         id: 'log_09',
         userId: 'ins_01',
         userName: 'Trần Văn Kiên',
-        action: 'Đánh giá Chưa đạt (Trả lại)',
+        action: 'Đánh giá Chưa đạt',
         details: 'Giải trình không hợp lệ, yêu cầu lập phương án trực thay thế.',
         createdAt: '2026-10-14T10:00:00',
+      },
+    ],
+  },
+  {
+    id: 'inc_05_b',
+    code: 'QC-2026-010',
+    title: 'Quá 2 giờ chưa liên hệ phụ huynh xác nhận học viên mầm non nghỉ không báo trước',
+    targetGroup: 'operations',
+    criteria: 'student_care',
+    source: 'manual',
+    branch: 'RinoEdu Linh Đàm',
+    subject: 'Tiếng Anh',
+    roomId: 'Quầy CSM tầng 1',
+    csmId: 'csm_03',
+    csmName: 'Phạm Đức Thắng',
+    description: 'Học viên Nguyễn Tuấn Anh (lớp Tiếng Anh Mầm Non K12) vắng mặt không phép ca sáng 08h30, nhưng đến 11h00 nhân viên CSM chưa gọi điện hỏi thăm phụ huynh.',
+    severity: 'medium',
+    status: 'open',
+    recurrenceCount: 1,
+    evidence: 'Sổ theo dõi vắng chưa có ghi chú lý do nghỉ của học sinh lúc 11h00.',
+    evidenceImage: 'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=600',
+    assignee: 'Phạm Đức Thắng',
+    issuedBy: 'Lê Thị Hạnh (Trưởng phòng CSM)',
+    createdAt: '2026-10-15T11:15:00',
+    deadline: '2026-10-15T15:00:00',
+    closureMethod: 'manual',
+    notes: 'Cần giải trình nguyên nhân chậm liên hệ và cập nhật tình hình học viên.',
+    comments: [],
+    logs: [
+      {
+        id: 'log_05_b1',
+        userId: 'ins_02',
+        userName: 'Lê Thị Hạnh',
+        action: 'Ghi nhận sự cố',
+        details: 'Chưa gọi điện phụ huynh học sinh nghỉ không phép.',
+        createdAt: '2026-10-15T11:15:00',
       },
     ],
   },
@@ -597,13 +835,30 @@ export const mockQcIncidents: QcIncident[] = [
     description: 'Ca học 18h00 nhưng đến 18h15 giáo viên mới có mặt. Khi vào lớp không có slide bài giảng và giáo án in sẵn, phải dùng sách photo của học sinh.',
     severity: 'high',
     status: 'open',
-    recurrenceCount: 1,
+    recurrenceCount: 2,
     evidence: 'Biên bản ghi nhận dự giờ đột xuất và log quẹt thẻ ra vào lúc 18h14.',
+    evidenceImage: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600',
     assignee: 'Cô Hoàng Thu Thảo',
     issuedBy: 'Nguyễn Thị Mai (Tổ trưởng chuyên môn)',
     createdAt: '2026-10-14T18:20:00',
     deadline: '2026-10-15T12:00:00',
-    notes: 'Đã quá hạn thời gian cam kết khắc phục, sự cố đang bị treo.',
+    notes: 'Đã bị trả về lần 1 do cần dạy bù 15 phút và cam kết tác phong sư phạm.',
+    remediationRounds: [
+      {
+        id: 'round_07_1',
+        roundNumber: 1,
+        submittedBy: 'Cô Hoàng Thu Thảo',
+        submittedAt: '2026-10-15T09:00:00',
+        action: 'Xe máy bị hỏng săm đột xuất trên đường Nguyễn Trãi nên đến trễ 15 phút. Giáo án đã in bổ sung sau ca học.',
+        evidence: 'Hóa đơn sửa xe máy và bản in giáo án có ký tên.',
+        image: 'https://images.unsplash.com/photo-1588072432836-e10032774350?w=600',
+        preventiveAction: 'Chủ động di chuyển sớm hơn 30 phút vào giờ cao điểm.',
+        reviewedBy: 'Nguyễn Thị Mai',
+        reviewedAt: '2026-10-15T11:00:00',
+        reviewStatus: 'rejected',
+        reviewNote: 'Đến muộn 15 phút làm hụt thời lượng buổi học của 12 học sinh. Yêu cầu cô Thảo dạy bù 15 phút vào cuối buổi tới và viết bản cam kết tác phong.',
+      },
+    ],
     comments: [],
     logs: [
       {
@@ -613,6 +868,22 @@ export const mockQcIncidents: QcIncident[] = [
         action: 'Ghi nhận sự cố',
         details: 'Giáo viên đi muộn và thiếu giáo án giảng dạy.',
         createdAt: '2026-10-14T18:20:00',
+      },
+      {
+        id: 'log_12_b',
+        userId: 'tch_04',
+        userName: 'Cô Hoàng Thu Thảo',
+        action: 'Báo cáo giải trình lần 1',
+        details: 'Gửi hóa đơn sửa xe và bản in giáo án.',
+        createdAt: '2026-10-15T09:00:00',
+      },
+      {
+        id: 'log_12_c',
+        userId: 'ins_04',
+        userName: 'Nguyễn Thị Mai',
+        action: 'Đánh giá Chưa đạt',
+        details: 'Yêu cầu dạy bù 15 phút và gửi bản cam kết tác phong.',
+        createdAt: '2026-10-15T11:00:00',
       },
     ],
   },
@@ -633,7 +904,7 @@ export const mockQcIncidents: QcIncident[] = [
     evidence: 'Ảnh chụp màn chiếu phòng B102 bị vỡ màu và sọc ngang.',
     evidenceImage: 'https://images.unsplash.com/photo-1562408590-e32931084e23?w=400',
     assignee: 'Võ Minh Tuấn (Kỹ thuật cơ sở)',
-    issuedBy: 'Trần Văn Kiên (Thanh tra viên)',
+    issuedBy: 'Trần Văn Kiên',
     createdAt: '2026-10-15T09:15:00',
     deadline: '2026-10-16T17:00:00',
     correctiveAction: 'Đang kiểm tra dây cáp HDMI và đặt bóng đèn chiếu thay thế.',
@@ -665,6 +936,7 @@ export const mockQcIncidents: QcIncident[] = [
     status: 'open',
     recurrenceCount: 0,
     evidence: 'Biên bản bản cứng trong sổ lưu hồ sơ hành chính thiếu chữ ký trang 3.',
+    evidenceImage: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600',
     assignee: 'Trần Văn Kiên',
     issuedBy: 'Lê Thị Hạnh (Quản lý chất lượng)',
     createdAt: '2026-10-15T08:30:00',
@@ -731,7 +1003,7 @@ export const mockQcIncidents: QcIncident[] = [
     recurrenceCount: 0,
     evidence: 'Biên bản đính chính của kiểm tra viên và lịch điều chuyển phòng thực tế.',
     assignee: 'Tổ IT CSVC',
-    issuedBy: 'Trần Văn Kiên (Thanh tra viên)',
+    issuedBy: 'Trần Văn Kiên',
     createdAt: '2026-10-12T14:00:00',
     closureMethod: 'manual',
     closedBy: 'Trần Văn Kiên',
@@ -748,6 +1020,114 @@ export const mockQcIncidents: QcIncident[] = [
         createdAt: '2026-10-12T14:30:00',
       },
     ],
+  },
+  {
+    id: 'inc_12',
+    code: 'QC-2026-012',
+    title: 'Nộp sổ điểm danh và phiếu đánh giá muộn ca sáng',
+    targetGroup: 'teacher',
+    criteria: 'attendance',
+    source: 'manual',
+    branch: 'RinoEdu Nguyễn Tuân',
+    classId: 'CLS-MATH-05',
+    className: 'Toán Tư Duy Bồi Dưỡng T5',
+    subject: 'Toán tư duy',
+    sessionNumber: 3,
+    sessionDate: '2026-10-10',
+    roomId: 'Phòng A203',
+    teacherId: 'tch_03',
+    teacherName: 'Thầy Trần Quang Huy',
+    csmId: 'csm_01',
+    csmName: 'Nguyễn Thị Mai',
+    description: 'Giáo viên nộp sổ điểm danh muộn 45 phút sau khi kết thúc ca học sáng ngày 10/10.',
+    severity: 'medium',
+    status: 'closed',
+    recurrenceCount: 0,
+    evidence: 'Log hệ thống ghi nhận thời gian bấm hoàn thành lúc 12:45.',
+    assignee: 'Thầy Trần Quang Huy',
+    issuedBy: 'Nguyễn Thị Mai',
+    createdAt: '2026-10-10T13:00:00',
+    deadline: '2026-10-11T12:00:00',
+    correctiveAction: 'Đã hoàn tất cập nhật danh sách học viên vắng có phép và gửi tin nhắn Zalo cho phụ huynh.',
+    closureMethod: 'manual',
+    closedBy: 'Nguyễn Thị Mai',
+    closedAt: '2026-10-11T10:00:00',
+    notes: 'Đã hoàn tất giải trình và đóng nghiệm thu.',
+    comments: [],
+    logs: [
+      {
+        id: 'log_17',
+        userId: 'tch_03',
+        userName: 'Thầy Trần Quang Huy',
+        action: 'Nộp giải trình',
+        details: 'Đã cập nhật bù danh sách học viên.',
+        createdAt: '2026-10-10T16:00:00',
+      },
+    ],
+  },
+  {
+    id: 'inc_13',
+    code: 'QC-2026-013',
+    title: 'Quên mang thẻ giáo viên và đồng phục chưa chuẩn quy định',
+    targetGroup: 'teacher',
+    criteria: 'pedagogy',
+    source: 'manual',
+    branch: 'RinoEdu Nguyễn Tuân',
+    classId: 'CLS-IEL-01',
+    className: 'IELTS Intensive K24',
+    subject: 'Tiếng Anh',
+    sessionNumber: 2,
+    sessionDate: '2026-10-11',
+    roomId: 'Phòng A201',
+    teacherId: 'tch_01',
+    teacherName: 'Thầy Hoàng Minh',
+    csmId: 'csm_01',
+    csmName: 'Nguyễn Thị Mai',
+    description: 'Dự giờ đột xuất phát hiện giáo viên mặc áo phông không cổ và không đeo thẻ chức danh.',
+    severity: 'low',
+    status: 'closed',
+    recurrenceCount: 0,
+    evidence: 'Ảnh chụp ghi nhận của thanh tra viên ca 17:30.',
+    assignee: 'Thầy Hoàng Minh',
+    issuedBy: 'Lê Thị Hạnh',
+    createdAt: '2026-10-11T17:45:00',
+    deadline: '2026-10-12T12:00:00',
+    correctiveAction: 'Đã nhận áo đồng phục sơ mi trung tâm bổ sung tại quầy lễ tân và cam kết mặc đúng quy chuẩn từ các buổi sau.',
+    closureMethod: 'manual',
+    closedBy: 'Lê Thị Hạnh',
+    closedAt: '2026-10-12T09:00:00',
+    notes: 'Đã nhắc nhở và đóng sự cố.',
+    comments: [],
+    logs: [],
+  },
+  {
+    id: 'inc_14',
+    code: 'QC-2026-014',
+    title: 'Chưa cập nhật phản hồi kết quả học tập tuần của học viên',
+    targetGroup: 'operations',
+    criteria: 'feedback',
+    source: 'manual',
+    branch: 'RinoEdu Linh Đàm',
+    classId: 'CLS-KID-02',
+    className: 'Tiếng Anh Mầm Non K12',
+    subject: 'Tiếng Anh',
+    sessionNumber: 2,
+    sessionDate: '2026-10-14',
+    roomId: 'Phòng B102',
+    csmId: 'csm_02',
+    csmName: 'Lê Thị Hương',
+    description: 'Chuyên viên CSM chưa cập nhật tổng hợp kết quả tuần 2 của 4 bé lớp Mầm non K12 lên hệ thống báo cáo phụ huynh.',
+    severity: 'medium',
+    status: 'open',
+    recurrenceCount: 0,
+    evidence: 'Bảng theo dõi tiến độ tuần thiếu dữ liệu tuần 2.',
+    assignee: 'Lê Thị Hương',
+    issuedBy: 'Trần Văn Kiên',
+    createdAt: '2026-10-15T10:00:00',
+    deadline: '2026-10-16T18:00:00',
+    notes: 'Cần bổ sung hoàn tất trước buổi học tiếp theo.',
+    comments: [],
+    logs: [],
   },
 ]
 

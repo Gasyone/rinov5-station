@@ -14,6 +14,7 @@ import {
   type QcTargetGroup,
   type QcSourceType,
   type QcErrorSeverity,
+  type QcRemediationRound,
 } from '@/mocks/qcChecks'
 import {
   type IncidentStatusFilter,
@@ -26,9 +27,16 @@ import {
 } from './qcCheckTypes'
 import { QcCheckToolbar } from './QcCheckToolbar'
 import { QcCheckTable } from './QcCheckTable'
-import { QcCheckCreateDialog, type CreateBatchIncidentForm } from './QcCheckCreateDialog'
+import {
+  QcCheckCreateDialog,
+  type CreateBatchIncidentForm,
+  type QcCreatePrefill,
+} from './QcCheckCreateDialog'
 import { QcCheckDetailDialog } from './QcCheckDetailDialog'
-import { sortQcIncidents, type QcSortMode } from './qcCheckHelpers'
+import { QcCheckSlaConfigDialog } from './QcCheckSlaConfigDialog'
+import { sortQcIncidents, matchesIncidentSearch } from './qcCheckHelpers'
+import { groupIncidentsByPersonnel } from './qcPersonnelHelpers'
+import type { QcPersonnelGroup } from './qcPersonnelTypes'
 
 const CURRENT_USER_ID = 'ins_01'
 const CURRENT_USER_NAME = 'Trần Văn Kiên'
@@ -55,7 +63,8 @@ export interface QcCheckScreenProps {
   defaultViewMode?: string
 }
 
-export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
+export function QcCheckScreen(props: QcCheckScreenProps = {}) {
+  void props
   const authUser = useAuthStore((s) => s.user)
   const currentStaffName = authUser?.name || CURRENT_USER_NAME
 
@@ -64,7 +73,6 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
 
   useEffect(() => {
     let isMounted = true
-    setIsLoading(true)
     fetch('/api/qc-incidents')
       .then((res) => res.json())
       .then((resData) => {
@@ -93,7 +101,6 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   const [activeTargetGroup, setActiveTargetGroup] = useState('all')
   const [activeStatus, setActiveStatus] = useState<IncidentStatusFilter>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortMode, setSortMode] = useState<QcSortMode>('severity_deadline')
 
   const [filters, setFilters] = useState<FilterState>({
     branches: [],
@@ -109,6 +116,8 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   const [page, setPage] = useState(1)
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [createPrefill, setCreatePrefill] = useState<QcCreatePrefill | null>(null)
+  const [isSlaConfigOpen, setIsSlaConfigOpen] = useState(false)
   const [detailIncidentId, setDetailIncidentId] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
 
@@ -171,20 +180,8 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }
       }
 
-      if (searchTerm) {
-        const q = searchTerm.toLowerCase()
-        const codeMatch = inc.code.toLowerCase().includes(q)
-        const titleMatch = inc.title.toLowerCase().includes(q)
-        const descMatch = inc.description.toLowerCase().includes(q)
-        const classMatch = inc.className?.toLowerCase().includes(q) ?? false
-        const teacherMatch = inc.teacherName?.toLowerCase().includes(q) ?? false
-        const csmMatch = inc.csmName?.toLowerCase().includes(q) ?? false
-        const roomMatch = inc.roomId?.toLowerCase().includes(q) ?? false
-        const assigneeMatch = inc.assignee.toLowerCase().includes(q)
-
-        if (!codeMatch && !titleMatch && !descMatch && !classMatch && !teacherMatch && !csmMatch && !roomMatch && !assigneeMatch) {
-          return false
-        }
+      if (searchTerm && !matchesIncidentSearch(inc, searchTerm)) {
+        return false
       }
 
       if (filters.branches.length > 0 && !filters.branches.includes(inc.branch)) return false
@@ -195,8 +192,8 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
       return true
     })
 
-    return sortQcIncidents(base, sortMode)
-  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, activeStatus, searchTerm, filters, sortMode])
+    return sortQcIncidents(base)
+  }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, activeStatus, searchTerm, filters])
 
   // Status totals according to active filters (Rule 5: Status Tiles update dynamically according to all active filters)
   const statusTileTotals = useMemo(() => {
@@ -218,19 +215,8 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         const target = selectedAssignee.toLowerCase().trim()
         if (!inc.assignee.toLowerCase().includes(target)) return false
       }
-      if (searchTerm) {
-        const q = searchTerm.toLowerCase()
-        const codeMatch = inc.code.toLowerCase().includes(q)
-        const titleMatch = inc.title.toLowerCase().includes(q)
-        const descMatch = inc.description.toLowerCase().includes(q)
-        const classMatch = inc.className?.toLowerCase().includes(q) ?? false
-        const teacherMatch = inc.teacherName?.toLowerCase().includes(q) ?? false
-        const csmMatch = inc.csmName?.toLowerCase().includes(q) ?? false
-        const roomMatch = inc.roomId?.toLowerCase().includes(q) ?? false
-        const assigneeMatch = inc.assignee.toLowerCase().includes(q)
-        if (!codeMatch && !titleMatch && !descMatch && !classMatch && !teacherMatch && !csmMatch && !roomMatch && !assigneeMatch) {
-          return false
-        }
+      if (searchTerm && !matchesIncidentSearch(inc, searchTerm)) {
+        return false
       }
       if (filters.branches.length > 0 && !filters.branches.includes(inc.branch)) return false
       if (filters.targetGroups.length > 0 && !filters.targetGroups.includes(inc.targetGroup)) return false
@@ -248,10 +234,15 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
     return totals
   }, [incidents, activeBranch, activeSubject, activeCriteria, activeDeadline, activeTargetGroup, selectedAssignee, currentStaffName, searchTerm, filters])
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredIncidents.length / pageSize))
+  // Group filtered incidents into personnel-centric rows matching Care screen architecture
+  const personnelGroups = useMemo(() => {
+    return groupIncidentsByPersonnel(filteredIncidents)
+  }, [filteredIncidents])
+
+  // Pagination on personnel groups
+  const totalPages = Math.max(1, Math.ceil(personnelGroups.length / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const pagedIncidents = filteredIncidents.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const pagedGroups = personnelGroups.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   // Filter panel configuration
   const filterGroups = useMemo<FilterGroupConfig[]>(() => [
@@ -300,6 +291,16 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
 
   const detailIncident = incidents.find((i) => i.id === detailIncidentId) ?? null
 
+  const currentPersonnelGroupForDetail = useMemo(() => {
+    if (!detailIncidentId) return null
+    return personnelGroups.find((g) => g.incidents.some((i) => i.id === detailIncidentId)) || null
+  }, [personnelGroups, detailIncidentId])
+
+  const relatedDetailIncidents = useMemo(() => {
+    if (currentPersonnelGroupForDetail) return currentPersonnelGroupForDetail.incidents
+    return detailIncident ? [detailIncident] : []
+  }, [currentPersonnelGroupForDetail, detailIncident])
+
   // Create Batch Incidents
   const handleCreateBatch = async (form: CreateBatchIncidentForm) => {
     const inspector = INSPECTOR_OPTIONS.find((i) => i.id === form.inspectorId)
@@ -339,7 +340,12 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   }
 
   // Update Status
-  const handleUpdateStatus = async (incidentId: string, status: QcErrorStatus) => {
+  const handleUpdateStatus = async (
+    incidentId: string,
+    status: QcErrorStatus,
+    reviewNote?: string,
+    updatedRounds?: QcRemediationRound[]
+  ) => {
     const statusText =
       status === 'open'
         ? 'Mở'
@@ -355,19 +361,31 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
                   ? 'Chưa đáp ứng'
                   : status
 
-    const updates: { closedBy?: string; closedAt?: string; closureMethod?: 'manual' | 'system_auto' } = {}
+    const updates: {
+      closedBy?: string
+      closedAt?: string
+      closureMethod?: 'manual' | 'system_auto'
+      remediationRounds?: QcRemediationRound[]
+      notes?: string
+    } = {}
     if (status === 'closed' || status === 'cancelled') {
       updates.closedBy = currentStaffName
       updates.closedAt = new Date().toISOString()
       updates.closureMethod = 'manual'
+    }
+    if (updatedRounds) {
+      updates.remediationRounds = updatedRounds
+    }
+    if (reviewNote) {
+      updates.notes = reviewNote
     }
 
     const newLog = {
       id: `log_${Date.now()}`,
       userId: CURRENT_USER_ID,
       userName: currentStaffName,
-      action: status === 'closed' ? 'Nghiệm thu đóng lỗi' : 'Cập nhật trạng thái',
-      details: `Chuyển trạng thái sang: ${statusText}`,
+      action: status === 'closed' ? 'Nghiệm thu đóng lỗi' : status === 'not_met' ? 'Đánh giá chưa đạt' : 'Cập nhật trạng thái',
+      details: reviewNote ? `${statusText}: ${reviewNote}` : `Chuyển trạng thái sang: ${statusText}`,
       createdAt: new Date().toISOString(),
     }
 
@@ -406,7 +424,10 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
     incidentId: string,
     correctiveAction: string,
     correctiveEvidence: string,
-    correctiveImage?: string
+    correctiveImage?: string,
+    preventiveAction?: string,
+    correctiveLink?: string,
+    updatedRounds?: QcRemediationRound[]
   ) => {
     const nowIso = new Date().toISOString()
     const newLog = {
@@ -414,7 +435,7 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
       userId: CURRENT_USER_ID,
       userName: currentStaffName,
       action: 'Báo cáo khắc phục sự cố',
-      details: `Nộp phương án khắc phục: ${correctiveAction.substring(0, 60)}...`,
+      details: `Nộp phương án khắc phục: ${correctiveAction.substring(0, 60)}...${preventiveAction ? ` • Phòng ngừa: ${preventiveAction.substring(0, 40)}` : ''}`,
       createdAt: nowIso,
     }
 
@@ -427,6 +448,9 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
           correctiveAction,
           correctiveEvidence,
           correctiveImage,
+          preventiveAction,
+          correctiveLink,
+          remediationRounds: updatedRounds || inc.remediationRounds,
           completionDate: nowIso,
           status: 'corrected',
           logs: [...(inc.logs || []), newLog],
@@ -442,12 +466,14 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
           correctiveAction,
           correctiveEvidence,
           correctiveImage,
+          preventiveAction,
+          correctiveLink,
           completionDate: nowIso,
           status: 'corrected',
           newLog,
         }),
       })
-      toast.success('Đã nộp báo cáo khắc phục thành công')
+      toast.success('Đã nộp báo cáo giải trình & khắc phục thành công')
     } catch (err) {
       console.error('Lỗi nộp khắc phục:', err)
       toast.error('Lỗi khi lưu phương án khắc phục vào cơ sở dữ liệu')
@@ -552,9 +578,42 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
     }
   }
 
+  // Reassign Assignee with audit log preservation
+  const handleReassign = (
+    incidentId: string,
+    newAssignee: string,
+    reason: string,
+    note?: string
+  ) => {
+    const inc = incidents.find((i) => i.id === incidentId)
+    const oldAssignee = inc?.assignee || 'Chưa phân công'
+
+    const newLog = {
+      id: `log_${Date.now()}`,
+      userId: CURRENT_USER_ID,
+      userName: currentStaffName,
+      action: 'Đổi người phụ trách',
+      details: `Chuyển người phụ trách từ "${oldAssignee}" sang "${newAssignee}". Lý do: ${reason}${note ? ` (${note})` : ''}`,
+      createdAt: new Date().toISOString(),
+    }
+
+    setIncidents((prev) =>
+      prev.map((item) => {
+        if (item.id !== incidentId) return item
+        return {
+          ...item,
+          assignee: newAssignee,
+          logs: [...(item.logs || []), newLog],
+        }
+      })
+    )
+
+    toast.success(`Đã đổi người phụ trách sang: ${newAssignee}`)
+  }
+
   const toggleSelectAll = () => {
-    const allIds = filteredIncidents.map((i) => i.id)
-    const isAll = allIds.every((id) => selectedIds.has(id))
+    const allIds = pagedGroups.map((g) => g.id)
+    const isAll = allIds.length > 0 && allIds.every((id) => selectedIds.has(id))
     setSelectedIds(isAll ? new Set() : new Set(allIds))
   }
 
@@ -565,6 +624,18 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
       else next.add(id)
       return next
     })
+  }
+
+  const handleCreateForPersonnel = (group: QcPersonnelGroup) => {
+    setCreatePrefill({
+      branch: group.branch,
+      targetGroup: group.targetGroup,
+      teacherName: group.targetGroup === 'teacher' ? group.personnelName : undefined,
+      assignee: group.personnelName,
+      roomId: group.locationContext.room,
+      className: group.locationContext.className,
+    })
+    setIsCreateOpen(true)
   }
 
   const toggleFilterValue = <T extends string>(group: keyof FilterState, value: T) => {
@@ -585,8 +656,6 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       <QcCheckToolbar
-        sortMode={sortMode}
-        onSortModeChange={setSortMode}
         activeBranch={activeBranch}
         activeSubject={activeSubject}
         activeCriteria={activeCriteria}
@@ -615,24 +684,22 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
         }}
         onSearchChange={(v) => { setSearchTerm(v); setPage(1) }}
         onOpenFilters={() => setIsFilterOpen(true)}
+        onOpenSlaConfig={() => setIsSlaConfigOpen(true)}
         onCreate={() => setIsCreateOpen(true)}
       />
 
       <div className="flex flex-1 min-h-0 w-full gap-2 overflow-hidden px-2.5 pb-2 pt-1 lg:px-3 lg:pb-2.5">
         <div className="flex-1 min-w-0 h-full overflow-hidden">
           <QcCheckTable
-            incidents={pagedIncidents}
+            groups={pagedGroups}
             selectedIds={selectedIds}
             onToggleAll={toggleSelectAll}
             onToggleOne={toggleSelectOne}
-            onRowClick={setDetailIncidentId}
-            onQuickApprove={(id) => handleUpdateStatus(id, 'closed')}
-            onQuickRecheck={handleRecheckSystem}
-            sortMode={sortMode}
-            onSortModeChange={setSortMode}
+            onViewIncidentDetail={setDetailIncidentId}
+            onCreateIncidentForPersonnel={handleCreateForPersonnel}
             pagination={{
               page: currentPage,
-              total: filteredIncidents.length,
+              total: personnelGroups.length,
               pageSize,
               onPageChange: setPage,
               onPageSizeChange: setPageSize,
@@ -677,22 +744,46 @@ export function QcCheckScreen({ defaultViewMode }: QcCheckScreenProps = {}) {
 
       {/* Batch Create Dialog */}
       <QcCheckCreateDialog
+        key={`${isCreateOpen}-${createPrefill?.assignee || createPrefill?.teacherName || 'new'}`}
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        onSubmit={handleCreateBatch}
+        onOpenChange={(isOpen) => {
+          setIsCreateOpen(isOpen)
+          if (!isOpen) setCreatePrefill(null)
+        }}
+        onSubmit={(form) => {
+          handleCreateBatch(form)
+          setCreatePrefill(null)
+        }}
+        prefill={createPrefill}
       />
 
-      {/* Detail Dialog */}
+      {/* Detail Dialog (Phương án 1: Master-Detail Nhiều vấn đề + Tách Lần hiện tại / Lịch sử) */}
       <QcCheckDetailDialog
         incident={detailIncident}
+        relatedIncidents={relatedDetailIncidents}
+        personnelGroup={currentPersonnelGroupForDetail}
         open={!!detailIncident}
         onOpenChange={(isOpen) => {
           if (!isOpen) setDetailIncidentId('')
         }}
+        onSelectIncident={(id) => setDetailIncidentId(id)}
         onUpdateStatus={handleUpdateStatus}
         onUpdateRemediation={handleUpdateRemediation}
         onRecheckSystem={handleRecheckSystem}
         onAddComment={handleAddComment}
+        onReassign={handleReassign}
+        onCreateNewIssue={() => {
+          if (currentPersonnelGroupForDetail) {
+            handleCreateForPersonnel(currentPersonnelGroupForDetail)
+          }
+        }}
+        currentStaffName={currentStaffName}
+      />
+
+      {/* SLA & Criteria Configuration Dialog */}
+      <QcCheckSlaConfigDialog
+        open={isSlaConfigOpen}
+        onOpenChange={setIsSlaConfigOpen}
       />
     </div>
   )

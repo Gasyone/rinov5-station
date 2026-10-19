@@ -1,7 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Image as ImageIcon } from 'lucide-react'
+import {
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Video,
+  X,
+  GraduationCap,
+  Building2,
+  Headset,
+  Sparkles,
+  Info,
+  AlertCircle,
+  AlertTriangle,
+  Flame,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,13 +32,16 @@ import { FieldLabel } from '@/components/shared'
 import {
   QC_TARGET_GROUP_LABELS,
   QC_CRITERIA_LABELS,
-  QC_ERROR_SEVERITY_LABELS,
-  INSPECTOR_OPTIONS,
+  QC_TARGET_GROUP_CRITERIA,
   type QcTargetGroup,
   type QcEvaluationCriteria,
   type QcErrorSeverity,
 } from '@/mocks/qcChecks'
-import { BRANCH_OPTIONS } from './qcCheckHelpers'
+import {
+  BRANCH_OPTIONS,
+  getQuickTemplates,
+  type QuickTemplateItem,
+} from './qcCheckHelpers'
 
 export interface CreateIncidentItem {
   targetGroup: QcTargetGroup
@@ -32,6 +52,7 @@ export interface CreateIncidentItem {
   // Context fields
   className?: string
   sessionNumber?: number
+  sessionInfo?: string
   roomId?: string
   teacherName?: string
   csmName?: string
@@ -50,12 +71,24 @@ export interface CreateBatchIncidentForm {
   incidents: CreateIncidentItem[]
 }
 
+export interface QcCreatePrefill {
+  branch?: string
+  targetGroup?: QcTargetGroup
+  teacherName?: string
+  assignee?: string
+  roomId?: string
+  className?: string
+}
+
 const SAMPLE_CLASSES = [
   'IELTS Intensive K24',
   'Toán Tư Duy Bồi Dưỡng T5',
   'Tiếng Anh Mầm Non K12',
   'Tiếng Anh Giao Tiếp E3',
   'Lập trình Scratch Nhí S2',
+  'IELTS-K24',
+  'MATH-T05',
+  'ENG-K12',
 ]
 
 const SAMPLE_ROOMS = [
@@ -69,12 +102,15 @@ const SAMPLE_ROOMS = [
   'Nhà vệ sinh tầng 2',
 ]
 
-const SAMPLE_TEACHERS = [
-  'Thầy Hoàng Minh',
-  'Cô Lê Thùy Dung',
-  'Thầy Trần Quang Huy',
-  'Cô Hoàng Thu Thảo',
-  'Thầy Nguyễn Văn Đức',
+const SAMPLE_EQUIPMENT = [
+  'Điều hòa không khí',
+  'Máy chiếu & Màn chiếu',
+  'Đèn chiếu sáng',
+  'Bàn ghế học sinh',
+  'Bảng viết & Bút lông',
+  'Hệ thống âm thanh / Loa',
+  'Cửa sổ / Cửa ra vào',
+  'Thiết bị vệ sinh',
 ]
 
 const SAMPLE_CSMS = [
@@ -87,19 +123,20 @@ const SAMPLE_CSMS = [
 function buildEmptyItem(defaultGroup: QcTargetGroup = 'teacher'): CreateIncidentItem {
   return {
     targetGroup: defaultGroup,
-    criteria: defaultGroup === 'teacher' ? 'attendance' : defaultGroup === 'facility' ? 'facility_quality' : 'student_care',
+    criteria: QC_TARGET_GROUP_CRITERIA[defaultGroup][0],
     title: '',
     description: '',
-    severity: 'medium',
-    className: defaultGroup === 'teacher' ? SAMPLE_CLASSES[0] : '',
+    severity: 'medium', // Luôn để mặc định là Trung bình
+    className: '',
     sessionNumber: defaultGroup === 'teacher' ? 1 : undefined,
+    sessionInfo: defaultGroup === 'teacher' ? 'Buổi 1' : '',
     roomId: defaultGroup === 'facility' ? SAMPLE_ROOMS[1] : '',
-    teacherName: defaultGroup === 'teacher' ? SAMPLE_TEACHERS[0] : '',
+    teacherName: '',
     csmName: defaultGroup === 'operations' ? SAMPLE_CSMS[0] : '',
     evidence: 'Ghi nhận trực tiếp khi kiểm tra',
     evidenceImage: '',
     evidenceLink: '',
-    assignee: defaultGroup === 'teacher' ? SAMPLE_TEACHERS[0] : defaultGroup === 'facility' ? 'Võ Minh Tuấn (Kỹ thuật)' : SAMPLE_CSMS[0],
+    assignee: 'Bộ phận liên quan',
     deadline: '',
     notes: '',
   }
@@ -113,17 +150,38 @@ function buildEmptyBatchForm(): CreateBatchIncidentForm {
   }
 }
 
+function buildInitialBatchForm(prefill?: QcCreatePrefill | null): CreateBatchIncidentForm {
+  if (prefill) {
+    const tg = prefill.targetGroup || 'teacher'
+    const item = buildEmptyItem(tg)
+    if (prefill.teacherName) item.teacherName = prefill.teacherName
+    if (prefill.assignee) item.assignee = prefill.assignee
+    if (prefill.roomId) item.roomId = prefill.roomId
+    if (prefill.className) item.className = prefill.className
+    return {
+      branch: prefill.branch || BRANCH_OPTIONS[0],
+      inspectorId: 'ins_01',
+      incidents: [item],
+    }
+  }
+  return buildEmptyBatchForm()
+}
+
 interface QcCheckCreateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (form: CreateBatchIncidentForm) => void
+  prefill?: QcCreatePrefill | null
 }
 
-export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCreateDialogProps) {
-  const [form, setForm] = useState<CreateBatchIncidentForm>(buildEmptyBatchForm)
+export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: QcCheckCreateDialogProps) {
+  const [form, setForm] = useState<CreateBatchIncidentForm>(() => buildInitialBatchForm(prefill))
+  const [editingLinkIdx, setEditingLinkIdx] = useState<number | null>(null)
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
 
   const handleReset = () => {
     setForm(buildEmptyBatchForm())
+    setEditingLinkIdx(null)
   }
 
   const handleUpdateItem = (
@@ -138,24 +196,34 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
       // Auto adjust defaults when changing targetGroup
       if (field === 'targetGroup') {
         const group = value as QcTargetGroup
+        const allowedCriteria = QC_TARGET_GROUP_CRITERIA[group]
+        if (!allowedCriteria.includes(current.criteria)) {
+          current.criteria = allowedCriteria[0]
+        }
         if (group === 'teacher') {
-          current.criteria = 'attendance'
-          current.className = current.className || SAMPLE_CLASSES[0]
-          current.sessionNumber = current.sessionNumber || 1
-          current.teacherName = current.teacherName || SAMPLE_TEACHERS[0]
-          current.assignee = current.teacherName || SAMPLE_TEACHERS[0]
+          current.sessionInfo = current.sessionInfo || 'Buổi 1'
         } else if (group === 'facility') {
-          current.criteria = 'facility_quality'
           current.roomId = current.roomId || SAMPLE_ROOMS[1]
-          current.assignee = 'Võ Minh Tuấn (Kỹ thuật)'
         } else {
-          current.criteria = 'student_care'
           current.csmName = current.csmName || SAMPLE_CSMS[0]
-          current.assignee = current.csmName || SAMPLE_CSMS[0]
         }
       }
 
       nextIncidents[index] = current
+      return { ...prev, incidents: nextIncidents }
+    })
+  }
+
+  const handleApplyTemplate = (index: number, tpl: QuickTemplateItem) => {
+    setForm((prev) => {
+      const nextIncidents = [...prev.incidents]
+      nextIncidents[index] = {
+        ...nextIncidents[index],
+        title: tpl.title,
+        criteria: tpl.criteria,
+        severity: tpl.severity,
+        description: tpl.desc,
+      }
       return { ...prev, incidents: nextIncidents }
     })
   }
@@ -179,17 +247,34 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
 
   const handleSubmit = () => {
     if (!form.branch) {
-      alert('Vui lòng chọn cơ sở ghi nhận sự cố.')
+      toast.error('Vui lòng chọn cơ sở ghi nhận sự cố.')
       return
     }
 
     const invalid = form.incidents.some((item) => !item.description.trim() && !item.title.trim())
     if (invalid) {
-      alert('Vui lòng điền tiêu đề hoặc mô tả cho tất cả các sự cố đang nhập.')
+      toast.error('Vui lòng điền tiêu đề hoặc mô tả cho tất cả các sự cố đang nhập.')
       return
     }
 
-    onSubmit(form)
+    // Sync sessionNumber / notes from sessionInfo if available
+    const normalizedForm: CreateBatchIncidentForm = {
+      ...form,
+      incidents: form.incidents.map((inc) => {
+        const parsedNum = inc.sessionInfo ? parseInt(inc.sessionInfo.replace(/\D+/g, ''), 10) : undefined
+        return {
+          ...inc,
+          sessionNumber: !isNaN(Number(parsedNum)) ? parsedNum : inc.sessionNumber,
+          notes: inc.sessionInfo
+            ? inc.notes
+              ? `${inc.notes} • Lịch: ${inc.sessionInfo}`
+              : `Lịch: ${inc.sessionInfo}`
+            : inc.notes,
+        }
+      }),
+    }
+
+    onSubmit(normalizedForm)
     handleReset()
   }
 
@@ -202,140 +287,115 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
       }}
     >
       <DialogContent
-        className="max-h-[92vh] w-[95vw] sm:max-w-[1100px] overflow-hidden flex flex-col p-6"
+        className="max-h-[92vh] w-[95vw] sm:max-w-[1100px] overflow-hidden flex flex-col p-3 sm:px-4 sm:py-2.5 gap-1.5"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="border-b border-border/50 pb-3 shrink-0">
-          <DialogTitle className="text-xl font-bold flex items-center justify-between">
-            <span>Ghi nhận sự cố chất lượng (QC Incident)</span>
-            <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-1 rounded">
-              Hỗ trợ ghi nhận hàng loạt trong 1 lần
-            </span>
-          </DialogTitle>
-        </DialogHeader>
+        {/* Datalist for autocomplete class name / code */}
+        <datalist id="classDatalist">
+          {SAMPLE_CLASSES.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
 
-        {/* Form Body */}
-        <div className="flex-1 overflow-y-auto min-h-0 space-y-5 py-4 pr-1">
-          {/* Section 1: General Info */}
-          <div className="rounded-lg border border-border/70 bg-card p-3.5 shadow-2xs">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-3">
-              1. Thông tin phiên ghi nhận
-            </h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FieldLabel label="Cơ sở / Chi nhánh *">
-                <BranchSelect
-                  value={form.branch}
-                  branches={BRANCH_OPTIONS}
-                  variant="inline"
-                  includeAll={false}
-                  onValueChange={(v) => setForm((p) => ({ ...p, branch: v }))}
-                />
-              </FieldLabel>
+        {/* Header: Title nhỏ, text thường, màu xám nhạt (Không border line). Bên phải: Textlink Thêm lỗi + Chọn chi nhánh */}
+        <DialogHeader className="pb-1 shrink-0">
+          <div className="flex items-center justify-between pr-8">
+            <DialogTitle className="text-xs sm:text-sm font-normal text-muted-foreground">
+              Ghi nhận sự cố chất lượng (QC Incident)
+            </DialogTitle>
 
-              <FieldLabel label="Người ghi nhận (Kiểm tra viên / Chuyên môn) *">
-                <InlineSelect
-                  value={form.inspectorId}
-                  ariaLabel="Chọn người kiểm tra"
-                  options={INSPECTOR_OPTIONS.map((i) => ({ value: i.id, label: `${i.name} (${i.role})` }))}
-                  onValueChange={(v) => setForm((p) => ({ ...p, inspectorId: v }))}
-                />
-              </FieldLabel>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={handleAddRow}
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline hover:text-primary/80 transition-colors cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Thêm lỗi</span>
+              </button>
+
+              <div className="h-3 w-px bg-border/80" />
+
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="text-muted-foreground whitespace-nowrap">Cơ sở:</span>
+                <div className="w-[180px]">
+                  <BranchSelect
+                    value={form.branch}
+                    branches={BRANCH_OPTIONS}
+                    variant="inline"
+                    includeAll={false}
+                    className="h-7 text-xs bg-muted/30 hover:bg-muted/50 border-border/70"
+                    onValueChange={(v) => setForm((p) => ({ ...p, branch: v }))}
+                  />
+                </div>
+              </div>
             </div>
           </div>
+        </DialogHeader>
 
-          {/* Section 2: Batch Incidents */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
-                2. Danh sách các sự cố phát hiện ({form.incidents.length})
-              </h4>
-              <span className="text-xs text-muted-foreground">
-                Ghi nhận bất kỳ lúc nào, có thể thêm nhiều sự cố cùng lúc
-              </span>
-            </div>
-
-            <div className="space-y-3.5">
-              {form.incidents.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-lg border border-border bg-card p-4 shadow-xs transition-all hover:border-primary/40 relative"
-                >
-                  {/* Top Bar of Item */}
-                  <div className="flex items-center justify-between border-b pb-2.5 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                        #{idx + 1}
+        {/* Form Body - Scrollable Container */}
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-2 py-0.5 pr-0.5">
+          {form.incidents.map((item, idx) => (
+            <div
+              key={idx}
+              className="rounded-lg border border-border bg-card p-2.5 sm:p-3 shadow-2xs transition-all hover:border-primary/40 relative"
+            >
+              {/* Tách 2 cột: Cột trái (Đối tượng) - Cột phải (Ghi nhận sự cố) */}
+              <div className="grid grid-cols-12 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+                {/* ─── CỘT BÊN TRÁI: ĐỐI TƯỢNG (Col 4) ─── */}
+                <div className="col-span-12 sm:col-span-4 pr-0 sm:pr-3 space-y-2">
+                  {/* Tab chọn đối tượng */}
+                  <div className="flex items-center gap-1.5">
+                    {form.incidents.length > 1 && (
+                      <span className="font-bold text-sm text-primary shrink-0 select-none px-0.5">
+                        {idx + 1}
                       </span>
-                      <span className="text-xs font-semibold text-foreground">
-                        Sự cố {idx + 1}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {/* Target Group Segmented Buttons */}
-                      <div className="flex rounded-md border p-0.5 bg-muted/30">
-                        {(['teacher', 'facility', 'operations'] as QcTargetGroup[]).map((group) => (
+                    )}
+                    <div className="flex w-full rounded-md border border-border/80 p-0.5 bg-muted/40">
+                      {(['teacher', 'facility', 'operations'] as QcTargetGroup[]).map((group) => {
+                        const Icon = group === 'teacher' ? GraduationCap : group === 'facility' ? Building2 : Headset
+                        const isActive = item.targetGroup === group
+                        return (
                           <button
                             key={group}
                             type="button"
                             onClick={() => handleUpdateItem(idx, 'targetGroup', group)}
-                            className={`px-2 py-1 text-xs font-semibold rounded transition-all ${
-                              item.targetGroup === group
+                            className={`flex-1 flex items-center justify-center gap-1 py-1 text-xs font-semibold rounded transition-all cursor-pointer ${
+                              isActive
                                 ? 'bg-primary text-primary-foreground shadow-2xs'
-                                : 'text-muted-foreground hover:text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/60'
                             }`}
                           >
-                            {QC_TARGET_GROUP_LABELS[group]}
+                            <Icon className="h-3.5 w-3.5" />
+                            <span className="truncate">{QC_TARGET_GROUP_LABELS[group]}</span>
                           </button>
-                        ))}
-                      </div>
-
-                      {form.incidents.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRow(idx)}
-                          className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors"
-                          aria-label="Xóa sự cố"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      )}
+                        )
+                      })}
                     </div>
                   </div>
 
-                  {/* Context Fields based on Target Group */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 bg-muted/20 p-2.5 rounded-md border border-border/40">
+                  {/* Chi tiết bối cảnh đối tượng */}
+                  <div className="space-y-2 pt-0.5">
                     {item.targetGroup === 'teacher' && (
                       <>
-                        <FieldLabel label="Lớp học">
-                          <InlineSelect
-                            value={item.className || ''}
-                            ariaLabel="Chọn lớp học"
-                            options={SAMPLE_CLASSES.map((c) => ({ value: c, label: c }))}
-                            onValueChange={(v) => handleUpdateItem(idx, 'className', v)}
-                          />
-                        </FieldLabel>
-
-                        <FieldLabel label="Buổi học số">
+                        <FieldLabel label="Lớp học / Mã lớp *" className="gap-1">
                           <input
-                            type="number"
-                            min={1}
-                            max={60}
-                            value={item.sessionNumber ?? 1}
-                            onChange={(e) => handleUpdateItem(idx, 'sessionNumber', Number(e.target.value) || 1)}
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                            type="text"
+                            list="classDatalist"
+                            value={item.className || ''}
+                            onChange={(e) => handleUpdateItem(idx, 'className', e.target.value)}
+                            placeholder="Nhập mã hoặc tên lớp..."
+                            className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-medium"
                           />
                         </FieldLabel>
 
-                        <FieldLabel label="Giáo viên đứng lớp">
-                          <InlineSelect
-                            value={item.teacherName || ''}
-                            ariaLabel="Chọn giáo viên"
-                            options={SAMPLE_TEACHERS.map((t) => ({ value: t, label: t }))}
-                            onValueChange={(v) => {
-                              handleUpdateItem(idx, 'teacherName', v)
-                              handleUpdateItem(idx, 'assignee', v)
-                            }}
+                        <FieldLabel label="Tên buổi & Lịch học *" className="gap-1">
+                          <input
+                            type="text"
+                            value={item.sessionInfo || ''}
+                            onChange={(e) => handleUpdateItem(idx, 'sessionInfo', e.target.value)}
+                            placeholder="VD: Buổi 3 - T2 (18h00 - 19h30)..."
+                            className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           />
                         </FieldLabel>
                       </>
@@ -343,31 +403,26 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
 
                     {item.targetGroup === 'facility' && (
                       <>
-                        <FieldLabel label="Phòng học / Khu vực">
+                        <FieldLabel label="Phòng học / Khu vực *" className="gap-1">
                           <InlineSelect
                             value={item.roomId || ''}
                             ariaLabel="Chọn phòng học"
+                            className="h-8 text-xs"
                             options={SAMPLE_ROOMS.map((r) => ({ value: r, label: r }))}
                             onValueChange={(v) => handleUpdateItem(idx, 'roomId', v)}
                           />
                         </FieldLabel>
 
-                        <FieldLabel label="Người phụ trách sửa chữa">
-                          <input
-                            type="text"
-                            value={item.assignee}
-                            onChange={(e) => handleUpdateItem(idx, 'assignee', e.target.value)}
-                            placeholder="VD: Kỹ thuật Võ Minh Tuấn"
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
-                          />
-                        </FieldLabel>
-
-                        <FieldLabel label="Hạn xử lý (Deadline)">
-                          <input
-                            type="datetime-local"
-                            value={item.deadline ? item.deadline.slice(0, 16) : ''}
-                            onChange={(e) => handleUpdateItem(idx, 'deadline', e.target.value)}
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                        <FieldLabel label="Hạng mục / Thiết bị" className="gap-1">
+                          <InlineSelect
+                            value={item.notes || ''}
+                            ariaLabel="Chọn thiết bị"
+                            className="h-8 text-xs"
+                            options={[
+                              { value: '', label: 'Chung toàn khu vực' },
+                              ...SAMPLE_EQUIPMENT.map((eq) => ({ value: eq, label: eq })),
+                            ]}
+                            onValueChange={(v) => handleUpdateItem(idx, 'notes', v)}
                           />
                         </FieldLabel>
                       </>
@@ -375,175 +430,375 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit }: QcCheckCre
 
                     {item.targetGroup === 'operations' && (
                       <>
-                        <FieldLabel label="Nhân viên CS / Vận hành">
+                        <FieldLabel label="Nhân viên Vận hành *" className="gap-1">
                           <InlineSelect
                             value={item.csmName || ''}
-                            ariaLabel="Chọn nhân viên CS"
+                            ariaLabel="Chọn nhân viên Vận hành"
+                            className="h-8 text-xs"
                             options={SAMPLE_CSMS.map((c) => ({ value: c, label: c }))}
-                            onValueChange={(v) => {
-                              handleUpdateItem(idx, 'csmName', v)
-                              handleUpdateItem(idx, 'assignee', v)
-                            }}
+                            onValueChange={(v) => handleUpdateItem(idx, 'csmName', v)}
                           />
                         </FieldLabel>
 
-                        <FieldLabel label="Lớp học liên quan (nếu có)">
-                          <InlineSelect
-                            value={item.className || ''}
-                            ariaLabel="Chọn lớp học"
-                            options={[
-                              { value: '', label: 'Không gắn lớp cụ thể' },
-                              ...SAMPLE_CLASSES.map((c) => ({ value: c, label: c })),
-                            ]}
-                            onValueChange={(v) => handleUpdateItem(idx, 'className', v)}
-                          />
-                        </FieldLabel>
-
-                        <FieldLabel label="Buổi học số (nếu có)">
+                        <FieldLabel label="Lớp học / Mã lớp liên quan" className="gap-1">
                           <input
-                            type="number"
-                            min={1}
-                            max={60}
-                            value={item.sessionNumber ?? ''}
-                            onChange={(e) => handleUpdateItem(idx, 'sessionNumber', e.target.value ? Number(e.target.value) : undefined)}
-                            placeholder="VD: 1"
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
+                            type="text"
+                            list="classDatalist"
+                            value={item.className || ''}
+                            onChange={(e) => handleUpdateItem(idx, 'className', e.target.value)}
+                            placeholder="Mã hoặc tên lớp..."
+                            className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-medium"
+                          />
+                        </FieldLabel>
+
+                        <FieldLabel label="Buổi học & Lịch học" className="gap-1">
+                          <input
+                            type="text"
+                            value={item.sessionInfo || ''}
+                            onChange={(e) => handleUpdateItem(idx, 'sessionInfo', e.target.value)}
+                            placeholder="VD: Buổi 2..."
+                            className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                           />
                         </FieldLabel>
                       </>
                     )}
                   </div>
+                </div>
 
-                  {/* Criteria, Severity & Assignee */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                    <FieldLabel label="Tiêu chí đánh giá *">
-                      <InlineSelect
-                        value={item.criteria}
-                        ariaLabel="Tiêu chí đánh giá"
-                        options={Object.entries(QC_CRITERIA_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-                        onValueChange={(v) => handleUpdateItem(idx, 'criteria', v as QcEvaluationCriteria)}
-                      />
-                    </FieldLabel>
+                {/* ─── CỘT BÊN PHẢI: GHI NHẬN SỰ CỐ (Col 8) ─── */}
+                <div className="col-span-12 sm:col-span-8 pl-0 sm:pl-3 pt-2 sm:pt-0 space-y-2">
+                  {/* Top Bar của Ghi nhận: Tiêu chí bên trái, Mức độ 4 Icon & Nút xóa bên phải */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-1.5">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-[200px]">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap font-medium">
+                        Tiêu chí: <span className="text-destructive">*</span>
+                      </span>
+                      <div className="flex-1 max-w-[240px]">
+                        <InlineSelect
+                          value={item.criteria}
+                          ariaLabel="Tiêu chí đánh giá"
+                          className="h-7 text-xs"
+                          options={QC_TARGET_GROUP_CRITERIA[item.targetGroup].map((c) => ({
+                            value: c,
+                            label: QC_CRITERIA_LABELS[c],
+                          }))}
+                          onValueChange={(v) => handleUpdateItem(idx, 'criteria', v as QcEvaluationCriteria)}
+                        />
+                      </div>
+                    </div>
 
-                    <FieldLabel label="Mức độ nghiêm trọng *">
-                      <InlineSelect
-                        value={item.severity}
-                        ariaLabel="Mức độ nghiêm trọng"
-                        options={Object.entries(QC_ERROR_SEVERITY_LABELS).map(([v, l]) => ({ value: v, label: l }))}
-                        onValueChange={(v) => handleUpdateItem(idx, 'severity', v as QcErrorSeverity)}
-                      />
-                    </FieldLabel>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="text-[11px] text-muted-foreground hidden sm:inline">Mức độ:</span>
+                        <div className="flex rounded-md border border-border/70 p-0.5 bg-muted/30">
+                          {[
+                            {
+                              value: 'low' as const,
+                              title: 'Mức độ Thấp',
+                              activeClass: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 ring-1 ring-emerald-500/30',
+                              inactiveClass: 'text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500/10',
+                              icon: Info,
+                            },
+                            {
+                              value: 'medium' as const,
+                              title: 'Mức độ Trung bình (Mặc định)',
+                              activeClass: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/40 ring-1 ring-blue-500/30',
+                              inactiveClass: 'text-blue-500 dark:text-blue-400 hover:bg-blue-500/10',
+                              icon: AlertCircle,
+                            },
+                            {
+                              value: 'high' as const,
+                              title: 'Mức độ Cao',
+                              activeClass: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 ring-1 ring-amber-500/30',
+                              inactiveClass: 'text-amber-500 dark:text-amber-400 hover:bg-amber-500/10',
+                              icon: AlertTriangle,
+                            },
+                            {
+                              value: 'critical' as const,
+                              title: 'Mức độ Nghiêm trọng',
+                              activeClass: 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/40 ring-1 ring-rose-500/30',
+                              inactiveClass: 'text-rose-500 dark:text-rose-400 hover:bg-rose-500/10',
+                              icon: Flame,
+                            },
+                          ].map((sev) => {
+                            const SevIcon = sev.icon
+                            const isActive = item.severity === sev.value
+                            return (
+                              <button
+                                key={sev.value}
+                                type="button"
+                                onClick={() => handleUpdateItem(idx, 'severity', sev.value)}
+                                title={sev.title}
+                                className={`p-1 rounded transition-all cursor-pointer flex items-center justify-center ${
+                                  isActive
+                                    ? `${sev.activeClass} shadow-2xs`
+                                    : `${sev.inactiveClass} opacity-85 hover:opacity-100`
+                                }`}
+                              >
+                                <SevIcon className="h-3.5 w-3.5" />
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
 
-                    <FieldLabel label="Người phụ trách khắc phục *">
-                      <input
-                        type="text"
-                        value={item.assignee}
-                        onChange={(e) => handleUpdateItem(idx, 'assignee', e.target.value)}
-                        placeholder="Chỉ định người xử lý..."
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs"
-                      />
-                    </FieldLabel>
+                      {form.incidents.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(idx)}
+                          className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors cursor-pointer"
+                          title="Xóa lỗi này"
+                          aria-label="Xóa lỗi"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Title & Description */}
-                  <div className="space-y-2 mb-3">
-                    <FieldLabel label="Tiêu đề tóm tắt sự cố *">
-                      <input
-                        type="text"
-                        value={item.title}
-                        onChange={(e) => handleUpdateItem(idx, 'title', e.target.value)}
-                        placeholder="VD: Quên điểm danh trên phần mềm sau buổi 3..."
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs font-medium"
-                      />
-                    </FieldLabel>
+                  {/* Dòng Mẫu nhanh (bên trái) + Icon Tải ảnh & Thêm link (bên phải) */}
+                  <div className="flex items-center justify-between gap-1.5 pb-0.5 text-[11px]">
+                    {/* Bên trái: Gợi ý mẫu nhanh */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar min-w-0">
+                      {(() => {
+                        const templates = getQuickTemplates(item.targetGroup, item.criteria)
+                        if (templates.length === 0) return null
+                        return (
+                          <>
+                            <span className="flex items-center gap-1 text-muted-foreground shrink-0 font-medium">
+                              <Sparkles className="h-3 w-3 text-amber-500" />
+                              Mẫu nhanh:
+                            </span>
+                            {templates.map((tpl, tplIdx) => (
+                              <button
+                                key={tplIdx}
+                                type="button"
+                                onClick={() => handleApplyTemplate(idx, tpl)}
+                                className="shrink-0 rounded border border-border/70 bg-background/80 hover:bg-primary/10 hover:border-primary/50 hover:text-primary px-2 py-0.5 text-muted-foreground transition-all truncate max-w-[240px] cursor-pointer"
+                                title={tpl.title}
+                              >
+                                {tpl.title}
+                              </button>
+                            ))}
+                          </>
+                        )
+                      })()}
+                    </div>
 
-                    <FieldLabel label="Mô tả chi tiết vi phạm *">
-                      <textarea
-                        rows={2}
-                        value={item.description}
-                        onChange={(e) => handleUpdateItem(idx, 'description', e.target.value)}
-                        placeholder="Mô tả cụ thể hành vi vi phạm, số lượng học sinh bị ảnh hưởng, thời điểm..."
-                        className="flex w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs shadow-xs"
-                      />
-                    </FieldLabel>
-                  </div>
-
-                  {/* Evidence Upload */}
-                  <div className="rounded-md border border-dashed border-border/80 bg-muted/20 p-3">
-                    <span className="text-xs font-semibold text-muted-foreground block mb-2">
-                      Bằng chứng phát hiện vi phạm:
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <label className="flex h-9 px-3 cursor-pointer items-center justify-center rounded-md border border-border bg-background hover:bg-muted/50 transition-colors text-xs font-semibold text-primary gap-1.5">
+                    {/* Bên phải: Icon Tải ảnh & Thêm link (không viền, không nền, có màu, highlight) */}
+                    <div className="flex items-center gap-1 shrink-0 ml-auto pl-1">
+                      {/* Icon Tải ảnh / Video */}
+                      <label
+                        title="Tải lên ảnh hoặc video minh chứng"
+                        className={cn(
+                          'p-1 rounded cursor-pointer transition-all flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 hover:bg-sky-500/15',
+                          item.evidenceImage && 'bg-sky-500/15 ring-1 ring-sky-500/30'
+                        )}
+                      >
                         <ImageIcon className="h-4 w-4" />
-                        <span>+ Đính kèm ảnh bằng chứng</span>
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,video/*"
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) {
+                              const isVid = file.type.startsWith('video/')
                               handleUpdateItem(idx, 'evidenceImage', URL.createObjectURL(file))
+                              if (isVid) {
+                                handleUpdateItem(
+                                  idx,
+                                  'notes',
+                                  (item.notes ? `${item.notes} • ` : '') + 'Video minh chứng'
+                                )
+                              }
                             }
                           }}
                           className="hidden"
                         />
                       </label>
 
-                      <input
-                        type="text"
-                        value={item.evidenceLink || ''}
-                        onChange={(e) => handleUpdateItem(idx, 'evidenceLink', e.target.value)}
-                        placeholder="Dán link bằng chứng / log hệ thống (nếu có)..."
-                        className="flex h-9 flex-1 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs"
-                      />
+                      {/* Icon Thêm link */}
+                      <button
+                        type="button"
+                        onClick={() => setEditingLinkIdx(editingLinkIdx === idx ? null : idx)}
+                        title="Thêm liên kết ảnh, video hoặc tài liệu"
+                        className={cn(
+                          'p-1 rounded cursor-pointer transition-all flex items-center justify-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 hover:bg-indigo-500/15',
+                          (editingLinkIdx === idx || item.evidenceLink) &&
+                            'bg-indigo-500/15 ring-1 ring-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-semibold'
+                        )}
+                      >
+                        <LinkIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
 
-                      {item.evidenceImage && (
-                        <div className="relative group w-12 h-9 rounded border overflow-hidden shrink-0">
-                          <img src={item.evidenceImage} alt="Proof" className="w-full h-full object-cover" />
+                  {/* Ô tiêu đề tóm tắt (không có label) */}
+                  <input
+                    type="text"
+                    value={item.title}
+                    onChange={(e) => handleUpdateItem(idx, 'title', e.target.value)}
+                    placeholder="Tiêu đề tóm tắt sự cố * (hoặc chọn mẫu nhanh bên trên)..."
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-xs font-semibold shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+
+                  {/* Ô mô tả chi tiết vi phạm (có thể mở rộng resize-y) */}
+                  <textarea
+                    rows={2}
+                    value={item.description}
+                    onChange={(e) => handleUpdateItem(idx, 'description', e.target.value)}
+                    placeholder="Mô tả chi tiết vi phạm (nội dung, ảnh hưởng, thời điểm phát hiện)..."
+                    className="flex w-full resize-y min-h-[52px] rounded-md border border-input bg-background p-2 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+
+                  {/* Khi thêm link, hiển thị ô nhập link ở dưới ô mô tả chi tiết, cùng ảnh/video đính kèm */}
+                  {(editingLinkIdx === idx || item.evidenceLink || item.evidenceImage) && (
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      {/* Ô nhập link ảnh / video khi click icon link */}
+                      {editingLinkIdx === idx && (
+                        <div className="relative flex items-center flex-1 min-w-[200px] max-w-[360px]">
+                          <LinkIcon className="h-3 w-3 text-indigo-500 absolute left-2 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={item.evidenceLink || ''}
+                            onChange={(e) => handleUpdateItem(idx, 'evidenceLink', e.target.value)}
+                            placeholder="Dán link ảnh, video, drive minh chứng..."
+                            className="flex h-7 w-full rounded-md border border-input bg-background pl-6.5 pr-6 text-xs shadow-2xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === 'Escape') {
+                                setEditingLinkIdx(null)
+                              }
+                            }}
+                          />
+                          {item.evidenceLink && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItem(idx, 'evidenceLink', '')}
+                              className="absolute right-1.5 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                              title="Xóa link"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Hiển thị link ảnh / video đã đính kèm (khi không sửa) */}
+                      {item.evidenceLink && editingLinkIdx !== idx && (
+                        <div className="flex items-center gap-1.5 h-7 px-2 rounded-md border border-border bg-muted/40 text-xs max-w-[320px]">
+                          <LinkIcon className="h-3 w-3 text-indigo-500 shrink-0" />
+                          <a
+                            href={item.evidenceLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline"
+                            title={item.evidenceLink}
+                          >
+                            {item.evidenceLink}
+                          </a>
                           <button
                             type="button"
-                            onClick={() => handleUpdateItem(idx, 'evidenceImage', '')}
-                            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold"
+                            onClick={() => handleUpdateItem(idx, 'evidenceLink', '')}
+                            className="text-muted-foreground hover:text-destructive shrink-0 p-0.5 cursor-pointer"
+                            title="Xóa link"
                           >
-                            Xóa
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Thumbnail ảnh / video đã upload */}
+                      {item.evidenceImage && (
+                        <div
+                          className="relative group h-7 w-12 rounded border border-border overflow-hidden shrink-0 bg-muted/40 shadow-2xs cursor-pointer"
+                          onClick={() => setPreviewImageUrl(item.evidenceImage || null)}
+                          title="Bấm để xem ảnh lớn"
+                        >
+                          {item.notes?.includes('Video minh chứng') ? (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white">
+                              <Video className="h-3.5 w-3.5 text-rose-400" />
+                            </div>
+                          ) : (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={item.evidenceImage} alt="Minh chứng" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleUpdateItem(idx, 'evidenceImage', '')
+                              if (item.notes?.includes('Video minh chứng')) {
+                                handleUpdateItem(
+                                  idx,
+                                  'notes',
+                                  item.notes.replace('Video minh chứng', '').replace(/^• | • $/g, '').trim()
+                                )
+                              }
+                            }}
+                            className="absolute top-0.5 right-0.5 h-3.5 w-3.5 rounded-full bg-black/75 hover:bg-destructive text-white flex items-center justify-center transition-colors cursor-pointer"
+                            title="Xóa ảnh/video"
+                          >
+                            <X className="h-2 w-2" />
                           </button>
                         </div>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
-
-            {/* Add More Row Button */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddRow}
-              className="w-full border-dashed border-primary/50 text-primary hover:bg-primary/5 font-semibold text-xs h-9"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Thêm sự cố vi phạm khác
-            </Button>
-          </div>
+          ))}
         </div>
 
-        {/* Footer */}
-        <DialogFooter className="border-t border-border/50 pt-3 flex w-full items-center justify-between sm:justify-between shrink-0">
-          <div className="text-xs text-muted-foreground font-medium">
-            Tổng cộng: <span className="font-bold text-foreground">{form.incidents.length}</span> sự cố sẽ được ghi nhận
+        {/* Footer (Không border line) */}
+        <DialogFooter className="pt-1 pb-0 flex w-full items-center justify-between sm:justify-between shrink-0">
+          <div className="text-xs text-muted-foreground">
+            Tổng cộng: <span className="font-semibold text-foreground">{form.incidents.length}</span> sự cố
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex gap-1.5">
+            <Button variant="outline" size="sm" className="h-7 text-xs px-2.5" onClick={() => onOpenChange(false)}>
               Hủy bỏ
             </Button>
-            <Button onClick={handleSubmit} disabled={!form.branch}>
+            <Button size="sm" className="h-7 text-xs px-3" onClick={handleSubmit} disabled={!form.branch}>
               Ghi nhận {form.incidents.length} sự cố
             </Button>
           </div>
         </DialogFooter>
       </DialogContent>
+
+      {/* Lightbox Preview for Create Dialog */}
+      {previewImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/85 backdrop-blur-xs p-4 animate-in fade-in-0 duration-150"
+          onClick={(e) => {
+            e.stopPropagation()
+            setPreviewImageUrl(null)
+          }}
+        >
+          <div
+            className="relative max-w-4xl max-h-[85vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -top-10 right-0 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPreviewImageUrl(null)}
+                className="h-7 w-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer text-base"
+                title="Đóng xem ảnh"
+              >
+                &times;
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewImageUrl}
+              alt="Minh chứng vi phạm"
+              className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg shadow-2xl border border-white/10"
+            />
+          </div>
+        </div>
+      )}
     </Dialog>
   )
 }

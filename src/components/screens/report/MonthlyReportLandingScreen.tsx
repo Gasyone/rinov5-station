@@ -24,6 +24,7 @@ import { MonthlyReportStatsCards } from '../classes/detail/MonthlyReportStatsCar
 import { FormattedEvaluationContent } from '../classes/detail/FormattedEvaluationContent'
 import { downloadMonthlyReportImage } from '../classes/detail/monthlyReportImageHelper'
 import { StudentPhotoGallerySection } from './StudentPhotoGallerySection'
+import { MonthlyFeaturedVideoCard } from './MonthlyFeaturedVideoCard'
 import { mockCareAlerts } from '@/mocks/careAlerts'
 import {
   getMonthlyReportById,
@@ -478,6 +479,20 @@ export function MonthlyReportLandingScreen({
               </div>
             </div>
 
+            {/* ── SECTION THỐNG KÊ (CHUYÊN CẦN, BTVN, ĐIỂM KIỂM TRA) ── */}
+            <MonthlyReportStatsCards
+              currentMonth={activeMonthConfig.current}
+              attendanceRatio={studentMetrics.attendanceRatio}
+              lateCount={studentMetrics.lateCount}
+              homeworkRatio={studentMetrics.homeworkRatio}
+              homeworkAvg={studentMetrics.homeworkAvg}
+              testScore={studentMetrics.testScore}
+              priorTestScore={studentMetrics.priorTestScore}
+              onScrollToEvaluation={() => {
+                document.getElementById('landing-section-a')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            />
+
             {/* Thư viện ảnh học viên bên dưới thông tin con */}
             <StudentPhotoGallerySection
               studentId={report.studentId}
@@ -514,19 +529,12 @@ export function MonthlyReportLandingScreen({
               </div>
             </div>
 
-            {/* 1. Smartcard Section (Chuyên cần, BTVN, Kiểm tra) đặt ngay đầu */}
-            <MonthlyReportStatsCards
-              currentMonth={activeMonthConfig.current}
-              attendanceRatio={studentMetrics.attendanceRatio}
-              lateCount={studentMetrics.lateCount}
-              homeworkRatio={studentMetrics.homeworkRatio}
-              homeworkAvg={studentMetrics.homeworkAvg}
-              testScore={studentMetrics.testScore}
-              priorTestScore={studentMetrics.priorTestScore}
-              onScrollToEvaluation={() => {
-                document.getElementById('landing-section-a')?.scrollIntoView({ behavior: 'smooth' })
-              }}
-            />
+            {/* Video điểm nhấn học tập nổi bật theo tháng (Chỉ video thuần túy, tự động phát) */}
+            {report.featuredVideo && (
+              <MonthlyFeaturedVideoCard
+                video={report.featuredVideo}
+              />
+            )}
 
             {/* 2. Khung Báo Cáo Chi Tiết */}
             <div className="bg-card rounded-xl border border-border/80 shadow-2xs p-3.5 sm:p-4 space-y-3.5">

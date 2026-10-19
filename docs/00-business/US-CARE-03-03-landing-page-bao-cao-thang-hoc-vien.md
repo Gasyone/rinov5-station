@@ -48,6 +48,8 @@ tags: [parent-portal, landing-page, monthly-report, photo-gallery, lightbox, pri
 | **REQ-06** | Mục A: Đánh giá quá trình 1 tháng | Bắt buộc (Must) | Cột phải (khung giữa) | Trình bày rõ ràng Nhận xét chung A1 và Nhận xét kết quả học tập A2 |
 | **REQ-07** | Mục B: Kế hoạch tháng tới & Ôn tập | Bắt buộc (Must) | Cột phải (khung dưới) | B1 kế hoạch lấy từ Khung chương trình lớp ghép, B2 ôn tập 4 tuần có ảnh phiếu bài tập đính kèm |
 | **REQ-08** | In báo cáo & Xuất file lưu trữ | Bắt buộc (Must) | Nút hành động | Tự động kích hoạt hộp thoại in của trình duyệt, căn chỉnh bố cục trang nhã khi in hoặc lưu file |
+| **REQ-09** | Trình chiếu Show khoảnh khắc tự động | Nên có (Should) | Hộp thoại toàn màn hình | Tự động phát trình chiếu ảnh và video, có thanh tiến trình, hiệu ứng chuyển cảnh và tùy chọn tốc độ |
+| **REQ-10** | Video điểm nhấn tháng nhúng trực tiếp | Bắt buộc (Must) | Cột phải (dưới lời chúc) | Video nổi bật nhất tháng của con, tự động phát có nút bật tiếng, hỗ trợ tua và phóng to toàn màn hình |
 
 ### 1.3. Quy tắc nghiệp vụ cốt lõi (Business Rules)
 1. **[RULE-MR-01] Phạm vi báo cáo chuẩn 1 tháng:** Trang đích phản ánh chính xác kết quả học tập và rèn luyện trong 1 chu kỳ dương lịch 1 tháng (ví dụ: `01/04/2026 đến 30/04/2026`). Phụ huynh có thể sử dụng bộ chọn kỳ báo cáo trên thanh điều hướng để xem lại các tháng trước đó.
@@ -63,6 +65,16 @@ tags: [parent-portal, landing-page, monthly-report, photo-gallery, lightbox, pri
    - Kế hoạch ôn tập 4 tuần (Mục B2) hiển thị đầy đủ nội dung bài tập rèn luyện tại nhà, kèm ảnh phiếu học tập và liên kết tài liệu để phụ huynh dễ dàng in ra hoặc mở cùng con luyện tập.
 6. **[RULE-MR-06] In ấn chuẩn định dạng tài liệu lưu trữ (Print / PDF):**
    - Khi phụ huynh bấm `In báo cáo`, hệ thống ẩn thanh điều hướng, ẩn nút bấm và các chi tiết thừa, tự động căn chỉnh bố cục 2 cột sang định dạng trang in thanh lịch, cho phép in ra giấy hoặc lưu thành file PDF làm kỷ niệm.
+7. **[RULE-MR-07] Cơ chế trình chiếu khoảnh khắc tự động (Live Preview Show):**
+   - Trình chiếu tự động lần lượt các hình ảnh và video của con với thanh tiến trình phân đoạn.
+   - Với hình ảnh: Tự động chuyển cảnh sau khoảng thời gian thiết lập (3 giây, 5 giây hoặc 7 giây) kèm hiệu ứng chuyển cảnh (Mờ dần, Thu phóng nhẹ hoặc Lướt ngang).
+   - Với video: Tự động chạy video và chỉ chuyển tiếp sang hình ảnh hoặc video tiếp theo khi video phát xong.
+   - Cho phép người dùng tạm dừng, chuyển tiếp, lùi lại, thay đổi hiệu ứng chuyển cảnh và tốc độ chạy.
+8. **[RULE-MR-08] Cơ chế nhúng và tự động phát Video điểm nhấn tháng:**
+   - Video nhúng trực tiếp theo tỷ lệ chuẩn, có đầy đủ thanh điều khiển: Phát/Tạm dừng, thanh tua thời gian, bật/tắt âm thanh, và phóng to toàn màn hình.
+   - Khi vào trang đích, video tự động chạy ở chế độ tắt tiếng để tuân thủ quy chuẩn trình duyệt.
+   - Cung cấp nút nổi "Chạm để bật tiếng" với hiệu ứng thu hút phụ huynh bấm nghe âm thanh.
+   - Bên dưới video có phần ghi nhận của giáo viên phụ trách về điểm nhấn học tập của học viên trong video đó.
 
 ---
 
@@ -187,6 +199,25 @@ sequenceDiagram
 * **Khi:** Phụ huynh nhấp vào hộp chọn kỳ báo cáo trên thanh điều hướng và chọn kỳ tháng cũ hơn (ví dụ: `Báo cáo Tháng 3 & Kế hoạch Tháng 4/2026`).
 * **Thì:**
   - Toàn bộ giao diện trang đích tự động làm mới và cập nhật đúng số liệu, nhận xét, kế hoạch và thư viện ảnh của kỳ tháng được chọn.
+
+### AC-07 (Interactive Path - Trình chiếu Live Show khoảnh khắc tự động)
+* **Giả sử:** Phụ huynh đang xem khối Khoảnh khắc học tập trên trang đích.
+* **Khi:** Phụ huynh nhấp nút `Xem Show kỷ niệm` hoặc biểu tượng trình chiếu.
+* **Thì:**
+  - Hệ thống mở hộp thoại trình chiếu toàn màn hình với thanh tiến trình phân đoạn ở trên cùng.
+  - Hình ảnh tự động chuyển cảnh mượt mà theo khoảng thời gian được thiết lập.
+  - Video tự động phát và khi phát xong tự động chuyển tiếp sang nội dung tiếp theo.
+  - Người dùng có thể nhấn nút tạm dừng, tiếp tục hoặc tùy chỉnh hiệu ứng và tốc độ phát.
+
+### AC-08 (Feature Path - Video điểm nhấn tháng tự động phát nhúng trực tiếp)
+* **Giả sử:** Phụ huynh truy cập trang đích báo cáo tháng của học viên có chứa video điểm nhấn.
+* **Khi:** Trang đích tải hoàn tất.
+* **Thì:**
+  - Khung video điểm nhấn hiển thị trang trọng tại cột phải, nằm ngay dưới Thẻ Lời chúc của giáo viên.
+  - Video tự động phát (ở chế độ tắt tiếng để tuân thủ quy chuẩn trình duyệt) với hình ảnh sắc nét.
+  - Hiển thị nút nổi "Chạm để bật tiếng" thu hút sự chú ý; khi phụ huynh nhấp vào nút này, âm thanh được bật ngay lập tức.
+  - Cung cấp đầy đủ thanh điều khiển: nút phát/tạm dừng, thanh tua thời gian, thời lượng và nút phóng to toàn màn hình.
+  - Bên dưới video hiển thị ghi chú đánh giá của giáo viên về điểm nhấn học tập của con.
 
 ---
 

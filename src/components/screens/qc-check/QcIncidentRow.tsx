@@ -59,7 +59,7 @@ export function QcIncidentRow({
     <tr
       onClick={() => onViewDetail(incident.id)}
       className={cn(
-        'group cursor-pointer transition-colors align-middle [&>td]:py-1.5 2xl:[&>td]:py-2 border-b-0',
+        'group cursor-pointer transition-colors align-middle [&>td]:py-2 2xl:[&>td]:py-2.5 border-b-0',
         rowBgClass
       )}
     >
@@ -78,11 +78,11 @@ export function QcIncidentRow({
         />
       </td>
 
-      {/* 2. Đối tượng: Sticky left-8 (Khóa 210px để đồng bộ) */}
+      {/* 2. Đối tượng: Sticky left-8 (Khóa 230px để đồng bộ) */}
       <td
         onClick={() => onViewDetail(incident.id)}
         className={cn(
-          'sticky left-8 z-30 w-[210px] min-w-[210px] max-w-[210px] px-2.5 overflow-hidden transition-colors cursor-pointer border-b border-border/40',
+          'sticky left-8 z-30 w-[230px] min-w-[230px] max-w-[230px] px-3.5 pr-4 overflow-hidden transition-colors cursor-pointer border-b border-border/40',
           stickyBgClass
         )}
       >
@@ -149,8 +149,8 @@ export function QcIncidentRow({
         </div>
       </td>
 
-      {/* 3. Tiêu chí & Vi phạm (Giản lược in đậm, text-sm font-normal) */}
-      <td className="px-2.5 overflow-hidden border-b border-border/40">
+      {/* 3. Tiêu chí & Vi phạm (Giản lược in đậm, text-sm font-normal, đệm phải rộng rãi) */}
+      <td className="px-4 pr-7 overflow-hidden border-b border-border/40 text-left">
         <div className="flex flex-col gap-0.5 py-0 text-left">
           <div className="flex items-center gap-1.5 flex-nowrap min-w-0">
             {/* Tiêu chí có màu theo mức độ */}
@@ -227,8 +227,8 @@ export function QcIncidentRow({
         </div>
       </td>
 
-      {/* 4. Khắc phục & Minh chứng (Giản lược in đậm, text-sm font-normal) */}
-      <td className="px-2.5 overflow-hidden border-b border-border/40 text-left">
+      {/* 4. Khắc phục & Minh chứng (Giản lược in đậm, text-sm font-normal, đệm phải rộng rãi) */}
+      <td className="px-4 pr-7 overflow-hidden border-b border-border/40 text-left">
         <div className="flex flex-col gap-0.5 py-0">
           {/* Dòng 1: Icon đính kèm / Tích tự động ở trước nội dung khắc phục */}
           <div className="flex items-center gap-1.5 min-w-0">
@@ -299,7 +299,7 @@ export function QcIncidentRow({
       </td>
 
       {/* 5. Thời gian (Giản lược in đậm, Ngày tháng bỏ năm, Đến hạn hôm nay màu cam) */}
-      <td className="w-[140px] min-w-[140px] max-w-[140px] px-2.5 overflow-hidden border-b border-border/40">
+      <td className="w-[150px] min-w-[150px] max-w-[150px] px-4 pr-5 overflow-hidden border-b border-border/40 text-left">
         <div className="flex flex-col gap-0.5 text-left">
           {/* Dòng 1: Thời gian ghi nhận / phát hiện - Ngày tháng bỏ năm, font-normal */}
           <div className="flex items-center gap-1 leading-tight whitespace-nowrap text-xs">
@@ -352,7 +352,7 @@ export function QcIncidentRow({
       </td>
 
       {/* 6. Trạng thái */}
-      <td className="w-[110px] min-w-[110px] max-w-[110px] px-2.5 overflow-hidden whitespace-nowrap border-b border-border/40">
+      <td className="w-[130px] min-w-[130px] max-w-[130px] px-3.5 pr-4 overflow-hidden whitespace-nowrap border-b border-border/40 text-left">
         <div className="flex items-center gap-1 text-left">
           <Badge
             variant="outline"

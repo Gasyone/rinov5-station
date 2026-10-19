@@ -161,7 +161,11 @@ export async function POST(request: NextRequest) {
             evidenceLink: item.evidenceLink || null,
             assignee: item.assignee || 'Bộ phận liên quan',
             issuedBy: inspectorName,
-            deadline: item.deadline || null,
+            deadline:
+              item.deadline ||
+              new Date(
+                Date.now() + (item.severity === 'critical' || item.severity === 'high' ? 24 : 48) * 60 * 60 * 1000
+              ).toISOString(),
             notes: item.notes || null,
             commentsJson: JSON.stringify([]),
             logsJson: JSON.stringify([initialLog]),
