@@ -19,6 +19,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       department: 'Tổ Giáo viên Tiếng Anh',
       directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
+      position: 'Giáo viên',
+      subject: 'Robotics & STEM',
+      branches: ['RinoEdu Nguyễn Tuân', 'RinoEdu Hà Đông'],
     }
   }
   if (cleanName.includes('Quang Huy')) {
@@ -29,6 +32,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       department: 'Tổ Giáo viên Toán Tư Duy',
       directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
+      position: 'Giáo viên',
+      subject: 'Toán Tư Duy',
+      branches: ['RinoEdu Linh Đàm', 'RinoEdu Cầu Giấy'],
     }
   }
   if (cleanName.includes('Thu Thảo')) {
@@ -39,6 +45,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
       department: 'Tổ Tiếng Anh Giao Tiếp',
       directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
+      position: 'Giáo viên',
+      subject: 'Tiếng Anh',
+      branches: ['RinoEdu Smart City', 'RinoEdu Cầu Giấy'],
     }
   }
   if (cleanName.includes('Thùy Dung')) {
@@ -49,6 +58,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
       department: 'Tổ Tiếng Anh Mầm Non',
       directManager: 'Nguyễn Thị Mai (Tổ trưởng CM)',
+      position: 'Giáo viên',
+      subject: 'Tiếng Anh Mầm Non',
+      branches: ['RinoEdu Smart City'],
     }
   }
   if (cleanName.includes('Minh Tuấn') || cleanName.includes('Tuấn')) {
@@ -59,6 +71,8 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
       department: 'Bộ phận Kỹ thuật & CSVC',
       directManager: 'Trần Văn Kiên (Trưởng ban QC)',
+      position: 'Kỹ thuật viên CSVC',
+      branches: ['RinoEdu Smart City', 'RinoEdu Nguyễn Tuân'],
     }
   }
   if (cleanName.includes('Thị Hương') || cleanName.includes('Hương')) {
@@ -69,6 +83,8 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
       department: 'Bộ phận Chăm sóc Khách hàng',
       directManager: 'Lê Thị Hạnh (Trưởng phòng CSM)',
+      position: 'Chuyên viên CSM',
+      branches: ['RinoEdu Linh Đàm'],
     }
   }
   if (cleanName.includes('Đức Thắng') || cleanName.includes('Thắng')) {
@@ -79,6 +95,8 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
       department: 'Bộ phận Lễ tân & Đón tiếp',
       directManager: 'Lê Thị Hạnh (Trưởng phòng CSM)',
+      position: 'Chuyên viên CSM',
+      branches: ['RinoEdu Smart City', 'RinoEdu Hà Đông'],
     }
   }
   if (cleanName.includes('Văn Tùng') || cleanName.includes('Tùng')) {
@@ -89,6 +107,8 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
       department: 'Ban Quản trị Cơ sở',
       directManager: 'Ban Giám đốc',
+      position: 'Quản lý Cơ sở',
+      branches: ['RinoEdu Smart City'],
     }
   }
 
@@ -99,6 +119,9 @@ export function getPersonnelProfile(cleanName: string, targetGroup?: string): Qc
     email: 'personnel@rinoedu.vn',
     department: 'Cơ sở chi nhánh',
     directManager: 'Quản lý phụ trách',
+    position: targetGroup === 'teacher' ? 'Giáo viên' : targetGroup === 'facility' ? 'Kỹ thuật viên CSVC' : 'Chuyên viên CSM',
+    subject: targetGroup === 'teacher' ? 'Tiếng Anh' : undefined,
+    branches: ['RinoEdu Smart City'],
   }
 }
 

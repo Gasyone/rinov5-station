@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import type { QcIncident, QcComment, QcLog } from '@/mocks/qcChecks'
+import type { QcIncident as DbQcIncident, Prisma } from '@prisma/client'
+import { mockQcIncidents } from '@/mocks/qcChecks'
+import type { QcIncident, QcComment, QcLog, QcTargetGroup, QcEvaluationCriteria, QcSourceType, QcErrorSeverity, QcErrorStatus, QcClosureMethod, QcRemediationRound } from '@/mocks/qcChecks'
 
-function mapDbToQcIncident(db: any): QcIncident {
+function mapDbToQcIncident(db: DbQcIncident): QcIncident {
   let comments: QcComment[] = []
   let logs: QcLog[] = []
+  let remediationRounds: QcRemediationRound[] = []
 
   try {
     if (db.commentsJson) comments = JSON.parse(db.commentsJson)
@@ -14,27 +17,32 @@ function mapDbToQcIncident(db: any): QcIncident {
     if (db.logsJson) logs = JSON.parse(db.logsJson)
   } catch {}
 
+  try {
+    if (db.remediationRoundsJson) remediationRounds = JSON.parse(db.remediationRoundsJson)
+  } catch {}
+
   return {
     id: db.id,
     code: db.code,
     title: db.title,
-    targetGroup: db.targetGroup,
-    criteria: db.criteria,
-    source: db.source,
+    targetGroup: db.targetGroup as QcTargetGroup,
+    criteria: db.criteria as QcEvaluationCriteria,
+    source: db.source as QcSourceType,
     branch: db.branch,
     classId: db.classId || undefined,
     className: db.className || undefined,
     subject: db.subject || undefined,
     sessionNumber: db.sessionNumber ?? undefined,
     sessionDate: db.sessionDate || undefined,
+    sessionInfo: db.sessionInfo || undefined,
     roomId: db.roomId || undefined,
     teacherId: db.teacherId || undefined,
     teacherName: db.teacherName || undefined,
     csmId: db.csmId || undefined,
     csmName: db.csmName || undefined,
     description: db.description,
-    severity: db.severity,
-    status: db.status,
+    severity: db.severity as QcErrorSeverity,
+    status: db.status as QcErrorStatus,
     recurrenceCount: db.recurrenceCount ?? 0,
     evidence: db.evidence || '',
     evidenceImage: db.evidenceImage || undefined,
@@ -47,8 +55,10 @@ function mapDbToQcIncident(db: any): QcIncident {
     correctiveEvidence: db.correctiveEvidence || undefined,
     correctiveImage: db.correctiveImage || undefined,
     correctiveLink: db.correctiveLink || undefined,
+    preventiveAction: db.preventiveAction || undefined,
     completionDate: db.completionDate || undefined,
-    closureMethod: db.closureMethod || undefined,
+    remediationRounds,
+    closureMethod: (db.closureMethod as QcClosureMethod) || undefined,
     closedBy: db.closedBy || undefined,
     closedAt: db.closedAt || undefined,
     notes: db.notes || undefined,
@@ -68,7 +78,7 @@ export async function GET(request: NextRequest) {
     const source = searchParams.get('source')
     const search = searchParams.get('search')?.toLowerCase().trim()
 
-    const where: any = {}
+    const where: Prisma.QcIncidentWhereInput = {}
     if (branch && branch !== 'all') where.branch = branch
     if (status && status !== 'all') where.status = status
     if (targetGroup && targetGroup !== 'all') where.targetGroup = targetGroup
@@ -80,10 +90,24 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    let mapped = incidentsFromDb.map(mapDbToQcIncident)
+    const mapped = incidentsFromDb.map(mapDbToQcIncident)
+    const dbCodes = new Set(mapped.map((m) => m.code))
+
+    // Bổ sung đầy đủ các sự cố mẫu mockQcIncidents chưa có trong DB (đặc biệt các sự cố nhiều lỗi cho nhân sự)
+    let all = [...mapped]
+    mockQcIncidents.forEach((mock) => {
+      if (!dbCodes.has(mock.code)) {
+        if (branch && branch !== 'all' && mock.branch !== branch) return
+        if (status && status !== 'all' && mock.status !== status) return
+        if (targetGroup && targetGroup !== 'all' && mock.targetGroup !== targetGroup) return
+        if (severity && severity !== 'all' && mock.severity !== severity) return
+        if (source && source !== 'all' && mock.source !== source) return
+        all.push(mock)
+      }
+    })
 
     if (search) {
-      mapped = mapped.filter(
+      all = all.filter(
         (i) =>
           i.code.toLowerCase().includes(search) ||
           i.title.toLowerCase().includes(search) ||
@@ -97,8 +121,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      total: mapped.length,
-      data: mapped,
+      total: all.length,
+      data: all,
     })
   } catch (error) {
     console.error('Error fetching QC incidents from DB:', error)
@@ -151,6 +175,7 @@ export async function POST(request: NextRequest) {
             branch: branch || item.branch || 'RinoEdu Nguyễn Tuân',
             className: item.className || null,
             sessionNumber: item.sessionNumber ?? null,
+            sessionInfo: item.sessionInfo || null,
             roomId: item.roomId || null,
             teacherName: item.teacherName || null,
             csmName: item.csmName || null,
@@ -166,6 +191,8 @@ export async function POST(request: NextRequest) {
               new Date(
                 Date.now() + (item.severity === 'critical' || item.severity === 'high' ? 24 : 48) * 60 * 60 * 1000
               ).toISOString(),
+            preventiveAction: item.preventiveAction || null,
+            remediationRoundsJson: JSON.stringify(item.remediationRounds || []),
             notes: item.notes || null,
             commentsJson: JSON.stringify([]),
             logsJson: JSON.stringify([initialLog]),
@@ -212,6 +239,7 @@ export async function POST(request: NextRequest) {
         subject: body.subject || null,
         sessionNumber: body.sessionNumber ?? null,
         sessionDate: body.sessionDate || null,
+        sessionInfo: body.sessionInfo || null,
         roomId: body.roomId || null,
         teacherId: body.teacherId || null,
         teacherName: body.teacherName || null,
@@ -229,7 +257,9 @@ export async function POST(request: NextRequest) {
         correctiveEvidence: body.correctiveEvidence || null,
         correctiveImage: body.correctiveImage || null,
         correctiveLink: body.correctiveLink || null,
+        preventiveAction: body.preventiveAction || null,
         completionDate: body.completionDate || null,
+        remediationRoundsJson: JSON.stringify(body.remediationRounds || []),
         closureMethod: body.closureMethod || null,
         closedBy: body.closedBy || null,
         closedAt: body.closedAt || null,

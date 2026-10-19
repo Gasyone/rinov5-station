@@ -2,6 +2,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 import { getCareAlerts, mockCareAlerts, type StudentCareAlert } from '@/mocks/careAlerts'
 import { StudentCareDetailPage } from './StudentCareDetailPage'
@@ -84,16 +85,13 @@ export function OperationsAlertScreen() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Detail sheet & roadmap modal states
-  const [activeDetailStudentId, setActiveDetailStudentId] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search)
-      return params.get('studentId') || null
-    }
-    return null
-  })
+  const searchParams = useSearchParams()
+  const studentIdFromUrl = searchParams.get('studentId') || null
+  const [overrideStudentId, setOverrideStudentId] = useState<string | null | undefined>(undefined)
+  const activeDetailStudentId = overrideStudentId !== undefined ? overrideStudentId : studentIdFromUrl
 
   const handleSelectStudentDetail = (id: string | null) => {
-    setActiveDetailStudentId(id)
+    setOverrideStudentId(id)
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href)
       if (id) {

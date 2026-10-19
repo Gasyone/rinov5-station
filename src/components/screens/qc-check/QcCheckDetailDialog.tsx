@@ -5,15 +5,13 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExternalLink } from 'lucide-react'
 import { StatusBadge } from '@/components/shared'
-import { cn } from '@/lib/utils'
 import type { QcIncident, QcErrorStatus, QcRemediationRound } from '@/mocks/qcChecks'
-import { QC_ERROR_STATUS_LABELS } from '@/mocks/qcChecks'
+import { QC_ERROR_STATUS_LABELS, mockQcIncidents } from '@/mocks/qcChecks'
 import { getIncidentBadgeSemantic, isIncidentOverdue } from './qcCheckTypes'
 import { QcChangeAssigneeDialog } from './QcChangeAssigneeDialog'
 import { QcDetailProfilePanel } from './QcDetailProfilePanel'
 import { QcDetailActiveRemediation } from './QcDetailActiveRemediation'
-import { QcDetailHistoryPanel } from './QcDetailHistoryPanel'
-import { formatStaffName } from './qcPersonnelHelpers'
+import { QcPersonnelHistoryDialog } from './QcPersonnelHistoryDialog'
 import type { QcPersonnelGroup } from './qcPersonnelTypes'
 
 export interface QcCheckDetailDialogProps {
@@ -71,18 +69,35 @@ export function QcCheckDetailDialog({
   currentStaffName = 'Trần Văn Kiên',
   event,
 }: QcCheckDetailDialogProps) {
-  // Combine all incidents available for this subject/personnel
+  // Combine all incidents available for this subject/personnel in a strictly stable, deterministic order
   const allIncidents = useMemo(() => {
-    const list: QcIncident[] = []
-    const first = propIncident ?? (event?.errors?.[0] as QcIncident | undefined) ?? null
-    if (first) list.push(first)
+    const map = new Map<string, QcIncident>()
+    // 1. Toàn bộ incidents từ personnelGroup (đồng bộ 100% với các thẻ lỗi ngoài danh sách)
+    if (personnelGroup?.incidents) {
+      personnelGroup.incidents.forEach((inc) => {
+        map.set(inc.id, inc)
+      })
+    }
+    // 2. Toàn bộ relatedIncidents
     relatedIncidents.forEach((inc) => {
-      if (!list.some((existing) => existing.id === inc.id)) {
-        list.push(inc)
-      }
+      map.set(inc.id, inc)
     })
-    return list
-  }, [propIncident, relatedIncidents, event])
+    if (propIncident && !map.has(propIncident.id)) {
+      map.set(propIncident.id, propIncident)
+    }
+    if (event?.errors) {
+      event.errors.forEach((err) => {
+        if (!map.has(err.id)) map.set(err.id, err as QcIncident)
+      })
+    }
+    const list = Array.from(map.values())
+    // Sắp xếp cố định, tuyệt đối không di chuyển vị trí phần tử khi propIncident thay đổi
+    return list.sort((a, b) => {
+      const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (timeDiff !== 0) return timeDiff
+      return a.id.localeCompare(b.id)
+    })
+  }, [personnelGroup, relatedIncidents, propIncident, event])
 
   // Track active selected incident inside the dialog without cascading effects
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null)
@@ -103,53 +118,73 @@ export function QcCheckDetailDialog({
   // Lightbox zoom state
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
+  // Dedicated history dialog state
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+
   // Reassignment modal state
   const [isChangeAssigneeOpen, setIsChangeAssigneeOpen] = useState(false)
   const [localAssigneeMap, setLocalAssigneeMap] = useState<Record<string, string>>({})
   const currentAssignee =
     localAssigneeMap[activeIncidentId] ?? activeIncident?.assignee ?? ''
 
-  // Derive initial rounds for the active incident
-  const derivedRounds: QcRemediationRound[] = useMemo(() => {
-    if (!activeIncident) return []
-    return activeIncident.remediationRounds?.length
-      ? activeIncident.remediationRounds
-      : activeIncident.correctiveAction
+  const [localRoundsMap, setLocalRoundsMap] = useState<Record<string, QcRemediationRound[]>>({})
+
+  // Helper lấy lịch sử các lần khắc phục cho bất kỳ sự cố nào (bảo toàn n lần phản hồi trước đó)
+  const getRoundsForIncident = useMemo(() => {
+    return (inc: QcIncident): QcRemediationRound[] => {
+      if (localRoundsMap[inc.id] && localRoundsMap[inc.id].length > 0) {
+        return localRoundsMap[inc.id]
+      }
+      if (inc.remediationRounds && inc.remediationRounds.length > 0) {
+        return inc.remediationRounds
+      }
+      const mockMatch = mockQcIncidents.find(
+        (m) => m.id === inc.id || m.code === inc.code
+      )
+      if (mockMatch?.remediationRounds && mockMatch.remediationRounds.length > 0) {
+        return mockMatch.remediationRounds
+      }
+      return inc.correctiveAction
         ? [
             {
-              id: 'round_01',
+              id: `round_${inc.id}_01`,
               roundNumber: 1,
-              submittedBy: activeIncident.assignee || 'Phạm Đức Thắng',
-              submittedAt: activeIncident.completionDate || activeIncident.createdAt,
-              action: activeIncident.correctiveAction,
-              evidence: activeIncident.correctiveEvidence,
-              image: activeIncident.correctiveImage,
-              link: activeIncident.correctiveLink,
-              preventiveAction: activeIncident.preventiveAction,
+              submittedBy: inc.assignee || 'Phạm Đức Thắng',
+              submittedAt: inc.completionDate || inc.createdAt,
+              action: inc.correctiveAction,
+              evidence: inc.correctiveEvidence,
+              image: inc.correctiveImage,
+              link: inc.correctiveLink,
+              preventiveAction: inc.preventiveAction,
               reviewedBy:
-                activeIncident.status === 'not_met'
-                  ? activeIncident.issuedBy
-                  : activeIncident.status === 'closed'
-                    ? activeIncident.closedBy
+                inc.status === 'not_met'
+                  ? inc.issuedBy
+                  : inc.status === 'closed'
+                    ? inc.closedBy || 'Trần Văn Kiên'
                     : undefined,
               reviewedAt:
-                activeIncident.closedAt ||
-                (activeIncident.status === 'not_met' ? '2026-10-14T10:00:00' : undefined),
+                inc.closedAt ||
+                (inc.status === 'not_met' ? '2026-10-14T10:00:00' : undefined),
               reviewStatus:
-                activeIncident.status === 'closed'
+                inc.status === 'closed'
                   ? ('approved' as const)
-                  : activeIncident.status === 'not_met'
+                  : inc.status === 'not_met'
                     ? ('rejected' as const)
                     : undefined,
-              reviewNote: activeIncident.notes || activeIncident.comments?.[0]?.content,
+              reviewNote: inc.notes || inc.comments?.[0]?.content || 'Đã kiểm tra và nghiệm thu đạt.',
             },
           ]
         : []
-  }, [activeIncident])
+    }
+  }, [localRoundsMap])
 
-  const [localRoundsMap, setLocalRoundsMap] = useState<Record<string, QcRemediationRound[]>>({})
-  const rounds = localRoundsMap[activeIncidentId] ?? derivedRounds
-  const pastRounds = rounds.filter((r) => !!r.reviewedBy)
+  const rounds = activeIncident ? getRoundsForIncident(activeIncident) : []
+  const pastRounds = rounds.filter((r) => !!r.reviewedBy || !!r.reviewStatus)
+
+  // Danh sách các lỗi đã đóng / đã hoàn tất của đối tượng nhân sự này
+  const completedIncidents = useMemo(() => {
+    return allIncidents.filter((i) => i.status === 'closed')
+  }, [allIncidents])
 
   if (!activeIncident) return null
 
@@ -225,49 +260,32 @@ export function QcCheckDetailDialog({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="max-w-5xl 2xl:max-w-6xl w-full p-4 sm:p-5 flex flex-col max-h-[92vh] h-auto overflow-hidden text-foreground gap-2.5"
+          className="max-w-5xl 2xl:max-w-6xl w-full p-3.5 sm:p-4 flex flex-col max-h-[92vh] h-auto overflow-hidden text-foreground gap-2"
           showCloseButton
         >
-          {/* Header Modal */}
-          <DialogHeader className="p-0 border-b border-border/60 pb-2.5 shrink-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-left">
-              <div className="space-y-0.5 min-w-0 pr-6">
-                <DialogTitle className="text-base sm:text-lg font-bold text-foreground leading-snug truncate">
-                  Chi tiết sự cố & Hồ sơ kiểm tra chất lượng
-                </DialogTitle>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span className="font-semibold text-primary">{activeIncident.branch}</span>
-                  <span>•</span>
-                  <span>
-                    Đối tượng: <strong className="text-foreground font-semibold">{formatStaffName(activeIncident.teacherName || activeIncident.assignee)}</strong>
-                  </span>
-                  <span>•</span>
-                  <span className="font-medium text-foreground bg-muted px-1.5 py-0.2 rounded">
-                    {allIncidents.length} sự cố ghi nhận
-                  </span>
-                </div>
-              </div>
+          {/* Header Modal - 1 dòng duy nhất, không đường line, text thường nhỏ gọn */}
+          <DialogHeader className="p-0 pb-0.5 shrink-0">
+            <div className="flex items-center justify-between gap-3 text-left pr-8">
+              <DialogTitle className="text-sm font-normal text-muted-foreground leading-none truncate">
+                Chi tiết Chất lượng nhân sự
+              </DialogTitle>
 
               {/* Status and recurrence badges */}
-              <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center pr-6 sm:pr-0">
-                <span
-                  className={cn(
-                    'text-xs font-semibold px-2 py-0.5 rounded border',
-                    isRecurring
-                      ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
-                      : 'border-border bg-muted/60 text-muted-foreground'
-                  )}
-                >
-                  {recurrenceCount} lần
-                </span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {isRecurring && (
+                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                    Tái diễn ({recurrenceCount})
+                  </span>
+                )}
 
                 <StatusBadge
                   status={getIncidentBadgeSemantic(activeIncident)}
                   label={QC_ERROR_STATUS_LABELS[activeIncident.status]}
+                  className="text-[11px] px-1.5 py-0.5"
                 />
 
                 {isOverdue && (
-                  <Badge variant="destructive" className="text-xs font-semibold px-2 py-0.5">
+                  <Badge variant="destructive" className="text-[11px] font-semibold px-1.5 py-0.5">
                     Quá hạn
                   </Badge>
                 )}
@@ -286,28 +304,28 @@ export function QcCheckDetailDialog({
                   incidents={allIncidents}
                   onSelectIncident={handleSelectIncidentInternal}
                   onCreateNewIssue={onCreateNewIssue}
+                  onZoomImage={setZoomImageUrl}
+                  onOpenHistory={() => setIsHistoryOpen(true)}
+                  onOpenChangeAssignee={(inc) => {
+                    handleSelectIncidentInternal(inc.id)
+                    setIsChangeAssigneeOpen(true)
+                  }}
+                  onCancelIncident={(incId) => {
+                    onUpdateStatus(incId, 'cancelled')
+                  }}
                 />
               </div>
 
-              {/* CỘT PHẢI: Khắc phục & Nghiệm thu (col-span-7) */}
-              <div className="md:col-span-7 flex flex-col gap-2.5 min-h-0">
-                {/* 1. Khu vực Trên: Lần đang khắc phục hiện tại (lần đang xử lý) */}
+              {/* CỘT PHẢI: Khắc phục & Nghiệm thu (col-span-7: Thông tin lỗi ở trên, Khắc phục & Xử lý ở dưới) */}
+              <div className="md:col-span-7 flex flex-col gap-3 min-h-0">
                 <QcDetailActiveRemediation
                   incident={activeIncident}
                   rounds={rounds}
+                  pastRounds={pastRounds}
                   currentAssignee={currentAssignee}
-                  onOpenChangeAssignee={() => setIsChangeAssigneeOpen(true)}
-                  onCancelIncident={() => onUpdateStatus(activeIncident.id, 'cancelled')}
                   onSubmitRemediation={handleSubmitRemediation}
                   onReviewSubmit={handleReviewSubmit}
                   onReopen={() => onUpdateStatus(activeIncident.id, 'correcting')}
-                  onZoomImage={setZoomImageUrl}
-                />
-
-                {/* 2. Khu vực Dưới: Lịch sử lỗi và các lần khắc phục trước đó */}
-                <QcDetailHistoryPanel
-                  incident={activeIncident}
-                  pastRounds={pastRounds}
                   onZoomImage={setZoomImageUrl}
                 />
               </div>
@@ -369,6 +387,24 @@ export function QcCheckDetailDialog({
           onConfirm={handleConfirmReassign}
         />
       )}
+
+      {/* Modal Lịch sử vi phạm & khắc phục đã đóng */}
+      <QcPersonnelHistoryDialog
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+        personnelName={
+          personnelGroup?.personnelName ||
+          activeIncident.teacherName ||
+          activeIncident.assignee ||
+          'Nhân sự trung tâm'
+        }
+        personnelCode={personnelGroup?.profile?.code}
+        role={personnelGroup?.role}
+        completedIncidents={completedIncidents}
+        getRoundsForIncident={getRoundsForIncident}
+        onZoomImage={setZoomImageUrl}
+        onReopenIncident={(incId) => onUpdateStatus(incId, 'correcting')}
+      />
     </>
   )
 }

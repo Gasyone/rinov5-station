@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import type { QcIncident, QcComment, QcLog } from '@/mocks/qcChecks'
+import type { QcIncident as DbQcIncident } from '@prisma/client'
+import type {
+  QcIncident,
+  QcComment,
+  QcLog,
+  QcRemediationRound,
+  QcTargetGroup,
+  QcEvaluationCriteria,
+  QcSourceType,
+  QcErrorSeverity,
+  QcErrorStatus,
+  QcClosureMethod,
+} from '@/mocks/qcChecks'
 
-function mapDbToQcIncident(db: any): QcIncident {
+function mapDbToQcIncident(db: DbQcIncident): QcIncident {
   let comments: QcComment[] = []
   let logs: QcLog[] = []
+  let remediationRounds: QcRemediationRound[] = []
 
   try {
     if (db.commentsJson) comments = JSON.parse(db.commentsJson)
@@ -14,27 +27,32 @@ function mapDbToQcIncident(db: any): QcIncident {
     if (db.logsJson) logs = JSON.parse(db.logsJson)
   } catch {}
 
+  try {
+    if (db.remediationRoundsJson) remediationRounds = JSON.parse(db.remediationRoundsJson)
+  } catch {}
+
   return {
     id: db.id,
     code: db.code,
     title: db.title,
-    targetGroup: db.targetGroup,
-    criteria: db.criteria,
-    source: db.source,
+    targetGroup: db.targetGroup as QcTargetGroup,
+    criteria: db.criteria as QcEvaluationCriteria,
+    source: db.source as QcSourceType,
     branch: db.branch,
     classId: db.classId || undefined,
     className: db.className || undefined,
     subject: db.subject || undefined,
     sessionNumber: db.sessionNumber ?? undefined,
     sessionDate: db.sessionDate || undefined,
+    sessionInfo: db.sessionInfo || undefined,
     roomId: db.roomId || undefined,
     teacherId: db.teacherId || undefined,
     teacherName: db.teacherName || undefined,
     csmId: db.csmId || undefined,
     csmName: db.csmName || undefined,
     description: db.description,
-    severity: db.severity,
-    status: db.status,
+    severity: db.severity as QcErrorSeverity,
+    status: db.status as QcErrorStatus,
     recurrenceCount: db.recurrenceCount ?? 0,
     evidence: db.evidence || '',
     evidenceImage: db.evidenceImage || undefined,
@@ -47,8 +65,10 @@ function mapDbToQcIncident(db: any): QcIncident {
     correctiveEvidence: db.correctiveEvidence || undefined,
     correctiveImage: db.correctiveImage || undefined,
     correctiveLink: db.correctiveLink || undefined,
+    preventiveAction: db.preventiveAction || undefined,
     completionDate: db.completionDate || undefined,
-    closureMethod: db.closureMethod || undefined,
+    remediationRounds,
+    closureMethod: (db.closureMethod as QcClosureMethod) || undefined,
     closedBy: db.closedBy || undefined,
     closedAt: db.closedAt || undefined,
     notes: db.notes || undefined,
@@ -129,7 +149,13 @@ export async function PATCH(
     if (body.correctiveEvidence !== undefined) updateData.correctiveEvidence = body.correctiveEvidence
     if (body.correctiveImage !== undefined) updateData.correctiveImage = body.correctiveImage
     if (body.correctiveLink !== undefined) updateData.correctiveLink = body.correctiveLink
+    if (body.preventiveAction !== undefined) updateData.preventiveAction = body.preventiveAction
     if (body.completionDate !== undefined) updateData.completionDate = body.completionDate
+    if (body.sessionInfo !== undefined) updateData.sessionInfo = body.sessionInfo
+
+    if (body.remediationRounds !== undefined) {
+      updateData.remediationRoundsJson = JSON.stringify(body.remediationRounds)
+    }
 
     if (body.closureMethod !== undefined) updateData.closureMethod = body.closureMethod
     if (body.closedBy !== undefined) updateData.closedBy = body.closedBy

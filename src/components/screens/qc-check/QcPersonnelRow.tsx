@@ -43,7 +43,18 @@ export function QcPersonnelRow({
       ? 'bg-slate-50 dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800'
       : 'bg-white dark:bg-zinc-950 hover:bg-slate-100 dark:hover:bg-zinc-800'
 
-  const primaryIncident = group.incidents[0]
+  // Ở ngoài danh sách nếu có thẻ mới thì ẩn thẻ cũ đi, chỉ hiển thị các thẻ cũ khi không có thẻ mới nào
+  const displayedIncidents = React.useMemo(() => {
+    const active = group.incidents.filter(
+      (i) => i.status !== 'closed' && i.status !== 'cancelled'
+    )
+    if (active.length > 0) {
+      return active
+    }
+    return group.incidents.filter((i) => i.status === 'closed')
+  }, [group.incidents])
+
+  const primaryIncident = displayedIncidents[0] || group.incidents[0]
 
   const handleRowClick = () => {
     if (primaryIncident) {
@@ -226,7 +237,7 @@ export function QcPersonnelRow({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-center gap-1 py-0.5">
-          {group.incidents.map((incident) => (
+          {displayedIncidents.map((incident) => (
             <QcTagHoverCard
               key={incident.id}
               incident={incident}

@@ -80,6 +80,9 @@ export interface QcPersonnelProfile {
   avatar?: string
   department?: string
   directManager?: string
+  position?: string
+  subject?: string
+  branches?: string[]
 }
 
 export interface QcPersonnelGroup {

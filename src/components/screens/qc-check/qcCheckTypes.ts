@@ -6,6 +6,34 @@ import type {
   QcEvaluationCriteria,
   QcErrorSeverity,
 } from '@/mocks/qcChecks'
+import { Flame, AlertTriangle, AlertCircle, Info } from 'lucide-react'
+import type React from 'react'
+
+export const SEVERITY_CONFIG: Record<
+  string,
+  { label: string; color: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  critical: {
+    label: 'Khẩn cấp',
+    color: 'text-destructive',
+    icon: Flame,
+  },
+  high: {
+    label: 'Cao',
+    color: 'text-orange-600 dark:text-orange-400',
+    icon: AlertTriangle,
+  },
+  medium: {
+    label: 'Trung bình',
+    color: 'text-amber-600 dark:text-amber-400',
+    icon: AlertCircle,
+  },
+  low: {
+    label: 'Thấp',
+    color: 'text-sky-600 dark:text-sky-400',
+    icon: Info,
+  },
+}
 
 export type IncidentStatusFilter = 'all' | QcErrorStatus | 'overdue'
 

@@ -35,7 +35,7 @@ import {
 import { QcCheckDetailDialog } from './QcCheckDetailDialog'
 import { QcCheckSlaConfigDialog } from './QcCheckSlaConfigDialog'
 import { sortQcIncidents, matchesIncidentSearch } from './qcCheckHelpers'
-import { groupIncidentsByPersonnel } from './qcPersonnelHelpers'
+import { groupIncidentsByPersonnel, formatStaffName } from './qcPersonnelHelpers'
 import type { QcPersonnelGroup } from './qcPersonnelTypes'
 
 const CURRENT_USER_ID = 'ins_01'
@@ -68,8 +68,8 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
   const authUser = useAuthStore((s) => s.user)
   const currentStaffName = authUser?.name || CURRENT_USER_NAME
 
-  const [incidents, setIncidents] = useState<QcIncident[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [incidents, setIncidents] = useState<QcIncident[]>(mockQcIncidents)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -77,7 +77,13 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
       .then((res) => res.json())
       .then((resData) => {
         if (isMounted && resData.success && Array.isArray(resData.data)) {
-          setIncidents(resData.data)
+          setIncidents((prev) => {
+            const map = new Map<string, QcIncident>()
+            mockQcIncidents.forEach((i) => map.set(i.id, i))
+            prev.forEach((i) => map.set(i.id, i))
+            resData.data.forEach((i: QcIncident) => map.set(i.id, i))
+            return Array.from(map.values())
+          })
         }
       })
       .catch((err) => {
@@ -297,9 +303,51 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
   }, [personnelGroups, detailIncidentId])
 
   const relatedDetailIncidents = useMemo(() => {
-    if (currentPersonnelGroupForDetail) return currentPersonnelGroupForDetail.incidents
-    return detailIncident ? [detailIncident] : []
-  }, [currentPersonnelGroupForDetail, detailIncident])
+    if (!detailIncident) return []
+    const map = new Map<string, QcIncident>()
+
+    // 1. Luôn đưa toàn bộ incidents của personnelGroup đang xem vào trước tiên (đồng bộ 100% với danh sách ngoài)
+    if (currentPersonnelGroupForDetail?.incidents) {
+      currentPersonnelGroupForDetail.incidents.forEach((inc) => {
+        map.set(inc.id, inc)
+      })
+    }
+
+    if (!map.has(detailIncident.id)) {
+      map.set(detailIncident.id, detailIncident)
+    }
+
+    const cleanTargetName = formatStaffName(
+      currentPersonnelGroupForDetail?.cleanName ||
+      detailIncident.teacherName ||
+      detailIncident.assignee ||
+      detailIncident.csmName
+    )
+    const branch = currentPersonnelGroupForDetail?.branch || detailIncident.branch
+
+    // Bổ sung dữ liệu sự cố từ mock data & incidents cùng nhân sự
+    mockQcIncidents.forEach((i) => {
+      const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
+      if (name === cleanTargetName && (!branch || i.branch === branch)) {
+        map.set(i.id, i)
+      }
+    })
+
+    incidents.forEach((i) => {
+      const name = formatStaffName(i.teacherName || i.assignee || i.csmName)
+      if (name === cleanTargetName && (!branch || i.branch === branch)) {
+        map.set(i.id, i)
+      }
+    })
+
+    const results = Array.from(map.values())
+    results.sort((a, b) => {
+      const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (timeDiff !== 0) return timeDiff
+      return a.id.localeCompare(b.id)
+    })
+    return results.length > 0 ? results : [detailIncident]
+  }, [detailIncident, currentPersonnelGroupForDetail, incidents])
 
   // Create Batch Incidents
   const handleCreateBatch = async (form: CreateBatchIncidentForm) => {
@@ -470,6 +518,7 @@ export function QcCheckScreen(props: QcCheckScreenProps = {}) {
           correctiveLink,
           completionDate: nowIso,
           status: 'corrected',
+          remediationRounds: updatedRounds,
           newLog,
         }),
       })
