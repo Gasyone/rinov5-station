@@ -12,10 +12,6 @@ import {
   Building2,
   Headset,
   Sparkles,
-  Info,
-  AlertCircle,
-  AlertTriangle,
-  Flame,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -35,136 +31,35 @@ import {
   QC_TARGET_GROUP_CRITERIA,
   type QcTargetGroup,
   type QcEvaluationCriteria,
-  type QcErrorSeverity,
 } from '@/mocks/qcChecks'
 import {
   BRANCH_OPTIONS,
   getQuickTemplates,
   type QuickTemplateItem,
 } from './qcCheckHelpers'
+import { SearchablePersonnelSelect } from './SearchablePersonnelSelect'
+import {
+  type CreateIncidentItem,
+  type CreateBatchIncidentForm,
+  type QcCreatePrefill,
+  SAMPLE_CLASSES,
+  SAMPLE_ROOMS,
+  SAMPLE_EQUIPMENT,
+  SEVERITY_OPTIONS,
+  buildEmptyItem,
+  buildEmptyBatchForm,
+  buildInitialBatchForm,
+} from './qcCheckCreateTypes'
 
-export interface CreateIncidentItem {
-  targetGroup: QcTargetGroup
-  criteria: QcEvaluationCriteria
-  title: string
-  description: string
-  severity: QcErrorSeverity
-  // Context fields
-  className?: string
-  sessionNumber?: number
-  sessionInfo?: string
-  roomId?: string
-  teacherName?: string
-  csmName?: string
-  // Evidence & Assignee
-  evidence: string
-  evidenceImage?: string
-  evidenceLink?: string
-  assignee: string
-  deadline?: string
-  notes?: string
-}
-
-export interface CreateBatchIncidentForm {
-  branch: string
-  inspectorId: string
-  incidents: CreateIncidentItem[]
-}
-
-export interface QcCreatePrefill {
-  branch?: string
-  targetGroup?: QcTargetGroup
-  teacherName?: string
-  assignee?: string
-  roomId?: string
-  className?: string
-}
-
-const SAMPLE_CLASSES = [
-  'IELTS Intensive K24',
-  'Toán Tư Duy Bồi Dưỡng T5',
-  'Tiếng Anh Mầm Non K12',
-  'Tiếng Anh Giao Tiếp E3',
-  'Lập trình Scratch Nhí S2',
-  'IELTS-K24',
-  'MATH-T05',
-  'ENG-K12',
-]
-
-const SAMPLE_ROOMS = [
-  'Phòng A101',
-  'Phòng A201',
-  'Phòng A203',
-  'Phòng B102',
-  'Phòng Lab 2',
-  'Sảnh chính tầng 1',
-  'Hành lang tầng 3',
-  'Nhà vệ sinh tầng 2',
-]
-
-const SAMPLE_EQUIPMENT = [
-  'Điều hòa không khí',
-  'Máy chiếu & Màn chiếu',
-  'Đèn chiếu sáng',
-  'Bàn ghế học sinh',
-  'Bảng viết & Bút lông',
-  'Hệ thống âm thanh / Loa',
-  'Cửa sổ / Cửa ra vào',
-  'Thiết bị vệ sinh',
-]
-
-const SAMPLE_CSMS = [
-  'Nguyễn Thị Mai',
-  'Lê Thị Hương',
-  'Phạm Đức Thắng',
-  'Trần Văn Bình',
-]
-
-function buildEmptyItem(defaultGroup: QcTargetGroup = 'teacher'): CreateIncidentItem {
-  return {
-    targetGroup: defaultGroup,
-    criteria: QC_TARGET_GROUP_CRITERIA[defaultGroup][0],
-    title: '',
-    description: '',
-    severity: 'medium', // Luôn để mặc định là Trung bình
-    className: '',
-    sessionNumber: defaultGroup === 'teacher' ? 1 : undefined,
-    sessionInfo: defaultGroup === 'teacher' ? 'Buổi 1' : '',
-    roomId: defaultGroup === 'facility' ? SAMPLE_ROOMS[1] : '',
-    teacherName: '',
-    csmName: defaultGroup === 'operations' ? SAMPLE_CSMS[0] : '',
-    evidence: 'Ghi nhận trực tiếp khi kiểm tra',
-    evidenceImage: '',
-    evidenceLink: '',
-    assignee: 'Bộ phận liên quan',
-    deadline: '',
-    notes: '',
-  }
-}
-
-function buildEmptyBatchForm(): CreateBatchIncidentForm {
-  return {
-    branch: BRANCH_OPTIONS[0],
-    inspectorId: 'ins_01',
-    incidents: [buildEmptyItem('teacher')],
-  }
-}
-
-function buildInitialBatchForm(prefill?: QcCreatePrefill | null): CreateBatchIncidentForm {
-  if (prefill) {
-    const tg = prefill.targetGroup || 'teacher'
-    const item = buildEmptyItem(tg)
-    if (prefill.teacherName) item.teacherName = prefill.teacherName
-    if (prefill.assignee) item.assignee = prefill.assignee
-    if (prefill.roomId) item.roomId = prefill.roomId
-    if (prefill.className) item.className = prefill.className
-    return {
-      branch: prefill.branch || BRANCH_OPTIONS[0],
-      inspectorId: 'ins_01',
-      incidents: [item],
-    }
-  }
-  return buildEmptyBatchForm()
+export type { CreateIncidentItem, CreateBatchIncidentForm, QcCreatePrefill }
+export {
+  SAMPLE_CLASSES,
+  SAMPLE_ROOMS,
+  SAMPLE_EQUIPMENT,
+  SEVERITY_OPTIONS,
+  buildEmptyItem,
+  buildEmptyBatchForm,
+  buildInitialBatchForm,
 }
 
 interface QcCheckCreateDialogProps {
@@ -202,10 +97,21 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
         }
         if (group === 'teacher') {
           current.sessionInfo = current.sessionInfo || 'Buổi 1'
+          if (!current.teacherName) {
+            current.teacherName = 'Cô Hoàng Thu Thảo'
+            current.assignee = 'Cô Hoàng Thu Thảo'
+          }
         } else if (group === 'facility') {
           current.roomId = current.roomId || SAMPLE_ROOMS[1]
+          if (!current.facilityStaffName) {
+            current.facilityStaffName = 'Võ Minh Tuấn'
+            current.assignee = 'Võ Minh Tuấn'
+          }
         } else {
-          current.csmName = current.csmName || SAMPLE_CSMS[0]
+          if (!current.csmName) {
+            current.csmName = 'Nguyễn Thị Mai'
+            current.assignee = 'Nguyễn Thị Mai'
+          }
         }
       }
 
@@ -249,6 +155,23 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
     if (!form.branch) {
       toast.error('Vui lòng chọn cơ sở ghi nhận sự cố.')
       return
+    }
+
+    for (let i = 0; i < form.incidents.length; i++) {
+      const inc = form.incidents[i]
+      const label = form.incidents.length > 1 ? `sự cố #${i + 1}` : 'sự cố'
+      if (inc.targetGroup === 'teacher' && !inc.teacherName?.trim() && !inc.assignee?.trim()) {
+        toast.error(`Vui lòng chọn giáo viên phụ trách cho ${label}.`)
+        return
+      }
+      if (inc.targetGroup === 'facility' && !inc.facilityStaffName?.trim() && !inc.assignee?.trim()) {
+        toast.error(`Vui lòng chọn nhân sự phụ trách CSVC cho ${label}.`)
+        return
+      }
+      if (inc.targetGroup === 'operations' && !inc.csmName?.trim() && !inc.assignee?.trim()) {
+        toast.error(`Vui lòng chọn nhân viên vận hành cho ${label}.`)
+        return
+      }
     }
 
     const invalid = form.incidents.some((item) => !item.description.trim() && !item.title.trim())
@@ -378,6 +301,21 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
                   <div className="space-y-2 pt-0.5">
                     {item.targetGroup === 'teacher' && (
                       <>
+                        <FieldLabel label="Giáo viên phụ trách *" className="gap-1">
+                          <SearchablePersonnelSelect
+                            targetGroup="teacher"
+                            value={item.teacherName || item.assignee}
+                            onSelect={(p) => {
+                              handleUpdateItem(idx, 'teacherName', p.name)
+                              handleUpdateItem(idx, 'assignee', p.name)
+                            }}
+                            onClear={() => {
+                              handleUpdateItem(idx, 'teacherName', '')
+                              handleUpdateItem(idx, 'assignee', '')
+                            }}
+                          />
+                        </FieldLabel>
+
                         <FieldLabel label="Lớp học / Mã lớp *" className="gap-1">
                           <input
                             type="text"
@@ -403,6 +341,21 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
 
                     {item.targetGroup === 'facility' && (
                       <>
+                        <FieldLabel label="Nhân sự phụ trách CSVC *" className="gap-1">
+                          <SearchablePersonnelSelect
+                            targetGroup="facility"
+                            value={item.facilityStaffName || item.assignee}
+                            onSelect={(p) => {
+                              handleUpdateItem(idx, 'facilityStaffName', p.name)
+                              handleUpdateItem(idx, 'assignee', p.name)
+                            }}
+                            onClear={() => {
+                              handleUpdateItem(idx, 'facilityStaffName', '')
+                              handleUpdateItem(idx, 'assignee', '')
+                            }}
+                          />
+                        </FieldLabel>
+
                         <FieldLabel label="Phòng học / Khu vực *" className="gap-1">
                           <InlineSelect
                             value={item.roomId || ''}
@@ -431,12 +384,17 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
                     {item.targetGroup === 'operations' && (
                       <>
                         <FieldLabel label="Nhân viên Vận hành *" className="gap-1">
-                          <InlineSelect
-                            value={item.csmName || ''}
-                            ariaLabel="Chọn nhân viên Vận hành"
-                            className="h-8 text-xs"
-                            options={SAMPLE_CSMS.map((c) => ({ value: c, label: c }))}
-                            onValueChange={(v) => handleUpdateItem(idx, 'csmName', v)}
+                          <SearchablePersonnelSelect
+                            targetGroup="operations"
+                            value={item.csmName || item.assignee}
+                            onSelect={(p) => {
+                              handleUpdateItem(idx, 'csmName', p.name)
+                              handleUpdateItem(idx, 'assignee', p.name)
+                            }}
+                            onClear={() => {
+                              handleUpdateItem(idx, 'csmName', '')
+                              handleUpdateItem(idx, 'assignee', '')
+                            }}
                           />
                         </FieldLabel>
 
@@ -491,36 +449,7 @@ export function QcCheckCreateDialog({ open, onOpenChange, onSubmit, prefill }: Q
                       <div className="flex items-center gap-1 text-xs">
                         <span className="text-[11px] text-muted-foreground hidden sm:inline">Mức độ:</span>
                         <div className="flex rounded-md border border-border/70 p-0.5 bg-muted/30">
-                          {[
-                            {
-                              value: 'low' as const,
-                              title: 'Mức độ Thấp',
-                              activeClass: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 ring-1 ring-emerald-500/30',
-                              inactiveClass: 'text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500/10',
-                              icon: Info,
-                            },
-                            {
-                              value: 'medium' as const,
-                              title: 'Mức độ Trung bình (Mặc định)',
-                              activeClass: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/40 ring-1 ring-blue-500/30',
-                              inactiveClass: 'text-blue-500 dark:text-blue-400 hover:bg-blue-500/10',
-                              icon: AlertCircle,
-                            },
-                            {
-                              value: 'high' as const,
-                              title: 'Mức độ Cao',
-                              activeClass: 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 ring-1 ring-amber-500/30',
-                              inactiveClass: 'text-amber-500 dark:text-amber-400 hover:bg-amber-500/10',
-                              icon: AlertTriangle,
-                            },
-                            {
-                              value: 'critical' as const,
-                              title: 'Mức độ Nghiêm trọng',
-                              activeClass: 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/40 ring-1 ring-rose-500/30',
-                              inactiveClass: 'text-rose-500 dark:text-rose-400 hover:bg-rose-500/10',
-                              icon: Flame,
-                            },
-                          ].map((sev) => {
+                          {SEVERITY_OPTIONS.map((sev) => {
                             const SevIcon = sev.icon
                             const isActive = item.severity === sev.value
                             return (

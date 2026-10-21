@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronRight, Clock, Sun, Sunset, Moon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import { EmptyState } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { MyScheduleCard } from './MyScheduleCard'
 import type { UnifiedSlot } from './myScheduleTypes'
-import { parseScheduleTime } from '@/components/screens/schedule/ScheduleTimeGrid'
 
 interface MySchedule1DViewProps {
   slots: UnifiedSlot[]
@@ -42,340 +42,468 @@ export function MySchedule1DView({
   hideBranch,
   onSlotClick,
 }: MySchedule1DViewProps) {
+  if (viewMode === 'day') {
+    return (
+      <MyScheduleDayListView
+        slots={slots}
+        selectedDate={days[0] || new Date()}
+        activeBranch={activeBranch}
+        hideBranch={hideBranch}
+        onSlotClick={onSlotClick}
+      />
+    )
+  }
+
+  return (
+    <MyScheduleWeekListView
+      slots={slots}
+      days={days}
+      today={today}
+      activeBranch={activeBranch}
+      hideBranch={hideBranch}
+      onSlotClick={onSlotClick}
+    />
+  )
+}
+
+function MyScheduleDayListView({
+  slots,
+  selectedDate,
+  activeBranch,
+  hideBranch,
+  onSlotClick,
+}: {
+  slots: UnifiedSlot[]
+  selectedDate: Date
+  activeBranch: string
+  hideBranch?: boolean
+  onSlotClick: (slot: UnifiedSlot) => void
+}) {
+  const [collapsedDayPeriods, setCollapsedDayPeriods] = useState<Record<string, boolean>>({})
+
+  const toggleDayPeriod = (id: string) => {
+    setCollapsedDayPeriods((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
+  }
+
+  const dayKey = toDateKey(selectedDate)
+  const daySlots = useMemo(() => {
+    return slots
+      .filter((s) => s.date === dayKey)
+      .sort((a, b) => a.timeLabel.localeCompare(b.timeLabel))
+  }, [slots, dayKey])
+
+  const morningSlots = useMemo(() => {
+    return daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'morning')
+  }, [daySlots])
+
+  const afternoonSlots = useMemo(() => {
+    return daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'afternoon')
+  }, [daySlots])
+
+  const eveningSlots = useMemo(() => {
+    return daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'evening')
+  }, [daySlots])
+
+  const periods = useMemo(
+    () => [
+      {
+        id: 'morning',
+        label: 'Ca Sáng (08:00 - 12:00)',
+        slots: morningSlots,
+        textColor: 'text-amber-700 dark:text-amber-400',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+        lineColor: 'bg-amber-500/40 dark:bg-amber-400/35 group-hover:bg-amber-500/70',
+      },
+      {
+        id: 'afternoon',
+        label: 'Ca Chiều (12:00 - 18:00)',
+        slots: afternoonSlots,
+        textColor: 'text-sky-700 dark:text-sky-400',
+        iconColor: 'text-sky-600 dark:text-sky-400',
+        lineColor: 'bg-sky-500/40 dark:bg-sky-400/35 group-hover:bg-sky-500/70',
+      },
+      {
+        id: 'evening',
+        label: 'Ca Tối (18:00 - 22:00)',
+        slots: eveningSlots,
+        textColor: 'text-indigo-700 dark:text-indigo-400',
+        iconColor: 'text-indigo-600 dark:text-indigo-400',
+        lineColor: 'bg-indigo-500/40 dark:bg-indigo-400/35 group-hover:bg-indigo-500/70',
+      },
+    ],
+    [morningSlots, afternoonSlots, eveningSlots]
+  )
+
+  if (daySlots.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-8">
+        <EmptyState
+          title="Không có lịch làm việc"
+          description={`Không có lịch làm việc hoặc giảng dạy nào trong ngày ${selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}.`}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative flex flex-1 flex-col overflow-y-auto min-h-0 bg-background/50 p-2.5 space-y-3">
+      <div className="space-y-2">
+        {periods.map((p) => {
+          if (p.slots.length === 0) return null
+          const isOpen = !collapsedDayPeriods[p.id]
+
+          return (
+            <div key={p.id} className="space-y-1.5">
+              <button
+                type="button"
+                onClick={() => toggleDayPeriod(p.id)}
+                className={cn(
+                  "group flex w-full items-center gap-2 py-1 text-sm font-bold hover:opacity-85 transition cursor-pointer select-none",
+                  p.textColor
+                )}
+              >
+                <ChevronRight
+                  className={cn(
+                    "h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5",
+                    p.iconColor,
+                    isOpen && "rotate-90"
+                  )}
+                />
+                <span className="shrink-0">
+                  {p.label} ({p.slots.length} lịch)
+                </span>
+                <div className={cn("h-[2px] flex-1 transition-colors rounded-full", p.lineColor)} />
+              </button>
+
+              {isOpen && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {p.slots.map((slot) => (
+                    <MyScheduleCard
+                      key={slot.id}
+                      slot={slot}
+                      showTime
+                      activeBranch={activeBranch}
+                      hideBranch={hideBranch}
+                      onClick={() => onSlotClick(slot)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function MyScheduleWeekListView({
+  slots,
+  days,
+  today,
+  activeBranch,
+  hideBranch,
+  onSlotClick,
+}: {
+  slots: UnifiedSlot[]
+  days: Date[]
+  today: Date
+  activeBranch: string
+  hideBranch?: boolean
+  onSlotClick: (slot: UnifiedSlot) => void
+}) {
   const [isMorningOpen, setIsMorningOpen] = useState(true)
   const [isAfternoonOpen, setIsAfternoonOpen] = useState(true)
   const [isEveningOpen, setIsEveningOpen] = useState(true)
 
-  // Single CSS Grid container fitting 100% width across 7 equal columns
-  const gridTemplateColumns = `repeat(${days.length}, minmax(0, 1fr))`
+  const morningSlotsByDay = useMemo(() => {
+    return days.map((day) =>
+      slots.filter((s) => s.date === toDateKey(day) && getSlotPeriod(s.timeLabel) === 'morning')
+    )
+  }, [days, slots])
 
-  // Sort slots chronologically
-  const sortedSlots = useMemo(() => {
-    return [...slots].sort((a, b) => {
-      if (a.date !== b.date) return a.date.localeCompare(b.date)
-      return (parseScheduleTime(a.timeLabel) || 0) - (parseScheduleTime(b.timeLabel) || 0)
-    })
-  }, [slots])
+  const afternoonSlotsByDay = useMemo(() => {
+    return days.map((day) =>
+      slots.filter((s) => s.date === toDateKey(day) && getSlotPeriod(s.timeLabel) === 'afternoon')
+    )
+  }, [days, slots])
 
-  // Group slots by day
-  const slotsByDay = useMemo(() => {
-    const map = new Map<string, UnifiedSlot[]>()
-    days.forEach((day) => {
-      map.set(toDateKey(day), [])
-    })
-    sortedSlots.forEach((slot) => {
-      const list = map.get(slot.date)
-      if (list) {
-        list.push(slot)
-      }
-    })
-    return map
-  }, [days, sortedSlots])
+  const eveningSlotsByDay = useMemo(() => {
+    return days.map((day) =>
+      slots.filter((s) => s.date === toDateKey(day) && getSlotPeriod(s.timeLabel) === 'evening')
+    )
+  }, [days, slots])
 
-  // Count by period across current view days
-  const morningCount = useMemo(() => {
-    return sortedSlots.filter(
-      (s) => days.some((d) => toDateKey(d) === s.date) && getSlotPeriod(s.timeLabel) === 'morning'
-    ).length
-  }, [sortedSlots, days])
+  const totalMorningCount = useMemo(
+    () => morningSlotsByDay.reduce((acc, curr) => acc + curr.length, 0),
+    [morningSlotsByDay]
+  )
+  const totalAfternoonCount = useMemo(
+    () => afternoonSlotsByDay.reduce((acc, curr) => acc + curr.length, 0),
+    [afternoonSlotsByDay]
+  )
+  const totalEveningCount = useMemo(
+    () => eveningSlotsByDay.reduce((acc, curr) => acc + curr.length, 0),
+    [eveningSlotsByDay]
+  )
 
-  const afternoonCount = useMemo(() => {
-    return sortedSlots.filter(
-      (s) => days.some((d) => toDateKey(d) === s.date) && getSlotPeriod(s.timeLabel) === 'afternoon'
-    ).length
-  }, [sortedSlots, days])
+  const hasAnySlots = slots.length > 0
 
-  const eveningCount = useMemo(() => {
-    return sortedSlots.filter(
-      (s) => days.some((d) => toDateKey(d) === s.date) && getSlotPeriod(s.timeLabel) === 'evening'
-    ).length
-  }, [sortedSlots, days])
-
-  if (viewMode === 'day') {
-    const singleDay = days[0]
-    const dayKey = singleDay ? toDateKey(singleDay) : ''
-    const daySlots = dayKey ? slotsByDay.get(dayKey) || [] : []
-
-    const morningSlots = daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'morning')
-    const afternoonSlots = daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'afternoon')
-    const eveningSlots = daySlots.filter((s) => getSlotPeriod(s.timeLabel) === 'evening')
-
+  if (!hasAnySlots) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 min-h-0 bg-background/50 space-y-4">
-        {daySlots.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Clock className="h-10 w-10 text-muted-foreground/40 mb-2" />
-            <p className="text-sm font-medium text-muted-foreground">Không có lịch làm việc / giảng dạy trong ngày này.</p>
+      <div className="flex flex-1 items-center justify-center p-8">
+        <EmptyState
+          title="Không có lịch làm việc"
+          description="Không tìm thấy lịch làm việc hoặc giảng dạy nào trong tuần được chọn hoặc bộ lọc hiện tại."
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+      <WeekHeader days={days} today={today} slots={slots} />
+      <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 p-3 space-y-3">
+        {/* Ca Sáng */}
+        {totalMorningCount > 0 && (
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              onClick={() => setIsMorningOpen(!isMorningOpen)}
+              className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-amber-700 dark:text-amber-400 hover:opacity-85 transition cursor-pointer select-none"
+            >
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                  isMorningOpen && "rotate-90"
+                )}
+              />
+              <span className="shrink-0">
+                Ca Sáng (08:00 - 12:00) ({totalMorningCount} lịch)
+              </span>
+              <div className="h-[2px] flex-1 bg-amber-500/40 dark:bg-amber-400/35 group-hover:bg-amber-500/70 transition-colors rounded-full" />
+            </button>
+
+            {isMorningOpen && (
+              <div className="grid grid-cols-7 gap-2">
+                {days.map((day, idx) => {
+                  const daySlots = morningSlotsByDay[idx]
+                  const isToday =
+                    day.getDate() === today.getDate() &&
+                    day.getMonth() === today.getMonth() &&
+                    day.getFullYear() === today.getFullYear()
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "space-y-1.5 min-w-0 p-0 transition-colors",
+                        isToday && "bg-primary/[0.02] rounded-md"
+                      )}
+                    >
+                      {daySlots.map((slot) => (
+                        <MyScheduleCard
+                          key={slot.id}
+                          slot={slot}
+                          showTime
+                          activeBranch={activeBranch}
+                          hideBranch={hideBranch}
+                          onClick={() => onSlotClick(slot)}
+                        />
+                      ))}
+                      {daySlots.length === 0 && (
+                        <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
+                          —
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="max-w-4xl mx-auto space-y-4">
-            {/* Ca Sáng */}
-            {morningSlots.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                  <Sun className="h-4 w-4" />
-                  <span>Ca Sáng (08:00 - 12:00) ({morningSlots.length} lịch)</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {morningSlots.map((slot) => (
-                    <MyScheduleCard
-                      key={slot.id}
-                      slot={slot}
-                      showTime
-                      activeBranch={activeBranch}
-                      hideBranch={hideBranch}
-                      onClick={() => onSlotClick(slot)}
-                    />
-                  ))}
-                </div>
+        )}
+
+        {/* Ca Chiều */}
+        {totalAfternoonCount > 0 && (
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              onClick={() => setIsAfternoonOpen(!isAfternoonOpen)}
+              className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-sky-700 dark:text-sky-400 hover:opacity-85 transition cursor-pointer select-none"
+            >
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                  isAfternoonOpen && "rotate-90"
+                )}
+              />
+              <span className="shrink-0">
+                Ca Chiều (12:00 - 18:00) ({totalAfternoonCount} lịch)
+              </span>
+              <div className="h-[2px] flex-1 bg-sky-500/40 dark:bg-sky-400/35 group-hover:bg-sky-500/70 transition-colors rounded-full" />
+            </button>
+
+            {isAfternoonOpen && (
+              <div className="grid grid-cols-7 gap-2">
+                {days.map((day, idx) => {
+                  const daySlots = afternoonSlotsByDay[idx]
+                  const isToday =
+                    day.getDate() === today.getDate() &&
+                    day.getMonth() === today.getMonth() &&
+                    day.getFullYear() === today.getFullYear()
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "space-y-1.5 min-w-0 p-0 transition-colors",
+                        isToday && "bg-primary/[0.02] rounded-md"
+                      )}
+                    >
+                      {daySlots.map((slot) => (
+                        <MyScheduleCard
+                          key={slot.id}
+                          slot={slot}
+                          showTime
+                          activeBranch={activeBranch}
+                          hideBranch={hideBranch}
+                          onClick={() => onSlotClick(slot)}
+                        />
+                      ))}
+                      {daySlots.length === 0 && (
+                        <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
+                          —
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
+          </div>
+        )}
 
-            {/* Ca Chiều */}
-            {afternoonSlots.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1 text-xs font-bold text-sky-600 dark:text-sky-400">
-                  <Sunset className="h-4 w-4" />
-                  <span>Ca Chiều (12:00 - 18:00) ({afternoonSlots.length} lịch)</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {afternoonSlots.map((slot) => (
-                    <MyScheduleCard
-                      key={slot.id}
-                      slot={slot}
-                      showTime
-                      activeBranch={activeBranch}
-                      hideBranch={hideBranch}
-                      onClick={() => onSlotClick(slot)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+        {/* Ca Tối */}
+        {totalEveningCount > 0 && (
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              onClick={() => setIsEveningOpen(!isEveningOpen)}
+              className="group flex w-full items-center gap-2 py-1 text-sm font-bold text-indigo-700 dark:text-indigo-400 hover:opacity-85 transition cursor-pointer select-none"
+            >
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400 transition-transform duration-200 group-hover:translate-x-0.5",
+                  isEveningOpen && "rotate-90"
+                )}
+              />
+              <span className="shrink-0">
+                Ca Tối (18:00 - 22:00) ({totalEveningCount} lịch)
+              </span>
+              <div className="h-[2px] flex-1 bg-indigo-500/40 dark:bg-indigo-400/35 group-hover:bg-indigo-500/70 transition-colors rounded-full" />
+            </button>
 
-            {/* Ca Tối */}
-            {eveningSlots.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 px-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                  <Moon className="h-4 w-4" />
-                  <span>Ca Tối (18:00 - 22:00) ({eveningSlots.length} lịch)</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {eveningSlots.map((slot) => (
-                    <MyScheduleCard
-                      key={slot.id}
-                      slot={slot}
-                      showTime
-                      activeBranch={activeBranch}
-                      hideBranch={hideBranch}
-                      onClick={() => onSlotClick(slot)}
-                    />
-                  ))}
-                </div>
+            {isEveningOpen && (
+              <div className="grid grid-cols-7 gap-2">
+                {days.map((day, idx) => {
+                  const daySlots = eveningSlotsByDay[idx]
+                  const isToday =
+                    day.getDate() === today.getDate() &&
+                    day.getMonth() === today.getMonth() &&
+                    day.getFullYear() === today.getFullYear()
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "space-y-1.5 min-w-0 p-0 transition-colors",
+                        isToday && "bg-primary/[0.02] rounded-md"
+                      )}
+                    >
+                      {daySlots.map((slot) => (
+                        <MyScheduleCard
+                          key={slot.id}
+                          slot={slot}
+                          showTime
+                          activeBranch={activeBranch}
+                          hideBranch={hideBranch}
+                          onClick={() => onSlotClick(slot)}
+                        />
+                      ))}
+                      {daySlots.length === 0 && (
+                        <div className="text-xs text-muted-foreground/30 text-center py-2 select-none">
+                          —
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
         )}
       </div>
-    )
-  }
+    </div>
+  )
+}
 
-  // Week Mode 1D Schedule Layout: Unified CSS Grid Container fitting 100% width
+function WeekHeader({
+  days,
+  today,
+  slots,
+}: {
+  days: Date[]
+  today: Date
+  slots: UnifiedSlot[]
+}) {
   return (
-    <div className="flex-1 overflow-auto min-h-0 bg-background/50">
-      <div
-        className="grid w-full min-w-[800px] border-b border-border/40"
-        style={{ gridTemplateColumns }}
-      >
-
-        {/* Sticky Week Header Row */}
+    <div className="flex bg-muted/30 border-b border-border/40">
+      <div className="grid flex-1 grid-cols-7">
         {days.map((day) => {
-          const isToday = day.getTime() === today.getTime()
-          const dayKey = toDateKey(day)
-          const dayItems = slots.filter((item) => item.date === dayKey)
-          const classCount = dayItems.filter((item) => item.scheduleType === 'class').length
-          const eventCount = dayItems.filter((item) => item.scheduleType === 'event').length
-          let countLabel = ''
-          if (classCount > 0 && eventCount > 0) {
-            countLabel = `${classCount} lớp, ${eventCount} sk`
-          } else if (classCount > 0) {
-            countLabel = `${classCount} lớp`
-          } else if (eventCount > 0) {
-            countLabel = `${eventCount} sự kiện`
-          } else {
-            countLabel = '0 lịch'
-          }
+          const isToday =
+            day.getDate() === today.getDate() &&
+            day.getMonth() === today.getMonth() &&
+            day.getFullYear() === today.getFullYear()
+          const daySlots = slots.filter((s) => s.date === toDateKey(day))
+          const count = daySlots.length
+          const weekdayStr = day.getDay() === 0 ? 'CN' : `T${day.getDay() + 1}`
 
           return (
             <div
               key={day.toISOString()}
-              className="sticky top-0 z-20 flex min-w-0 flex-col items-center border-r border-b border-border/40 bg-background/95 backdrop-blur-sm py-2.5 last:border-r-0 select-none"
+              className={cn(
+                "flex items-center justify-center gap-1.5 py-1.5 px-1 transition-colors border-r border-border/20 last:border-r-0 text-xs min-h-[34px] overflow-hidden whitespace-nowrap select-none",
+                isToday && "bg-primary/5"
+              )}
             >
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={cn(
-                    'text-xs font-semibold uppercase tracking-wider',
-                    isToday ? 'text-primary' : 'text-muted-foreground'
-                  )}
-                >
-                  {day.toLocaleDateString('vi-VN', { weekday: 'short' }).replace('.', '')}
-                </span>
-                <span
-                  className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold',
-                    isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
-                  )}
-                >
-                  {day.getDate()}
-                </span>
-              </div>
-              <span className="text-[9.5px] mt-1 text-muted-foreground font-semibold">
-                {countLabel}
+              <span
+                className={cn(
+                  'flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold shrink-0',
+                  isToday ? 'bg-primary text-primary-foreground shadow-2xs' : 'text-foreground font-semibold'
+                )}
+              >
+                {day.getDate()}
+              </span>
+              <span
+                className={cn(
+                  'text-xs font-semibold',
+                  isToday ? 'text-primary font-bold' : 'text-muted-foreground'
+                )}
+              >
+                {weekdayStr}
+              </span>
+              <span
+                className={cn(
+                  "text-xs",
+                  count > 0 ? (isToday ? "text-primary font-semibold" : "text-muted-foreground font-medium") : "text-muted-foreground/60"
+                )}
+              >
+                ({count})
               </span>
             </div>
           )
         })}
-
-        {/* Ca Sáng Collapsible Bar (Spans All Columns) */}
-        <div style={{ gridColumn: '1 / -1' }} className="border-b border-border/40">
-          <button
-            type="button"
-            onClick={() => setIsMorningOpen(!isMorningOpen)}
-            className="flex w-full items-center justify-between bg-amber-500/10 border-b border-amber-500/20 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-2">
-              <Sun className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-              <span>Ca Sáng (08:00 - 12:00) ({morningCount} lịch)</span>
-            </div>
-            <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isMorningOpen && "rotate-90")} />
-          </button>
-        </div>
-
-        {/* Ca Sáng Day Cells */}
-        {isMorningOpen &&
-          days.map((day) => {
-            const dayKey = toDateKey(day)
-            const daySlots = (slotsByDay.get(dayKey) || []).filter(
-              (s) => getSlotPeriod(s.timeLabel) === 'morning'
-            )
-
-            return (
-              <div
-                key={`morning-${day.toISOString()}`}
-                className="p-2 space-y-2 min-w-0 border-r border-b border-border/40 last:border-r-0 bg-muted/5"
-              >
-                {daySlots.map((slot) => (
-                  <MyScheduleCard
-                    key={slot.id}
-                    slot={slot}
-                    showTime
-                    activeBranch={activeBranch}
-                    hideBranch={hideBranch}
-                    onClick={() => onSlotClick(slot)}
-                  />
-                ))}
-                {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
-                    —
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-        {/* Ca Chiều Collapsible Bar (Spans All Columns) */}
-        <div style={{ gridColumn: '1 / -1' }} className="border-b border-border/40">
-          <button
-            type="button"
-            onClick={() => setIsAfternoonOpen(!isAfternoonOpen)}
-            className="flex w-full items-center justify-between bg-sky-500/10 border-b border-sky-500/20 px-3 py-2 text-xs font-bold text-sky-700 dark:text-sky-400 hover:bg-sky-500/20 transition cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-2">
-              <Sunset className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
-              <span>Ca Chiều (12:00 - 18:00) ({afternoonCount} lịch)</span>
-            </div>
-            <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isAfternoonOpen && "rotate-90")} />
-          </button>
-        </div>
-
-        {/* Ca Chiều Day Cells */}
-        {isAfternoonOpen &&
-          days.map((day) => {
-            const dayKey = toDateKey(day)
-            const daySlots = (slotsByDay.get(dayKey) || []).filter(
-              (s) => getSlotPeriod(s.timeLabel) === 'afternoon'
-            )
-
-            return (
-              <div
-                key={`afternoon-${day.toISOString()}`}
-                className="p-2 space-y-2 min-w-0 border-r border-b border-border/40 last:border-r-0 bg-muted/5"
-              >
-                {daySlots.map((slot) => (
-                  <MyScheduleCard
-                    key={slot.id}
-                    slot={slot}
-                    showTime
-                    activeBranch={activeBranch}
-                    hideBranch={hideBranch}
-                    onClick={() => onSlotClick(slot)}
-                  />
-                ))}
-                {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
-                    —
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-        {/* Ca Tối Collapsible Bar (Spans All Columns) */}
-        <div style={{ gridColumn: '1 / -1' }} className="border-b border-border/40">
-          <button
-            type="button"
-            onClick={() => setIsEveningOpen(!isEveningOpen)}
-            className="flex w-full items-center justify-between bg-indigo-500/10 border-b border-indigo-500/20 px-3 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/20 transition cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-2">
-              <Moon className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-              <span>Ca Tối (18:00 - 22:00) ({eveningCount} lịch)</span>
-            </div>
-            <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform duration-200", isEveningOpen && "rotate-90")} />
-          </button>
-        </div>
-
-        {/* Ca Tối Day Cells */}
-        {isEveningOpen &&
-          days.map((day) => {
-            const dayKey = toDateKey(day)
-            const daySlots = (slotsByDay.get(dayKey) || []).filter(
-              (s) => getSlotPeriod(s.timeLabel) === 'evening'
-            )
-
-            return (
-              <div
-                key={`evening-${day.toISOString()}`}
-                className="p-2 space-y-2 min-w-0 border-r border-b border-border/40 last:border-r-0 bg-muted/5"
-              >
-                {daySlots.map((slot) => (
-                  <MyScheduleCard
-                    key={slot.id}
-                    slot={slot}
-                    showTime
-                    activeBranch={activeBranch}
-                    hideBranch={hideBranch}
-                    onClick={() => onSlotClick(slot)}
-                  />
-                ))}
-                {daySlots.length === 0 && (
-                  <div className="h-12 flex items-center justify-center text-xs text-muted-foreground/30 italic select-none">
-                    —
-                  </div>
-                )}
-              </div>
-            )
-          })}
       </div>
     </div>
   )

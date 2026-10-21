@@ -1,5 +1,5 @@
-import { HomeScreen } from '@/components/screens/home/HomeScreen'
+import { redirect } from 'next/navigation'
 
 export default function DashboardPage() {
-  return <HomeScreen />
+  redirect('/app/my_schedule')
 }

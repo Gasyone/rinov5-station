@@ -1,0 +1,396 @@
+{
+  "student_operations_alert": [
+    {
+      "id": "col_care_content",
+      "title": "Cột Nội dung chăm sóc & Lịch hẹn gọi lại",
+      "category": "Tiến độ tương tác",
+      "badgeLabel": "Nội dung CS",
+      "targetSelector": "table thead th:nth-child(6), table tbody tr td:nth-child(6)",
+      "what": "Cột hiển thị tóm tắt lần tương tác gần nhất theo thời gian tương đối (VD: 4 ngày trước: Đã nhắn Zalo...) và lịch hẹn gọi lại phụ huynh (VD: Hẹn gọi lại: 24/07 15:00).",
+      "why": "Giúp Chuyên viên CS nắm bắt ngay lịch sử trao đổi gần nhất mà không phải mở từng hồ sơ; không bao giờ bỏ quên lịch hẹn gọi lại với phụ huynh.",
+      "who": "Chuyên viên chăm sóc khách hàng (CSM), Quản lý cơ sở.",
+      "rules": [
+        "Hiển thị thời gian tương đối (VD: vừa xong, X giờ trước, X ngày trước) để nắm độ trễ tương tác.",
+        "Mốc hẹn gọi lại hiển thị nổi bật với biểu tượng lịch hẹn và thời gian chi tiết.",
+        "Nhấp chuột vào dòng nội dung để mở dòng thời gian tương tác (Care Interaction Timeline)."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Cột Nội dung chăm sóc (Mục 1.3)",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_student",
+      "title": "Cột Học viên & Thông tin đào tạo",
+      "category": "Định danh học viên",
+      "badgeLabel": "Học viên",
+      "targetSelector": "table thead th:nth-child(2), table tbody tr td:nth-child(2)",
+      "what": "Hiển thị họ tên học viên, tên tiếng Anh, môn học đăng ký (Toán tư duy, Tiếng Anh) và cấp độ học tập hiện tại.",
+      "why": "Nhận diện tức thì học sinh và môn học đang theo để chuẩn bị nội dung trao đổi phù hợp với phụ huynh.",
+      "who": "CSM, Giáo viên, Quản lý cơ sở.",
+      "rules": [
+        "Bấm vào tên học viên để chuyển thẳng sang trang Chi tiết Chăm sóc Học viên (Student Care Detail Page).",
+        "Hiển thị avatar ký tự viết tắt nếu học viên chưa có ảnh đại diện."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Thông tin Học viên",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_contact",
+      "title": "Cột Liên hệ & Cơ chế Che số điện thoại bảo mật",
+      "category": "Bảo mật & An toàn dữ liệu",
+      "badgeLabel": "Bảo mật SĐT",
+      "targetSelector": "table thead th:nth-child(3), table tbody tr td:nth-child(3)",
+      "what": "Tên người liên hệ (Mẹ/Bố) và số điện thoại được che 4 chữ số ở giữa dạng 091****111.",
+      "why": "Bảo vệ thông tin khách hàng, ngăn chặn nhân sự nội bộ sao chép (leech) hàng loạt danh sách số điện thoại phụ huynh ra ngoài.",
+      "who": "Toàn bộ nhân sự xem danh sách tổng.",
+      "rules": [
+        "[RULE-OA-01] Bắt buộc che 4 chữ số ở giữa trên bảng danh sách chính.",
+        "Tuyệt đối không hiển thị nút Copy nhanh số điện thoại trực tiếp ngoài bảng.",
+        "Chỉ khi có thẩm quyền mở xem hồ sơ chi tiết thì số điện thoại mới hiển thị đầy đủ và có ghi vết kiểm toán (Audit Log)."
+      ],
+      "documentLinks": [
+        {
+          "label": "Chính sách Bảo mật Dữ liệu RIN-SEC-01",
+          "url": "https://wiki.rinoedu.ai/security/data-masking-policy"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_care_staff",
+      "title": "Cột Người chăm sóc & Phân định vai trò (CS / GV)",
+      "category": "Phân công nhân sự",
+      "badgeLabel": "Người chăm sóc",
+      "targetSelector": "table thead th:nth-child(4), table tbody tr td:nth-child(4)",
+      "what": "Phân tầng rõ ràng 2 dòng nhân sự phụ trách: dòng trên là Chuyên viên CS, dòng dưới là Giáo viên giảng dạy, kèm ký hiệu (bạn) nếu trùng tài khoản.",
+      "why": "Phân định rạch ròi trách nhiệm nghiệp vụ dịch vụ và học thuật; nhân viên nhận biết ngay ca thuộc trách nhiệm cá nhân.",
+      "who": "Chuyên viên CS, Giáo viên.",
+      "rules": [
+        "[RULE-OA-06] Gắn nhãn (bạn) thanh mảnh cùng dòng với tên nhân sự đang đăng nhập.",
+        "Rê chuột vào tên nhân sự để mở thẻ thông tin liên hệ nội bộ."
+      ],
+      "documentLinks": [
+        {
+          "label": "Quy chuẩn Người chăm sóc",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_care_tags",
+      "title": "Cột Thẻ Chăm sóc & Giới hạn hiển thị thẻ ưu tiên",
+      "category": "Phân loại nguyên nhân cảnh báo",
+      "badgeLabel": "Thẻ cảnh báo",
+      "targetSelector": "table thead th:nth-child(5), table tbody tr td:nth-child(5)",
+      "what": "Cột hiển thị lý do học viên bị đưa vào diện chăm sóc (Học lực giảm, Vắng học liên tiếp, Thiếu bài tập, Chăm sóc đặc biệt CSĐB).",
+      "why": "Giúp nhân viên nắm bắt bệnh án của học sinh ngay trước khi gọi điện, nói đúng trọng tâm vấn đề.",
+      "who": "Chuyên viên CS, Giáo viên.",
+      "rules": [
+        "[RULE-OA-04] Mỗi dòng chỉ hiển thị tối đa 2 thẻ ưu tiên nhất, thẻ thừa gom vào nút +N.",
+        "Ưu tiên hiển thị thẻ Chăm sóc đặc biệt (CĐB) lên đầu."
+      ],
+      "documentLinks": [
+        {
+          "label": "Danh mục Quy tắc Thẻ Chăm sóc",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_care_status",
+      "title": "Cột Trạng thái & Hạn cam kết xử lý",
+      "category": "Vòng đời & Khẩn cấp",
+      "badgeLabel": "Trạng thái",
+      "targetSelector": "table thead th:nth-child(7), table tbody tr td:nth-child(7)",
+      "what": "Phân tầng 2 lớp: lớp trên là Trạng thái chăm sóc (Chưa chăm sóc, Đang xử lý, Hoàn thành); lớp dưới là Hạn cam kết xử lý.",
+      "why": "Phân định giữa tiến độ và thời hạn, ca quá hạn tự động báo đỏ khẩn cấp để nhân viên ưu tiên xử lý.",
+      "who": "CSM, Quản lý cơ sở.",
+      "rules": [
+        "[RULE-OA-03] Trạng thái vòng đời độc lập với thời hạn cam kết.",
+        "Ca quá hạn SLA tự động đẩy lên mức ưu tiên cao nhất."
+      ],
+      "documentLinks": [
+        {
+          "label": "Quy tắc Phân tầng Trạng thái",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "col_class",
+      "title": "Cột Lớp học & Trạng thái phân bổ",
+      "category": "Học vụ & Lớp học",
+      "badgeLabel": "Lớp học",
+      "targetSelector": "table thead th:nth-child(8), table tbody tr td:nth-child(8)",
+      "what": "Mã lớp học đang tham gia, huy hiệu trạng thái lớp (Đang học, Chờ chuyển lớp, Bảo lưu, Hết buổi) và ngày hạn kết thúc khóa.",
+      "why": "Nằm ở cột cuối cùng để tối ưu luồng đọc từ trái sang phải: từ nhận diện học sinh -> vấn đề -> lớp học.",
+      "who": "Điều phối học vụ, CSM, Quản lý chi nhánh.",
+      "rules": [
+        "[RULE-OA-05] Cột Lớp học luôn phản ánh trung thực trạng thái phân bổ lớp từ học vụ.",
+        "Học viên bảo lưu chưa thoát lớp hiển thị rõ ràng là Bảo lưu (Giữ lớp)."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Cột Lớp học",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "class_chips",
+      "title": "Thanh lọc nhanh Trạng thái Lớp học",
+      "category": "Phân loại tình trạng học viên",
+      "badgeLabel": "Trạng thái lớp",
+      "targetSelector": "button:has-text(\"Đang học\"), button:has-text(\"Chờ chuyển lớp\"), button:has-text(\"Chờ xếp lớp\"), button:has-text(\"Bảo lưu\"), button:has-text(\"Hết buổi\")",
+      "what": "Nhóm nút chuyển đổi nhanh (Chip Group) ở hàng thứ 2 gồm: Đang học, Chờ chuyển lớp, Chờ xếp lớp, Bảo lưu, Hết buổi.",
+      "why": "Giúp nhân viên phân loại ngay tình huống học tập của học sinh mà không phải dò từng dòng trên bảng.",
+      "who": "Chuyên viên CS, Điều phối học vụ, Quản lý chi nhánh.",
+      "rules": [
+        "[RULE-OA-05] Phản ánh chính xác tình trạng phân bổ lớp.",
+        "Trên màn hình nhỏ, nhóm nút tự động thu gọn lại thành ô thả xuống thông minh."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Trạng thái Lớp học",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "my_tickets",
+      "title": "Phím tắt \"Thẻ của tôi\" & Nhận diện nhân sự (bạn)",
+      "category": "Tối ưu hóa thao tác cá nhân",
+      "badgeLabel": "Thẻ của tôi",
+      "targetSelector": "button:has-text(\"Thẻ của tôi\")",
+      "what": "Nút lọc tức thì Thẻ của tôi gắn số đếm động trên thanh công cụ và ký hiệu nhận diện (bạn) thanh mảnh cạnh tên nhân sự.",
+      "why": "Nhân viên CS và Giáo viên chỉ cần 1 cú click là lọc đúng danh sách ca mình cần xử lý trong ngày mà không phải gõ tìm kiếm thủ công.",
+      "who": "Chuyên viên CS, Giáo viên.",
+      "rules": [
+        "[RULE-OA-06] Số lượng đếm tự động tính toán lại theo Cơ sở và Môn học đang chọn.",
+        "Khi kích hoạt, bảng chỉ hiển thị ca của cá nhân, các thẻ trạng thái được cập nhật đồng bộ."
+      ],
+      "documentLinks": [
+        {
+          "label": "Tài liệu Đặc tả US-CARE-01-01",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "status_tiles",
+      "title": "Dải thẻ Trạng thái Chăm sóc (Status Tiles)",
+      "category": "Vòng đời Chăm sóc",
+      "badgeLabel": "Trạng thái CS",
+      "targetSelector": "button:has-text(\"Chưa chăm sóc\"), button:has-text(\"Đang xử lý\"), button:has-text(\"Đã chăm sóc\")",
+      "what": "Hệ thống thẻ phân loại trạng thái vòng đời chăm sóc: Chưa chăm sóc, Đang xử lý, Đã chăm sóc kèm số đếm động.",
+      "why": "Theo dõi nhanh số lượng học viên trong từng giai đoạn xử lý của cơ sở.",
+      "who": "Chuyên viên CS, Quản lý cơ sở.",
+      "rules": [
+        "Số đếm trên từng thẻ tự động cập nhật đồng bộ theo bộ lọc Cơ sở, Môn học và Thẻ của tôi."
+      ],
+      "documentLinks": [
+        {
+          "label": "Quy chuẩn Status Tiles",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "export_button",
+      "title": "Nút Xuất dữ liệu Excel",
+      "category": "Tác vụ & Báo cáo",
+      "badgeLabel": "Xuất dữ liệu",
+      "targetSelector": "button:has-text(\"Xuất dữ liệu\"), button:has(.lucide-download)",
+      "what": "Nút mở hộp thoại tùy chọn xuất danh sách học viên cần chăm sóc ra định dạng bảng tính Excel.",
+      "why": "Phục vụ công tác báo cáo tuần/tháng cho Ban Giám đốc và chia sẻ dữ liệu cho các cuộc họp vận hành.",
+      "who": "Quản lý cơ sở (BM), Trưởng bộ phận CS.",
+      "rules": [
+        "Cho phép tùy chọn các trường dữ liệu cần xuất.",
+        "Chỉ xuất dữ liệu theo đúng phạm vi danh sách đã được lọc trên màn hình."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Xuất Dữ liệu",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "advanced_filters",
+      "title": "Bộ lọc Mở rộng & Phân tích Đa chiều",
+      "category": "Công cụ điều tra sâu",
+      "badgeLabel": "Bộ lọc nâng cao",
+      "targetSelector": "button:has(.lucide-sliders-horizontal), [data-slot=\"filter-button\"]",
+      "what": "Bảng trượt bộ lọc mở rộng cho phép kết hợp lọc theo nhiều điều kiện: số buổi nghỉ liên tiếp, điểm số học tập, số bài tập chưa nộp, môn học, giáo viên, khoảng ngày tương tác.",
+      "why": "Dành cho Quản lý chi nhánh khi cần rà soát chiến dịch chăm sóc chuyên sâu.",
+      "who": "Quản lý cơ sở (BM), Trưởng bộ phận CS.",
+      "rules": [
+        "Hỗ trợ đếm số lượng bộ lọc đang kích hoạt để người dùng không bị quên điều kiện đã chọn.",
+        "Nút Xóa bộ lọc đưa bảng về trạng thái mặc định an toàn."
+      ],
+      "documentLinks": [
+        {
+          "label": "Cấu hình Bộ lọc Đa chiều",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "search_input",
+      "title": "Ô Tìm kiếm thông minh",
+      "category": "Tìm kiếm & Tra cứu",
+      "badgeLabel": "Tìm kiếm",
+      "targetSelector": "input[placeholder*=\"Tìm kiếm\"]",
+      "what": "Ô tìm kiếm nhanh học viên theo Họ tên, Tên tiếng Anh, Số điện thoại hoặc Tên phụ huynh.",
+      "why": "Tra cứu tức thời học sinh cần chăm sóc trong vài giây.",
+      "who": "Tất cả nhân viên sử dụng màn hình.",
+      "rules": [
+        "Hỗ trợ gõ tiếng Việt có dấu và không dấu.",
+        "Tự động đặt lại trang hiện tại về trang 1 khi người dùng thay đổi từ khóa."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Tìm kiếm",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "branch_select",
+      "title": "Bộ chọn Cơ sở (Chi nhánh đào tạo)",
+      "category": "Phạm vi dữ liệu",
+      "badgeLabel": "Cơ sở",
+      "targetSelector": "button[aria-label=\"Cơ sở\"], [data-slot=\"branch-select\"]",
+      "what": "Hộp thả xuống chọn phạm vi cơ sở hoạt động: CS1, CS2 hoặc Tất cả cơ sở.",
+      "why": "Giúp nhân viên tập trung vào cơ sở mình phụ trách; Quản lý vùng có thể xem chéo các cơ sở.",
+      "who": "Toàn bộ nhân sự.",
+      "rules": [
+        "Thay đổi cơ sở sẽ tự động cập nhật lại toàn bộ danh sách và số liệu thống kê."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Bộ chọn Cơ sở",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "subject_select",
+      "title": "Bộ chọn Môn học",
+      "category": "Phạm vi dữ liệu",
+      "badgeLabel": "Môn học",
+      "targetSelector": "button:has-text(\"Tất cả các môn\"), button:has-text(\"Tiếng Anh\"), button:has-text(\"Toán tư duy\")",
+      "what": "Hộp lọc theo chương trình môn học: Tiếng Anh, Toán tư duy hoặc Tất cả các môn.",
+      "why": "Phân loại học viên theo khối chuyên môn giảng dạy.",
+      "who": "Giáo viên bộ môn, CSM.",
+      "rules": [
+        "Dữ liệu danh sách tự động lọc tương ứng."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Bộ chọn Môn học",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "assignee_select",
+      "title": "Bộ chọn Người phụ trách",
+      "category": "Phân công nhân sự",
+      "badgeLabel": "Người phụ trách",
+      "targetSelector": "button[aria-label=\"Lọc theo người phụ trách\"], button:has-text(\"Người phụ trách\"), button:has-text(\"Tất cả người phụ trách\")",
+      "what": "Ô chọn thả xuống lọc danh sách theo từng nhân sự CS hoặc Giáo viên cụ thể.",
+      "why": "Quản lý cơ sở có thể kiểm tra tiến độ xử lý của từng nhân viên cấp dưới.",
+      "who": "Quản lý cơ sở, Trưởng nhóm CS.",
+      "rules": [
+        "Hỗ trợ tìm kiếm nhanh tên nhân viên trong danh sách thả xuống."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Lọc Người phụ trách",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "csdb_select",
+      "title": "Bộ chọn Loại thẻ CS (Tiêu chí CSĐB)",
+      "category": "Phân loại chăm sóc",
+      "badgeLabel": "Loại thẻ CS",
+      "targetSelector": "button[aria-label=\"Lọc theo Loại thẻ CS\"], button:has-text(\"Loại thẻ CS\")",
+      "what": "Hộp lọc theo nhóm tiêu chí chăm sóc: Học lực, BTVN, Chuyên cần.",
+      "why": "Giúp nhân viên gom nhóm các học viên có cùng loại vấn đề để xử lý theo đợt.",
+      "who": "CSM, Giáo viên.",
+      "rules": [
+        "Lọc chính xác theo nhãn cảnh báo tương ứng."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Phân loại Thẻ CS",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    },
+    {
+      "id": "due_date_select",
+      "title": "Bộ chọn Hạn xử lý cam kết",
+      "category": "Thời hạn & SLA",
+      "badgeLabel": "Hạn xử lý",
+      "targetSelector": "button[aria-label=\"Lọc theo hạn xử lý\"], button:has-text(\"hạn xử lý\"), button:has-text(\"Hạn xử lý\")",
+      "what": "Hộp lọc theo mức độ cấp bách: Quá hạn, Đến hạn, Hẹn gọi lại.",
+      "why": "Tập trung giải quyết các ca khẩn cấp sắp trễ hạn với khách hàng.",
+      "who": "CSM, Quản lý cơ sở.",
+      "rules": [
+        "Ca quá hạn gắn chấm màu đỏ, ca đến hạn gắn chấm màu cam."
+      ],
+      "documentLinks": [
+        {
+          "label": "Đặc tả Hạn xử lý",
+          "url": "https://github.com/example/rinov5/blob/main/docs/00-business/US-CARE-01-01-update-danh-sach-cham-soc-hoc-vien.md"
+        }
+      ],
+      "userStory": "US-CARE-01-01",
+      "businessFunction": "BF-CARE-01"
+    }
+  ]
+}

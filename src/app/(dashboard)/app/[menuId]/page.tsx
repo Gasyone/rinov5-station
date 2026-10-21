@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, lazy, use } from 'react'
+import { redirect } from 'next/navigation'
 import { EmptyState, ModuleLoadingSkeleton } from '@/components/shared'
 import { screens } from '@/config/screens'
 
@@ -204,6 +205,9 @@ const SCREEN_MAP: Record<string, ReturnType<typeof lazy>> = {
 
 export default function MenuPage({ params }: { params: Promise<{ menuId: string }> }) {
   const { menuId } = use(params)
+  if (menuId === 'dashboard' || menuId === 'home') {
+    redirect('/app/my_schedule')
+  }
   const Screen = SCREEN_MAP[menuId]
   const screenConfig = screens[menuId]
 

@@ -79,7 +79,7 @@ export function MyScheduleScreen({
   const allClass = useMemo(() => getMockClassSessions().filter((session) => session.type !== 'digi_session'), [])
   const allEvent = useMemo(() => getMockEventSessions().filter((session) => session.type === 'placement_test'), [])
   const [viewMode, setViewMode] = useState<'day' | 'week'>('week')
-  const [layoutType, setLayoutType] = useState<ScheduleLayoutType>('matrix')
+  const [layoutType, setLayoutType] = useState<ScheduleLayoutType>('schedule_1d')
   const [bucketFilters, setBucketFilters] = useState<string[]>([])
   const [sourceFilters, setSourceFilters] = useState<string[]>([])
   const [statusFilters, setStatusFilters] = useState<string[]>([])
@@ -528,3 +528,4 @@ export function MyScheduleScreen({
     </div>
   )
 }
+

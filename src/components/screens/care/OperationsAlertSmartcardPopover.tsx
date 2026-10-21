@@ -68,6 +68,9 @@ export function OperationsAlertSmartcardPopover({
       ? `${customStartDate.slice(5)} → ${customEndDate.slice(5)}`
       : (activeTimeOption?.label ?? 'Tháng hiện tại')
 
+  // Tạm thời ẩn thống kê và popover theo yêu cầu
+  return null
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

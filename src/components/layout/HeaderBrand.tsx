@@ -4,9 +4,9 @@ import Image from 'next/image'
 export function HeaderBrand() {
   return (
     <Link
-      href="/app/dashboard"
+      href="/app/my_schedule"
       className="flex items-center gap-2 shrink-0 hover:opacity-90 transition-opacity"
-      title="Về trang chủ (Home)"
+      title="Về trang chính (Lịch của tôi)"
     >
       <div className="ui-pill-surface flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-muted shrink-0">
         <Image

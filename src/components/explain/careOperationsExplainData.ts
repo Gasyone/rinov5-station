@@ -1,0 +1,124 @@
+import type { ExplainTopic } from './explainTypes'
+
+export const CARE_OPERATIONS_EXPLAIN_TOPICS: Record<string, ExplainTopic> = {
+  metrics_sla: {
+    id: 'metrics_sla',
+    title: 'Chỉ số Chăm sóc Học viên & Cam kết Đúng hạn SLA',
+    category: 'Chỉ số KPI Vận hành',
+    badgeLabel: 'SLA & KPI',
+    what: 'Hộp thông tin tổng hợp "sức khỏe vận hành" chăm sóc học viên trong tháng, bao gồm Tỷ lệ xử lý đúng hạn SLA (78%), Tổng ca cảnh báo (18 ca), Ca đã hoàn tất CS (0 ca), Ca quá hạn SLA (4 ca), Ca chăm sóc đặc biệt CSĐB (14 ca) và Thanh tiến độ tác nghiệp.',
+    why: 'Giúp Quản lý cơ sở (Branch Manager) và Trưởng nhóm CS nắm bắt tức thì bức tranh toàn cảnh chỉ trong 3 giây: Biết cơ sở đang xử lý tốt hay chậm trễ, có bao nhiêu ca khẩn cấp cần can thiệp ngay để ngăn chặn học viên bỏ học hoặc phụ huynh bức xúc.',
+    who: 'Quản lý cơ sở (Branch Manager), Chuyên viên chăm sóc (CSM), Giáo viên quản lý lớp.',
+    rules: [
+      'Công thức tính Tỷ lệ đúng hạn SLA: (Số ca xử lý trong hạn cam kết / Tổng số ca cảnh báo phát sinh) × 100%.',
+      'Số liệu trên popover tự động tính toán lại theo bộ lọc Tháng và Cơ sở đang áp dụng.',
+      'Thanh tiến độ tác nghiệp phản ánh tỷ trọng 3 giai đoạn: Đã chăm sóc (xanh lá), Đang xử lý (vàng cam), Chưa chăm sóc (đỏ).',
+      'Thanh tóm tắt rút gọn trên thanh công cụ luôn hiển thị 4 chỉ số cốt lõi để theo dõi liên tục mà không cần mở bảng chi tiết.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  my_tickets: {
+    id: 'my_tickets',
+    title: 'Phím tắt "Thẻ của tôi" & Nhận diện nhân sự (bạn)',
+    category: 'Tối ưu hóa thao tác cá nhân',
+    badgeLabel: 'Thẻ của tôi',
+    what: 'Nút lọc tức thì "Thẻ của tôi" gắn số đếm động trên thanh công cụ và ký hiệu nhận diện "(bạn)" thanh mảnh cạnh tên nhân sự đăng nhập tại cột Người chăm sóc.',
+    why: 'Giải quyết nỗi đau của nhân viên CS và Giáo viên: giữa danh sách hàng trăm học viên của toàn trung tâm, nhân viên chỉ cần 1 cú click là lọc đúng danh sách ca mình cần xử lý trong ngày mà không phải gõ tên tìm kiếm thủ công.',
+    who: 'Chuyên viên chăm sóc khách hàng (CSM), Giáo viên phụ trách lớp.',
+    rules: [
+      '[RULE-OA-06] Phím tắt hiển thị số lượng thẻ chăm sóc mà tài khoản hiện tại đang trực tiếp phụ trách (với vai trò CS hoặc Giáo viên).',
+      'Số lượng đếm tự động tính toán lại theo Cơ sở và Môn học đang chọn.',
+      'Khi kích hoạt, bảng chỉ hiển thị ca của cá nhân, đồng thời các thẻ trạng thái (Status Tiles) được cập nhật đồng bộ.',
+      'Ký hiệu "(bạn)" hiển thị thanh mảnh, không đóng khung viền để giữ độ thoáng tự nhiên cho bảng dữ liệu.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  status_tiles: {
+    id: 'status_tiles',
+    title: 'Phân tầng Trạng thái Chăm sóc & Hạn xử lý',
+    category: 'Vòng đời & Mức độ khẩn cấp',
+    badgeLabel: 'Trạng thái & SLA',
+    what: 'Hệ thống thẻ phân loại trạng thái vòng đời chăm sóc (Tất cả, Chưa chăm sóc, Đang xử lý, Đã chăm sóc) kết hợp ô chọn Hạn xử lý cam kết (Quá hạn, Đến hạn, Hẹn gọi lại).',
+    why: 'Tách bạch giữa "Tiến độ công việc" (đã làm hay chưa) và "Thời hạn cam kết" (gấp hay chưa gấp), giúp nhân viên không bị nhầm lẫn giữa việc đang làm dở với việc đã trễ hạn với khách hàng.',
+    who: 'Chuyên viên chăm sóc khách hàng (CSM), Quản lý cơ sở.',
+    rules: [
+      '[RULE-OA-03] Trạng thái vòng đời độc lập với thời hạn cam kết.',
+      'Ca Quá hạn SLA được đánh dấu cảnh báo màu đỏ khẩn cấp và có xu hướng được ưu tiên đẩy lên đầu danh sách.',
+      'Học viên hẹn gọi lại được lưu vết mốc giờ phụ huynh yêu cầu để hệ thống nhắc nhở.',
+      'Số đếm trên từng thẻ trạng thái tự động nhảy theo các bộ lọc cơ sở, môn học và thẻ chăm sóc.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  class_chips: {
+    id: 'class_chips',
+    title: 'Thanh lọc nhanh Trạng thái Lớp học',
+    category: 'Phân loại tình trạng học viên',
+    badgeLabel: 'Trạng thái lớp',
+    what: 'Nhóm nút bấm chuyển đổi nhanh (Chip Group) ở hàng thứ 2 thanh công cụ gồm: Đang học, Chờ chuyển lớp, Chờ xếp lớp, Bảo lưu, Hết buổi.',
+    why: 'Giúp nhân viên phân loại ngay tình huống học tập của học sinh mà không phải dò từng dòng trên bảng. Ví dụ: cần giải quyết gấp các bạn "Chờ chuyển lớp" hoặc "Bảo lưu" để giữ doanh thu.',
+    who: 'Chuyên viên CS, Điều phối học vụ, Quản lý chi nhánh.',
+    rules: [
+      '[RULE-OA-05] Cột Lớp học luôn phản ánh trung thực trạng thái phân bổ lớp từ hệ thống học vụ.',
+      'Trường hợp học viên bảo lưu nhưng chưa thoát khỏi lớp hiện tại, hệ thống hiển thị rõ ràng là "Bảo lưu (Giữ lớp)".',
+      'Trên màn hình nhỏ, nhóm nút tự động thu gọn lại thành ô thả xuống thông minh để không vỡ giao diện.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  phone_masking: {
+    id: 'phone_masking',
+    title: 'Cơ chế Che số điện thoại chống sao chép hàng loạt',
+    category: 'Bảo mật & An toàn dữ liệu',
+    badgeLabel: 'Bảo mật SĐT',
+    what: 'Toàn bộ số điện thoại liên hệ trên bảng danh sách chính đều được che 4 chữ số ở giữa dạng 091****111, đồng thời không cung cấp nút sao chép trần trụi ngoài bảng.',
+    why: 'Bảo vệ quyền riêng tư của phụ huynh/học viên và ngăn ngừa rủi ro nhân sự nội bộ sao chép (leech) hàng loạt dữ liệu số điện thoại khách hàng ra ngoài trung tâm.',
+    who: 'Toàn bộ nhân sự xem danh sách tổng.',
+    rules: [
+      '[RULE-OA-01] Bắt buộc che 4 chữ số ở giữa trên mọi bảng danh sách chính.',
+      'Tuyệt đối không hiển thị nút Copy nhanh số điện thoại trực tiếp trên từng dòng bảng.',
+      'Chỉ khi nhân viên có thẩm quyền bấm mở xem Hồ sơ chi tiết (Detail Modal), số điện thoại đầy đủ mới được hiển thị và hành động này được ghi vết kiểm toán (Audit Log).',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  care_tags: {
+    id: 'care_tags',
+    title: 'Cột Thẻ Chăm sóc & Giới hạn hiển thị thẻ ưu tiên',
+    category: 'Phân loại nguyên nhân cảnh báo',
+    badgeLabel: 'Thẻ cảnh báo',
+    what: 'Cột hiển thị lý do học viên bị đưa vào diện chăm sóc (Học lực giảm, Vắng học liên tiếp, Thiếu bài tập, Chăm sóc đặc biệt CSĐB).',
+    why: 'Giúp nhân viên nắm bắt "bệnh án" của học sinh ngay trước khi bấm gọi điện cho phụ huynh, nói đúng vấn đề trọng tâm thay vì hỏi chung chung.',
+    who: 'Chuyên viên CS, Giáo viên phụ trách.',
+    rules: [
+      '[RULE-OA-04] Mỗi dòng chỉ hiển thị tối đa 2 thẻ ưu tiên nhất để tránh phình to dòng dữ liệu.',
+      'Ưu tiên hiển thị thẻ Chăm sóc đặc biệt (CĐB) lên trước.',
+      'Nếu học viên có từ 3 thẻ trở lên, các thẻ thừa được gom vào nút "+N", khi bấm vào sẽ mở bảng nổi liệt kê chi tiết.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+
+  advanced_filters: {
+    id: 'advanced_filters',
+    title: 'Bộ lọc Mở rộng & Phân tích Đa chiều',
+    category: 'Công cụ điều tra sâu',
+    badgeLabel: 'Bộ lọc nâng cao',
+    what: 'Bảng trượt bộ lọc mở rộng cho phép kết hợp lọc theo nhiều điều kiện: số buổi nghỉ liên tiếp, điểm số học tập, số bài tập chưa nộp, môn học, giáo viên phụ trách, khoảng ngày tương tác.',
+    why: 'Dành cho Quản lý chi nhánh khi cần rà soát chiến dịch chăm sóc chuyên sâu (ví dụ: tìm tất cả học sinh nghỉ từ 2 buổi trở lên chưa ai gọi điện).',
+    who: 'Quản lý cơ sở (BM), Trưởng bộ phận CS.',
+    rules: [
+      'Hỗ trợ đếm số lượng bộ lọc đang kích hoạt để người dùng không bị quên điều kiện đã chọn.',
+      'Nút "Xóa bộ lọc" đưa bảng về trạng thái mặc định an toàn.',
+    ],
+    userStory: 'US-CARE-01-01',
+    businessFunction: 'BF-CARE-01',
+  },
+}

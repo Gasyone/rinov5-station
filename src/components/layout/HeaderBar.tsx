@@ -13,6 +13,7 @@ import {
   Settings,
   ShieldCheck,
   Sun,
+  Lightbulb,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore, type DemoRole } from '@/stores/useAuthStore'
@@ -22,6 +23,7 @@ import { navigationGroups } from '@/config/navigation'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 
 const DEMO_ROLE_OPTIONS: Array<{ role: DemoRole; label: string; desc: string }> = [
   { role: 'csm', label: 'CS', desc: 'Chuyên cần, Dịch vụ & Rủi ro dừng học' },
@@ -70,6 +72,8 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
   const setLocale = useUIStore((s) => s.setLocale)
   const currentMenuId = useUIStore((s) => s.currentMenuId)
   const customHeaderTitle = useUIStore((s) => s.customHeaderTitle)
+  const isExplainMode = useUIStore((s) => s.isExplainMode)
+  const toggleExplainMode = useUIStore((s) => s.toggleExplainMode)
   const router = useRouter()
 
   const baseMenuId = currentMenuId ? currentMenuId.split('/')[0] : null
@@ -168,6 +172,41 @@ export function HeaderBar({ onOpenMobileSidebar }: HeaderBarProps) {
               className="h-auto min-w-0 border-0 bg-transparent p-0 pr-3 text-xs shadow-none outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0"
             />
           </div>
+        </div>
+
+        {/* Switch Chế độ Thuyết minh PO (Explain Mode) */}
+        <div
+          className={cn(
+            'flex h-7 items-center gap-1.5 rounded-full border px-2 text-xs transition-colors select-none',
+            isExplainMode
+              ? 'border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 shadow-2xs'
+              : 'border-border/70 bg-background/60 text-muted-foreground hover:bg-accent hover:text-foreground'
+          )}
+          title="Bật/Tắt Chế độ Thuyết minh Nghiệp vụ PO (Explain Mode)"
+        >
+          <Lightbulb
+            className={cn(
+              'h-3.5 w-3.5 transition-colors shrink-0',
+              isExplainMode
+                ? 'text-amber-500 fill-amber-500 animate-pulse'
+                : 'text-muted-foreground/70'
+            )}
+          />
+          <span className="hidden lg:inline text-[11px] font-medium tracking-tight">
+            Thuyết minh PO
+          </span>
+          <Switch
+            size="sm"
+            checked={isExplainMode}
+            onCheckedChange={() => {
+              toggleExplainMode()
+              if (!isExplainMode) {
+                toast.info('Đã bật Chế độ Thuyết minh PO! Nhấp vào các huy hiệu 💡 để xem ý đồ nghiệp vụ.')
+              }
+            }}
+            aria-label="Chế độ Thuyết minh PO"
+            className="data-[state=checked]:bg-amber-500"
+          />
         </div>
 
         {/* Feedback Popover Button */}

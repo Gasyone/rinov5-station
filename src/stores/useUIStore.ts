@@ -16,6 +16,8 @@ interface UIState {
   currentMenuId: string | null
   customHeaderTitle: string | null
   workdayDate: string
+  isExplainMode: boolean
+  activeExplainTopic: string | null
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
   setTheme: (theme: 'light' | 'dark') => void
@@ -25,6 +27,9 @@ interface UIState {
   setCurrentMenuId: (menuId: string | null) => void
   setCustomHeaderTitle: (title: string | null) => void
   setWorkdayDate: (date: string) => void
+  setExplainMode: (enabled: boolean) => void
+  toggleExplainMode: () => void
+  setActiveExplainTopic: (topic: string | null) => void
 }
 
 const generateId = () => {
@@ -93,6 +98,24 @@ export const useUIStore = create<UIState>()(
       setWorkdayDate: (date: string) => {
         set({ workdayDate: date })
       },
+
+      isExplainMode: false,
+      activeExplainTopic: null,
+
+      setExplainMode: (enabled: boolean) => {
+        set({ isExplainMode: enabled, activeExplainTopic: enabled ? null : null })
+      },
+
+      toggleExplainMode: () => {
+        set((state) => ({
+          isExplainMode: !state.isExplainMode,
+          activeExplainTopic: !state.isExplainMode ? state.activeExplainTopic : null,
+        }))
+      },
+
+      setActiveExplainTopic: (topic: string | null) => {
+        set({ activeExplainTopic: topic })
+      },
     }),
     {
       name: 'rinov5-ui',
@@ -100,6 +123,7 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         theme: state.theme,
         locale: state.locale,
+        isExplainMode: state.isExplainMode,
       }),
     }
   )

@@ -224,7 +224,7 @@ export function DraftQuoteLandingScreen({ quoteId }: DraftQuoteLandingScreenProp
         <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
-              href="/app/dashboard"
+              href="/app/my_schedule"
               className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 transition-colors"
               title="Quay lại Hệ thống"
             >

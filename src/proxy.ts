@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * `auth_session=true` cookie on successful (mock) login. This proxy:
  *
  *  - Redirects unauthenticated requests for `/app/*` to `/login`.
- *  - Bounces authenticated users away from `/login` to `/app/dashboard`.
+ *  - Bounces authenticated users away from `/login` to `/app/my_schedule`.
  *
  * The cookie value is NOT a real session token — see the comment in
  * `login/route.ts` for the security caveat. Replace with a signed JWT or
@@ -15,7 +15,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  */
 const PROTECTED_PREFIX = '/app'
 const LOGIN_PATH = '/login'
-const DEFAULT_AUTHED_PATH = '/app/dashboard'
+const DEFAULT_AUTHED_PATH = '/app/my_schedule'
 
 
 export function proxy(request: NextRequest) {

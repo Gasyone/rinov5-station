@@ -9,7 +9,7 @@ import { getNavigationGroupsForRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useUIStore } from '@/stores/useUIStore'
 import { UserProfileDialog } from '@/components/shared'
-import { cn } from '@/lib/utils'
+import { ExplainTourOverlay } from '@/components/explain'
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -91,6 +91,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
       {isDev && DevPanel ? <DevPanel /> : null}
       <UserProfileDialog />
+      <ExplainTourOverlay />
     </div>
   )
 }

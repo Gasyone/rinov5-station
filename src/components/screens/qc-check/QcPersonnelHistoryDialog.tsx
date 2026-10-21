@@ -48,7 +48,7 @@ function HistoryIncidentCluster({
   onZoomImage: (url: string) => void
   onReopenIncident: (incidentId: string) => void
 }) {
-  const [isOlderExpanded, setIsOlderExpanded] = useState<boolean>(false)
+  const [isOlderExpanded, setIsOlderExpanded] = useState<boolean>(true)
 
   // Lần khắc phục đã đạt nghiệm thu
   const approvedRound =
@@ -241,21 +241,33 @@ export function QcPersonnelHistoryDialog({
   onReopenIncident,
 }: QcPersonnelHistoryDialogProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [monthFilter, setMonthFilter] = useState('all')
 
   const availableMonths = useMemo(() => {
     const monthSet = new Set<string>()
-    // Defaults for demo
-    monthSet.add('2026-10')
-    monthSet.add('2026-09')
     completedIncidents.forEach((inc) => {
       const d = inc.closedAt || inc.createdAt
       if (d && d.length >= 7) {
         monthSet.add(d.substring(0, 7))
       }
     })
-    return Array.from(monthSet).sort().reverse()
+    const sorted = Array.from(monthSet).sort().reverse()
+    return sorted.length > 0 ? sorted : ['2026-10']
   }, [completedIncidents])
+
+  // Cho phép người dùng chuyển tháng, mặc định null để tự động dùng tháng gần nhất availableMonths[0]
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+
+  const effectiveMonth = useMemo(() => {
+    if (selectedMonth && availableMonths.includes(selectedMonth)) {
+      return selectedMonth
+    }
+    return availableMonths[0] || '2026-10'
+  }, [selectedMonth, availableMonths])
+
+  const currentMonthLabel = useMemo(() => {
+    const [year, month] = effectiveMonth.split('-')
+    return `Tháng ${parseInt(month, 10)}/${year}`
+  }, [effectiveMonth])
 
   const filteredIncidents = useMemo(() => {
     return completedIncidents.filter((inc) => {
@@ -263,13 +275,48 @@ export function QcPersonnelHistoryDialog({
         const text = `${inc.title} ${inc.code} ${inc.criteria} ${inc.description}`.toLowerCase()
         if (!text.includes(searchTerm.toLowerCase().trim())) return false
       }
-      if (monthFilter !== 'all') {
-        const dateStr = inc.closedAt || inc.createdAt || ''
-        if (!dateStr.startsWith(monthFilter)) return false
-      }
+      const dateStr = inc.closedAt || inc.createdAt || ''
+      if (!dateStr.startsWith(effectiveMonth)) return false
       return true
     })
-  }, [completedIncidents, searchTerm, monthFilter])
+  }, [completedIncidents, searchTerm, effectiveMonth])
+
+  // Thống kê số lượng chi tiết của 1 tháng đang chọn (không phải danh sách tháng 1,2,3...)
+  const currentMonthStats = useMemo(() => {
+    let rejectedCount = 0
+    filteredIncidents.forEach((inc) => {
+      const rounds = getRoundsForIncident(inc)
+      rejectedCount += rounds.filter((r) => r.reviewStatus === 'rejected').length
+    })
+
+    return {
+      total: filteredIncidents.length,
+      rejected: rejectedCount,
+      approved: filteredIncidents.length,
+    }
+  }, [filteredIncidents, getRoundsForIncident])
+
+  // Chu kỳ cho dropdown
+  const monthDropdownOptions = useMemo(() => {
+    const counts: Record<string, number> = {}
+    completedIncidents.forEach((inc) => {
+      const d = inc.closedAt || inc.createdAt
+      if (d && d.length >= 7) {
+        const m = d.substring(0, 7)
+        counts[m] = (counts[m] || 0) + 1
+      }
+    })
+    return availableMonths.map((m) => {
+      const [year, month] = m.split('-')
+      return {
+        monthKey: m,
+        year,
+        month,
+        label: `Tháng ${parseInt(month, 10)}/${year}`,
+        count: counts[m] || 0,
+      }
+    })
+  }, [completedIncidents, availableMonths])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -278,11 +325,12 @@ export function QcPersonnelHistoryDialog({
         showCloseButton
       >
         {/* Header Modal */}
-        <DialogHeader className="p-0 pb-1 shrink-0 border-b border-border/60">
-          <div className="flex items-center justify-between gap-3 text-left pr-8">
-            <div className="space-y-0.5">
+        <DialogHeader className="p-0 pb-2 shrink-0 border-b border-border/60">
+          <div className="flex items-center justify-between gap-3 text-left pr-8 flex-wrap sm:flex-nowrap">
+            {/* Bên trái: Tiêu đề & Thông tin nhân sự */}
+            <div className="space-y-0.5 min-w-0">
               <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                <History className="h-4 w-4 text-primary" />
+                <History className="h-4 w-4 text-primary shrink-0" />
                 <span>Lịch sử chất lượng & Hồ sơ khắc phục</span>
               </DialogTitle>
               <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
@@ -305,6 +353,43 @@ export function QcPersonnelHistoryDialog({
                 </span>
               </div>
             </div>
+
+            {/* Bên phải: Thống kê số lượng của 1 tháng đang chọn */}
+            <div className="flex items-center gap-1.5 shrink-0 py-0.5">
+              <span className="text-[11px] font-medium text-muted-foreground whitespace-nowrap hidden sm:inline">
+                Thống kê {currentMonthLabel}:
+              </span>
+              <div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-lg border border-border/60 text-xs">
+                <span className="inline-flex items-center gap-1 text-foreground font-medium">
+                  <span className="font-bold text-primary">{currentMonthStats.total}</span> sự cố
+                </span>
+                <span className="text-border/80 text-muted-foreground">•</span>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 font-medium',
+                    currentMonthStats.rejected > 0
+                      ? 'text-destructive font-semibold'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'px-1.5 py-0.2 rounded text-[10px] font-bold',
+                      currentMonthStats.rejected > 0
+                        ? 'bg-destructive/15 text-destructive'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {currentMonthStats.rejected}
+                  </span>
+                  lần chưa đạt
+                </span>
+                <span className="text-border/80 text-muted-foreground">•</span>
+                <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium">
+                  <span className="font-bold">{currentMonthStats.approved}</span> đã nghiệm thu
+                </span>
+              </div>
+            </div>
           </div>
         </DialogHeader>
 
@@ -324,19 +409,15 @@ export function QcPersonnelHistoryDialog({
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground whitespace-nowrap">Chu kỳ:</span>
             <select
-              value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              className="h-8 text-xs rounded-md border border-input bg-background px-2.5 shadow-2xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer text-foreground font-normal"
+              value={effectiveMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="h-8 text-xs rounded-md border border-input bg-background px-2.5 shadow-2xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer text-foreground font-medium"
             >
-              <option value="all">Tất cả các tháng ({completedIncidents.length})</option>
-              {availableMonths.map((m) => {
-                const [year, month] = m.split('-')
-                return (
-                  <option key={m} value={m}>
-                    Tháng {month}/{year}
-                  </option>
-                )
-              })}
+              {monthDropdownOptions.map((opt) => (
+                <option key={opt.monthKey} value={opt.monthKey}>
+                  {opt.label} ({opt.count} sự cố)
+                </option>
+              ))}
             </select>
           </div>
         </div>

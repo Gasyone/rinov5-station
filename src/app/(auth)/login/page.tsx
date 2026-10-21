@@ -51,7 +51,7 @@ export default function LoginPage() {
     const ok = await login(identifier, password)
     if (ok) {
       const redirectUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('redirect') : null
-      window.location.href = redirectUrl || '/app/dashboard'
+      window.location.href = redirectUrl || '/app/my_schedule'
     }
   }
 

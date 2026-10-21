@@ -58,6 +58,8 @@ interface OperationsAlertToolbarProps {
   assigneeOptions: ToolbarSelectOption[]
   myAlertsCount: number
   currentStaffName: string
+  /** Tạm thời ẩn thống kê và popover theo yêu cầu */
+  showSmartcardMetrics?: boolean
 }
 
 const PACKAGE_STATUS_FILTER_ITEMS: Array<{
@@ -132,6 +134,7 @@ export function OperationsAlertToolbar({
   assigneeOptions,
   myAlertsCount,
   currentStaffName,
+  showSmartcardMetrics = false,
 }: OperationsAlertToolbarProps) {
 
   const statusPillTiles: StatusTile<'all' | 'pending' | 'in_progress' | 'cared'>[] = [
@@ -300,8 +303,8 @@ export function OperationsAlertToolbar({
             }
           />
 
-          {/* Smart Card Popover Chỉ số Chăm sóc Học viên */}
-          <OperationsAlertSmartcardPopover alerts={alerts} />
+          {/* Smart Card Popover Chỉ số Chăm sóc Học viên - Tạm thời ẩn theo yêu cầu */}
+          {showSmartcardMetrics && <OperationsAlertSmartcardPopover alerts={alerts} />}
         </div>
       </div>
 
